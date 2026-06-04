@@ -12,6 +12,7 @@ import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature } from '../../state/scene';
+import { campaign } from '../../scenes/campaign';
 import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
@@ -42,6 +43,7 @@ export function Editor() {
   const [scene, setScene] = useState<Scene>(() => clone(tome1Intro));
   const [tool, setTool] = useState<Tool>({ mode: 'tile', terrain: 'mur' });
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
@@ -113,10 +115,36 @@ export function Editor() {
     setScene({ ...scene, triggers: [...scene.triggers, { id: `trig-${Date.now().toString(36)}`, rect, once: true, effects: [] }] });
     setTrigOpen(true); // ouvrir l'éditeur pour attacher les effets
   }
+  function addBuilding(type: string, rect: Rect) {
+    const meta = BUILDINGS_META[type];
+    if (!meta) return;
+    const b: BuildingFeature = {
+      id: `b-${Date.now().toString(36)}`,
+      type: meta.id,
+      foot: rect,
+      reveal: meta.defaultReveal,
+      door: { x: rect.x + Math.floor(rect.w / 2), y: rect.y + rect.h - 1 },
+      params: {},
+      label: meta.label,
+    };
+    setScene({ ...scene, buildings: [...(scene.buildings ?? []), b] });
+    setSelected(null);
+    setSelectedBuilding(b.id);
+  }
 
   const sel = scene.entities.find((e) => e.id === selected) ?? null;
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (e.id === selected ? { ...e, ...patch } : e)) });
+  const selB = (scene.buildings ?? []).find((b) => b.id === selectedBuilding) ?? null;
+  const updateSelB = (patch: Partial<BuildingFeature>) =>
+    setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (b.id === selectedBuilding ? { ...b, ...patch } : b)) });
+  const updateSelBParam = (key: string, value: unknown) =>
+    setScene({
+      ...scene,
+      buildings: (scene.buildings ?? []).map((b) =>
+        b.id === selectedBuilding ? { ...b, params: { ...b.params, [key]: value } } : b,
+      ),
+    });
 
   function exportJson() {
     const blob = new Blob([JSON.stringify(scene, null, 2)], { type: 'application/json' });
@@ -323,7 +351,7 @@ export function Editor() {
             height={stage.h}
             onPointerDown={(e) => {
               const p = isoTile(e);
-              if (tool.mode === 'trigger') {
+              if (tool.mode === 'trigger' || tool.mode === 'building') {
                 dragStartRef.current = p;
                 setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
               } else {
@@ -332,11 +360,13 @@ export function Editor() {
               }
             }}
             onPointerMove={(e) => {
-              if (tool.mode === 'trigger' && dragStartRef.current) setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
+              if ((tool.mode === 'trigger' || tool.mode === 'building') && dragStartRef.current)
+                setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
               else if (painting && tool.mode === 'tile') applyAt(isoTile(e));
             }}
             onPointerUp={(e) => {
               if (tool.mode === 'trigger' && dragStartRef.current) addTrigger(rectFrom(dragStartRef.current, isoTile(e)));
+              else if (tool.mode === 'building' && dragStartRef.current) addBuilding(tool.type, rectFrom(dragStartRef.current, isoTile(e)));
               dragStartRef.current = null;
               setDragRect(null);
               setPainting(false);
@@ -420,6 +450,13 @@ export function Editor() {
               )}
             </g>
             {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
+            {selB && (
+              <g>
+                {perimeterTiles(selB).map((t) => (
+                  <path key={`selb-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={2} opacity={0.8} />
+                ))}
+              </g>
+            )}
             {dragRect && (
               <g>
                 {Array.from({ length: dragRect.w * dragRect.h }, (_, i) => {
@@ -436,7 +473,88 @@ export function Editor() {
         </main>
 
         <aside className="editor-inspector">
-          {sel ? (
+          {selB ? (
+            <>
+              <div className="mini-title">Bâtiment sélectionné</div>
+              <div className="inspector">
+                <p>
+                  <b>{BUILDINGS_META[selB.type]?.label ?? selB.type}</b> @ ({selB.foot.x}, {selB.foot.y}) {selB.foot.w}×{selB.foot.h}
+                </p>
+                <label className="ed-field">
+                  Libellé
+                  <input value={selB.label ?? ''} onChange={(e) => updateSelB({ label: e.target.value })} />
+                </label>
+                <label className="ed-field">
+                  Orientation
+                  <select value={selB.facing ?? 'S'} onChange={(e) => updateSelB({ facing: e.target.value as BuildingFeature['facing'] })}>
+                    <option value="N">Nord</option>
+                    <option value="E">Est</option>
+                    <option value="S">Sud</option>
+                    <option value="O">Ouest</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  Révélation
+                  <select value={selB.reveal} onChange={(e) => updateSelB({ reveal: e.target.value as BuildingFeature['reveal'] })}>
+                    <option value="cutaway">Toit qui se lève (intérieur in-scene)</option>
+                    <option value="door">Façade pleine + porte → intérieur</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  Tuile-porte
+                  <select
+                    value={selB.door ? `${selB.door.x},${selB.door.y}` : ''}
+                    onChange={(e) => {
+                      const [x, y] = e.target.value.split(',').map(Number);
+                      updateSelB({ door: { x, y } });
+                    }}
+                  >
+                    {perimeterTiles(selB).map((t) => (
+                      <option key={`${t.x},${t.y}`} value={`${t.x},${t.y}`}>
+                        ({t.x}, {t.y})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {selB.reveal === 'door' && (
+                  <>
+                    <label className="ed-field">
+                      Scène d'intérieur
+                      <select value={selB.interiorScene ?? ''} onChange={(e) => updateSelB({ interiorScene: e.target.value || undefined })}>
+                        <option value="">— aucune —</option>
+                        {campaign.map((c) => (
+                          <option key={c.scene.id} value={c.scene.id}>
+                            {c.scene.nom} ({c.scene.id})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="ed-field">
+                      Point d'arrivée (entry)
+                      <input value={selB.entry ?? ''} onChange={(e) => updateSelB({ entry: e.target.value || undefined })} />
+                    </label>
+                  </>
+                )}
+                <ParamFields
+                  schema={BUILDINGS[selB.type]?.paramsSchema ?? []}
+                  values={(selB.params ?? {}) as Record<string, unknown>}
+                  onChange={updateSelBParam}
+                />
+                <button
+                  className="btn small danger"
+                  onClick={() => {
+                    setScene({ ...scene, buildings: (scene.buildings ?? []).filter((x) => x.id !== selB.id) });
+                    setSelectedBuilding(null);
+                  }}
+                >
+                  Supprimer
+                </button>
+                <button className="btn small" onClick={() => setSelectedBuilding(null)}>
+                  Désélectionner
+                </button>
+              </div>
+            </>
+          ) : sel ? (
             <>
               <div className="mini-title">Entité sélectionnée</div>
               <div className="inspector">
@@ -493,6 +611,18 @@ export function Editor() {
                     />
                   </label>
                 )}
+                {sel.kind === 'prop' && (
+                  <label className="ed-field">
+                    Décor
+                    <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel({ ref: e.target.value })}>
+                      {Object.values(PROPS).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
                   Supprimer
                 </button>
@@ -505,12 +635,24 @@ export function Editor() {
                 Sélectionnez une entité sur la carte pour l'éditer (créature, dialogue, butin…).
                 <br />
                 <br />
-                Onglet <b>Carte</b> : peindre tuiles, placer entités, dessiner des zones.
+                Onglet <b>Carte</b> : peindre tuiles, placer entités, <b>glisser</b> pour poser un bâtiment ou une zone.
                 <br />
                 Onglet <b>Logique</b> : triggers, dialogues, rencontres.
                 <br />
                 Onglet <b>Scène</b> : nom, taille, ambiance.
               </p>
+              {(scene.buildings ?? []).length > 0 && (
+                <>
+                  <div className="mini-title">Bâtiments posés</div>
+                  <div className="entity-tools">
+                    {(scene.buildings ?? []).map((b) => (
+                      <button key={b.id} className="btn small" onClick={() => setSelectedBuilding(b.id)}>
+                        {b.label ?? BUILDINGS_META[b.type]?.label ?? b.type} ({b.foot.x},{b.foot.y})
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </aside>
@@ -567,4 +709,15 @@ export function Editor() {
 
 function entColor(kind: EntityKind): string {
   return { heroStart: '#2ecc71', pnj: '#4aa3df', ennemi: '#c0392b', objet: '#f1c40f', prop: '#7f8c8d' }[kind];
+}
+
+/** Tuiles du périmètre d'un bâtiment (candidates pour la porte). */
+function perimeterTiles(b: BuildingFeature): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let y = b.foot.y; y < b.foot.y + b.foot.h; y++)
+    for (let x = b.foot.x; x < b.foot.x + b.foot.w; x++) {
+      const peri = x === b.foot.x || x === b.foot.x + b.foot.w - 1 || y === b.foot.y || y === b.foot.y + b.foot.h - 1;
+      if (peri) out.push({ x, y });
+    }
+  return out;
 }
