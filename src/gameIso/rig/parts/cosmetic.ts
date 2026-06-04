@@ -1,4 +1,4 @@
-import type { Part } from './types';
+import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
 import { GENERATED_HEADS } from './generated/heads';
 
@@ -31,10 +31,10 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
 
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
  *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours. */
-export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): Part {
+export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const base = baseSpeciesOf(species);
   const gen = GENERATED_HEADS[`${base}:${sex}`];
-  if (gen?.[slot]) return { svg: gen[slot]! };
-  if (slot === 'visage') return { svg: pick(VISAGE, `${base}:${sex}`, 'default', idx) };
-  return { svg: pick(CHEVEUX, `${base}:${sex}`, 'Humain:M', idx) };
+  if (gen?.[slot] != null) return gen[slot]!; // PartArt (string = front, ou objet par vue)
+  if (slot === 'visage') return pick(VISAGE, `${base}:${sex}`, 'default', idx);
+  return pick(CHEVEUX, `${base}:${sex}`, 'Humain:M', idx);
 }

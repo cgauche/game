@@ -1,21 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { weaponPart, shieldPart, armourPart, armourMaterial, equipFromCombatant, isShield } from './equipment';
+import { pickView } from './types';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged', q: string[] = []): Weapon =>
   ({ name, type, damage: '+4', qualities: q } as Weapon);
+const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
 
 describe('weaponPart', () => {
   it('reconnaît une épée vs un arc (SVG différents)', () => {
-    expect(weaponPart(wep('Épée', 'melee')).svg).not.toBe(weaponPart(wep('Arc court', 'ranged')).svg);
+    expect(wpv('Épée')).not.toBe(wpv('Arc court', 'ranged'));
   });
   it('arme inconnue → part générique mêlée non vide', () => {
-    expect(weaponPart(wep('Truc bizarre', 'melee')).svg).toContain('<');
+    expect(wpv('Truc bizarre')).toContain('<');
   });
 });
 
 describe('weaponFamily (via weaponPart) — corrections audit', () => {
-  const part = (name: string, type: 'melee' | 'ranged' = 'melee') => weaponPart(wep(name, type)).svg;
+  const part = (name: string, type: 'melee' | 'ranged' = 'melee') => wpv(name, type);
   it('Javelot → famille lance (pas le défaut arc/épée)', () => {
     expect(part('Javelot')).toBe(part('Lance de cavalerie'));
   });
@@ -61,7 +63,7 @@ describe('armourMaterial — corrections audit', () => {
 describe('armourPart', () => {
   const mail: ItemInstance = { uid: '1', name: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true };
   it('mappe une pièce de corps sur le slot torse', () => {
-    expect(armourPart(mail, 'torse')?.svg).toContain('<');
+    expect(pickView(armourPart(mail, 'torse'), 'front')).toContain('<');
   });
   it('ne renvoie rien si la pièce ne couvre pas l’emplacement', () => {
     expect(armourPart(mail, 'jambes')).toBeNull();
@@ -70,7 +72,7 @@ describe('armourPart', () => {
 
 describe('shieldPart', () => {
   it('renvoie un SVG de bouclier non vide', () => {
-    expect(shieldPart(wep('Bouclier', 'melee', ['Bouclier'])).svg).toContain('<');
+    expect(pickView(shieldPart(wep('Bouclier', 'melee', ['Bouclier'])), 'front')).toContain('<');
   });
 });
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { careerClass, careerTenue } from './career';
+import { pickView } from './types';
 
 describe('careerClass', () => {
   it('lit la classe depuis careers.json', () => {
@@ -15,8 +16,8 @@ describe('careerTenue', () => {
   it('fournit au moins torse + jambes pour chaque classe connue', () => {
     for (const c of ['Guerriers', 'Lettrés', 'Roublards', 'Ruraux', 'Citadins', 'Courtisans', 'Itinérants', 'Riverains']) {
       const t = careerTenue(c);
-      expect(t.torse?.svg).toContain('<');
-      expect(t.jambes?.svg).toContain('<');
+      expect(pickView(t.torse, 'front')).toContain('<');
+      expect(pickView(t.jambes, 'front')).toContain('<');
     }
   });
 });

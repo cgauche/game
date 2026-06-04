@@ -6,6 +6,15 @@ import type { Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import type { EquipCtx } from './parts/equipment';
+import type { View } from './facing';
+import { VIEW_POSE } from './viewPose';
+
+/** Somme de deux poses (deltas d'angles) — compose la pose de vue avec la pose d'anim. */
+function addPose(a: Pose, b: Pose): Pose {
+  const out: Pose = { ...a };
+  for (const k of Object.keys(b) as (keyof Pose)[]) out[k] = (out[k] ?? 0) + (b[k] ?? 0);
+  return out;
+}
 
 export interface ResolvedBone {
   id: BoneId;
@@ -22,10 +31,11 @@ export function resolveRig(
   equip: EquipCtx,
   pose: Pose,
   career?: string,
+  view: View = 'front',
 ): ResolvedBone[] {
   const sk = applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build);
-  const world = worldTransforms(sk, pose);
-  const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1);
+  const world = worldTransforms(sk, addPose(VIEW_POSE[view], pose)); // pose de vue + pose d'anim
+  const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
 
   // Échelle de rendu par os = (thickness/réf, length/réf). Os de longueur/épaisseur
   // nulle (arme/bouclier) : hérite du parent. N'affecte PAS la FK (positions des joints).
@@ -64,13 +74,14 @@ export function resolveRig(
 }
 
 /** Composant : un <g data-bone> par os, transformable individuellement (anim C / postures D). */
-export function RigSprite({ appearance, equip, pose = {}, career }: {
+export function RigSprite({ appearance, equip, pose = {}, career, view = 'front' }: {
   appearance: Appearance;
   equip: EquipCtx;
   pose?: Pose;
   career?: string;
+  view?: View;
 }): JSX.Element {
-  const bones = resolveRig(appearance, equip, pose, career);
+  const bones = resolveRig(appearance, equip, pose, career, view);
   return (
     <g className="rig">
       {bones.map((b) => (

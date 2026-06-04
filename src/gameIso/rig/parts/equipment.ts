@@ -1,6 +1,6 @@
 import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engine/types';
 import type { Slot } from '../bones';
-import type { Part } from './types';
+import type { PartArt } from './types';
 import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
@@ -44,7 +44,7 @@ function weaponFamily(w: Weapon): string {
 }
 
 /** Parts d'arme (dessinées dans le repère local de l'os `arme`, manche à l'origine). */
-const WEAPONS: Record<string, string> = {
+const WEAPONS: Record<string, PartArt> = {
   epee: `<rect x="-1.5" y="-2" width="3" height="6" fill="#5a3f24"/><rect x="-1" y="-30" width="2" height="28" fill="url(#g_steel)"/><rect x="-5" y="-2" width="10" height="2.5" fill="#caa64a"/>`,
   hache: `<rect x="-1.5" y="-2" width="3" height="30" fill="#4a2f17"/><path d="M-2 -28 q14 -10 14 12 q-14 -2 -14 -10z" fill="url(#g_axe)" stroke="#2a3038"/>`,
   masse: `<rect x="-1.5" y="-2" width="3" height="28" fill="#4a2f17"/><circle cx="0" cy="-28" r="6" fill="url(#g_steelD)"/>`,
@@ -57,12 +57,12 @@ const WEAPONS: Record<string, string> = {
 // Familles d'armes dessinées par le workflow d'art (poudre, fronde, fouet, explosif…).
 Object.assign(WEAPONS, GENERATED_WEAPONS);
 
-export function weaponPart(w: Weapon): Part {
-  return { svg: WEAPONS[weaponFamily(w)] ?? WEAPONS.epee };
+export function weaponPart(w: Weapon): PartArt {
+  return WEAPONS[weaponFamily(w)] ?? WEAPONS.epee;
 }
 
-export function shieldPart(_x: Weapon | ItemInstance): Part {
-  return { svg: `<ellipse cx="0" cy="6" rx="11" ry="15" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.5"/><ellipse cx="0" cy="6" rx="3" ry="3" fill="#caa64a"/>` };
+export function shieldPart(_x: Weapon | ItemInstance): PartArt {
+  return `<ellipse cx="0" cy="6" rx="11" ry="15" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.5"/><ellipse cx="0" cy="6" rx="3" ry="3" fill="#caa64a"/>`;
 }
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */
@@ -89,18 +89,18 @@ function coversSlot(item: ItemInstance, slot: Slot): boolean {
   return !!locs && (item.locs ?? []).some((l) => locs.includes(l));
 }
 
-export function armourPart(item: ItemInstance, slot: Slot): Part | null {
+export function armourPart(item: ItemInstance, slot: Slot): PartArt | null {
   if (!coversSlot(item, slot)) return null;
   const mat = armourMaterial(item);
   // Art dessiné par le workflow (matériau × emplacement) en priorité.
   const gen = GENERATED_ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
-  if (gen) return { svg: gen };
+  if (gen) return gen;
   const fill = MATERIAL_FILL[mat];
   switch (slot) {
-    case 'tete':   return { svg: `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>` };
-    case 'torse':  return { svg: `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>` };
-    case 'bras':   return { svg: `<rect x="-3.7" y="-2" width="7.4" height="30" rx="3" fill="${fill}"/>` };
-    case 'jambes': return { svg: `<rect x="-4.5" y="0" width="9" height="46" rx="3" fill="${fill}"/>` };
+    case 'tete':   return `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>`;
+    case 'torse':  return `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>`;
+    case 'bras':   return `<rect x="-3.7" y="-2" width="7.4" height="30" rx="3" fill="${fill}"/>`;
+    case 'jambes': return `<rect x="-4.5" y="0" width="9" height="46" rx="3" fill="${fill}"/>`;
     default:       return null;
   }
 }

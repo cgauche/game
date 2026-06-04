@@ -55,3 +55,15 @@ describe('resolveRig — échelle des parts par os', () => {
     expect(arme!.scale[0]).toBe(arme!.scale[1]); // échelle UNIFORME → l'arme ne s'étire pas
   });
 });
+
+describe('resolveRig — vues (facing)', () => {
+  it('view=profile change la pose de base (≠ front)', () => {
+    const epF = resolveRig(app, equip, {}, undefined, 'front').find((b) => b.id === 'epauleG')?.matrix.join(',');
+    const epP = resolveRig(app, equip, {}, undefined, 'profile').find((b) => b.id === 'epauleG')?.matrix.join(',');
+    expect(epP).not.toBe(epF); // VIEW_POSE.profile a bougé epauleG
+  });
+  it('view=back sans art back retombe sur le SVG front (jamais vide)', () => {
+    const torse = resolveRig(app, equip, {}, undefined, 'back').find((b) => b.id === 'torse');
+    expect(torse?.parts.some((p) => p.svg.includes('<'))).toBe(true);
+  });
+});
