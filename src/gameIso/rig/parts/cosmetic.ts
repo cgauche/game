@@ -1,4 +1,6 @@
 import type { Part } from './types';
+import { baseSpeciesOf } from '../skeletons';
+import { GENERATED_HEADS } from './generated/heads';
 
 const eye = (cx: number) =>
   `<ellipse cx="${cx}" cy="7" rx="1.4" ry="2" fill="url(#g_eye)"/><circle cx="${cx}" cy="7" r="0.8" fill="#140a06"/>`;
@@ -27,8 +29,12 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
   return arr[idx >= 0 && idx < arr.length ? idx : 0];
 }
 
-/** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}. */
+/** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
+ *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours. */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): Part {
-  if (slot === 'visage') return { svg: pick(VISAGE, `${species}:${sex}`, 'default', idx) };
-  return { svg: pick(CHEVEUX, `${species}:${sex}`, 'Humain:M', idx) };
+  const base = baseSpeciesOf(species);
+  const gen = GENERATED_HEADS[`${base}:${sex}`];
+  if (gen?.[slot]) return { svg: gen[slot]! };
+  if (slot === 'visage') return { svg: pick(VISAGE, `${base}:${sex}`, 'default', idx) };
+  return { svg: pick(CHEVEUX, `${base}:${sex}`, 'Humain:M', idx) };
 }

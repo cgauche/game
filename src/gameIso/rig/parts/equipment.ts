@@ -1,6 +1,7 @@
 import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engine/types';
 import type { Slot } from '../bones';
 import type { Part } from './types';
+import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -23,9 +24,17 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
 function weaponFamily(w: Weapon): string {
   // Nom normalisé (accents retirés) → patterns sans accent, robustes à l'encodage.
   const n = w.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (/pistolet|arquebus|fusil|tromblon|mousquet|poudre|escopette/.test(n)) return 'poudre';
+  if (/fronde|fustibale/.test(n)) return 'fronde';
+  if (/fouet/.test(n)) return 'fouet';
+  if (/bombe|grenade|explos/.test(n)) return 'explosif';
+  if (/lasso/.test(n)) return 'lasso';
+  if (/bolas/.test(n)) return 'bolas';
+  if (/coup.?de.?poing|cestus|poing americain/.test(n)) return 'poing';
+  if (/main gauche|brise.?epee|dague de parade|parade/.test(n)) return 'parade';
   if (/arbal/.test(n)) return 'arbalete';
   if (/arc/.test(n)) return 'arc';
-  if (/dague|couteau|main gauche|stylet|poignard/.test(n)) return 'dague';
+  if (/dague|couteau|stylet|poignard/.test(n)) return 'dague';
   if (/hache|pioche|cognee/.test(n)) return 'hache';
   if (/masse|marteau|gourdin|fleau|maillet|matraque/.test(n)) return 'masse';
   if (/lance|hallebarde|pique|epieu|javelot|fleche|flechette|trait/.test(n)) return 'lance';
@@ -45,6 +54,8 @@ const WEAPONS: Record<string, string> = {
   arc: `<path d="M0 -26 Q14 0 0 26" stroke="#6a4a2a" stroke-width="2.4" fill="none"/><line x1="0" y1="-26" x2="0" y2="26" stroke="#d8d0c0" stroke-width="0.8"/>`,
   arbalete: `<rect x="-2" y="-4" width="4" height="20" fill="#5a3f24"/><path d="M-12 -4 H12" stroke="#3a2a18" stroke-width="3"/>`,
 };
+// Familles d'armes dessinées par le workflow d'art (poudre, fronde, fouet, explosif…).
+Object.assign(WEAPONS, GENERATED_WEAPONS);
 
 export function weaponPart(w: Weapon): Part {
   return { svg: WEAPONS[weaponFamily(w)] ?? WEAPONS.epee };
@@ -55,7 +66,7 @@ export function shieldPart(_x: Weapon | ItemInstance): Part {
 }
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */
-function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'maille' | 'plaque' {
+export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'maille' | 'plaque' {
   const n = item.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   if (/cuir|jaque/.test(n)) return 'cuir';
   if (/maille|cotte|haubert/.test(n)) return 'maille';
@@ -80,7 +91,11 @@ function coversSlot(item: ItemInstance, slot: Slot): boolean {
 
 export function armourPart(item: ItemInstance, slot: Slot): Part | null {
   if (!coversSlot(item, slot)) return null;
-  const fill = MATERIAL_FILL[armourMaterial(item)];
+  const mat = armourMaterial(item);
+  // Art dessiné par le workflow (matériau × emplacement) en priorité.
+  const gen = GENERATED_ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
+  if (gen) return { svg: gen };
+  const fill = MATERIAL_FILL[mat];
   switch (slot) {
     case 'tete':   return { svg: `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>` };
     case 'torse':  return { svg: `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>` };

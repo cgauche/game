@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { weaponPart, shieldPart, armourPart, equipFromCombatant, isShield } from './equipment';
+import { weaponPart, shieldPart, armourPart, armourMaterial, equipFromCombatant, isShield } from './equipment';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged', q: string[] = []): Weapon =>
@@ -19,8 +19,9 @@ describe('weaponFamily (via weaponPart) — corrections audit', () => {
   it('Javelot → famille lance (pas le défaut arc/épée)', () => {
     expect(part('Javelot')).toBe(part('Lance de cavalerie'));
   });
-  it('Main Gauche → famille dague', () => {
-    expect(part('Main Gauche')).toBe(part('Dague'));
+  it('Main Gauche → famille parade (≠ dague), comme Brise-épée', () => {
+    expect(part('Main Gauche')).toBe(part('Brise-épée'));
+    expect(part('Main Gauche')).not.toBe(part('Dague'));
   });
   it('Fleuret et Zweihänder (accents) → famille épée', () => {
     expect(part('Fleuret')).toBe(part('Épée'));
@@ -39,20 +40,21 @@ describe('isShield', () => {
   });
 });
 
-describe('armourMaterial (via armourPart fill) — corrections audit', () => {
-  const fillOf = (name: string, pa: number, slot: 'torse' | 'jambes', locs: ('corps' | 'jambeG')[]) =>
-    armourPart({ uid: 'x', name, kind: 'armor', qualities: [], pa, locs, enc: 1, equipped: true } as ItemInstance, slot)?.svg ?? '';
+describe('armourMaterial — corrections audit', () => {
+  const mat = (name: string, pa: number) =>
+    armourMaterial({ uid: 'x', name, kind: 'armor', qualities: [], pa, locs: ['corps'], enc: 1, equipped: true } as ItemInstance);
   it('« Plastron de cuir » = cuir (cuir prime sur plaque)', () => {
-    expect(fillOf('Plastron de cuir', 2, 'torse', ['corps'])).toContain('#6a4a2a');
+    expect(mat('Plastron de cuir', 2)).toBe('cuir');
   });
-  it('« Plastron » (plaque) = acier', () => {
-    expect(fillOf('Plastron', 5, 'torse', ['corps'])).toContain('url(#g_steel)');
+  it('« Plastron » (plaque) = plaque', () => {
+    expect(mat('Plastron', 5)).toBe('plaque');
   });
-  it('« Jambières d’acier » = plaque', () => {
-    expect(fillOf("Jambières d'acier", 2, 'jambes', ['jambeG'])).toContain('url(#g_steel)');
+  it('« Jambières d’acier » et « Brassards » = plaque', () => {
+    expect(mat("Jambières d'acier", 2)).toBe('plaque');
+    expect(mat('Brassards', 2)).toBe('plaque');
   });
   it('« Cotte de mailles » = maille', () => {
-    expect(fillOf('Cotte de mailles', 2, 'torse', ['corps'])).toContain('url(#g_steelD)');
+    expect(mat('Cotte de mailles', 2)).toBe('maille');
   });
 });
 
