@@ -9,6 +9,7 @@ export function BattlePanel() {
   const selectSpell = useGame((s) => s.battleSelectSpell);
   const focusSpell = useGame((s) => s.battleFocusSpell);
   const endTurn = useGame((s) => s.battleEndTurn);
+  const defendTotal = useGame((s) => s.battleDefendTotal);
   const startScene = useGame((s) => s.startScene);
   if (!battle) return null;
 
@@ -74,6 +75,14 @@ export function BattlePanel() {
               Incanter {battle.acted && '✓'}
             </button>
           )}
+          <button
+            className="btn"
+            disabled={battle.acted}
+            onClick={defendTotal}
+            title="Utilise l'Action pour +20 à tous vos Tests de défense jusqu'à votre prochain tour"
+          >
+            Sur la défensive {battle.acted && '✓'}
+          </button>
           <button className="btn" onClick={endTurn}>
             Fin du tour →
           </button>

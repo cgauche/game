@@ -149,6 +149,8 @@ export interface Combatant {
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;
+  /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
+  defensiveStance?: boolean;
   /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
    *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
   appearance?: import('../gameIso/rig/appearance').Appearance;

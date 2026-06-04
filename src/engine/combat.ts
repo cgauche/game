@@ -107,7 +107,7 @@ export function resolveMelee(
   }
 
   const defVal = defenseValue(defender, defenseMode);
-  const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender));
+  const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0));
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;

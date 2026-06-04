@@ -117,6 +117,8 @@ interface GameState {
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
   battleEndTurn: () => void;
+  /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
+  battleDefendTotal: () => void;
   log: (msg: string) => void;
 }
 
@@ -377,6 +379,16 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleEndTurn: () => advanceTurn(get, set),
+
+  battleDefendTotal: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    active.defensiveStance = true;
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {
@@ -775,6 +787,9 @@ function advanceTurn(get: () => GameState, set: any) {
     const next = battle.combatants.find((c) => c.id === battle!.order[turn]);
     if (next && !isOutOfAction(next)) break;
   }
+  // La posture « Sur la défensive » expire au début du tour de son porteur (LDB Combat l.118).
+  const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
+  if (newActive) newActive.defensiveStance = false;
   battle = { ...battle, turn, round, action: null, moved: false, acted: false, reachable: new Map() };
   set({ battle });
   if (checkBattleOver(get, set)) return;

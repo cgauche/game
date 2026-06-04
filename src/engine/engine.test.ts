@@ -68,6 +68,33 @@ describe("Atouts d'arme (LDB Les armes)", () => {
   });
 });
 
+describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
+  const rngOf = (roll: number): RNG => ({ int: () => roll });
+  const mk = (cc: number, opts: Partial<Combatant> = {}): Combatant =>
+    ({
+      id: 'c',
+      name: 'c',
+      kind: 'enemy',
+      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 20, max: 20 },
+      advantage: 0,
+      conditions: [],
+      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [] }],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      skills: [],
+      talents: [],
+      movement: 4,
+      ...opts,
+    }) as unknown as Combatant;
+  it('un défenseur sur la défensive est plus dur à toucher (même jet)', () => {
+    const atk = mk(50);
+    const open = mk(30); // Parade = CC 30
+    const guard = mk(30, { defensiveStance: true }); // +20 → 50
+    expect(resolveMelee(atk, open, atk.weapons[0], rngOf(40), { defense: 'parade' }).hit).toBe(true);
+    expect(resolveMelee(atk, guard, atk.weapons[0], rngOf(40), { defense: 'parade' }).hit).toBe(false);
+  });
+});
+
 describe('États en combat (LDB ch.16)', () => {
   const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);
   it('pénalité de combat non-cumul : la pire pénalité d’un seul État', () => {
