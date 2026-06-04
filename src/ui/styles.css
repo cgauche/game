@@ -957,11 +957,42 @@ textarea:focus {
   width: 110px;
 }
 
+/* Palette à onglets */
+.pal-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pal-tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 8px 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.pal-tabs button:hover {
+  color: var(--text);
+}
+.pal-tabs button.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+.pal-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* Palette : groupe logique + aperçu entité */
 .logic-buttons {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 .ent-preview {
   display: grid;

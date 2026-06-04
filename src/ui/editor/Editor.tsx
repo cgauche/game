@@ -36,6 +36,7 @@ export function Editor() {
   const [trigOpen, setTrigOpen] = useState(false);
   const [dlgOpen, setDlgOpen] = useState(false);
   const [encOpen, setEncOpen] = useState(false);
+  const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
@@ -181,77 +182,110 @@ export function Editor() {
 
       <div className="editor-body">
         <aside className="editor-palette">
-          <div className="mini-title">Métadonnées</div>
-          <label className="ed-field">
-            Nom
-            <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
-          </label>
-          <div className="ed-dim">
-            <label>
-              L
-              <input type="number" value={scene.dimensions.w} min={5} max={40} onChange={(e) => resize(Number(e.target.value) || 5, scene.dimensions.h)} />
-            </label>
-            <label>
-              H
-              <input type="number" value={scene.dimensions.h} min={5} max={40} onChange={(e) => resize(scene.dimensions.w, Number(e.target.value) || 5)} />
-            </label>
+          <div className="pal-tabs">
+            <button className={palTab === 'carte' ? 'active' : ''} onClick={() => setPalTab('carte')}>
+              🗺️ Carte
+            </button>
+            <button className={palTab === 'logique' ? 'active' : ''} onClick={() => setPalTab('logique')}>
+              ⚙️ Logique
+            </button>
+            <button className={palTab === 'scene' ? 'active' : ''} onClick={() => setPalTab('scene')}>
+              📄 Scène
+            </button>
           </div>
 
-          <div className="mini-title">Terrains</div>
-          <div className="terrain-palette">
-            {TERRAINS.map((t) => (
+          {palTab === 'carte' && (
+            <div className="pal-tab">
+              <div className="mini-title">Terrains</div>
+              <div className="terrain-palette">
+                {TERRAINS.map((t) => (
+                  <button
+                    key={t}
+                    className={`terrain-swatch ${tool.mode === 'tile' && tool.terrain === t ? 'active' : ''}`}
+                    style={{ background: '#' + TERRAIN_COLORS[t].toString(16).padStart(6, '0') }}
+                    onClick={() => setTool({ mode: 'tile', terrain: t })}
+                    title={t}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mini-title">Entités</div>
+              <div className="entity-tools">
+                {KINDS.map((k) => (
+                  <button
+                    key={k}
+                    className={`btn small ${tool.mode === 'entity' && tool.kind === k ? 'btn-primary' : ''}`}
+                    onClick={() => setTool({ mode: 'entity', kind: k })}
+                  >
+                    {KIND_LABEL[k]}
+                  </button>
+                ))}
+                <button className={`btn small danger ${tool.mode === 'erase' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'erase' })}>
+                  Gomme
+                </button>
+              </div>
+
+              <div className="mini-title">Zones</div>
               <button
-                key={t}
-                className={`terrain-swatch ${tool.mode === 'tile' && tool.terrain === t ? 'active' : ''}`}
-                style={{ background: '#' + TERRAIN_COLORS[t].toString(16).padStart(6, '0') }}
-                onClick={() => setTool({ mode: 'tile', terrain: t })}
-                title={t}
+                className={`btn small ${tool.mode === 'trigger' ? 'btn-primary' : ''}`}
+                onClick={() => setTool({ mode: 'trigger' })}
+                title="Glisser sur la carte pour dessiner une zone de trigger"
               >
-                {t}
+                🟦 Dessiner une zone (trigger)
               </button>
-            ))}
-          </div>
+            </div>
+          )}
 
-          <div className="mini-title">Entités</div>
-          <div className="entity-tools">
-            {KINDS.map((k) => (
-              <button
-                key={k}
-                className={`btn small ${tool.mode === 'entity' && tool.kind === k ? 'btn-primary' : ''}`}
-                onClick={() => setTool({ mode: 'entity', kind: k })}
-              >
-                {KIND_LABEL[k]}
+          {palTab === 'logique' && (
+            <div className="pal-tab logic-buttons">
+              <button className="btn btn-primary" onClick={() => setTrigOpen(true)}>
+                🎯 Triggers &amp; effets ({scene.triggers.length})
               </button>
-            ))}
-            <button className={`btn small danger ${tool.mode === 'erase' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'erase' })}>
-              Gomme
-            </button>
-          </div>
+              <button className="btn btn-primary" onClick={() => setDlgOpen(true)}>
+                💬 Dialogues ({scene.dialogues.length})
+              </button>
+              <button className="btn btn-primary" onClick={() => setEncOpen(true)}>
+                ⚔️ Rencontres ({scene.encounters.length})
+              </button>
+              <button className="btn small" onClick={openAdvanced}>
+                Avancé (JSON)
+              </button>
+            </div>
+          )}
 
-          <div className="mini-title">Zones</div>
-          <button
-            className={`btn small ${tool.mode === 'trigger' ? 'btn-primary' : ''}`}
-            onClick={() => setTool({ mode: 'trigger' })}
-            title="Glisser sur la carte pour dessiner une zone de trigger"
-          >
-            🟦 Dessiner une zone (trigger)
-          </button>
-
-          <div className="mini-title">Logique de scène</div>
-          <div className="logic-buttons">
-            <button className="btn small btn-primary" onClick={() => setTrigOpen(true)}>
-              🎯 Triggers &amp; effets ({scene.triggers.length})
-            </button>
-            <button className="btn small btn-primary" onClick={() => setDlgOpen(true)}>
-              💬 Dialogues ({scene.dialogues.length})
-            </button>
-            <button className="btn small btn-primary" onClick={() => setEncOpen(true)}>
-              ⚔️ Rencontres ({scene.encounters.length})
-            </button>
-            <button className="btn small" onClick={openAdvanced}>
-              Avancé (JSON)
-            </button>
-          </div>
+          {palTab === 'scene' && (
+            <div className="pal-tab">
+              <label className="ed-field">
+                Nom
+                <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
+              </label>
+              <div className="ed-dim">
+                <label>
+                  L
+                  <input type="number" value={scene.dimensions.w} min={5} max={40} onChange={(e) => resize(Number(e.target.value) || 5, scene.dimensions.h)} />
+                </label>
+                <label>
+                  H
+                  <input type="number" value={scene.dimensions.h} min={5} max={40} onChange={(e) => resize(scene.dimensions.w, Number(e.target.value) || 5)} />
+                </label>
+              </div>
+              <label className="ed-field">
+                Ambiance
+                <select value={scene.ambiance ?? 'jour'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
+                  <option value="jour">Jour</option>
+                  <option value="nuit">Nuit</option>
+                  <option value="interieur">Intérieur</option>
+                  <option value="foret">Forêt</option>
+                </select>
+              </label>
+              <label className="ed-field">
+                Message d'introduction
+                <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
+              </label>
+            </div>
+          )}
         </aside>
 
         <main className="editor-canvas-wrap">
@@ -429,21 +463,17 @@ export function Editor() {
             </>
           ) : (
             <>
-              <div className="mini-title">Scène</div>
-              <label className="ed-field">
-                Ambiance
-                <select value={scene.ambiance ?? 'jour'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
-                  <option value="jour">Jour</option>
-                  <option value="nuit">Nuit</option>
-                  <option value="interieur">Intérieur</option>
-                  <option value="foret">Forêt</option>
-                </select>
-              </label>
-              <label className="ed-field">
-                Message d'introduction
-                <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
-              </label>
-              <p className="hint">Cliquez une entité pour l'éditer. Outil « Zone » : glissez sur la carte pour créer un trigger.</p>
+              <div className="mini-title">Inspecteur</div>
+              <p className="hint">
+                Sélectionnez une entité sur la carte pour l'éditer (créature, dialogue, butin…).
+                <br />
+                <br />
+                Onglet <b>Carte</b> : peindre tuiles, placer entités, dessiner des zones.
+                <br />
+                Onglet <b>Logique</b> : triggers, dialogues, rencontres.
+                <br />
+                Onglet <b>Scène</b> : nom, taille, ambiance.
+              </p>
             </>
           )}
         </aside>
