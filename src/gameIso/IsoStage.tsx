@@ -23,8 +23,7 @@ import {
 } from './iso';
 import {
   DEFS,
-  wallBlock,
-  tree,
+  terrainOverlay,
   placeSprite,
   enemySprite,
   pnjSprite,
@@ -106,9 +105,8 @@ export function IsoStage() {
   // décor statique
   for (let y = 0; y < dims.h; y++)
     for (let x = 0; x < dims.w; x++) {
-      const t = tileAt(scene, x, y);
-      if (t === 'mur') objs.push({ d: depth(x, y), el: <g key={`w${x}-${y}`} dangerouslySetInnerHTML={{ __html: wallBlock(x, y, dims) }} /> });
-      if (t === 'bois') objs.push({ d: depth(x, y) - 0.1, el: <g key={`t${x}-${y}`} dangerouslySetInnerHTML={{ __html: tree(x, y, dims) }} /> });
+      const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
+      if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
     }
 
   // bâtiments multi-tuiles (toit togglable pour le cutaway)

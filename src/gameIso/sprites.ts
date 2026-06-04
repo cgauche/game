@@ -3,7 +3,7 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, tileCenter, Dims } from './iso';
+import { TW, TH, tileCenter, depth, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import { propSvg } from './catalog/decor';
 import { composeAppearance, hashSeed, type AppearancePins } from './appearance';
@@ -21,6 +21,24 @@ export function placeSprite(inner: string, x: number, y: number, dims: Dims, sca
 // --- Tuiles & décor de terrain --------------------------------------------
 // Présentation des terrains : pilotée par le catalogue (catalog/terrain.ts).
 export { terrainGradient } from './catalog/terrain';
+
+/**
+ * Terrains à rendu « en relief » : un objet depth-trié dessiné AU-DESSUS du sol
+ * plat (mur 3D, arbre billboard), par opposition aux terrains plats (herbe…).
+ * Source UNIQUE pour le jeu (IsoStage) ET l'éditeur — fini les branches
+ * `if (t === 'mur') … if (t === 'bois')` dupliquées à l'identique dans les deux.
+ * Ajouter un terrain en relief = une entrée ici (plus de `switch` inline).
+ */
+const TERRAIN_OVERLAYS: Record<string, { render: (x: number, y: number, dims: Dims) => string; depthBias: number }> = {
+  mur: { render: (x, y, d) => wallBlock(x, y, d), depthBias: 0 },
+  bois: { render: (x, y, d) => tree(x, y, d), depthBias: -0.1 },
+};
+
+/** Relief d'un terrain (mur/bois…) prêt à empiler avec sa profondeur, ou null si plat. */
+export function terrainOverlay(id: string, x: number, y: number, dims: Dims): { d: number; html: string } | null {
+  const ov = TERRAIN_OVERLAYS[id];
+  return ov ? { d: depth(x, y) + ov.depthBias, html: ov.render(x, y, dims) } : null;
+}
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);

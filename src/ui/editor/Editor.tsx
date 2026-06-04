@@ -4,7 +4,7 @@ import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, wallBlock, tree, placeSprite, entitySprite, creatureNames } from '../../gameIso/sprites';
+import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
 import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
@@ -13,7 +13,7 @@ import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { BuildingFeature } from '../../state/scene';
+import { BuildingFeature, Trigger } from '../../state/scene';
 import { campaign } from '../../scenes/campaign';
 import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
@@ -45,6 +45,7 @@ export function Editor() {
   const [tool, setTool] = useState<Tool>({ mode: 'tile', terrain: 'mur' });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
@@ -95,6 +96,7 @@ export function Editor() {
       const existing = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
       if (existing) {
         setSelected(existing.id);
+        setSelectedTrigger(null);
         return;
       }
       const id = `${tool.kind}-${Date.now().toString(36)}`;
@@ -102,6 +104,7 @@ export function Editor() {
       // 'personnage' sans ref → villageois par défaut (apparence éditable dans l'inspecteur).
       setScene({ ...scene, entities: [...scene.entities, ent] });
       setSelected(id);
+      setSelectedTrigger(null);
     }
   }
 
@@ -111,6 +114,12 @@ export function Editor() {
   function addTrigger(rect: Rect) {
     setScene({ ...scene, triggers: [...scene.triggers, { id: `trig-${Date.now().toString(36)}`, rect, once: true, effects: [] }] });
     setTrigOpen(true); // ouvrir l'éditeur pour attacher les effets
+  }
+  /** Sélectionne une zone trigger existante (clic direct sur la carte) ; exclusif. */
+  function selectTrigger(id: string) {
+    setSelectedTrigger(id);
+    setSelected(null);
+    setSelectedBuilding(null);
   }
   function addBuilding(type: string, rect: Rect) {
     const meta = BUILDINGS_META[type];
@@ -127,6 +136,7 @@ export function Editor() {
     };
     setScene({ ...scene, buildings: [...(scene.buildings ?? []), b] });
     setSelected(null);
+    setSelectedTrigger(null);
     setSelectedBuilding(b.id);
   }
 
@@ -134,6 +144,10 @@ export function Editor() {
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (e.id === selected ? { ...e, ...patch } : e)) });
   const selB = (scene.buildings ?? []).find((b) => b.id === selectedBuilding) ?? null;
+  const selT = scene.triggers.find((t) => t.id === selectedTrigger) ?? null;
+  const updateSelT = (patch: Partial<Trigger>) =>
+    setScene({ ...scene, triggers: scene.triggers.map((t) => (t.id === selectedTrigger ? { ...t, ...patch } : t)) });
+  const updateSelTRect = (patch: Partial<Trigger['rect']>) => updateSelT({ rect: { ...selT!.rect, ...patch } });
   const updateSelB = (patch: Partial<BuildingFeature>) =>
     setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (b.id === selectedBuilding ? { ...b, ...patch } : b)) });
   const updateSelBParam = (key: string, value: unknown) =>
@@ -390,9 +404,8 @@ export function Editor() {
                 const objs: { d: number; el: JSX.Element }[] = [];
                 for (let y = 0; y < dims.h; y++)
                   for (let x = 0; x < dims.w; x++) {
-                    const t = tileAt(scene, x, y);
-                    if (t === 'mur') objs.push({ d: depth(x, y), el: <g key={`w${x}-${y}`} dangerouslySetInnerHTML={{ __html: wallBlock(x, y, dims) }} /> });
-                    if (t === 'bois') objs.push({ d: depth(x, y) - 0.1, el: <g key={`t${x}-${y}`} dangerouslySetInnerHTML={{ __html: tree(x, y, dims) }} /> });
+                    const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
+                    if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                   }
                 for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, scene.ambiance === 'nuit'));
                 for (const e of scene.entities) {
@@ -418,22 +431,34 @@ export function Editor() {
               })()}
             </g>
             <g>
-              {scene.triggers.flatMap((t) =>
-                Array.from({ length: Math.max(0, t.rect.w * t.rect.h) }, (_, i) => {
-                  const x = t.rect.x + (i % t.rect.w);
-                  const y = t.rect.y + Math.floor(i / t.rect.w);
-                  return (
-                    <path
-                      key={`tr-${t.id}-${i}`}
-                      d={diamondPath(x, y, dims)}
-                      fill="rgba(231,76,60,0.12)"
-                      stroke="rgba(231,76,60,0.9)"
-                      strokeWidth={1.5}
-                      strokeDasharray="4 3"
-                    />
-                  );
-                }),
-              )}
+              {scene.triggers.map((t) => {
+                const isSel = t.id === selectedTrigger;
+                return (
+                  <g
+                    key={`tr-${t.id}`}
+                    style={{ cursor: 'pointer' }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation(); // sélectionner la zone plutôt que peindre dessous
+                      selectTrigger(t.id);
+                    }}
+                  >
+                    {Array.from({ length: Math.max(0, t.rect.w * t.rect.h) }, (_, i) => {
+                      const x = t.rect.x + (i % t.rect.w);
+                      const y = t.rect.y + Math.floor(i / t.rect.w);
+                      return (
+                        <path
+                          key={i}
+                          d={diamondPath(x, y, dims)}
+                          fill={isSel ? 'rgba(231,76,60,0.3)' : 'rgba(231,76,60,0.12)'}
+                          stroke={isSel ? '#ffe066' : 'rgba(231,76,60,0.9)'}
+                          strokeWidth={isSel ? 2.5 : 1.5}
+                          strokeDasharray="4 3"
+                        />
+                      );
+                    })}
+                  </g>
+                );
+              })}
             </g>
             {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
             {selB && (
@@ -459,7 +484,55 @@ export function Editor() {
         </main>
 
         <aside className="editor-inspector">
-          {selB ? (
+          {selT ? (
+            <>
+              <div className="mini-title">Zone trigger sélectionnée</div>
+              <div className="inspector">
+                <p>
+                  <b>{selT.id}</b> @ ({selT.rect.x}, {selT.rect.y}) {selT.rect.w}×{selT.rect.h}
+                </p>
+                <label className="ed-field">
+                  X (colonne)
+                  <input type="number" value={selT.rect.x} onChange={(e) => updateSelTRect({ x: Number(e.target.value) })} />
+                </label>
+                <label className="ed-field">
+                  Y (ligne)
+                  <input type="number" value={selT.rect.y} onChange={(e) => updateSelTRect({ y: Number(e.target.value) })} />
+                </label>
+                <label className="ed-field">
+                  Largeur
+                  <input type="number" min={1} value={selT.rect.w} onChange={(e) => updateSelTRect({ w: Math.max(1, Number(e.target.value)) })} />
+                </label>
+                <label className="ed-field">
+                  Hauteur
+                  <input type="number" min={1} value={selT.rect.h} onChange={(e) => updateSelTRect({ h: Math.max(1, Number(e.target.value)) })} />
+                </label>
+                <label className="ed-field">
+                  Condition (flag ; « ! » pour nié)
+                  <input value={selT.condition ?? ''} onChange={(e) => updateSelT({ condition: e.target.value || undefined })} />
+                </label>
+                <label className="ed-field">
+                  <input type="checkbox" checked={selT.once ?? false} onChange={(e) => updateSelT({ once: e.target.checked })} /> Une
+                  seule fois
+                </label>
+                <button className="btn small" onClick={() => setTrigOpen(true)}>
+                  Éditer les effets ({selT.effects.length})
+                </button>
+                <button
+                  className="btn small danger"
+                  onClick={() => {
+                    setScene({ ...scene, triggers: scene.triggers.filter((x) => x.id !== selT.id) });
+                    setSelectedTrigger(null);
+                  }}
+                >
+                  Supprimer
+                </button>
+                <button className="btn small" onClick={() => setSelectedTrigger(null)}>
+                  Désélectionner
+                </button>
+              </div>
+            </>
+          ) : selB ? (
             <>
               <div className="mini-title">Bâtiment sélectionné</div>
               <div className="inspector">
