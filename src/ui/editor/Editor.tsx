@@ -7,6 +7,7 @@ import { TERRAIN_COLORS } from '../../game/palette';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, TILE_GRAD, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
 import { TriggersEditor } from './TriggersEditor';
+import { DialogueEditor } from './DialogueEditor';
 const TERRAINS: Terrain[] = ['herbe', 'sol', 'route', 'plancher', 'bois', 'eau', 'mur', 'porte'];
 const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
@@ -31,6 +32,7 @@ export function Editor() {
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
+  const [dlgOpen, setDlgOpen] = useState(false);
   const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
@@ -216,8 +218,11 @@ export function Editor() {
           <button className="btn small btn-primary" style={{ marginTop: 12 }} onClick={() => setTrigOpen(true)}>
             🎯 Triggers &amp; effets
           </button>
+          <button className="btn small btn-primary" style={{ marginTop: 6 }} onClick={() => setDlgOpen(true)}>
+            💬 Dialogues
+          </button>
           <button className="btn small" style={{ marginTop: 6 }} onClick={openAdvanced}>
-            Dialogues / Combats (JSON)
+            Rencontres / avancé (JSON)
           </button>
         </aside>
 
@@ -359,6 +364,15 @@ export function Editor() {
           dialogues={scene.dialogues}
           onSave={(t) => setScene({ ...scene, triggers: t })}
           onClose={() => setTrigOpen(false)}
+        />
+      )}
+
+      {dlgOpen && (
+        <DialogueEditor
+          dialogues={scene.dialogues}
+          encounters={scene.encounters}
+          onSave={(d) => setScene({ ...scene, dialogues: d })}
+          onClose={() => setDlgOpen(false)}
         />
       )}
 
