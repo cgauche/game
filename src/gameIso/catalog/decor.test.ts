@@ -17,10 +17,18 @@ describe('catalogue décors', () => {
       'tas-foin',
       'feu-camp',
       'arbre',
+      'cadavre',
+      'mare-sang',
+      'cheval-mort',
+      'epave-carrosse',
     ])
       expect(PROPS[id], id).toBeDefined();
   });
   it('id inconnu → fallback (tonneau), pas d exception', () => {
     expect(propSvg('zzz').length).toBeGreaterThan(0);
+  });
+  it('rend un SVG non vide pour les décors d ambush', () => {
+    for (const id of ['cadavre', 'mare-sang', 'cheval-mort', 'epave-carrosse'])
+      expect(propSvg(id).length, id).toBeGreaterThan(40);
   });
 });

@@ -28,6 +28,15 @@ const feuCamp = () =>
   `<g><ellipse cx="60" cy="146" rx="22" ry="9" fill="#2a2018"/><path d="M44 144 L74 132 M48 146 L80 138 M40 140 L70 128" stroke="#5a4226" stroke-width="5" stroke-linecap="round"/><g class="warm"><path d="M60 138 Q48 118 60 100 Q66 116 72 110 Q78 128 60 138 Z" fill="#ff7a1a"/><path d="M60 136 Q54 124 60 112 Q64 122 60 136 Z" fill="#ffd479"/></g></g>`;
 const arbre = () =>
   `<g><ellipse cx="60" cy="148" rx="26" ry="11" fill="#000" opacity="0.3"/><rect x="53" y="110" width="14" height="40" rx="3" fill="#4a3220"/><path d="M60 50 L100 122 L74 114 L60 130 L46 114 L20 122 Z" fill="#1d3d18"/><path d="M60 50 L100 122 L74 114 L60 92 Z" fill="#2a5320"/><path d="M60 72 L84 116 L60 108 Z" fill="#327026" opacity="0.6"/></g>`;
+// Décors « ADN » d'une embuscade (cf. public/ambush.html), boîte 120×150 / sol ≈ y146.
+const mareSang = () =>
+  `<g><ellipse cx="60" cy="142" rx="36" ry="13" fill="#5e1010" opacity="0.9"/><ellipse cx="42" cy="135" rx="13" ry="5" fill="#7e1212" opacity="0.8"/><ellipse cx="82" cy="146" rx="10" ry="4" fill="#7e1212" opacity="0.7"/><ellipse cx="60" cy="140" rx="22" ry="7" fill="#360707" opacity="0.6"/></g>`;
+const cadavre = () =>
+  `<g><ellipse cx="60" cy="146" rx="32" ry="10" fill="#5e1010" opacity="0.5"/><path d="M60 132 L94 124 M60 134 L90 148" stroke="#54331f" stroke-width="11" stroke-linecap="round"/><path d="M54 130 L30 116 M54 134 L34 150" stroke="#54331f" stroke-width="8" stroke-linecap="round"/><ellipse cx="58" cy="132" rx="20" ry="13" fill="#54331f"/><ellipse cx="58" cy="132" rx="20" ry="13" fill="#000" opacity="0.18"/><circle cx="34" cy="128" r="10" fill="#cdb89a"/><path d="M24 124 q10 -9 20 0z" fill="#2a1d12"/></g>`;
+const chevalMort = () =>
+  `<g><ellipse cx="62" cy="146" rx="42" ry="11" fill="#000" opacity="0.25"/><path d="M40 112 q-14 6 -10 26 q10 -6 12 -18z" fill="#1a1008"/><ellipse cx="58" cy="128" rx="40" ry="20" fill="#5a3c22"/><ellipse cx="26" cy="124" rx="17" ry="16" fill="#5a3c22"/><path d="M44 142 l-4 14 M58 144 l0 14 M74 140 l4 14 M86 138 l8 12" stroke="#3a2614" stroke-width="6" stroke-linecap="round"/><path d="M88 120 Q104 122 112 134 Q108 140 96 134 Z" fill="#5a3c22"/><path d="M108 130 Q121 134 125 143 L112 140 Z" fill="#4a2f1a"/><ellipse cx="117" cy="138" rx="3" ry="2.4" fill="#1a0e06"/></g>`;
+const epaveCarrosse = () =>
+  `<g><ellipse cx="60" cy="146" rx="44" ry="12" fill="#000" opacity="0.3"/><g transform="rotate(-8 60 110)"><rect x="24" y="84" width="78" height="46" rx="8" fill="#6e2a30" stroke="#2a0e0e" stroke-width="3"/><rect x="24" y="84" width="78" height="10" rx="5" fill="#7a2630"/><rect x="40" y="103" width="24" height="24" rx="3" fill="#39151a" stroke="#d8a93b" stroke-width="2"/><path d="M24 116 h78" stroke="#d8a93b" stroke-width="1.5" opacity="0.7"/></g><ellipse cx="33" cy="140" rx="18" ry="8" fill="none" stroke="#241a10" stroke-width="5"/><line x1="15" y1="140" x2="51" y2="140" stroke="#3a2a18" stroke-width="2.5"/><line x1="33" y1="132" x2="33" y2="148" stroke="#3a2a18" stroke-width="2.5"/><circle cx="93" cy="126" r="15" fill="none" stroke="#241a10" stroke-width="5"/><circle cx="93" cy="126" r="4" fill="#3a2a18"/></g>`;
 
 export const PROPS: Record<string, PropViz> = {
   tonneau: { id: 'tonneau', label: 'Tonneau', render: tonneau },
@@ -43,6 +52,10 @@ export const PROPS: Record<string, PropViz> = {
   'tas-foin': { id: 'tas-foin', label: 'Tas de foin', render: tasFoin },
   'feu-camp': { id: 'feu-camp', label: 'Feu de camp', render: feuCamp },
   arbre: { id: 'arbre', label: 'Arbre', render: arbre },
+  cadavre: { id: 'cadavre', label: 'Cadavre', render: cadavre },
+  'mare-sang': { id: 'mare-sang', label: 'Mare de sang', render: mareSang },
+  'cheval-mort': { id: 'cheval-mort', label: 'Cheval mort', render: chevalMort },
+  'epave-carrosse': { id: 'epave-carrosse', label: 'Épave de carrosse', render: epaveCarrosse },
 };
 
 export function propSvg(ref: string): string {
