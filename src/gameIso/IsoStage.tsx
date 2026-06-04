@@ -22,7 +22,6 @@ import {
 } from './iso';
 import {
   DEFS,
-  TILE_GRAD,
   wallBlock,
   tree,
   placeSprite,
@@ -32,6 +31,7 @@ import {
   objetSprite,
   propSprite,
 } from './sprites';
+import { groundTile } from './ground';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
@@ -74,15 +74,11 @@ export function IsoStage() {
   const dims: Dims = scene.dimensions;
   const size = stageSize(dims);
 
-  // --- Couche sol (losanges) ---
+  // --- Couche sol (losanges + raccord d'arêtes) ---
   const floor: JSX.Element[] = [];
   for (let y = 0; y < dims.h; y++)
-    for (let x = 0; x < dims.w; x++) {
-      const t = tileAt(scene, x, y);
-      floor.push(
-        <path key={`f${x}-${y}`} d={diamondPath(x, y, dims)} fill={`url(#${TILE_GRAD[t]})`} stroke="rgba(0,0,0,0.16)" />,
-      );
-    }
+    for (let x = 0; x < dims.w; x++)
+      floor.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, dims) }} />);
 
   // --- Surbrillances de combat ---
   const highlights: JSX.Element[] = [];

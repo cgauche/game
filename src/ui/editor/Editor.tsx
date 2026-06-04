@@ -3,13 +3,15 @@ import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
-import { TERRAIN_COLORS } from '../../game/palette';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, TILE_GRAD, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
+import { DEFS, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
+import { groundTile } from '../../gameIso/ground';
+import { TERRAINS as TERRAIN_META } from '../../state/terrain';
+import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
-const TERRAINS: Terrain[] = ['herbe', 'sol', 'route', 'plancher', 'bois', 'eau', 'mur', 'porte'];
+const TERRAIN_IDS = Object.keys(TERRAIN_META);
 const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
   heroStart: 'Départ héros',
@@ -198,15 +200,15 @@ export function Editor() {
             <div className="pal-tab">
               <div className="mini-title">Terrains</div>
               <div className="terrain-palette">
-                {TERRAINS.map((t) => (
+                {TERRAIN_IDS.map((t) => (
                   <button
                     key={t}
                     className={`terrain-swatch ${tool.mode === 'tile' && tool.terrain === t ? 'active' : ''}`}
-                    style={{ background: '#' + TERRAIN_COLORS[t].toString(16).padStart(6, '0') }}
+                    style={{ background: TERRAIN_VIZ[t]?.swatch ?? '#888' }}
                     onClick={() => setTool({ mode: 'tile', terrain: t })}
-                    title={t}
+                    title={TERRAIN_META[t].label}
                   >
-                    {t}
+                    {TERRAIN_META[t].label}
                   </button>
                 ))}
               </div>
@@ -326,10 +328,8 @@ export function Editor() {
               {(() => {
                 const els: JSX.Element[] = [];
                 for (let y = 0; y < dims.h; y++)
-                  for (let x = 0; x < dims.w; x++) {
-                    const t = tileAt(scene, x, y);
-                    els.push(<path key={`f${x}-${y}`} d={diamondPath(x, y, dims)} fill={`url(#${TILE_GRAD[t]})`} stroke="rgba(0,0,0,0.18)" />);
-                  }
+                  for (let x = 0; x < dims.w; x++)
+                    els.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, dims) }} />);
                 return els;
               })()}
             </g>
