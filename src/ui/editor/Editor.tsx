@@ -67,7 +67,7 @@ export function Editor() {
     if (e.kind === 'pnj') return pnjSprite();
     if (e.kind === 'ennemi') return enemySprite(e.ref ?? '');
     if (e.kind === 'objet') return objetSprite();
-    if (e.kind === 'prop') return propSprite();
+    if (e.kind === 'prop') return propSprite(e.ref);
     return '';
   }
 

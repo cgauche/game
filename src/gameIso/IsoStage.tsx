@@ -134,7 +134,7 @@ export function IsoStage() {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart') continue;
       const inner =
-        ent.kind === 'pnj' ? pnjSprite() : ent.kind === 'ennemi' ? enemySprite(ent.ref ?? '') : ent.kind === 'objet' ? objetSprite() : propSprite();
+        ent.kind === 'pnj' ? pnjSprite() : ent.kind === 'ennemi' ? enemySprite(ent.ref ?? '') : ent.kind === 'objet' ? objetSprite() : propSprite(ent.ref);
       objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
     }
     // groupe (token = 1er héros)

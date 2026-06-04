@@ -7,6 +7,7 @@ import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import { TERRAIN_VIZ } from './catalog/terrain';
+import { propSvg } from './catalog/decor';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -185,8 +186,8 @@ export function pnjSprite(): string {
 export function objetSprite(): string {
   return crate();
 }
-export function propSprite(): string {
-  return barrel();
+export function propSprite(ref?: string): string {
+  return propSvg(ref ?? 'tonneau');
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------
