@@ -869,7 +869,7 @@ function advanceTurn(get: () => GameState, set: any) {
     if (next && !isOutOfAction(next)) break;
   }
   // La posture « Sur la défensive » expire au début du tour de son porteur (LDB Combat l.118).
-  const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
+  const newActive = battle.combatants.find((c) => c.id === battle!.order[turn]);
   if (newActive) newActive.defensiveStance = false;
   battle = { ...battle, turn, round, action: null, moved: false, acted: false, reachable: new Map() };
   set({ battle });
