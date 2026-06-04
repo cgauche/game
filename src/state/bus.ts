@@ -26,8 +26,11 @@ export const EVT = {
   ENTITY_CLICK: 'entity_click',
   /** store → rendu : l'état a changé, rafraîchir le rendu. */
   SCENE_DIRTY: 'scene_dirty',
-  /** store → rendu : jouer une animation d'attaque {from,to,result}. */
+  /** store → rendu : jouer une animation d'attaque
+   *  {from, to, result, kind:'melee'|'ranged'|'spell', defense:'parade'|'esquive'|'none'}. */
   ANIM_ATTACK: 'anim_attack',
+  /** rendu → rendu : l'attaque atteint sa cible (timing du recul + dégât flottant) {to, result}. */
+  ANIM_IMPACT: 'anim_impact',
   /** store → rendu : déplacement animé d'un token {id,path}. */
   ANIM_MOVE: 'anim_move',
 } as const;

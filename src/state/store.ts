@@ -535,7 +535,9 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   }
   if (res.advantageTo === 'attacker') attacker.advantage += 1;
   if (res.advantageTo === 'defender') target.advantage += 1;
-  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res });
+  const kind = weapon.type === 'ranged' ? 'ranged' : 'melee';
+  const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
+  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
   const log = [...battle.log, res.log];
   if (res.defenderDefeated) log.push(`${target.name} est mis hors de combat !`);
   set({ battle: { ...battle, acted: true, action: null, log } });
@@ -615,7 +617,7 @@ function castSpell(
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble) logLines.push(...applyMiscast(caster, 'mineure'));
     else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(caster, 'mineure'));
-    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res });
+    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', defense: 'none' });
     if (res.defenderDefeated) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     const res = resolveCasting(caster, spell, battleRng, 'intermediaire', focusedNI0);
