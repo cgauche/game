@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { Combatant, ActiveEffect, CHAR_LABELS, CharKey } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
-import { resolveMelee, resolveRanged, initiativeOrder, combatValue } from '../engine/combat';
+import { resolveMelee, resolveRanged, initiativeOrder, combatValue, defenseValue } from '../engine/combat';
 import {
   resolveMagicMissile,
   resolveCasting,
@@ -29,6 +29,7 @@ import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } fro
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, manhattan, Pt } from './path';
+import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
@@ -511,6 +512,12 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
   }
 }
 
+/** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
+ *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
+function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
+  return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
+}
+
 function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant) {
   const battle = get().battle!;
   if (manhattan(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') {
@@ -521,7 +528,7 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   const res =
     weapon.type === 'ranged'
       ? resolveRanged(attacker, target, weapon, battleRng)
-      : resolveMelee(attacker, target, weapon, battleRng, { defense: 'parade' });
+      : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target) });
   if (res.hit && res.woundsLost) {
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
     if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
@@ -749,46 +756,58 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
 
-  // Cible : héros vivant le plus proche.
-  const targets = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
-  if (targets.length === 0) return checkBattleOver(get, set) as any;
-  targets.sort((a, b) => manhattan(enemy.pos!, a.pos!) - manhattan(enemy.pos!, b.pos!));
-  const target = targets[0];
+  const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
+  if (heroes.length === 0) return checkBattleOver(get, set) as any;
 
-  // Se rapprocher si nécessaire.
-  if (manhattan(enemy.pos!, target.pos!) > 1) {
-    const blocked = occupied(battle, enemy.id);
-    const reach = reachable(scene, enemy.pos!, effectiveMovement(enemy), blocked);
-    // Trouver la case atteignable la plus proche de la cible.
-    let best: Pt | null = null;
-    let bestD = Infinity;
-    for (const k of reach.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      const d = manhattan({ x, y }, target.pos!);
-      if (d < bestD) {
-        bestD = d;
-        best = { x, y };
-      }
-    }
-    if (best) {
-      const path = pathTo(scene, enemy.pos!, best, blocked);
-      enemy.pos = best;
-      bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
-      set({ battle: { ...battle } });
-      bus.emit(EVT.SCENE_DIRTY);
-    }
-  }
+  const blocked = occupied(battle, enemy.id);
+  // Premier Projectile magique connu et prêt : la détection a besoin des données
+  // de sort, donc elle reste ici (couche impure), pas dans la décision pure (ai.ts).
+  const offensiveSpell = enemy.spells?.find((label) => {
+    const sp = findSpell(label);
+    return !!sp && isMagicMissile(sp);
+  });
+  const action = chooseEnemyAction({
+    enemy,
+    heroes,
+    scene,
+    blocked,
+    movement: effectiveMovement(enemy),
+    offensiveSpell,
+  });
+  const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
 
-  // Attaquer si adjacent.
-  if (manhattan(enemy.pos!, target.pos!) <= 1) {
+  // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
+  const attackThenAdvance = (target: Combatant) => {
     setTimeout(() => {
       const b = get().battle;
       if (!b || b.over) return;
       doAttack(get, set, enemy, target);
       setTimeout(() => advanceTurn(get, set), 500);
     }, 350);
-  } else {
-    setTimeout(() => advanceTurn(get, set), 350);
+  };
+
+  switch (action.kind) {
+    case 'end':
+      return advanceTurn(get, set);
+    case 'cast':
+      castSpell(get, set, enemy, targetOf(action.targetId), action.spell);
+      setTimeout(() => advanceTurn(get, set), 500);
+      return;
+    case 'shoot':
+    case 'melee':
+      attackThenAdvance(targetOf(action.targetId));
+      return;
+    case 'move': {
+      const path = pathTo(scene, enemy.pos!, action.to, blocked);
+      enemy.pos = action.to;
+      bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
+      set({ battle: { ...battle } });
+      bus.emit(EVT.SCENE_DIRTY);
+      const tgt = targetOf(action.thenTargetId);
+      if (manhattan(enemy.pos!, tgt.pos!) <= 1) attackThenAdvance(tgt);
+      else setTimeout(() => advanceTurn(get, set), 350);
+      return;
+    }
   }
 }
 
