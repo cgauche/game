@@ -5,6 +5,7 @@
  */
 import { TW, TH, tileCenter, depth, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
+import creatureViews from './creatureViews.json';
 import { propSvg } from './catalog/decor';
 import { composeAppearance, hashSeed, type AppearancePins } from './appearance';
 
@@ -101,6 +102,31 @@ export function enemySprite(label: string, seed = 0, pins?: AppearancePins): str
   const composed = composeAppearance(label, seed, pins);
   if (composed != null) return composed;
   return CREATURE_SPRITES[label] ?? CREATURE_BY_NORM[label.toLowerCase()] ?? mutantStand();
+}
+
+// Vues directionnelles (dos/profil) générées pour les créatures non-humanoïdes (F2).
+type CreatureViewSet = { back?: string; profile?: string };
+const CREATURE_VIEWS = creatureViews as Record<string, CreatureViewSet>;
+const CREATURE_VIEWS_BY_NORM: Record<string, CreatureViewSet> = {};
+for (const [k, v] of Object.entries(CREATURE_VIEWS)) CREATURE_VIEWS_BY_NORM[k.toLowerCase()] = v;
+
+/**
+ * Sprite d'une créature pour une VUE donnée (front/back/profile). La vue de profil
+ * est tournée à droite ; le miroir gauche/droite est appliqué par le rendu (token).
+ * Repli sur le front si la vue directionnelle n'existe pas pour ce bestiaire.
+ */
+export function creatureView(label: string, view: 'front' | 'back' | 'profile', seed = 0, pins?: AppearancePins): string {
+  if (view !== 'front' && label) {
+    const v = CREATURE_VIEWS[label] ?? CREATURE_VIEWS_BY_NORM[label.toLowerCase()];
+    const svg = v?.[view];
+    if (svg) return svg;
+  }
+  return enemySprite(label, seed, pins);
+}
+
+/** True si le bestiaire a des vues directionnelles générées pour ce label. */
+export function hasCreatureViews(label: string): boolean {
+  return !!(CREATURE_VIEWS[label] ?? CREATURE_VIEWS_BY_NORM[label.toLowerCase()]);
 }
 
 export function pnjSprite(): string {

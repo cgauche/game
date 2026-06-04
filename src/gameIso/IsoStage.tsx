@@ -26,12 +26,14 @@ import {
   terrainOverlay,
   placeSprite,
   enemySprite,
+  creatureView,
   pnjSprite,
   entitySprite,
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { enemyRigProfile } from './rig/enemyProfile';
+import { facingView, screenDir } from './rig/facing';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -92,6 +94,28 @@ export function IsoStage() {
       if (to && to.kind !== 'hero') fire(d.to, 'tok-recoil');
     });
     return () => { offA(); offI(); };
+  }, []);
+
+  // Facing 8-dir des créatures monolithiques : vue (front/back/profile) + miroir,
+  // mis à jour à l'attaque (vers la cible) et au déplacement (vers la destination).
+  const [creatureFacing, setCreatureFacing] = useState<Record<string, { view: 'front' | 'back' | 'profile'; mirror: boolean }>>({});
+  useEffect(() => {
+    const faceTo = (id: string, from?: { x: number; y: number }, to?: { x: number; y: number }) => {
+      if (!from || !to) return;
+      const { dx, dy } = screenDir(from, to);
+      if (dx === 0 && dy === 0) return;
+      setCreatureFacing((m) => ({ ...m, [id]: facingView(dx, dy) }));
+    };
+    const offA = bus.on(EVT.ANIM_ATTACK, (d: any) => {
+      const b = useGame.getState().battle;
+      const from = b?.combatants.find((c) => c.id === d.from);
+      if (from && from.kind !== 'hero') faceTo(d.from, from.pos, b?.combatants.find((c) => c.id === d.to)?.pos);
+    });
+    const offM = bus.on(EVT.ANIM_MOVE, (d: any) => {
+      const p = d?.path;
+      if (p && p.length > 1) faceTo(d.id, p[0], p[p.length - 1]);
+    });
+    return () => { offA(); offM(); };
   }, []);
 
   // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
@@ -155,7 +179,7 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string) => {
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy + TH / 2;
     return (
@@ -167,7 +191,10 @@ export function IsoStage() {
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
         {/* calque fx (anim légère token entier pour les créatures) — sans transform de base */}
         <g className={fx}>
-          <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`} dangerouslySetInnerHTML={{ __html: inner }} />
+          <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
+            {/* miroir gauche/droite autour du centre de la boîte créature (x=80) */}
+            <g transform={mirror ? 'translate(160,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: inner }} />
+          </g>
         </g>
       </g>
     );
@@ -201,8 +228,9 @@ export function IsoStage() {
         const el = tokenNode(c.id, c.pos.x, c.pos.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c));
         objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el });
       } else {
-        const inner = enemySprite(c.name, hashSeed(c.id));
-        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id]) });
+        const f = creatureFacing[c.id] ?? { view: 'front' as const, mirror: false };
+        const inner = creatureView(c.name, f.view, hashSeed(c.id));
+        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror) });
       }
     }
   } else {
