@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { IsoStage } from '../gameIso/IsoStage';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';
+import { ActionBar } from './ActionBar';
 import { TestModal } from './TestModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
@@ -65,6 +66,7 @@ export function CampaignView() {
           <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
         )}
         {dialogue && <DialogueBox />}
+        {mode === 'battle' && battle && <ActionBar />}
       </main>
 
       {mode === 'battle' && battle && <BattlePanel />}

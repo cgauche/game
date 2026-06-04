@@ -1,21 +1,17 @@
 import { useGame, activeCombatant } from '../state/store';
 import { campaign } from '../scenes/campaign';
-import { findSpell } from '../data/index';
-import { isArcaneSpell } from '../engine/magic';
 
+/**
+ * Panneau d'INFO de combat (droite) : round, ordre d'initiative, journal, résultat.
+ * Les ACTIONS du combattant actif sont dans la barre du bas (cf. ActionBar) pour
+ * ne pas surcharger ce panneau.
+ */
 export function BattlePanel() {
   const battle = useGame((s) => s.battle);
-  const selectAction = useGame((s) => s.battleSelectAction);
-  const selectSpell = useGame((s) => s.battleSelectSpell);
-  const focusSpell = useGame((s) => s.battleFocusSpell);
-  const endTurn = useGame((s) => s.battleEndTurn);
-  const defendTotal = useGame((s) => s.battleDefendTotal);
   const startScene = useGame((s) => s.startScene);
   if (!battle) return null;
 
   const active = activeCombatant(battle);
-  const isHeroTurn = active?.kind === 'hero' && !battle.over;
-  const hasSpells = isHeroTurn && (active!.spells?.length ?? 0) > 0;
 
   return (
     <section className="battle-panel">
@@ -49,80 +45,6 @@ export function BattlePanel() {
           );
         })}
       </div>
-
-      {isHeroTurn && (
-        <div className="bp-actions">
-          <button
-            className={`btn ${battle.action === 'move' ? 'btn-primary' : ''}`}
-            disabled={battle.moved}
-            onClick={() => selectAction(battle.action === 'move' ? null : 'move')}
-          >
-            Se déplacer {battle.moved && '✓'}
-          </button>
-          <button
-            className={`btn ${battle.action === 'attack' ? 'btn-primary' : ''}`}
-            disabled={battle.acted}
-            onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
-          >
-            Attaquer {battle.acted && '✓'}
-          </button>
-          {hasSpells && (
-            <button
-              className={`btn ${battle.action === 'cast' ? 'btn-primary' : ''}`}
-              disabled={battle.acted}
-              onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
-            >
-              Incanter {battle.acted && '✓'}
-            </button>
-          )}
-          <button
-            className="btn"
-            disabled={battle.acted}
-            onClick={defendTotal}
-            title="Utilise l'Action pour +20 à tous vos Tests de défense jusqu'à votre prochain tour"
-          >
-            Sur la défensive {battle.acted && '✓'}
-          </button>
-          <button className="btn" onClick={endTurn}>
-            Fin du tour →
-          </button>
-        </div>
-      )}
-
-      {hasSpells && battle.action === 'cast' && (
-        <div className="bp-spells">
-          {active!.spells!.map((label) => {
-            const spell = findSpell(label);
-            if (!spell) return null;
-            const selected = battle.selectedSpell === label;
-            const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
-            const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
-            const focusDr = active!.focus?.spell === label ? active!.focus.dr : null;
-            return (
-              <div key={label} className="bp-spell-row">
-                <button
-                  className={`btn btn-sm ${selected ? 'btn-primary' : ''}`}
-                  onClick={() => selectSpell(label)}
-                  title={spell.desc}
-                >
-                  {spell.label} <span className="bp-spell-ni">({ni})</span>
-                </button>
-                {canFocus && (
-                  <button className="btn btn-sm" onClick={() => focusSpell(label)} title="Test étendu de Focalisation">
-                    Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {isHeroTurn && battle.action === 'move' && <p className="bp-hint">Cliquez une case bleue pour vous déplacer.</p>}
-      {isHeroTurn && battle.action === 'attack' && <p className="bp-hint">Cliquez un ennemi adjacent pour l'attaquer.</p>}
-      {isHeroTurn && battle.action === 'cast' && battle.selectedSpell && (
-        <p className="bp-hint">Cliquez une cible pour lancer {battle.selectedSpell}.</p>
-      )}
 
       <div className="battle-log">
         {battle.log.slice(-8).map((l, i) => (
