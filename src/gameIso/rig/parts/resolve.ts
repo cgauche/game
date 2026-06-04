@@ -2,7 +2,7 @@ import type { Slot } from '../bones';
 import type { Part } from './types';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
-import { careerClass, careerTenue } from './career';
+import { careerTenueFor } from './career';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
@@ -20,8 +20,7 @@ export function resolveParts(
   overrides: Partial<Record<Slot, number>>,
   seed: number,
 ): Record<Slot, Part | null> {
-  const cls = career ? careerClass(career) : 'Citadins';
-  const tenue = careerTenue(cls);
+  const tenue = careerTenueFor(career);
   const out = {} as Record<Slot, Part | null>;
 
   // Cosmétique (toujours). overrides priment, sinon variante dérivée du seed.

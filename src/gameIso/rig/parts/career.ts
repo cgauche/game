@@ -1,5 +1,6 @@
 import careers from '../../../data/careers.json';
 import type { Part } from './types';
+import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
 
 type CareerRow = { label: string; class: string };
 const BY_LABEL: Record<string, string> = {};
@@ -48,4 +49,15 @@ const TENUES: Record<string, Partial<Record<'torse' | 'jambes' | 'bras' | 'tete'
 
 export function careerTenue(cls: string): Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part>> {
   return TENUES[cls] ?? TENUES.Citadins;
+}
+
+/** Tenue résolue pour une carrière : art PAR CARRIÈRE si dispo, sinon archétype de CLASSE. */
+export function careerTenueFor(career: string | undefined): Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part>> {
+  const gen = career ? GENERATED_CAREER_TENUES[career] : undefined;
+  if (gen && Object.keys(gen).length) {
+    const out: Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part>> = {};
+    for (const [slot, svg] of Object.entries(gen)) out[slot as 'torse'] = { svg };
+    return out;
+  }
+  return careerTenue(careerClass(career ?? ''));
 }
