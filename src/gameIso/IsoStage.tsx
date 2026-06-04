@@ -3,7 +3,7 @@
  * dessine la scène courante (exploration ou combat), gère le clic→tuile, les
  * surbrillances de combat et le déplacement animé. Réutilise toute la logique.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
@@ -26,12 +26,14 @@ import {
   wallBlock,
   tree,
   placeSprite,
-  heroSprite,
   enemySprite,
   pnjSprite,
   entitySprite,
 } from './sprites';
 import { hashSeed } from './appearance';
+import { RigSprite } from './rig/composeRig';
+import { defaultAppearance } from './rig/appearance';
+import { equipFromCombatant } from './rig/parts/equipment';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -132,14 +134,39 @@ export function IsoStage() {
     );
   };
 
+  // Variante de token() hébergeant des enfants React (rig héros) — même ombre/anneau/échelle.
+  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean) => {
+    const { cx, cy } = tileCenter(x, y, dims);
+    const feetY = cy + TH / 2;
+    return (
+      <g
+        key={id}
+        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
+      >
+        <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
+        {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
+        <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>{child}</g>
+      </g>
+    );
+  };
+
   if (mode === 'battle' && battle) {
     let hi = 0;
     for (const c of battle.combatants) {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
-      const inner = isHero ? heroSprite(c) : enemySprite(c.name, hashSeed(c.id));
-      objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c)) });
+      if (isHero) {
+        const el = tokenNode(
+          c.id, c.pos.x, c.pos.y,
+          <RigSprite appearance={c.appearance ?? defaultAppearance(c)} equip={equipFromCombatant(c)} career={c.career} />,
+          0.62, ring, isOutOfAction(c),
+        );
+        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el });
+      } else {
+        const inner = enemySprite(c.name, hashSeed(c.id));
+        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c)) });
+      }
     }
   } else {
     for (const ent of scene.entities) {
@@ -149,8 +176,14 @@ export function IsoStage() {
     }
     // groupe (token = 1er héros)
     const leader = party[0];
-    const inner = leader ? heroSprite(leader) : pnjSprite();
-    objs.push({ d: depth(partyPos.x, partyPos.y) + 0.5, el: token('__party', partyPos.x, partyPos.y, inner, 0.6, HERO_RING[0]) });
+    const el = leader
+      ? tokenNode(
+          '__party', partyPos.x, partyPos.y,
+          <RigSprite appearance={leader.appearance ?? defaultAppearance(leader)} equip={equipFromCombatant(leader)} career={leader.career} />,
+          0.6, HERO_RING[0],
+        )
+      : token('__party', partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0]);
+    objs.push({ d: depth(partyPos.x, partyPos.y) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
 
