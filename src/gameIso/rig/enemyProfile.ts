@@ -69,7 +69,7 @@ const ROLE_CAREERS: [RegExp, string][] = [
   [/bandit|brigand|pillard|racaille|spadassin|sbire|homme de main|deserteur|hors-la-loi|maraudeur|coupe-gorge/, 'Voleur'],
   [/soldat|garde|milicien|mercenaire|sergent|capitaine|garnison|reitre|hallebardier|piquier|arbaletrier|archer|homme d.?armes|guerrier/, 'Soldat'],
   [/batelier|marin|matelot|gabarier|passeur/, 'Batelier'],
-  [/mendiant|gueux|paysan|rustre|vagabond|miserable|manant/, 'Mendiant'],
+  [/mendiant|gueux|paysan|rustre|vagabond|miserable|manant|villageois|habitant|quidam/, 'Mendiant'],
   [/mutant/, 'Mendiant'],
 ];
 
@@ -164,4 +164,24 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const overlays = isMutant ? mutationOverlays(seed) : undefined;
 
   return { appearance, career, equip, overlays };
+}
+
+/**
+ * Profil rig pour une ENTITÉ de scène humanoïde (hors combat) : pas d'équipement de
+ * combat (mains libres, pour les poses d'ambiance), apparence dérivée du nom + seed.
+ * null si le nom désigne une créature non-humanoïde.
+ */
+export function entityRigProfile(name: string, seed: number, career?: string): EnemyRigProfile | null {
+  if (classifyEnemy(name) === 'creature') return null;
+  const n = norm(name);
+  const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M';
+  const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
+  const appearance: Appearance = { species: detectSpecies(n), sex, build, seed };
+  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
+  return {
+    appearance,
+    career: career ?? detectCareer(n),
+    equip: { weapons: [], armour: [] },
+    overlays: isMutant ? mutationOverlays(seed) : undefined,
+  };
 }

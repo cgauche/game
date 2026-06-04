@@ -32,7 +32,8 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
-import { enemyRigProfile } from './rig/enemyProfile';
+import { AmbientRigToken } from './AmbientRigToken';
+import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -250,6 +251,17 @@ export function IsoStage() {
   } else {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart') continue;
+      // Entité humanoïde avec animation d'ambiance → rig animé (ex. mutant qui dévore).
+      if (ent.kind === 'personnage' && ent.anim) {
+        const prof = entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', ent.appearance?.seed ?? hashSeed(ent.id));
+        if (prof) {
+          objs.push({
+            d: depth(ent.pos.x, ent.pos.y),
+            el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim} />, 0.55),
+          });
+          continue;
+        }
+      }
       const inner = entitySprite(ent);
       objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
     }

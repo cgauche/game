@@ -62,6 +62,8 @@ export interface SceneEntity {
   loot?: string[];
   /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
   appearance?: EntityAppearance;
+  /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
+  anim?: string;
 }
 
 export interface BuildingParams {

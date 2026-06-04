@@ -51,7 +51,8 @@ for (const car of ['Garde', 'Noble', 'Répurgateur', 'Tueur', 'Médecin', 'Voleu
 }
 
 // F1 : ennemis humanoïdes riggés (classifieur + dérivation). Arme + tenue + mutations.
-import { enemyRigProfile } from '../src/gameIso/rig/enemyProfile';
+import { enemyRigProfile, entityRigProfile } from '../src/gameIso/rig/enemyProfile';
+import { AMBIENT_CLIPS } from '../src/gameIso/rig/anim/ambientClips';
 import type { Combatant } from '../src/engine/types';
 function enemyCell(name: string, view: 'front' | 'back' | 'profile' = 'front') {
   const c = {
@@ -80,6 +81,25 @@ for (const e of ['Bandit', 'Cultiste', 'Soldat', 'Garde', 'Flagellant', 'Noble',
 // Mutant : 3 vues + montre les calques de mutation.
 for (const v of ['front', 'back', 'profile'] as const) cells.push(enemyCell('Mutant', v));
 cells.push(enemyCell('Guerrier du Chaos'));
+
+// I : poses d'ambiance (1re keyframe du clip en boucle) — démo mutant qui dévore.
+function ambientCell(name: string, animKey: string, label: string) {
+  const p = entityRigProfile(name, 4);
+  if (!p) return '';
+  const pose = AMBIENT_CLIPS[animKey].steps[0].pose;
+  const svg = renderToStaticMarkup(
+    React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#22291d' }),
+      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.career, overlays: p.overlays, pose }),
+    ),
+  );
+  return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#be9;font:11px sans-serif">${label}</figcaption></figure>`;
+}
+cells.push(ambientCell('Mutant', 'feeding', 'Mutant dévore'));
+cells.push(ambientCell('Villageois', 'praying', 'Villageois prie'));
+cells.push(ambientCell('Cultiste', 'cowering', 'Cultiste terrorisé'));
+cells.push(ambientCell('Villageois', 'sitting', 'Assis au sol'));
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Rig QC</title></head>
 <body style="background:#11141c;padding:16px">

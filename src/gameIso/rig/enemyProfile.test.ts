@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyEnemy, enemyRigProfile } from './enemyProfile';
+import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -97,5 +97,25 @@ describe('enemyRigProfile', () => {
     expect((enemyRigProfile(mkEnemy('Mutant'))!.overlays ?? []).length).toBeGreaterThanOrEqual(1);
     expect((enemyRigProfile(mkEnemy('Guerrier du Chaos'))!.overlays ?? []).length).toBeGreaterThanOrEqual(1);
     expect((enemyRigProfile(mkEnemy('Bandit'))!.overlays ?? []).length).toBe(0);
+  });
+});
+
+describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
+  it('humanoïde → profil sans équipement de combat', () => {
+    const p = entityRigProfile('Mutant', 42)!;
+    expect(p).not.toBeNull();
+    expect(p.equip.weapons).toEqual([]);
+    expect((p.overlays ?? []).length).toBeGreaterThanOrEqual(1); // mutant → calques
+  });
+  it('villageois → Humain, tenue de mendiant (peuple)', () => {
+    const p = entityRigProfile('Villageois', 1)!;
+    expect(p.appearance.species).toBe('Humain');
+    expect(p.career).toBe('Mendiant');
+  });
+  it('non-humanoïde → null (garde le sprite créature)', () => {
+    expect(entityRigProfile('Rat géant', 1)).toBeNull();
+  });
+  it('déterministe sur le seed', () => {
+    expect(entityRigProfile('Mutant', 7)!.appearance).toEqual(entityRigProfile('Mutant', 7)!.appearance);
   });
 });

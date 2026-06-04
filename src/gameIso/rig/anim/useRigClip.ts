@@ -54,6 +54,10 @@ export function useRigClip() {
   const hold = useCallback((name: ClipName) => {
     active.current = { clip: CLIPS[name], start: performance.now(), impactDone: true, hold: true };
   }, []);
+  /** Maintient un clip arbitraire (boucle d'ambiance ou posture tenue). */
+  const holdClip = useCallback((clip: Clip) => {
+    active.current = { clip, start: performance.now(), impactDone: true, hold: true };
+  }, []);
 
-  return { pose, play, playClip, hold };
+  return { pose, play, playClip, hold, holdClip };
 }
