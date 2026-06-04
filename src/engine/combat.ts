@@ -81,6 +81,10 @@ export interface AttackOptions {
   defense?: 'parade' | 'esquive' | 'none';
 }
 
+/** Une arme possède-t-elle l'Atout/Défaut `q` (insensible à la casse ; ignore l'Indice). */
+const hasQ = (w: Weapon | undefined, q: string): boolean =>
+  !!w && w.qualities.some((x) => x.toLowerCase().startsWith(q.toLowerCase()));
+
 /** Résout une attaque de mêlée (Test opposé de Corps à corps). */
 export function resolveMelee(
   attacker: Combatant,
@@ -91,7 +95,8 @@ export function resolveMelee(
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   const atkVal = combatValue(attacker, 'melee');
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender));
+  const precise = hasQ(weapon, 'Précise') ? 10 : 0; // Atout Précise : +10 au Test (l.304)
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise);
 
   if (defenseMode === 'none') {
     // Cible sans défense : un simple succès suffit à toucher.
@@ -103,7 +108,10 @@ export function resolveMelee(
 
   const defVal = defenseValue(defender, defenseMode);
   const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender));
-  const opp = resolveOpposed(atk, def);
+  // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
+  // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
+  const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
+  const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
 
   if (opp.winner === 'defender') {
     return {
@@ -167,7 +175,8 @@ export function resolveRanged(
       return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
     bandMod = m;
   }
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod);
+  const precise = hasQ(weapon, 'Précise') ? 10 : 0;
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod + precise);
   if (!atk.success) {
     return {
       hit: false,
@@ -193,17 +202,19 @@ function applyHit(
   const loc = hitLocation(reverseRoll(attackerRoll));
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = parseWeaponDamage(weapon.damage, sb);
-  const damage = weaponDmg + Math.max(0, dr);
+  const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
+  const damage = weaponDmg + Math.max(0, effDR);
   const tb = bonus(effectiveChar(defender, 'E'));
-  const ap = defender.armour[loc] ?? 0;
+  // Atout Perforante : ignore le premier point d'armure (l.316 ; le distinguo
+  // métal/non-métal n'est pas modélisé — l'armure est un PA unique par localisation).
+  const ap = Math.max(0, (defender.armour[loc] ?? 0) - (hasQ(weapon, 'Perforante') ? 1 : 0));
   const woundsLost = Math.max(1, damage - (tb + ap));
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
-  // Blessure critique + À Terre : « si le nombre de Points de Blessure perdus
-  // est supérieur au total de Points de Blessure de l'adversaire » (13 - Combat.md).
-  // → quand les dégâts d'UN coup dépassent les Blessures MAX (pas le réservoir
-  // courant). Corrigé suite à l'audit de fidélité.
-  const isCritical = critical || woundsLost > defender.wounds.max;
+  // Blessure critique : double réussi (déjà dans `critical`), Atout Empaleuse sur un
+  // multiple de 10 (l.282), ou Blessures perdues > Blessures MAX (13 - Combat.md).
+  const empale = hasQ(weapon, 'Empaleuse') && attackerRoll % 10 === 0;
+  const isCritical = critical || empale || woundsLost > defender.wounds.max;
   return {
     hit: true,
     attackerRoll,

@@ -19,7 +19,8 @@ import {
   buffDurationRounds,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { rollTest, TestResult } from '../engine/tests';
+import { rollTest, TestResult, opposedTest } from '../engine/tests';
+import { effectiveChar } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -543,6 +544,16 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
     if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
   }
+  // Atout Assommante : une touche à la Tête → Test opposé Force/Résistance ; si
+  // l'attaquant l'emporte, la cible gagne un État Sonné (LDB Les armes l.268).
+  let assommanteLog: string | null = null;
+  if (res.hit && res.location === 'tete' && weapon.qualities.some((q) => q.toLowerCase().startsWith('assommante'))) {
+    const resist = effectiveChar(target, 'E') + (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    if (opposedTest(effectiveChar(attacker, 'F'), resist, battleRng).winner === 'attacker') {
+      addCondition(target, 'Sonné');
+      assommanteLog = `${target.name} est Sonné (Assommante).`;
+    }
+  }
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
@@ -560,6 +571,7 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
   const log = [...battle.log, res.log];
+  if (assommanteLog) log.push(assommanteLog);
   if (res.defenderDefeated) log.push(`${target.name} est mis hors de combat !`);
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);

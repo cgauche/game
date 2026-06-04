@@ -16,6 +16,58 @@ describe('Portée des tirs (LDB Difficultés de Combat ; 1 case = 2 m)', () => {
   });
 });
 
+describe("Atouts d'arme (LDB Les armes)", () => {
+  const rngOf = (roll: number): RNG => ({ int: () => roll });
+  const fighter = (cc: number, weapon: Partial<Weapon> = {}): Combatant =>
+    ({
+      id: 'a',
+      name: 'a',
+      kind: 'enemy',
+      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 20, max: 20 },
+      advantage: 0,
+      conditions: [],
+      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      skills: [],
+      talents: [],
+      movement: 4,
+    }) as unknown as Combatant;
+
+  it('Perforante ignore 1 PA (→ +1 Blessure)', () => {
+    const def = fighter(30);
+    def.armour.brasD = 3; // jet 44 → reverseRoll 44 → Bras droit
+    const hit = (q: string[]) => {
+      const atk = fighter(50, { qualities: q, damage: '+10' });
+      return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
+    };
+    expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
+  });
+  it('Pointue : +1 DR sur une touche (→ +1 Blessure)', () => {
+    const def = fighter(30);
+    const hit = (q: string[]) => {
+      const atk = fighter(50, { qualities: q });
+      return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
+    };
+    expect(hit(['Pointue']).woundsLost! - hit([]).woundsLost!).toBe(1);
+  });
+  it('Empaleuse : Critique sur un multiple de 10', () => {
+    const emp = fighter(60, { qualities: ['Empaleuse'] });
+    const r = resolveMelee(emp, fighter(30), emp.weapons[0], rngOf(20), { defense: 'none' });
+    expect(r.hit).toBe(true);
+    expect(r.critical).toBe(true);
+    const plain = fighter(60);
+    expect(resolveMelee(plain, fighter(30), plain.weapons[0], rngOf(20), { defense: 'none' }).critical).toBe(false);
+  });
+  it("Précise : +10 au Test (touche là où l'arme nue échoue, même jet)", () => {
+    const def = fighter(30);
+    const plain = fighter(40); // CC 40, jet 45 → échec
+    const prec = fighter(40, { qualities: ['Précise'] }); // +10 → cible 50, jet 45 → réussite
+    expect(resolveMelee(plain, def, plain.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(false);
+    expect(resolveMelee(prec, def, prec.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(true);
+  });
+});
+
 describe('États en combat (LDB ch.16)', () => {
   const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);
   it('pénalité de combat non-cumul : la pire pénalité d’un seul État', () => {
