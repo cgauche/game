@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG, RNG } from './dice';
-import { Combatant } from './types';
-import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend, endOfRound } from './conditions';
+import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee, rangeBandModifier } from './combat';

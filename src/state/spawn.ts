@@ -5,10 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../engine/types';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock } from './scene';
-
-function emptyArmour(ap = 0): ArmourPoints {
-  return { tete: ap, brasG: ap, brasD: ap, corps: ap, jambeG: ap, jambeD: ap };
-}
+import { emptyArmour } from '../engine/items';
 
 function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): Characteristics {
   const chars = {} as Characteristics;

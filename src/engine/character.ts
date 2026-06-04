@@ -15,7 +15,7 @@
  */
 import { RNG, defaultRNG, roll } from './dice';
 import { maxWounds } from './characteristics';
-import { buildInventory, recomputeLoadout } from './items';
+import { buildInventory, recomputeLoadout, emptyArmour } from './items';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation } from './types';
 import {
   SpeciesData,
@@ -261,10 +261,6 @@ const ARMOUR_LOC_MAP: Record<string, HitLocation[]> = {
   Corps: ['corps'],
   Jambes: ['jambeG', 'jambeD'],
 };
-
-function emptyArmour(): ArmourPoints {
-  return { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-}
 
 export function deriveArmour(trappingNames: string[]): ArmourPoints {
   const ap = emptyArmour();

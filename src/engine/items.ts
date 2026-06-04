@@ -67,7 +67,10 @@ export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => s + (i.enc || 0), 0);
 }
 
-const emptyArmour = (): ArmourPoints => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
+/** Armure vide : PA uniforme `ap` sur toutes les localisations (0 par défaut). */
+export function emptyArmour(ap = 0): ArmourPoints {
+  return { tete: ap, brasG: ap, brasD: ap, corps: ap, jambeG: ap, jambeD: ap };
+}
 
 /** Recalcule armes/armure actives + encombrement depuis l'équipement porté. */
 export function recomputeLoadout(c: Combatant): void {
