@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt, WALKABLE } from '../../state/scene';
+import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { TERRAIN_COLORS } from '../../game/palette';
-
-const ET = 28;
+import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
+import { DEFS, TILE_GRAD, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
 const TERRAINS: Terrain[] = ['herbe', 'sol', 'route', 'plancher', 'bois', 'eau', 'mur', 'porte'];
 const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
@@ -29,65 +29,34 @@ export function Editor() {
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
-
-  useEffect(() => draw(), [scene, selected]);
 
   function clone(s: Scene): Scene {
     return JSON.parse(JSON.stringify(s));
   }
 
-  function draw() {
-    const cv = canvasRef.current;
-    if (!cv) return;
-    const ctx = cv.getContext('2d')!;
-    const { w, h } = scene.dimensions;
-    cv.width = w * ET;
-    cv.height = h * ET;
-    for (let y = 0; y < h; y++)
-      for (let x = 0; x < w; x++) {
-        const t = tileAt(scene, x, y);
-        ctx.fillStyle = '#' + TERRAIN_COLORS[t].toString(16).padStart(6, '0');
-        ctx.fillRect(x * ET, y * ET, ET, ET);
-        if (!WALKABLE[t]) {
-          ctx.fillStyle = 'rgba(0,0,0,0.25)';
-          ctx.fillRect(x * ET, y * ET, ET, ET);
-        }
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-        ctx.strokeRect(x * ET, y * ET, ET, ET);
-      }
-    for (const e of scene.entities) {
-      ctx.fillStyle = entColor(e.kind);
-      ctx.beginPath();
-      ctx.arc(e.pos.x * ET + ET / 2, e.pos.y * ET + ET / 2, ET / 2 - 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.lineWidth = e.id === selected ? 3 : 1;
-      ctx.strokeStyle = e.id === selected ? '#ffe066' : '#000';
-      ctx.stroke();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText((e.label ?? e.ref ?? e.kind)[0].toUpperCase(), e.pos.x * ET + ET / 2, e.pos.y * ET + ET / 2 + 4);
-    }
-    // Triggers (zones)
-    for (const t of scene.triggers) {
-      ctx.strokeStyle = 'rgba(231,76,60,0.9)';
-      ctx.setLineDash([4, 3]);
-      ctx.strokeRect(t.rect.x * ET, t.rect.y * ET, t.rect.w * ET, t.rect.h * ET);
-      ctx.setLineDash([]);
-    }
+  const dims: Dims = scene.dimensions;
+  const stage = stageSize(dims);
+
+  /** Point écran → tuile (projection iso, comme le jeu). */
+  function isoTile(ev: React.PointerEvent): { x: number; y: number } {
+    const svg = canvasRef.current!;
+    const pt = svg.createSVGPoint();
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+    return screenToTile(loc.x, loc.y, dims);
   }
 
-  function tileFromEvent(e: React.MouseEvent): { x: number; y: number } {
-    const r = canvasRef.current!.getBoundingClientRect();
-    const scaleX = canvasRef.current!.width / r.width;
-    const scaleY = canvasRef.current!.height / r.height;
-    return {
-      x: Math.floor(((e.clientX - r.left) * scaleX) / ET),
-      y: Math.floor(((e.clientY - r.top) * scaleY) / ET),
-    };
+  /** Sprite de jeu correspondant à une entité (WYSIWYG). */
+  function entitySvg(e: SceneEntity): string {
+    if (e.kind === 'pnj') return pnjSprite();
+    if (e.kind === 'ennemi') return enemySprite(e.ref ?? '');
+    if (e.kind === 'objet') return objetSprite();
+    if (e.kind === 'prop') return propSprite();
+    return '';
   }
 
   function applyAt(p: { x: number; y: number }) {
@@ -248,17 +217,83 @@ export function Editor() {
         </aside>
 
         <main className="editor-canvas-wrap">
-          <canvas
+          <svg
             ref={canvasRef}
-            className="editor-canvas"
-            onMouseDown={(e) => {
+            className="editor-iso"
+            viewBox={`0 0 ${stage.w} ${stage.h}`}
+            width={stage.w}
+            height={stage.h}
+            onPointerDown={(e) => {
               setPainting(true);
-              applyAt(tileFromEvent(e));
+              applyAt(isoTile(e));
             }}
-            onMouseMove={(e) => painting && tool.mode === 'tile' && applyAt(tileFromEvent(e))}
-            onMouseUp={() => setPainting(false)}
-            onMouseLeave={() => setPainting(false)}
-          />
+            onPointerMove={(e) => painting && tool.mode === 'tile' && applyAt(isoTile(e))}
+            onPointerUp={() => setPainting(false)}
+            onPointerLeave={() => setPainting(false)}
+          >
+            <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
+            <g>
+              {(() => {
+                const els: JSX.Element[] = [];
+                for (let y = 0; y < dims.h; y++)
+                  for (let x = 0; x < dims.w; x++) {
+                    const t = tileAt(scene, x, y);
+                    els.push(<path key={`f${x}-${y}`} d={diamondPath(x, y, dims)} fill={`url(#${TILE_GRAD[t]})`} stroke="rgba(0,0,0,0.18)" />);
+                  }
+                return els;
+              })()}
+            </g>
+            <g>
+              {(() => {
+                const objs: { d: number; el: JSX.Element }[] = [];
+                for (let y = 0; y < dims.h; y++)
+                  for (let x = 0; x < dims.w; x++) {
+                    const t = tileAt(scene, x, y);
+                    if (t === 'mur') objs.push({ d: depth(x, y), el: <g key={`w${x}-${y}`} dangerouslySetInnerHTML={{ __html: wallBlock(x, y, dims) }} /> });
+                    if (t === 'bois') objs.push({ d: depth(x, y) - 0.1, el: <g key={`t${x}-${y}`} dangerouslySetInnerHTML={{ __html: tree(x, y, dims) }} /> });
+                  }
+                for (const e of scene.entities) {
+                  if (e.kind === 'heroStart') {
+                    const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
+                    objs.push({
+                      d: depth(e.pos.x, e.pos.y) + 0.4,
+                      el: (
+                        <g key={e.id}>
+                          <path d={diamondPath(e.pos.x, e.pos.y, dims)} fill="#2ecc71" opacity={0.55} />
+                          <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="13" fontWeight="bold" fill="#0a2a14">
+                            H
+                          </text>
+                        </g>
+                      ),
+                    });
+                  } else {
+                    objs.push({ d: depth(e.pos.x, e.pos.y) + 0.5, el: <g key={e.id} dangerouslySetInnerHTML={{ __html: placeSprite(entitySvg(e), e.pos.x, e.pos.y, dims, 0.5) }} /> });
+                  }
+                }
+                objs.sort((a, b) => a.d - b.d);
+                return objs.map((o) => o.el);
+              })()}
+            </g>
+            <g>
+              {scene.triggers.flatMap((t) =>
+                Array.from({ length: Math.max(0, t.rect.w * t.rect.h) }, (_, i) => {
+                  const x = t.rect.x + (i % t.rect.w);
+                  const y = t.rect.y + Math.floor(i / t.rect.w);
+                  return (
+                    <path
+                      key={`tr-${t.id}-${i}`}
+                      d={diamondPath(x, y, dims)}
+                      fill="rgba(231,76,60,0.12)"
+                      stroke="rgba(231,76,60,0.9)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 3"
+                    />
+                  );
+                }),
+              )}
+            </g>
+            {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
+          </svg>
           <p className="hint">
             Peignez les tuiles (cliquer-glisser). Placez les entités. Les zones rouges en pointillés sont les triggers.
           </p>
