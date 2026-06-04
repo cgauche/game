@@ -101,34 +101,34 @@ export interface Combatant {
 }
 
 /** Niveau de difficulté d'un Test (Livre de base, Tests). */
+// Tableau de Difficulté du Livre de base (12 - Tests.md), vérifié par audit de
+// fidélité : « Accessible +20 », « Complexe −10 », « Difficile −20 » — pas de
+// palier « Moyen » ni « Épique ».
 export type Difficulty =
   | 'tresFacile' // +60
   | 'facile' // +40
-  | 'moyen' // +20
-  | 'accessible' // +20 (alias usage courant)
+  | 'accessible' // +20
   | 'intermediaire' // +0
-  | 'difficile' // -10
-  | 'epique' // -20
+  | 'complexe' // -10
+  | 'difficile' // -20
   | 'tresDifficile'; // -30
 
 export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   tresFacile: 60,
   facile: 40,
-  moyen: 20,
   accessible: 20,
   intermediaire: 0,
-  difficile: -10,
-  epique: -20,
+  complexe: -10,
+  difficile: -20,
   tresDifficile: -30,
 };
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   tresFacile: 'Très facile (+60)',
   facile: 'Facile (+40)',
-  moyen: 'Moyen (+20)',
   accessible: 'Accessible (+20)',
   intermediaire: 'Intermédiaire (+0)',
-  difficile: 'Difficile (−10)',
-  epique: 'Épique (−20)',
+  complexe: 'Complexe (−10)',
+  difficile: 'Difficile (−20)',
   tresDifficile: 'Très difficile (−30)',
 };

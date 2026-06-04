@@ -102,7 +102,7 @@ export function resolveMelee(
   const def = rollTest(defVal, 'intermediaire', rng);
   const opp = resolveOpposed(atk, def);
 
-  if (!opp.attackerWins) {
+  if (opp.winner === 'defender') {
     return {
       hit: false,
       attackerRoll: atk.roll,
@@ -112,6 +112,19 @@ export function resolveMelee(
       advantageTo: 'defender',
       defenderDefeated: false,
       log: `${attacker.name} rate son attaque ; ${defender.name} gagne +1 Avantage.`,
+    };
+  }
+  if (opp.winner === 'tie') {
+    // Égalité parfaite (DR et valeurs cibles) : statu quo, personne ne l'emporte.
+    return {
+      hit: false,
+      attackerRoll: atk.roll,
+      defenderRoll: def.roll,
+      netSL: 0,
+      critical: false,
+      advantageTo: null,
+      defenderDefeated: false,
+      log: `Échange neutre : ni ${attacker.name} ni ${defender.name} ne prend l'avantage.`,
     };
   }
   const critical = atk.isDouble && atk.success;
@@ -160,6 +173,11 @@ function applyHit(
   const woundsLost = Math.max(1, damage - (tb + ap));
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
+  // Blessure critique + À Terre : « si le nombre de Points de Blessure perdus
+  // est supérieur au total de Points de Blessure de l'adversaire » (13 - Combat.md).
+  // → quand les dégâts d'UN coup dépassent les Blessures MAX (pas le réservoir
+  // courant). Corrigé suite à l'audit de fidélité.
+  const isCritical = critical || woundsLost > defender.wounds.max;
   return {
     hit: true,
     attackerRoll,
@@ -167,13 +185,13 @@ function applyHit(
     location: loc,
     damage,
     woundsLost,
-    critical: critical || defeated, // Blessures à 0 ⇒ Blessure critique
+    critical: isCritical,
     advantageTo: 'attacker',
     defenderDefeated: defeated,
     log:
       `${attacker.name} touche ${defender.name} (${locLabel(loc)}) : ` +
       `${damage} dégâts − ${tb + ap} (BE+PA) = ${woundsLost} Blessures` +
-      (critical || defeated ? ' — CRITIQUE !' : '') +
+      (isCritical ? ' — CRITIQUE !' : '') +
       '.',
   };
 }

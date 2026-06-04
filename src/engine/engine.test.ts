@@ -4,6 +4,7 @@ import { evaluateTest, resolveOpposed, rollTest } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
 import { createHero } from './character';
+import { DIFFICULTY_MODIFIERS } from './types';
 import type { Characteristics, Combatant, Weapon } from './types';
 
 describe('Tests & DR', () => {
@@ -93,6 +94,47 @@ describe('Résolution de mêlée', () => {
       expect(res.woundsLost).toBeGreaterThanOrEqual(1);
       expect(res.location).toBeDefined();
     }
+  });
+});
+
+// --- Corrections issues de l'audit de fidélité ---------------------------
+describe('Difficulté (canon : Accessible/Complexe/Difficile)', () => {
+  it('table conforme au Livre de base', () => {
+    expect(DIFFICULTY_MODIFIERS.accessible).toBe(20);
+    expect(DIFFICULTY_MODIFIERS.complexe).toBe(-10);
+    expect(DIFFICULTY_MODIFIERS.difficile).toBe(-20); // pas -10
+    const keys = Object.keys(DIFFICULTY_MODIFIERS);
+    expect(keys).not.toContain('moyen');
+    expect(keys).not.toContain('epique');
+  });
+});
+
+describe('Test opposé (départage canon)', () => {
+  it('égalité de DR : la valeur cible la plus haute l’emporte (sans priorité attaquant)', () => {
+    const att = evaluateTest(13, 45); // sl = 4 - 1 = 3, cible 45
+    const def = evaluateTest(23, 55); // sl = 5 - 2 = 3, cible 55 > 45
+    const r = resolveOpposed(att, def);
+    expect(att.sl).toBe(def.sl);
+    expect(r.winner).toBe('defender'); // cible 55 > 45 l'emporte
+  });
+  it('DR ET valeur cible égaux → statu quo (tie), aucun vainqueur', () => {
+    const att = evaluateTest(23, 45); // sl 2, cible 45
+    const def = evaluateTest(21, 45); // sl 2, cible 45
+    const r = resolveOpposed(att, def);
+    expect(r.winner).toBe('tie');
+    expect(r.attackerWins).toBe(false);
+  });
+});
+
+describe('Blessure critique (dégâts > Blessures max)', () => {
+  it('un coup dépassant les Blessures totales déclenche un Critique', () => {
+    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: '+BF+20', qualities: [] };
+    const a = dummy('Brute', { CC: 90, F: 40 }, 20, heavy);
+    const d = dummy('Frêle', { CC: 20, E: 20 }, 3, heavy); // Blessures max 3
+    const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });
+    expect(res.hit).toBe(true);
+    expect(res.woundsLost!).toBeGreaterThan(d.wounds.max);
+    expect(res.critical).toBe(true);
   });
 });
 

@@ -44,14 +44,20 @@ export function evaluateTest(r: number, target: number): TestResult {
 export interface OpposedResult {
   attacker: TestResult;
   defender: TestResult;
+  /** Vainqueur du test opposé. `tie` = statu quo (aucun vainqueur). */
+  winner: 'attacker' | 'defender' | 'tie';
+  /** Conservé pour compatibilité : true uniquement si `winner === 'attacker'`. */
   attackerWins: boolean;
   /** DR net du vainqueur (sert aux dégâts en combat). */
   netSL: number;
 }
 
 /**
- * Test opposé. Le vainqueur est celui dont le DR est le plus élevé. En cas
- * d'égalité, l'attaquant l'emporte si sa valeur cible est supérieure ou égale.
+ * Test opposé (12 - Tests.md). Le vainqueur est celui dont le DR est le plus
+ * élevé ; en cas d'égalité de DR, celui dont la valeur cible (Compétence/
+ * Caractéristique) est STRICTEMENT la plus élevée ; si elles sont aussi égales,
+ * aucun vainqueur (statu quo / relance au choix du MJ). Pas de priorité
+ * « attaquant » (corrigé suite à l'audit de fidélité).
  */
 export function opposedTest(
   attackerValue: number,
@@ -66,14 +72,14 @@ export function opposedTest(
 }
 
 export function resolveOpposed(attacker: TestResult, defender: TestResult): OpposedResult {
-  // En test opposé, un échec compte comme un DR « relatif » : on compare les SL,
-  // l'échec étant traité comme négatif (déjà le cas dans evaluateTest).
-  let attackerWins: boolean;
-  if (attacker.sl !== defender.sl) attackerWins = attacker.sl > defender.sl;
-  else attackerWins = attacker.target >= defender.target;
-  // Si aucun des deux ne réussit, le « vainqueur » est celui qui a le moins échoué.
+  // 1) DR le plus élevé l'emporte. 2) Égalité de DR → valeur cible strictement
+  // la plus haute. 3) Encore égal → statu quo (tie), aucun vainqueur.
+  let winner: 'attacker' | 'defender' | 'tie';
+  if (attacker.sl !== defender.sl) winner = attacker.sl > defender.sl ? 'attacker' : 'defender';
+  else if (attacker.target !== defender.target) winner = attacker.target > defender.target ? 'attacker' : 'defender';
+  else winner = 'tie';
   const netSL = Math.abs(attacker.sl - defender.sl);
-  return { attacker, defender, attackerWins, netSL };
+  return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL };
 }
 
 function clamp(v: number): number {
