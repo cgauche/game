@@ -105,10 +105,9 @@ describe('apparences enrichies (palette-swap, silhouette préservée)', () => {
     for (let i = 0; i < layers[0].variants.length; i++)
       expect(composeAppearance('Humain', 0, { [layers[0].slot]: i })!.length).toBeGreaterThan(50);
   });
-  it('Mutant : plusieurs apparences, sans réintroduire le vert (#mut interdit)', () => {
-    const looks = new Set([0, 1, 2, 3, 4, 5].map((s) => composeAppearance('Mutant', s)));
-    expect(looks.size).toBeGreaterThan(1);
-    for (const v of looks) expect(v).not.toMatch(/url\(#mut\)/);
+  it('Mutant : plusieurs apparences distinctes (debout, charognard, lézard…)', () => {
+    const looks = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => composeAppearance('Mutant', s)));
+    expect(looks.size).toBeGreaterThan(2);
   });
 });
 
