@@ -4,9 +4,9 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ActiveEffect, CHAR_LABELS } from '../engine/types';
+import { Combatant, ActiveEffect, CHAR_LABELS, HitLocation, Weapon } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
-import { resolveMelee, resolveRanged, initiativeOrder, defenseValue } from '../engine/combat';
+import { resolveMelee, resolveRanged, initiativeOrder, defenseValue, AttackResult } from '../engine/combat';
 import {
   resolveMagicMissile,
   resolveCasting,
@@ -59,6 +59,13 @@ export interface PendingTest {
   onSuccess?: Effect[];
   onFailure?: Effect[];
 }
+/** Attaque en attente : la modale affiche « Lancer », puis le résultat + Chance. */
+export interface PendingAttack {
+  attackerId: string;
+  targetId: string;
+  location: HitLocation | null;
+  result: AttackResult | null; // null = pas encore lancé
+}
 
 export interface BattleState {
   combatants: Combatant[];
@@ -90,6 +97,7 @@ interface GameState {
   inventory: string[];
   money: Money;
   pendingTest: PendingTest | null;
+  pendingAttack: PendingAttack | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -119,6 +127,12 @@ interface GameState {
   battleEndTurn: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
+  /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
+  attackSetLocation: (loc: HitLocation | null) => void;
+  attackRoll: () => void;
+  attackReroll: () => void;
+  attackConfirm: () => void;
+  attackCancel: () => void;
   log: (msg: string) => void;
 }
 
@@ -138,6 +152,7 @@ export const useGame = create<GameState>((set, get) => ({
   inventory: [],
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
+  pendingAttack: null,
   document: null,
   previousScene: null,
 
@@ -375,7 +390,12 @@ export const useGame = create<GameState>((set, get) => ({
     }
     if (battle.action !== 'attack') return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
-    doAttack(get, set, active, target);
+    if (manhattan(active.pos!, target.pos!) > 1 && active.weapons[0]?.type === 'melee') {
+      get().log('Cible hors de portée de mêlée.');
+      return;
+    }
+    // Ouvre la modale d'attaque (le jet se fait après le clic « Lancer »).
+    set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null } });
   },
 
   battleEndTurn: () => advanceTurn(get, set),
@@ -389,6 +409,45 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+
+  attackSetLocation: (loc) => {
+    const pa = get().pendingAttack;
+    if (!pa || pa.result) return; // la visée ne change plus après le jet
+    set({ pendingAttack: { ...pa, location: loc } });
+  },
+  attackRoll: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || pa.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || !target) return;
+    const r = resolveAttack(attacker, target, pa.location ?? undefined);
+    if (!r) {
+      get().log('Cible hors de portée de mêlée.');
+      set({ pendingAttack: null });
+      return;
+    }
+    set({ pendingAttack: { ...pa, result: r.res } });
+  },
+  attackReroll: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
+    attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB Destin)
+    const r = resolveAttack(attacker, target, pa.location ?? undefined);
+    if (r) set({ pendingAttack: { ...pa, result: r.res }, battle: { ...battle } });
+  },
+  attackConfirm: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    set({ pendingAttack: null });
+    if (attacker && target) applyAttackResult(get, set, attacker, target, attacker.weapons[0], pa.result);
+  },
+  attackCancel: () => set({ pendingAttack: null }),
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {
@@ -541,17 +600,29 @@ function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
   return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
 }
 
-function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant) {
-  const battle = get().battle!;
-  if (manhattan(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') {
-    get().log('Cible hors de portée de mêlée.');
-    return;
-  }
+/** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
+ *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
+function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
+  if (manhattan(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') return null;
   const weapon = attacker.weapons[0];
   const res =
     weapon.type === 'ranged'
-      ? resolveRanged(attacker, target, weapon, battleRng, manhattan(attacker.pos!, target.pos!))
-      : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target) });
+      ? resolveRanged(attacker, target, weapon, battleRng, manhattan(attacker.pos!, target.pos!), location)
+      : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target), location });
+  return { res, weapon };
+}
+
+/** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
+ *  Avantage, animation, journal, fin de combat. */
+function applyAttackResult(
+  get: () => GameState,
+  set: any,
+  attacker: Combatant,
+  target: Combatant,
+  weapon: Weapon,
+  res: AttackResult,
+): void {
+  const battle = get().battle!;
   if (res.hit && res.woundsLost) {
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
     if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
@@ -588,6 +659,16 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
+}
+
+/** Attaque instantanée (utilisée par l'IA ennemie) : résout puis applique. */
+function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): void {
+  const r = resolveAttack(attacker, target);
+  if (!r) {
+    get().log('Cible hors de portée de mêlée.');
+    return;
+  }
+  applyAttackResult(get, set, attacker, target, r.weapon, r.res);
 }
 
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule

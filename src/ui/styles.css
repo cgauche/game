@@ -744,6 +744,39 @@ textarea:focus {
   flex: 1;
   text-align: left;
 }
+
+/* ── Modale d'attaque (jet + localisation + Chance) ── */
+.roll-modal {
+  min-width: 340px;
+}
+.rm-vs {
+  text-align: center;
+  margin: 4px 0 12px;
+}
+.rm-weapon {
+  color: var(--muted);
+  font-weight: normal;
+}
+.rm-loc {
+  margin-bottom: 12px;
+}
+.rm-loc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+.rm-pen {
+  color: var(--gold);
+  font-style: normal;
+  font-size: 12px;
+}
+.rm-log {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 8px 0;
+}
 .bp-hint {
   font-size: 12px;
   color: var(--gold);

@@ -79,6 +79,8 @@ export interface AttackResult {
 
 export interface AttackOptions {
   defense?: 'parade' | 'esquive' | 'none';
+  /** Localisation visée (Complexe -10 au Test ; sinon localisation = jet inversé). */
+  location?: HitLocation;
 }
 
 /** Une arme possède-t-elle l'Atout/Défaut `q` (insensible à la casse ; ignore l'Indice). */
@@ -96,14 +98,15 @@ export function resolveMelee(
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   const atkVal = combatValue(attacker, 'melee');
   const precise = hasQ(weapon, 'Précise') ? 10 : 0; // Atout Précise : +10 au Test (l.304)
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise);
+  const aimed = opts.location ? -10 : 0; // viser une localisation = Complexe -10 (LDB Combat l.104)
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise + aimed);
 
   if (defenseMode === 'none') {
     // Cible sans défense : un simple succès suffit à toucher.
     if (!atk.success) {
       return miss(attacker, defender, atk.roll, 'defender');
     }
-    return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success);
+    return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, opts.location);
   }
 
   const defVal = defenseValue(defender, defenseMode);
@@ -139,7 +142,7 @@ export function resolveMelee(
     };
   }
   const critical = atk.isDouble && atk.success;
-  const res = applyHit(attacker, defender, weapon, atk.roll, opp.netSL, critical);
+  const res = applyHit(attacker, defender, weapon, atk.roll, opp.netSL, critical, opts.location);
   res.defenderRoll = def.roll;
   return res;
 }
@@ -166,6 +169,7 @@ export function resolveRanged(
   weapon: Weapon,
   rng: RNG = defaultRNG,
   distanceTiles?: number,
+  location?: HitLocation,
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged');
   let bandMod = 0;
@@ -176,7 +180,8 @@ export function resolveRanged(
     bandMod = m;
   }
   const precise = hasQ(weapon, 'Précise') ? 10 : 0;
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod + precise);
+  const aimed = location ? -10 : 0;
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod + precise + aimed);
   if (!atk.success) {
     return {
       hit: false,
@@ -188,7 +193,7 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success);
+  return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, location);
 }
 
 function applyHit(
@@ -198,8 +203,9 @@ function applyHit(
   attackerRoll: number,
   dr: number,
   critical: boolean,
+  forcedLoc?: HitLocation,
 ): AttackResult {
-  const loc = hitLocation(reverseRoll(attackerRoll));
+  const loc = forcedLoc ?? hitLocation(reverseRoll(attackerRoll));
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = parseWeaponDamage(weapon.damage, sb);
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)

@@ -180,7 +180,9 @@ describe('Boucle de jeu (store)', () => {
     const turn = order.indexOf(heroC.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
     const before = enemy.wounds.current;
-    useGame.getState().battleClickEntity(enemy.id);
+    useGame.getState().battleClickEntity(enemy.id); // ouvre la modale d'attaque
+    useGame.getState().attackRoll(); // lance le jet
+    useGame.getState().attackConfirm(); // applique le résultat
     st = useGame.getState();
     const enemyAfter = st.battle!.combatants.find((c) => c.id === enemy.id)!;
     expect(enemyAfter.wounds.current).toBeLessThan(before);
