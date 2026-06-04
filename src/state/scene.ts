@@ -8,6 +8,7 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import { terrainWalkable } from './terrain';
+import { buildingBlockedAt } from './buildings';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
@@ -154,6 +155,7 @@ export function tileAt(scene: Scene, x: number, y: number): Terrain {
 }
 
 export function isWalkable(scene: Scene, x: number, y: number): boolean {
+  if (buildingBlockedAt(scene, x, y)) return false;
   return terrainWalkable(tileAt(scene, x, y));
 }
 
