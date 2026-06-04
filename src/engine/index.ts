@@ -7,3 +7,4 @@ export * from './combat';
 export * from './character';
 export * from './conditions';
 export * from './skills';
+export * from './items';

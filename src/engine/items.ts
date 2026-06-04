@@ -1,0 +1,107 @@
+/**
+ * Système d'objets / équipement. Les objets portent les stats des `trappings`
+ * (Dégâts, PA, qualités, encombrement). Les armes/armures ACTIVES en combat
+ * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
+ * recomputeLoadout : équiper une hache ou une armure change donc le combat.
+ */
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon } from './types';
+import { bonus } from './characteristics';
+import { findTrapping } from '../data';
+
+let uidCounter = 0;
+export function newUid(): string {
+  return `it-${++uidCounter}`;
+}
+
+/** Localisations d'armure (libellés trappings → localisations d'impact). */
+const ARMOUR_LOC: Record<string, HitLocation[]> = {
+  Tête: ['tete'],
+  Bras: ['brasG', 'brasD'],
+  Mains: ['brasG', 'brasD'],
+  Corps: ['corps'],
+  Jambes: ['jambeG', 'jambeD'],
+};
+
+function kindOf(type: string): ItemKind {
+  if (type === 'melee') return 'melee';
+  if (type === 'ranged') return 'ranged';
+  if (type === 'armor') return 'armor';
+  if (type === 'ammunition') return 'ammo';
+  return 'misc';
+}
+
+/** Construit une instance d'objet depuis un trapping (par son label). */
+export function itemFromTrapping(label: string): ItemInstance | null {
+  const t = findTrapping(label);
+  if (!t) return null;
+  const kind = kindOf(t.type);
+  const locs =
+    t.loc != null
+      ? t.loc
+          .split(',')
+          .map((s) => s.trim())
+          .flatMap((p) => ARMOUR_LOC[p] ?? [])
+      : undefined;
+  return {
+    uid: newUid(),
+    name: t.label,
+    kind,
+    damage: t.damage ?? undefined,
+    reach: t.reach,
+    range: kind === 'ranged' ? Number(t.reach) || null : null,
+    qualities: t.qualities ?? [],
+    pa: t.pa ?? undefined,
+    locs: locs && locs.length ? locs : undefined,
+    enc: t.enc ?? 0,
+    equipped: false,
+    desc: t.desc,
+  };
+}
+
+/** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance (Livre de base). */
+export function maxEncumbrance(c: Combatant): number {
+  return bonus(c.characteristics.F) + bonus(c.characteristics.E);
+}
+
+export function totalEncumbrance(c: Combatant): number {
+  return (c.items ?? []).reduce((s, i) => s + (i.enc || 0), 0);
+}
+
+const emptyArmour = (): ArmourPoints => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
+
+/** Recalcule armes/armure actives + encombrement depuis l'équipement porté. */
+export function recomputeLoadout(c: Combatant): void {
+  const items = c.items ?? [];
+  const weapons: Weapon[] = [];
+  for (const it of items) {
+    if (!it.equipped) continue;
+    if (it.kind === 'melee' || it.kind === 'ranged')
+      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities });
+  }
+  // Mains nues toujours disponibles en dernier recours.
+  weapons.push({ name: 'Mains nues', type: 'melee', damage: '+BF-2', reach: 'Très courte', qualities: [] });
+
+  const armour = emptyArmour();
+  for (const it of items) {
+    if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
+    for (const l of it.locs) armour[l] = Math.max(armour[l], it.pa);
+  }
+
+  c.weapons = weapons;
+  c.armour = armour;
+  c.encumbrance = totalEncumbrance(c);
+}
+
+/** Construit l'inventaire d'un héros depuis une liste de noms de trappings. */
+export function buildInventory(trappingNames: string[]): ItemInstance[] {
+  const items: ItemInstance[] = [];
+  for (const raw of trappingNames) {
+    const name = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const it = itemFromTrapping(name);
+    if (!it) continue;
+    // Équiper d'office armes et armures (le joueur pourra changer).
+    if (it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor') it.equipped = true;
+    items.push(it);
+  }
+  return items;
+}

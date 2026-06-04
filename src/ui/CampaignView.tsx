@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useGame, activeCombatant } from '../state/store';
 import { IsoStage } from '../gameIso/IsoStage';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';
 import { TestModal } from './TestModal';
 import { DocumentModal } from './DocumentModal';
+import { CharacterSheet } from './CharacterSheet';
 import { Combatant } from '../engine/types';
 
 export function CampaignView() {
@@ -16,6 +18,7 @@ export function CampaignView() {
   const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
   const setScreen = useGame((s) => s.setScreen);
+  const [sheetId, setSheetId] = useState<string | null>(null);
 
   return (
     <div className="screen campaign-view">
@@ -26,7 +29,7 @@ export function CampaignView() {
         <h3>{scene?.nom}</h3>
         <div className="party-hud">
           {party.map((h) => (
-            <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} />
+            <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} onOpen={() => setSheetId(h.id)} />
           ))}
         </div>
         <div className="purse">
@@ -67,6 +70,7 @@ export function CampaignView() {
       {mode === 'battle' && battle && <BattlePanel />}
       <TestModal />
       <DocumentModal />
+      {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
     </div>
   );
 }
@@ -75,11 +79,11 @@ function battleVersion(combatants: Combatant[] | undefined, h: Combatant): Comba
   return combatants?.find((c) => c.id === h.id) ?? null;
 }
 
-function PartyHudCard({ hero }: { hero: Combatant }) {
+function PartyHudCard({ hero, onOpen }: { hero: Combatant; onOpen?: () => void }) {
   const ratio = hero.wounds.max > 0 ? hero.wounds.current / hero.wounds.max : 0;
   const down = hero.wounds.current <= 0;
   return (
-    <div className={`party-hud-card ${down ? 'down' : ''}`}>
+    <div className={`party-hud-card clickable ${down ? 'down' : ''}`} onClick={onOpen} title="Voir la fiche / l'équipement">
       <div className="phc-top">
         <strong>{hero.name}</strong>
         <span>

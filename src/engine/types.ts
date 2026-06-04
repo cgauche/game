@@ -78,6 +78,24 @@ export interface ConditionInstance {
   value: number; // certains États s'empilent (ex. Hémorragique)
 }
 
+export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
+
+/** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
+export interface ItemInstance {
+  uid: string;
+  name: string;
+  kind: ItemKind;
+  damage?: string; // armes
+  reach?: string | null;
+  range?: number | null;
+  qualities: string[];
+  pa?: number; // armures : Points d'Armure
+  locs?: HitLocation[]; // armures : localisations couvertes
+  enc: number; // encombrement
+  equipped: boolean;
+  desc?: string | null;
+}
+
 export interface Combatant {
   id: string;
   name: string;
@@ -88,8 +106,13 @@ export interface Combatant {
   wounds: { current: number; max: number };
   advantage: number;
   conditions: ConditionInstance[];
+  /** Armes/armure ACTIVES (dérivées de l'équipement) — utilisées en combat. */
   weapons: Weapon[];
   armour: ArmourPoints;
+  /** Inventaire complet à stats (porté, équipé ou non) — héros. */
+  items?: ItemInstance[];
+  /** Encombrement total porté (dérivé). */
+  encumbrance?: number;
   skills: SkillInstance[];
   talents: TalentInstance[];
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */

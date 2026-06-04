@@ -737,6 +737,145 @@ textarea:focus {
   white-space: pre;
 }
 
+/* Fiche de personnage / équipement */
+.party-hud-card.clickable {
+  cursor: pointer;
+}
+.party-hud-card.clickable:hover {
+  border-color: var(--accent2);
+}
+.sheet-modal {
+  width: 620px;
+  max-width: 94vw;
+  max-height: 88vh;
+  overflow: auto;
+}
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.sheet-head h3 {
+  margin: 0;
+}
+.sheet-stats {
+  margin-bottom: 12px;
+}
+.sheet-combat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.ap-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.ap-cell {
+  text-align: center;
+  background: var(--bg2);
+  border-radius: 6px;
+  padding: 4px 0;
+}
+.ap-cell span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.ap-cell b {
+  font-size: 16px;
+  color: #6f6685;
+}
+.ap-cell b.on {
+  color: #9ecbff;
+}
+.sc-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.sc-meta b {
+  color: var(--text);
+}
+.sc-meta .enc-over b,
+.sc-meta .enc-over {
+  color: var(--danger);
+}
+.sc-weapons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sc-weapons .weap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.sc-weapons .weap em {
+  color: var(--gold);
+}
+.inv-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.inv-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.inv-row.kind-melee,
+.inv-row.kind-ranged {
+  border-left-color: #c9905a;
+}
+.inv-row.kind-armor {
+  border-left-color: #6f8fb8;
+}
+.inv-row.equipped {
+  background: #2a2438;
+}
+.ir-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ir-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.ir-stats {
+  font-size: 11px;
+  color: var(--muted);
+}
+.ir-enc {
+  font-size: 11px;
+  color: var(--muted);
+}
+.ir-kind {
+  font-size: 11px;
+  color: #6f6685;
+  font-style: italic;
+}
+.muted {
+  color: var(--muted);
+}
+
 /* Bourse & inventaire (HUD) */
 .purse {
   display: flex;

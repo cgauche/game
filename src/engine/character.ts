@@ -13,6 +13,7 @@
  */
 import { RNG, defaultRNG, roll } from './dice';
 import { maxWounds } from './characteristics';
+import { buildInventory, recomputeLoadout } from './items';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation } from './types';
 import {
   SpeciesData,
@@ -100,12 +101,10 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const chosenTalent = opts.careerTalent ?? talentChoices[0];
   const talents: TalentInstance[] = chosenTalent ? [{ name: chosenTalent, times: 1 }] : [];
 
-  // 5) Possessions : classe + carrière.
+  // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
   const classTrappings = classForCareer(opts.careerLabel)?.trappings ?? [];
   const trappingNames = [...classTrappings, ...(level?.trappings ?? [])];
-
-  const weapons = deriveWeapons(trappingNames, chars);
-  const armour = deriveArmour(trappingNames);
+  const items = buildInventory(trappingNames);
 
   const small = sp.small;
   const wmax = maxWounds(chars, small);
@@ -117,7 +116,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const resilience = fateBase.resilience + split.resilience;
 
   heroCounter += 1;
-  return {
+  const hero: Combatant = {
     id: opts.id ?? `hero-${heroCounter}`,
     name: opts.name,
     kind: 'hero',
@@ -127,8 +126,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     wounds: { current: wmax, max: wmax },
     advantage: 0,
     conditions: [],
-    weapons,
-    armour,
+    weapons: [],
+    armour: emptyArmour(),
+    items,
     skills,
     talents,
     movement: sp.movement,
@@ -138,6 +138,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     resolve: resilience,
     motivation: opts.motivation,
   };
+  recomputeLoadout(hero); // dérive weapons/armour/encombrement de l'équipement
+  return hero;
 }
 
 function autoFateSplit(extra: number): { fate: number; resilience: number } {

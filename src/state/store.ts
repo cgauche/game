@@ -9,6 +9,7 @@ import { makeRNG, RNG } from '../engine/dice';
 import { resolveMelee, resolveRanged, initiativeOrder, combatValue } from '../engine/combat';
 import { rollTest, TestResult } from '../engine/tests';
 import { partyBest } from '../engine/skills';
+import { recomputeLoadout } from '../engine/items';
 import { isOutOfAction, endOfRound, addCondition } from '../engine/conditions';
 import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } from './scene';
 import { spawnEnemy } from './spawn';
@@ -74,6 +75,7 @@ interface GameState {
 
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
+  toggleEquip: (heroId: string, uid: string) => void;
   startScene: (scene: Scene) => void;
   transitionTo: (sceneId: string, entry?: string) => void;
   moveParty: (pt: Pt) => void;
@@ -110,6 +112,21 @@ export const useGame = create<GameState>((set, get) => ({
   document: null,
 
   setScreen: (s) => set({ screen: s }),
+
+  /** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. */
+  toggleEquip: (heroId, uid) =>
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const it = (clone.items ?? []).find((i) => i.uid === uid);
+        if (it) {
+          it.equipped = !it.equipped;
+          recomputeLoadout(clone);
+        }
+        return clone;
+      }),
+    })),
   setParty: (p) => set({ party: p }),
 
   startScene: (scene) => {
