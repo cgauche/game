@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hashSeed, composeAppearance, appearanceLayers } from './appearance';
 import { CREATURE_APPEARANCES } from './creatureAppearances';
-import { enemySprite } from './sprites';
+import { enemySprite, entitySprite, creatureNames, pnjSprite, objetSprite, propSprite } from './sprites';
 import creatureSprites from './creatureSprites.json';
 
 describe('hashSeed', () => {
@@ -58,5 +58,34 @@ describe('enemySprite — fallback monolithique', () => {
   });
   it('label inconnu → un sprite non vide (mutantStand)', () => {
     expect(enemySprite('PasUneCréature').length).toBeGreaterThan(0);
+  });
+});
+
+describe('entitySprite — apparence découplée du rôle', () => {
+  it('pnj sans ref → villageois (pnjSprite)', () => {
+    expect(entitySprite({ kind: 'pnj', id: 'p1' })).toBe(pnjSprite());
+  });
+  it("pnj avec ref 'Villageois' → villageois", () => {
+    expect(entitySprite({ kind: 'pnj', id: 'p2', ref: 'Villageois' })).toBe(pnjSprite());
+  });
+  it("pnj avec ref 'Pigeon' → apparence pigeon (n'importe quelle créature)", () => {
+    const pigeon = (creatureSprites as Record<string, string>)['Pigeon'];
+    expect(entitySprite({ kind: 'pnj', id: 'p3', ref: 'Pigeon' })).toBe(pigeon);
+  });
+  it("ennemi avec ref 'Zombie' → sprite bestiaire", () => {
+    const zombie = (creatureSprites as Record<string, string>)['Zombie'];
+    expect(entitySprite({ kind: 'ennemi', id: 'e1', ref: 'Zombie' })).toBe(zombie);
+  });
+  it('objet → sprite objet non vide', () => {
+    expect(entitySprite({ kind: 'objet', id: 'o1' }).length).toBeGreaterThan(0);
+  });
+  it("prop → sprite décor non vide", () => {
+    expect(entitySprite({ kind: 'prop', id: 'd1', ref: 'arbre' })).toBe(propSprite('arbre'));
+  });
+  it('creatureNames inclut des créatures variées du bestiaire', () => {
+    const names = creatureNames();
+    expect(names).toContain('Pigeon');
+    expect(names).toContain('Zombie');
+    expect(names.length).toBeGreaterThan(10);
   });
 });

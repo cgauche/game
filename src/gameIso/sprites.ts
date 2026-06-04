@@ -7,7 +7,7 @@ import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import { propSvg } from './catalog/decor';
-import { composeAppearance, type AppearancePins } from './appearance';
+import { composeAppearance, hashSeed, type AppearancePins } from './appearance';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -171,6 +171,42 @@ export function enemySprite(label: string, seed = 0, pins?: AppearancePins): str
 
 export function pnjSprite(): string {
   return villager();
+}
+
+/** Noms d'apparence disponibles (clés du bestiaire) — pour le sélecteur éditeur. */
+export function creatureNames(): string[] {
+  return Object.keys(CREATURE_SPRITES);
+}
+
+/** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
+export interface EntityViz {
+  kind: string;
+  id: string;
+  ref?: string;
+  appearance?: { seed?: number; pins?: Record<string, number> };
+}
+
+/**
+ * Sprite d'une entité de scène — apparence DÉCOUPLÉE du rôle. Un pnj peut
+ * porter n'importe quelle apparence créature via `ref` (ex. un pigeon qui
+ * donne une quête) ; sans `ref` (ou ref 'Villageois') il reste villageois.
+ * Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
+ */
+export function entitySprite(ent: EntityViz): string {
+  const seed = ent.appearance?.seed ?? hashSeed(ent.id);
+  switch (ent.kind) {
+    case 'pnj':
+      if (!ent.ref || ent.ref === 'Villageois') return pnjSprite();
+      return enemySprite(ent.ref, seed, ent.appearance?.pins);
+    case 'ennemi':
+      return enemySprite(ent.ref ?? '', seed, ent.appearance?.pins);
+    case 'objet':
+      return objetSprite();
+    case 'prop':
+      return propSprite(ent.ref);
+    default:
+      return '';
+  }
 }
 export function objetSprite(): string {
   return propSvg('caisse');

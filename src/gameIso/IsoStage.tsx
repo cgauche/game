@@ -29,8 +29,7 @@ import {
   heroSprite,
   enemySprite,
   pnjSprite,
-  objetSprite,
-  propSprite,
+  entitySprite,
 } from './sprites';
 import { hashSeed } from './appearance';
 import { groundTile } from './ground';
@@ -144,14 +143,7 @@ export function IsoStage() {
   } else {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart') continue;
-      const inner =
-        ent.kind === 'pnj'
-          ? pnjSprite()
-          : ent.kind === 'ennemi'
-            ? enemySprite(ent.ref ?? '', ent.appearance?.seed ?? hashSeed(ent.id), ent.appearance?.pins)
-            : ent.kind === 'objet'
-              ? objetSprite()
-              : propSprite(ent.ref);
+      const inner = entitySprite(ent);
       objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
     }
     // groupe (token = 1er héros)
@@ -193,7 +185,9 @@ export function IsoStage() {
 
     if (st.mode === 'battle') {
       const occ = st.battle?.combatants.find((c) => c.pos && c.pos.x === x && c.pos.y === y && !isOutOfAction(c));
-      if (occ && occ.kind === 'enemy') st.battleClickEntity(occ.id);
+      // En mode incantation, on peut cibler n'importe quel combattant (allié,
+      // ennemi ou soi) ; sinon seuls les ennemis sont cliquables pour attaquer.
+      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast')) st.battleClickEntity(occ.id);
       else st.battleClickTile({ x, y });
       return;
     }

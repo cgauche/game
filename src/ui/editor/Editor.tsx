@@ -4,8 +4,8 @@ import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
-import { hashSeed } from '../../gameIso/appearance';
+import { DEFS, wallBlock, tree, placeSprite, entitySprite, creatureNames } from '../../gameIso/sprites';
+import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -76,13 +76,9 @@ export function Editor() {
     return screenToTile(loc.x, loc.y, dims);
   }
 
-  /** Sprite de jeu correspondant à une entité (WYSIWYG). */
+  /** Sprite de jeu correspondant à une entité (WYSIWYG, source unique partagée). */
   function entitySvg(e: SceneEntity): string {
-    if (e.kind === 'pnj') return pnjSprite();
-    if (e.kind === 'ennemi') return enemySprite(e.ref ?? '', e.appearance?.seed ?? hashSeed(e.id), e.appearance?.pins);
-    if (e.kind === 'objet') return objetSprite();
-    if (e.kind === 'prop') return propSprite(e.ref);
-    return '';
+    return entitySprite(e);
   }
 
   function applyAt(p: { x: number; y: number }) {
@@ -574,30 +570,67 @@ export function Editor() {
                   Libellé
                   <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
                 </label>
-                {sel.kind === 'ennemi' && (
-                  <label className="ed-field">
-                    Créature (bestiaire)
-                    <select value={sel.ref ?? ''} onChange={(e) => updateSel({ ref: e.target.value })}>
-                      {enemyCreatures.map((c) => (
-                        <option key={c.label} value={c.label}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                {sel.kind === 'pnj' && (
-                  <label className="ed-field">
-                    Dialogue
-                    <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>
-                      <option value="">— aucun —</option>
-                      {scene.dialogues.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.id}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                {(sel.kind === 'pnj' || sel.kind === 'ennemi') && (
+                  <>
+                    <label className="ed-field">
+                      Apparence
+                      <select
+                        value={sel.ref ?? (sel.kind === 'pnj' ? 'Villageois' : '')}
+                        onChange={(e) => updateSel({ ref: e.target.value })}
+                      >
+                        <option value="Villageois">Villageois</option>
+                        {creatureNames().map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {appearanceLayers(sel.ref ?? '').length > 0 && (
+                      <div className="ed-field">
+                        <span>Variante d'apparence</span>
+                        {appearanceLayers(sel.ref ?? '').map((layer) => (
+                          <label key={layer.slot} className="ed-subfield">
+                            {layer.slot}
+                            <select
+                              value={sel.appearance?.pins?.[layer.slot] ?? -1}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                const pins = { ...(sel.appearance?.pins ?? {}) };
+                                if (v < 0) delete pins[layer.slot];
+                                else pins[layer.slot] = v;
+                                updateSel({ appearance: { ...sel.appearance, pins } });
+                              }}
+                            >
+                              <option value={-1}>Aléatoire</option>
+                              {layer.variants.map((_, i) => (
+                                <option key={i} value={i}>
+                                  variante {i + 1}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ))}
+                        <button
+                          className="btn small"
+                          onClick={() => updateSel({ appearance: { ...sel.appearance, seed: hashSeed(sel.id + ':' + Math.floor(performance.now())) } })}
+                        >
+                          🎲 Relancer
+                        </button>
+                      </div>
+                    )}
+                    <label className="ed-field">
+                      Dialogue / quête
+                      <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>
+                        <option value="">— aucun —</option>
+                        {scene.dialogues.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.id}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </>
                 )}
                 {sel.kind === 'objet' && (
                   <label className="ed-field">

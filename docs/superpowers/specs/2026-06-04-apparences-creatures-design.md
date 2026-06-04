@@ -163,6 +163,36 @@ les décors gore : `gush`, `fly`. Portage direct des `@keyframes` d'`ambush.html
 - Validation navigateur (Playwright MCP) après Phase B/C : charger une scène d'embuscade,
   vérifier variété visuelle + 0 erreur console + screenshot.
 
+## Pivot (2026-06-04, après Phase A) — découpler apparence et rôle
+
+Constat en cours d'exécution : le `kind` `pnj`/`ennemi` est quasi vestigial. Le combat
+vient des **encounters** (pas des entités `ennemi`) ; l'interaction vient de `dialogueId`
+(`store.ts:215`), indépendamment du `kind`. Le `kind` ne sélectionne en pratique que la
+**source du sprite** (`pnj → pnjSprite()` villageois figé ; `ennemi → enemySprite(ref)`).
+Conséquence : impossible de faire « un pigeon (apparence bestiaire) qui donne une quête
+(dialogue) », car apparence et rôle sont couplés au `kind`.
+
+**Décision : découpler apparence et rôle**, en gardant les valeurs `kind` `pnj`/`ennemi`
+(rétrocompat, aucune migration) mais en unifiant leurs capacités :
+
+- **Rendu unifié** : nouvelle fonction partagée `entitySprite(ent)` (type structurel, pas
+  d'import `SceneEntity` dans `sprites.ts`) utilisée par `IsoStage` ET `Editor.entitySvg`
+  (supprime la duplication). Un `pnj` rend via `ref` + apparence si `ref` est défini
+  (peut donc être n'importe quelle créature), sinon villageois ; `ennemi` via `ref`
+  (défaut mutant) ; `objet`/`prop` inchangés. `ref === 'Villageois'` (ou `pnj` sans
+  `ref`) → `pnjSprite()`.
+- **Inspecteur unifié** : pour `pnj` ET `ennemi`, un seul bloc « Personnage » : sélecteur
+  d'apparence (`ref` = clés `creatureSprites` + « Villageois »), `dialogueId`
+  (dialogue/quête), section calques. Liste d'apparences exposée via un nouvel export
+  `creatureNames()` (clés du bestiaire), pas seulement `enemyCreatures` (filtré combat).
+- **Interaction** : inchangée — toute entité avec `dialogueId` est cliquable
+  (`store.ts:215`, `IsoStage` clic). Donc un `ennemi`/pigeon avec `dialogueId` parle déjà.
+
+**Remplace** la Phase B « porter les 4 poses mutant d'ambush » : le `Mutant` actuel est
+déjà brun/charnu (barre qualité « anti-blob-vert »), donc pas de portage vert-blob. Les
+variantes d'apparence par créature (calques) restent au catalogue Phase B *ultérieure*,
+dans le style redessiné — hors de ce pivot.
+
 ## Hors périmètre (YAGNI)
 
 - Paramétrique complet sur les 57 créatures du bestiaire (seulement Mutant + Humain en v1).
