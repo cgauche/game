@@ -147,6 +147,9 @@ export interface Combatant {
   // Combat tactique (grille)
   pos?: { x: number; y: number };
   initiative?: number;
+  /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
+   *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
+  appearance?: import('../gameIso/rig/appearance').Appearance;
 }
 
 /** Niveau de difficulté d'un Test (Livre de base, Tests). */
