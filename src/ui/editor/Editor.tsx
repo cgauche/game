@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { tome1Intro } from '../../scenes/tome1-intro';
@@ -33,19 +33,60 @@ type Tool =
   | { mode: 'entity'; kind: EntityKind }
   | { mode: 'building'; type: string }
   | { mode: 'erase' }
-  | { mode: 'trigger' };
+  | { mode: 'trigger' }
+  | { mode: 'encounter' };
 type Rect = { x: number; y: number; w: number; h: number };
+
+/**
+ * Historique d'édition (annuler/rétablir) : chaque `setScene` empile un instantané
+ * de la scène ; `resetScene` (Nouveau / Charger / Importer) vide l'historique.
+ * Les instantanés sont des objets `Scene` complets (les éditions clonent déjà).
+ */
+function useSceneHistory(initial: Scene | (() => Scene)) {
+  const [scene, setSceneState] = useState<Scene>(initial);
+  const sceneRef = useRef(scene);
+  sceneRef.current = scene; // toujours synchronisé, pour des callbacks stables
+  const past = useRef<Scene[]>([]);
+  const future = useRef<Scene[]>([]);
+
+  const setScene = useCallback((next: Scene) => {
+    past.current.push(sceneRef.current);
+    if (past.current.length > 200) past.current.shift(); // borne mémoire
+    future.current = [];
+    setSceneState(next);
+  }, []);
+  const undo = useCallback(() => {
+    if (!past.current.length) return;
+    future.current.push(sceneRef.current);
+    setSceneState(past.current.pop()!);
+  }, []);
+  const redo = useCallback(() => {
+    if (!future.current.length) return;
+    past.current.push(sceneRef.current);
+    setSceneState(future.current.pop()!);
+  }, []);
+  const resetScene = useCallback((s: Scene) => {
+    past.current = [];
+    future.current = [];
+    setSceneState(s);
+  }, []);
+
+  return { scene, setScene, undo, redo, resetScene, canUndo: past.current.length > 0, canRedo: future.current.length > 0 };
+}
 
 export function Editor() {
   const setScreen = useGame((s) => s.setScreen);
   const startScene = useGame((s) => s.startScene);
   const party = useGame((s) => s.party);
 
-  const [scene, setScene] = useState<Scene>(() => clone(tome1Intro));
+  const { scene, setScene, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
   const [tool, setTool] = useState<Tool>({ mode: 'tile', terrain: 'mur' });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
+  const [selectedSpawn, setSelectedSpawn] = useState<{ enc: number; idx: number } | null>(null);
+  const [encTarget, setEncTarget] = useState<string>(''); // rencontre cible pour le placement
+  const [encRef, setEncRef] = useState<string>(''); // créature à placer
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
@@ -58,6 +99,25 @@ export function Editor() {
   const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
+
+  // Raccourcis Annuler/Rétablir. Dans un champ de saisie, on laisse l'undo natif.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (k === 'y' || (k === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
 
   function clone(s: Scene): Scene {
     return JSON.parse(JSON.stringify(s));
@@ -97,6 +157,7 @@ export function Editor() {
       if (existing) {
         setSelected(existing.id);
         setSelectedTrigger(null);
+        setSelectedSpawn(null);
         return;
       }
       const id = `${tool.kind}-${Date.now().toString(36)}`;
@@ -105,6 +166,19 @@ export function Editor() {
       setScene({ ...scene, entities: [...scene.entities, ent] });
       setSelected(id);
       setSelectedTrigger(null);
+      setSelectedSpawn(null);
+    } else if (tool.mode === 'encounter') {
+      // Ajoute un ennemi à la rencontre cible (créée si « Nouvelle… »).
+      const ref = encRef || enemyCreatures[0]?.label || 'Mutant';
+      const encs = scene.encounters.map((e) => ({ ...e, enemies: [...e.enemies] }));
+      let target = encs.find((e) => e.id === encTarget);
+      if (!target) {
+        target = { id: encTarget || `enc-${Date.now().toString(36)}`, enemies: [] };
+        encs.push(target);
+        setEncTarget(target.id);
+      }
+      target.enemies.push({ ref, pos: { ...p } });
+      setScene({ ...scene, encounters: encs });
     }
   }
 
@@ -120,6 +194,14 @@ export function Editor() {
     setSelectedTrigger(id);
     setSelected(null);
     setSelectedBuilding(null);
+    setSelectedSpawn(null);
+  }
+  /** Sélectionne un ennemi de rencontre (clic sur la carte) ; exclusif. */
+  function selectSpawn(enc: number, idx: number) {
+    setSelectedSpawn({ enc, idx });
+    setSelected(null);
+    setSelectedBuilding(null);
+    setSelectedTrigger(null);
   }
   function addBuilding(type: string, rect: Rect) {
     const meta = BUILDINGS_META[type];
@@ -137,6 +219,7 @@ export function Editor() {
     setScene({ ...scene, buildings: [...(scene.buildings ?? []), b] });
     setSelected(null);
     setSelectedTrigger(null);
+    setSelectedSpawn(null);
     setSelectedBuilding(b.id);
   }
 
@@ -148,6 +231,26 @@ export function Editor() {
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (t.id === selectedTrigger ? { ...t, ...patch } : t)) });
   const updateSelTRect = (patch: Partial<Trigger['rect']>) => updateSelT({ rect: { ...selT!.rect, ...patch } });
+  const spawn = selectedSpawn ? scene.encounters[selectedSpawn.enc]?.enemies[selectedSpawn.idx] ?? null : null;
+  const updateSpawn = (patch: Partial<{ ref: string; pos: { x: number; y: number } }>) => {
+    if (!selectedSpawn) return;
+    const { enc, idx } = selectedSpawn;
+    setScene({
+      ...scene,
+      encounters: scene.encounters.map((e, ei) =>
+        ei === enc ? { ...e, enemies: e.enemies.map((en, ni) => (ni === idx ? { ...en, ...patch } : en)) } : e,
+      ),
+    });
+  };
+  const deleteSpawn = () => {
+    if (!selectedSpawn) return;
+    const { enc, idx } = selectedSpawn;
+    setScene({
+      ...scene,
+      encounters: scene.encounters.map((e, ei) => (ei === enc ? { ...e, enemies: e.enemies.filter((_, ni) => ni !== idx) } : e)),
+    });
+    setSelectedSpawn(null);
+  };
   const updateSelB = (patch: Partial<BuildingFeature>) =>
     setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (b.id === selectedBuilding ? { ...b, ...patch } : b)) });
   const updateSelBParam = (key: string, value: unknown) =>
@@ -170,7 +273,7 @@ export function Editor() {
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
-        setScene(JSON.parse(txt));
+        resetScene(JSON.parse(txt));
         setSelected(null);
       } catch {
         alert('JSON invalide');
@@ -213,11 +316,17 @@ export function Editor() {
         </button>
         <h2>Éditeur de niveau</h2>
         <div className="editor-toolbar">
-          <button className="btn small" onClick={() => setScene(emptyScene())}>
+          <button className="btn small" onClick={() => resetScene(emptyScene())}>
             Nouveau
           </button>
-          <button className="btn small" onClick={() => setScene(clone(tome1Intro))}>
+          <button className="btn small" onClick={() => resetScene(clone(tome1Intro))}>
             Charger « La Diligence »
+          </button>
+          <button className="btn small" onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)">
+            ↶ Annuler
+          </button>
+          <button className="btn small" onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Y)">
+            ↷ Rétablir
           </button>
           <label className="btn small file-btn">
             Importer
@@ -301,6 +410,33 @@ export function Editor() {
               >
                 🟦 Dessiner une zone (trigger)
               </button>
+
+              <div className="mini-title">Rencontres (ennemis)</div>
+              <div className="entity-tools">
+                <select value={encTarget} onChange={(e) => setEncTarget(e.target.value)} title="Rencontre cible">
+                  <option value="">Nouvelle rencontre…</option>
+                  {scene.encounters.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.id} ({e.enemies.length})
+                    </option>
+                  ))}
+                </select>
+                <select value={encRef} onChange={(e) => setEncRef(e.target.value)} title="Créature à placer">
+                  <option value="">{enemyCreatures[0]?.label ?? 'créature'}…</option>
+                  {enemyCreatures.map((c) => (
+                    <option key={c.label} value={c.label}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className={`btn small ${tool.mode === 'encounter' ? 'btn-primary' : ''}`}
+                  onClick={() => setTool({ mode: 'encounter' })}
+                  title="Cliquer sur la carte pour ajouter des ennemis à la rencontre cible"
+                >
+                  ⚔️ Placer des ennemis
+                </button>
+              </div>
             </div>
           )}
 
@@ -426,6 +562,34 @@ export function Editor() {
                     objs.push({ d: depth(e.pos.x, e.pos.y) + 0.5, el: <g key={e.id} dangerouslySetInnerHTML={{ __html: placeSprite(entitySvg(e), e.pos.x, e.pos.y, dims, 0.5) }} /> });
                   }
                 }
+                // Ennemis des rencontres (points d'apparition) : visibles + cliquables.
+                for (const [encIdx, enc] of scene.encounters.entries()) {
+                  enc.enemies.forEach((en, idx) => {
+                    const isSel = selectedSpawn?.enc === encIdx && selectedSpawn?.idx === idx;
+                    const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos } as SceneEntity;
+                    objs.push({
+                      d: depth(en.pos.x, en.pos.y) + 0.45,
+                      el: (
+                        <g
+                          key={`spawn-${encIdx}-${idx}`}
+                          style={{ cursor: 'pointer' }}
+                          onPointerDown={(ev) => {
+                            ev.stopPropagation();
+                            selectSpawn(encIdx, idx);
+                          }}
+                        >
+                          <path
+                            d={diamondPath(en.pos.x, en.pos.y, dims)}
+                            fill="rgba(192,57,43,0.32)"
+                            stroke={isSel ? '#ffe066' : '#c0392b'}
+                            strokeWidth={isSel ? 2.5 : 1.5}
+                          />
+                          <g dangerouslySetInnerHTML={{ __html: placeSprite(entitySvg(synth), en.pos.x, en.pos.y, dims, 0.5) }} />
+                        </g>
+                      ),
+                    });
+                  });
+                }
                 objs.sort((a, b) => a.d - b.d);
                 return objs.map((o) => o.el);
               })()}
@@ -528,6 +692,38 @@ export function Editor() {
                   Supprimer
                 </button>
                 <button className="btn small" onClick={() => setSelectedTrigger(null)}>
+                  Désélectionner
+                </button>
+              </div>
+            </>
+          ) : spawn ? (
+            <>
+              <div className="mini-title">Ennemi de rencontre</div>
+              <div className="inspector">
+                <p>
+                  <b>{scene.encounters[selectedSpawn!.enc].id}</b> · ennemi @ ({spawn.pos.x}, {spawn.pos.y})
+                </p>
+                <label className="ed-field">
+                  Créature
+                  <select value={spawn.ref ?? ''} onChange={(e) => updateSpawn({ ref: e.target.value })}>
+                    <option value="">— créature —</option>
+                    {enemyCreatures.map((c) => (
+                      <option key={c.label} value={c.label}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="ed-field">
+                  X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
+                </label>
+                <label className="ed-field">
+                  Y<input type="number" value={spawn.pos.y} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, y: Number(e.target.value) } })} />
+                </label>
+                <button className="btn small danger" onClick={deleteSpawn}>
+                  Supprimer
+                </button>
+                <button className="btn small" onClick={() => setSelectedSpawn(null)}>
                   Désélectionner
                 </button>
               </div>
