@@ -34,6 +34,14 @@ import {
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
+// Viewport virtuel : le SVG remplit tout l'espace dispo (preserveAspectRatio
+// slice) et la caméra recadre autour du point focal (groupe / combattant actif).
+const VW = 1100;
+const VH = 720;
+const AMBIANCE_DEFS = `
+  <radialGradient id="g_warm" cx="55%" cy="24%" r="78%"><stop offset="0%" stop-color="#ffce78" stop-opacity="0.10"/><stop offset="100%" stop-color="#ffce78" stop-opacity="0"/></radialGradient>
+  <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>`;
+
 export function IsoStage() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
@@ -122,6 +130,23 @@ export function IsoStage() {
   }
   objs.sort((a, b) => a.d - b.d);
 
+  // --- Caméra : recadre autour du point focal (groupe / combattant actif) ---
+  let focus = partyPos;
+  if (mode === 'battle' && battle) {
+    const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
+    if (active?.pos) focus = active.pos;
+    else {
+      const alive = battle.combatants.filter((c) => c.pos && !isOutOfAction(c));
+      if (alive.length)
+        focus = {
+          x: Math.round(alive.reduce((s, c) => s + c.pos!.x, 0) / alive.length),
+          y: Math.round(alive.reduce((s, c) => s + c.pos!.y, 0) / alive.length),
+        };
+    }
+  }
+  const fc = tileCenter(focus.x, focus.y, dims);
+  const cam = { x: VW / 2 - fc.cx, y: VH / 2 - fc.cy };
+
   // --- Interaction (clic → tuile) ---
   const onPointerDown = (ev: React.PointerEvent) => {
     const st = useGame.getState();
@@ -132,7 +157,7 @@ export function IsoStage() {
     pt.x = ev.clientX;
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    const { x, y } = screenToTile(loc.x, loc.y, dims);
+    const { x, y } = screenToTile(loc.x - cam.x, loc.y - cam.y, dims);
     if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) return;
 
     if (st.mode === 'battle') {
@@ -172,23 +197,22 @@ export function IsoStage() {
     <svg
       ref={svgRef}
       className="iso-stage"
-      viewBox={`0 0 ${size.w} ${size.h}`}
-      width={size.w}
-      height={size.h}
+      viewBox={`0 0 ${VW} ${VH}`}
+      preserveAspectRatio="xMidYMid slice"
       onPointerDown={onPointerDown}
     >
-      <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
-      <g>{floor}</g>
-      <g>{highlights}</g>
-      <g>{objs.map((o) => o.el)}</g>
-      {mode === 'exploration' && !dialogue && (
-        <g>
-          {(() => {
-            const { cx, cy } = tileCenter(partyPos.x, partyPos.y, dims);
-            return <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />;
-          })()}
-        </g>
-      )}
+      <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
+      <g style={{ transform: `translate(${cam.x}px,${cam.y}px)`, transition: 'transform 0.45s ease-out' }}>
+        <g>{floor}</g>
+        <g>{highlights}</g>
+        {mode === 'exploration' && !dialogue && (
+          <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
+        )}
+        <g>{objs.map((o) => o.el)}</g>
+      </g>
+      {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
+      <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
+      <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
     </svg>
   );
 }
