@@ -86,6 +86,8 @@ interface GameState {
   resolveTest: () => void;
   closeDocument: () => void;
 
+  /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
+  seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
   battleSelectAction: (a: 'move' | 'attack' | null) => void;
   battleClickTile: (pt: Pt) => void;
@@ -226,6 +228,10 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   closeDialogue: () => set({ dialogue: null }),
+
+  seedRng: (seed) => {
+    battleRng = makeRNG(seed);
+  },
 
   startCombat: (encounterId, onVictory) => {
     const { scene, party, partyPos } = get();

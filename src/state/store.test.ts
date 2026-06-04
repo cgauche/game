@@ -85,8 +85,9 @@ describe('Boucle de jeu (store)', () => {
 
   it('une attaque de héros adjacent retire des Blessures', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
-    hero.characteristics.CC = 70; // assurer la touche pour le test
+    hero.characteristics.CC = 70; // CC élevée + seed fixe → touche déterministe
     useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(2); // RNG de combat contrôlé : seed 2 ⇒ touche avec dégâts (cf. recherche)
     useGame.getState().startScene(tome1Intro);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
