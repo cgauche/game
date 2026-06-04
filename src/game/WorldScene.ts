@@ -203,7 +203,7 @@ export class WorldScene extends Phaser.Scene {
       for (const e of st.scene.entities) {
         if (e.kind === 'heroStart') continue;
         const color =
-          e.kind === 'ennemi' ? ENEMY_COLOR : e.kind === 'pnj' ? PNJ_COLOR : e.kind === 'objet' ? OBJET_COLOR : PROP_COLOR;
+          e.kind === 'personnage' ? PNJ_COLOR : e.kind === 'objet' ? OBJET_COLOR : PROP_COLOR;
         place(e.id, color, initial(e.label ?? e.ref ?? '?'), e.pos);
       }
       // Token du groupe

@@ -20,11 +20,10 @@ import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
 const TERRAIN_IDS = Object.keys(TERRAIN_META);
-const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
+const KINDS: EntityKind[] = ['heroStart', 'personnage', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
   heroStart: 'Départ héros',
-  pnj: 'PNJ',
-  ennemi: 'Ennemi',
+  personnage: 'Personnage',
   objet: 'Objet',
   prop: 'Décor',
 };
@@ -100,7 +99,7 @@ export function Editor() {
       }
       const id = `${tool.kind}-${Date.now().toString(36)}`;
       const ent: SceneEntity = { id, kind: tool.kind, pos: { ...p }, label: KIND_LABEL[tool.kind] };
-      if (tool.kind === 'ennemi') ent.ref = enemyCreatures[0]?.label ?? 'Mutant';
+      // 'personnage' sans ref → villageois par défaut (apparence éditable dans l'inspecteur).
       setScene({ ...scene, entities: [...scene.entities, ent] });
       setSelected(id);
     }
@@ -570,12 +569,12 @@ export function Editor() {
                   Libellé
                   <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
                 </label>
-                {(sel.kind === 'pnj' || sel.kind === 'ennemi') && (
+                {sel.kind === 'personnage' && (
                   <>
                     <label className="ed-field">
                       Apparence
                       <select
-                        value={sel.ref ?? (sel.kind === 'pnj' ? 'Villageois' : '')}
+                        value={sel.ref ?? 'Villageois'}
                         onChange={(e) => updateSel({ ref: e.target.value })}
                       >
                         <option value="Villageois">Villageois</option>

@@ -56,7 +56,7 @@ function build(): Scene {
       { id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } },
       {
         id: 'gustav',
-        kind: 'pnj',
+        kind: 'personnage',
         pos: { x: 6, y: 4 },
         label: 'Gustav',
         dialogueId: 'dlg-gustav',

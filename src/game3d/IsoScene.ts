@@ -252,9 +252,9 @@ export class IsoScene {
         if (e.kind === 'heroStart') continue;
         seen.add(e.id);
         const color =
-          e.kind === 'ennemi' ? ENEMY_COLOR : e.kind === 'pnj' ? PNJ_COLOR : e.kind === 'objet' ? OBJET_COLOR : PROP_COLOR;
+          e.kind === 'personnage' ? PNJ_COLOR : e.kind === 'objet' ? OBJET_COLOR : PROP_COLOR;
         const tk = this.ensureToken(e.id, () =>
-          e.kind === 'pnj' ? this.makeCharacter(color) : this.makeProp(e.kind, color),
+          e.kind === 'personnage' ? this.makeCharacter(color) : this.makeProp(e.kind, color),
         );
         setPos(tk, e.pos.x, e.pos.y, true);
       }

@@ -195,6 +195,8 @@ export interface EntityViz {
 export function entitySprite(ent: EntityViz): string {
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   switch (ent.kind) {
+    // 'personnage' = kind unifié ; 'pnj'/'ennemi' = anciennes valeurs (compat).
+    case 'personnage':
     case 'pnj':
       if (!ent.ref || ent.ref === 'Villageois') return pnjSprite();
       return enemySprite(ent.ref, seed, ent.appearance?.pins);

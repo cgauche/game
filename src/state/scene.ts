@@ -15,7 +15,21 @@ export type Terrain = string;
 
 export type Facing = 'N' | 'S' | 'E' | 'O';
 
-export type EntityKind = 'heroStart' | 'pnj' | 'ennemi' | 'objet' | 'prop';
+/**
+ * Rôle d'une entité de scène. `personnage` = tout être animé (apparence libre
+ * via `ref` + dialogue/quête optionnel) — fusion des anciens `pnj`/`ennemi`,
+ * que le combat (encounters) et l'interaction (dialogueId) ne distinguaient pas.
+ * Les valeurs `pnj`/`ennemi` restent acceptées au chargement des scènes anciennes
+ * (normalisées via `normalizeEntityKind`).
+ */
+export type EntityKind = 'heroStart' | 'personnage' | 'objet' | 'prop';
+
+/** Mappe les anciennes valeurs de kind (`pnj`/`ennemi`) vers `personnage`. */
+export function normalizeEntityKind(k: string): EntityKind {
+  if (k === 'pnj' || k === 'ennemi') return 'personnage';
+  if (k === 'heroStart' || k === 'personnage' || k === 'objet' || k === 'prop') return k;
+  return 'personnage';
+}
 
 export interface CustomStatblock {
   name: string;

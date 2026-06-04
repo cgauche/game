@@ -89,3 +89,20 @@ describe('entitySprite — apparence découplée du rôle', () => {
     expect(names.length).toBeGreaterThan(10);
   });
 });
+
+describe('entitySprite — kind unifié personnage', () => {
+  it('personnage sans ref → villageois', () => {
+    expect(entitySprite({ kind: 'personnage', id: 'c1' })).toBe(pnjSprite());
+  });
+  it("personnage avec ref 'Pigeon' → apparence pigeon", () => {
+    const pigeon = (creatureSprites as Record<string, string>)['Pigeon'];
+    expect(entitySprite({ kind: 'personnage', id: 'c2', ref: 'Pigeon' })).toBe(pigeon);
+  });
+  it("compat : ancien kind 'pnj' rend toujours (villageois sans ref)", () => {
+    expect(entitySprite({ kind: 'pnj', id: 'c3' })).toBe(pnjSprite());
+  });
+  it("compat : ancien kind 'ennemi' rend toujours (bestiaire via ref)", () => {
+    const zombie = (creatureSprites as Record<string, string>)['Zombie'];
+    expect(entitySprite({ kind: 'ennemi', id: 'c4', ref: 'Zombie' })).toBe(zombie);
+  });
+});
