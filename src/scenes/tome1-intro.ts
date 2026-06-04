@@ -23,17 +23,11 @@ function build(): Scene {
     set(x, 12, 'route');
   }
 
-  // Auberge « La Diligence » : bâtiment fermé (murs + plancher), porte au sud.
-  for (let x = 2; x <= 10; x++) {
-    set(x, 2, 'mur');
-    set(x, 8, 'mur');
-  }
-  for (let y = 2; y <= 8; y++) {
-    set(2, y, 'mur');
-    set(10, y, 'mur');
-  }
-  for (let x = 3; x <= 9; x++) for (let y = 3; y <= 7; y++) set(x, y, 'plancher');
-  set(6, 8, 'porte'); // entrée de la salle de bar
+  // Auberge « La Diligence » : un BÂTIMENT (taverne) à façade pleine dont la porte
+  // (au sud, en 6,7) ouvre sur la Grande Salle — scène d'intérieur séparée
+  // `tome1-auberge-interieur` (Gustav, les clients, l'affiche y vivent). Cf. la
+  // feature `buildings` ci-dessous. Sentier d'approche de la porte vers la route :
+  for (let y = 8; y <= 10; y++) set(6, y, 'sol');
 
   // Quelques arbres en lisière (décor / obstacles).
   for (const [x, y] of [[15, 3], [17, 4], [19, 2], [16, 6], [20, 7], [18, 8]] as const) set(x, y, 'bois');
@@ -49,19 +43,25 @@ function build(): Scene {
       'Parlez à l\'aubergiste, puis reprenez la route — mais le voyage réserve une mauvaise surprise.',
     dimensions: { w: W, h: H },
     ambiance: 'jour',
+    buildings: [
+      {
+        id: 'auberge-diligence',
+        type: 'taverne',
+        foot: { x: 3, y: 2, w: 7, h: 6 },
+        facing: 'S',
+        reveal: 'door',
+        door: { x: 6, y: 7 },
+        interiorScene: 'tome1-auberge-interieur',
+        entry: 'entree',
+        label: 'La Diligence',
+        params: { roofMaterial: 'chaume' },
+      },
+    ],
     tiles,
     startMessage:
       "Chapitre 1 — Vous approchez de l'auberge-relais « La Diligence », à deux jours d'Altdorf.",
     entities: [
       { id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } },
-      {
-        id: 'gustav',
-        kind: 'personnage',
-        pos: { x: 6, y: 4 },
-        label: 'Gustav',
-        dialogueId: 'dlg-gustav',
-      },
-      { id: 'noiraud', kind: 'prop', pos: { x: 8, y: 3 }, label: 'Noiraud' },
       {
         id: 'corps',
         kind: 'objet',
@@ -70,76 +70,10 @@ function build(): Scene {
         loot: ['Lettre scellée de Kastor Lieberung', "Papiers d'identité"],
       },
     ],
-    dialogues: [
-      {
-        id: 'dlg-gustav',
-        start: 'g1',
-        nodes: [
-          {
-            id: 'g1',
-            speaker: 'Gustav, l’aubergiste',
-            text:
-              '« Bonsoir ! Bienvenue à la Diligence. Prenez un siège, là, près du feu, vous serez bien au chaud. ' +
-              'Voulez-vous à manger et à boire ? » Au-dessus du bar, le corbeau Noiraud croasse : « Voulez-vous boire des chevaux ? »',
-            choices: [
-              { text: 'Nous cherchons une place pour Altdorf.', next: 'g2' },
-              { text: 'Parlez-nous des autres voyageurs.', next: 'g3' },
-              {
-                text: 'Lire l’affiche placardée près du bar.',
-                effects: [
-                  {
-                    type: 'document',
-                    title: 'ON RECHERCHE',
-                    text:
-                      'AVIS À LA POPULATION\n\nSon Altesse le Prince Héritier Hergard von Tasseninck recherche des aventuriers courageux et loyaux pour une mission au service de l’Empire.\n\nForte récompense promise. Présentez-vous à Altdorf, au Palais, en mentionnant cette affiche.\n\nQue Sigmar guide vos pas.',
-                  },
-                ],
-              },
-              { text: 'Plus tard. (Quitter)', effects: [{ type: 'endDialogue' }] },
-            ],
-          },
-          {
-            id: 'g2',
-            speaker: 'Gustav, l’aubergiste',
-            text:
-              '« Altdorf ! La capitale ! Deux cochers logent ici cette nuit, Gunnar et Hultz. ' +
-              'La diligence repart au matin — si vous tenez à votre place, soyez prêts à l’aube. »',
-            choices: [
-              {
-                text: 'Marchander le prix de la place. (Marchandage)',
-                effects: [
-                  {
-                    type: 'test',
-                    skill: 'Marchandage',
-                    label: 'Marchandage du prix',
-                    difficulty: 'intermediaire',
-                    onSuccess: [
-                      { type: 'giveMoney', silver: 2 },
-                      { type: 'journal', text: 'Gustav grommelle puis consent à baisser le prix.' },
-                      { type: 'endDialogue' },
-                    ],
-                    onFailure: [
-                      { type: 'journal', text: '« Désolé, c’est le tarif, et c’est déjà une affaire ! »' },
-                      { type: 'endDialogue' },
-                    ],
-                  },
-                ],
-              },
-              { text: '(Revenir)', next: 'g1' },
-              { text: 'Merci, Gustav.', effects: [{ type: 'journal', text: 'La diligence pour Altdorf repart au matin.' }, { type: 'endDialogue' }] },
-            ],
-          },
-          {
-            id: 'g3',
-            speaker: 'Gustav, l’aubergiste',
-            text:
-              '« Une noble dame, Isolde von Strudeldorf, avec sa servante et sa garde du corps. ' +
-              'Un étudiant plongé dans ses livres, et un joueur trop élégant accoudé au bar. Du beau monde ! »',
-            choices: [{ text: '(Revenir)', next: 'g1' }],
-          },
-        ],
-      },
-    ],
+    // Gustav et sa salle de bar vivent désormais dans la scène d'intérieur
+    // `tome1-auberge-interieur` (dialogue `dlg-gustav` inclus), atteinte par la
+    // porte du bâtiment « La Diligence ».
+    dialogues: [],
     triggers: [
       {
         id: 'ambush',

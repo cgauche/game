@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
+import { tome1Auberge } from '../scenes/tome1-auberge';
 import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
@@ -35,16 +36,26 @@ describe('Boucle de jeu (store)', () => {
     expect(st.mode).toBe('exploration');
   });
 
-  it('un dialogue de PNJ s’ouvre et se parcourt', () => {
+  it('un dialogue de PNJ s’ouvre et se parcourt (Gustav, intérieur de l’auberge)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
-    // Se placer à côté de Gustav (6,4) puis interagir.
-    useGame.setState({ partyPos: { x: 6, y: 5 } });
+    useGame.getState().startScene(tome1Auberge);
+    // Se placer à côté de Gustav (5,2) dans la Grande Salle puis interagir.
+    useGame.setState({ partyPos: { x: 5, y: 3 } });
     useGame.getState().interactEntity('gustav');
     expect(useGame.getState().dialogue?.dialogue.id).toBe('dlg-gustav');
     useGame.getState().chooseDialogue(0); // → g2
     expect(useGame.getState().dialogue?.nodeId).toBe('g2');
+  });
+
+  it('la porte du bâtiment « La Diligence » ouvre l’intérieur enregistré dans la campagne', () => {
+    // tome1-auberge-interieur est enregistré via campaign[] : aucune startScene
+    // manuelle de l'intérieur n'est nécessaire, contrairement aux tests de porte
+    // ci-dessous qui utilisent une scène ad hoc.
+    useGame.getState().startScene(tome1Intro);
+    useGame.setState({ partyPos: { x: 6, y: 8 } }); // juste sous la porte (6,7)
+    useGame.getState().moveParty({ x: 6, y: 7 }); // marcher sur la porte → intérieur
+    expect(useGame.getState().scene?.id).toBe('tome1-auberge-interieur');
   });
 
   it('le trigger de la route déclenche l’embuscade des mutants', () => {
