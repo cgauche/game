@@ -32,7 +32,7 @@ export function worldTransforms(sk: Skeleton, pose: Pose): Record<BoneId, Matrix
   const world = (id: BoneId): Matrix => {
     if (out[id]) return out[id];
     const b = sk[id];
-    const ang = pose[id] ?? b.angle;
+    const ang = b.angle + (pose[id] ?? 0); // pose = DELTA additif sur l'angle de repos
     const local = mul(translate(b.pivot.x, b.pivot.y), rotate(ang));
     out[id] = b.parent ? mul(world(b.parent), local) : local;
     return out[id];

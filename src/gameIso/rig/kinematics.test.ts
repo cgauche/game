@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { translate, rotate, mul, apply, worldTransforms } from './kinematics';
 import type { Skeleton } from './bones';
+import type { Pose } from './poses';
 
 const close = (a: number, b: number) => expect(Math.abs(a - b)).toBeLessThan(1e-6);
 
@@ -36,5 +37,15 @@ describe('worldTransforms', () => {
     // un point (1,0) dans b subit rotate(90) → (0,1), puis +(10,5) = (10,6).
     const pb = apply(w['b' as keyof typeof w], { x: 1, y: 0 });
     close(pb.x, 10); close(pb.y, 6);
+  });
+
+  it('pose = delta ADDITIF sur l’angle de repos (90 + 10 = 100°, pas 10°)', () => {
+    const w = worldTransforms(sk, { b: 10 } as Pose);
+    const ob = apply(w['b' as keyof typeof w], { x: 0, y: 0 });
+    close(ob.x, 10); close(ob.y, 5); // origine inchangée (le pivot)
+    // rotate(100°) de (1,0) = (cos100, sin100), + origine (10,5).
+    const r = (100 * Math.PI) / 180;
+    const p = apply(w['b' as keyof typeof w], { x: 1, y: 0 });
+    close(p.x, 10 + Math.cos(r)); close(p.y, 5 + Math.sin(r));
   });
 });
