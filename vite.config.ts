@@ -13,10 +13,14 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Sépare React/Zustand (stables, bien cachés) du code applicatif.
-        // L'éditeur sort déjà en chunk async via React.lazy (cf. ui/App.tsx).
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'zustand'],
+        // Dépendances stables (React/Zustand…) → chunk vendor bien caché.
+        // L'éditeur et le rendu de jeu sortent déjà en chunks async (React.lazy, ui/App.tsx).
+        manualChunks(id) {
+          if (id.includes('node_modules')) return 'vendor';
+          // Tables de règles générées (~1 Mo) : chunk séparé, cacheable indépendamment du
+          // code applicatif (changer le code ne réinvalide pas les données). Encore chargées
+          // au démarrage (le moteur pur les importe) — le découplage paresseux reste à faire.
+          if (id.includes('/src/data/') && id.endsWith('.json')) return 'gamedata';
         },
       },
     },
