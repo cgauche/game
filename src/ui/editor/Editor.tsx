@@ -5,6 +5,7 @@ import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
+import { hashSeed } from '../../gameIso/appearance';
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -78,7 +79,7 @@ export function Editor() {
   /** Sprite de jeu correspondant à une entité (WYSIWYG). */
   function entitySvg(e: SceneEntity): string {
     if (e.kind === 'pnj') return pnjSprite();
-    if (e.kind === 'ennemi') return enemySprite(e.ref ?? '');
+    if (e.kind === 'ennemi') return enemySprite(e.ref ?? '', e.appearance?.seed ?? hashSeed(e.id), e.appearance?.pins);
     if (e.kind === 'objet') return objetSprite();
     if (e.kind === 'prop') return propSprite(e.ref);
     return '';
