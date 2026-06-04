@@ -78,6 +78,21 @@ export interface ConditionInstance {
   value: number; // certains États s'empilent (ex. Hémorragique)
 }
 
+/**
+ * Effet magique actif et temporisé (Bénédiction, Sort de bonus…).
+ * Les bonus ne se cumulent pas : le meilleur l'emporte par caractéristique
+ * (Livre de base p.238 / p.220).
+ */
+export interface ActiveEffect {
+  label: string;
+  /** Caractéristique modifiée, le cas échéant. */
+  char?: CharKey;
+  /** Valeur du bonus (ex. +10). */
+  bonus: number;
+  /** Rounds restants avant dissipation. */
+  roundsLeft: number;
+}
+
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
 
 /** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
@@ -115,6 +130,12 @@ export interface Combatant {
   encumbrance?: number;
   skills: SkillInstance[];
   talents: TalentInstance[];
+  /** Sorts/prières connus (libellés référençant src/data/spells.json). */
+  spells?: string[];
+  /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */
+  activeEffects?: ActiveEffect[];
+  /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
+  focus?: { spell: string; dr: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
   movement: number;
   // Destin / Résilience (héros uniquement)

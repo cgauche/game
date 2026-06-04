@@ -13,11 +13,32 @@ interface PregenDef {
   career: string;
   seed: number;
   motivation: string;
+  /** Sorts/prières connus (libellés de src/data/spells.json). */
+  spells?: string[];
 }
 
+// Les 4 premiers composent l'équipe « Test rapide » : on y inclut un Sorcier
+// (Sorts via Langue (Magick)) et un Prêtre (Prières via Prière) pour exercer la
+// couche magie au combat.
 const DEFS: PregenDef[] = [
   { name: 'Sigmund Reikhardt', species: 'Humains (Reiklander)', career: 'Soldat', seed: 101, motivation: 'Devoir' },
   { name: 'Grunni Pierre-de-Fer', species: 'Nains', career: 'Tueur', seed: 202, motivation: 'Honte (Malédiction du Tueur)' },
+  {
+    name: 'Wilhelmina Faust',
+    species: 'Humains (Reiklander)',
+    career: 'Sorcier',
+    seed: 707,
+    motivation: 'Connaissance',
+    spells: ['Fléchette', 'Choc'],
+  },
+  {
+    name: 'Frère Anselm',
+    species: 'Humains (Reiklander)',
+    career: 'Prêtre',
+    seed: 808,
+    motivation: 'Foi',
+    spells: ['Bénédiction de Guérison', 'Bénédiction de Bataille'],
+  },
   { name: 'Aelindra Feuille-d’Argent', species: 'Elfes sylvains', career: 'Chasseur', seed: 303, motivation: 'Nature' },
   { name: 'Rosa Brandt', species: 'Humains (Reiklander)', career: 'Apothicaire', seed: 404, motivation: 'Connaissance' },
   { name: 'Klein Bürger', species: 'Halflings', career: 'Voleur', seed: 505, motivation: 'Curiosité' },
@@ -29,16 +50,16 @@ export function makePregens(): Combatant[] {
   const out: Combatant[] = [];
   for (const d of DEFS) {
     try {
-      out.push(
-        createHero({
-          speciesLabel: d.species,
-          careerLabel: d.career,
-          name: d.name,
-          motivation: d.motivation,
-          rng: makeRNG(d.seed),
-          id: `pregen-${d.seed}`,
-        }),
-      );
+      const hero = createHero({
+        speciesLabel: d.species,
+        careerLabel: d.career,
+        name: d.name,
+        motivation: d.motivation,
+        rng: makeRNG(d.seed),
+        id: `pregen-${d.seed}`,
+      });
+      if (d.spells?.length) hero.spells = [...d.spells];
+      out.push(hero);
     } catch (e) {
       console.error(`Pré-tiré « ${d.name} » ignoré :`, e);
     }

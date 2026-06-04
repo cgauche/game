@@ -5,7 +5,25 @@ import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
 import { createHero } from './character';
 import { DIFFICULTY_MODIFIERS } from './types';
-import type { Characteristics, Combatant, Weapon } from './types';
+import type { ActiveEffect, Characteristics, Combatant, SkillInstance, Weapon } from './types';
+import { effectiveChar } from './characteristics';
+import { endOfRound } from './conditions';
+import {
+  castInfo,
+  castingValue,
+  parseSpellDamage,
+  parseDurationRounds,
+  parseHeal,
+  parseConditionEffect,
+  parseCharBuffs,
+  buffDurationRounds,
+  isMagicMissile,
+  isArcaneSpell,
+  resolveCasting,
+  resolveMagicMissile,
+  resolveFocus,
+  type SpellLike,
+} from './magic';
 
 describe('Tests & DR', () => {
   it('réussite si jet ≤ cible, DR = différence des dizaines', () => {
@@ -135,6 +153,230 @@ describe('Blessure critique (dégâts > Blessures max)', () => {
     expect(res.hit).toBe(true);
     expect(res.woundsLost!).toBeGreaterThan(d.wounds.max);
     expect(res.critical).toBe(true);
+  });
+});
+
+// --- Magie -----------------------------------------------------------------
+function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], wounds = 12): Combatant {
+  const base: Characteristics = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  return {
+    id: 'c',
+    name: 'Mage',
+    kind: 'hero',
+    characteristics: { ...base, ...chars },
+    wounds: { current: wounds, max: wounds },
+    advantage: 0,
+    conditions: [],
+    weapons: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills,
+    talents: [],
+    movement: 4,
+  };
+}
+
+const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
+
+describe('Magie — routage du test par branche', () => {
+  it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {
+    const info = castInfo(PRIERE);
+    expect(info.skill).toBe('Prière');
+    expect(info.requireNI).toBe(false);
+  });
+  it('les Sorts utilisent Langue (Magick) (Int), avec NI', () => {
+    const info = castInfo(ARCANE);
+    expect(info.skill).toBe('Langue');
+    expect(info.spec).toBe('Magick');
+    expect(info.requireNI).toBe(true);
+  });
+  it('isArcaneSpell distingue Arcane/Domaine de la Magie mineure et des Prières', () => {
+    expect(isArcaneSpell(ARCANE)).toBe(true);
+    expect(isArcaneSpell(FLECHETTE)).toBe(false);
+    expect(isArcaneSpell(PRIERE)).toBe(false);
+  });
+});
+
+describe('Magie — analyse des descriptions', () => {
+  it('parseSpellDamage lit « Dégâts +N » et les flags ignore PA / Bonus d’Endurance', () => {
+    expect(parseSpellDamage('Projectile magique avec Dégâts +8.')).toEqual({ damage: 8, ignorePA: false, ignoreBE: false });
+    expect(parseSpellDamage('Dégât +0 qui ignore les PA.')).toEqual({ damage: 0, ignorePA: true, ignoreBE: false });
+    // B1 : Vortex d’âmes / drain de Shyish — ignore le Bonus d’Endurance ET les PA.
+    expect(parseSpellDamage('Projectile magique avec Dégâts +10 qui ignore le Bonus d’Endurance et les PA.')).toEqual({
+      damage: 10,
+      ignorePA: true,
+      ignoreBE: true,
+    });
+    expect(parseSpellDamage('Votre cible gagne +10 en Agilité.')).toBeNull();
+  });
+  it('isMagicMissile détecte les Projectiles magiques', () => {
+    expect(isMagicMissile(FLECHETTE)).toBe(true);
+    expect(isMagicMissile(PRIERE)).toBe(false);
+  });
+  it('parseDurationRounds lit « N rounds »', () => {
+    expect(parseDurationRounds('6 rounds')).toBe(6);
+    expect(parseDurationRounds('Instantanée')).toBeNull();
+  });
+});
+
+describe('Magie — valeur d’incantation', () => {
+  it('Langue (Magick) = Int + avances', () => {
+    const c = caster({ Int: 40 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 15 }]);
+    expect(castingValue(c, 'Langue', 'Magick')).toBe(55);
+  });
+  it('Prière = Soc + avances', () => {
+    const c = caster({ Soc: 35 }, [{ name: 'Prière', characteristic: 'Soc', advances: 10 }]);
+    expect(castingValue(c, 'Prière')).toBe(45);
+  });
+  it('sans la compétence, la Caractéristique seule est utilisée', () => {
+    const c = caster({ Int: 33 });
+    expect(castingValue(c, 'Langue', 'Magick')).toBe(33);
+  });
+});
+
+describe('Magie — résolution de l’incantation', () => {
+  it('un Sort réussi mais avec DR < NI n’est pas lancé', () => {
+    // Valeur 95 → réussite quasi certaine, mais DR max ~9 < NI 20.
+    const c = caster({ Int: 95 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const spell: SpellLike = { ...ARCANE, cn: 20 };
+    const res = resolveCasting(c, spell, makeRNG(3));
+    expect(res.cast).toBe(false);
+  });
+  it('cohérence : lancé ⇔ réussite et DR ≥ NI', () => {
+    const c = caster({ Int: 60 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    for (let seed = 0; seed < 20; seed++) {
+      const res = resolveCasting(c, FLECHETTE, makeRNG(seed));
+      const success = res.roll <= res.target;
+      expect(res.cast).toBe(success && res.sl >= 0);
+    }
+  });
+  it('une Prière réussie est lancée sans seuil de NI', () => {
+    const c = caster({ Soc: 99 }, [{ name: 'Prière', characteristic: 'Soc', advances: 0 }]);
+    const res = resolveCasting(c, PRIERE, makeRNG(2));
+    expect(res.cast).toBe(res.roll <= res.target);
+  });
+});
+
+describe('Magie — Projectile magique', () => {
+  it('Dégâts = Dégâts du sort + DR + BFM, Localisation = jet inversé', () => {
+    const c = caster({ Int: 80, FM: 40 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const target = caster({ E: 30 }, [], 15);
+    const spell: SpellLike = { ...FLECHETTE, desc: 'Projectile magique avec Dégâts +4.' };
+    const res = resolveMagicMissile(c, target, spell, makeRNG(5));
+    if (res.hit) {
+      expect(res.location).toBe(hitLocation(reverseRoll(res.roll)));
+      expect(res.damage).toBe(4 + Math.max(0, res.sl) + 4); // +4 sort, DR, BFM 4
+      expect(res.woundsLost).toBe(Math.max(1, res.damage! - 3)); // BE 3, PA 0
+    }
+  });
+});
+
+describe('Magie — Focalisation', () => {
+  it('cumule un DR positif sur réussite', () => {
+    const c = caster({ FM: 90 }, [{ name: 'Focalisation', spec: 'Aqshy', characteristic: 'FM', advances: 0 }]);
+    const res = resolveFocus(c, ARCANE, makeRNG(4));
+    expect(res.dr).toBeGreaterThanOrEqual(0);
+    if (res.roll <= 90) expect(res.dr).toBe(Math.max(0, Math.floor(90 / 10) - Math.floor(res.roll / 10)));
+  });
+});
+
+describe('Magie — effets actifs (buffs temporisés)', () => {
+  it('effectiveChar applique le meilleur bonus, sans cumul', () => {
+    const c = caster({ CC: 35 });
+    c.activeEffects = [
+      { label: 'A', char: 'CC', bonus: 10, roundsLeft: 6 },
+      { label: 'B', char: 'CC', bonus: 20, roundsLeft: 6 },
+    ];
+    expect(effectiveChar(c, 'CC')).toBe(55); // 35 + max(10,20)
+  });
+  it('endOfRound décrémente et dissipe les effets expirés', () => {
+    const c = caster({ CC: 35 });
+    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, roundsLeft: 1 };
+    c.activeEffects = [eff];
+    endOfRound(c);
+    expect(c.activeEffects.length).toBe(0);
+    expect(effectiveChar(c, 'CC')).toBe(35);
+  });
+  // Pénalités (omission-majeure corrigée) : meilleur bonus + pire pénalité, sommés.
+  it('effectiveChar applique le meilleur bonus ET la pire pénalité (l.168)', () => {
+    const c = caster({ Ag: 40 });
+    c.activeEffects = [
+      { label: 'buff', char: 'Ag', bonus: 10, roundsLeft: 6 },
+      { label: 'autre buff', char: 'Ag', bonus: 20, roundsLeft: 6 },
+      { label: 'Écorce', char: 'Ag', bonus: -10, roundsLeft: 6 },
+    ];
+    expect(effectiveChar(c, 'Ag')).toBe(50); // 40 + max(10,20) + min(-10) = 40+20-10
+  });
+  it('effectiveChar garde la pénalité la PIRE entre deux malus', () => {
+    const c = caster({ Dex: 45 });
+    c.activeEffects = [
+      { label: 'a', char: 'Dex', bonus: -10, roundsLeft: 6 },
+      { label: 'b', char: 'Dex', bonus: -20, roundsLeft: 6 },
+    ];
+    expect(effectiveChar(c, 'Dex')).toBe(25); // 45 + 0 - 20
+  });
+});
+
+describe('Magie — parseCharBuffs (bonus/pénalités de caractéristique)', () => {
+  it('lit un bonus simple « +N en X »', () => {
+    expect(parseCharBuffs('Votre cible gagne +10 en Capacité de Combat.')).toEqual([{ char: 'CC', bonus: 10 }]);
+  });
+  it('lit une pénalité multi-caractéristiques « -N en X et Y » (Écorce)', () => {
+    expect(parseCharBuffs('La cible subit -10 en Agilité et Dextérité.')).toEqual([
+      { char: 'Ag', bonus: -10 },
+      { char: 'Dex', bonus: -10 },
+    ]);
+  });
+  it('ne confond pas « Force » et « Force Mentale »', () => {
+    expect(parseCharBuffs('Vous gagnez +20 en Force Mentale.')).toEqual([{ char: 'FM', bonus: 20 }]);
+    expect(parseCharBuffs('Vous gagnez +5 en Force.')).toEqual([{ char: 'F', bonus: 5 }]);
+  });
+});
+
+describe('Magie — correctifs de fidélité (audit)', () => {
+  // B1 — Projectile ignorant le Bonus d'Endurance : le BE n'est pas déduit.
+  it('B1 : un Projectile « ignore le Bonus d’Endurance » ne déduit pas le BE', () => {
+    const c = caster({ Int: 80, FM: 30 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const target = caster({ E: 39 }, [], 20); // BE 3
+    const spell: SpellLike = {
+      label: 'Vortex d’âmes',
+      type: 'Magie des Arcanes',
+      cn: 0,
+      duration: 'Instantanée',
+      desc: 'Projectile magique avec Dégâts +10 qui ignore le Bonus d’Endurance et les PA.',
+    };
+    const res = resolveMagicMissile(c, target, spell, makeRNG(5));
+    if (res.hit) {
+      // mitigation BE+PA = 0 → toutes les Blessures passent.
+      expect(res.woundsLost).toBe(res.damage);
+    }
+  });
+
+  // B2 — soin paramétré « (Bonus de Sociabilité) Blessures » (Caresse de Rhya).
+  it('B2 : parseHeal lit le soin littéral ET « (Bonus de X) Blessures »', () => {
+    const pretre = caster({ Soc: 45 }); // BSoc 4
+    expect(parseHeal('Guérir 1d10... non. Guérir 3 Points de Blessure.', pretre)).toBe(3);
+    expect(parseHeal('Choisissez : Guérir (Bonus de Sociabilité) Blessures.', pretre)).toBe(4);
+    expect(parseHeal('Votre cible gagne +10 en Capacité de Combat.', pretre)).toBeNull();
+  });
+
+  // B3 — distinction retrait/ajout d'État ; « retirer 1 Etat » (sans accent ni nom).
+  it('B3 : parseConditionEffect distingue retrait et ajout d’État', () => {
+    expect(parseConditionEffect('Votre cible peut retirer 1 Etat.')).toEqual({ op: 'remove', name: undefined, value: 1 });
+    expect(parseConditionEffect('La cible reçoit 1 État Sonné.')).toEqual({ op: 'add', name: 'Sonné', value: 1 });
+    expect(parseConditionEffect('Le porteur perd 2 États Aveuglé.')).toEqual({ op: 'remove', name: 'Aveuglé', value: 2 });
+    expect(parseConditionEffect('Votre cible gagne +10 en Agilité.')).toBeNull();
+  });
+
+  // I1 — pas d'invention d'1 round ; résolution des durées-formule « (Bonus de X) Rounds ».
+  it('I1 : buffDurationRounds résout littéral et formule, null hors-rounds', () => {
+    const c = caster({ FM: 45, Ag: 39 }); // BFM 4, BAg 3
+    expect(buffDurationRounds('6 rounds', c)).toBe(6);
+    expect(buffDurationRounds('(Bonus de Force Mentale) Rounds', c)).toBe(4);
+    expect(buffDurationRounds('(Bonus d’Agilité) Rounds', c)).toBe(3);
+    expect(buffDurationRounds('1 minute', c)).toBeNull(); // hors-rounds : pas de défaut inventé
+    expect(buffDurationRounds(undefined, c)).toBeNull();
   });
 });
 

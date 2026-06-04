@@ -8,7 +8,8 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed } from './tests';
-import { bonus } from './characteristics';
+import { bonus, effectiveChar } from './characteristics';
+import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
 
 /** Dégâts d'arme : « +BF+4 » → BF + 4, « +9 » → 9. */
@@ -46,17 +47,20 @@ const tens = (n: number) => Math.floor(n / 10);
 /** Valeur de Compétence de combat (Caractéristique + avances pertinentes). */
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged'): number {
   const charKey = kind === 'melee' ? 'CC' : 'CT';
-  const base = c.characteristics[charKey];
+  const base = effectiveChar(c, charKey);
   const skillName = kind === 'melee' ? 'corps à corps' : 'projectiles';
   const sk = c.skills.find((s) => s.name.toLowerCase().includes(skillName));
   return base + (sk?.advances ?? 0);
 }
 
-/** Valeur de défense (Parade = Corps à corps ; Esquive = Agilité + avances). */
+/**
+ * Valeur de défense (Parade = Corps à corps ; Esquive = Agilité + avances).
+ * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295).
+ */
 export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
   if (mode === 'parade') return combatValue(c, 'melee');
   const sk = c.skills.find((s) => s.name.toLowerCase().includes('esquive'));
-  return c.characteristics.Ag + (sk?.advances ?? 0);
+  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + agilityTestPenalty(c);
 }
 
 export interface AttackResult {
@@ -165,10 +169,10 @@ function applyHit(
   critical: boolean,
 ): AttackResult {
   const loc = hitLocation(reverseRoll(attackerRoll));
-  const sb = bonus(attacker.characteristics.F);
+  const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = parseWeaponDamage(weapon.damage, sb);
   const damage = weaponDmg + Math.max(0, dr);
-  const tb = bonus(defender.characteristics.E);
+  const tb = bonus(effectiveChar(defender, 'E'));
   const ap = defender.armour[loc] ?? 0;
   const woundsLost = Math.max(1, damage - (tb + ap));
   const newWounds = defender.wounds.current - woundsLost;

@@ -1,7 +1,7 @@
 /**
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
-import { CharKey, Characteristics } from './types';
+import { CharKey, Characteristics, Combatant } from './types';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -10,6 +10,21 @@ export function bonus(value: number): number {
 
 export function charBonus(chars: Characteristics, key: CharKey): number {
   return bonus(chars[key]);
+}
+
+/**
+ * Valeur effective d'une Caractéristique, modifiée par les effets magiques
+ * actifs. Les bonus/pénalités ne se cumulent pas : seuls le MEILLEUR bonus et la
+ * PIRE pénalité s'appliquent, et tous deux sont sommés (Livre de base l.168 /
+ * p.220). Ex. +20, +10 et -10 sur la même Caractéristique → +20 - 10 = +10 net.
+ */
+export function effectiveChar(c: Combatant, key: CharKey): number {
+  const base = c.characteristics[key];
+  const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
+  if (mods.length === 0) return base;
+  const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
+  const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));
+  return base + bestBonus + worstPenalty;
 }
 
 /**

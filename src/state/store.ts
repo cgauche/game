@@ -4,13 +4,26 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant } from '../engine/types';
+import { Combatant, ActiveEffect, CHAR_LABELS, CharKey } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
 import { resolveMelee, resolveRanged, initiativeOrder, combatValue } from '../engine/combat';
+import {
+  resolveMagicMissile,
+  resolveCasting,
+  resolveFocus,
+  isMagicMissile,
+  isArcaneSpell,
+  parseHeal,
+  parseConditionEffect,
+  parseCharBuffs,
+  buffDurationRounds,
+} from '../engine/magic';
 import { rollTest, TestResult } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
-import { isOutOfAction, endOfRound, addCondition } from '../engine/conditions';
+import { effectiveMovement } from '../engine/encumbrance';
+import { isOutOfAction, endOfRound, addCondition, removeCondition } from '../engine/conditions';
+import { findSpell } from '../data/index';
 import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
@@ -49,7 +62,9 @@ export interface BattleState {
   order: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | null;
+  /** Sort sélectionné pour l'action d'incantation en cours. */
+  selectedSpell: string | null;
   reachable: Map<string, number>;
   moved: boolean;
   acted: boolean;
@@ -73,12 +88,14 @@ interface GameState {
   money: Money;
   pendingTest: PendingTest | null;
   document: { title: string; text: string } | null;
+  /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
+  previousScene: { id: string; pos: Pt } | null;
 
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
   startScene: (scene: Scene) => void;
-  transitionTo: (sceneId: string, entry?: string) => void;
+  transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
   interactEntity: (entityId: string) => void;
   chooseDialogue: (choiceIndex: number) => void;
@@ -89,7 +106,9 @@ interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | null) => void;
+  battleSelectSpell: (label: string) => void;
+  battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
   battleEndTurn: () => void;
@@ -113,6 +132,7 @@ export const useGame = create<GameState>((set, get) => ({
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
   document: null,
+  previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
 
@@ -154,14 +174,16 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
 
-  /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent). */
-  transitionTo: (sceneId, entry) => {
+  /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).
+   *  `pos` force la case d'arrivée (utilisé par `transitionBack`). */
+  transitionTo: (sceneId, entry, pos) => {
     const target = sceneRegistry[sceneId];
     if (!target) {
       get().log(`(Scène « ${sceneId} » introuvable — transition ignorée.)`);
       return;
     }
     const start =
+      pos ||
       (entry && target.entryPoints?.[entry]) ||
       target.entities.find((e) => e.kind === 'heroStart')?.pos ||
       findFreeTile(target);
@@ -183,13 +205,15 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   moveParty: (pt) => {
-    const { scene, mode } = get();
+    const { scene, mode, partyPos } = get();
     if (!scene || mode !== 'exploration') return;
     if (!isWalkable(scene, pt.x, pt.y)) return;
+    const from = partyPos; // case quittée (sert de retour hors du bâtiment)
     set({ partyPos: pt });
     bus.emit(EVT.SCENE_DIRTY);
     const door = doorAt(scene, pt.x, pt.y);
     if (door && door.reveal === 'door' && door.interiorScene) {
+      set({ previousScene: { id: scene.id, pos: from } });
       get().transitionTo(door.interiorScene, door.entry);
       return;
     }
@@ -257,6 +281,7 @@ export const useGame = create<GameState>((set, get) => ({
       turn: 0,
       round: 1,
       action: null,
+      selectedSpell: null,
       reachable: new Map(),
       moved: false,
       acted: false,
@@ -277,10 +302,31 @@ export const useGame = create<GameState>((set, get) => ({
     let reach = new Map<string, number>();
     if (a === 'move' && !battle.moved) {
       const blocked = occupied(battle, active.id);
-      reach = reachable(scene, active.pos!, active.movement, blocked);
+      reach = reachable(scene, active.pos!, effectiveMovement(active), blocked);
     }
-    set({ battle: { ...battle, action: a, reachable: reach } });
+    // Quitter le mode incantation oublie le sort sélectionné.
+    const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
+    set({ battle: { ...battle, action: a, reachable: reach, selectedSpell } });
     bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. */
+  battleSelectSpell: (label) => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || battle.acted) return;
+    set({ battle: { ...battle, action: 'cast', selectedSpell: label, reachable: new Map() } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
+  battleFocusSpell: (label) => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || battle.acted) return;
+    focusSpell(get, set, active, label);
   },
 
   battleClickTile: (pt) => {
@@ -302,12 +348,18 @@ export const useGame = create<GameState>((set, get) => ({
 
   battleClickEntity: (id) => {
     const { battle } = get();
-    if (!battle || battle.over) return;
+    if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
-    if (battle.action !== 'attack' || battle.acted) return;
     const target = battle.combatants.find((c) => c.id === id);
-    if (!target || target.kind === 'hero') return;
+    if (!target) return;
+    if (battle.action === 'cast' && battle.selectedSpell) {
+      // L'incantation peut viser un allié, un ennemi ou soi-même.
+      castSpell(get, set, active, target, battle.selectedSpell);
+      return;
+    }
+    if (battle.action !== 'attack') return;
+    if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
     doAttack(get, set, active, target);
   },
 
@@ -415,9 +467,20 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
       case 'startCombat':
         get().startCombat(e.encounter);
         break;
-      case 'transition':
+      case 'transition': {
+        const cur = get();
+        if (cur.scene) set({ previousScene: { id: cur.scene.id, pos: { ...cur.partyPos } } });
         get().transitionTo(e.scene, e.entry);
         break;
+      }
+      case 'transitionBack': {
+        const prev = get().previousScene;
+        if (prev) {
+          set({ previousScene: null });
+          get().transitionTo(prev.id, undefined, prev.pos);
+        }
+        break;
+      }
       case 'test': {
         // Test de compétence : le meilleur du groupe tente. Branche après acquittement.
         const best = partyBest(get().party, e.skill, e.characteristic);
@@ -470,6 +533,134 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
+}
+
+/** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
+ *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
+function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
+  target.activeEffects = target.activeEffects ?? [];
+  // On ne dédoublonne qu'entre effets de MÊME signe (bonus vs pénalité séparés) :
+  // un bonus et une pénalité sur la même caractéristique s'additionnent (effectiveChar).
+  const sameSign = (b: number) => b >= 0 === effect.bonus >= 0;
+  const idx = target.activeEffects.findIndex((e) => e.char === effect.char && effect.char != null && sameSign(e.bonus));
+  if (idx >= 0) {
+    const cur = target.activeEffects[idx].bonus;
+    const better = effect.bonus >= 0 ? effect.bonus >= cur : effect.bonus <= cur;
+    if (better) target.activeEffects[idx] = effect;
+  } else {
+    target.activeEffects.push(effect);
+  }
+}
+
+/** Rounds attribués à un buff dont la durée (minutes/heures/jours) dépasse le combat. */
+const COMBAT_PERSIST = 9999;
+
+/** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
+function castSpell(
+  get: () => GameState,
+  set: any,
+  caster: Combatant,
+  target: Combatant,
+  label: string,
+) {
+  const battle = get().battle!;
+  const spell = findSpell(label);
+  if (!spell) {
+    get().log(`Sort « ${label} » introuvable.`);
+    return;
+  }
+  const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
+  const logLines: string[] = [];
+
+  if (isMagicMissile(spell)) {
+    const res = resolveMagicMissile(caster, target, spell, battleRng, focusedNI0);
+    logLines.push(res.log);
+    if (res.hit && res.woundsLost) {
+      target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
+      if (res.isCritical && target.wounds.current > 0) addCondition(target, 'À Terre');
+    }
+    if (res.isFumble) logLines.push(`${caster.name} subit une Incantation Imparfaite !`);
+    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res });
+    if (res.defenderDefeated) logLines.push(`${target.name} est mis hors de combat !`);
+  } else {
+    const res = resolveCasting(caster, spell, battleRng, 'intermediaire', focusedNI0);
+    logLines.push(res.log);
+    if (res.cast) {
+      const heal = parseHeal(spell.desc, caster);
+      const buffs = parseCharBuffs(spell.desc);
+      const condEff = parseConditionEffect(spell.desc);
+      if (heal != null) {
+        target.wounds.current = Math.min(target.wounds.max, target.wounds.current + heal);
+        logLines.push(`${target.name} regagne ${heal} Blessure(s).`);
+      } else if (buffs.length) {
+        const rounds = buffDurationRounds(spell.duration, caster);
+        // Durée hors-rounds (minutes/heures/jours) : elle dépasse l'échelle tactique
+        // → l'effet persiste pour ce combat. On n'invente PAS un nombre de rounds.
+        const roundsLeft = rounds ?? COMBAT_PERSIST;
+        for (const b of buffs) {
+          applyActiveEffect(target, { label: spell.label, char: b.char, bonus: b.bonus, roundsLeft });
+        }
+        const parts = buffs.map((b) => `${b.bonus >= 0 ? '+' : ''}${b.bonus} ${CHAR_LABELS[b.char]}`).join(', ');
+        logLines.push(
+          `${target.name} : ${spell.label} (${parts}, ${rounds != null ? rounds + ' rounds' : 'durée hors combat'}).`,
+        );
+      } else if (condEff) {
+        if (condEff.op === 'remove') {
+          const name = condEff.name ?? target.conditions[0]?.name;
+          if (name) {
+            removeCondition(target, name, condEff.value);
+            logLines.push(`${target.name} retire ${condEff.value} État ${name}.`);
+          } else {
+            logLines.push(`${target.name} n'a aucun État à retirer.`);
+          }
+        } else {
+          addCondition(target, condEff.name!, condEff.value);
+          logLines.push(`${target.name} reçoit ${condEff.value} État ${condEff.name}.`);
+        }
+      }
+      // Sinon : l'effet du sort est purement narratif (déjà journalisé).
+    } else if (res.isFumble) {
+      logLines.push(
+        castInfoIsPrayer(spell.type)
+          ? `${caster.name} provoque la Colère des dieux !`
+          : `${caster.name} subit une Incantation Imparfaite !`,
+      );
+    }
+  }
+
+  // Le sort focalisé est consommé après le lancement.
+  if (focusedNI0) caster.focus = undefined;
+  set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+}
+
+/** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
+function castInfoIsPrayer(type: string): boolean {
+  return type === 'Béni' || type === 'Invocation';
+}
+
+/** Focalise un sort d'Arcane/Domaine : cumule le DR jusqu'à atteindre le NI. */
+function focusSpell(get: () => GameState, set: any, caster: Combatant, label: string) {
+  const battle = get().battle!;
+  const spell = findSpell(label);
+  if (!spell || !isArcaneSpell(spell)) {
+    get().log('Ce sort ne peut pas être focalisé.');
+    return;
+  }
+  const res = resolveFocus(caster, spell, battleRng);
+  const prev = caster.focus?.spell === label ? caster.focus.dr : 0;
+  caster.focus = { spell: label, dr: prev + res.dr };
+  const logLines = [res.log];
+  const ni = spell.cn ?? 0;
+  if (caster.focus.dr >= ni) {
+    logLines.push(`${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).`);
+  } else {
+    logLines.push(`Focalisation : ${caster.focus.dr}/${ni} DR.`);
+  }
+  if (res.isFumble) logLines.push(`${caster.name} subit une Incantation Imparfaite !`);
+  set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
+  bus.emit(EVT.SCENE_DIRTY);
 }
 
 function checkBattleOver(get: () => GameState, set: any): boolean {
@@ -537,7 +728,7 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   // Se rapprocher si nécessaire.
   if (manhattan(enemy.pos!, target.pos!) > 1) {
     const blocked = occupied(battle, enemy.id);
-    const reach = reachable(scene, enemy.pos!, enemy.movement, blocked);
+    const reach = reachable(scene, enemy.pos!, effectiveMovement(enemy), blocked);
     // Trouver la case atteignable la plus proche de la cible.
     let best: Pt | null = null;
     let bestD = Infinity;

@@ -93,6 +93,8 @@ export type Effect =
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   | { type: 'startCombat'; encounter: string }
   | { type: 'transition'; scene: string; entry?: string }
+  /** Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. */
+  | { type: 'transitionBack' }
   | { type: 'startDialogue'; dialogue: string }
   | { type: 'journal'; text: string }
   | { type: 'document'; title: string; text: string }

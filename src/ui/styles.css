@@ -615,6 +615,29 @@ textarea:focus {
   color: var(--gold);
   margin: 0;
 }
+.bp-spells {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+.bp-spell-row {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+.bp-spell-row .btn {
+  flex: 1;
+  text-align: left;
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.bp-spell-ni {
+  color: var(--muted);
+  font-size: 11px;
+}
 .battle-log {
   background: var(--panel);
   border: 1px solid var(--border);

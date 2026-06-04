@@ -4,6 +4,8 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
 import { emptyScene } from './scene';
+import { makeInteriorScene } from '../scenes/interiors';
+import type { BuildingFeature } from './scene';
 
 function reset() {
   useGame.setState({
@@ -81,6 +83,74 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().startScene(exterior); // charge l'extérieur (départ 0,0)
     useGame.getState().moveParty({ x: 3, y: 4 }); // sur la porte
     expect(useGame.getState().scene?.id).toBe('interieur-test');
+  });
+
+  it('incanter un Projectile magique résout l’incantation et consomme l’action', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
+    hero.characteristics.Int = 90; // assurer le lancement (NI 0)
+    hero.spells = ['Fléchette'];
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    const turn = st.battle!.order.indexOf(heroC.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Fléchette', acted: false } });
+    useGame.getState().battleClickEntity(enemy.id);
+    st = useGame.getState();
+    // L'action est consommée et l'incantation est journalisée.
+    expect(st.battle!.acted).toBe(true);
+    expect(st.battle!.action).toBeNull();
+    expect(st.battle!.log.some((l) => l.includes('Fléchette'))).toBe(true);
+  });
+
+  it('une Bénédiction de bonus pose un effet actif temporisé sur la cible', () => {
+    const pretre = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Prêtre', name: 'Prêtre', rng: makeRNG(8) });
+    pretre.characteristics.Soc = 95; // assurer la réussite de la Prière
+    pretre.spells = ['Bénédiction de Bataille'];
+    useGame.setState({ party: [pretre] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const turn = st.battle!.order.indexOf(heroC.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Bénédiction de Bataille', acted: false } });
+    useGame.getState().battleClickEntity(heroC.id); // se cibler soi-même
+    st = useGame.getState();
+    const after = st.battle!.combatants.find((c) => c.id === heroC.id)!;
+    const failed = st.battle!.log.some((l) => l.includes('échoue'));
+    if (!failed) {
+      expect(after.activeEffects?.some((e) => e.char === 'CC' && e.bonus === 10)).toBe(true);
+    }
+    expect(st.battle!.acted).toBe(true);
+  });
+
+  it('porte → intérieur → retour (transitionBack) : aller-retour complet', () => {
+    const interior = makeInteriorScene({ id: 'int-test', nom: 'Intérieur test', w: 6, h: 6 });
+    const exterior = emptyScene(8, 8);
+    exterior.id = 'ext-test';
+    exterior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    const chapel: BuildingFeature = {
+      id: 'chap',
+      type: 'chapelle',
+      foot: { x: 2, y: 2, w: 3, h: 3 },
+      reveal: 'door',
+      facing: 'S',
+      door: { x: 3, y: 4 },
+      interiorScene: 'int-test',
+    };
+    exterior.buildings = [chapel];
+    useGame.getState().startScene(interior); // enregistre l'intérieur
+    useGame.getState().startScene(exterior); // charge l'extérieur
+    // on se place SOUS la porte puis on entre (pour mémoriser un retour hors du bâtiment)
+    useGame.setState({ partyPos: { x: 3, y: 5 } });
+    useGame.getState().moveParty({ x: 3, y: 4 }); // sur la porte → intérieur
+    expect(useGame.getState().scene?.id).toBe('int-test');
+    // sortie : la porte de l'intérieur est en bas-centre (3,5) ; y marcher → retour
+    useGame.getState().moveParty({ x: 3, y: 5 });
+    expect(useGame.getState().scene?.id).toBe('ext-test');
+    expect(useGame.getState().partyPos).toEqual({ x: 3, y: 5 }); // retour à la case d'entrée
   });
 
   it('une attaque de héros adjacent retire des Blessures', () => {

@@ -38,6 +38,13 @@ export function endOfRound(c: Combatant): string[] {
       log.push(`${c.name} : un État ${n} se dissipe.`);
     }
   }
+  // Effets magiques temporisés (Bénédictions, Sorts de bonus).
+  if (c.activeEffects?.length) {
+    for (const e of c.activeEffects) e.roundsLeft -= 1;
+    const expired = c.activeEffects.filter((e) => e.roundsLeft <= 0);
+    for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
+    c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
+  }
   return log;
 }
 

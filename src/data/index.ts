@@ -101,6 +101,18 @@ export interface EtatData {
   desc: string;
   source: { book: string; page: number };
 }
+export interface SpellData {
+  label: string;
+  type: string;
+  subType: string | null;
+  /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
+  cn: number | null;
+  range: string;
+  target: number | string;
+  duration: string;
+  desc: string;
+  source: { book: string; page: number };
+}
 
 export const characteristics = characteristicsJson as any[];
 export const species = speciesJson as SpeciesData[];
@@ -114,7 +126,7 @@ export const traits = traitsJson as any[];
 export const qualities = qualitiesJson as any[];
 export const trappings = trappingsJson as TrappingData[];
 export const creatures = creaturesJson as CreatureData[];
-export const spells = spellsJson as any[];
+export const spells = spellsJson as SpellData[];
 
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);
@@ -138,4 +150,7 @@ export function findTrapping(label: string): TrappingData | undefined {
 }
 export function findCreature(label: string): CreatureData | undefined {
   return creatures.find((c) => c.label === label);
+}
+export function findSpell(label: string): SpellData | undefined {
+  return spells.find((s) => s.label === label);
 }
