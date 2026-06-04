@@ -124,7 +124,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Esquive vs Parade comme choix défensif réel ; armes à deux mains, bouclier.
 - États restants pleinement actifs (Empêtré, Aveuglé, En flammes, Empoisonné…).
 - Dépense de **Chance / Détermination** en jeu (relancer, ajouter du DR).
-- IA d'ennemi enrichie (actuellement : approche + attaque).
+- ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade —
+  `state/ai.ts` pur+testé). Reste, lié aux actions ci-dessus : charge, désengagement, Avantage complet.
 
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
@@ -166,9 +167,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Fait : palette à onglets, triggers/dialogues/rencontres structurés, outil Zone, **bâtiments &
   décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment,
   **kind `personnage` unifié** (apparence = ref bestiaire + variante de calque + dialogue/quête).
-- Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; sélectionner/éditer
-  une **zone trigger** existante en cliquant dessus ; éditeur de statblocks ; **projet multi-scènes**
-  (lier les scènes d'intérieur que `reveal:'door'` référence).
+- ✅ **Sélection d'une zone trigger au clic** (surbrillance + inspecteur : rect, condition, effets, suppr.).
+- Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; éditeur de statblocks ;
+  **projet multi-scènes** (registre éditable de scènes d'intérieur, au-delà du `campaign[]` codé).
 
 ## 🎯 Jalon 7 — Coop en ligne
 
@@ -197,14 +198,20 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   **Humain** (tuniques) et **Mutant** (5 morphologies) sont enrichis — le reste du bestiaire
   = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
   perfectibles (corps « ballon », jambes fines).
-- IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
+- ✅ **IA d'ennemi enrichie** (cible le plus faible atteignable, tir à distance, sorts offensifs,
+  choix Esquive/Parade — `state/ai.ts` pur + testé). Reste : **undo/redo** dans l'éditeur ;
+  rencontres placées via inputs (pas sur carte).
 - **Art des bâtiments** enrichi (tuiles/ardoises/chaume, fenêtres + éclairage nuit, porte côté
   `facing`, colombages, ombre) ; reste perfectible vers le niveau d'`ambush.html` (textures fines,
   variantes par type, rotation pleine selon `facing`).
-- **`reveal:'door'`** : mécanisme prêt (`transitionBack` + `makeInteriorScene`), mais les **scènes
-  d'intérieur concrètes** restent à créer et lier dans un **projet multi-scènes** (cf. Jalon 6).
-- Primitives historiques `mur`/`bois` (tuiles) coexistent avec le nouveau système de bâtiments
-  (rendu spécial-casé en dur dans `IsoStage`/`Editor`, hors catalogue — à faire passer par le catalogue).
+- ✅ **`reveal:'door'` + intérieur concret** : la salle de bar « La Diligence » (`tome1-auberge-interieur`,
+  contenu sourcé) est créée, enregistrée (`campaign[]`) et liée par la porte du bâtiment taverne de
+  tome1-intro — boucle porte → intérieur → `transitionBack` vérifiée (en jeu + test). Reste : un
+  **projet multi-scènes** éditable (registre de scènes au-delà du `campaign[]` codé).
+- ✅ **Rendu `mur`/`bois` centralisé** : les branches dupliquées à l'identique dans `IsoStage` ET
+  `Editor` passent par une source unique (`sprites.terrainOverlay` + registre `TERRAIN_OVERLAYS`).
+  Reste (optionnel) : migrer `bois` → décor `arbre` et retirer l'id terrain (`mur` reste : sentinelle
+  hors-grille + pièces d'intérieur).
 - ✅ **Code mort retiré** : renderers obsolètes Phaser (`src/game/`) + three.js (`src/game3d/`)
   supprimés ; dépendances `phaser`/`three`/`@types/three` retirées (~188 Mo de node_modules, ~900 l.).
 - ✅ **Code-splitting** : éditeur + rendu de jeu (`CampaignView`) + vendor en chunks async
