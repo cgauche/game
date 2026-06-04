@@ -1,0 +1,344 @@
+[
+  {
+    "abr": "CC",
+    "label": "Capacité de Combat",
+    "type": "roll",
+    "desc": "Il s'agit de votre capacité à vous battre au Corps à corps, à exécuter une frappe mesurée, et de votre efficacité dans le tumulte d'une mêlée générale. Cet Attribut est aussi utilisé pour le combat à mains nues, quand l'arme est votre propre corps !",
+    "base": {
+      "Humain": 20,
+      "Halfling": 10,
+      "Nain": 30,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 20,
+      "Ogre": 20
+    },
+    "source": {
+      "book": "LDB",
+      "page": 33
+    }
+  },
+  {
+    "abr": "CT",
+    "label": "Capacité de Tir",
+    "type": "roll",
+    "desc": "Elle représente votre capacité à atteindre vos cibles avec des armes à distance telles que des arcs et des couteaux de lancer, et, en général, à lancer des objets. Cet Attribut est aussi utilisé comme base pour d'autres attaques à distance comme le Vomissement des trolls.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 30,
+      "Nain": 20,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 10,
+      "Ogre": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 33
+    }
+  },
+  {
+    "abr": "F",
+    "label": "Force",
+    "type": "roll",
+    "desc": "Ceci indique combien de Dégâts vous infligez au Corps à corps, combien vous pouvez soulever et à quel point vous êtes bon en Natation et en Escalade.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 10,
+      "Nain": 20,
+      "Haut Elfe": 20,
+      "Elfe Sylvain": 20,
+      "Gnome": 10,
+      "Ogre": 35
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "E",
+    "label": "Endurance",
+    "type": "roll",
+    "desc": "Il s'agit de votre résistance physique. Elle vous aide à survivre aux Dégâts durant un combat, mais aussi à des conditions difficiles et à résister au poison.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 20,
+      "Nain": 30,
+      "Haut Elfe": 20,
+      "Elfe Sylvain": 20,
+      "Gnome": 15,
+      "Ogre": 35
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "I",
+    "label": "Initiative",
+    "type": "roll",
+    "desc": "Elle représente votre vitesse de pensée et de réaction, en particulier dans le feu de l'action et quand vous êtes sous pression. Elle détermine l'ordre de combat, votre intuition et votre perception, et vous aide à être le premier à réagir.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 20,
+      "Nain": 20,
+      "Haut Elfe": 40,
+      "Elfe Sylvain": 40,
+      "Gnome": 30,
+      "Ogre": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "Ag",
+    "label": "Agilité",
+    "type": "roll",
+    "desc": "L'Agilité est l'expression de votre coordination physique et de vos capacités athlétiques naturelles, la base dans des domaines comme la course, l'équitation et la dissimulation. Elle est aussi utilisée pour esquiver les coups en combat.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 20,
+      "Nain": 10,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 30,
+      "Ogre": 15
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "Dex",
+    "label": "Dextérité",
+    "type": "roll",
+    "desc": "Elle indique votre capacité à accomplir des tâches manuelles délicates telles que jouer d'un instrument de musique ou confectionner habilement des objets. Elle vous aide aussi pour les tours de passe-passe ou pour faire les poches.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 30,
+      "Nain": 30,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 30,
+      "Ogre": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "Int",
+    "label": "Intelligence",
+    "type": "roll",
+    "desc": "L'Intelligence symbolise le potentiel de pensée, d'analyse et de compréhension. Utile pour soigner, évaluer et pour les connaissances en général, elle est indispensable pour comprendre et lancer des Sorts.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 20,
+      "Nain": 20,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 30,
+      "Ogre": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "FM",
+    "label": "Force Mentale",
+    "type": "roll",
+    "desc": "La Force Mentale représente votre volonté en général et votre capacité à ignorer les difficultés et à vous concentrer sur le travail en cours. Elle aide à résister à toutes sortes d'influences et de coercitions, et protège contre la peur et la terreur.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 30,
+      "Nain": 40,
+      "Haut Elfe": 30,
+      "Elfe Sylvain": 30,
+      "Gnome": 40,
+      "Ogre": 20
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "Soc",
+    "label": "Sociabilité",
+    "type": "roll",
+    "desc": "La Sociabilité vous pousse à vous entendre avec les gens et à paraître assez plaisant et convenable. Elle vous aide lorsque vous discutez avec les gens du coin ou que vous commandez les gens en situation de combat, enjôlez les gardes ou tentez de les corrompre, et, pour les Personnages pieux, lorsque vous communiquez avec votre divinité.",
+    "base": {
+      "Humain": 20,
+      "Halfling": 30,
+      "Nain": 10,
+      "Haut Elfe": 20,
+      "Elfe Sylvain": 20,
+      "Gnome": 15,
+      "Ogre": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "B",
+    "label": "Blessure",
+    "type": "wounds",
+    "desc": "Vos Points de Blessure indiquent le nombre de Dégâts que vous pouvez endurer en fonction de votre puissance physique et de votre force de volonté pour éviter les blessures. Voir le Chapitre 5 : Règles pour en savoir plus sur la façon d'utiliser les Points de Blessures pour calculer les Dégâts.",
+    "base": {
+      "Humain": "BF+(2 × BE)+BFM",
+      "Halfling": "(2 × BE)+BFM",
+      "Nain": "BF+(2 × BE)+BFM",
+      "Haut Elfe": "BF+(2 × BE)+BFM",
+      "Elfe Sylvain": "BF+(2 × BE)+BFM",
+      "Gnome": "(2 × BE)+BFM",
+      "Ogre": "(BF+(2×BE)+BFM)×2"
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "",
+    "label": "Destin",
+    "type": "extra",
+    "desc": "Chaque Personnage possède une destinée. Alors même si ce futur reste mystérieux et qu'il n'y a aucune garantie quant au fait qu'il soit glorieux, héroïque ou même agréable, il est voué a accomplir quelque chose d'important.<br><br>Pour réprésenter cela, vous commencez la partie avec un certain nombre de Points de Destin. Ce sont ces Points qui vous différencient du reste des habitants du Vieux Monde. Ils vont vous permettre de survivre même lorsque toutes les chances sont contre voous et de l'emporter là où les gens normaux échouerraient<br><br>Le Destin détermine le nombre de Points de Chance dont vous pouvez disposer et qui peuvent être sacrifiés lors des circonstances les plus difficiles afin d'éviter une mort certaine.",
+    "base": {
+      "Humain": 2,
+      "Halfling": 0,
+      "Nain": 0,
+      "Haut Elfe": 0,
+      "Elfe Sylvain": 0,
+      "Gnome": 2,
+      "Ogre": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "",
+    "label": "Chance",
+    "type": "",
+    "desc": "Le Destin est directement lié à vos Points de Chance. Les Points de Chance sont dépensés pour recevoir un bonus mineur, y compris la possibilité de pouvoir relancer un Test qui s'est soldé par un échec ou de prendre l'avantage lorsque la chance vous sourit, et leur nombre ne va pas cesser de fluctuer au cours du jeu.",
+    "base": {
+      "Humain": 0,
+      "Halfling": 0,
+      "Nain": 0,
+      "Haut Elfe": 0,
+      "Elfe Sylvain": 0,
+      "Gnome": 0,
+      "Ogre": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "",
+    "label": "Résilience",
+    "type": "extra",
+    "desc": "Alors que les Points de Destin représentent votre destinée, peut-être tracée par une divinité mystérieuse, la Résilience représente votre volonté et votre détermination à endurer les événements et à vous dépasser quels que soient les obstacles auxquels vous faite face.<br><br>La Résilience détermine votre limite maximale de Détermination et elle peut être sacrifiée pour vous permettre de surmonter des situations à priori impossibles.",
+    "base": {
+      "Humain": 1,
+      "Halfling": 2,
+      "Nain": 2,
+      "Haut Elfe": 0,
+      "Elfe Sylvain": 0,
+      "Gnome": 0,
+      "Ogre": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "",
+    "label": "Détermination",
+    "type": "",
+    "desc": "Tout comme le Destin, la Résilience est directement liée à une réserve de Point, cette fois appelée Détermination. Les Points e Détermination sont dépensés afin de passer outre des contrariétés mineures, comme le fait d'ignorer les effets négatifs des Blessures critiques pendant un Round ou de retirer un Etat.",
+    "base": {
+      "Humain": 0,
+      "Halfling": 0,
+      "Nain": 0,
+      "Haut Elfe": 0,
+      "Elfe Sylvain": 0,
+      "Gnome": 0,
+      "Ogre": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "",
+    "label": "Extra Points",
+    "type": "points",
+    "desc": "Vous commencez avec une valeur de base pour le Destin et la Résilience, puis vous disposez d'un nombre de Points supplémentaires à répartir entre ces Attributs, comme bon vous semble. Les nombres de Points supplémentaires sont indiqués dans le Tableau des Attributs. Plus vous attribuez de Points à votre Destin, plus vous êtes chanceux. En comparaison, une plus haute Résilience indique que vous pouvez faire face à n'importe quelle situation.",
+    "base": {
+      "Humain": 3,
+      "Halfling": 3,
+      "Nain": 2,
+      "Haut Elfe": 2,
+      "Elfe Sylvain": 2,
+      "Gnome": 2,
+      "Ogre": 1
+    },
+    "source": {
+      "book": "LDB",
+      "page": 34
+    }
+  },
+  {
+    "abr": "M",
+    "label": "Mouvement",
+    "type": "mv",
+    "desc": "Le Mouvement est utilisé pour déterminer vos vitesses de marche et de course. Le Mouvement humain standard est de 4. Si vous utilisez une grille pour le déplacement, cela indique le nombre de cases que vous pouvez parcourir en un Round, ou de centimètres sur une table. À plus long terme, il indique combien de kilomètres par heure vous pouvez aisément parcourir à pied. Pour plus de détails sur le Mouvement, voir page 164.<br><br><table> <tr> <th> Mouvement </th> <th> Marche </th> <th> Charge </th> </tr> <tr> <td> 3 </td> <td> 6 </td> <td> 12 </td> </tr> <tr> <td> 4 </td> <td> 8 </td> <td> 16 </td> </tr> <tr> <td> 5 </td> <td> 10 </td> <td> 20 </td> </tr> </table> ",
+    "base": {
+      "Humain": 4,
+      "Halfling": 3,
+      "Nain": 3,
+      "Haut Elfe": 5,
+      "Elfe Sylvain": 5,
+      "Gnome": 3,
+      "Ogre": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 35
+    }
+  },
+  {
+    "abr": "",
+    "label": "Corruption",
+    "type": "",
+    "desc": "Les Points de Corruption sont utilisés pour représenter la lente dérive de votre âme vers les Dieux Sombres du Chaos. Chaque fois que vous êtes exposé à une potentielle source de Corruption, vous risquez d'accumuler des Points. Plus ce total est important, plus vous vous rapprochez du Chaos et plus votre âme s'assombrit, jusqu'à ce qu'éventuellement, vous changiez...",
+    "base": {
+      "Humain": 0,
+      "Halfling": 0,
+      "Nain": 0,
+      "Haut Elfe": 0,
+      "Elfe Sylvain": 0,
+      "Gnome": 0,
+      "Ogre": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 182
+    }
+  }
+]

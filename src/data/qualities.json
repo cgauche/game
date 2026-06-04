@@ -1,0 +1,322 @@
+[
+  {
+    "label": "À Enroulement",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes À Enroulement possèdent généralement de longues chaînes avec des poids au bout, les rendant très difficiles à parer efficacement. Les Tests de Corps à corps opposant une attaque provenant d'une arme À Enroulement subissent une pénalité de -1 DR, car les frappes parées s'enroulent sur le haut des boucliers ou autour des lames.",
+    "source": {
+      "book": "LDB",
+      "page": 297
+    }
+  },
+  {
+    "label": "À Poudre noire",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les coups de feu suivis de volutes de fumée et de confusion peuvent être terrifiants. Si vous êtes ciblé par une arme à Poudre noire, vous devez réussir un Test de Calme Accessible (+20) ou gagner un État Brisé, même si le tir vous rate.",
+    "source": {
+      "book": "LDB",
+      "page": 297
+    }
+  },
+  {
+    "label": "À Répétition",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Votre arme contient Indice munitions, automatiquement rechargées après chaque coup que vous tirez. Lorsque vous avez utilisé toutes vos munitions, vous devez recharger entièrement l'arme en utilisant les règles normales.",
+    "source": {
+      "book": "LDB",
+      "page": 297
+    }
+  },
+  {
+    "label": "Assommante",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes Assommantes sont particulièrement efficaces pour forcer les ennemis à se soumettre. Si vous touchez la Tête avec une arme Assommante, tentez un Test opposé Force/ Résistance contre la cible frappée. Si vous remportez le Test, votre adversaire gagne un État Sonné.",
+    "source": {
+      "book": "LDB",
+      "page": 297
+    }
+  },
+  {
+    "label": "Défensive",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes Défensives sont conçues pour parer les attaques. Si vous utilisez une telle arme, vous gagnez un bonus de +1 DR à n'importe quel Test de Corps à corps quand vous opposez une attaque.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Dévastatrice",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Une arme Dévastatrice peut utiliser le résultat le plus haut entre le dé des unités ou le DR pour déterminer les Dégâts causés par une touche réussie. Par exemple, si vous obtenez 34 à votre Test d'attaque et que le nombre visé était 52, vos pouvez choisir d'utiliser le DR, qui dans ce cas est de 2, ou le résultat du dé des unités, qui est de 4. Une arme Inoffensive ne peut jamais être Dévastatrice (Inoffensive prend le dessus).",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Empaleuse",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes Empaleuses peuvent tuer d'une simple frappe nette et causent un Coup Critique sur n'importe quel nombre divisible par 10 (par exemple : 10, 20, 30, etc.), ainsi que sur un double (par exemple : 11, 22, 33) obtenu inférieur ou égal au Test approprié au combat.<br><br>Si l'empalement vient d'une arme à distance, la munition utilisée s'est fermement logée dans le corps de la cible. Les flèches et les carreaux nécessitent un Test de Guérison Intermédiaire pour être retirés – les balles nécessitent un chirurgien (voir le Talent Chirurgie au Chapitre 4 : Compétences et Talents). Chaque flèche ou balle non retirée vous empêche de guérir 1 de vos Blessures.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "À Explosion",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Tous les Personnages situés à Indice mètres du point cible frappé subissent DR + Dégâts d'arme et gagnent tous les États infligés par l'arme.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Immobilisante",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Votre arme s'enroule autour de vos adversaires, les entravant. N'importe quel adversaire touché avec succès par votre arme gagne un État Empêtré avec une Force égale à votre Caractéristique de Force. Quand vous Entravez un adversaire, vous ne pouvez par ailleurs pas utiliser l'arme pour toucher. Vous pouvez y mettre un terme quand vous le souhaitez.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Incassable",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "L'arme est extrêmement bien conçue ou faite dans un matériau particulièrement résistant. Dans presque toutes les circonstances, cette arme ne sera ni brisée, ni corrodée, ni émoussée.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Percutante",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Certaines armes sont vraiment colossales ou causent de terribles dégâts dus à leur poids ou à leur conception. Sur une touche réussie, ajoutez le résultat du dé des unités du lancer d'attaque à tout Dégât causé par une arme Percutante. Une arme Inoffensive ne peut jamais être également Percutante (Inoffensive prend le dessus).",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Perforante",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "L'arme est extrêmement efficace pour pénétrer les armures. Les PA ne provenant pas de métal sont ignorés, et le premier point de toutes les autres armures est ignoré.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Perturbante",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes Perturbantes peuvent être utilisées pour forcer un adversaire à reculer à cause de leur dangerosité ou de leur capacité d'enroulement. Au lieu de causer des Dégâts, une attaque réussie avec une arme Perturbante peut forcer un adversaire à reculer d'un mètre par DR obtenu au Test opposé.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Piège-lame",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Certaines armes sont conçues pour piéger d'autres armes, et parfois même les briser. Si vous obtenez un Critique quand vous vous défendez contre une attaque provenant d'une arme possédant une lame, vous pouvez choisir de la piéger plutôt que de causer un Coup Critique.<br><br>Si vous choisissez cela, effectuez un Test opposé de Force, en ajoutant votre DR obtenu au précédent Test de Corps à corps. Si vous l'emportez, votre adversaire laisse tomber la lame qui lui est arrachée. Si vous obtenez un Succès Stupéfiant, vous ne désarmez pas seulement votre adversaire, mais la force de votre manœuvre brise la lame à moins qu'elle ne possède l'Atout Incassable. Si vous échouez au Test, votre adversaire libère sa lame et peut combattre normalement.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Pistolet",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Vous pouvez utiliser cette arme pour attaquer en Combat rapproché.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Pointue",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Il est facile d'atteindre sa cible avec cette arme. Gagnez un bonus de +1 DR à tout Test réussi quand vous attaquez avec cette arme.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Précise",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "L'arme est précise et permet de toucher aisément. Gagnez un bonus de +10 à n'importe quel Test quand vous utilisez cette arme.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Protectrice",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Si vous utilisez cette arme pour opposer une attaque, vous êtes considéré comme ayant Indice PA à tous les endroits de votre corps. Si votre arme possède un Indice Protectrice de 2 ou plus (donc : Protectrice 2 ou Protectrice 3), vous pouvez aussi opposer des projectiles tirés dans votre Ligne de Vue.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Rapide",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes Rapides sont conçues pour frapper avec une telle rapidité que parer n'est pas une option, laissant un adversaire transpercé avant qu'il ait pu réagir. Le porteur d'une arme Rapide peut choisir d'attaquer avec l'arme Rapide en dehors de l'ordre d'Initiative normale, que ce soit pour frapper le premier, le <br><br>De plus, tous les Tests de Corps à corps pour se défendre contre des armes Rapides subissent une pénalité de -10 si votre adversaire utilise une arme sans l'Atout Rapide ; les autres Compétences défendent normalement. Deux adversaires avec des armes Rapides combattent dans l'ordre d'Initiative (l'un par rapport à l'autre) normalement. Une arme Rapide ne peut jamais être aussi Lente (Lente prend le dessus).dernier ou au moment où il le souhaite.",
+    "source": {
+      "book": "LDB",
+      "page": 298
+    }
+  },
+  {
+    "label": "Taille",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Les armes de Taille possèdent de lourdes lames qui peuvent entamer les armures avec une horrifiante facilité. Si vous touchez un adversaire, vous Endommagez de 1 Point une pièce d'armure ou un Bouclier frappé tout en blessant la cible.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Dangereuse",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "Certaines armes sont presque aussi susceptibles de vous blesser que votre adversaire. Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse (voir Chapitre 5 : Règles pour plus d'informations sur les Maladresses).",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Épuisante",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "L'arme est fatigante à utiliser ou il est difficile de viser avec. Vous ne gagnez les bénéfices des Traits d'arme Percutante et Dévastatrice que lors d'un Tour où vous Chargez.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Imprécise",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "Les armes Imprécises sont difficiles à manier car elles sont lourdes ou bien il est difficile de viser avec. Subissez une pénalité de -1 DR quand vous utilisez l'arme pour attaquer. Une arme Imprécise ne peut jamais être également Précise (Imprécise prend le dessus).",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Inoffensive",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "Certaines armes ne sont pas très efficaces pour pénétrer les armures. Tous les PA sont doublés contre les armes Inoffensives. De plus, vous n'infligez pas automatiquement le minimum de 1 Blessure sur une touche réussie en combat.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Lente",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "Les armes Lentes sont lourdes et massives, les rendant difficiles à utiliser correctement. Les Personnages utilisant des armes Lentes frappent toujours en dernier lors d'un Round, sans tenir compte de l'ordre d'Initiative. De plus, les adversaires gagnent un bonus de +1 DR à tout Test pour se défendre contre vos attaques.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Recharge",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "L'arme est longue à recharger. Une arme déchargée possédant ce défaut nécessite un Test étendu de Projectiles approprié au Groupe d'armes correspondant et nécessite également d'obtenir Indice DR pour être rechargée. Si vous êtes interrompu pendant que vous rechargez, vous devez recommencer à zéro.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "Flexible",
+    "type": "Atout",
+    "subType": "Armure",
+    "desc": "Une armure Flexible peut être portée sous une couche d'armure non Flexible si vous le souhaitez. Si c'est le cas, vous gagnez les bénéfices des deux.",
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Impénétrable",
+    "type": "Atout",
+    "subType": "Armure",
+    "desc": "L'armure est particulièrement résistante, ce qui signifie que la plupart des attaques ne peuvent tout simplement pas la pénétrer. Toutes les Blessures Critiques causées par un nombre impair pour vous toucher, tel que 11 ou 33, sont ignorées.",
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Partielle",
+    "type": "Défaut",
+    "subType": "Armure",
+    "desc": "L'armure ne couvre pas entièrement la Localisation. Un adversaire qui obtient un nombre pair pour vous toucher, ou obtient un Coup Critique, ignore les PA de l'armure Partielle.",
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Points faibles",
+    "type": "Défaut",
+    "subType": "Armure",
+    "desc": "L'armure possèdent de petits Points faibles où une lame peut facilement se glisser si votre adversaire est suffisamment habile ou chanceux. Si votre adversaire possède une arme avec l'Atout Empaleuse et obtient un Critique, les PA de votre armure sont ignorés.",
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "% en discretion",
+    "type": "Défaut",
+    "subType": "Armure",
+    "desc": "Certaines armures entraînent une pénalité si vous la portez, par exemple, porter une cotte de mailles entraîne une pénalité de -10 en Discrétion.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  },
+  {
+    "label": "% en perception",
+    "type": "Défaut",
+    "subType": "Armure",
+    "desc": "Certaines armures entraînent une pénalité si vous la portez, par exemple, porter une cotte de mailles entraîne une pénalité de -10 en Discrétion.",
+    "source": {
+      "book": "LDB",
+      "page": 299
+    }
+  }
+]

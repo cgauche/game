@@ -1,0 +1,6411 @@
+[
+  {
+    "label": "Bâton de combat",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Assommante",
+      "Défensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Hallebarde",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Défensive",
+      "Taille",
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Lance",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": "Très longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Pique",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 4,
+    "availability": "Rare",
+    "reach": "Considérable",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Mains nues",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 0,
+    "availability": null,
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+0",
+    "qualities": [
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": "ND",
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Coup-de-poing",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Arme improvisée",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": "Variable",
+    "availability": "ND",
+    "reach": "Variable",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+1",
+    "qualities": [
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": "ND",
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Arme simple",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [],
+    "desc": "Le terme « Arme simple » est utilisé pour décrire un certain nombre d'armes de base qui, bien que différentes, sont considérées comme étant effectivement les mêmes pour le jeu, y compris les épées, les haches, les marteaux, les masses, les lances courtes etc. ",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Bouclier",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Protectrice 2",
+      "Défensive",
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Bouclier (Grand)",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Protectrice 3",
+      "Défensive",
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Bouclier (Targe)",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+1",
+    "qualities": [
+      "Protectrice 1",
+      "Défensive",
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Couteau",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+1",
+    "qualities": [
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Dague",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Lance de cavalerie",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Cavalerie",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": "Très longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+6",
+    "qualities": [
+      "Empaleuse",
+      "Percutante"
+    ],
+    "desc": "Les Lances de cavalerie sont considérées comme des Armes improvisées si vous les utilisez lors d'un Round où vous n'avez pas Chargé.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Marteau à bec-de-corbin",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Cavalerie",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Assommante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Épée bâtarde",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux-mains",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Dévastatrice",
+      "Défensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Grande hache",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux-mains",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+6",
+    "qualities": [
+      "Épuisante",
+      "Percutante",
+      "Taille"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Marteau de guerre",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux-mains",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+6",
+    "qualities": [
+      "Assommante",
+      "Dévastatrice",
+      "Lente"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Pioche à deux mains",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux-mains",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Dévastatrice",
+      "Empaleuse",
+      "Lente"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 9,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Zweihänder",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux-mains",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Dévastatrice",
+      "Taille"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Fleuret",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Escrime",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Rapide",
+      "Empaleuse",
+      "Pointue",
+      "Inoffensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Rapière",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Escrime",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Rapide",
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Fléau",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Fléau",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Perturbante",
+      "À Enroulement"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Fléau à grain",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Fléau",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Perturbante",
+      "Imprécise",
+      "À Enroulement"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Fléau d'armes",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Fléau",
+    "enc": 2,
+    "availability": "Rare",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+6",
+    "qualities": [
+      "Perturbante",
+      "Percutante",
+      "Épuisante",
+      "À Enroulement"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Brise-épée",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Parade",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Défensive",
+      "Piège-lame"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 2,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Main Gauche",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Parade",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Défensive"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 294
+    }
+  },
+  {
+    "label": "Arbalète",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arbalète",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": 60,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Recharge 1"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arbalète de poing",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Arbalète",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": 10,
+    "loc": null,
+    "pa": null,
+    "damage": "+7",
+    "qualities": [
+      "Pistolet"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 6,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arbalète lourde",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arbalète",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dévastatrice",
+      "Recharge 2"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 7,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arc",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arc",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arc court",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arc",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": 20,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arc elfique",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arc",
+    "enc": 2,
+    "availability": "Exotique",
+    "reach": 150,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Dévastatrice",
+      "Pointue"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arc long",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Arc",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Dévastatrice"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Fouet",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Entraves",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": 6,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Immobilisante"
+    ],
+    "desc": "Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée.",
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Lasso",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Entraves",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "BFx2",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Immobilisante"
+    ],
+    "desc": "Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée.",
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Bombe",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Explosifs",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": "BF",
+    "loc": null,
+    "pa": null,
+    "damage": "+12",
+    "qualities": [
+      "À Explosion 5",
+      "Dangereuse",
+      "Percutante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Bombe incendiaire",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Explosifs",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "BF",
+    "loc": null,
+    "pa": null,
+    "damage": "Spécial",
+    "qualities": [
+      "À Explosion 4",
+      "Dangereuse"
+    ],
+    "desc": "Une Bombe incendiaire donne +DR État En flammes à chaque cible affectée.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Fronde",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Fronde",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": 60,
+    "loc": null,
+    "pa": null,
+    "damage": "+6",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Fustibale",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Fronde",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+7",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Bolas",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": "BFx3",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF",
+    "qualities": [
+      "Immobilisante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Couteau de lancer",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "BFx2",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Fléchette",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "BFx2",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+1",
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Hache de lancer",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "BFx2",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Taille"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Javelot",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "BFx3",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Rocher",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Lancer",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "BFx3",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF",
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": "",
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arquebus à répétition",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Ingénierie",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": 30,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Dévastatrice",
+      "À Poudre noire",
+      "Recharge 5",
+      "À Répétition 4"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Pistolet à répétition",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Ingénierie",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": 10,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "Dangereuse",
+      "Dévastatrice",
+      "Pistolet",
+      "À Poudre noire",
+      "Recharge 4",
+      "À Répétition 4"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Arquebuse",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Dévastatrice",
+      "À Poudre noire",
+      "Recharge 3"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Long fusil d'Hochland",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dévastatrice",
+      "Pointue",
+      "À Poudre noire",
+      "Précise",
+      "Recharge 4"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 100,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Pistolet",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": 20,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "Dévastatrice",
+      "Pistolet",
+      "À Poudre noire",
+      "Recharge 1"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Tromblon",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": 20,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "Dangereuse",
+      "Dévastatrice",
+      "À Poudre noire",
+      "Recharge 2",
+      "À Explosion 3"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 295
+    }
+  },
+  {
+    "label": "Carreau",
+    "prefix": "(12)",
+    "type": "ammunition",
+    "subType": "Arbalète",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Flèche",
+    "prefix": "(12)",
+    "type": "ammunition",
+    "subType": "Arc",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Empaleuse"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Flèche elfique",
+    "prefix": null,
+    "type": "ammunition",
+    "subType": "Arc",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": "+50",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Précise",
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Balle de plomb",
+    "prefix": "(12)",
+    "type": "ammunition",
+    "subType": "Fronde",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "-10",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Assommante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Projectile de pierre",
+    "prefix": "(12)",
+    "type": "ammunition",
+    "subType": "Fronde",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Assommante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Balle et Poudre",
+    "prefix": "(12)",
+    "type": "ammunition",
+    "subType": "Poudre noire et ingénierie",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Munitions improvisées et Poudre",
+    "prefix": null,
+    "type": "ammunition",
+    "subType": "Poudre noire et ingénierie",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Moitié de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Petites munitions et Poudre",
+    "prefix": null,
+    "type": "ammunition",
+    "subType": "Poudre noire et ingénierie",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "À Explosion +1"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 296
+    }
+  },
+  {
+    "label": "Calotte de cuir",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Cuir souple",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Tête",
+    "pa": 1,
+    "damage": null,
+    "qualities": [
+      "Partielle"
+    ],
+    "desc": "Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Jambières en cuir",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Cuir souple",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Jambes",
+    "pa": 1,
+    "damage": null,
+    "qualities": [],
+    "desc": "Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.",
+    "price": {
+      "gold": 0,
+      "silver": 14,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Justaucorps de cuir",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Cuir souple",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Corps",
+    "pa": 1,
+    "damage": null,
+    "qualities": [],
+    "desc": "Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Veste de cuir",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Cuir souple",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Bras, Corps",
+    "pa": 1,
+    "damage": null,
+    "qualities": [],
+    "desc": "Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.",
+    "price": {
+      "gold": 0,
+      "silver": 12,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Plastron de cuir",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Cuir bouilli",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": "Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Points faibles"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Chausses de mailles",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Mailles",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": "Jambes",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Flexible",
+      "-10% en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Chemise de mailles",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Mailles",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": "Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Flexible",
+      "-10% en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Coiffe de mailles",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Mailles",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": "Tête",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Flexible",
+      "Partielle",
+      "-10% en Discrétion",
+      "-10% en Perception"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Cotte de mailles",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Mailles",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Mains, Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Flexible",
+      "-10% en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Brassards",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Plate",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": null,
+    "loc": "Mains, Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Impénétrable",
+      "Points faibles",
+      "-10% en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Heaume",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Plate",
+    "enc": 2,
+    "availability": "Rare",
+    "reach": null,
+    "loc": "Tête",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Impénétrable",
+      "Points faibles",
+      "-10% en Discrétion",
+      "-20% en Perception"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Heaume ouvert",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Plate",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": "Tête",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Partielle",
+      "-10% en Discrétion",
+      "-10% en Perception"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Jambières d'acier",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Plate",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": null,
+    "loc": "Jambes",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Impénétrable",
+      "Points faibles",
+      "-20 % en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Plastron",
+    "prefix": null,
+    "type": "armor",
+    "subType": "Plate",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": "Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      "Impénétrable",
+      "Points faibles",
+      "-10% en Discrétion"
+    ],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 300
+    }
+  },
+  {
+    "label": "Baril",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 6,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Capacité: 145 litres de liquide.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Besace",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Considéré comme « porté » si vous le mettez en bandoulière.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Bourse",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Chope en étain",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Cruche",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "4/5 litres de liquide.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Étui à parchemin",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Flasque",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "1 demi-litre de liquide.",
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Fontes de selle",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 4,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Grand sac",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite une main pour être transporté (ou deux mains s'il est plein).",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Outre à eau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Capacité: 4/5 litres de liquide.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 8
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Sac",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite 1 main pour être transporté.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Sac à dos",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Considéré comme « porté » si vous le fixez à votre dos.",
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Tonneau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Sacs et Contenants",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Capacité: 45 litres de liquide.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 301
+    }
+  },
+  {
+    "label": "Amulette",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Bijoux",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Le prix varie en fonction de la fabrication, du type de métal et de la valeur des gemmes. En règle générale, des bagues communes sans gemme coûtent 10 pièces du métal correspondant (par exemple, cuivre, argent ou or) alors que les colliers coûtent 20 pièces du métal correspondant.",
+    "price": {
+      "gold": "Variable",
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Bottes",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Canne de marche",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les cannes en bois poli avec des pommeaux de métal sont des symboles de statut pour les citoyens les plus fortunés.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Cape",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Capuchon",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Masque",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Chapeau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les chapeaux de qualité sont des symboles de statut dans les villes et cités de l'Empire. Plus le chapeau est voyant, mieux c'est.",
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Chaussures",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Chevalière",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Des bagues en or avec un sceau gravé sont portées par des nobles et des représentants de guildes, qui les utilisent pour imprimer un héraldique ou un emblème sur un cachet de cire.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Costume",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Épingle",
+    "prefix": "(6)",
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Gants",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Gants en cuir",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Costume de cour",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les tenues des Nobles comprennent des poignets et des cols en dentelle, des tissus de grande qualité et des chaussures à bouts pointus. Leurs serviteurs portent également des tenues luxueuses lors des banquets et des cérémonies. Mais leurs livrées et corsages sont moins ostentatoires que ceux des nobles et peuvent donc être achetés à moitié prix.",
+    "price": {
+      "gold": 12,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Manteau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Protège le porteur contre les éléments et le froid extrême ; sans un bon manteau ou similaire, vous recevrez des pénalités pour résister à l'exposition au froid (voir page 181).",
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Parfum",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Poudre pour le visage",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Robes",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Sceptre",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les plus hauts responsables juridiques portent des sceptres pour indiquer leur statut.",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Symbole religieux",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 8
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Tatouage",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Uniforme",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Vêtements",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Vêtements et Accessoires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Bière, pinte",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 3
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Bière, tonnelet",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Capacité de 13 litres. Les tonnelets vides peuvent être remplis pour 18sc.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Bière de Bugman XXXXXX, pinte",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Des marchands voyagent à travers le Vieux Monde pour acheter cette forte bière naine issue de la célèbre brasserie fondée par Josef Bugman. La bière de Bugman XXXXXX est vendue dans la plupart des principales cités. Une chope de bière de Bugman XXXXXX compte pour 4 chopes de bière normale pour le calcul de l'intoxication (voir Résistance à l'alcool à la page 129), et confère une immunité aux Tests de Peur pour 1d10 heures.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 9
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Chambre, commune/nuit",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les invités qui dorment dans des chambres communes doivent se méfier des voleurs.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Chambre, privée/nuit",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Convient à 2 invités. Les grandes chambres coûtent le double du prix et conviennent à 4 invités.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Écurie/nuit",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Nourriture, courses/journée",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Repas, auberge",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Spiritueux, pinte",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Vin, bouteille",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Vin & spiritueux, verre",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Ration",
+    "prefix": "(1 jour)",
+    "type": "trapping",
+    "subType": "Nourriture, Boisson et Hébergement",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 302
+    }
+  },
+  {
+    "label": "Aiguille",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Balai",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Béquille",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Bésicles",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les bésicles de verre dotées de poignées confèrent un bonus de +20 aux Tests de Lire/Écrire pour déchiffrer une écriture minuscule ou inintelligible. Les Tests de Perception pour chercher des détails précis, tels qu'une porte ou un",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Binette",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Boulier",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Brosse pour le sol",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Cachet, gravé",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Ciseau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Clef",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Clou",
+    "prefix": "(12)",
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Couteau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Cure-oreille",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Faucille",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Gaffe",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Hameçon",
+    "prefix": "(12)",
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Peut être utilisé pour attraper du poisson (voir Trouver de la nourriture et des herbes à la page 131).",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Maillet",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Marteau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Menottes",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les prisonniers qui essaient de se libérer de menottes subissent 1 Blessure et doivent réussir un Test de Force Très difficile (-30).",
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Miroir à main",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 1,
+      "silver": 1,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Nécessaire antipoison",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Renferme un petit couteau, des herbes et un bocal de sangsue. Un Test de Guérison réussi avec un nécessaire antipoison retire tout État Empoisonné. Le traitement prend au moins deux Rounds.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Nécessaire d'écriture",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Renferme une plume d'oie, un encrier et du papier buvard.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Nécessaire de déguisement",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Comprend suffisamment d'accessoires pour quatre déguisements (par exemple des perruques et du maquillage) ainsi que des éléments pour changer votre apparence, utilisés par ceux qui possèdent la Compétence Divertissement (Interprétation) (par exemple de la cire, du faux sang et des prothèses).",
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Outils de crochetage",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Un assortiment de petits outils aux formes variées nécessaire pour utiliser la Compétence Crochetage sans pénalité.",
+    "price": {
+      "gold": 0,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Peigne",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pelle",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Perche",
+    "prefix": "(3 mètres)",
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 3,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Une longue perche est utilisée pour diriger une barque ; compte comme une Arme improvisée.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pied-de-biche",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Piège à animaux",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Utilisé pour attraper du gibier (voir Trouver de la nourriture et des herbes à la page 131).",
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pilon et Mortier",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 14,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pinces, acier",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pince à épiler",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pinceau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Pioche",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Plume d'oie",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Râteau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Scie",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Seau",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Serpillère",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Télescope",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils et nécessaires",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 303
+    }
+  },
+  {
+    "label": "Carte",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Document légal",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Un simple document juridique, un testament, une reconnaissance de dettes ou une lettre d'intention.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Licence de Guilde",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "ND",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les licences de Guilde sont généralement imprimées sur de simples feuilles de parchemin, cachetées avec un sceau officiel et signées par le maître de Guilde local. Les licences de Guilde ne s'achètent pas ; elles sont accordées aux membres des Guildes selon les traditions et les lois de chacune.",
+    "price": {
+      "gold": "ND",
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Apothicaire)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les livres d'Apothicaire sont en général manuscrits. Un livre d'apothicaire de base contient des descriptions d'ingrédients et des instructions avec des diagrammes pour les processus de brassage. Des préparations pour des toniques digestifs, des décoctions de guérison et de vitalité sont",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Art)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Pièces, poèmes, ballades ou peut-être des arrangements musicaux griffonnés sur des parchemins volants, les livres d'Art prennent différentes formes. Ils comprennent également les traités de perspective, de forme et de style souvent rédigés par des peintres ou sculpteurs célèbres – tels que Leonardo",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Cryptographie)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Là où les algorithmes et les clefs de cryptage peuvent être rédigés sur une seule page ou deux, les livres de cryptographie sont souvent des codex manuscrits traitant de mathématiques, de numérologie et de cryptage poly-alphabétique.",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Ingénierie)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "La majorité des livres d'ingénierie sont imprimés. L'ingénierie est une science avancée de l'Empire, en grande partie grâce à l'École des Ingénieurs impériaux d'Altdorf et la Guilde des Ingénieurs nains. De ce fait, les textes d'Ingénierie sont souvent écrits, co-écrits et publiés par ces derniers.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Loi)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les lois varient considérablement d'une région à une autre. Les cités possédant des presses à imprimer en rassemblent les décrets en volumes reliés, alors que les juges des plus petites villes se réfèrent souvent à des documents manuscrits, rédigés il y a des siècles. Les livres de Loi utilisés par les juristes itinérants ou les juges combinent souvent des pages imprimées et manuscrites issues de différentes villes à travers l'Empire, collectées et rassemblées à l'intérieur d'une même couverture.",
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Magie)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les grimoires de Sorts sont en général rédigés par des Sorciers, et leurs couvertures sont souvent fermées par des serrures. Parfois, les grimoires sont même protégés par des alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Médecine)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les textes médicaux peuvent aussi bien être manuscrits qu'imprimés, en fonction du prestige de l'auteur médecin. Les illustrations sont courantes, et incluent généralement des dessins d'autopsies détaillés et des procédures expliquées.",
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Livre (Religion)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les livres religieux sont de toutes formes dans l'Empire, réputé pour ses observances religieuses. Il existe un marché important pour les textes les plus populaires, dont la plupart sont fabriqués à moindre coût sur des presses à imprimer.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Grimoire",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les grimoires de Sorts sont en général rédigés par des Sorciers, et leurs couvertures sont souvent fermées par des serrures. Parfois, les grimoires sont même protégés par des alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Parchemin",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Feuille de parchemin",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Tract",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Livres et documents",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 304
+    }
+  },
+  {
+    "label": "Atelier",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "L'éventail d'outils est large",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Apothicaire)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des brûleurs à huile, des étagères pleines d'ingrédients, un pilon et un mortier, des cuillères, des bocaux, des poids et une balance.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Charpentier)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des tours à bois, des rabots, des pinces, un stock de bois de charpente, marteau et clous, scie, règle de mesure, craie et fil à plomb.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Forgeron)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent une enclume, un fourneau, un tas-étampe, des masses, des lingots de métal, marteau, tenailles, poinçons, étampes, mèches et foreuses.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Graveur)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des moules, des presses, gravoirs, poinçons, cire, acide, marteau et ciseaux.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Artiste)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des chevalets ou des piédestaux, des stocks de toiles, de parchemin, de vélin, de bois, d'argile ou de pierres non taillées, brosses et pinceaux, marteau et ciseaux, râpes, limes et grattoirs.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Herboriste)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des séchoirs, des passoires, des entonnoirs, des bols, des bocaux, pilon et mortier, petits couteaux, sécateurs et gants.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Ingénieur)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des poulies, des cordes, des tables à dessin, sablier, règle de mesure, cordeau, compas de dessin et équerre en T.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Atelier (Médecin)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": "ND",
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Ateliers incluent des dessins anatomiques, des instruments assortis et une table de chirurgie, aiguilles et sutures, bandages, scalpel, vinaigre, forceps et speculum.",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "L'éventail d'outils est large",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Apothicaire)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Outils comprennent un pilon et un mortier, des cuillères, des bocaux, des poids et une balance",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Charpentier)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Marteau et clous, scie, règle de mesure, craie et fil à plomb",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Forgeron)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Marteau, tenailles, poinçons, étampes, mèches et foreuses",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Graveur)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Gravoirs, poinçons, cire, acide, marteau et ciseaux",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Artiste)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Brosses et pinceaux, marteau et ciseaux, râpes, limes et grattoirs",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Herboriste)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Pilon et Mortier, petits couteaux, sécateurs et gants",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Ingénieur)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Sablier, règle de mesure, cordeau, compas de dessin et équerre en T",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Médecin)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Aiguilles et sutures, bandages, scalpel, vinaigre, forceps et speculum",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Outils professionnels (Navigateur)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Outils professionnels et ateliers",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Quadrant, astrolabe, cartes et compas, sablier et ligne de sonde.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 305
+    }
+  },
+  {
+    "label": "Barque",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Un rameur est la norme.",
+    "price": {
+      "gold": 6,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Chaland",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite trois membres d'équipage.",
+    "price": {
+      "gold": 225,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Chariot",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite un conducteur et deux chevaux.",
+    "price": {
+      "gold": 75,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Charrette",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite un conducteur et un animal de trait.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Cheval de guerre léger",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 70,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Cheval de selle",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Cheval de trait",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Chien",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Collier et laisse (chien)",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 7
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Coracle",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 6,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les coracles sont de petits bateaux légers qui conviennent pour une personne et peuvent être facilement transportés. Ils sont faits de cuir, ou d'écorce, tendu sur un cadre de bois, et dirigés à l'aide d'une seule rame.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Destrier",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cheval entraîné pour la guerre.",
+    "price": {
+      "gold": 230,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Diligence",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Nécessite deux conducteurs et quatre chevaux.",
+    "price": {
+      "gold": 150,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Mule",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Pigeon voyageur",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Poney",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": null,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Poulet",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 5
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Selle et Harnais",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 4,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 6,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Singe",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 2,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Vers",
+    "prefix": "(6)",
+    "type": "trapping",
+    "subType": "Animaux et véhicules",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 1
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Bave",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Extrait des oursins caméléons des marais de l'Empire, cet hallucinogène extraordinairement puissant donne des visions d'un désir profond, comme un amour perdu, un ami décédé ou un enfant disparu. Appelé Bave dans les rues, il est populaire auprès des personnes désespérées. Après l'exposition, vous devez réussir un Test d'Endurance Très difficile (-30) ou être perdu dans un fantasme très réaliste, que le MJ doit gérer. Durée: 1d10 minutes.",
+    "price": {
+      "gold": 1,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Bonnet de fou",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Ces champignons hallucinogènes sont consommés par les gobelins fanatiques avant la bataille. Ils induisent une rage berserk, ajoutant +10 en Force, +4 Blessures et le Talent Frénésie. Quand l'effet se dissipe, l'utilisateur perd 1d10 Points de Blessure. Tous ceux qui ne sont pas des peaux-vertes doivent aussi réussir un Test de Résistance Intermédiaire (+0) ou contracter une Infection mineure. Durée: actif tant qu'il est mâché plus 2d10 minutes supplémentaires.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Brise-cœur",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Combiner les venins d'un Amphisbaena (un serpent rare à deux têtes) et d'un Jabberslythe produit un poison inodore et incolore. Quand il est ingéré, la mixture mortelle inflige 4 État Empoisonné. Combattu avec un Test de Résistance Complexe (-10).",
+    "price": {
+      "gold": 40,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Délice de Ranald",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Ce stimulant très addictif est un composé synthétique à base de soufre, de mercure et d'autres éléments. Inhaler la poudre octroie un bonus de +1 en Mouvement, et de +10 en F, E, Ag et CC. Cela dure trois heures, après lesquelles l'utilisateur subit une pénalité de -2 en Mouvement et -20 en Capacité de Combat, Endurance, Force et Agilité. Durée: 1 jour.",
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Fleur de lune",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Ce tranquillisant est une mousse séchée qui pousse seulement sur les feuilles de la forêt Laurelorn. Les elfes utilisent la Fleur de lune pour traiter la Peste noire, octroyant un bonus de +30 à tous les Tests associés pour résister à la maladie, mais elle n'a aucun effet sur les autres races. Les autres peuvent inhaler les vapeurs en faisant bouillir la mousse et s'ils ratent un Test de Force Mentale Très difficile (-30) gagnent un État Inconscient. Sur un succès, ils reçoivent un bonus de +20 aux Tests de Calme et gagnent 1 État Exténué. La Fleur de lune est utilisée comme anesthésique par les médecins réputés et onéreux. Durée: 1d10 + 5 heures.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Lotus noir",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cette plante mortelle pousse dans les jungles des Terres du Sud, et elle est utilisée pour empoisonner les lames. Les victimes qui subissent au moins 1 Point de Blessure d'une lame recouverte de sa sève subissent immédiatement 2 État Empoisonnés. Combattu avec un Test de Résistance Complexe (-10).",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Mystracine",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "L'une des drogues de rue les plus courantes de l'Empire, la mystracine doit être mâchée, pour apporter une sensation d'euphorie et des hallucinations agréables qui, selon les dires de certains, pourraient être reliées aux Vents de la Magie. La drogue donne un bonus de +10 aux Tests d'Endurance et de Force Mentale, mais une pénalité de -10 aux Tests d'Agilité, d'Initiative et d'Intelligence. Durée: active tant qu'elle est mâchée plus 1d10 x 10 minutes supplémentaires.",
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Racine de mandragore",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cette substance hallucinogène extrêmement addictive pousse sous les potences et elle est mâchée pour calmer un esprit agité. Les utilisateurs doivent réussir un Test de Force Mentale à chaque Round pour effectuer une Action ou un Mouvement (un au choix) ; de plus, le Mouvement est réduit de moitié. Cependant, les Tests de Calme reçoivent un bonus de +20. Durée: active tant qu'elle est mâchée plus 1d10 x 10 minutes supplémentaires.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 306
+    }
+  },
+  {
+    "label": "Belladone",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "La consommation de cette herbe plonge la victime dans un profond sommeil au bout de 2-3 heures, à moins qu'elle réussisse un Test de Résistance. Un sommeil induit par la belladone dure 1d10 + 4 heures. Dose: 1 par personne.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Cataplasme de guérison",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cette bande médicinale malodorante est fabriquée à partir d'excréments et d'urine d'animaux, associés à un certain nombre d'herbes communes telles que la sigmafoil, la tarrabeth ou la valériane. Vous ne subissez aucune Infection mineure issue d'une Blessure Critique traitée avec un cataplasme de guérison.",
+    "price": {
+      "gold": 0,
+      "silver": 12,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Faxtoryll",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Appliqués sur une plaie, les cataplasmes constitués de ce coagulant végétal retirent tout État Hémorragique sans Test de Guérison. Dose: 1 par Blessure Critique.",
+    "price": {
+      "gold": 0,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Potion de guérison",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Si vous avez plus de 0 Blessure, récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance. Dose: 1 par rencontre.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Potion de vitalité",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Boire cette décoction retire instantanément tout État Exténué.",
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Racine de terre",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Cette herbe est ingérée pour annuler les effets de bubons causés par la Peste noire (bien que l'odeur soit toujours conséquente). De plus, gagnez un bonus de +10 à tous les Tests concernant la maladie. Dose: 1 par jour.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Soude commune",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Maintenu sous le nez d'une personne, l'arôme d'une branche écrasée de cette herbe retire 1 État Sonné. Dose: 1 par rencontre.",
+    "price": {
+      "gold": 0,
+      "silver": 12,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Tonique digestif",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Octroie +20 aux Tests pour se remettre des maux d'estomacs tels que la Courante galopante ou le Flux sanglant (voir Maladies et Infections page 186).",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 307
+    }
+  },
+  {
+    "label": "Cache-œil",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Souvent décoratif, un cache-œil est utilisé pour recouvrir un globe oculaire meurtri.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Crochet",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Vous possédez un crochet là où vous aviez une main. Outil étonnamment maniable une fois que vous vous y êtes habitué, vous pouvez racheter la pénalité de -20 à tous les Tests impliquant deux mains pour 100 PX pour chaque tranche de 5, soustraite de la pénalité, retirant la pénalité entière pour 400 PX. Ajout: en Combat rapproché, les Crochets sont considérés comme des Dagues.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Dents en bois",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les fausses dents sont souvent magnifiquement sculptées et peintes, et représentent parfois une amélioration par rapport aux originales. Vous ignorez toutes les pénalités dues à la perte de dents.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Fausse jambe",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Une fausse jambe (ou juste un faux pied, pour la moitié du prix) vous permet d'ignorer 1 Point de Mouvement perdu par la perte de votre membre. De plus, pour 100 PX, vous pouvez récupérer le dernier Point de Mouvement perdu, car vous vous entraînez à utiliser votre prothèse, et pour 200 PX, vous réapprenez comment utiliser de nouveau Esquive. Tout cela nécessite, cependant, que vous ne perdiez pas votre fausse jambe.",
+    "price": {
+      "gold": 0,
+      "silver": 16,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Merveille d'ingénierie",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Si, et seulement si, vous êtes extrêmement riche, vous commandez une œuvre d'art auprès de l'une des Guildes d'Ingénieurs, ce qui vous permet d'ignorer complètement la perte d'une oreille, d'une main, d'un bras ou d'une jambe, lorsque la vapeur siffle et que la machinerie fonctionne à la place du sang et des muscles. Si vous subissez une Blessure Critique à la Merveille, elle tombe automatiquement en panne et doit être rapportée pour une réparation coûteuse (au moins 10 % du prix de base, en fonction de la nature de la Blessure Critique reçue).",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Nez doré",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Bien que la plupart soient faits de bois ou de céramique, le terme de nez doré demeure très utilisé. Vous pouvez ignorer la perte de Sociabilité due au fait de ne pas avoir de nez.",
+    "price": {
+      "gold": 0,
+      "silver": 18,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Œil de verre",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Prothèses",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Très populaire chez les riches qui préfèrent ne pas arborer un trop grossier cache-œil, l'œil de verre se présente sous différentes formes, du bois au verre poli.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Affiche",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 2,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Allumette",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 1
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Assiette",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Bâche de toile",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Balle",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 5
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Bandages",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Un Test de Guérison ou de Dextérité réussi retire +1 État Hémorragique supplémentaire.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Bâtonnet de fusain",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Boîte à amadou",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 2
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Bol",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Bougie",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Fournit un éclairage sur 10 mètres lorsqu'elle est allumée.",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Casserole",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 7,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Chiffons",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 1
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Corde",
+    "prefix": "(10 mètres)",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Couvert",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 6
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Couverture",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 8
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Craie",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Dés",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Grappin",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Couplé à une corde, il permet de gravir des surfaces inaccessibles.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 10
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Instrument",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Divers instruments sont inclus dans cette catégorie. Le prix et l'encombrement standard correspondent aux instruments de taille moyenne (exemple, mandoline, corne de cocher, petit tambour). Les petits instruments coûtent la moitié du prix et compte pour 0 Point d'Encombrement (par exemple, pipeau, flûte à bec, tambourin). Les plus grands instruments coûtent le double du prix et comptent pour 2 Points d'Encombrement (par exemple harpe, luth, grand tambour).",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Lampe Davrich",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Une lampe de sûreté développée la première fois pour les mines du Reikland par le Maître Ingénieur Davrich Stephansson. Elle abrite une bougie qui émet une lumière vive en présence de « grisou » (gaz explosif) ; après 1d10 Rounds d'exposition à la lampe, le grisou explosera. Il est donc sage de se replier avant que cela n'arrive.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Huile de lampe",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Contient assez de combustible pour 4 heures d'utilisation standard, ou 8 heures avec une petite flamme équivalente à une bougie.",
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Lampe tempête",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Des obturateurs protègent la flamme du vent, et permet également de diriger la lumière dans un arc de 90° ou de l'obscurcir complètement. Fournit un éclairage sur 20 mètres, ou 30 quand il est ciblé.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Lanterne",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Fournit un éclairage sur 20 mètres.",
+    "price": {
+      "gold": 0,
+      "silver": 12,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Marmite",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Matraque",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Paquet de cartes",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Pipe et Tabac",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 4
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Poupée",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Sac de couchage",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les Tests de Résistance effectués pour résister au froid (voir page 181) gagnent un bonus de +20 quand vous l'utilisez pour vous reposer.",
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Tasse",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 8
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  },
+  {
+    "label": "Tente",
+    "prefix": null,
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Une tente de taille moyenne pour 4 personnes dormant côte à côte. Les petites tentes conviennent à 2 personnes pour la moitié du prix et 1 Point d'Encombrement. Les grandes tentes sont prévues pour 8 personnes, pour le double du prix et 4 Points d'Encombrement.",
+    "price": {
+      "gold": 0,
+      "silver": 12,
+      "bronze": 0
+    },
+    "source": {
+      "book": "LDB",
+      "page": 308
+    }
+  }
+]

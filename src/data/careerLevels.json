@@ -1,0 +1,7834 @@
+[
+  {
+    "label": "Pamphlétaire",
+    "career": "Agitateur",
+    "level": 1,
+    "skills": [
+      "Art (Écriture)",
+      "Charme",
+      "Marchandage",
+      "Métier (Imprimerie)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Savoir (Politique)",
+      "Subornation"
+    ],
+    "talents": [
+      "Baratiner",
+      "Faire la manche",
+      "Lire/Écrire",
+      "Sociable"
+    ],
+    "trappings": [
+      "Nécessaire d'écriture",
+      "Marteau",
+      "Clou",
+      "Pile de prospectus"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Intelligence",
+      "Sociabilité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Agitateur",
+    "career": "Agitateur",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Divertissement (Narration)",
+      "Esquive",
+      "Intuition",
+      "Pari"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Ergoteur",
+      "Ferveur ardente",
+      "Orateur"
+    ],
+    "trappings": [
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Fauteur de Troubles",
+    "career": "Agitateur",
+    "level": 3,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Bagarre)",
+      "Intimidation",
+      "Perception"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Fuite !",
+      "Menteur",
+      "Pas de côté"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Pamphlétaire"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Démagogue",
+    "career": "Agitateur",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Affable",
+      "Grand orateur",
+      "Intrigant",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Pamphlétaire (3)",
+      "Mécène",
+      "Presse à imprimer",
+      "Chapeau impresionnant"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Apprenti Artisan",
+    "career": "Artisan",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Discrétion (Urbaine)",
+      "Esquive",
+      "Évaluation",
+      "Métier (Au choix)",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Artiste (Au choix)",
+      "Infatigable",
+      "Maître artisan (Au choix)",
+      "Très fort"
+    ],
+    "trappings": [
+      "Craie",
+      "Justaucorps de cuir",
+      "Chiffon (1d10)"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Dextérité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Artisan",
+    "career": "Artisan",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Langue (Guilde)",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Costaud",
+      "Doigts de fée",
+      "Négociateur",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Outils professionnels"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Maître artisan",
+    "career": "Artisan",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intuition",
+      "Recherche",
+      "Signes secrets (Guilde)"
+    ],
+    "talents": [
+      "Bricoleur",
+      "Lire/Écrire",
+      "Sens aiguisé (Goût ou Toucher)",
+      "Travailleur qualifié (Au choix)"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Atelier"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître de guilde",
+    "career": "Artisan",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Subornation"
+    ],
+    "talents": [
+      "Intrigant",
+      "Magnum Opus",
+      "Orateur",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Guilde",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Employé",
+    "career": "Bourgeois",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Conduite d'attelage",
+      "Escalade",
+      "Esquive",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Costaud",
+      "Insignifiant",
+      "Savoir-vivre (Serviteurs)"
+    ],
+    "trappings": [
+      "Hébergement",
+      "Bonnes chaussures"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Intelligence",
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Bourgeois",
+    "career": "Bourgeois",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Évaluation",
+      "Intuition",
+      "Musicien (Au choix)",
+      "Savoir (Région)",
+      "Subornation"
+    ],
+    "talents": [
+      "Escroquer",
+      "Négociateur",
+      "Savoir-vivre (Au choix)",
+      "Sociable"
+    ],
+    "trappings": [
+      "Maison de ville",
+      "Serviteur",
+      "Plume d'oie",
+      "Encre"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Conseiller municipal",
+    "career": "Bourgeois",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Perception",
+      "Recherche",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Coopératif",
+      "Lire/Écrire",
+      "Orateur",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Diligence",
+      "Cocher",
+      "Maison de ville"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Bourgmestre",
+    "career": "Bourgeois",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Affable",
+      "Grand orateur",
+      "Intrigant",
+      "Présence imposante"
+    ],
+    "trappings": [
+      "Chaîne officielle",
+      "Diligence",
+      "Valet de pied",
+      "Vêtements de qualité",
+      "Grand hôtel particulier avec jardins",
+      "Serviteurs"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Limier",
+    "career": "Enquêteur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Discrétion (Urbaine)",
+      "Escalade",
+      "Intuition",
+      "Perception",
+      "Pistage",
+      "Ragot"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Insignifiant",
+      "Lire/Écrire",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Lanterne",
+      "Huile de lampe",
+      "Journal",
+      "Plume d'oie",
+      "Encre"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Agilité",
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Enquêteur",
+    "career": "Enquêteur",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Crochetage",
+      "Escamotage",
+      "Esquive",
+      "Résistance à l'alcool",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Discret",
+      "Persévérant",
+      "Perspicace",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Loupe",
+      "Outils de crochetage",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Maître Enquêteur",
+    "career": "Enquêteur",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Évaluation",
+      "Savoir (Au choix)",
+      "Subornation"
+    ],
+    "talents": [
+      "Affable",
+      "Effraction",
+      "Sixième sens",
+      "Studieux"
+    ],
+    "trappings": [
+      "Assistant",
+      "Bureau"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Détective",
+    "career": "Enquêteur",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Lecture rapide",
+      "Savant (Au choix)",
+      "Sens aiguisé (Au choix)",
+      "Tour des souvenirs"
+    ],
+    "trappings": [
+      "Longue vue",
+      "Réseau d'informateurs"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Négociant",
+    "career": "Marchand",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Conduite d'attelage",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Soin aux animaux",
+      "Subornation"
+    ],
+    "talents": [
+      "Affable",
+      "Baratiner",
+      "Lire/Écrire",
+      "Négociateur"
+    ],
+    "trappings": [
+      "Bouiller",
+      "Mule",
+      "Charette",
+      "Bâche de toile",
+      "Pistoles d'argent (3d10)"
+    ],
+    "characteristics": [
+      "Force Mentale",
+      "Agilité",
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Marchand",
+    "career": "Marchand",
+    "level": 2,
+    "skills": [
+      "Évaluation",
+      "Intuition",
+      "Langue (Au choix)",
+      "Langue (Guilde)",
+      "Perception",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Escroquer",
+      "Perspicace",
+      "Savoir-vivre (Guildes)",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Bateau de transport fluvial ou Chariot (2)",
+      "Licence de Guilde",
+      "20 CO"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître Marchand",
+    "career": "Marchand",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Langue (Classique)",
+      "Orientation",
+      "Signes secrets (Guilde)"
+    ],
+    "talents": [
+      "Menteur",
+      "Numismate",
+      "Savoir-vivre (Au choix)",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Hôtel particulier",
+      "Serviteurs",
+      "Entrepôt",
+      "100 CO"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Prince Marchand",
+    "career": "Marchand",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Chanceux",
+      "Intrigant",
+      "Nanti",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Bateau de transport fluvial (2) ou Chariot (4)",
+      "Grand domaine",
+      "Entrepôt (2)",
+      "1000 CO",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Indigent",
+    "career": "Mendiant",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Charme",
+      "Discrétion (Urbaine)",
+      "Esquive",
+      "Intuition",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Brouet",
+      "Faire la manche",
+      "Résistance (Maladie)",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Couverture de mauvaise qualité",
+      "Tasse"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Agilité",
+      "Sociabilité"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Mendiant",
+    "career": "Mendiant",
+    "level": 2,
+    "skills": [
+      "Divertissement (Au choix)",
+      "Divertissement (Interprétation)",
+      "Escamotage",
+      "Marchandage",
+      "Perception",
+      "Ragot"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Criminel",
+      "Insignifiant",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Béquille",
+      "Bol"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Maître Mendiant",
+    "career": "Mendiant",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Emprise sur les animaux",
+      "Savoir (Région)",
+      "Signes secrets (Vagabond)"
+    ],
+    "talents": [
+      "Baratiner",
+      "Combat déloyal",
+      "Dur à cuire",
+      "Pas de côté"
+    ],
+    "trappings": [
+      "Nécessaire de déguisement",
+      "Planque",
+      "Disciple indigent"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Roi des Mendiants",
+    "career": "Mendiant",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Subornation"
+    ],
+    "talents": [
+      "Affable",
+      "Caïd",
+      "Menteur",
+      "Sans peur (Miliciens)"
+    ],
+    "trappings": [
+      "Antre",
+      "Groupe important de disciples Mendiants"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Recrue de la Milice",
+    "career": "Milicien",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Au choix)",
+      "Escalade",
+      "Esquive",
+      "Pari",
+      "Perception",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Dur à cuire",
+      "Frappe assommante",
+      "Persévérant"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Veste de cuir",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Milicien",
+    "career": "Milicien",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Intimidation",
+      "Intuition",
+      "Ragot",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Criminel",
+      "Effraction",
+      "Sprinter",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Lanterne",
+      "Perche",
+      "Huile de lampe",
+      "Insigne en cuivre"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Sergent de la Milice",
+    "career": "Milicien",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Divertissement (Narration)",
+      "Marchandage",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Désarmer",
+      "Flairer les ennuis",
+      "Sans peur (Criminels)",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Plastron",
+      "Heaume",
+      "Symbole de garde"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine de la Milice",
+    "career": "Milicien",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Caïd",
+      "Intrigant",
+      "Orateur",
+      "Robuste"
+    ],
+    "trappings": [
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Chapeaau de qualité",
+      "Arme simple de qualité",
+      "Symbole de garde de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Chasseur de Rat",
+    "career": "Ratier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Discrétion (Urbaine ou Souterrains)",
+      "Dressage (Chien)",
+      "Emprise sur les animaux",
+      "Projectiles (Fronde)",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Frappe assommante",
+      "Résistance (Maladie)",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Fronde",
+      "Projectile de pierre (12)",
+      "Sac",
+      "Petit chien féroce"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Capacité de Tir",
+      "Force Mentale"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Ratier",
+    "career": "Ratier",
+    "level": 2,
+    "skills": [
+      "Marchandage",
+      "Perception",
+      "Piégeage",
+      "Ragot",
+      "Savoir (Poison)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Sans peur (Rats)",
+      "Savoir-vivre (Guildes)",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Piège à animaux",
+      "Perche pour attraper les rats morts"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Égoutier",
+    "career": "Ratier",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Escalade",
+      "Esquive",
+      "Projectiles (Arbalète)"
+    ],
+    "talents": [
+      "Bonnes jambes",
+      "Cœur vaillant",
+      "Dur à cuire",
+      "Rat d'égout"
+    ],
+    "trappings": [
+      "Lanterne darvish",
+      "Arme simple",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Exterminateur",
+    "career": "Ratier",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Pistage"
+    ],
+    "talents": [
+      "Menaçant",
+      "Obstiné",
+      "Robuste",
+      "Sans peur (Skaven)"
+    ],
+    "trappings": [
+      "Assistant",
+      "Grand chien féroce",
+      "Sac d'appâts empoisonnés (10 doses de Brise-Cœur)"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Artiste Apprenti",
+    "career": "Artiste",
+    "level": 1,
+    "skills": [
+      "Art (Au choix)",
+      "Calme",
+      "Discrétion (Urbaine)",
+      "Évaluation",
+      "Perception",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Artiste (Au choix)",
+      "Infatigable",
+      "Persévérant",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Pinceau ou Ciseau ou Plume d'oie"
+    ],
+    "characteristics": [
+      "Force",
+      "Initiative",
+      "Dextérité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Artiste",
+    "career": "Artiste",
+    "level": 2,
+    "skills": [
+      "Escalade",
+      "Intuition",
+      "Langue (Classique)",
+      "Marchandage",
+      "Métier (Matériel artistique)",
+      "Pari"
+    ],
+    "talents": [
+      "Criminel",
+      "Doigts de fée",
+      "Noctambule",
+      "Sociable"
+    ],
+    "trappings": [
+      "Besace",
+      "Outils professionnels (Artiste)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Artiste de renom",
+    "career": "Artiste",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Savoir (Art)",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Négociateur",
+      "Savoir-vivre (Au choix)",
+      "Sens aiguisé (Au choix)"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Atelier (Artiste)",
+      "Mécène"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maestro",
+    "career": "Artiste",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Recherche"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Caïd",
+      "Lire/Écrire",
+      "Magnum Opus"
+    ],
+    "trappings": [
+      "Apprenti (3)",
+      "Bibliotèque (Art)",
+      "Grand Atelier (Artiste)"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Assistant",
+    "career": "Conseiller",
+    "level": 1,
+    "skills": [
+      "Langue (Classique)",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Politique)",
+      "Subornation"
+    ],
+    "talents": [
+      "Insignifiant",
+      "Lire/Écrire",
+      "Savoir-vivre (Au choix)",
+      "Sociable"
+    ],
+    "trappings": [
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Conseiller",
+    "career": "Conseiller",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Évaluation",
+      "Intuition",
+      "Pari",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Baratiner",
+      "Coopératif",
+      "Criminel",
+      "Intrigant"
+    ],
+    "trappings": [
+      "Livrée"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Consultant",
+    "career": "Conseiller",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Divertissement (Narration)",
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Ergoteur",
+      "Menteur",
+      "Noctambule",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Vêtements de qualité",
+      "Assistant"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Chancelier",
+    "career": "Conseiller",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Affable",
+      "Caïd",
+      "Escroquer",
+      "Présence imposante"
+    ],
+    "trappings": [
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Costume luxueux et d'excellente qualité",
+      "Suite de Conseillers",
+      "Suite d'Assistants"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Escrimeur",
+    "career": "Duelliste",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Guérison",
+      "Intuition",
+      "Langue (Classique)",
+      "Perception",
+      "Résistance"
+    ],
+    "talents": [
+      "Battement",
+      "Distraire",
+      "Feinte",
+      "Pas de côté"
+    ],
+    "trappings": [
+      "Arme simple ou Rapière",
+      "Besace",
+      "Vêtements",
+      "Bandages (1d10)"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Duelliste",
+    "career": "Duelliste",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Corps à corps (Parade)",
+      "Métier (Armurier)",
+      "Pari",
+      "Projectiles (Poudre noire)"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Renversement",
+      "Savoir-vivre (Au choix)",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Main gauche ou Brise-Epée",
+      "Pistolet",
+      "Poudre",
+      "Munitions"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître duelliste",
+    "career": "Duelliste",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Corps à corps (Base)",
+      "Intimidation",
+      "Représentation (Acrobaties)"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Désarmer",
+      "Maniement de deux armes",
+      "Riposte"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Fidèle main gauche",
+      "Epée d'entrainement en bois (2)",
+      "Rapière de qualité"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Champion de Justice",
+    "career": "Duelliste",
+    "level": 4,
+    "skills": [
+      "Corps à corps (Au choix)",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Frappe blessante",
+      "Frappe réactive",
+      "Maîtrise du combat",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Armes de qualité (2)"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Héraut",
+    "career": "Émissaire",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Conduite d'attelage",
+      "Esquive",
+      "Intuition",
+      "Ramer",
+      "Résistance"
+    ],
+    "talents": [
+      "Affable",
+      "Baratiner",
+      "Lire/Écrire",
+      "Savoir-vivre (Nobles)"
+    ],
+    "trappings": [
+      "Veste de cuir",
+      "Livrée",
+      "Étui à parchemin"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Agilité",
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Émissaire",
+    "career": "Émissaire",
+    "level": 2,
+    "skills": [
+      "Art (Écriture)",
+      "Calme",
+      "Marchandage",
+      "Ragot",
+      "Savoir (Politique)",
+      "Subornation"
+    ],
+    "talents": [
+      "Attirant",
+      "Menteur",
+      "Savoir-vivre (Au choix)",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Plume d'oie",
+      "Encre",
+      "Feuille de parchemin (10)"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Diplomate",
+    "career": "Émissaire",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intimidation",
+      "Langue (Au choix)",
+      "Orientation"
+    ],
+    "talents": [
+      "Intrigant",
+      "Noctambule",
+      "Négociateur",
+      "Sociable"
+    ],
+    "trappings": [
+      "Assistant",
+      "Carte",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Ambassadeur",
+    "career": "Émissaire",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Noblesse",
+      "Perspicace",
+      "Présence imposante",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Assistant",
+      "Vêtements élégants de qualité supérieure",
+      "Suite de Diplomates",
+      "Héraut"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 5"
+  },
+  {
+    "label": "Informateur",
+    "career": "Espion",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Discrétion (Au choix)",
+      "Marchandage",
+      "Pari",
+      "Perception",
+      "Ragot",
+      "Subornation"
+    ],
+    "talents": [
+      "Baratiner",
+      "Discret",
+      "Noctambule",
+      "Sociable"
+    ],
+    "trappings": [
+      "Bâtonnet de fusain",
+      "Besace",
+      "Tenue vestimantaire différente (2)",
+      "Cape à capuchon"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Force Mentale",
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Espion",
+    "career": "Espion",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Divertissement (Interprétation)",
+      "Escalade",
+      "Escamotage",
+      "Intuition",
+      "Signes secrets (Au choix)"
+    ],
+    "talents": [
+      "Identité secrète",
+      "Lire sur les lèvres",
+      "Lire/Écrire",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Informateur",
+      "Nécessaire de déguisement",
+      "Réseau d'informateurs",
+      "Télescope"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Agent secret",
+    "career": "Espion",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Dressage (Pigeon)",
+      "Langue (Au choix)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Attirant",
+      "Imitation",
+      "Maître en déguisement",
+      "Menteur"
+    ],
+    "trappings": [
+      "Livre (Cryptographie)",
+      "Réseau d'espions et d'informateurs",
+      "Piegons voyageurs",
+      "Plume d'oie",
+      "Encre"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Maître Espion",
+    "career": "Espion",
+    "level": 4,
+    "skills": [
+      "Recherche",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Affable",
+      "Intrigant",
+      "Suborneur",
+      "Tour des souvenirs"
+    ],
+    "trappings": [
+      "Bureau",
+      "Personnel",
+      "Grand réseau d'Espions",
+      "d'Agents secrets et d'Informateurs"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 4"
+  },
+  {
+    "label": "Gardien",
+    "career": "Intendant",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Emprise sur les animaux",
+      "Intuition",
+      "Perception",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Frappe assommante",
+      "Menaçant",
+      "Vision nocturne",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Clefs",
+      "Lanterne",
+      "Huile de lampe",
+      "Livrée"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Intendant",
+    "career": "Intendant",
+    "level": 2,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Natation",
+      "Projectiles (Arc)",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Affinité avec les animaux",
+      "Bon marcheur (Au choix)",
+      "Nomade",
+      "Savoir-vivre (Serviteurs)"
+    ],
+    "trappings": [
+      "Arme simple ou Arc avec Flèche (10)",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sénéchal",
+    "career": "Intendant",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Ragot",
+      "Subornation"
+    ],
+    "talents": [
+      "Coopératif",
+      "Escroquer",
+      "Lire/Écrire",
+      "Numismate"
+    ],
+    "trappings": [
+      "Plastron",
+      "Bâton cérémoniel de fonction",
+      "Equipe d'Intendants et de Gardiens"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Gouverneur",
+    "career": "Intendant",
+    "level": 4,
+    "skills": [
+      "Évaluation",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Affable",
+      "Présence imposante",
+      "Savant (Région)",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Assistant",
+      "Résidence de gouverneur",
+      "Serviteur"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Héritier",
+    "career": "Noble",
+    "level": 1,
+    "skills": [
+      "Commandement",
+      "Corps à corps (Escrime)",
+      "Intimidation",
+      "Musicien (Au choix)",
+      "Pari",
+      "Résistance à l'alcool",
+      "Savoir (Héraldique)",
+      "Subornation"
+    ],
+    "talents": [
+      "Chanceux",
+      "Lire/Écrire",
+      "Noblesse",
+      "Savoir-vivre (Nobles)"
+    ],
+    "trappings": [
+      "Costume de cour",
+      "Fleuret ou Miroir à main",
+      "Bijoux valant (3d10 CO)",
+      "Serviteur personnel"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Initiative",
+      "Dextérité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Noble",
+    "career": "Noble",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Parade)",
+      "Langue (Classique)",
+      "Ragot",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Affable",
+      "Attirant",
+      "Noctambule",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Employé de maison (4)",
+      "Costume de cour",
+      "Luxueux Costume de cour",
+      "Cheval de selle avec selle et harnais ou Diligence",
+      "Main gauche ou Cape de qualité",
+      "Bijoux (50 CO)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Magnat",
+    "career": "Noble",
+    "level": 3,
+    "skills": [
+      "Intuition",
+      "Langue (Au choix)",
+      "Perception",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Imperturbable",
+      "Intrigant",
+      "Négociateur",
+      "Orateur"
+    ],
+    "trappings": [
+      "Ensemble de luxueux costume de cour (2)",
+      "200 CO",
+      "Fief",
+      "Bijoux (200 CO)",
+      "Chevalière"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 5"
+  },
+  {
+    "label": "Noble Seigneur",
+    "career": "Noble",
+    "level": 4,
+    "skills": [
+      "Pistage",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Nanti",
+      "Présence imposante",
+      "Seigneur de guerre",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Ensemble de somptueux costumes de cour (4)",
+      "Fleuret de qualité ou Miroir à main",
+      "500 CO",
+      "Bijoux (500 CO)",
+      "Province"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 7"
+  },
+  {
+    "label": "Domestique",
+    "career": "Serviteur",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Conduite d'attelage",
+      "Discrétion (Au choix)",
+      "Escalade",
+      "Esquive",
+      "Intuition",
+      "Perception",
+      "Résistance"
+    ],
+    "talents": [
+      "Costaud",
+      "Infatigable",
+      "Insignifiant",
+      "Obstiné"
+    ],
+    "trappings": [
+      "Brosse pour le sol"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Agilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Serviteur",
+    "career": "Serviteur",
+    "level": 2,
+    "skills": [
+      "Évaluation",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Discret",
+      "Persévérant",
+      "Prévoyant",
+      "Savoir-vivre (Serviteurs)"
+    ],
+    "trappings": [
+      "Livrée"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Valet",
+    "career": "Serviteur",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Intimidation",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Affable",
+      "Coopératif",
+      "Escroquer",
+      "Résistance (Poison)"
+    ],
+    "trappings": [
+      "Boite à amadou",
+      "Huile de lampe",
+      "Lampe tempête",
+      "Livrée de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Régisseur",
+    "career": "Serviteur",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Corps à corps (Base)"
+    ],
+    "talents": [
+      "Lire/Écrire",
+      "Numismate",
+      "Perspicace",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Vêtements élégants",
+      "Serviteur"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Apprenti Cavalier",
+    "career": "Cavalier",
+    "level": 1,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Emprise sur les animaux",
+      "Langue (Bataille)",
+      "Perception",
+      "Résistance",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Claquer le fouet",
+      "Réflexes foudroyants",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Veste de cuir",
+      "Cheval de selle",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Agilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Cavalier",
+    "career": "Cavalier",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Corps à corps (Cavalerie)",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Artilleur",
+      "Savoir-vivre (Soldats)",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Plastron",
+      "Heaume",
+      "Cheval de guerre léger",
+      "Selle et Harnais",
+      "Pistolet",
+      "Munition (10)",
+      "Bouclier"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Sergent de Cavalerie légère",
+    "career": "Cavalier",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intimidation",
+      "Intuition",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Haine (Au choix)",
+      "Seigneur de guerre",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Echarpe (Symbole de fonction)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Officier de Cavalerie Légère",
+    "career": "Cavalier",
+    "level": 4,
+    "skills": [
+      "Pari",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Frappe réactive",
+      "Robuste",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Paquet de cartes",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Ecuyer",
+    "career": "Chevalier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Cavalerie)",
+      "Emprise sur les animaux",
+      "Guérison",
+      "Métier (Maréchal-ferrant)",
+      "Savoir (Héraldique)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Costaud",
+      "Guerrier né",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Veste de cuir",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Bouclier",
+      "Outils professionnels (Maréchal-ferrant)"
+    ],
+    "characteristics": [
+      "Force",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Chevalier",
+    "career": "Chevalier",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Résistance"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Menaçant",
+      "Porte-Bouclier",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Destrier",
+      "Selle et Harnais",
+      "Arme (Au choix)",
+      "Lance",
+      "Armure de plates",
+      "Heaume"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Chevalier commandeur",
+    "career": "Chevalier",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Résistance à l'alcool",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Inébranlable",
+      "Sans peur (Au choix)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Caparaçon",
+      "Petite unité de Chevaliers"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Chevalier du Cercle Intérieur",
+    "career": "Chevalier",
+    "level": 4,
+    "skills": [
+      "Savoir (Au choix)",
+      "Signes secrets (Ordre chevaleresque)"
+    ],
+    "talents": [
+      "Désarmer",
+      "Exaltant",
+      "Frappe blessante",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Grand heaume à cimier",
+      "Ecuyer",
+      "Importante unité de Chevaliers ou plusieurs petites unités de Chevaliers"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 4"
+  },
+  {
+    "label": "Sentinelle",
+    "career": "Garde",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Intuition",
+      "Pari",
+      "Perception",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Frappe assommante",
+      "Maîtrise des dés",
+      "Persévérant",
+      "Savoir-vivre (Serviteurs)"
+    ],
+    "trappings": [
+      "Bouclier (Targe)",
+      "Veste de cuir",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Agilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Garde",
+    "career": "Garde",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Armes d'hast)",
+      "Esquive",
+      "Intimidation",
+      "Projectiles (Arc)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Impitoyable",
+      "Porte-Bouclier",
+      "Renversement"
+    ],
+    "trappings": [
+      "Arc",
+      "Flèche (10)",
+      "Cotte de mailles",
+      "Bouclier",
+      "Lance"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Garde d'honneur",
+    "career": "Garde",
+    "level": 3,
+    "skills": [
+      "Corps à corps (À deux mains)",
+      "Guérison",
+      "Langue (Bataille)",
+      "Savoir (Savoir-vivre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Inébranlable",
+      "Sans peur (Intrus)",
+      "Saut carpé"
+    ],
+    "trappings": [
+      "Arme à deux mains ou hallebarde",
+      "Heaume",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Garde officier",
+    "career": "Garde",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Maîtrise du combat",
+      "Robuste",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Plastron"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Pugiliste",
+    "career": "Gladiateur",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Au choix)",
+      "Corps à corps (Bagarre)",
+      "Esquive",
+      "Intimidation",
+      "Pari",
+      "Résistance"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Combattant au contact",
+      "Mâchoires d'acier",
+      "Renversement"
+    ],
+    "trappings": [
+      "Bandages",
+      "Coup-de-poing",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Gladiateur",
+    "career": "Gladiateur",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Corps à corps (Fléau ou À deux mains)",
+      "Intuition",
+      "Marchandage",
+      "Perception",
+      "Projectiles (Entraves)"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Combat instinctif",
+      "Maniement de deux armes",
+      "Porte-Bouclier"
+    ],
+    "trappings": [
+      "Fléau ou Arme à deux mains",
+      "Arme simple",
+      "Filet ou Fouet",
+      "Bouclier ou Bouclier (Targe)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Champion de fosse",
+    "career": "Gladiateur",
+    "level": 3,
+    "skills": [
+      "Ragot",
+      "Représentation (Combat)",
+      "Résistance à l'alcool",
+      "Savoir (Anatomie)"
+    ],
+    "talents": [
+      "Désarmer",
+      "Maîtrise du combat",
+      "Menaçant",
+      "Robuste"
+    ],
+    "trappings": [
+      "Heaume",
+      "Plastron"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Légende de la fosse",
+    "career": "Gladiateur",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Effrayant",
+      "Endurci",
+      "Frappe réactive"
+    ],
+    "trappings": [
+      "Heaume de qualité"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Chair fraîche",
+    "career": "Mangeur d'hommes",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Pari",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Costaud",
+      "Infatigable",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Dague",
+      "Gros morceau de viande",
+      "Envie de voyager"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Mangeur d'hommes",
+    "career": "Mangeur d'hommes",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Corps à corps (À deux mains)",
+      "Divertissement (Beuglement)",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Rechargement rapide",
+      "Savoir-vivre (Minus)",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Pansière",
+      "Vêtements locaux",
+      "Arme à deux mains ou Pistolet ogre"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Broyeur d'hommes",
+    "career": "Mangeur d'hommes",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Rhinox)",
+      "Commandement",
+      "Corps à corps (Au choix)",
+      "Intuition"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Dur à cuire",
+      "Effrayant",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Unité de mercenaires",
+      "Respect"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine mangeur d'hommes",
+    "career": "Mangeur d'hommes",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Frappe réactive",
+      "Maîtrise du combat",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Pansière éprouvée au combat",
+      "Contrat de mercenaire"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Novice (Prêtre Guerrier)",
+    "career": "Prêtre guerrier",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Guérison",
+      "Prière",
+      "Résistance",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Béni (Au choix)",
+      "Lire/Écrire",
+      "Obstiné",
+      "Savoir-vivre (Fidèles)"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Livre (Religion)",
+      "Justaucorps de cuir",
+      "Symbole religieux",
+      "Toges"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Prêtre Guerrier",
+    "career": "Prêtre guerrier",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Au choix)",
+      "Divertissement (Discours)",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Invocation (Au choix)",
+      "Maniement de deux armes",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Plastron"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Prêtre sergent",
+    "career": "Prêtre guerrier",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Intuition",
+      "Perception",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Âme pure",
+      "Cœur vaillant",
+      "Vigilance",
+      "Visions sacrées"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Prêtre capitaine",
+    "career": "Prêtre guerrier",
+    "level": 4,
+    "skills": [
+      "Résistance à l'alcool",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Haine sacrée",
+      "Sans peur (Au choix)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Relique religieuse"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Recrue",
+    "career": "Soldat",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Base)",
+      "Escalade",
+      "Esquive",
+      "Langue (Bataille)",
+      "Musicien (Tambour ou Fifre)",
+      "Résistance"
+    ],
+    "talents": [
+      "Guerrier né",
+      "Infatigable",
+      "Maîtrise des dés",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Dague",
+      "Plastron de cuir",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Soldat",
+    "career": "Soldat",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Au choix)",
+      "Pari",
+      "Projectiles (Au choix)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Porte-Bouclier",
+      "Rechargement rapide",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Heaume",
+      "Plastron"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sergent",
+    "career": "Soldat",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Guérison",
+      "Intuition",
+      "Perception"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Inébranlable",
+      "Seigneur de guerre",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Unité de Recrues (Compagnie)",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Officier",
+    "career": "Soldat",
+    "level": 4,
+    "skills": [
+      "Orientation",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Orateur",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Lettre de nomination",
+      "Cheval de guerre léger",
+      "Selle et Harnais",
+      "Carte",
+      "Ordres de mission",
+      "Unité de Soldats",
+      "Uniforme de qualité",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Taquineur de blaireau",
+    "career": "Chevaucheur de blaireau",
+    "level": 1,
+    "skills": [
+      "Chevaucher (Blaireau)",
+      "Dressage (Blaireau)",
+      "Emprise sur les animaux",
+      "Esquive",
+      "Métier (Au choix)",
+      "Perception",
+      "Projectiles (Fronde)",
+      "Ragot"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Fuite !",
+      "Tir rapide",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Veste de cuir",
+      "Fronde",
+      "Blaireau apprivoisé",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Agilité",
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chevaucheur de blaireau",
+    "career": "Chevaucheur de blaireau",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Orientation",
+      "Projectiles (Entraves)",
+      "Résistance",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Nomade",
+      "Tir précis",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Fontes de selle",
+      "Plastron de cuir",
+      "Arme de lancer ou d'entraves"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sergent blaireau",
+    "career": "Chevaucheur de blaireau",
+    "level": 3,
+    "skills": [
+      "Corps à corps (Cavalerie)",
+      "Intimidation",
+      "Pistage",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Déterminé",
+      "Distraire",
+      "Rat d'égout"
+    ],
+    "trappings": [
+      "Caparaçon pour blaireau (2 PA sur la tête et le torse)",
+      "Arme (Base) ou Arme (cavalerie)"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître blaireau",
+    "career": "Chevaucheur de blaireau",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Effrayant",
+      "Exaltant",
+      "Frappe blessante",
+      "Noctambule"
+    ],
+    "trappings": [
+      "Gros blaireau apprivoisé (blaireau- poney tacheté du Moot)",
+      "Écuyer (Taquineur de blaireau)",
+      "Armure de plates",
+      "Sens de l'humour"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Matamore",
+    "career": "Spadassin",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Au choix)",
+      "Divertissement (Raillerie)",
+      "Esquive",
+      "Intimidation",
+      "Marchandage",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Combattant au contact",
+      "Guerrier né",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Coup-de-poing",
+      "Capuchon ou Masque",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Agilité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Spadassin",
+    "career": "Spadassin",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Intuition",
+      "Perception",
+      "Subornation"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Criminel",
+      "Frappe assommante",
+      "Renversement"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Bouclier"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Tueur à gages",
+    "career": "Spadassin",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Escalade",
+      "Orientation",
+      "Projectiles (Lancer)"
+    ],
+    "talents": [
+      "Désarmer",
+      "Frappe précise",
+      "Impitoyable",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Cape",
+      "Couteaux de lancer",
+      "Lacet étrangleur",
+      "Poison"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Assassin",
+    "career": "Spadassin",
+    "level": 4,
+    "skills": [
+      "Divertissement (Interprétation)",
+      "Projectiles (Arbalète)"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Assaut féroce",
+      "Frappe blessante",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Arbalète",
+      "Carreaux (10)",
+      "Nécessaire de déguisement"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Tueur de Trolls",
+    "career": "Tueur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Guérison",
+      "Pari",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Trolls)"
+    ],
+    "talents": [
+      "Frénésie",
+      "Maniement de deux armes",
+      "Sans peur (Tout)",
+      "Tueur"
+    ],
+    "trappings": [
+      "Arme simple (Hache)",
+      "Flasque (Alcool)",
+      "Honte",
+      "Tatouages"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Tueur de Géants",
+    "career": "Tueur",
+    "level": 2,
+    "skills": [
+      "Corps à corps (À deux mains)",
+      "Évaluation",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Savoir (Géants)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Endurci",
+      "Menaçant",
+      "Renversement"
+    ],
+    "trappings": [
+      "Bijoux",
+      "Grande hache",
+      "Tëte de troll"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Tueur de Dragons",
+    "career": "Tueur",
+    "level": 3,
+    "skills": [
+      "Divertissement (Narration)",
+      "Perception",
+      "Projectiles (Lancer)",
+      "Savoir (Dragons)"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Assaut féroce",
+      "Impitoyable",
+      "Robuste"
+    ],
+    "trappings": [
+      "Tête de géant",
+      "Haches de lancer"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Tueur de Démons",
+    "career": "Tueur",
+    "level": 4,
+    "skills": [
+      "Intuition",
+      "Savoir (Chaos)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Effrayant",
+      "Maîtrise du combat",
+      "Très fort"
+    ],
+    "trappings": [
+      "Tête de dragon"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Chasseur de voleurs",
+    "career": "Chasseur de primes",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Intuition",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Subornation",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Affable",
+      "Discret",
+      "Effraction",
+      "Frappe assommante"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Corde",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Combat",
+      "Endurance"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chasseur de primes",
+    "career": "Chasseur de primes",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Intimidation",
+      "Pistage",
+      "Projectiles (Arbalète)",
+      "Projectiles (Entraves)",
+      "Résistance"
+    ],
+    "talents": [
+      "Impitoyable",
+      "Infatigable",
+      "Tireur de précision",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arbalète",
+      "Carreaux (10)",
+      "Calotte de cuir",
+      "Filet",
+      "Mandat d'arrêt",
+      "Menottes"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître Chasseur de primes",
+    "career": "Chasseur de primes",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Escalade",
+      "Natation",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Frappe précise",
+      "Maniement de deux armes",
+      "Sprinter",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Selle"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Chasseur de primes vétéran",
+    "career": "Chasseur de primes",
+    "level": 4,
+    "skills": [
+      "Conduite d'attelage",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Sans peur (Primes)",
+      "Tir mortel",
+      "Tir sûr"
+    ],
+    "trappings": [
+      "Cheval de trait",
+      "Charette",
+      "Chemise de mailles",
+      "Paires de Menottes (4)"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Garde forestier",
+    "career": "Rôdeur fantôme",
+    "level": 1,
+    "skills": [
+      "Discrétion (Au choix)",
+      "Escalade",
+      "Métier (Fabricant d'arcs)",
+      "Orientation",
+      "Perception",
+      "Projectiles (Arc)",
+      "Savoir (Bêtes)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Régions boisées)",
+      "Discret",
+      "Tir précis",
+      "Véloce"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Cape à capuche",
+      "Arc long",
+      "Flèche (10)",
+      "Outils professionnels (Fabricant d'arcs)"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Agilité",
+      "Intelligence"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Rôdeur fantôme",
+    "career": "Rôdeur fantôme",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Emprise sur les animaux",
+      "Piégeage",
+      "Pistage",
+      "Signes secrets (Ranger)"
+    ],
+    "talents": [
+      "Affinité avec les animaux",
+      "Grimpeur",
+      "Sens de l'orientation",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Arc elfique",
+      "Flèches fabriquées par le Personnage (10)",
+      "Assortiment de pièges",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Esprit du vent",
+    "career": "Rôdeur fantôme",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Esquive",
+      "Natation",
+      "Résistance"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Souplesse féline",
+      "Tireur d'élite",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Arc elfique avec au moins 1 Atout",
+      "Armure de cuir avec au moins 1 Atout",
+      "Flèche elfique (10)"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Courroux de la forêt",
+    "career": "Rôdeur fantôme",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Frappe blessante",
+      "Haine (Au choix)",
+      "Tir mortel",
+      "Tireur embusqué"
+    ],
+    "trappings": [
+      "Trophée d'un ennemi légendaire",
+      "Flèche elfique antique (pour proie spéciale)",
+      "Réputation effrayante"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Postillon",
+    "career": "Cocher",
+    "level": 1,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Conduite d'attelage",
+      "Emprise sur les animaux",
+      "Escalade",
+      "Perception",
+      "Projectiles (Entraves)",
+      "Résistance",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Affinité avec les animaux",
+      "Persévérant",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Manteau chaud",
+      "Gants chauds",
+      "Fouet"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Cocher",
+    "career": "Cocher",
+    "level": 2,
+    "skills": [
+      "Intuition",
+      "Orientation",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Artilleur",
+      "Claquer le fouet",
+      "Imperturbable",
+      "Obstiné"
+    ],
+    "trappings": [
+      "Tromblon",
+      "Munition (10)",
+      "Corne de cocher",
+      "Veste de cuir",
+      "Chapeau"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Maître cocher",
+    "career": "Cocher",
+    "level": 3,
+    "skills": [
+      "Dressage (Cheval)",
+      "Intimidation",
+      "Langue (Au choix)",
+      "Savoir (Itinéraires)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Négociateur",
+      "Sans peur (Hors-la-loi)",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Cape de qualité",
+      "Chemise de mailles",
+      "Pistolet"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître des routes",
+    "career": "Cocher",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Commandement"
+    ],
+    "talents": [
+      "Rechargement rapide",
+      "Sans peur (Hommes-bêtes)",
+      "Sens de l'orientation",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Parc de diligences et de chevaux",
+      "Cartes"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Vagabond",
+    "career": "Colporteur",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Discrétion (Rurale ou Urbaine)",
+      "Divertissement (Narration)",
+      "Intuition",
+      "Marchandage",
+      "Ragot",
+      "Résistance",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bricoleur",
+      "Fuite !",
+      "Nomade",
+      "Pêcheur"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Sac de couchage",
+      "Biens (2d10 sous de cuivre)",
+      "Tente"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Dextérité",
+      "Force Mentale"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Colporteur",
+    "career": "Colporteur",
+    "level": 2,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Emprise sur les animaux",
+      "Évaluation",
+      "Métier (Bricoleur)",
+      "Résistance à l'alcool",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Infatigable",
+      "Négociateur",
+      "Sens de l'orientation",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Mule",
+      "Fontes de selle",
+      "Biens (2d10 pistoles d'argent)",
+      "Ensemble d'ustensiles de cuisine",
+      "Outils professionnels (Bricoleur)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Maître colporteur",
+    "career": "Colporteur",
+    "level": 3,
+    "skills": [
+      "Conduite d'attelage",
+      "Intimidation",
+      "Langue (Au choix)",
+      "Perception"
+    ],
+    "talents": [
+      "Costaud",
+      "Numismate",
+      "Prévoyant",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Charette",
+      "Biens (2d10 CO)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Négociant itinérant",
+    "career": "Colporteur",
+    "level": 4,
+    "skills": [
+      "Savoir (Géographie)",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Affable",
+      "Menteur",
+      "Obstiné",
+      "Persévérant"
+    ],
+    "trappings": [
+      "Cheval de trait",
+      "Charette",
+      "Biens (5d10 CO)",
+      "50 pistoles d'argent"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Zélote",
+    "career": "Flagellant",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Fléau)",
+      "Esquive",
+      "Guérison",
+      "Intimidation",
+      "Intuition",
+      "Résistance",
+      "Savoir (Sigmar)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Brouet",
+      "Charge berserk",
+      "Frénésie",
+      "Lire/Écrire"
+    ],
+    "trappings": [
+      "Fléau",
+      "Robes en lambeaux"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Flagellant",
+    "career": "Flagellant",
+    "level": 2,
+    "skills": [
+      "Art (Icones)",
+      "Athlétisme",
+      "Calme",
+      "Langue (Classique)",
+      "Projectiles (Fronde)",
+      "Savoir (Empire)"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Endurci",
+      "Flagellant",
+      "Haine (Hérétiques)"
+    ],
+    "trappings": [
+      "Fronde",
+      "Pancarte",
+      "Symbole religieux"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Pénitent",
+    "career": "Flagellant",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Langue (Au choix)",
+      "Perception",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Menaçant",
+      "Pansement de fortune",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Relique"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Prophète du destin",
+    "career": "Flagellant",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Divertissement (Discours)"
+    ],
+    "talents": [
+      "Contrôle de la Frénésie",
+      "Effrayant",
+      "Ferveur ardente",
+      "Sans peur (Hérétiques)"
+    ],
+    "trappings": [
+      "Livre (Religion)",
+      "Partisans (dont des Pénitents, des Flagellants et des Zélotes)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Coureur",
+    "career": "Messager",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Bagarre)",
+      "Escalade",
+      "Esquive",
+      "Orientation",
+      "Perception",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Fuite !",
+      "Pas de côté",
+      "Sprinter",
+      "Véloce"
+    ],
+    "trappings": [
+      "Étui à parchemin"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Messager",
+    "career": "Messager",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Savoir (Région)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Claquer le fouet",
+      "Criminel",
+      "Sens de l'orientation",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Veste de cuir",
+      "Cheval de selle",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Estafette",
+    "career": "Messager",
+    "level": 3,
+    "skills": [
+      "Emprise sur les animaux",
+      "Résistance à l'alcool",
+      "Subornation",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Flairer les ennuis",
+      "Impitoyable",
+      "Persévérant"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Fontes de selle",
+      "Bouclier"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Messager vétéran",
+    "career": "Messager",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Intimidation"
+    ],
+    "talents": [
+      "Caïd",
+      "Haine (Hors-la-loi)",
+      "Négociateur",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Estafettes",
+      "Chemise de mailles",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Coureur des forts",
+    "career": "Patrouilleur des karak",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Escalade",
+      "Esquive",
+      "Métier (Cartographe)",
+      "Perception",
+      "Ramer",
+      "Résistance",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Endurci",
+      "Infatigable",
+      "Sens de l'orientation"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Arme simple",
+      "Veste de cuir",
+      "Outils professionnels (Cartographe)"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Patrouilleur des karak",
+    "career": "Patrouilleur des karak",
+    "level": 2,
+    "skills": [
+      "Emprise sur les animaux",
+      "Intuition",
+      "Pistage",
+      "Projectiles (Poudre noire)",
+      "Signes secrets (Éclaireur)",
+      "Signes secrets (Ranger)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Flairer les ennuis",
+      "Grimpeur",
+      "Nomade"
+    ],
+    "trappings": [
+      "Arme à poudre noire",
+      "Munitions (10)",
+      "Grappin",
+      "Corde"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Gardien des routes des karak",
+    "career": "Patrouilleur des karak",
+    "level": 3,
+    "skills": [
+      "Discrétion (Souterrains)",
+      "Orientation",
+      "Piégeage",
+      "Savoir (Ingénierie)"
+    ],
+    "talents": [
+      "Artilleur",
+      "Guide fluvial ou Bonnes jambes",
+      "Combattant en espace clos",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Outils professionnels (Maçonnerie)"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Arpenteur des karak",
+    "career": "Patrouilleur des karak",
+    "level": 4,
+    "skills": [
+      "Calme",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Bricoleur",
+      "Persévérant",
+      "Robuste",
+      "Savant (Forteresses et routes naines)"
+    ],
+    "trappings": [
+      "Apprentis Coureurs des forts (4)",
+      "Cartes",
+      "Souvenirs de nombreux voyages"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Péager",
+    "career": "Patrouilleur routier",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Marchandage",
+      "Pari",
+      "Perception",
+      "Projectiles (Arbalète)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Subornation"
+    ],
+    "talents": [
+      "Escroquer",
+      "Imperturbable",
+      "Numismate",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Arbalète",
+      "Carreau (10)",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Endurance",
+      "Initiative"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Patrouilleur routier",
+    "career": "Patrouilleur routier",
+    "level": 2,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Intimidation",
+      "Intuition",
+      "Résistance",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Claquer le fouet",
+      "Criminel",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Corde"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Sergent Patrouilleur",
+    "career": "Patrouilleur routier",
+    "level": 3,
+    "skills": [
+      "Athlétisme",
+      "Charme",
+      "Commandement",
+      "Projectiles (Poudre noire)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Haine (Au choix)",
+      "Sans peur (Hors-la-loi)",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Escadrille de Patrouilleurs routiers",
+      "Pistolet",
+      "Munition (10)",
+      "Bouclier",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Capitaine Patrouilleur",
+    "career": "Patrouilleur routier",
+    "level": 4,
+    "skills": [
+      "Orientation",
+      "Savoir (Empire)"
+    ],
+    "talents": [
+      "Caïd",
+      "Orateur",
+      "Présence imposante",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Pistolet",
+      "Munition (10)",
+      "Chapeau de qualité",
+      "Cape de qualité",
+      "Unité de Patrouilleurs routiers"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Garde novice",
+    "career": "Gardechamps",
+    "level": 1,
+    "skills": [
+      "Discrétion (Rurale)",
+      "Intuition",
+      "Métier (Au choix)",
+      "Orientation",
+      "Perception",
+      "Projectiles (Fronde)",
+      "Ragot",
+      "Savoir (Le Moot)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Distraire",
+      "Frappe précise",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Tente",
+      "Carte de la région",
+      "Fronde",
+      "Projectile de pierre (10)",
+      "Outils professionnels (même spécialisation que Métier)"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Agilité",
+      "Force Mentale"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Gardechamps",
+    "career": "Gardechamps",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Résistance à l'alcool",
+      "Signes secrets (Éclaireur)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Flairer les ennuis",
+      "Sens de l'orientation",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Veste de cuir",
+      "Arme simple",
+      "Lanterne",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Sergent Gardechamps",
+    "career": "Gardechamps",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Piégeage",
+      "Résistance",
+      "Savoir (Nécromancie)"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Nomade",
+      "Vision nocturne",
+      "Véloce"
+    ],
+    "trappings": [
+      "Chemise de mailles de bonne qualité",
+      "Escouade de Gardes novices"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine Gardechamps",
+    "career": "Gardechamps",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Robuste",
+      "Sans peur (Morts-vivants)",
+      "Savant (Terrain du Moot)"
+    ],
+    "trappings": [
+      "Garnison de Sergent Gardechamps",
+      "Respect de la communauté"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Interrogateur",
+    "career": "Répurgateur",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Corps à corps (Bagarre)",
+      "Guérison",
+      "Intimidation",
+      "Intuition",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Torture)"
+    ],
+    "talents": [
+      "Déterminé",
+      "Imperturbable",
+      "Lire/Écrire",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Instruments de torture"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Répurgateur",
+    "career": "Répurgateur",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Projectiles (Au choix)",
+      "Ragot",
+      "Savoir (Sorcières)"
+    ],
+    "talents": [
+      "Discret",
+      "Maniement de deux armes",
+      "Tireur de précision",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arbalète de poing ou pistolet",
+      "Chapeau en cuir",
+      "Veste de cuir",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Corde",
+      "Epée plaquée argent"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Inquisiteur",
+    "career": "Répurgateur",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Résistance",
+      "Savoir (Loi)",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Impitoyable",
+      "Obstiné",
+      "Sans peur (Sorcières)"
+    ],
+    "trappings": [
+      "Vêtements de qualité",
+      "Interrogateurs subordonnés"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Répurgateur vétéran",
+    "career": "Répurgateur",
+    "level": 4,
+    "skills": [
+      "Savoir (Chaos)",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Âme pure",
+      "Effrayant",
+      "Perception de la magie",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Costume luxueux de qualité supérieure",
+      "Répurgateurs subordonnés"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Musicien de rues",
+    "career": "Saltimbanque",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Charme",
+      "Divertissement (Au choix)",
+      "Escamotage",
+      "Marchandage",
+      "Musicien (Au choix)",
+      "Ragot",
+      "Représentation (Au choix)"
+    ],
+    "talents": [
+      "Affable",
+      "Attirant",
+      "Imitation",
+      "Orateur"
+    ],
+    "trappings": [
+      "Bol",
+      "Instrument"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Dextérité",
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Saltimbanque",
+    "career": "Saltimbanque",
+    "level": 2,
+    "skills": [
+      "Chevaucher (Au choix)",
+      "Corps à corps (Base)",
+      "Divertissement (Au choix)",
+      "Musicien (Au choix)",
+      "Projectiles (Lancer)",
+      "Représentation (Au choix)"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Contorsionniste",
+      "Saut carpé",
+      "Tireur d'élite"
+    ],
+    "trappings": [
+      "Armes de lancer",
+      "Costume",
+      "Instrument",
+      "Choix de textes (Que vous ne savez pas encore lire)"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Troubadour",
+    "career": "Saltimbanque",
+    "level": 3,
+    "skills": [
+      "Art (Écriture)",
+      "Dressage (Au choix)",
+      "Langue (Au choix)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Baratiner",
+      "Lire/Écrire",
+      "Maître en déguisement",
+      "Oreille absolue"
+    ],
+    "trappings": [
+      "Animal dressé",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Chef de troupe",
+    "career": "Saltimbanque",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Conduite d'attelage"
+    ],
+    "talents": [
+      "Négociateur",
+      "Savoir-vivre (Au choix)",
+      "Vivacité",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Cheval de trait",
+      "Chariot (Scène)",
+      "Garde-robe avec costumes et accessoires",
+      "Troupe de Saltimbanques"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Apprenti Apothicaire",
+    "career": "Apothicaire",
+    "level": 1,
+    "skills": [
+      "Guérison",
+      "Langue (Classique)",
+      "Métier (Apothicaire)",
+      "Métier (Empoisonneur)",
+      "Résistance à l'alcool",
+      "Savoir (Chimie)",
+      "Savoir (Remèdes)",
+      "Savoir (Plantes)"
+    ],
+    "talents": [
+      "Concocter",
+      "Lire/Écrire",
+      "Maître artisan (Apothicaire)",
+      "Savoir-vivre (Érudit)"
+    ],
+    "trappings": [
+      "Livre (Vierge)",
+      "Potion de guérison",
+      "Justaucorps de cuir",
+      "Pilon et Mortier"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Dextérité",
+      "Intelligence"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Apothicaire",
+    "career": "Apothicaire",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Langue (Guilde)",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Savoir (Science)"
+    ],
+    "talents": [
+      "Criminel",
+      "Négociateur",
+      "Pharmacologie",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Outils professionnels"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Maître Apothicaire",
+    "career": "Apothicaire",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intuition",
+      "Recherche",
+      "Signes secrets (Guilde)"
+    ],
+    "talents": [
+      "Perspicace",
+      "Résistance (Poison)",
+      "Studieux",
+      "Travailleur qualifié (Apothicaire)"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Atelier",
+      "Livre (Apothicaire)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Apothicaire de Renom",
+    "career": "Apothicaire",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Intimidation"
+    ],
+    "talents": [
+      "Imperturbable",
+      "Savant (Apothicaire)",
+      "Sens aiguisé (Goût)",
+      "Travailleur qualifié (Empoisonneur)"
+    ],
+    "trappings": [
+      "Bon de commande",
+      "Grand Atelier"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Faiseur de bouillie",
+    "career": "Boucher Ogre",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Escalade",
+      "Intimidation",
+      "Langue (Magick)",
+      "Métier (Boucher)",
+      "Prière",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Endurci",
+      "Infatigable",
+      "Magie mineure",
+      "Sixième sens"
+    ],
+    "trappings": [
+      "Tablier de boucher",
+      "Arme simple (Couperet) ou Arme simple (Maillet)"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Boucher ogre",
+    "career": "Boucher Ogre",
+    "level": 2,
+    "skills": [
+      "Art (Boucherie)",
+      "Focalisation (Azyr ou Ghur ou Shyish)",
+      "Métier (Cuisine)",
+      "Projectiles (Lancer)",
+      "Savoir (La Gueule)",
+      "Signes secrets (La Gueule)"
+    ],
+    "talents": [
+      "Harmonisation aethyrique",
+      "Magie des Arcanes (Gueule)",
+      "Sens aiguisé (Goût)",
+      "Visions sacrées"
+    ],
+    "trappings": [
+      "Os d'animaux sculptés (Grimoire)",
+      "Outils professionnels (Boucher)"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Sage de la Gueule",
+    "career": "Boucher Ogre",
+    "level": 3,
+    "skills": [
+      "Divertissement (Discours)",
+      "Guérison",
+      "Intuition",
+      "Perception"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Effrayant",
+      "Mage de guerre",
+      "Seconde vue"
+    ],
+    "trappings": [
+      "Apprenti boucher",
+      "Sac sanglant",
+      "10 Ingrédients ésotériques",
+      "Collection de crânes"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Maître massacreur",
+    "career": "Boucher Ogre",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Magie)"
+    ],
+    "talents": [
+      "Détection d'artefact",
+      "Exaltant",
+      "Ferveur ardente",
+      "Perception de la magie"
+    ],
+    "trappings": [
+      "Grotte ou Autre repaire",
+      "Cultistes loyaux de la Gueule",
+      "Faim insatiable"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Étudiant",
+    "career": "Érudit",
+    "level": 1,
+    "skills": [
+      "Divertissement (Narration)",
+      "Langue (Classique)",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Recherche",
+      "Résistance à l'alcool",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Doué en calcul",
+      "Lire/Écrire",
+      "Noctambule",
+      "Perspicace"
+    ],
+    "trappings": [
+      "Alcool",
+      "Livre",
+      "Lettre de recommandation",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Intelligence",
+      "Force Mentale"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Érudit",
+    "career": "Érudit",
+    "level": 2,
+    "skills": [
+      "Art (Écriture)",
+      "Intuition",
+      "Langue (Au choix)",
+      "Métier (Au choix)",
+      "Perception",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Affable",
+      "Lecture rapide",
+      "Savoir-vivre (Érudits)",
+      "Studieux"
+    ],
+    "trappings": [
+      "Accès à une bibliothèque",
+      "Diplôme"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Chercheur",
+    "career": "Érudit",
+    "level": 3,
+    "skills": [
+      "Divertissement (Conférence)",
+      "Intimidation",
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Linguistique",
+      "Orateur",
+      "Savant (Au choix)",
+      "Tour des souvenirs"
+    ],
+    "trappings": [
+      "Mortier",
+      "Robes"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Professeur",
+    "career": "Érudit",
+    "level": 4,
+    "skills": [
+      "Divertissement (Rhétorique)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Grand orateur",
+      "Magnum Opus",
+      "Savant (Au choix)",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Étude"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Étudiant Ingénieur",
+    "career": "Ingénieur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Langue (Classique)",
+      "Métier (Ingénieur)",
+      "Perception",
+      "Projectiles (Poudre noire)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Ingénierie)"
+    ],
+    "talents": [
+      "Artilleur",
+      "Artiste (Au choix)",
+      "Bricoleur",
+      "Lire/Écrire"
+    ],
+    "trappings": [
+      "Livre (Ingénierie)",
+      "Marteau",
+      "Clou"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Dextérité",
+      "Intelligence"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Ingénieur",
+    "career": "Ingénieur",
+    "level": 2,
+    "skills": [
+      "Conduite d'attelage",
+      "Esquive",
+      "Langue (Guilde)",
+      "Orientation",
+      "Projectiles (Ingénierie)",
+      "Recherche"
+    ],
+    "talents": [
+      "Maître artisan (Ingénieur)",
+      "Sens de l'orientation",
+      "Savoir-vivre (Guildes)",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Outils professionnels (Ingénieur)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Maître Ingénieur",
+    "career": "Ingénieur",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Langue (Khazalid)",
+      "Signes secrets (Guilde)"
+    ],
+    "talents": [
+      "Doué en calcul",
+      "Savoir-vivre (Érudit)",
+      "Travailleur qualifié (Ingénieur)",
+      "Tireur embusqué"
+    ],
+    "trappings": [
+      "Atelier"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Ingénieur Agréé",
+    "career": "Ingénieur",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Inébranlable",
+      "Magnum Opus",
+      "Rechargement rapide",
+      "Savant (Ingénierie)"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Bibliothèque (Ingénieur)",
+      "Outils professionnels de qualité (Ingénieur)",
+      "Grand atelier (Ingénieur)"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Étudiant en Droit",
+    "career": "Juriste",
+    "level": 1,
+    "skills": [
+      "Langue (Classique)",
+      "Marchandage",
+      "Perception",
+      "Recherche",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Loi)",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Baratiner",
+      "Lire/Écrire",
+      "Lecture rapide",
+      "Savoir-vivre (Érudit)"
+    ],
+    "trappings": [
+      "Livre (Loi)",
+      "Loupe"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Dextérité",
+      "Intelligence"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Juriste",
+    "career": "Juriste",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Intuition",
+      "Langue (Guilde)",
+      "Ragot",
+      "Signes secrets (Guilde)",
+      "Subornation"
+    ],
+    "talents": [
+      "Affable",
+      "Criminel",
+      "Ergoteur",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Robe de juriste",
+      "Licence de Guilde",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître du Barreau",
+    "career": "Juriste",
+    "level": 3,
+    "skills": [
+      "Art (Écriture)",
+      "Divertissement (Discours)",
+      "Intimidation",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Ferveur ardente",
+      "Menteur",
+      "Perspicace",
+      "Studieux"
+    ],
+    "trappings": [
+      "Assistant (Etudiant ou Serviteur)",
+      "Bureau"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Juge",
+    "career": "Juriste",
+    "level": 4,
+    "skills": [
+      "Calme",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Caïd",
+      "Nanti",
+      "Présence imposante",
+      "Savant (Loi)"
+    ],
+    "trappings": [
+      "Maillet",
+      "Perruque ostentatoire"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Étudiant en Médecine",
+    "career": "Médecin",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Conduite d'attelage",
+      "Escamotage",
+      "Guérison",
+      "Perception",
+      "Ragot",
+      "Résistance",
+      "Subornation"
+    ],
+    "talents": [
+      "Frappe assommante",
+      "Lire/Écrire",
+      "Pansement de fortune",
+      "Studieux"
+    ],
+    "trappings": [
+      "Bandages",
+      "Potion de guérison"
+    ],
+    "characteristics": [
+      "Dextérité",
+      "Intelligence",
+      "Force Mentale"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Médecin",
+    "career": "Médecin",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Langue (Guilde)",
+      "Marchandage",
+      "Métier (Barbier)",
+      "Savoir (Anatomie)",
+      "Savoir (Remèdes)"
+    ],
+    "talents": [
+      "Chirurgie",
+      "Criminel",
+      "Imperturbable",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Livre (Médecine)",
+      "Licence de Guilde",
+      "Outils professionnels (Médecin)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Docteur en médecine",
+    "career": "Médecin",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intimidation",
+      "Recherche",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Frappe blessante",
+      "Perspicace",
+      "Résistance (Maladie)",
+      "Savoir-vivre (Érudits)"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Atelier (Remèdes)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Médecin de la cour",
+    "career": "Médecin",
+    "level": 4,
+    "skills": [
+      "Représentation (Danse)",
+      "Savoir (Noble)"
+    ],
+    "talents": [
+      "Obstiné",
+      "Doigts de fée",
+      "Savant (Remèdes)",
+      "Savoir-vivre (Nobles)"
+    ],
+    "trappings": [
+      "Tenue d'apparat",
+      "Lettre d'engagement"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Novice (Nonne)",
+    "career": "Nonne",
+    "level": 1,
+    "skills": [
+      "Art (Calligraphie)",
+      "Calme",
+      "Divertissement (Narration)",
+      "Guérison",
+      "Prière",
+      "Ragot",
+      "Résistance",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Brouet",
+      "Béni (Au choix)",
+      "Faire la manche",
+      "Lire/Écrire"
+    ],
+    "trappings": [
+      "Robes",
+      "Symbole religieux"
+    ],
+    "characteristics": [
+      "Dextérité",
+      "Intelligence",
+      "Sociabilité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Nonne",
+    "career": "Nonne",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Au choix)",
+      "Métier (Brasseur)",
+      "Métier (Herboriste)",
+      "Métier (Vigneron)",
+      "Recherche"
+    ],
+    "talents": [
+      "Invocation (Au choix)",
+      "Pansement de fortune",
+      "Savoir-vivre (Fidèles)",
+      "Visions sacrées"
+    ],
+    "trappings": [
+      "Livre (Religion)",
+      "Relique",
+      "Outils professionnels (Au choix)"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Abbesse",
+    "career": "Nonne",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Perception",
+      "Savoir (Politique)",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Résistance (Au choix)",
+      "Robuste",
+      "Savant (Théologie)"
+    ],
+    "trappings": [
+      "Abbaye",
+      "Bibliothèque (Théologie)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Prieure Générale",
+    "career": "Nonne",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Âme pure",
+      "Obstiné",
+      "Présence imposante",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Ordre de religieux"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Initié",
+    "career": "Prêtre",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Intuition",
+      "Perception",
+      "Prière",
+      "Recherche",
+      "Résistance",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Affable",
+      "Béni (Au choix)",
+      "Lire/Écrire",
+      "Visions sacrées"
+    ],
+    "trappings": [
+      "Symbole religieux",
+      "Robes"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Agilité",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Prêtre",
+    "career": "Prêtre",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Guérison",
+      "Intimidation",
+      "Ragot"
+    ],
+    "talents": [
+      "Baratiner",
+      "Invocation (Au choix)",
+      "Studieux",
+      "Savoir-vivre (Fidèles)"
+    ],
+    "trappings": [
+      "Livre (Religion)",
+      "Robes de cérémonie"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Grand Prêtre",
+    "career": "Prêtre",
+    "level": 3,
+    "skills": [
+      "Art (Écriture)",
+      "Commandement",
+      "Divertissement (Discours)",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Obstiné",
+      "Ferveur ardente",
+      "Haine (Au choix)",
+      "Sens aiguisé (Au choix)"
+    ],
+    "trappings": [
+      "Robe de bonne qualité",
+      "relique religieuse",
+      "Prêtres subordonnés",
+      "Temple"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Lecteur",
+    "career": "Prêtre",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Âme pure",
+      "Grand orateur",
+      "Résistance (Au choix)",
+      "Savant (Théologie)"
+    ],
+    "trappings": [
+      "Bibliothèque (Théologie)",
+      "Grands Prêtres subordonnés"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Sorcier novice",
+    "career": "Sorcier",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Armes d'hast)",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Focalisation (Au choix)",
+      "Intuition",
+      "Langue (Magick)",
+      "Perception",
+      "Savoir (Magie)"
+    ],
+    "talents": [
+      "Harmonisation aethyrique",
+      "Lire/Écrire",
+      "Magie mineure",
+      "Seconde vue"
+    ],
+    "trappings": [
+      "Grimoire",
+      "Bâton de combat"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Intelligence",
+      "Force Mentale"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Sorcier",
+    "career": "Sorcier",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Intimidation",
+      "Langue (Au choix)",
+      "Langue (Bataille)",
+      "Ragot"
+    ],
+    "talents": [
+      "Magie des Arcanes (Magie des couleurs)",
+      "Détection d'artefact",
+      "Mains agiles",
+      "Sixième sens"
+    ],
+    "trappings": [
+      "Licence magique"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître Sorcier",
+    "career": "Sorcier",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Évaluation",
+      "Savoir (Guerre)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Diction instinctive",
+      "Maniement de deux armes",
+      "Menaçant",
+      "Perception de la magie"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Cheval de guerre léger",
+      "Objet magique"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Seigneur sorcier",
+    "career": "Sorcier",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Effrayant",
+      "Mage de guerre",
+      "Vigilance",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Atelier (Magie)",
+      "Bibliothèque (Magie)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Canotier",
+    "career": "Batelier",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Esquive",
+      "Natation",
+      "Ragot",
+      "Ramer",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Infatigable",
+      "Nageur endurant",
+      "Pêcheur"
+    ],
+    "trappings": [
+      "Arme simple (Gaffe)",
+      "Veste de cuir",
+      "Perche"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Agilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Batelier",
+    "career": "Batelier",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Divertissement (Narration)",
+      "Intuition",
+      "Marchandage",
+      "Perception",
+      "Savoir (Voies fluviales)"
+    ],
+    "talents": [
+      "Marinier",
+      "Savoir-vivre (Guildes)",
+      "Très fort",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arbalète de poing ou pistolet",
+      "Chapeau en cuir",
+      "Veste de cuir",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Corde",
+      "Epée plaquée argent"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Chef de bord",
+    "career": "Batelier",
+    "level": 3,
+    "skills": [
+      "Divertissement (Chant)",
+      "Escalade",
+      "Guérison",
+      "Métier (Construction de bateaux)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Escroquer",
+      "Flairer les ennuis",
+      "Négociateur"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Outils professionnels (Charpentier)"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine",
+    "career": "Batelier",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Orientation"
+    ],
+    "talents": [
+      "Menaçant",
+      "Orateur",
+      "Sens de l'orientation",
+      "Pilote"
+    ],
+    "trappings": [
+      "Chapeau",
+      "Bateau de transport fluvial",
+      "Equipage"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Coureur de rivières",
+    "career": "Contrebandier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Discrétion (Rurale ou Urbaine)",
+      "Natation",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Subornation",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Bon marcheur (Marécages)",
+      "Criminel",
+      "Infatigable",
+      "Pêcheur"
+    ],
+    "trappings": [
+      "Grand sac",
+      "Masque ou Écharpe",
+      "Boîte à amadou",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Dextérité",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Contrebandier",
+    "career": "Contrebandier",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Savoir (Région)",
+      "Signes secrets (Contrebandier)"
+    ],
+    "talents": [
+      "Marinier",
+      "Négociateur",
+      "Savoir-vivre (Criminels)",
+      "Très fort"
+    ],
+    "trappings": [
+      "Baril (2)",
+      "Arme simple",
+      "Veste de cuir",
+      "Barque"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Maître contrebandier",
+    "career": "Contrebandier",
+    "level": 3,
+    "skills": [
+      "Évaluation",
+      "Intimidation",
+      "Intuition",
+      "Savoir (Voies fluviales)"
+    ],
+    "talents": [
+      "Nageur endurant",
+      "Pilote",
+      "Sans peur (Patrouilleurs fluviaux)",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Coureur de rivières",
+      "Bateau de transport fluvial rapide"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Roi des contrebandiers",
+    "career": "Contrebandier",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Bon marcheur (Littoral)",
+      "Caïd",
+      "Perspicace",
+      "Pied marin"
+    ],
+    "trappings": [
+      "Nécessaire de déguisement",
+      "Flotille de bateaux de transport fluvial"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Porteur",
+    "career": "Débardeur",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Escalade",
+      "Esquive",
+      "Natation",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Costaud",
+      "Infatigable",
+      "Très fort"
+    ],
+    "trappings": [
+      "Arme simple (Gaffe)",
+      "Gants en cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Initiative"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Débardeur",
+    "career": "Débardeur",
+    "level": 2,
+    "skills": [
+      "Discrétion (Urbaine)",
+      "Divertissement (Narration)",
+      "Intimidation",
+      "Pari",
+      "Perception",
+      "Subornation"
+    ],
+    "talents": [
+      "Criminel",
+      "Bonnes jambes",
+      "Persévérant",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Justaucorps de cuir",
+      "Pipe",
+      "Tabac",
+      "Casquette de porteur"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Contremaître",
+    "career": "Débardeur",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Évaluation",
+      "Intuition"
+    ],
+    "talents": [
+      "Escroquer",
+      "Négociateur",
+      "Orateur",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Gagne de Débardeurs",
+      "Sifflet"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître des docks",
+    "career": "Débardeur",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Taxes)"
+    ],
+    "talents": [
+      "Caïd",
+      "Lire/Écrire",
+      "Menaçant",
+      "Numismate"
+    ],
+    "trappings": [
+      "Bureau",
+      "Personnel",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Alevin",
+    "career": "Femme du fleuve",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Esquive",
+      "Natation",
+      "Ragot",
+      "Ramer",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Marécages)",
+      "Nageur endurant",
+      "Pêcheur",
+      "Sociable"
+    ],
+    "trappings": [
+      "Sceau",
+      "Canne à pêche",
+      "Appâts",
+      "Jambières en cuir"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Agilité",
+      "Dextérité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Femme du fleuve",
+    "career": "Femme du fleuve",
+    "level": 2,
+    "skills": [
+      "Pari",
+      "Piégeage",
+      "Projectiles (Entraves)",
+      "Projectiles (Lancer)",
+      "Savoir (Région)",
+      "Savoir (Voies fluviales)"
+    ],
+    "talents": [
+      "Infatigable",
+      "Maître artisan (Construction de bateaux)",
+      "Marinier",
+      "Nomade"
+    ],
+    "trappings": [
+      "Piège à anguilles",
+      "Justaucorps de cuir",
+      "Filet",
+      "Lance"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Sage des rives",
+    "career": "Femme du fleuve",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Corps à corps (Armes d'hast)",
+      "Intuition",
+      "Perception"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Persévérant",
+      "Savant (Voies fluviales)",
+      "Très fort"
+    ],
+    "trappings": [
+      "Barque",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Ancienne du fleuve",
+    "career": "Femme du fleuve",
+    "level": 4,
+    "skills": [
+      "Divertissement (Narration)",
+      "Savoir (Folklore)"
+    ],
+    "talents": [
+      "Obstiné",
+      "Orateur",
+      "Travailleur qualifié (Construction de bateaux)",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Cabane ou Bateau de transport fluvial"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Marin d'eau douce",
+    "career": "Marin",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Escalade",
+      "Natation",
+      "Pari",
+      "Ragot",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Bon marcheur (Littoral)",
+      "Infatigable",
+      "Nageur endurant",
+      "Pêcheur"
+    ],
+    "trappings": [
+      "Sceau",
+      "Brosse",
+      "Serpillère"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Dextérité",
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Marin",
+    "career": "Marin",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Divertissement (Chant)",
+      "Esquive",
+      "Langue (Au choix)",
+      "Résistance"
+    ],
+    "talents": [
+      "Bonnes jambes",
+      "Pied marin",
+      "Souplesse féline",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme simple (Gaffe)",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître d'équipage",
+    "career": "Marin",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Métier (Charpentier)",
+      "Perception"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Loup de mer",
+      "Persévérant",
+      "Très fort"
+    ],
+    "trappings": [
+      "Outils professionnels (Charpentier)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine de Navire",
+    "career": "Marin",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Orientation"
+    ],
+    "talents": [
+      "Orateur",
+      "Sens de l'orientation",
+      "Perspicace",
+      "Pilote"
+    ],
+    "trappings": [
+      "Cartes maritimes",
+      "Voilier",
+      "Equipage",
+      "Sextant",
+      "Longue vue"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Pilleur d'épaves",
+    "career": "Naufrageur",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Escalade",
+      "Esquive",
+      "Natation",
+      "Ramer",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Criminel",
+      "Effraction",
+      "Infatigable",
+      "Pêcheur"
+    ],
+    "trappings": [
+      "Pied-de-biche",
+      "Grand sac",
+      "Gants en cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Initiative"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Naufrageur",
+    "career": "Naufrageur",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Intuition",
+      "Orientation",
+      "Perception",
+      "Piégeage",
+      "Subornation"
+    ],
+    "talents": [
+      "Fuite !",
+      "Nageur endurant",
+      "Nomade",
+      "Trappeur"
+    ],
+    "trappings": [
+      "Barque",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Pirate des rivières",
+    "career": "Naufrageur",
+    "level": 3,
+    "skills": [
+      "Discrétion (Rurale)",
+      "Intimidation",
+      "Projectiles (Arbalète)",
+      "Ragot"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Marinier",
+      "Menaçant",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Arbalète",
+      "Carreaux (10)",
+      "Corde avec grappin",
+      "Bateau de transport fluvial"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Capitaine naufrageur",
+    "career": "Naufrageur",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Savoir (Voies fluviales)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Combattant au contact",
+      "Guerrier né",
+      "Pilote"
+    ],
+    "trappings": [
+      "Flotille de bateaux de transport fluvial",
+      "Equipage de Naufrageurs",
+      "Tonnelet de bière",
+      "Menottes"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Guide fluvial",
+    "career": "Nautonier",
+    "level": 1,
+    "skills": [
+      "Intuition",
+      "Natation",
+      "Perception",
+      "Ragot",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Savoir (Région)",
+      "Savoir (Voies fluviales)"
+    ],
+    "talents": [
+      "Marinier",
+      "Pêcheur",
+      "Sens de l'orientation",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Arme simple (Gaffe)",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Initiative"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Nautonier",
+    "career": "Nautonier",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Langue (Au choix)",
+      "Orientation"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Guide fluvial",
+      "Négociateur",
+      "Savoir-vivre (Guildes)"
+    ],
+    "trappings": [
+      "Justaucorps de cuir",
+      "Corde",
+      "Barque"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Agent 1"
+  },
+  {
+    "label": "Pilote",
+    "career": "Nautonier",
+    "level": 3,
+    "skills": [
+      "Intimidation",
+      "Marchandage",
+      "Savoir (Région)",
+      "Savoir (Épaves)"
+    ],
+    "talents": [
+      "Pied marin",
+      "Pilote",
+      "Sens aiguisé (Vue)",
+      "Très fort"
+    ],
+    "trappings": [
+      "Perche",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Maître nocher",
+    "career": "Nautonier",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Nageur endurant",
+      "Persévérant",
+      "Sixième sens",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Canotier",
+      "Petit bateau de transport fluvial"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Recrue fluviale",
+    "career": "Patrouilleur fluvial",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Natation",
+      "Perception",
+      "Ramer",
+      "Résistance",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Infatigable",
+      "Marinier",
+      "Nageur endurant",
+      "Très fort"
+    ],
+    "trappings": [
+      "Arme simple (Epée)",
+      "Veste de cuir",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Force",
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Patrouilleur fluvial",
+    "career": "Patrouilleur fluvial",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Intimidation",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Savoir (Voies fluviales)",
+      "Subornation"
+    ],
+    "talents": [
+      "Artilleur",
+      "Criminel",
+      "Pêcheur",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Lanterne",
+      "Huile de lampe",
+      "Pistolet",
+      "Munition (10)",
+      "Bouclier"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Abordeur",
+    "career": "Patrouilleur fluvial",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Escalade",
+      "Intuition"
+    ],
+    "talents": [
+      "Haine (Au choix)",
+      "Pied marin",
+      "Pilote",
+      "Sans peur (Naufrageurs)"
+    ],
+    "trappings": [
+      "Chemise de mailles",
+      "Grappin",
+      "Heaume"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Maître abordeur",
+    "career": "Patrouilleur fluvial",
+    "level": 4,
+    "skills": [
+      "Orientation",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Caïd",
+      "Menaçant",
+      "Sens de l'orientation",
+      "Présence imposante"
+    ],
+    "trappings": [
+      "Bateaux de patrouille",
+      "Equipage",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Filou",
+    "career": "Charlatan",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Divertissement (Narration)",
+      "Escamotage",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Subornation"
+    ],
+    "talents": [
+      "Chanceux",
+      "Maîtrise des dés",
+      "Savoir-vivre (Au choix)",
+      "Tricheur"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Vêtements (2)",
+      "Paquet de cartes",
+      "Dés"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Dextérité",
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Charlatan",
+    "career": "Charlatan",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Divertissement (Interprétation)",
+      "Esquive",
+      "Évaluation",
+      "Intuition",
+      "Perception"
+    ],
+    "talents": [
+      "Baratiner",
+      "Criminel",
+      "Identité secrète",
+      "Mains agiles"
+    ],
+    "trappings": [
+      "Document falsifié",
+      "Vêtements de qualité (2)",
+      "Assortiment de poudres colorées",
+      "Eau",
+      "Breloques",
+      "Colifichets"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Arnaqueur",
+    "career": "Charlatan",
+    "level": 3,
+    "skills": [
+      "Crochetage",
+      "Langue (Voleur)",
+      "Savoir (Héraldique)",
+      "Signes secrets (Voleur)"
+    ],
+    "talents": [
+      "Attirant",
+      "Lire/Écrire",
+      "Menteur",
+      "Négociateur"
+    ],
+    "trappings": [
+      "Nécessaire de déguisement",
+      "Outils de crochetage",
+      "Plusieurs documents falsifiés"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Escroc",
+    "career": "Charlatan",
+    "level": 4,
+    "skills": [
+      "Recherche",
+      "Savoir (Généalogie)"
+    ],
+    "talents": [
+      "Affable",
+      "Flairer les ennuis",
+      "Maître en déguisement",
+      "Sociable"
+    ],
+    "trappings": [
+      "Nécessaire d'écriture",
+      "Sceau falsifié"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Prostitué",
+    "career": "Entremetteur",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Divertissement (Au choix)",
+      "Intimidation",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Subornation"
+    ],
+    "talents": [
+      "Attirant",
+      "Baratiner",
+      "Chat de gouttière",
+      "Sociable"
+    ],
+    "trappings": [
+      "Flasque (Alcool)"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Dextérité",
+      "Sociabilité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Entremetteur",
+    "career": "Entremetteur",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Esquive",
+      "Intuition",
+      "Perception",
+      "Résistance",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Ambidextre",
+      "Criminel",
+      "Noctambule",
+      "Résistance (Maladie)"
+    ],
+    "trappings": [
+      "Dose de mytracine",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Souteneur",
+    "career": "Entremetteur",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Évaluation",
+      "Langue (Au choix)",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Affable",
+      "Escroquer",
+      "Négociateur",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Réseau de Prostituées"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Meneur",
+    "career": "Entremetteur",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Caïd",
+      "Numismate",
+      "Perspicace",
+      "Suborneur"
+    ],
+    "trappings": [
+      "Maison de ville avec discrète entrée arrière",
+      "Réseau d'Entremetteurs"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Bandit",
+    "career": "Hors-la-loi",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Base)",
+      "Intimidation",
+      "Pari",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Criminel",
+      "Fuite !",
+      "Nomade",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Sac de couchage",
+      "Arme simple",
+      "Veste de cuir",
+      "Boîte à amadou"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Hors-la-loi",
+    "career": "Hors-la-loi",
+    "level": 2,
+    "skills": [
+      "Discrétion (Rurale)",
+      "Esquive",
+      "Guérison",
+      "Perception",
+      "Projectiles (Arc)",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Frappe assommante",
+      "Tireur de précision",
+      "Trappeur"
+    ],
+    "trappings": [
+      "Arc",
+      "Flèche (10)",
+      "Bouclier",
+      "Tente"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Chef de bande",
+    "career": "Hors-la-loi",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Intuition",
+      "Ragot"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Menaçant",
+      "Rechargement rapide",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Heaume",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Cotte de mailles",
+      "Bande de Hors-la-loi"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Roi des bandits",
+    "career": "Hors-la-loi",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Empire)"
+    ],
+    "talents": [
+      "Robuste",
+      "Sans peur (Patrouilleurs routiers)",
+      "Tir mortel",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "\"Fief\" de Chefs de bande",
+      "Antre"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Trafiquant de cadavres",
+    "career": "Pilleur de tombes",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Discrétion (Au choix)",
+      "Escalade",
+      "Esquive",
+      "Intuition",
+      "Perception",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Criminel",
+      "Fuite !",
+      "Infatigable"
+    ],
+    "trappings": [
+      "Pied-de-biche",
+      "Charrette à bras",
+      "Cape à capuchon",
+      "Bâche en toile"
+    ],
+    "characteristics": [
+      "Force",
+      "Initiative",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Pilleur de tombes",
+    "career": "Pilleur de tombes",
+    "level": 2,
+    "skills": [
+      "Conduite d'attelage",
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Marchandage",
+      "Savoir (Remèdes)",
+      "Subornation"
+    ],
+    "talents": [
+      "Effraction",
+      "Résistance (Maladie)",
+      "Très fort",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Arme simple",
+      "Pelle",
+      "Lampe tempête",
+      "Huile de lampe"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Pilleur de tombeaux",
+    "career": "Pilleur de tombes",
+    "level": 3,
+    "skills": [
+      "Crochetage",
+      "Piégeage",
+      "Recherche",
+      "Savoir (Histoire)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Lire/Écrire",
+      "Persévérant",
+      "Rat d'égout"
+    ],
+    "trappings": [
+      "Corde",
+      "Barque"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chasseur de trésors",
+    "career": "Pilleur de tombes",
+    "level": 4,
+    "skills": [
+      "Métier (Ingénieur)",
+      "Orientation"
+    ],
+    "talents": [
+      "Obstiné",
+      "Sans peur (Morts-vivants)",
+      "Sixième sens",
+      "Trappeur"
+    ],
+    "trappings": [
+      "Sac de couchage",
+      "Cartes",
+      "Tente",
+      "Outils professionnels (Ingénieur)",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Coupe-jarret",
+    "career": "Rançonneur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Corps à corps (Bagarre)",
+      "Discrétion (Urbaine)",
+      "Esquive",
+      "Intimidation",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Criminel",
+      "Menaçant",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Coup-de-poing",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Rançonneur",
+    "career": "Rançonneur",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Langue (Estalien ou Tiléen)",
+      "Ragot",
+      "Subornation"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Escroquer",
+      "Frappe assommante",
+      "Guerrier né"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Chapeau",
+      "Chemise de mailles"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Chef de gang",
+    "career": "Rançonneur",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intuition",
+      "Perception",
+      "Projectiles (Arbalète)"
+    ],
+    "talents": [
+      "Résistance (Poison)",
+      "Robuste",
+      "Sans peur (Miliciens)",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Arbalète de poing",
+      "Carreaux (10)",
+      "Gang de Coupe-jarret et de Rançonneurs",
+      "Antre"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Baron du crime",
+    "career": "Rançonneur",
+    "level": 4,
+    "skills": [
+      "Savoir (Loi)",
+      "Savoir (Politique)"
+    ],
+    "talents": [
+      "Caïd",
+      "Effrayant",
+      "Nanti",
+      "Présence imposante"
+    ],
+    "trappings": [
+      "Chefs de gangs subalterrnes",
+      "Réseau d'Informateurs",
+      "Vêtements de qualité",
+      "Chapeau de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Brocanteur",
+    "career": "Receleur",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Évaluation",
+      "Marchandage",
+      "Pari",
+      "Ragot",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Négociateur",
+      "Sociable",
+      "Tricheur"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Marchandises volées (3d10 pistoles d'argent)"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Agilité",
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Receleur",
+    "career": "Receleur",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Intimidation",
+      "Intuition",
+      "Métier (Graveur)",
+      "Perception",
+      "Signes secrets (Voleur)"
+    ],
+    "talents": [
+      "Criminel",
+      "Numismate",
+      "Perspicace",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Monocle",
+      "Outils professionnels (Graveur)",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Maître receleur",
+    "career": "Receleur",
+    "level": 3,
+    "skills": [
+      "Divertissement (Narration)",
+      "Savoir (Art)",
+      "Savoir (Région)",
+      "Subornation"
+    ],
+    "talents": [
+      "Affable",
+      "Caïd",
+      "Doué en calcul",
+      "Frappe assommante"
+    ],
+    "trappings": [
+      "Echoppe de prêteur sur gages"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Professionnel du marché noir",
+    "career": "Receleur",
+    "level": 4,
+    "skills": [
+      "Recherche",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Menaçant",
+      "Suborneur",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Gros bras",
+      "Réseau d'Informateurs",
+      "Entrepôt"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Ensorceleur",
+    "career": "Sorcier dissident",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Discrétion (Rurale)",
+      "Escamotage",
+      "Focalisation",
+      "Intimidation",
+      "Langue (Magick)",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Criminel",
+      "Diction instinctive",
+      "Magie mineure",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Bougies",
+      "Craie",
+      "Poupée",
+      "Epingles"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Sorcier dissident",
+    "career": "Sorcier dissident",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Armes d'hast)",
+      "Emprise sur les animaux",
+      "Esquive",
+      "Intuition",
+      "Métier (Herboriste)",
+      "Perception"
+    ],
+    "talents": [
+      "Attirant",
+      "Magie des Arcanes (Sorcellerie)",
+      "Seconde vue",
+      "Sorcier !"
+    ],
+    "trappings": [
+      "Bâton de combat",
+      "Sac",
+      "Assortiment d'herbes",
+      "Outils professionnels (Herboriste)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Devin",
+    "career": "Sorcier dissident",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Marchandage",
+      "Savoir (Magie noire)",
+      "Subornation"
+    ],
+    "talents": [
+      "Affinité avec les animaux",
+      "Effrayant",
+      "Mains agiles",
+      "Perception de la magie"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Cape avec de nombreuses poches",
+      "Porte-bonheur"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Démoniste",
+    "career": "Sorcier dissident",
+    "level": 4,
+    "skills": [
+      "Savoir (Démonologie)",
+      "Savoir (Magie)"
+    ],
+    "talents": [
+      "Chanceux",
+      "Obstiné",
+      "Harmonisation aethyrique",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Robes",
+      "Crâne"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Rôdeur",
+    "career": "Voleur",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Discrétion (Urbaine)",
+      "Escalade",
+      "Esquive",
+      "Intuition",
+      "Perception",
+      "Résistance"
+    ],
+    "talents": [
+      "Chat de gouttière",
+      "Criminel",
+      "Frappe assommante",
+      "Fuite !"
+    ],
+    "trappings": [
+      "Pied-de-biche",
+      "Veste de cuir",
+      "Sac"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Agilité",
+      "Force Mentale"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Voleur",
+    "career": "Voleur",
+    "level": 2,
+    "skills": [
+      "Crochetage",
+      "Escamotage",
+      "Évaluation",
+      "Ragot",
+      "Savoir (Région)",
+      "Signes secrets (Voleur)"
+    ],
+    "talents": [
+      "Discret",
+      "Effraction",
+      "Mains agiles",
+      "Savoir-vivre (Criminels)"
+    ],
+    "trappings": [
+      "Outils professionnels (Voleur)",
+      "Corde"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Maître voleur",
+    "career": "Voleur",
+    "level": 3,
+    "skills": [
+      "Intimidation",
+      "Pari",
+      "Projectiles (Arbalète)",
+      "Subornation"
+    ],
+    "talents": [
+      "Doigts de fée",
+      "Pas de côté",
+      "Trappeur",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Arbalète de poing",
+      "Carreaux (10)"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Cambrioleur",
+    "career": "Voleur",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Piégeage"
+    ],
+    "talents": [
+      "Bonnes jambes",
+      "Grimpeur",
+      "Nanti",
+      "Souplesse féline"
+    ],
+    "trappings": [
+      "Vêtements sombres",
+      "Grappin",
+      "Masque ou Echarpes"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Percepteur",
+    "career": "Bailli",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Intimidation",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Escroquer",
+      "Infatigable",
+      "Numismate",
+      "Persévérant"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Caissette"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Initiative",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Bailli",
+    "career": "Bailli",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Évaluation",
+      "Intuition",
+      "Savoir (Région)",
+      "Subornation"
+    ],
+    "talents": [
+      "Criminel",
+      "Effraction",
+      "Frappe assommante",
+      "Orateur"
+    ],
+    "trappings": [
+      "Veste de cuir",
+      "Percepteurs (3)"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Préfet",
+    "career": "Bailli",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Orientation",
+      "Savoir (Héraldique)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Caïd",
+      "Flairer les ennuis",
+      "Lire/Écrire",
+      "Menaçant"
+    ],
+    "trappings": [
+      "Cheval",
+      "Selle et Harnais",
+      "Plastron",
+      "Bailli"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Magistrat",
+    "career": "Bailli",
+    "level": 4,
+    "skills": [
+      "Langue (Classique)",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Intrigant",
+      "Perspicace",
+      "Présence imposante",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Bibliothèque (Loi)",
+      "Robes de qualité",
+      "Sceau d'office"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Traqueur",
+    "career": "Chasseur",
+    "level": 1,
+    "skills": [
+      "Emprise sur les animaux",
+      "Escalade",
+      "Perception",
+      "Piégeage",
+      "Projectiles (Fronde)",
+      "Résistance",
+      "Savoir (Bêtes sauvages)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Dur à cuire",
+      "Nomade",
+      "Trappeur"
+    ],
+    "trappings": [
+      "Assortiment de différents pièges à animaux",
+      "Arme simple",
+      "Bottes",
+      "Cape épaisse",
+      "Fronde",
+      "Pierre (10)"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Dextérité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Chasseur",
+    "career": "Chasseur",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Discrétion (Rurale)",
+      "Intuition",
+      "Projectiles (Arc)",
+      "Signes secrets (Chasseur)"
+    ],
+    "talents": [
+      "Œil du chasseur",
+      "Tireur de précision",
+      "Tir précis",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Arc",
+      "Flèche (10)"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Pisteur",
+    "career": "Chasseur",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Natation",
+      "Orientation",
+      "Pistage"
+    ],
+    "talents": [
+      "Sans peur (Animaux)",
+      "Sens aiguisé (Au choix)",
+      "Tireur d'élite",
+      "Tir mortel"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Sac de couchage",
+      "Tente"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Maître de la Chasse",
+    "career": "Chasseur",
+    "level": 4,
+    "skills": [
+      "Dressage (Au choix)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Robuste",
+      "Sans peur (Monstres)",
+      "Tir sûr",
+      "Tireur embusqué"
+    ],
+    "trappings": [
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Chenil avec chiens de chasse"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Coureur des bois",
+    "career": "Éclaireur",
+    "level": 1,
+    "skills": [
+      "Corps à corps (Base)",
+      "Emprise sur les animaux",
+      "Escalade",
+      "Perception",
+      "Ragot",
+      "Résistance",
+      "Savoir (Région)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Nomade",
+      "Sens de l'orientation",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Veste de cuir",
+      "Bottes robustes",
+      "Cape",
+      "Corde"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Éclaireur",
+    "career": "Éclaireur",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Discrétion (Rurale)",
+      "Orientation",
+      "Pistage",
+      "Projectiles (Arc)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Vigilance",
+      "Vision nocturne",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arc",
+      "Flèche (10)",
+      "Chemise de mailles"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Guide",
+    "career": "Éclaireur",
+    "level": 3,
+    "skills": [
+      "Marchandage",
+      "Natation",
+      "Signes secrets (Chasseur)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Bonnes jambes",
+      "Sens aiguisé (Vue)",
+      "Sixième sens",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Carte",
+      "Cheval de selle",
+      "Selle et Harnais",
+      "Fontes de selle",
+      "Vivres pour 2 semaines",
+      "Tente"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Explorateur",
+    "career": "Éclaireur",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Métier (Cartographe)"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Linguistique",
+      "Persévérant",
+      "Savant (Région)"
+    ],
+    "trappings": [
+      "Sélection de cartes",
+      "Outils professionnels (Cartographe)"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Voleur de rhinox",
+    "career": "Gardien de troupeaux de rhinox",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Discrétion (Rurale)",
+      "Esquive",
+      "Perception",
+      "Piégeage",
+      "Projectiles (Entraves)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Subornation"
+    ],
+    "talents": [
+      "Bon marcheur (Montagnes)",
+      "Fuite !",
+      "Nomade",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Sac à dos",
+      "Arme simple",
+      "Lasso",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Gardien de troupeaux de rhinox",
+    "career": "Gardien de troupeaux de rhinox",
+    "level": 2,
+    "skills": [
+      "Dressage (Rhinox)",
+      "Emprise sur les animaux",
+      "Pistage",
+      "Projectiles (Lancer)",
+      "Savoir (Rhinox)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Cœur vaillant",
+      "Costaud",
+      "Sans peur (Grandes bêtes)"
+    ],
+    "trappings": [
+      "Harpon ou Grande lance de jet",
+      "Fourrures de rhinox"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Dompteur de rhinox",
+    "career": "Gardien de troupeaux de rhinox",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Chevaucher (Rhinox)",
+      "Intimidation",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Déterminé",
+      "Distraire",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Rhinox",
+      "Pansière avec un crâne de rhinox",
+      "Fontes de selle"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître des rhinox",
+    "career": "Gardien de troupeaux de rhinox",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Intuition"
+    ],
+    "talents": [
+      "Effrayant",
+      "Exaltant",
+      "Frappe blessante",
+      "Noctambule"
+    ],
+    "trappings": [
+      "Ferme ou Droits de pâturage sur un grand domaine",
+      "Troupeau de rhinox ou d'autres Grandes bêtes"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Cueilleur",
+    "career": "Herboriste",
+    "level": 1,
+    "skills": [
+      "Emprise sur les animaux",
+      "Escalade",
+      "Métier (Herboriste)",
+      "Natation",
+      "Perception",
+      "Résistance",
+      "Savoir (Herbes)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Nomade",
+      "Sens aiguisé (Goût)",
+      "Sens de l'orientation"
+    ],
+    "trappings": [
+      "Bottes",
+      "Cape",
+      "Besace",
+      "Assortiment d'herbes"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Initiative",
+      "Agilité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Herboriste",
+    "career": "Herboriste",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Guérison",
+      "Marchandage",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Costaud",
+      "Doigts de fée",
+      "Négociateur",
+      "Vivacité"
+    ],
+    "trappings": [
+      "Arme simple (Faucille)",
+      "Cataplasme de guérison",
+      "Outils professionnels (Herboriste)"
+    ],
+    "characteristics": [
+      "Dextérité"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Maître Herboriste",
+    "career": "Herboriste",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intuition",
+      "Métier (Poisons)",
+      "Savoir (Remèdes)"
+    ],
+    "talents": [
+      "Dur à cuire",
+      "Maître artisan (Herboriste)",
+      "Pansement de fortune",
+      "Perspicace"
+    ],
+    "trappings": [
+      "Atelier (Herboriste)",
+      "Cueilleur",
+      "Cataplasme de guérison (3)",
+      "Potion de guérison"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Herboriste de renom",
+    "career": "Herboriste",
+    "level": 4,
+    "skills": [
+      "Conduite d'attelage",
+      "Orientation"
+    ],
+    "talents": [
+      "Concocter",
+      "Résistance (Poison)",
+      "Savant (Herbes)",
+      "Travailleur qualifié (Herboriste)"
+    ],
+    "trappings": [
+      "Poney",
+      "Charrette"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Prospecteur",
+    "career": "Mineur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Corps à corps (À deux mains)",
+      "Intuition",
+      "Natation",
+      "Perception",
+      "Résistance",
+      "Savoir (Région)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Rocailleux)",
+      "Costaud",
+      "Nomade",
+      "Persévérant"
+    ],
+    "trappings": [
+      "Bâtonnet de fusain",
+      "Carte grossière",
+      "Casserole",
+      "Pelle"
+    ],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Mineur",
+    "career": "Mineur",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Escalade",
+      "Évaluation",
+      "Métier (Explosifs)",
+      "Résistance à l'alcool",
+      "Signes secrets (Mineur)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Infatigable",
+      "Très fort",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Arme simple (Pioche)",
+      "Huile de lampe",
+      "Lampe Davrich",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Maître Mineur",
+    "career": "Mineur",
+    "level": 3,
+    "skills": [
+      "Discrétion (Souterrains)",
+      "Métier (Ingénieur)",
+      "Ragot",
+      "Savoir (Géologie)"
+    ],
+    "talents": [
+      "Bricoleur",
+      "Frappe précise",
+      "Maître artisan (Explosifs)",
+      "Rat d'égout"
+    ],
+    "trappings": [
+      "Pioche à deux mains",
+      "Heaume",
+      "Outils professionnels (Ingénieur)"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Contremaître de la mine",
+    "career": "Mineur",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Commandement"
+    ],
+    "talents": [
+      "Obstiné",
+      "Ergoteur",
+      "Escroquer",
+      "Lire/Écrire"
+    ],
+    "trappings": [
+      "Equipe de Mineurs",
+      "Nécessaire d'écriture"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Voyant",
+    "career": "Mystique",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Divertissement (Voyance)",
+      "Escamotage",
+      "Esquive",
+      "Intuition",
+      "Marchandage",
+      "Perception",
+      "Ragot"
+    ],
+    "talents": [
+      "Affable",
+      "Attirant",
+      "Chanceux",
+      "Seconde vue"
+    ],
+    "trappings": [
+      "Bijoux de pacotille",
+      "Paquet de cartes ou Dés"
+    ],
+    "characteristics": [
+      "Initiative",
+      "Agilité",
+      "Sociabilité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Mystique",
+    "career": "Mystique",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Divertissement (Prophétie)",
+      "Évaluation",
+      "Intimidation",
+      "Savoir (Astrologie)",
+      "Subornation"
+    ],
+    "talents": [
+      "Détection d'artefact",
+      "Prévoyant",
+      "Sixième sens",
+      "Visions sacrées"
+    ],
+    "trappings": [
+      "Assortiment d'amulettes"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Sage",
+    "career": "Mystique",
+    "level": 3,
+    "skills": [
+      "Art (Écriture)",
+      "Divertissement (Narration)",
+      "Emprise sur les animaux",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Magie mineure",
+      "Lire/Écrire",
+      "Sorcier !"
+    ],
+    "trappings": [
+      "Outils professionnels (Ecriture)"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Prophète",
+    "career": "Mystique",
+    "level": 4,
+    "skills": [
+      "Focalisation (Azyr)",
+      "Savoir (Prophétie)"
+    ],
+    "talents": [
+      "Obstiné",
+      "Magie des Arcanes (Cieux)",
+      "Menaçant",
+      "Perception de la magie"
+    ],
+    "trappings": [
+      "Outils professionnels (Astrologie)"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Apprenti Sorcier de Village",
+    "career": "Sorcier de village",
+    "level": 1,
+    "skills": [
+      "Focalisation",
+      "Intuition",
+      "Langue (Magick)",
+      "Perception",
+      "Résistance",
+      "Savoir (Folklore)",
+      "Savoir (Herbes)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Bon marcheur (Régions boisées)",
+      "Magie mineure",
+      "Mains agiles",
+      "Nomade"
+    ],
+    "trappings": [
+      "Porte-bonheurs (1d10)",
+      "Bâton de combat",
+      "Sac à dos"
+    ],
+    "characteristics": [
+      "Endurance",
+      "Initiative",
+      "Dextérité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Sorcier de village",
+    "career": "Sorcier de village",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Guérison",
+      "Métier (Colifichets)",
+      "Métier (Herboriste)",
+      "Ragot",
+      "Savoir (Région)"
+    ],
+    "talents": [
+      "Affinité avec les animaux",
+      "Harmonisation aethyrique",
+      "Magie des Arcanes (Magie naturelle)",
+      "Sixième sens"
+    ],
+    "trappings": [
+      "Cataplasme de guérison",
+      "Nécessaire antipoison",
+      "Outils professionnels (Herboriste)"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Maître Sorcier de village",
+    "career": "Sorcier de village",
+    "level": 3,
+    "skills": [
+      "Marchandage",
+      "Savoir (Esprits)",
+      "Savoir (Généalogie)",
+      "Savoir (Magie)"
+    ],
+    "talents": [
+      "Âme pure",
+      "Maître artisan (Herboriste)",
+      "Perception de la magie",
+      "Résistance (Maladie)"
+    ],
+    "trappings": [
+      "Apprenti",
+      "Cabane isolée"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Sage de village",
+    "career": "Sorcier de village",
+    "level": 4,
+    "skills": [
+      "Intimidation",
+      "Prière"
+    ],
+    "talents": [
+      "Obstiné",
+      "Sens aiguisé (Au choix)",
+      "Travailleur qualifié (Herboriste)",
+      "Vision nocturne"
+    ],
+    "trappings": [
+      "Assortiment de crânes d'animaux",
+      "Cape de cérémonie",
+      "Couronne de fleurs"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Paysan",
+    "career": "Villageois",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Bagarre)",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Région)",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Brouet",
+      "Infatigable",
+      "Nomade",
+      "Obstiné"
+    ],
+    "trappings": [],
+    "characteristics": [
+      "Force",
+      "Endurance",
+      "Agilité"
+    ],
+    "status": "Bronze 2"
+  },
+  {
+    "label": "Villageois",
+    "career": "Villageois",
+    "level": 2,
+    "skills": [
+      "Conduite d'attelage",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Esquive",
+      "Marchandage",
+      "Métier (Au choix)"
+    ],
+    "talents": [
+      "Affinité avec les animaux",
+      "Dur à cuire",
+      "Persévérant",
+      "Très fort"
+    ],
+    "trappings": [
+      "Arme simple (Hache)",
+      "Outils de la Profession (Identique au Métier)",
+      "Justaucorps de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Échevin",
+    "career": "Villageois",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Intimidation",
+      "Subornation"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Maître artisan (Au choix)",
+      "Négociateur",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Mule",
+      "Charette",
+      "Maison de village",
+      "Atelier"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Doyen",
+    "career": "Villageois",
+    "level": 4,
+    "skills": [
+      "Intuition",
+      "Savoir (Histoire)"
+    ],
+    "talents": [
+      "Doigts de fée",
+      "Orateur",
+      "Savant (Région)",
+      "Travailleur qualifié (Au choix)"
+    ],
+    "trappings": [
+      "Respect du village"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 2"
+  }
+]

@@ -1,0 +1,2502 @@
+[
+  {
+    "label": "Humain",
+    "title": null,
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 30,
+      "B": 12
+    },
+    "traits": [
+      "Arme +7",
+      "Préjugé (un au choix)"
+    ],
+    "optionals": [
+      "À distance +8 (50)",
+      "Lanceur de Sorts",
+      "Maladie"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 311
+    }
+  },
+  {
+    "label": "Nain",
+    "title": null,
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 3,
+      "CC": 40,
+      "CT": 30,
+      "F": 30,
+      "E": 40,
+      "I": 30,
+      "Ag": 20,
+      "Dex": 40,
+      "Int": 30,
+      "FM": 50,
+      "Soc": 20,
+      "B": 16
+    },
+    "traits": [
+      "Animosité (un au choix)",
+      "Arme +7",
+      "Haine (peaux-vertes)",
+      "Préjugé (un au choix)",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +8 (50)",
+      "Rage"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 311
+    }
+  },
+  {
+    "label": "Halfling",
+    "title": null,
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 3,
+      "CC": 20,
+      "CT": 40,
+      "F": 20,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 40,
+      "Int": 30,
+      "FM": 40,
+      "Soc": 40,
+      "B": 10
+    },
+    "traits": [
+      "Arme +5",
+      "Taille (Petite)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +7 (25)",
+      "Furtif"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 311
+    }
+  },
+  {
+    "label": "Elfe (haut et sylvain)",
+    "title": null,
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 5,
+      "CC": 40,
+      "CT": 40,
+      "F": 30,
+      "E": 30,
+      "I": 50,
+      "Ag": 40,
+      "Dex": 40,
+      "Int": 40,
+      "FM": 40,
+      "Soc": 30,
+      "B": 13
+    },
+    "traits": [
+      "Animosité (deux au choix)",
+      "Arme +7",
+      "Préjugé (un au choix)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +9 (150)",
+      "Arboricole",
+      "Furtif",
+      "Lanceur de Sorts (un au choix)",
+      "Magique",
+      "Pisteur",
+      "Résistance à la Magie"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 311
+    }
+  },
+  {
+    "label": "Ogre",
+    "title": null,
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": 20,
+      "F": 45,
+      "E": 45,
+      "I": 10,
+      "Ag": 25,
+      "Dex": 20,
+      "Int": 20,
+      "FM": 30,
+      "Soc": 20,
+      "B": 30
+    },
+    "traits": [
+      "Affamé",
+      "Arme +8",
+      "Armure (Peau 1)",
+      "Préjugé (Maigrichons)",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Belliqueux",
+      "Infecté",
+      "Pisteur"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Grands, bruyants, brutaux et extrêmement violents, les ogres sont animés par le besoin de remplir leur énorme ventre musclé. Ils manquent d'astuce ou d'intelligence pour le faire avec subtilité, optant d'emblée pour la force dans la plupart des situations.<br><br>Originaires des terres situées très à l'est, les ogres sont répandus dans le Vieux Monde car ils adorent errer, toujours à la recherche de nouvelles proies. Au cours de leurs voyages à but alimentaire, longs de plusieurs décennies, ils mettent tout en œuvre pour s'intégrer, portant des vêtements de la région et suivant les coutumes locales qu'ils comprennent, car cela leur permet d'attirer plus facilement leur prochaine proie.<br><br>Dans l'Empire, ils servent souvent dans l'Armée et sont souvent aperçus dans les grandes villes, où ils sont recrutés pour leurs muscles. La Guilde des Vieux halflings (des entrepreneurs en construction) a effectivement monopolisé le travail bon marché des ogres dans nombre de villes et cités de l'Empire, source d'un grand mécontentement pour ses rivaux.",
+    "source": {
+      "book": "LDB",
+      "page": 312
+    }
+  },
+  {
+    "label": "Bella la Noire",
+    "title": "Bandit humain",
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 3,
+      "CC": 32,
+      "CT": 35,
+      "F": 41,
+      "E": 45,
+      "I": 30,
+      "Ag": 25,
+      "Dex": 29,
+      "Int": 27,
+      "FM": 34,
+      "Soc": 33,
+      "B": 19
+    },
+    "traits": [
+      "À distance +8 (50)",
+      "Animosité (Les riches, Les hommes-bêtes)",
+      "Arboricole",
+      "Arme +8",
+      "Armure (Légère 2)",
+      "Brutal",
+      "Endurant",
+      "Préjugé (Baillis, Juristes)"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le mari de Béthilda a été massacré par des hommes-bêtes attaquant le village de Reikherz. Quatre mois plus tard, elle fut expulsée pour ne pas avoir payé son loyer. Désespérée, Béthilda se rapprocha de son cousin, un hors-la-loi recherché. Après s'être laissée persuader, Béthilda rejoignit sa bande de bandits qui sévissait sur la route de Karstadt-Siedlung et fut surprise de trouver aussi intéressant le vol de grand chemin. Aujourd'hui, elle voyage en tant que Bella la Noire et s'est bâti une réputation de brutalité impitoyable, ce qui inquiète grandement son cousin.",
+    "source": {
+      "book": "LDB",
+      "page": 313
+    }
+  },
+  {
+    "label": "Pol Dankels",
+    "title": "Sorcier humain",
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 24,
+      "CT": 26,
+      "F": 27,
+      "E": 46,
+      "I": 49,
+      "Ag": 26,
+      "Dex": 34,
+      "Int": 65,
+      "FM": 47,
+      "Soc": 44,
+      "B": 14
+    },
+    "traits": [
+      "Arme +5",
+      "Coriace",
+      "Intelligent",
+      "Lanceur de Sorts (Sorcellerie)",
+      "Préjugé (sigmarites)",
+      "Rusé"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Pol pensait qu'il suivrait les traces de ses parents, dirigeant la boulangerie Bertram à Tahme, mais les dieux avaient d'autres projets pour lui. C'est le jour de son vingt-troisième anniversaire, le jour où sa femme l'a découvert au lit avec sa sœur et a voulu partir avec leurs trois enfants, que quelque chose a basculé. Les badauds ont affirmé que ses yeux luisants étaient violets et que de la fumée lavande sortait de ses mains. Pour Pol, le monde devint rouge alors que la boulangerie flambait. C'était il y a sept ans. Pol est depuis sur la route avec ses trois enfants, fuyant désespérément les Répurgateurs et les mandataires de sa femme. Il ne se laissera pas attraper. Ses enfants ont besoin de lui.",
+    "source": {
+      "book": "LDB",
+      "page": 313
+    }
+  },
+  {
+    "label": "Araignée géante",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 5,
+      "CC": 35,
+      "CT": 25,
+      "F": 15,
+      "E": 25,
+      "I": 10,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 5,
+      "FM": 25,
+      "Soc": null,
+      "B": 2
+    },
+    "traits": [
+      "Arme +3",
+      "Bestial",
+      "Grimpant",
+      "Taille (Petite)",
+      "Toile 40",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Arboricole",
+      "Armure 1",
+      "Dressé (Dompté, Garder, Guerre, Magie, Monture)",
+      "Morsure",
+      "Nuée",
+      "Taille (de Petite à Énorme)",
+      "Venin (Moyen)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les araignées géantes se tapissent au plus profond des forêts et des grottes de l'Empire, mais elles peuvent vivre n'importe où, y compris dans les greniers poussiéreux et les caves sombres. La plupart capturent leurs proies à l'aide de toiles solides avant de leur injecter du venin. Bien que la plupart aient la taille d'un grand rat, certaines espèces d'araignées géantes sont effroyablement grandes. Les gobelins des forêts capturent souvent de grands spécimens pour en faire des montures.",
+    "source": {
+      "book": "LDB",
+      "page": 314
+    }
+  },
+  {
+    "label": "Cheval",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 7,
+      "CC": 25,
+      "CT": null,
+      "F": 45,
+      "E": 35,
+      "I": 15,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 10,
+      "FM": 10,
+      "Soc": 10,
+      "B": 22
+    },
+    "traits": [
+      "Arme +7",
+      "Bestial",
+      "Foulée",
+      "Nerveux",
+      "Taille (Grande)"
+    ],
+    "optionals": [
+      "Armure",
+      "Dressé (Divertir, Dompté, Guerre, Magie, Monture, Trait)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les chevaux sont élevés pour différents usages, servant de montures rapides aux Messagers, de destriers robustes pour les Chevaliers et de chevaux de traits pour les fermiers. Ils sont tellement utilisés que le commerce de chevaux est presque une compétition sportive au Reikland. Les maquignons (les vendeurs de chevaux) sans scrupule cherchent à se faire de l'argent sur le dos d'acheteurs ignorants, en lissant la robe et limant les dents des vieux chevaux, ou en leur bourrant les naseaux de petits chiffons pour éponger le mucus. Un acheteur non averti devrait donc se montrer prudent.",
+    "source": {
+      "book": "LDB",
+      "page": 314
+    }
+  },
+  {
+    "label": "Chien",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": null,
+      "F": 20,
+      "E": 20,
+      "I": 35,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 15,
+      "FM": 10,
+      "Soc": 15,
+      "B": 5
+    },
+    "traits": [
+      "Arme +5",
+      "Bestial",
+      "Foulée",
+      "Nerveux",
+      "Taille (Petite)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Armure 1",
+      "Dressé (Divertir, Dompté, Garder, Guerre, Magie, Rapporter)",
+      "Frénésie",
+      "Infecté",
+      "Pisteur",
+      "Taille (de Petite à Moyenne)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les chiens sont élevés pour une myriade de raisons à travers le Vieux Monde. Alors que les toutous choyés des courtisans d'Altdorf ne sont une menace que pour la dignité d'un Joueur, les espèces plus grandes, y compris celles élevées pour la guerre ou les combats de chiens, peuvent représenter une menace considérable.",
+    "source": {
+      "book": "LDB",
+      "page": 315
+    }
+  },
+  {
+    "label": "Loup",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": null,
+      "F": 35,
+      "E": 30,
+      "I": 35,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 10
+    },
+    "traits": [
+      "Arme +6",
+      "Armure 1",
+      "Bestial",
+      "Foulée",
+      "Nerveux",
+      "Pisteur",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Garde, Guerre, Magie, Monture, Rapporter, Trait)",
+      "Frénésie",
+      "Infecté",
+      "Taille (Grande)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les loups chassent généralement en meute et ont la réputation d'être des chasseurs tenaces, poursuivant sans relâche leurs proies sur des dizaines de kilomètres. Plusieurs espèces rôdent dans le Reikland, dont les redoutables loups géants, capturés et élevés par des gobelins qui les utilisent comme gardes ou montures.",
+    "source": {
+      "book": "LDB",
+      "page": 315
+    }
+  },
+  {
+    "label": "Ours",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": null,
+      "F": 55,
+      "E": 45,
+      "I": 20,
+      "Ag": 25,
+      "Dex": 15,
+      "Int": 10,
+      "FM": 15,
+      "Soc": null,
+      "B": 28
+    },
+    "traits": [
+      "Arme +8",
+      "Armure (Peau 1)",
+      "Bestial",
+      "Foulée",
+      "Morsure +9",
+      "Nerveux",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Affamé",
+      "Dressé (Divertir, Dompté, Guerre)",
+      "Infecté",
+      "Parasité",
+      "Taille (Énorme)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Arpentant les étendues sauvages du Reikland, les Ours sont solitaires et généralement farouches, agressifs que lorsque des intrus menacent leurs petits ou s'ils sont blessés. Quand la nourriture se raréfie, ils se rapprochent des villages non protégés et des voyageurs, en particulier ceux qui se montrent négligents avec leurs provisions.",
+    "source": {
+      "book": "LDB",
+      "page": 315
+    }
+  },
+  {
+    "label": "Pigeon",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 2,
+      "CC": 15,
+      "CT": null,
+      "F": 5,
+      "E": 15,
+      "I": 25,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 10,
+      "FM": 20,
+      "Soc": 10,
+      "B": 1
+    },
+    "traits": [
+      "Arme +0",
+      "Bestial",
+      "Nerveux",
+      "Taille (Minuscule)",
+      "Vol 100"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Revenir au colombier)",
+      "Taille (Petite)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les pigeons sont élevés dans tout le Reikland pour transporter des messages de toutes sortes. Récemment, ils ont gagné en renommée pour le transport de chargements plus mortels, car l'oiseau facilement accessible est devenu populaire parmi les Ingénieurs, qui les utilisent pour déployer leurs « bombes-pigeons » à des degrés divers de réussite.",
+    "source": {
+      "book": "LDB",
+      "page": 316
+    }
+  },
+  {
+    "label": "Rat géant",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": null,
+      "F": 30,
+      "E": 25,
+      "I": 25,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 5
+    },
+    "traits": [
+      "Arme +4",
+      "Bestial",
+      "Foulée",
+      "Infecté",
+      "Nerveux",
+      "Vision nocturne",
+      "Taille (Petite)"
+    ],
+    "optionals": [
+      "Armure 1",
+      "Dressé (Guerre)",
+      "Maladie (Fièvre du rongeur ou Peste Noire)",
+      "Nuée",
+      "Taille (de Petite à Moyenne)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les rats s'infiltrent partout et sont particulièrement répandus dans les cités et les villes. Plus la population est dense, plus les rats s'entassent avec eux, ce qui est particulièrement néfaste quand les créatures sont porteuses de maladies. Généralement de petite taille, ils peuvent atteindre des proportions monstrueuses, et l'on rapporte la présence de rats sous Altdorf, de la taille d'un humain voire plus grands. On utilise des pièges à rats pour les garder sous contrôle.",
+    "source": {
+      "book": "LDB",
+      "page": 316
+    }
+  },
+  {
+    "label": "Sanglier",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 7,
+      "CC": 35,
+      "CT": null,
+      "F": 35,
+      "E": 35,
+      "I": 35,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 10,
+      "FM": 10,
+      "Soc": null,
+      "B": 10
+    },
+    "traits": [
+      "Arme +6",
+      "Armure (Peau 1)",
+      "Bestial",
+      "Cornes (Défenses)",
+      "Foulée",
+      "Nerveux",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Belliqueux",
+      "Dressé (Dompté, Guerre, Magie, Monture)",
+      "Frénésie",
+      "Infecté",
+      "Parasité",
+      "Taille (Grande)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "À la recherche de nourriture dans la forêt, les sangliers sont des créatures solitaires, qui, lorsqu'ils sont acculés, se battent en utilisant leurs défenses aiguisées avec une ténacité qui stupéfait ceux qui n'y sont pas préparés. Bien que la plupart mesurent entre 1m50 et 1m80 de long, certains atteignent des proportions remarquables. Les plus grands d'entre eux sont très prisés des orcs, qui les utilisent comme de féroces montures de guerre.",
+    "source": {
+      "book": "LDB",
+      "page": 316
+    }
+  },
+  {
+    "label": "Serpent",
+    "title": null,
+    "folder": "Les bêtes du Reikland",
+    "char": {
+      "M": 3,
+      "CC": 40,
+      "CT": null,
+      "F": 30,
+      "E": 25,
+      "I": 25,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 5,
+      "FM": 45,
+      "Soc": null,
+      "B": 8
+    },
+    "traits": [
+      "À Sang-froid",
+      "Arme +5",
+      "Armure 1",
+      "Bestial",
+      "Rapide",
+      "Taille (Petite)"
+    ],
+    "optionals": [
+      "Constricteur",
+      "Limicole",
+      "Nuée",
+      "Taille (de Minuscule à Énorme)",
+      "Venin (de Très Facile à Très Difficile)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "On trouve des serpents dans tout l'Empire, en particulier dans les forêts profondes. La plupart sont inoffensifs, mais certains utilisent un venin mortel ou enserrent leurs victimes jusqu'à ce qu'elles meurent par suffocation. Comme beaucoup de créatures du Vieux Monde, ils peuvent atteindre des proportions gigantesques, représentant un réel danger même pour le plus fort des mercenaires.",
+    "source": {
+      "book": "LDB",
+      "page": 317
+    }
+  },
+  {
+    "label": "Basilic",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 45,
+      "CT": 35,
+      "F": 55,
+      "E": 55,
+      "I": 25,
+      "Ag": 15,
+      "Dex": null,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 64
+    },
+    "traits": [
+      "À Sang-froid",
+      "Arme +9",
+      "Armure 2",
+      "Attaque caudale +8",
+      "Bestial",
+      "Foulée",
+      "Immunité (Poison)",
+      "Infecté",
+      "Morsure +9",
+      "Regard pétrifiant",
+      "Taille (Énorme)",
+      "Venin",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Mutation",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Ces créatures reptiliennes à huit pattes sont solitaires et insaisissables. Considérées comme étant l’une des plus anciennes créatures du Chaos, on les dit emplies de tant de malveillance et de venin que même le sol sur lequel elles marchent est empoisonné. Leur morsure est également venimeuse, mais c’est leur regard pétrifiant qui est le plus à craindre.<br><br> Rarement rencontrés aujourd’hui, les basilics sont des ennemis des plus dangereux. Leurs glandes et leurs organes sont très prisés des Sorciers et Alchimistes. Des chasseurs opportunistes écoutent donc souvent les rumeurs sur la présence de basilics dans les espaces sauvages du Vorbergland, et bien peu en reviennent.",
+    "source": {
+      "book": "LDB",
+      "page": 317
+    }
+  },
+  {
+    "label": "Bête des marais",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 5,
+      "CC": 35,
+      "CT": null,
+      "F": 50,
+      "E": 55,
+      "I": 10,
+      "Ag": 15,
+      "Dex": 10,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 40
+    },
+    "traits": [
+      "Arme +8",
+      "Fabriqué",
+      "Increvable",
+      "Infecté",
+      "Infravision",
+      "Instable",
+      "Limicole",
+      "Régénération",
+      "Stupide",
+      "Taille (Grande)"
+    ],
+    "optionals": [
+      "Affamé",
+      "Frénésie",
+      "Parasité",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Animées par des lanceurs de Sorts à partir d’immondices des marais et des tourbières, les Bêtes des marais ne sont que des automates parfaitement stupides créés par magie. Vaguement humanoïdes, ils sont constitués de boue, d’os, de branches et de mucus, et nécessitent d’importantes quantités de magie pour conserver leur intégrité. Parfois, ils sont animés par des Sorciers spécialisés dans la Magie de Jade pour servir de gardes du corps ou pour accomplir une tâche spécifique nécessitant de la force brute ou un meurtre aveugle. Ils s’animent parfois de façon autonome, engendrés dans des bassins d’eau stagnante où le flux de Magie a été corrompu. Le Collège de Jade d’Altdorf conserve une vingtaine de ces créatures comme bêtes de somme, qui effectuent des corvées pour les Magisters supérieurs, maintenues par la focalisation incessante de douzaines d’apprentis.",
+    "source": {
+      "book": "LDB",
+      "page": 318
+    }
+  },
+  {
+    "label": "Demigriffon",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 7,
+      "CC": 35,
+      "CT": null,
+      "F": 55,
+      "E": 40,
+      "I": 30,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 15,
+      "FM": 25,
+      "Soc": null,
+      "B": 30
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 1",
+      "Bestial",
+      "Foulée",
+      "Morsure +9",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Garde, Guerre, Monture, Trait)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Avec leur tête d’aigle et leur corps de lion, les demigriffons sont de puissantes créatures au port altier. Ils arpentent les forêts et les prairies de l’Empire, généralement loin des habitations humaines, chassant seuls. Des demigriffons captifs sont utilisés par les ordres de chevaliers les plus indomptables de l’Empire comme destriers de guerre. Contrairement aux plus grandes montures monstrueuses, généralement capturées jeunes et élevées en captivité, la capture d’un demigriffon adulte est un rite de passage dans certains ordres.",
+    "source": {
+      "book": "LDB",
+      "page": 318
+    }
+  },
+  {
+    "label": "Dragon",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 65,
+      "CT": 60,
+      "F": 65,
+      "E": 65,
+      "I": 60,
+      "Ag": 25,
+      "Dex": 15,
+      "Int": 45,
+      "FM": 85,
+      "Soc": 25,
+      "B": 104
+    },
+    "traits": [
+      "Arme +10",
+      "Armure 5",
+      "Attaque caudale +9",
+      "Morsure +10",
+      "Souffle +15 (divers)",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Vol 80"
+    ],
+    "optionals": [
+      "Arboricole",
+      "Corruption mentale",
+      "Dressé (Monture)",
+      "Immunité (une au choix)",
+      "Lanceur de Sorts (Divers)",
+      "Limicole",
+      "Magique",
+      "Mort-vivant",
+      "Mutation",
+      "Parasité",
+      "Taille (Monstrueuse)",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les dragons régnaient sur les cieux bien avant que les anciennes races n’arpentent le monde connu. Même si les dragons d’aujourd’hui ne sont plus que l’ombre de leurs frères, ils demeurent parmi les créatures connues les plus puissantes de l’Empire.<br><br>Les quelques anciens dragons survivants sont immenses et sortent rarement de leur léthargie. S’ils prennent ombrage de la présence d’un petit groupe d’aventuriers, ces derniers ne pourront pas faire grand-chose pour lui résister.",
+    "source": {
+      "book": "LDB",
+      "page": 319
+    }
+  },
+  {
+    "label": "Fimir",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 35,
+      "CT": 20,
+      "F": 45,
+      "E": 40,
+      "I": 30,
+      "Ag": 20,
+      "Dex": 20,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 15,
+      "B": 30
+    },
+    "traits": [
+      "À Sang-froid",
+      "Arme +8",
+      "Armure 2",
+      "Limicole",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Attaque caudale +7",
+      "Lanceur de Sorts (Démonologie)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les Fimirs sont des créatures reptiliennes discrètes, pourvues d’un seul oeil. Ils chassent dans les recoins sombres des marais et des tourbières de l’ouest du Reikland, mais fuient la lumière du soleil. Les Fimirs n’apparaissent habituellement qu’à l’aube ou au crépuscule, ou sous le couvert de la brume et du brouillard pour traquer des victimes à des fins mystérieuses. Des sorcières humaines inconscientes ou suffisamment désespérées pour se mêler des affaires des démons ont été appelées pour rechercher un Fimir dans le but de mettre au jour ses pernicieux mystères, car on prétend qu’elles invoquent et contrôlent ces entités. Et quant à savoir s’il est plus risqué de traiter avec les Puissances de la Ruine ou avec le Fimir, à chacun de le décider. Les Fimirs forment une société matriarcale. Le chef de chaque clan est une puissante sorcière appelée meargh, aidée par un groupe de lanceurs de Sorts inférieurs appelés dirach. La majorité des membres du clan sont d’humbles sheals, qui sont protégés par une caste de guerriers, les fimms, aux queues garnies de pointes et de boules osseuses, utilisées pour briser les membres des adversaires imprudents.",
+    "source": {
+      "book": "LDB",
+      "page": 319
+    }
+  },
+  {
+    "label": "Géant",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": 30,
+      "F": 65,
+      "E": 55,
+      "I": 30,
+      "Ag": 20,
+      "Dex": 15,
+      "Int": 25,
+      "FM": 25,
+      "Soc": 20,
+      "B": 72
+    },
+    "traits": [
+      "Arme +10",
+      "Armure 1",
+      "Coriace",
+      "Foulée",
+      "Taille (Énorme)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Affamé",
+      "Bestial",
+      "Infecté",
+      "Parasité",
+      "Souffle (Vomi d’ivrogne)",
+      "Stupide",
+      "Taille (Monstrueuse)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les géants sont des créatures solitaires qui évitent généralement la civilisation. La plupart chassent dans les endroits éloignés et montagneux entourant l’Empire ou se cachent dans des grottes et des ruines oubliées, loin des peuples plus petits, bien qu’ils migrent parfois dans les contreforts à la recherche de nourriture. Ils ont la réputation d’être belliqueux et féroces, à cause de leur taille impressionnante, de leur régime alimentaire à base de bétail et de leur association avec des armées peaux-vertes en maraude qui les asservissent. En réalité, beaucoup de géants ont un bon fond, sont en proie à des crises de colère et défendent farouchement leur vie privée, mais ne sont pas nécessairement hostiles aux autres.",
+    "source": {
+      "book": "LDB",
+      "page": 320
+    }
+  },
+  {
+    "label": "Griffon",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 50,
+      "CT": null,
+      "F": 50,
+      "E": 50,
+      "I": 45,
+      "Ag": 60,
+      "Dex": null,
+      "Int": 20,
+      "FM": 40,
+      "Soc": null,
+      "B": 76
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 1",
+      "Bestial",
+      "Morsure +9",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Vol 80"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Garde, Guerre, Magie, Monture)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Avec les pattes avant et les ailes d’un aigle et l’arrière-train d’un grand chat, les griffons sont des bêtes élégantes au port naturellement altier et majestueux. Ils nichent haut dans les montagnes qui entourent l’Empire et sont des tueurs rapides et efficaces, peu enclins à la destruction aveugle de créatures, contrairement aux manticores ou aux hippogriffes. Peut-être à cause de cette apparente noblesse, l’image du Griffon est extrêmement populaire au sein de l’Empire, utilisée sur les blasons, dans l’iconographie religieuse et comme symbole de l’Empire lui-même.<br><br>Les griffons sont aussi l’une des bêtes les plus intelligentes. S’ils sont capturés relativement jeunes et soumis à un entraînement approprié, ils peuvent être extrêmement loyaux, capables d’anticiper et d’obéir à une grande variété d’ordres. Ils sont tellement prisés que des chasseurs meurent régulièrement en essayant de se procurer un oeuf de griffon pour le revendre.<br><br>Le griffon le plus célèbre du Reikland est sans doute Griffe-de-Mort. Installé dans le Zoo impérial d’Altdorf, il appartenait au Prince héritier du Reikland et aurait paraît-il éclos dans les mains de l’Empereur Karl Franz en personne – ce qui a provoqué l’impression de toutes sortes de dessins humoristiques dans des pamphlets séditieux.",
+    "source": {
+      "book": "LDB",
+      "page": 320
+    }
+  },
+  {
+    "label": "Hyppogriffe",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 7,
+      "CC": 45,
+      "CT": null,
+      "F": 55,
+      "E": 50,
+      "I": 20,
+      "Ag": 55,
+      "Dex": null,
+      "Int": 5,
+      "FM": 35,
+      "Soc": null,
+      "B": 36
+    },
+    "traits": [
+      "Animosité (Tout)",
+      "Arme +9",
+      "Belliqueux",
+      "Bestial",
+      "Foulée",
+      "Morsure +9",
+      "Taille (Grande)",
+      "Territorial",
+      "Vision nocturne",
+      "Vol 120"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Monture)",
+      "Frénésie",
+      "Haine (Tout)",
+      "Rage"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Particulièrement féroces et territoriaux, les hippogriffes possèdent une tête et des ailes d’aigle, le buste d’un lion et l’arrière-train d’un cheval. Issus le plus souvent des Montagnes Grises, ils attaquent sans provocation, presque imprudents dans leur fureur, déchirant la chair en lambeaux pour la dévorer plus tard. Leur rage est telle que des troupeaux entiers de bétails peuvent être anéantis par un seul hippogriffe, qui s’enfuit ensuite avec ses proies préférées, abandonnant les restes aux charognards.<br><br>N’étant pas foncièrement intelligents, lors de la chasse, les hippogriffes ont tendance à tuer tout ce qu’ils voient. Supposant que tout ce qu’ils ne voient plus disparaît à jamais, les victimes réelles des hippogriffes sont relativement peu nombreuses, puisqu’il suffit de trouver une bonne cachette pour leur échapper.",
+    "source": {
+      "book": "LDB",
+      "page": 321
+    }
+  },
+  {
+    "label": "Hydre",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": null,
+      "F": 50,
+      "E": 55,
+      "I": 15,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 15,
+      "FM": 25,
+      "Soc": null,
+      "B": 68
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 3",
+      "Bestial",
+      "Constricteur",
+      "Foulée",
+      "Furtif",
+      "Pisteur",
+      "Régénération",
+      "Taille (Énorme)",
+      "Souffle +10 (Feu)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Belliqueux",
+      "Territorial",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "L’hydre possède plusieurs têtes semblables à celle d’un lézard et un corps massif qui supporte un entrelacs de cous et de têtes qui soufflent une fumée incandescente et mordent férocement. Créatures étrangement tenaces et furtives, les hydres traquent leurs proies sur des kilomètres, mais elles perdent trop souvent patience et chargent, en rugissant de toutes leurs têtes.",
+    "source": {
+      "book": "LDB",
+      "page": 321
+    }
+  },
+  {
+    "label": "Jabberslythe",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 7,
+      "CC": 45,
+      "CT": 40,
+      "F": 55,
+      "E": 50,
+      "I": 20,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 10,
+      "FM": 20,
+      "Soc": null,
+      "B": 68
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 3",
+      "Attaque caudale +8",
+      "Bestial",
+      "Bond",
+      "Infecté",
+      "Langue préhensile +5 (12)",
+      "Morsure +9",
+      "Perturbant",
+      "Sang corrosif",
+      "Taille (Énorme)",
+      "Venin",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Mutation",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le Jabberslythe est une ancienne créature du Chaos qui se cache dans les profondeurs des forêts les plus sombres. Créature démente, le Jabberslythe est un ignoble mélange de crapaud, de dragon de vase et d’insecte, le tout irrigué par un sang noir corrosif qui jaillit à la moindre blessure. Pire encore, tous ceux qui regardent cette horreur perdent l’esprit, baragouinant, se griffant les yeux et riant hystériquement, faisant d’eux des proies faciles pour le Jabberslythe. De plus, il dispose d’une langue collante capable de fouetter et de ramener son prochain repas dans sa gueule béante. En accord avec son apparence, la créature se déplace de façon gauche et balourde, et possède même des ailes, bien trop petites pour réussir à soulever son impressionnant gabarit.",
+    "source": {
+      "book": "LDB",
+      "page": 322
+    }
+  },
+  {
+    "label": "Manticore",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": null,
+      "F": 55,
+      "E": 55,
+      "I": 50,
+      "Ag": 65,
+      "Dex": null,
+      "Int": 10,
+      "FM": 35,
+      "Soc": null,
+      "B": 72
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 2",
+      "Attaque caudale +8",
+      "Bestial",
+      "Morsure +9",
+      "Taille (Énorme)",
+      "Territorial",
+      "Venin",
+      "Vol 80"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Magie, Monture)",
+      "Haine (Prédateurs)",
+      "Mutation"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Heureusement assez rares, les manticores sont féroces à l’extrême, animées par la volonté de débarrasser leur territoire, avec une extraordinaire brutalité, des prédateurs rivaux. Cela signifie que se trouver sur le territoire d’une manticore ne passe pas inaperçu, car des corps d’autres monstres jonchent le sol. La créature possède la tête et le corps déformé d’un grand chat (bien que parfois son visage apparaisse un peu trop humain), les ailes d’une chauve-souris et une queue semblable à un fouet hérissé de barbelés.<br><br><i>« Quand je voyageais avec les elfes d’Ulthuan, j’ai vu beaucoup de choses qui sidéreraient la plupart des gens. Une fois, j’ai aperçu une manticore, avec au beau milieu de sa crinière de lion un visage de haut elfe ! Je suppose que c’était moins une manticore qu’une elfticore. »</i><br>– Adhemar Fitztancred, Gardien Gris, conteur et menteur",
+    "source": {
+      "book": "LDB",
+      "page": 322
+    }
+  },
+  {
+    "label": "Pégase",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 8,
+      "CC": 35,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 30,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 20,
+      "FM": 25,
+      "Soc": null,
+      "B": 28
+    },
+    "traits": [
+      "Arme +7",
+      "Foulée",
+      "Taille (Grande)",
+      "Vol 100"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Guerre, Magie, Monture, Trait)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les pégases sont de magnifiques chevaux blancs pourvus d’ailes de cygne. Ce sont des voltigeurs acharnés et inépuisables qui se déplacent en grandes hordes dans les hautes montagnes, semblant prendre beaucoup de plaisir à virevolter dans les courants d’air chaud tourbillonnants. Les pégases font de parfaits destriers et beaucoup de guerriers ou d’éclaireurs ont tenté d’en capturer un. Ils sont très intelligents, et certains pensent qu’ils ne se laissent capturer que s’ils le veulent bien, ce qui a fait naître toutes sortes de légendes romantiques fantaisistes insistant sur le fait que seuls les plus dignes ou les plus vertueux pouvaient être choisis.<br><br><i>« Ouais, les champs sont verdoyants par ici. Ce sont les pégases, vous voyez. Pas besoin d’acheter de l’engrais pour fertiliser, il tombe du paradis, comme un cadeau des dieux. Attention, faut pas rester sous la horde quand elle passe au-dessus. C’est salissant. Très salissant. »</i><br>– Berthold Bruner, fermier et garde-pégase",
+    "source": {
+      "book": "LDB",
+      "page": 323
+    }
+  },
+  {
+    "label": "Pieuvre des tourbières",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 3,
+      "CC": 35,
+      "CT": null,
+      "F": 80,
+      "E": 75,
+      "I": 15,
+      "Ag": 55,
+      "Dex": null,
+      "Int": 5,
+      "FM": 65,
+      "Soc": null,
+      "B": 56
+    },
+    "traits": [
+      "Amphibie",
+      "Bestial",
+      "Constricteur",
+      "Furtif",
+      "Limicole",
+      "Taille (Grande)",
+      "8 Tentacules +9"
+    ],
+    "optionals": [
+      "Taille (Énorme-Monstrueuse)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les pieuvres des tourbières se cachent dans les eaux peu profondes, généralement dans les marécages. Elles y attendent leurs proies dans une immobilité parfaite, capables de sentir les vibrations des créatures en approche, puis surgissent de l’eau boueuse, cherchant à agripper et à noyer en utilisant leurs robustes tentacules. Généralement marbrées de vert et de brun, les pieuvres des tourbières bénéficient d’un camouflage parfaitement adapté aux environnements marécageux, leurs immenses yeux limpides étant souvent le seul indice trahissant leur présence. Beaucoup possèdent des tentacules de six mètres ou plus et un corps de plus d’un mètre quatre-vingt de long, mais des histoires prétendent qu’elles atteignent plusieurs fois cette taille, en particulier si elles ont un apport régulier supplémentaire en viande.",
+    "source": {
+      "book": "LDB",
+      "page": 323
+    }
+  },
+  {
+    "label": "Squig des cavernes",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 45,
+      "CT": null,
+      "F": 50,
+      "E": 30,
+      "I": 10,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 5,
+      "FM": 15,
+      "Soc": null,
+      "B": 12
+    },
+    "traits": [
+      "Arme +9",
+      "Bestial",
+      "Bond",
+      "Infecté",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Amphibie",
+      "Cornes",
+      "Frénésie",
+      "Infravision",
+      "Rage",
+      "Souffle (acide ou gaz)",
+      "Taille (Minuscule-Énorme)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les squigs sont de grandes créatures fongoïdes, en général de forme ronde, qui vivent sous terre dans les grottes les plus profondes et les plus sombres. Ils arborent une gueule béante et de grandes dents pointues. Ils sont prisés des gobelins pour leur chair et leur peau, mais aussi comme gardes ou animaux de compagnie.",
+    "source": {
+      "book": "LDB",
+      "page": 323
+    }
+  },
+  {
+    "label": "Troll",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": 15,
+      "F": 55,
+      "E": 45,
+      "I": 10,
+      "Ag": 15,
+      "Dex": 15,
+      "Int": 10,
+      "FM": 20,
+      "Soc": 5,
+      "B": 30
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 2",
+      "Coriace",
+      "Increvable",
+      "Infecté",
+      "Morsure +8",
+      "Régénération",
+      "Stupide",
+      "Taille (Grande)",
+      "Vomissement"
+    ],
+    "optionals": [
+      "Affamé",
+      "Amphibie",
+      "Bestial",
+      "Frénésie",
+      "Furtif",
+      "Insensible à la douleur",
+      "Limicole",
+      "Mutation",
+      "Parasité",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les trolls sont des créatures sales et immondes qui infestent tous les coins du Vieux Monde. Prompts à s’adapter à leur environnement, quel que soit leur type, ils sont tous énormes et imposants. Sombres et mus par leurs pulsions alimentaires, ils aiment tout de même amasser des biens et leur repaire peut renfermer des trésors composés d’objets utiles et de valeur… et des restes macabres de leurs repas.<br><br>Bien qu’il existe beaucoup d’espèces de trolls, ils partagent tous des traits communs : ils sont généralement extrêmement stupides, ce qui signifie que tout ennemi vif d’esprit peut avoir un avantage sur eux ; ils peuvent régénérer, ce qui les rend extrêmement difficiles à tuer ; et ils sont capables de régurgiter leur dernier repas à volonté, vomissant de la bile âcre sur des distances particulièrement impressionnantes – bien qu’ils répugnent à le faire, car la faim les tenaille alors.<br><br><i>« Je vous assure, monsieur, que nous avons mené de nombreuses études sur le sujet, et nous avons perdu certains de nos plus braves taxonomistes dans cette entreprise. Il y a précisément vingt-trois espèces de trolls dans l’Empire en ce moment – y compris dix-sept sous-espèces et deux observations non vérifiées, pas encore classifiées. Ce niveau de détail est exactement ce pourquoi la Société impériale a été créée : nous savons que nos chiffres sont exacts. »</i><br>– Ignatius de Nuln, homme de lettres",
+    "source": {
+      "book": "LDB",
+      "page": 324
+    }
+  },
+  {
+    "label": "Vouivre",
+    "title": null,
+    "folder": "Les bêtes monstrueuses du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": null,
+      "F": 60,
+      "E": 55,
+      "I": 15,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 10,
+      "FM": 50,
+      "Soc": null,
+      "B": 84
+    },
+    "traits": [
+      "Arme +10",
+      "Armure 2",
+      "Bestial",
+      "Taille (Énorme)",
+      "Venin",
+      "Vol 90"
+    ],
+    "optionals": [
+      "Attaque caudale +9",
+      "Cornes",
+      "Dressé (Dompté, Garde, Guerre, Magie, Monture)",
+      "Souffle (Poison)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Bien que les incultes les confondent souvent à tort avec des dragons, au-delà de quelques similitudes superficielles, les vouivres nauséabondes n’ont rien de commun avec ces dignes créatures. Charognards lâches et malvoyants, elles ont tendance à assouvir leur énorme appétit en choisissant des créatures sans défense – principalement des moutons et des chèvres –, évitant autant que possible le combat direct. Contrairement aux autres monstres des Montagnes, les vouivres ne sont pas particulièrement territoriales, et se déplacent généralement lorsque leurs zone de chasse sont envahis.",
+    "source": {
+      "book": "LDB",
+      "page": 325
+    }
+  },
+  {
+    "label": "Orc",
+    "title": null,
+    "folder": "Les hordes de peaux-vertes",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": 30,
+      "F": 35,
+      "E": 45,
+      "I": 20,
+      "Ag": 25,
+      "Dex": 20,
+      "Int": 25,
+      "FM": 35,
+      "Soc": 20,
+      "B": 14
+    },
+    "traits": [
+      "Animosité (peaux-vertes)",
+      "Arme +8",
+      "Armure 3",
+      "Belliqueux",
+      "Increvable",
+      "Infecté",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +8 (50)",
+      "Insensible à la douleur",
+      "Taille (Grande)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les orcs sont mauvais, brutaux, belliqueux et presque immunisés contre la douleur. Ils possèdent un corps massif et de larges épaules puissantes et ils ne laisseront pas une chose aussi insignifiante que la perte d’un bras faire obstacle à une bonne bagarre. Ils sont taillés pour le combat et n’aiment rien de plus au monde. Quand ils n’ont pas d’ennemis à combattre, ils s’en prennent à des groupes rivaux de peaux-vertes. S’il n’y a pas de groupe rival, ils se battront entre eux. Bien que moins nombreux que les gobelins, ils sont plus grands et plus robustes, et toutes les occasions sont bonnes pour le faire savoir. Les orcs peuvent atteindre des tailles prodigieuses, et les plus grands, les plus forts, les plus robustes et les plus agressifs d’entre eux se voient par conséquent accorder plus de prestige : la force entraîne le pouvoir dans leur société guerrière. Certains orcs chevauchent d’énormes sangliers pendant les batailles, un spectacle assez terrifiant.Nous être les meilleurs.<br><br><i>« Nous être les meilleurs. Nous pas être foutus gobbos ou stoupides trollz, nous être plus forts ! Et si quoiqu’un dit que nous pas forts, nous taper dur sur foutue tête. »</i><br>– Gurkk Chop’crâne, Chef orc",
+    "source": {
+      "book": "LDB",
+      "page": 325
+    }
+  },
+  {
+    "label": "Gobelin",
+    "title": null,
+    "folder": "Les hordes de peaux-vertes",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 20,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 20,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      "Animosité (peaux-vertes)",
+      "Arme +7",
+      "Armure 1",
+      "Effrayé (elfes)",
+      "Infecté",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +7 (25)",
+      "Arboricole",
+      "Haine (nains)",
+      "Infravision",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "L’instinct de conservation d’un gobelin, rachitique, malveillant, mais également agile et intelligent, ne doit jamais être sous-estimé. Ces créatures sont néanmoins lâches, et se regroupent donc facilement si le nombre leur procure un avantage écrasant. Les gobelins rejoignent souvent les armées d’orcs – pas toujours par choix – s’appropriant opportunément une partie du butin de guerre pendant que les autres prennent part au plus gros du combat.<br><br><i>« Des gobelins, sire ! Par milliers ! »</i><br>– Lieutenant Bromkopf, 24e Régiment de Fantassins reiklander",
+    "source": {
+      "book": "LDB",
+      "page": 326
+    }
+  },
+  {
+    "label": "Snotling",
+    "title": null,
+    "folder": "Les hordes de peaux-vertes",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": 15,
+      "F": 25,
+      "E": 20,
+      "I": 20,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 15,
+      "FM": 30,
+      "Soc": null,
+      "B": 7
+    },
+    "traits": [
+      "Arme +4",
+      "Bestial",
+      "Infecté",
+      "Taille (Petite)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Rapporter, Garde)",
+      "Nuée",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Créatures écervelées s’apparentant à des chiots excités et incontrôlables, les snotlings sont des charognards et des imitateurs-nés, ramassant des os et des choses brillantes partout où ils passent, ou copiant les actions de tout ce qu’ils voient. Si les gobelins ou les orcs les poussent au conflit, ils se battent en nuées nauséabondes, essayant de submerger leurs ennemis par le poids de leur nombre. Pour cela, ils trouvent toutes sortes de substances répugnantes et toxiques, comme des champignons vénéneux ou des déjections, à lancer sur leurs ennemis.",
+    "source": {
+      "book": "LDB",
+      "page": 326
+    }
+  },
+  {
+    "label": "Banshee",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": null,
+      "F": 30,
+      "E": 30,
+      "I": 20,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 25,
+      "FM": 40,
+      "Soc": 20,
+      "B": 13
+    },
+    "traits": [
+      "Arme +7",
+      "Éthéré",
+      "Hurlement fantomatique",
+      "Infravision",
+      "Instable",
+      "Mort-vivant",
+      "Terreur 3"
+    ],
+    "optionals": [
+      "Bestial",
+      "Insensible à la douleur",
+      "Rage",
+      "Territorial",
+      "Vol"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les Banshees sont les vestiges spectraux de sorcières autrefois puissantes dont les esprits sont imprégnés de l’énergie fétide de Dhar. Leur après-vie sans repos est tourmentée par le chagrin et l’amertume, un vide béant dans leurs âmes qui les pousse à émettre des hurlements déchirants, assez terrifiants et puissants pour plonger dans la folie ceux qui l’entendent, ou même arrêter leur coeur.",
+    "source": {
+      "book": "LDB",
+      "page": 327
+    }
+  },
+  {
+    "label": "Chauve-souris vampire (Varghulf)",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 8,
+      "CC": 55,
+      "CT": null,
+      "F": 55,
+      "E": 55,
+      "I": 30,
+      "Ag": 50,
+      "Dex": 20,
+      "Int": 10,
+      "FM": 60,
+      "Soc": null,
+      "B": 42
+    },
+    "traits": [
+      "Affamé",
+      "Arme +9",
+      "Armure 1",
+      "Bestial",
+      "Haine (Vivant)",
+      "Infravision",
+      "Morsure +8",
+      "Mort-vivant",
+      "Peur 4",
+      "Régénération",
+      "Taille (Grande)",
+      "Terreur 3",
+      "Vampirique"
+    ],
+    "optionals": [
+      "Corruption (Mineure)",
+      "Frénésie",
+      "Pisteur",
+      "Rage",
+      "Territorial",
+      "Vol"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "La plupart des vampires dissimulent leur besoin de sang sous une apparence de civilité et de savoir-vivre, se définissant eux-mêmes comme les aristocrates des morts-vivants. Cependant, certains fuient leur côté humain et embrassent la bête qui les habite. Ces chauve-souris vampires, les Varghulfs, sont des créatures cruelles et sauvages, abandonnées à l’autosatisfaction animale. Elles se manifestent sous la forme de grandes bêtes aux allures de chauve-souris, se délectant de leur besoin primaire de sang.",
+    "source": {
+      "book": "LDB",
+      "page": 327
+    }
+  },
+  {
+    "label": "Fantôme",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 6,
+      "CC": 30,
+      "CT": null,
+      "F": 30,
+      "E": 30,
+      "I": 10,
+      "Ag": 30,
+      "Dex": 20,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 10
+    },
+    "traits": [
+      "Arme +6",
+      "Éthéré",
+      "Infravision",
+      "Instable",
+      "Mort-vivant",
+      "Peur 2"
+    ],
+    "optionals": [
+      "Bestial",
+      "Haine",
+      "Nuée",
+      "Rage",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les fantômes sont les esprits d’âmes tourmentées, mortes alors que leurs affaires terrestres n’étaient pas réglées. Tout comme les squelettes et les zombies, les fantômes peuvent être invoqués par des vampires ou des nécromanciens, ou peuvent hanter des régions imprégnées de Dhar. Dans des cas exceptionnels, des esprits particulièrement déterminés peuvent se frayer un chemin depuis le Royaume de Morr pour poursuivre leurs propres affaires, bien que de tels événements attirent rapidement l’attention du Culte de Morr ou des Magisters de l’Ordre d’Améthyste. Lorsqu’ils sont invoqués grâce aux arts nécromantiques, les fantômes se regroupent, formant de grandes armées d’esprits qui fondent sur leurs ennemis. Ils répandent la peur et la désolation sur leur passage.",
+    "source": {
+      "book": "LDB",
+      "page": 328
+    }
+  },
+  {
+    "label": "Goule de crypte",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": null,
+      "F": 35,
+      "E": 30,
+      "I": 30,
+      "Ag": 35,
+      "Dex": 25,
+      "Int": 20,
+      "FM": 20,
+      "Soc": 5,
+      "B": 11
+    },
+    "traits": [
+      "Arme +6",
+      "Infecté",
+      "Morsure +5",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Bestial",
+      "Insensible à la douleur",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Parmi les êtres les plus pitoyables du Vieux Monde, les goules de crypte sont des créatures voûtées et hideuses, à la peau cireuse et sale, et dont les dents jaunes bien aiguisées sont capables de déchirer la chair de leurs victimes. Les goules sont attirées par les énergies magiques de Shyish et Dhar, ce qui signifie dans les faits qu’elles tournent autour des cimetières, des cryptes et des champs de bataille.",
+    "source": {
+      "book": "LDB",
+      "page": 328
+    }
+  },
+  {
+    "label": "Loup funeste",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 9,
+      "CC": 30,
+      "CT": null,
+      "F": 35,
+      "E": 35,
+      "I": 30,
+      "Ag": 30,
+      "Dex": null,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 24
+    },
+    "traits": [
+      "Arme +6",
+      "Armure 1",
+      "Fabriqué",
+      "Foulée",
+      "Infravision",
+      "Instable",
+      "Mort-vivant",
+      "Peur 2",
+      "Pisteur",
+      "Taille (Grande)"
+    ],
+    "optionals": [
+      "Corruption (Mineure)",
+      "Infecté",
+      "Insensible à la douleur",
+      "Perturbant",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Quand la terre restitue les morts, il n’y a pas que les humains qui se relèvent : parodies macabres de loups géants aux yeux rougeoyants, aux lambeaux de chairs tombant de leurs carcasses putréfiées, les loups funestes rôdent la nuit pour le compte de leurs maîtres nécromanciens. Dans le Reikland, on dit qu’ils parcourent les forêts hantées des Hägercrybs quand Morrslieb est pleine, à la recherche d’une proie pour assouvir leur insatiable faim, rongés par un appétit de chair fraîche et un instinct accru pour l’odeur du sang.",
+    "source": {
+      "book": "LDB",
+      "page": 328
+    }
+  },
+  {
+    "label": "Spectre de cairn",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 6,
+      "CC": 35,
+      "CT": null,
+      "F": 35,
+      "E": 30,
+      "I": 15,
+      "Ag": 30,
+      "Dex": 25,
+      "Int": 25,
+      "FM": 50,
+      "Soc": 15,
+      "B": 14
+    },
+    "traits": [
+      "Arme +9",
+      "Éthéré",
+      "Étreinte glaciale",
+      "Infravision",
+      "Instable",
+      "Mort-vivant",
+      "Terreur 3"
+    ],
+    "optionals": [
+      "Bestial",
+      "Champion",
+      "Insensible à la douleur",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les spectres de cairn sont des esprits particulièrement puissants, les restes spectraux d’aspirants nécromanciens qui ont cherché à prolonger leur existence grâce à la magie sombre. De leur vivant, ils étaient obstinés ; dans la mort, leur volonté malveillante les pousse à exercer une terrible vengeance sur les âmes ardentes des vivants. Beaucoup de ces spectres hantent les cairns couverts de brume qui parsèment le paysage de l’Empire, tels que les Hägercrybs déchues.",
+    "source": {
+      "book": "LDB",
+      "page": 329
+    }
+  },
+  {
+    "label": "Squelette",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": 25,
+      "F": 30,
+      "E": 30,
+      "I": 20,
+      "Ag": 20,
+      "Dex": 25,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 12
+    },
+    "traits": [
+      "Arme +7",
+      "Armure 2",
+      "Fabriqué",
+      "Infravision",
+      "Insensible à la douleur",
+      "Instable",
+      "Mort-vivant",
+      "Peur 2"
+    ],
+    "optionals": [
+      "Corruption (Mineure)",
+      "Infecté",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les squelettes sont les restes décharnés de ceux qui sont morts depuis longtemps, réanimés, parodies de vivants, par une magie sombre pour arpenter la terre. Ceux qui sont morts sans recevoir le repos accordé par les rituels de Morr, le dieu de la Mort, peuvent être ressuscités sous cette forme par un nécromancien suffisamment puissant. Totalement dépourvus d’intelligence, les squelettes combattent jusqu’à ce que leurs os soient réduits en miettes. Leur ténacité n’a rien à voir avec du courage, ils n’ont tout simplement peur de rien, et ne peuvent pas être tués puisqu’ils ne sont vivants.<br><br><i>« J’ai soulevé le lourd couvercle, m’attendant à découvrir le sublime masque mortuaire en or de Khetanken. Mais on nous avait mal renseignés. Une main osseuse a jailli et m’a saisi par le cou. Surpris, j’ai lâché le couvercle, et la main et l’avant-bras ont été sectionnés, piégeant la créature dans le sarcophage. Mais la main persistait à m’étrangler, serrant si fort mon pauvre cou que je pouvais à peine respirer ! J’ai pensé que ma dernière heure était arrivée. C’est alors que soeur Célestine a jeté de l’eau bénite sur la chose qui est redevenue inerte. Je m’en sers pour me gratter le dos à présent. »</i><br>– Hubert Karter, Pilleur de tombes",
+    "source": {
+      "book": "LDB",
+      "page": 329
+    }
+  },
+  {
+    "label": "Vampire",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 6,
+      "CC": 60,
+      "CT": 40,
+      "F": 50,
+      "E": 40,
+      "I": 50,
+      "Ag": 70,
+      "Dex": 40,
+      "Int": 40,
+      "FM": 60,
+      "Soc": 40,
+      "B": 19
+    },
+    "traits": [
+      "Arme +9",
+      "Morsure +8",
+      "Mort-vivant",
+      "Vampirique",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Affamé",
+      "Bestial",
+      "Champion",
+      "Corruption (Mineure)",
+      "Corruption mentale",
+      "Frénésie",
+      "Grimpant",
+      "Increvable",
+      "Infravision",
+      "Insensible à la douleur",
+      "Lanceur de Sorts (Mort ou Nécromancie)",
+      "Perturbant",
+      "Peur 1",
+      "Pisteur",
+      "Rage",
+      "Regard pétrifiant",
+      "Régénération",
+      "Vol"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les vampires se considèrent comme les rois de la nuit. Beaucoup peuvent passer pour des humains, certains opérant même durant de longues périodes parmi les vivants. Malgré leur apparence extérieure humaine, aucun coeur ne bat sous leur peau pâle, et au lieu des faims de mortels, ils souffrent d’une soif incessante de sang. Les vampires du Vieux Monde sont en fin de compte tous issus de lignées anciennes, apparues il y a des millénaires dans le Sud. Beaucoup sont extrêmement fiers de leur héritage, des traits et traditions qui les différencient des autres. Les vampires de lignées différentes sont souvent de grands rivaux, mais ils sont assez intelligents pour se rassembler quand cela devient nécessaire pour faire face aux ennemis les plus importants.",
+    "source": {
+      "book": "LDB",
+      "page": 330
+    }
+  },
+  {
+    "label": "Zombie",
+    "title": null,
+    "folder": "Les morts sans repos",
+    "char": {
+      "M": 4,
+      "CC": 15,
+      "CT": null,
+      "F": 30,
+      "E": 30,
+      "I": 5,
+      "Ag": 10,
+      "Dex": 15,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 12
+    },
+    "traits": [
+      "Arme +7",
+      "Fabriqué",
+      "Infravision",
+      "Insensible à la douleur",
+      "Instable",
+      "Mort-vivant",
+      "Peur 2"
+    ],
+    "optionals": [
+      "Armure",
+      "Corruption (Mineure)",
+      "Infecté",
+      "Maladie",
+      "Parasité",
+      "Perturbant",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Comme les squelettes, les zombies sont des créatures mortes-vivantes réanimées et maintenues « en vie » par d’ignobles magies. Contrairement aux squelettes, ils sont morts si récemment qu’une grande partie de leur corps subsiste encore, la chair malade et pourrissante s’affaissant sur leurs organes boursouflés et envahis par les vers. Quand ils combattent, leur chair et leurs organes se détachent de leurs os, libérant des effluves nauséabondes et toxiques, suffisamment puissantes pour retourner l’estomac de quiconque, à part, peut-être, celui des soldats les plus endurcis.",
+    "source": {
+      "book": "LDB",
+      "page": 330
+    }
+  },
+  {
+    "label": "Chamane-Brey",
+    "title": null,
+    "folder": "Hommes-bêtes, les enfants du Chaos",
+    "char": {
+      "M": 4,
+      "CC": 40,
+      "CT": 30,
+      "F": 30,
+      "E": 45,
+      "I": 40,
+      "Ag": 35,
+      "Dex": 25,
+      "Int": 30,
+      "FM": 50,
+      "Soc": 30,
+      "B": 16
+    },
+    "traits": [
+      "Arboricole",
+      "Arme +7",
+      "Cornes +6",
+      "Corruption (Mineure)",
+      "Lanceur de Sorts (Bêtes, n’importe laquelle du Chaos, Mort ou Ombres)",
+      "Rage",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Infecté",
+      "Maladie (Vérole du Tanneur)",
+      "Mutation",
+      "Parasité",
+      "Taille (Grande)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les chamanes-brays sont nés avec la capacité de manier les pouvoirs du Chaos, qu’ils utilisent avec un talent terrifiant. Ils n’ont jamais besoin de se défendre eux-mêmes contre les autres membres de la horde, ce qui est exceptionnel chez les hommes-bêtes. Personne n’oserait les attaquer puisqu’ils représentent la volonté des Dieux Sombres en personne.",
+    "source": {
+      "book": "LDB",
+      "page": 331
+    }
+  },
+  {
+    "label": "Gor",
+    "title": null,
+    "folder": "Hommes-bêtes, les enfants du Chaos",
+    "char": {
+      "M": 4,
+      "CC": 45,
+      "CT": 30,
+      "F": 35,
+      "E": 45,
+      "I": 30,
+      "Ag": 35,
+      "Dex": 25,
+      "Int": 25,
+      "FM": 30,
+      "Soc": 25,
+      "B": 14
+    },
+    "traits": [
+      "Arboricole",
+      "Arme +7",
+      "Armure 1",
+      "Cornes +6",
+      "Rage",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Armure 2",
+      "Corruption (Mineure)",
+      "Infecté",
+      "Lanceur de Sorts (Bêtes)",
+      "Maladie (Vérole du Tanneur)",
+      "Mutation",
+      "Parasité",
+      "Taille (Grande)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les gors, les hommes-bêtes les plus courants, hantent presque chaque forêt du Vieux Monde. Leur apparence varie considérablement, mais tous allient des traits bestiaux et humains, souvent avec la tête et les jambes d’un bouc et le torse et les bras d’un humain. La seule caractéristique commune à tous les Gors est une grande paire de cornes – les plus grandes sont les meilleures, car elles indiquent le statut parmi les hommes-bêtes –, un trait qui les différencie des ungors et des changepeaux.",
+    "source": {
+      "book": "LDB",
+      "page": 332
+    }
+  },
+  {
+    "label": "Minotaure",
+    "title": null,
+    "folder": "Hommes-bêtes, les enfants du Chaos",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": 25,
+      "F": 44,
+      "E": 45,
+      "I": 20,
+      "Ag": 35,
+      "Dex": 25,
+      "Int": 20,
+      "FM": 30,
+      "Soc": 15,
+      "B": 30
+    },
+    "traits": [
+      "Affamé",
+      "Arme +9",
+      "Cornes +9",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Arboricole",
+      "Belliqueux",
+      "Corruption (Mineure)",
+      "Infecté",
+      "Maladie (Vérole du Tanneur)",
+      "Mutation",
+      "Parasité",
+      "Rage"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les minotaures semblables à des taureaux, énormes et massifs, dominent même les plus grands bestigors. Les hordes possédant un grand contingent de minotaures se considèrent comme particulièrement bénies par les Dieux Sombres. Les hommes-bêtes se rassemblent autour des minotaures car leur présence imposante insuffle du courage même aux plus petits d’entre eux.",
+    "source": {
+      "book": "LDB",
+      "page": 332
+    }
+  },
+  {
+    "label": "Ungor",
+    "title": null,
+    "folder": "Hommes-bêtes, les enfants du Chaos",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": 30,
+      "F": 30,
+      "E": 35,
+      "I": 30,
+      "Ag": 35,
+      "Dex": 25,
+      "Int": 25,
+      "FM": 35,
+      "Soc": 25,
+      "B": 12
+    },
+    "traits": [
+      "Arboricole",
+      "Arme +6",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "À distance +7 (25)",
+      "Armure 1",
+      "Corruption (Mineure)",
+      "Infecté",
+      "Maladie (Vérole du Tanneur)",
+      "Mutation",
+      "Parasité",
+      "Taille (Petite)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les ungors possèdent des cornes vestigiales ou très courtes, et ils sont donc à peine considérés comme des « gors » par le reste de la horde. Certains possèdent même des visages semblables à ceux des humains, faisant d’eux des infiltrés efficaces, mais aussi des cibles faciles aux moqueries. En effet, les ungors sont durement traités par les gors, et sont souvent chétifs et mal nourris par rapport à leurs frères aux plus grandes cornes, ce qui en fait des créatures aigries, enclines à reporter leur jalousie sur les autres.",
+    "source": {
+      "book": "LDB",
+      "page": 332
+    }
+  },
+  {
+    "label": "Cultiste",
+    "title": null,
+    "folder": "Cultistes, les égarés et les damnés",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 30,
+      "B": 12
+    },
+    "traits": [
+      "Arme +6"
+    ],
+    "optionals": [
+      "Armure 1",
+      "Corruption (Mineure)",
+      "Lanceur de Sorts (Chaos)",
+      "Mutation"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Pour ceux qui ne sont pas atteints par le fléau du Chaos, il ne représente qu’une abomination contre nature, mais pour ceux qu’il affecte, chaque pas vers la damnation, chaque idée les rapprochant du Chaos semble non seulement logique mais indispensable. Certains adeptes particulièrement dévoués des cultes proscrits reçoivent des « dons » de leurs dieux : d’immondes mutations qui les condamneront à mort si les Répurgateurs découvrent leur secret.",
+    "source": {
+      "book": "LDB",
+      "page": 333
+    }
+  },
+  {
+    "label": "Mutant",
+    "title": null,
+    "folder": "Cultistes, les égarés et les damnés",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 30,
+      "Soc": 30,
+      "B": 12
+    },
+    "traits": [
+      "Arme +7",
+      "Corruption (Mineure)",
+      "Mutation"
+    ],
+    "optionals": [
+      "Tous les traits"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "L’un des destins les plus tragiques pour un humain est de succomber à l’influence mutagène du Chaos. Cela peut se produire sans raison aucune, et même des bébés peuvent naître mutants. Lorsque cela se produit, beaucoup de parents ne trouvent pas la force d’assassiner leurs enfants, mais les abandonnent plutôt dans les bois, pour qu’ils meurent ou soient recueillis par d’autres mutants ou hommes bêtes. Peu importe qu’ils soient innocents, tous les mutants sont source de terreur pour le commun des mortels, et la plupart se tournent vers les Dieux Sombres, abandonnés et aigris, ou en finissent avant qu’il ne soit trop tard.",
+    "source": {
+      "book": "LDB",
+      "page": 333
+    }
+  },
+  {
+    "label": "Guerrier du Chaos",
+    "title": null,
+    "folder": "Cultistes, les égarés et les damnés",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": 30,
+      "F": 45,
+      "E": 45,
+      "I": 45,
+      "Ag": 55,
+      "Dex": 30,
+      "Int": 35,
+      "FM": 55,
+      "Soc": 25,
+      "B": 17
+    },
+    "traits": [
+      "Arme +8",
+      "Armure 5",
+      "Champion",
+      "Corruption (Mineure)"
+    ],
+    "optionals": [
+      "Belliqueux",
+      "Corruption mentale",
+      "Frénésie",
+      "Lanceur de Sorts (Chaos)",
+      "Maladie",
+      "Mutation",
+      "Perturbant"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Énormes brutes lourdement cuirassées, affublées de pointes et d’impressionnants symboles de leurs dieux, les guerriers du Chaos ne sont clairement plus des humains. Plus rien ne subsiste de leur existence passée, et ils n’existent que pour servir leur sombre maître, et rien d’autre.<br><br>Alors que la plupart des guerriers du Chaos sont des maraudeurs couverts de gloire venant des régions loin au nord, quelques cultistes privilégiés peuvent se voir attribuer une armure du Chaos par les Dieux Sombres, leur conférant une grande puissance, avec obligation de ne jamais l’ôter du reste de leur vie. Comme peu de guerriers les surpassent, et qu’aucun chevalier n’est mieux protégé, leur espérance de vie demeure très longue.<br><br><i>« Dans le Nord redouté se trouve le plus grand danger. Il est le fruit d’un autre lieu, d’un autre temps, nous attaquant à cause des erreurs et de la malchance de dieux morts depuis longtemps. Il agrippe avidement notre monde, frémissant d’impatience, envoyant des hordes parmi les plus belliqueuses et envieuses : nos propres parents, les tribus de l’Homme. »</i><br><br>— Phitzer, Sorcière wissenlander",
+    "source": {
+      "book": "LDB",
+      "page": 334
+    }
+  },
+  {
+    "label": "Sanguinaire de Khorne",
+    "title": null,
+    "folder": "Démons, les armées baragouinantes",
+    "char": {
+      "M": 5,
+      "CC": 55,
+      "CT": 35,
+      "F": 45,
+      "E": 35,
+      "I": 60,
+      "Ag": 40,
+      "Dex": 30,
+      "Int": 25,
+      "FM": 70,
+      "Soc": 15,
+      "B": 17
+    },
+    "traits": [
+      "Arme +9",
+      "Arme (griffes)",
+      "Armure 5",
+      "Champion",
+      "Cornes +8",
+      "Corruption (Modérée)",
+      "Démoniaque 8+",
+      "Frénésie",
+      "Insensible à la douleur",
+      "Instable",
+      "Peur 3"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Élus de Khorne, les sanguinaires règnent sur les champs de bataille du Vieux Monde, arrachant crânes et vies en l’honneur du dieu du Sang. Des dents pointues et acérées dépassent de leur monstrueux visage cornu. Leur peau rouge-sang est dure comme l’airain, forgée sur l’enclume de guerres incessantes. Chaque sanguinaire porte une Lame des Enfers, diaboliquement tranchante et trempée dans le sang versé, qu’il manie avec témérité, se délectant du doux plaisir de la tuerie aveugle.",
+    "source": {
+      "book": "LDB",
+      "page": 335
+    }
+  },
+  {
+    "label": "Démonette de Slaanesh",
+    "title": null,
+    "folder": "Démons, les armées baragouinantes",
+    "char": {
+      "M": 4,
+      "CC": 60,
+      "CT": 50,
+      "F": 40,
+      "E": 30,
+      "I": 65,
+      "Ag": 60,
+      "Dex": 35,
+      "Int": 30,
+      "FM": 70,
+      "Soc": 45,
+      "B": 17
+    },
+    "traits": [
+      "Arme +9",
+      "Champion",
+      "Corruption (Modérée)",
+      "Démoniaque 8+",
+      "Instable",
+      "Perturbant",
+      "Peur 2",
+      "Vision nocturne"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Comme toutes les créatures du Prince de la Souffrance et du Plaisir, les démonettes de Slaanesh sont aussi belles qu’horribles. Leur allure surnaturelle défiant tout sens et toute rationalité, elles rendent leurs ennemis incapables de résister, tant ils sont charmés par la sensualité de leurs formes monstrueuses. Elles arborent une peau crémeuse et pâle et de grands yeux noir de jais, ainsi qu’une épaisse chevelure flottant au vent et de couleur contre nature. Au lieu de mains, leurs bras sveltes se terminent par des griffes recourbées aux allures de pinces de crabe.",
+    "source": {
+      "book": "LDB",
+      "page": 335
+    }
+  },
+  {
+    "label": "Slenderthigh Whiptongue",
+    "title": "Prince démon de Slaanesh",
+    "folder": "Princes démons",
+    "char": {
+      "M": 6,
+      "CC": 95,
+      "CT": 110,
+      "F": 115,
+      "E": 120,
+      "I": 100,
+      "Ag": 95,
+      "Dex": 40,
+      "Int": 70,
+      "FM": 85,
+      "Soc": 85,
+      "B": 86
+    },
+    "traits": [
+      "Arme +16",
+      "Armure 1",
+      "Champion",
+      "Cornes +15",
+      "Corruption (Majeure)",
+      "Démoniaque 8+",
+      "Instable",
+      "Lanceur de Sorts (Slaanesh)",
+      "Perturbant",
+      "Taille (Grande)",
+      "Terreur 3",
+      "Vision nocturne"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 336
+    }
+  },
+  {
+    "label": "Fr’hough Mournbreath",
+    "title": "Prince démon de Nurgle",
+    "folder": "Princes démons",
+    "char": {
+      "M": 4,
+      "CC": 70,
+      "CT": 35,
+      "F": 120,
+      "E": 150,
+      "I": 50,
+      "Ag": 20,
+      "Dex": 30,
+      "Int": 85,
+      "FM": 120,
+      "Soc": 50,
+      "B": 108
+    },
+    "traits": [
+      "Arme +15",
+      "Armure 4",
+      "Cornes +14",
+      "Corruption (Majeure)",
+      "Démoniaque 7+",
+      "Infecté",
+      "Infravision",
+      "Instable",
+      "Lanceur de Sorts (Nurgle)",
+      "Maladie (Vérole urticante)",
+      "Parasité",
+      "Souffle +12 (Corrosif )",
+      "Taille (Grande)",
+      "Terreur 3"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "LDB",
+      "page": 336
+    }
+  },
+  {
+    "label": "Guerrier des clans",
+    "title": null,
+    "folder": "Les ignobles hommes-rats",
+    "char": {
+      "M": 5,
+      "CC": 30,
+      "CT": 30,
+      "F": 30,
+      "E": 30,
+      "I": 40,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 20,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      "Arme +7",
+      "Armure 2",
+      "Infecté",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Furtif",
+      "Maladie (Fièvre du rongeur)",
+      "Mutation",
+      "Nerveux",
+      "Pisteur"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "La plupart des skavens sont originaires de l’un de leurs nombreux et obscurs clans qui se chamaillent constamment pour des raisons diplomatiques, se poignardent dans le dos, ou encore déclarent la guerre aux autres. Ils agissent généralement sous les ordres de skavens de statuts supérieurs, mais cherchent toujours un moyen d’obtenir une meilleure position, le plus souvent par trahison. Ils revêtent habituellement du cuir moisi ou des vêtements sales, avec des bouts de métal rouillé et terni leur servant d’armure. Les guerriers des clans sont souvent envoyés comme éclaireurs ou pillards pour récupérer des denrées, chercher des malepierres ou rafler des esclaves.",
+    "source": {
+      "book": "LDB",
+      "page": 337
+    }
+  },
+  {
+    "label": "Rat ogre",
+    "title": null,
+    "folder": "Les ignobles hommes-rats",
+    "char": {
+      "M": 5,
+      "CC": 35,
+      "CT": 10,
+      "F": 55,
+      "E": 45,
+      "I": 35,
+      "Ag": 45,
+      "Dex": 25,
+      "Int": 10,
+      "FM": 25,
+      "Soc": 15,
+      "B": 30
+    },
+    "traits": [
+      "Arme +9",
+      "Armure 1",
+      "Infecté",
+      "Stupide",
+      "Taille (Grande)",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Attaque caudale +8",
+      "Corruption (Mineure)",
+      "Dressé (Dompté, Garde, Guerre, Monture)",
+      "Infravision",
+      "Maladie (Fièvre du rongeur)",
+      "Mutation",
+      "Parasité",
+      "Pisteur"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les rats ogres sont des brutes imposantes, élevées dans les cavernes sombres de l’Empire souterrain par les Maîtres corrupteurs du clan Molder. Ils sont stupides, mais intrépides et implacables au combat lorsqu’ils sont dirigés par leurs maîtres skavens. Rarement rencontrés seuls, ils ont tendance à accompagner et servir de garde du corps à des prophètes gris, ou autres skavens de renom.",
+    "source": {
+      "book": "LDB",
+      "page": 337
+    }
+  },
+  {
+    "label": "Vermine de choc",
+    "title": null,
+    "folder": "Les ignobles hommes-rats",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": 35,
+      "F": 35,
+      "E": 35,
+      "I": 55,
+      "Ag": 50,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 25,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      "Arme +8",
+      "Armure 4",
+      "Infecté",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Maladie (Fièvre du rongeur)",
+      "Mutation",
+      "Pisteur"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les combattants d’élite des skavens sont les vermines de choc : plus grands, plus forts, plus endurcis et plus disciplinés que les guerriers des clans. Ils servent de base à tout assaut majeur et constituent les gardes du corps de skavens importants. Les vermines de choc sont généralement lourdement armées et cuirassées, arborant les combinaisons d’armes favorites de leur clan.",
+    "source": {
+      "book": "LDB",
+      "page": 337
+    }
+  }
+]
