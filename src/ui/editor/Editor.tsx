@@ -6,6 +6,7 @@ import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
 import { groundTile } from '../../gameIso/ground';
+import { buildingLayers } from '../../gameIso/catalog/buildings';
 import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { TriggersEditor } from './TriggersEditor';
@@ -342,6 +343,19 @@ export function Editor() {
                     if (t === 'mur') objs.push({ d: depth(x, y), el: <g key={`w${x}-${y}`} dangerouslySetInnerHTML={{ __html: wallBlock(x, y, dims) }} /> });
                     if (t === 'bois') objs.push({ d: depth(x, y) - 0.1, el: <g key={`t${x}-${y}`} dangerouslySetInnerHTML={{ __html: tree(x, y, dims) }} /> });
                   }
+                for (const b of scene.buildings ?? []) {
+                  const L = buildingLayers(b.type, b.foot, b.params ?? {}, { dims });
+                  objs.push({
+                    d: depth(b.foot.x + b.foot.w - 1, b.foot.y + b.foot.h - 1),
+                    el: (
+                      <g key={`b-${b.id}`}>
+                        <g dangerouslySetInnerHTML={{ __html: L.interior }} />
+                        <g dangerouslySetInnerHTML={{ __html: L.walls }} />
+                        <g dangerouslySetInnerHTML={{ __html: L.roof }} />
+                      </g>
+                    ),
+                  });
+                }
                 for (const e of scene.entities) {
                   if (e.kind === 'heroStart') {
                     const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
