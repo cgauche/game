@@ -11,6 +11,7 @@ import { rollTest, resolveOpposed } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
+import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 
 /** Dégâts d'arme : « +BF+4 » → BF + 4, « +9 » → 9. */
 export function parseWeaponDamage(damage: string, strengthBonus: number): number {
@@ -88,9 +89,9 @@ export function resolveMelee(
   rng: RNG = defaultRNG,
   opts: AttackOptions = {},
 ): AttackResult {
-  const defenseMode = opts.defense ?? 'parade';
+  const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   const atkVal = combatValue(attacker, 'melee');
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10);
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender));
 
   if (defenseMode === 'none') {
     // Cible sans défense : un simple succès suffit à toucher.
@@ -101,7 +102,7 @@ export function resolveMelee(
   }
 
   const defVal = defenseValue(defender, defenseMode);
-  const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10);
+  const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender));
   const opp = resolveOpposed(atk, def);
 
   if (opp.winner === 'defender') {
@@ -143,7 +144,7 @@ export function resolveRanged(
   rng: RNG = defaultRNG,
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged');
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10);
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker));
   if (!atk.success) {
     return {
       hit: false,

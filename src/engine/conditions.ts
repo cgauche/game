@@ -3,6 +3,11 @@
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
 import { Combatant } from './types';
+import { bonus, effectiveChar } from './characteristics';
+import { d10, RNG, defaultRNG } from './dice';
+
+/** Nombre de pions (cumul) d'un État donné. */
+const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
 export function addCondition(c: Combatant, name: string, value = 1): void {
   const existing = c.conditions.find((x) => x.name === name);
@@ -22,17 +27,69 @@ export function hasCondition(c: Combatant, name: string): boolean {
 }
 
 /**
- * Fin de Round : certains États se dissipent (Assourdi, Étourdi/Sonné) et
- * l'Hémorragique inflige 1 Blessure par point. Retourne un journal.
+ * Pénalité aux Tests de COMBAT due aux États (LDB ch.16). Non-cumul (l.20) : on
+ * applique la pénalité d'UN SEUL État (la plus forte), mais un même État empile
+ * (Exténué×3 = -30). Aveuglé/Brisé/Empoisonné/Sonné = -10 ; Exténué = -10/point.
+ * (À Terre/Assourdi/Empêtré ne touchent que les Tests de déplacement/audition.)
  */
-export function endOfRound(c: Combatant): string[] {
+export function combatTestPenalty(c: Combatant): number {
+  const cand: number[] = [];
+  if (hasCondition(c, 'Aveuglé')) cand.push(-10);
+  if (hasCondition(c, 'Brisé')) cand.push(-10);
+  if (hasCondition(c, 'Empoisonné')) cand.push(-10);
+  if (hasCondition(c, 'Sonné')) cand.push(-10);
+  const ext = stacks(c, 'Exténué');
+  if (ext > 0) cand.push(-10 * ext);
+  return cand.length ? Math.min(...cand) : 0;
+}
+
+/**
+ * Bonus pour TOUCHER en mêlée une cible affectée (LDB ch.16). Non-cumul : meilleur
+ * bonus d'un seul État. À Terre/Surpris +20, Aveuglé +10. (Assourdi +10 par le
+ * flanc/derrière : non modélisé — l'orientation des combattants n'est pas suivie.)
+ */
+export function meleeAttackerBonus(target: Combatant): number {
+  const cand: number[] = [];
+  if (hasCondition(target, 'À Terre')) cand.push(20);
+  if (hasCondition(target, 'Surpris')) cand.push(20);
+  if (hasCondition(target, 'Aveuglé')) cand.push(10);
+  return cand.length ? Math.max(...cand) : 0;
+}
+
+/** Une cible Surprise ne peut pas se défendre lors d'un Test opposé (LDB ch.16 l.132). */
+export function cannotDefend(c: Combatant): boolean {
+  return hasCondition(c, 'Surpris');
+}
+
+/**
+ * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
+ * dissipation des États temporaires (LDB ch.16). Retourne un journal.
+ */
+export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
-  const bleed = c.conditions.find((x) => x.name === 'Hémorragique');
+  // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
+  const bleed = stacks(c, 'Hémorragique');
   if (bleed) {
-    c.wounds.current = Math.max(0, c.wounds.current - bleed.value);
-    log.push(`${c.name} subit ${bleed.value} Blessure(s) (Hémorragique).`);
+    c.wounds.current = Math.max(0, c.wounds.current - bleed);
+    log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);
   }
-  for (const n of ['Assourdi', 'Sonné', 'Étourdi']) {
+  // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
+  const poison = stacks(c, 'Empoisonné');
+  if (poison) {
+    c.wounds.current = Math.max(0, c.wounds.current - poison);
+    log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
+  }
+  // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
+  const fire = stacks(c, 'En flammes');
+  if (fire) {
+    const minPA = Math.min(...Object.values(c.armour));
+    const dmg = Math.max(1, d10(rng) - bonus(effectiveChar(c, 'E')) - minPA) + (fire - 1);
+    c.wounds.current = Math.max(0, c.wounds.current - dmg);
+    log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
+  }
+  // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
+  // Sonné réclame en théorie un Test de Résistance (l.125) — simplifié ici à -1/Round.
+  for (const n of ['Aveuglé', 'Assourdi', 'Surpris', 'Sonné']) {
     if (hasCondition(c, n)) {
       removeCondition(c, n, 1);
       log.push(`${c.name} : un État ${n} se dissipe.`);

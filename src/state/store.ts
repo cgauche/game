@@ -752,7 +752,7 @@ function advanceTurn(get: () => GameState, set: any) {
       turn = 0;
       round += 1;
       battle.log.push(`— Round ${round} —`);
-      for (const c of battle.combatants) endOfRound(c).forEach((l) => battle!.log.push(l));
+      for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle!.log.push(l));
       // Avantage : -1 si on n'en a gagné aucun ce Round (LDB Dépl. l.40 ; la perte sur
       // infériorité numérique n'est pas modélisée — l'état Engagé ne l'est pas non plus).
       for (const c of battle.combatants) {

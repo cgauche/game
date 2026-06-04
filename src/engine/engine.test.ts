@@ -1,9 +1,37 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG, RNG } from './dice';
 import { Combatant } from './types';
+import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend, endOfRound } from './conditions';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
+
+describe('États en combat (LDB ch.16)', () => {
+  const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);
+  it('pénalité de combat non-cumul : la pire pénalité d’un seul État', () => {
+    const c = mkc();
+    addCondition(c, 'Exténué', 3); // -30
+    addCondition(c, 'Aveuglé'); // -10
+    expect(combatTestPenalty(c)).toBe(-30); // pas -40 (non-cumul)
+  });
+  it('bonus d’attaquant : À Terre +20 prime sur Aveuglé +10', () => {
+    const t = mkc();
+    addCondition(t, 'À Terre');
+    addCondition(t, 'Aveuglé');
+    expect(meleeAttackerBonus(t)).toBe(20);
+  });
+  it('Surpris empêche de se défendre', () => {
+    const t = mkc();
+    addCondition(t, 'Surpris');
+    expect(cannotDefend(t)).toBe(true);
+  });
+  it('Empoisonné inflige 1 Blessure par point en fin de Round', () => {
+    const c = { name: 'x', conditions: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
+    addCondition(c, 'Empoisonné', 2);
+    endOfRound(c);
+    expect(c.wounds.current).toBe(8);
+  });
+});
 
 describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
   const rngOf = (roll: number): RNG => ({ int: () => roll });
