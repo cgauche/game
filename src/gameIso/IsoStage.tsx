@@ -4,6 +4,7 @@
  * surbrillances de combat et le déplacement animé. Réutilise toute la logique.
  */
 import { useEffect, useRef, useState } from 'react';
+import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { pathTo } from '../state/path';
