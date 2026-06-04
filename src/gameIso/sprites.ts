@@ -6,6 +6,7 @@
 import { Terrain } from '../state/scene';
 import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
+import creatureSprites from './creatureSprites.json';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -173,9 +174,14 @@ export function heroSprite(c: Combatant): string {
   return soldier();
 }
 
+const CREATURE_SPRITES = creatureSprites as Record<string, string>;
+const CREATURE_BY_NORM: Record<string, string> = {};
+for (const [k, v] of Object.entries(CREATURE_SPRITES)) CREATURE_BY_NORM[k.toLowerCase()] = v;
+
+/** Sprite d'une créature du bestiaire (généré depuis l'illustration officielle). */
 export function enemySprite(label: string): string {
-  if (/mutant/i.test(label)) return mutantStand();
-  return mutantStand();
+  if (!label) return mutantStand();
+  return CREATURE_SPRITES[label] ?? CREATURE_BY_NORM[label.toLowerCase()] ?? mutantStand();
 }
 
 export function pnjSprite(): string {
