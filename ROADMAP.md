@@ -168,8 +168,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment,
   **kind `personnage` unifié** (apparence = ref bestiaire + variante de calque + dialogue/quête).
 - ✅ **Sélection d'une zone trigger au clic** (surbrillance + inspecteur : rect, condition, effets, suppr.).
-- Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; éditeur de statblocks ;
-  **projet multi-scènes** (registre éditable de scènes d'intérieur, au-delà du `campaign[]` codé).
+- ✅ **Placement des ennemis sur la carte**, **undo/redo**, **projet multi-scènes** (basculer / lier les
+  intérieurs sans toucher `campaign[]`). Reste : éditeur de statblocks.
 
 ## 🎯 Jalon 7 — Coop en ligne
 
@@ -199,26 +199,29 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
   perfectibles (corps « ballon », jambes fines).
 - ✅ **IA d'ennemi enrichie** (cible le plus faible atteignable, tir à distance, sorts offensifs,
-  choix Esquive/Parade — `state/ai.ts` pur + testé). Reste : **undo/redo** dans l'éditeur ;
-  rencontres placées via inputs (pas sur carte).
+  choix Esquive/Parade — `state/ai.ts` pur + testé).
+- ✅ **Éditeur : annuler/rétablir** (`useSceneHistory`, Ctrl+Z/Y) **+ placement des ennemis de
+  rencontre sur la carte** (outil dédié ; points d'apparition visibles et cliquables).
 - **Art des bâtiments** enrichi (tuiles/ardoises/chaume, fenêtres + éclairage nuit, porte côté
   `facing`, colombages, ombre) ; reste perfectible vers le niveau d'`ambush.html` (textures fines,
   variantes par type, rotation pleine selon `facing`).
-- ✅ **`reveal:'door'` + intérieur concret** : la salle de bar « La Diligence » (`tome1-auberge-interieur`,
-  contenu sourcé) est créée, enregistrée (`campaign[]`) et liée par la porte du bâtiment taverne de
-  tome1-intro — boucle porte → intérieur → `transitionBack` vérifiée (en jeu + test). Reste : un
-  **projet multi-scènes** éditable (registre de scènes au-delà du `campaign[]` codé).
+- ✅ **`reveal:'door'` + intérieur concret + projet multi-scènes** : la salle de bar « La Diligence »
+  (`tome1-auberge-interieur`, sourcée) est créée, enregistrée et liée par la porte du bâtiment taverne de
+  tome1-intro (boucle vérifiée). L'éditeur gère désormais un **projet de plusieurs scènes** (basculer /
+  ajouter / retirer, export-import au niveau projet, `store.loadProject`) : on crée et lie un intérieur
+  **sans toucher `campaign[]`**.
 - ✅ **Rendu `mur`/`bois` centralisé** : les branches dupliquées à l'identique dans `IsoStage` ET
   `Editor` passent par une source unique (`sprites.terrainOverlay` + registre `TERRAIN_OVERLAYS`).
-  Reste (optionnel) : migrer `bois` → décor `arbre` et retirer l'id terrain (`mur` reste : sentinelle
-  hors-grille + pièces d'intérieur).
+  `bois` et `mur` sont **gardés comme terrains bloquants** (les migrer en décor `arbre` les rendrait
+  franchissables — changement de gameplay non souhaité ; le décor `arbre` reste pour les arbres non bloquants).
 - ✅ **Code mort retiré** : renderers obsolètes Phaser (`src/game/`) + three.js (`src/game3d/`)
   supprimés ; dépendances `phaser`/`three`/`@types/three` retirées (~188 Mo de node_modules, ~900 l.).
-- ✅ **Code-splitting** : éditeur + rendu de jeu (`CampaignView`) + vendor en chunks async
-  (`React.lazy`) — démarrage allégé (chunk unique ~1,2 Mo → index 818 Ko + vendor 144 Ko, sprites
-  différés 188 Ko). Reste : les **tables de règles** (`src/data/*.json`, ~1 Mo) restent dans le
-  chunk initial (couplées au moteur pur — à découpler avant de pouvoir les différer).
-- ✅ **CI** (`.github/workflows/ci.yml`) : `build:data` → typecheck → tests → build sur push/PR.
+- ✅ **Code-splitting** : éditeur + rendu de jeu (`CampaignView`) + vendor + **tables de règles
+  (`gamedata`)** en chunks séparés (`React.lazy` + `manualChunks`) — le chunk applicatif passe de
+  ~1,2 Mo à **~580 Ko**, les données (~760 Ko) cachées indépendamment du code. Reste (optionnel) :
+  chargement *paresseux* des données (demande de découpler le moteur pur du dossier `src/data`).
+- ✅ **CI + lint** (`.github/workflows/ci.yml`) : `build:data` → typecheck → **ESLint** → tests → build
+  sur push/PR (config ESLint volontairement lenient ; base à 0 erreur).
 - ✅ **Éclairage nocturne des fenêtres** : recette navigateur rejouée (Playwright — verre ambré
   `#f2c45a` + halo + flicker confirmés vs verre froid `#33414d` de jour) + test unitaire de la
   branche `night` (`buildings.test.ts`).
