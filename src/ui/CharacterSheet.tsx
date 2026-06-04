@@ -106,6 +106,39 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
           </div>
         </div>
 
+        <div className="sheet-skills">
+          <div className="mini-title">Compétences</div>
+          <div className="skill-grid">
+            {hero.skills.length === 0 && <span className="muted">Aucune.</span>}
+            {hero.skills.map((s, i) => {
+              const val = (hero.characteristics[s.characteristic] ?? 0) + s.advances;
+              return (
+                <div className="skill-line" key={i} title={`${s.characteristic} ${hero.characteristics[s.characteristic]} + ${s.advances}`}>
+                  <span className="sk-name">
+                    {s.name}
+                    {s.spec ? ` (${s.spec})` : ''}
+                  </span>
+                  <span className="sk-val">{val}</span>
+                  <span className="sk-adv">+{s.advances}</span>
+                </div>
+              );
+            })}
+          </div>
+          {hero.talents.length > 0 && (
+            <>
+              <div className="mini-title">Talents</div>
+              <div className="skill-tags">
+                {hero.talents.map((t, i) => (
+                  <span className="tag talent" key={i}>
+                    {t.name}
+                    {t.times > 1 ? ` ×${t.times}` : ''}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="sheet-inventory">
           <div className="mini-title">Inventaire & équipement ({items.length})</div>
           <div className="inv-rows">

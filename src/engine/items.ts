@@ -92,16 +92,26 @@ export function recomputeLoadout(c: Combatant): void {
   c.encumbrance = totalEncumbrance(c);
 }
 
+/** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */
+function damageScore(d?: string): number {
+  if (!d) return 0;
+  return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
+}
+
 /** Construit l'inventaire d'un héros depuis une liste de noms de trappings. */
 export function buildInventory(trappingNames: string[]): ItemInstance[] {
   const items: ItemInstance[] = [];
   for (const raw of trappingNames) {
     const name = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
     const it = itemFromTrapping(name);
-    if (!it) continue;
-    // Équiper d'office armes et armures (le joueur pourra changer).
-    if (it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor') it.equipped = true;
-    items.push(it);
+    if (it) items.push(it);
   }
+  // Équipement par défaut : la MEILLEURE arme de mêlée + la première à distance
+  // + toutes les armures. Les doublons restent dans l'inventaire (déséquipés).
+  const melee = items.filter((i) => i.kind === 'melee');
+  const ranged = items.filter((i) => i.kind === 'ranged');
+  if (melee.length) melee.sort((a, b) => damageScore(b.damage) - damageScore(a.damage))[0].equipped = true;
+  if (ranged.length) ranged[0].equipped = true;
+  for (const a of items) if (a.kind === 'armor') a.equipped = true;
   return items;
 }
