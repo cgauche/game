@@ -4,7 +4,18 @@ import { Combatant } from './types';
 import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend, endOfRound } from './conditions';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
-import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
+import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee, rangeBandModifier } from './combat';
+
+describe('Portée des tirs (LDB Difficultés de Combat ; 1 case = 2 m)', () => {
+  it('Bout portant +60, Courte +40, Moyenne/Longue +0, Extrême -30, au-delà = null', () => {
+    const R = 50; // Arc : Portée 50 m
+    expect(rangeBandModifier(2, R)).toBe(60); // 4 m ≤ 5 (÷10)
+    expect(rangeBandModifier(10, R)).toBe(40); // 20 m ≤ 25 (÷2)
+    expect(rangeBandModifier(40, R)).toBe(0); // 80 m ≤ 100 (×2)
+    expect(rangeBandModifier(70, R)).toBe(-30); // 140 m ≤ 150 (×3)
+    expect(rangeBandModifier(80, R)).toBeNull(); // 160 m > 150 → hors de portée
+  });
+});
 
 describe('États en combat (LDB ch.16)', () => {
   const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);

@@ -136,15 +136,38 @@ export function resolveMelee(
   return res;
 }
 
+/**
+ * Modificateur de portée d'un tir (LDB « Difficultés de Combat ») : Bout portant
+ * (≤ Portée÷10) +60, Courte (≤ Portée÷2) +40, Moyenne/Longue (≤ Portée×2) +0,
+ * Extrême (≤ Portée×3) -30 ; au-delà = hors de portée (null). Échelle 1 case = 2 m
+ * (LDB Déplacement l.55). `rangeMeters` = Portée de l'arme en mètres.
+ */
+export function rangeBandModifier(distanceTiles: number, rangeMeters: number): number | null {
+  const m = distanceTiles * 2;
+  if (m <= rangeMeters / 10) return 60;
+  if (m <= rangeMeters / 2) return 40;
+  if (m <= rangeMeters * 2) return 0;
+  if (m <= rangeMeters * 3) return -30;
+  return null;
+}
+
 /** Résout une attaque à distance (Test de Projectiles, non opposé). */
 export function resolveRanged(
   attacker: Combatant,
   defender: Combatant,
   weapon: Weapon,
   rng: RNG = defaultRNG,
+  distanceTiles?: number,
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged');
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker));
+  let bandMod = 0;
+  if (distanceTiles != null && weapon.range) {
+    const m = rangeBandModifier(distanceTiles, weapon.range);
+    if (m == null)
+      return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
+    bandMod = m;
+  }
+  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod);
   if (!atk.success) {
     return {
       hit: false,

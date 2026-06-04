@@ -537,7 +537,7 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
   const weapon = attacker.weapons[0];
   const res =
     weapon.type === 'ranged'
-      ? resolveRanged(attacker, target, weapon, battleRng)
+      ? resolveRanged(attacker, target, weapon, battleRng, manhattan(attacker.pos!, target.pos!))
       : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target) });
   if (res.hit && res.woundsLost) {
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
