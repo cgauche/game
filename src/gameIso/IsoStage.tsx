@@ -3,10 +3,11 @@
  * dessine la scène courante (exploration ou combat), gère le clic→tuile, les
  * surbrillances de combat et le déplacement animé. Réutilise toute la logique.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { pathTo } from '../state/path';
+import { bus, EVT } from '../state/bus';
 import { isOutOfAction } from '../engine/conditions';
 import { Combatant } from '../engine/types';
 import {
@@ -51,6 +52,23 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
+
+  // Dégâts flottants en combat (déclenchés par l'évènement ANIM_ATTACK du moteur).
+  type Float = { key: number; x: number; y: number; text: string; crit: boolean };
+  const [floats, setFloats] = useState<Float[]>([]);
+  const floatId = useRef(0);
+  useEffect(() => {
+    const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
+      const b = useGame.getState().battle;
+      if (!b || !d?.result?.hit) return;
+      const target = b.combatants.find((c) => c.id === d.to);
+      if (!target?.pos) return;
+      const key = ++floatId.current;
+      setFloats((f) => [...f, { key, x: target.pos!.x, y: target.pos!.y, text: `-${d.result.woundsLost}`, crit: !!d.result.critical }]);
+      setTimeout(() => setFloats((f) => f.filter((x) => x.key !== key)), 850);
+    });
+    return off;
+  }, []);
 
   if (!scene) return null;
   const dims: Dims = scene.dimensions;
@@ -209,6 +227,24 @@ export function IsoStage() {
           <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
         )}
         <g>{objs.map((o) => o.el)}</g>
+        {floats.map((f) => {
+          const { cx, cy } = tileCenter(f.x, f.y, dims);
+          return (
+            <text
+              key={f.key}
+              className="dmg-float"
+              x={cx}
+              y={cy - 28}
+              textAnchor="middle"
+              fill={f.crit ? '#ffd166' : '#ff5a5a'}
+              stroke="#1a0606"
+              strokeWidth={0.6}
+            >
+              {f.text}
+              {f.crit ? ' ✸' : ''}
+            </text>
+          );
+        })}
       </g>
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
