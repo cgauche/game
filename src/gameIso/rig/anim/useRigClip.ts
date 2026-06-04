@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Pose } from '../poses';
 import { CLIPS, sampleClip, type ClipName } from './clips';
 
@@ -43,12 +43,12 @@ export function useRigClip() {
     };
   }, []);
 
-  const play = (name: ClipName, opts?: { onImpact?: () => void; onDone?: () => void }) => {
+  const play = useCallback((name: ClipName, opts?: { onImpact?: () => void; onDone?: () => void }) => {
     active.current = { name, start: performance.now(), onImpact: opts?.onImpact, onDone: opts?.onDone, impactDone: false, hold: false };
-  };
-  const hold = (name: ClipName) => {
+  }, []);
+  const hold = useCallback((name: ClipName) => {
     active.current = { name, start: performance.now(), impactDone: true, hold: true };
-  };
+  }, []);
 
   return { pose, play, hold };
 }
