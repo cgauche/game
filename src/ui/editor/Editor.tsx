@@ -6,9 +6,13 @@ import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
 import { groundTile } from '../../gameIso/ground';
-import { buildingLayers } from '../../gameIso/catalog/buildings';
+import { buildingLayers, BUILDINGS } from '../../gameIso/catalog/buildings';
 import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
+import { BUILDINGS_META } from '../../state/buildings';
+import { PROPS } from '../../gameIso/catalog/decor';
+import { BuildingFeature } from '../../state/scene';
+import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
@@ -22,7 +26,12 @@ const KIND_LABEL: Record<EntityKind, string> = {
   prop: 'Décor',
 };
 
-type Tool = { mode: 'tile'; terrain: Terrain } | { mode: 'entity'; kind: EntityKind } | { mode: 'erase' } | { mode: 'trigger' };
+type Tool =
+  | { mode: 'tile'; terrain: Terrain }
+  | { mode: 'entity'; kind: EntityKind }
+  | { mode: 'building'; type: string }
+  | { mode: 'erase' }
+  | { mode: 'trigger' };
 type Rect = { x: number; y: number; w: number; h: number };
 
 export function Editor() {
@@ -228,6 +237,20 @@ export function Editor() {
                 <button className={`btn small danger ${tool.mode === 'erase' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'erase' })}>
                   Gomme
                 </button>
+              </div>
+
+              <div className="mini-title">Bâtiments</div>
+              <div className="entity-tools">
+                {Object.values(BUILDINGS_META).map((b) => (
+                  <button
+                    key={b.id}
+                    className={`btn small ${tool.mode === 'building' && tool.type === b.id ? 'btn-primary' : ''}`}
+                    onClick={() => setTool({ mode: 'building', type: b.id })}
+                    title={`${b.label} (${b.category}) — glisser pour définir l'empreinte`}
+                  >
+                    {b.label}
+                  </button>
+                ))}
               </div>
 
               <div className="mini-title">Zones</div>
