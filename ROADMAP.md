@@ -60,6 +60,12 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   fumée de cheminée, enseigne qui balance).
 - **RNG de combat seedable** (`store.seedRng`) : combat enfin déterministe — flaky test éliminé,
   socle pour la coop réseau.
+- **Polish 0.6 (D1–D4)** : `facing` **pilote la porte** (`defaultDoor` pur) **et est lu par le rendu** ;
+  **intérieurs réutilisables** via l'effet **`transitionBack`** + `makeInteriorScene` (aller-retour
+  porte → intérieur → retour, `previousScene` au store) ; **art des bâtiments enrichi** (rangs de
+  tuiles/ardoises/chaume, **fenêtres** allumées la **nuit** — halo + flicker, **porte côté `facing`**,
+  colombages en croix de St-André, ombre portée) ; **validé en navigateur** (pose drag, 3 calques,
+  cutaway, raccord d'arêtes, palette catalogue, `facing`→porte).
 
 ## ✅ Jalon 0.7 — Couche magie au combat *(fait)*
 
@@ -192,13 +198,14 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
   perfectibles (corps « ballon », jambes fines).
 - IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
-- **Art des bâtiments procédural** (silhouettes simples) — à enrichir vers le niveau d'`ambush.html`.
-- **`facing`** des bâtiments réglable dans l'inspecteur mais **pas encore lu** par le rendu (ni la
-  porte par défaut) — orientation/rotation à câbler.
-- **`reveal:'door'`** suppose des **scènes d'intérieur** dédiées : à créer et lier (cf. Jalon 6).
+- **Art des bâtiments** enrichi (tuiles/ardoises/chaume, fenêtres + éclairage nuit, porte côté
+  `facing`, colombages, ombre) ; reste perfectible vers le niveau d'`ambush.html` (textures fines,
+  variantes par type, rotation pleine selon `facing`).
+- **`reveal:'door'`** : mécanisme prêt (`transitionBack` + `makeInteriorScene`), mais les **scènes
+  d'intérieur concrètes** restent à créer et lier dans un **projet multi-scènes** (cf. Jalon 6).
 - Primitives historiques `mur`/`bois` (tuiles) coexistent avec le nouveau système de bâtiments.
-- Recette visuelle interactive (pose de bâtiment, cutaway) restée à valider en navigateur (verrou
-  Chrome lors de la session ; logique couverte par tests unitaires).
+- **Éclairage nocturne des fenêtres** couvert par typecheck + tests, mais **recette navigateur
+  non rejouée** (verrou Chrome) — à screenshoter quand le poste est libre.
 - Bundle volumineux — à code-splitter.
 
 ## Principes directeurs
