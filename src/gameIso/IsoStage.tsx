@@ -30,9 +30,7 @@ import {
   entitySprite,
 } from './sprites';
 import { hashSeed } from './appearance';
-import { RigSprite } from './rig/composeRig';
-import { defaultAppearance } from './rig/appearance';
-import { equipFromCombatant } from './rig/parts/equipment';
+import { AnimatedRigToken } from './AnimatedRigToken';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -57,12 +55,12 @@ export function IsoStage() {
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
 
-  // Dégâts flottants en combat (déclenchés par l'évènement ANIM_ATTACK du moteur).
+  // Dégâts flottants — déclenchés sur ANIM_IMPACT (timing de l'impact du clip), pas à l'émission.
   type Float = { key: number; x: number; y: number; text: string; crit: boolean };
   const [floats, setFloats] = useState<Float[]>([]);
   const floatId = useRef(0);
   useEffect(() => {
-    const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
+    const off = bus.on(EVT.ANIM_IMPACT, (d: any) => {
       const b = useGame.getState().battle;
       if (!b || !d?.result?.hit) return;
       const target = b.combatants.find((c) => c.id === d.to);
@@ -72,6 +70,27 @@ export function IsoStage() {
       setTimeout(() => setFloats((f) => f.filter((x) => x.key !== key)), 850);
     });
     return off;
+  }, []);
+
+  // Anim légère des créatures monolithiques (non riggées) : fente/recul de token entier.
+  const [creatureFx, setCreatureFx] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const fire = (id: string, cls: string) => {
+      setCreatureFx((m) => ({ ...m, [id]: cls }));
+      setTimeout(() => setCreatureFx((m) => { const n = { ...m }; delete n[id]; return n; }), 340);
+    };
+    const offA = bus.on(EVT.ANIM_ATTACK, (d: any) => {
+      const b = useGame.getState().battle;
+      const from = b?.combatants.find((c) => c.id === d.from);
+      if (from && from.kind !== 'hero') fire(d.from, 'tok-lunge');
+    });
+    const offI = bus.on(EVT.ANIM_IMPACT, (d: any) => {
+      const b = useGame.getState().battle;
+      if (!d?.result?.hit) return;
+      const to = b?.combatants.find((c) => c.id === d.to);
+      if (to && to.kind !== 'hero') fire(d.to, 'tok-recoil');
+    });
+    return () => { offA(); offI(); };
   }, []);
 
   if (!scene) return null;
@@ -117,7 +136,7 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean) => {
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy + TH / 2;
     return (
@@ -127,7 +146,10 @@ export function IsoStage() {
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
-        <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`} dangerouslySetInnerHTML={{ __html: inner }} />
+        {/* calque fx (anim légère token entier pour les créatures) — sans transform de base */}
+        <g className={fx}>
+          <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`} dangerouslySetInnerHTML={{ __html: inner }} />
+        </g>
       </g>
     );
   };
@@ -155,15 +177,11 @@ export function IsoStage() {
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
       if (isHero) {
-        const el = tokenNode(
-          c.id, c.pos.x, c.pos.y,
-          <RigSprite appearance={c.appearance ?? defaultAppearance(c)} equip={equipFromCombatant(c)} career={c.career} />,
-          0.62, ring, isOutOfAction(c),
-        );
+        const el = tokenNode(c.id, c.pos.x, c.pos.y, <AnimatedRigToken combatant={c} />, 0.62, ring, isOutOfAction(c));
         objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el });
       } else {
         const inner = enemySprite(c.name, hashSeed(c.id));
-        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c)) });
+        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id]) });
       }
     }
   } else {
@@ -175,11 +193,7 @@ export function IsoStage() {
     // groupe (token = 1er héros)
     const leader = party[0];
     const el = leader
-      ? tokenNode(
-          '__party', partyPos.x, partyPos.y,
-          <RigSprite appearance={leader.appearance ?? defaultAppearance(leader)} equip={equipFromCombatant(leader)} career={leader.career} />,
-          0.6, HERO_RING[0],
-        )
+      ? tokenNode('__party', partyPos.x, partyPos.y, <AnimatedRigToken combatant={leader} />, 0.6, HERO_RING[0])
       : token('__party', partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0]);
     objs.push({ d: depth(partyPos.x, partyPos.y) + 0.5, el });
   }
