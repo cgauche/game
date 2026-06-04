@@ -14,7 +14,6 @@ import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature, Trigger } from '../../state/scene';
-import { campaign } from '../../scenes/campaign';
 import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
@@ -76,7 +75,7 @@ function useSceneHistory(initial: Scene | (() => Scene)) {
 
 export function Editor() {
   const setScreen = useGame((s) => s.setScreen);
-  const startScene = useGame((s) => s.startScene);
+  const loadProject = useGame((s) => s.loadProject);
   const party = useGame((s) => s.party);
 
   const { scene, setScene, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
@@ -87,6 +86,7 @@ export function Editor() {
   const [selectedSpawn, setSelectedSpawn] = useState<{ enc: number; idx: number } | null>(null);
   const [encTarget, setEncTarget] = useState<string>(''); // rencontre cible pour le placement
   const [encRef, setEncRef] = useState<string>(''); // créature à placer
+  const [otherScenes, setOtherScenes] = useState<Scene[]>([]); // projet : scènes ≠ active
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
@@ -121,6 +121,34 @@ export function Editor() {
 
   function clone(s: Scene): Scene {
     return JSON.parse(JSON.stringify(s));
+  }
+
+  // --- Projet multi-scènes : la scène éditée (`scene`, avec son historique) + les
+  // autres scènes en réserve (`otherScenes`). Permet d'authoring et de lier des
+  // intérieurs sans toucher campaign.ts. ---
+  function switchScene(id: string) {
+    if (id === scene.id) return;
+    const target = otherScenes.find((s) => s.id === id);
+    if (!target) return;
+    setOtherScenes([...otherScenes.filter((s) => s.id !== id), scene]); // ranger l'active, sortir la cible
+    resetScene(target);
+  }
+  function addScene() {
+    const s = emptyScene();
+    s.id = `scene-${Date.now().toString(36)}`;
+    s.nom = 'Nouvelle scène';
+    setOtherScenes([...otherScenes, scene]);
+    resetScene(s);
+  }
+  function deleteScene(id: string) {
+    if (id === scene.id) {
+      if (otherScenes.length === 0) return; // ne pas supprimer la dernière scène
+      const [next, ...rest] = otherScenes;
+      setOtherScenes(rest);
+      resetScene(next);
+    } else {
+      setOtherScenes(otherScenes.filter((s) => s.id !== id));
+    }
   }
 
   const dims: Dims = scene.dimensions;
@@ -262,18 +290,24 @@ export function Editor() {
     });
 
   function exportJson() {
-    const blob = new Blob([JSON.stringify(scene, null, 2)], { type: 'application/json' });
+    // Exporte le PROJET (toutes les scènes) ; la première est la scène d'entrée.
+    const project = [scene, ...otherScenes];
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${scene.id}.json`;
+    a.download = `${scene.id}-projet.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
-        resetScene(JSON.parse(txt));
+        const data = JSON.parse(txt);
+        const scenes: Scene[] = Array.isArray(data) ? data : [data]; // projet OU scène unique
+        if (!scenes.length) return;
+        setOtherScenes(scenes.slice(1));
+        resetScene(scenes[0]);
         setSelected(null);
       } catch {
         alert('JSON invalide');
@@ -285,7 +319,7 @@ export function Editor() {
       alert('Ajoutez d\'abord au moins un aventurier au groupe (menu Nouvelle partie) pour tester.');
       return;
     }
-    startScene(scene);
+    loadProject([scene, ...otherScenes], scene.id);
     setScreen('campaign');
   }
   function openAdvanced() {
@@ -459,6 +493,35 @@ export function Editor() {
 
           {palTab === 'scene' && (
             <div className="pal-tab">
+              <div className="mini-title">Scènes du projet</div>
+              <div className="entity-tools">
+                {[scene, ...otherScenes].map((s) => (
+                  <div key={s.id} className="proj-scene-row">
+                    <button
+                      className={`btn small ${s.id === scene.id ? 'btn-primary' : ''}`}
+                      onClick={() => switchScene(s.id)}
+                      title={s.id}
+                    >
+                      {s.nom || s.id}
+                    </button>
+                    <button
+                      className="btn small danger"
+                      title="Retirer cette scène du projet"
+                      onClick={() => deleteScene(s.id)}
+                      disabled={s.id === scene.id && otherScenes.length === 0}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button className="btn small" onClick={addScene}>
+                  + Nouvelle scène
+                </button>
+              </div>
+              <label className="ed-field">
+                Identifiant (référencé par les portes d'intérieur)
+                <input value={scene.id} onChange={(e) => setScene({ ...scene, id: e.target.value })} />
+              </label>
               <label className="ed-field">
                 Nom
                 <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
@@ -783,9 +846,9 @@ export function Editor() {
                       Scène d'intérieur
                       <select value={selB.interiorScene ?? ''} onChange={(e) => updateSelB({ interiorScene: e.target.value || undefined })}>
                         <option value="">— aucune —</option>
-                        {campaign.map((c) => (
-                          <option key={c.scene.id} value={c.scene.id}>
-                            {c.scene.nom} ({c.scene.id})
+                        {[scene, ...otherScenes].map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.nom || s.id} ({s.id})
                           </option>
                         ))}
                       </select>

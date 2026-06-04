@@ -97,6 +97,8 @@ interface GameState {
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
   startScene: (scene: Scene) => void;
+  /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. */
+  loadProject: (scenes: Scene[], entryId: string) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
   interactEntity: (entityId: string) => void;
@@ -174,6 +176,14 @@ export const useGame = create<GameState>((set, get) => ({
       journal: scene.startMessage ? [scene.startMessage] : [],
     });
     bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  loadProject: (scenes, entryId) => {
+    // Enregistre toutes les scènes du projet (pour que les portes reveal:'door'
+    // résolvent leurs intérieurs), puis démarre la scène d'entrée.
+    for (const s of scenes) registerScene(s);
+    const entry = scenes.find((s) => s.id === entryId) ?? scenes[0];
+    if (entry) get().startScene(entry);
   },
 
   /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).
