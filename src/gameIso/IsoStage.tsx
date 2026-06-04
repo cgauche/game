@@ -93,6 +93,24 @@ export function IsoStage() {
     return () => { offA(); offI(); };
   }, []);
 
+  // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
+  type Proj = { key: number; from: { x: number; y: number }; to: { x: number; y: number }; kind: string };
+  const [projs, setProjs] = useState<Proj[]>([]);
+  const projId = useRef(0);
+  useEffect(() => {
+    const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
+      if (d.kind !== 'ranged' && d.kind !== 'spell') return;
+      const b = useGame.getState().battle;
+      const from = b?.combatants.find((c) => c.id === d.from)?.pos;
+      const to = b?.combatants.find((c) => c.id === d.to)?.pos;
+      if (!from || !to) return;
+      const key = ++projId.current;
+      setProjs((p) => [...p, { key, from, to, kind: d.kind }]);
+      setTimeout(() => setProjs((p) => p.filter((x) => x.key !== key)), 340);
+    });
+    return off;
+  }, []);
+
   if (!scene) return null;
   const dims: Dims = scene.dimensions;
   const size = stageSize(dims);
@@ -296,6 +314,27 @@ export function IsoStage() {
               {f.text}
               {f.crit ? ' ✸' : ''}
             </text>
+          );
+        })}
+        {projs.map((p) => {
+          const a = tileCenter(p.from.x, p.from.y, dims);
+          const b = tileCenter(p.to.x, p.to.y, dims);
+          const ang = (Math.atan2(b.cy - a.cy, b.cx - a.cx) * 180) / Math.PI;
+          return (
+            <g
+              key={`p${p.key}`}
+              className="proj"
+              style={{ ['--ax' as never]: `${a.cx}px`, ['--ay' as never]: `${a.cy - 18}px`, ['--bx' as never]: `${b.cx}px`, ['--by' as never]: `${b.cy - 18}px` }}
+            >
+              {p.kind === 'spell' ? (
+                <circle r={5} fill="url(#g_glow)" />
+              ) : (
+                <g transform={`rotate(${ang})`}>
+                  <rect x={-8} y={-1} width={16} height={2} rx={1} fill="#caa882" />
+                  <path d="M8 0 l-4 -2 v4 z" fill="#caa882" />
+                </g>
+              )}
+            </g>
           );
         })}
       </g>

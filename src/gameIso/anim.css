@@ -84,3 +84,10 @@
 }
 .tok-lunge { animation: tok-lunge 0.3s ease-out; }
 .tok-recoil { animation: tok-recoil 0.32s ease-out; }
+
+/* Projectile volant from→to (flèche/carreau ou trait magique). */
+@keyframes proj-fly {
+  from { transform: translate(var(--ax), var(--ay)); }
+  to { transform: translate(var(--bx), var(--by)); }
+}
+.proj { animation: proj-fly 0.3s linear forwards; }
