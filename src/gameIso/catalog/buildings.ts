@@ -1,6 +1,6 @@
 import { tileCenter, TW, TH } from '../iso';
 import type { BuildingViz, BuildingLayers, RenderCtx, Rect, ParamField } from './types';
-import type { BuildingParams } from '../../state/scene';
+import type { BuildingParams, Facing } from '../../state/scene';
 
 /** Coins écran (sol) de l'empreinte : grand losange N-E-S-O. */
 function footCorners(foot: Rect, ctx: RenderCtx) {
@@ -21,25 +21,58 @@ const pt = (p: number[]) => `${p[0]},${p[1]}`;
 /** Point décalé vers le haut, gardé en nombres (pas de round-trip via string). */
 const upXY = (p: number[], h: number): [number, number] => [p[0], p[1] - h];
 const mid = (a: number[], b: number[]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+const lerp = (a: number[], b: number[], t: number): [number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+
+/** Quad (chemin `d`) plaqué sur une face de mur : base p0→p1, bande de hauteur [y0,y1]·H, centré en tC (demi-largeur tH). */
+function pane(p0: number[], p1: number[], H: number, tC: number, tH: number, y0: number, y1: number): string {
+  const A = lerp(p0, p1, tC - tH);
+  const B = lerp(p0, p1, tC + tH);
+  return `M${A[0]},${A[1] - H * y0} L${B[0]},${B[1] - H * y0} L${B[0]},${B[1] - H * y1} L${A[0]},${A[1] - H * y1} Z`;
+}
 
 // --- Helpers de calques partagés ------------------------------------------
+function groundShadow(c: Corners): string {
+  const cx = (c.E[0] + c.O[0]) / 2;
+  const cy = (c.S[1] + c.N[1]) / 2;
+  const grow = (p: number[]) => [cx + (p[0] - cx) * 1.06, cy + (p[1] - cy) * 1.06 + 4];
+  return `<path d="M${grow(c.N)} L${grow(c.E)} L${grow(c.S)} L${grow(c.O)} Z" fill="#000" opacity="0.20"/>`;
+}
+
 function wallFaces(c: Corners, H: number, wallC: string, edge: string): string {
   return (
     `<path d="M${pt(c.O)} L${pt(c.S)} L${up(c.S, H)} L${up(c.O, H)} Z" fill="${wallC}" stroke="${edge}" stroke-width="2"/>` +
     `<path d="M${pt(c.S)} L${pt(c.E)} L${up(c.E, H)} L${up(c.S, H)} Z" fill="${wallC}" stroke="${edge}" stroke-width="2" opacity="0.9"/>`
   );
 }
-function floorInterior(c: Corners): string {
-  return `<path d="M${pt(c.N)} L${pt(c.E)} L${pt(c.S)} L${pt(c.O)} Z" fill="#3a2c1e" opacity="0.9"/>`;
+
+/** Fenêtres (une par face avant) + porte sur le mur du côté `facing`. */
+function openings(c: Corners, H: number, facing?: Facing): string {
+  const glass = '#33414d';
+  const frame = '#2a2018';
+  const wood = '#42301c';
+  let s = '';
+  // fenêtres à volets, mi-hauteur, une par face avant
+  s += `<path d="${pane(c.O, c.S, H, 0.5, 0.07, 0.46, 0.72)}" fill="${glass}" stroke="${frame}" stroke-width="1.5"/>`;
+  s += `<path d="${pane(c.S, c.E, H, 0.5, 0.07, 0.46, 0.72)}" fill="${glass}" stroke="${frame}" stroke-width="1.5" opacity="0.92"/>`;
+  // porte : choix de la face avant selon facing (E → face droite ; sinon face gauche)
+  const onRight = facing === 'E';
+  const tC = onRight ? 0.5 : facing === 'S' ? 0.82 : 0.5;
+  const [p0, p1] = onRight ? [c.S, c.E] : [c.O, c.S];
+  s += `<path d="${pane(p0, p1, H, tC, 0.11, 0, 0.52)}" fill="${wood}" stroke="${frame}" stroke-width="2"/>`;
+  s += `<path d="${pane(p0, p1, H, tC, 0.085, 0.03, 0.48)}" fill="#241a10"/>`; // vantail sombre
+  return s;
 }
-function hipRoof(c: Corners, H: number, roofH: number, col: [string, string, string, string]): string {
-  const apex = [(c.N[0] + c.S[0]) / 2, (c.N[1] + c.S[1]) / 2 - (H + roofH)];
-  return (
-    `<path d="M${up(c.O, H)} L${up(c.N, H)} L${pt(apex)} Z" fill="${col[0]}"/>` +
-    `<path d="M${up(c.N, H)} L${up(c.E, H)} L${pt(apex)} Z" fill="${col[1]}"/>` +
-    `<path d="M${up(c.O, H)} L${up(c.S, H)} L${pt(apex)} Z" fill="${col[2]}"/>` +
-    `<path d="M${up(c.S, H)} L${up(c.E, H)} L${pt(apex)} Z" fill="${col[3]}"/>`
-  );
+
+/** Pans de colombage (bandeau + montants + croix de St-André) pour les façades à pans de bois. */
+function timberBraces(c: Corners, H: number, timber: string): string {
+  let s = `<path d="M${up(c.O, H * 0.5)} L${up(c.S, H * 0.5)} L${up(c.E, H * 0.5)}" stroke="${timber}" stroke-width="3" fill="none" opacity="0.7"/>`;
+  s += `<path d="M${pt(c.S)} L${up(c.S, H)}" stroke="${timber}" stroke-width="3" opacity="0.6"/>`;
+  for (const [a, b] of [[c.O, c.S], [c.S, c.E]] as const) {
+    const m = lerp(a, b, 0.5);
+    s += `<path d="M${pt(m)} L${m[0]},${m[1] - H}" stroke="${timber}" stroke-width="2" opacity="0.45"/>`;
+    s += `<path d="M${a[0]},${a[1] - H * 0.5} L${b[0]},${b[1] - H}" stroke="${timber}" stroke-width="1.6" opacity="0.35"/>`;
+  }
+  return s;
 }
 
 const ROOF: Record<string, [string, string, string, string]> = {
@@ -47,7 +80,38 @@ const ROOF: Record<string, [string, string, string, string]> = {
   chaume: ['#9a7b3a', '#7a5f29', '#8a6c30', '#65501f'],
   ardoise: ['#4a5560', '#363f48', '#414c56', '#2c343b'],
 };
-const roofOf = (p: BuildingParams) => ROOF[p.roofMaterial ?? 'tuile'] ?? ROOF.tuile;
+const COURSE: Record<string, string> = { tuile: '#5a1f17', chaume: '#6a531f', ardoise: '#2a323a' };
+
+function hipRoof(c: Corners, H: number, roofH: number, material: string): string {
+  const col = ROOF[material] ?? ROOF.tuile;
+  const apex = [(c.N[0] + c.S[0]) / 2, (c.N[1] + c.S[1]) / 2 - (H + roofH)];
+  let s =
+    `<path d="M${up(c.O, H)} L${up(c.N, H)} L${pt(apex)} Z" fill="${col[0]}"/>` +
+    `<path d="M${up(c.N, H)} L${up(c.E, H)} L${pt(apex)} Z" fill="${col[1]}"/>` +
+    `<path d="M${up(c.O, H)} L${up(c.S, H)} L${pt(apex)} Z" fill="${col[2]}"/>` +
+    `<path d="M${up(c.S, H)} L${up(c.E, H)} L${pt(apex)} Z" fill="${col[3]}"/>`;
+  // rangs de tuiles/ardoises (lignes parallèles aux avant-toits)
+  const courseCol = COURSE[material] ?? COURSE.tuile;
+  const n = material === 'chaume' ? 2 : 3;
+  const faces: [number[], number[]][] = [
+    [upXY(c.O, H), upXY(c.N, H)],
+    [upXY(c.N, H), upXY(c.E, H)],
+    [upXY(c.O, H), upXY(c.S, H)],
+    [upXY(c.S, H), upXY(c.E, H)],
+  ];
+  for (const [e0, e1] of faces)
+    for (let i = 1; i <= n; i++) {
+      const f = i / (n + 1);
+      const a = lerp(e0, apex, f);
+      const b = lerp(e1, apex, f);
+      s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${courseCol}" stroke-width="1.2" opacity="0.5"/>`;
+    }
+  return s;
+}
+
+function floorInterior(c: Corners): string {
+  return `<path d="M${pt(c.N)} L${pt(c.E)} L${pt(c.S)} L${pt(c.O)} Z" fill="#3a2c1e" opacity="0.9"/>`;
+}
 
 // --- Générateurs ----------------------------------------------------------
 const colombage: BuildingViz['render'] = (foot, params, ctx) => {
@@ -55,11 +119,8 @@ const colombage: BuildingViz['render'] = (foot, params, ctx) => {
   const H = 40 * (params.floors ?? 2);
   const timber = params.timberColor ?? '#4a3220';
   const wallC = params.wallColor ?? '#d8c9a8';
-  const walls =
-    wallFaces(c, H, wallC, timber) +
-    `<path d="M${up(c.O, H * 0.5)} L${up(c.S, H * 0.5)} L${up(c.E, H * 0.5)}" stroke="${timber}" stroke-width="3" fill="none" opacity="0.75"/>` +
-    `<path d="M${pt(c.S)} L${up(c.S, H)}" stroke="${timber}" stroke-width="3" opacity="0.55"/>`;
-  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 34, roofOf(params)) };
+  const walls = groundShadow(c) + wallFaces(c, H, wallC, timber) + timberBraces(c, H, timber) + openings(c, H, ctx.facing);
+  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 34, params.roofMaterial ?? 'tuile') };
 };
 
 const taverne: BuildingViz['render'] = (foot, params, ctx) => {
@@ -79,7 +140,7 @@ const taverne: BuildingViz['render'] = (foot, params, ctx) => {
 const forge: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 38 * (params.floors ?? 1);
-  const walls = wallFaces(c, H, params.wallColor ?? '#8a8378', '#4d4a44');
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#8a8378', '#4d4a44') + openings(c, H, ctx.facing);
   // cheminée + fumée animée (coin E)
   const e = upXY(c.E, H);
   const ch = [e[0] - 10, e[1] - 6];
@@ -88,29 +149,29 @@ const forge: BuildingViz['render'] = (foot, params, ctx) => {
     `<g class="smoke" style="transform-box:fill-box;transform-origin:${ch[0]}px ${ch[1] - 26}px">` +
     `<circle cx="${ch[0]}" cy="${ch[1] - 30}" r="7" fill="#cfc8bf" opacity="0.5"/>` +
     `<circle cx="${ch[0] + 4}" cy="${ch[1] - 40}" r="9" fill="#bcb4a9" opacity="0.4"/></g>`;
-  return { walls: walls + chimney, interior: floorInterior(c), roof: hipRoof(c, H, 22, ROOF.ardoise) };
+  return { walls: walls + chimney, interior: floorInterior(c), roof: hipRoof(c, H, 22, 'ardoise') };
 };
 
 const echoppe: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 34;
-  const walls = wallFaces(c, H, params.wallColor ?? '#cdbd98', params.timberColor ?? '#5a3f24');
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#cdbd98', params.timberColor ?? '#5a3f24') + openings(c, H, ctx.facing);
   // auvent rayé en façade (au-dessus de O→S)
   const a = upXY(c.O, H * 0.5);
   const b = upXY(c.S, H * 0.5);
   const awning = `<path d="M${pt(a)} L${pt(b)} L${b[0]},${b[1] + 16} L${a[0]},${a[1] + 16} Z" fill="#a8423a" opacity="0.85"/>`;
-  return { walls: walls + awning, interior: floorInterior(c), roof: hipRoof(c, H, 18, roofOf(params)) };
+  return { walls: walls + awning, interior: floorInterior(c), roof: hipRoof(c, H, 18, params.roofMaterial ?? 'tuile') };
 };
 
 const chapelle: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 70;
-  const walls = wallFaces(c, H, params.wallColor ?? '#b9b2a4', '#6a655c');
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#b9b2a4', '#6a655c') + openings(c, H, ctx.facing);
   const apex = [(c.N[0] + c.S[0]) / 2, (c.N[1] + c.S[1]) / 2 - (H + 64)];
   const cross =
     `<line x1="${apex[0]}" y1="${apex[1]}" x2="${apex[0]}" y2="${apex[1] - 20}" stroke="#d8c27a" stroke-width="3"/>` +
     `<line x1="${apex[0] - 7}" y1="${apex[1] - 14}" x2="${apex[0] + 7}" y2="${apex[1] - 14}" stroke="#d8c27a" stroke-width="3"/>`;
-  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 64, ROOF.ardoise) + cross };
+  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 64, 'ardoise') + cross };
 };
 
 const tour: BuildingViz['render'] = (foot, params, ctx) => {
@@ -122,22 +183,30 @@ const tour: BuildingViz['render'] = (foot, params, ctx) => {
   const H = 60 * (params.floors ?? 2);
   const stone = params.wallColor ?? '#8d8a84';
   const body =
+    groundShadow(c) +
     `<path d="M${cx - rx},${cyBase} L${cx - rx},${cyBase - H} A${rx},${ry} 0 0 1 ${cx + rx},${cyBase - H} L${cx + rx},${cyBase} A${rx},${ry} 0 0 1 ${cx - rx},${cyBase} Z" fill="${stone}" stroke="#56524b" stroke-width="2"/>` +
     `<ellipse cx="${cx}" cy="${cyBase - H}" rx="${rx}" ry="${ry}" fill="#a09c95"/>`;
+  // meurtrières + porte cintrée + assises de pierre
+  let detail = '';
+  for (const hy of [0.35, 0.62, 0.85]) detail += `<rect x="${cx - 2.5}" y="${cyBase - H * hy - 9}" width="5" height="14" rx="2" fill="#2c2a26"/>`;
+  for (let i = 1; i <= 4; i++) detail += `<line x1="${cx - rx}" y1="${cyBase - (H * i) / 5}" x2="${cx + rx}" y2="${cyBase - (H * i) / 5}" stroke="#6e6a62" stroke-width="1" opacity="0.4"/>`;
+  detail += `<path d="M${cx - 9},${cyBase} L${cx - 9},${cyBase - 16} Q${cx},${cyBase - 26} ${cx + 9},${cyBase - 16} L${cx + 9},${cyBase} Z" fill="#3a2a18" stroke="#241a10"/>`;
   // créneaux
   let cren = '';
-  for (let i = -2; i <= 2; i++)
-    cren += `<rect x="${cx + i * (rx / 2.5) - 4}" y="${cyBase - H - ry - 8}" width="8" height="12" fill="${stone}" stroke="#56524b"/>`;
-  return { walls: body, interior: '', roof: cren };
+  for (let i = -2; i <= 2; i++) cren += `<rect x="${cx + i * (rx / 2.5) - 4}" y="${cyBase - H - ry - 8}" width="8" height="12" fill="${stone}" stroke="#56524b"/>`;
+  return { walls: body + detail, interior: '', roof: cren };
 };
 
 const manoir: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 56 * (params.floors ?? 2);
+  const timber = params.timberColor ?? '#3a2c1e';
   const walls =
-    wallFaces(c, H, params.wallColor ?? '#cfc3a6', params.timberColor ?? '#3a2c1e') +
-    `<path d="M${up(c.O, H * 0.5)} L${up(c.S, H * 0.5)} L${up(c.E, H * 0.5)}" stroke="${params.timberColor ?? '#3a2c1e'}" stroke-width="2.5" fill="none" opacity="0.6"/>`;
-  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 44, ROOF.ardoise) };
+    groundShadow(c) +
+    wallFaces(c, H, params.wallColor ?? '#cfc3a6', timber) +
+    `<path d="M${up(c.O, H * 0.5)} L${up(c.S, H * 0.5)} L${up(c.E, H * 0.5)}" stroke="${timber}" stroke-width="2.5" fill="none" opacity="0.55"/>` +
+    openings(c, H, ctx.facing);
+  return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 44, 'ardoise') };
 };
 
 const HOUSE_SCHEMA: ParamField[] = [

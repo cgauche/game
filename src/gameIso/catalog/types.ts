@@ -1,5 +1,5 @@
 import type { Dims } from '../iso';
-import type { BuildingParams } from '../../state/scene';
+import type { BuildingParams, Facing } from '../../state/scene';
 
 export type ParamField =
   | { key: string; label: string; type: 'number'; min?: number; max?: number; step?: number }
@@ -8,6 +8,8 @@ export type ParamField =
 
 export interface RenderCtx {
   dims: Dims;
+  /** Orientation du bâtiment (place la porte visible côté façade). */
+  facing?: Facing;
 }
 export type Rect = { x: number; y: number; w: number; h: number };
 
