@@ -4,7 +4,7 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ActiveEffect, CHAR_LABELS, HitLocation, Weapon } from '../engine/types';
+import { Combatant, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
 import { resolveMelee, resolveRanged, initiativeOrder, defenseValue, AttackResult } from '../engine/combat';
 import {
@@ -50,10 +50,15 @@ export interface Money {
 }
 /** Test de compétence interactif en attente d'acquittement par le joueur. */
 export interface PendingTest {
+  actorId: string;
   actorName: string;
   label: string;
-  roll: number;
+  skillValue: number;
+  difficulty: Difficulty;
+  requireSL: number;
   target: number;
+  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
+  roll: number | null;
   success: boolean;
   sl: number;
   onSuccess?: Effect[];
@@ -113,6 +118,8 @@ interface GameState {
   interactEntity: (entityId: string) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
+  testRoll: () => void;
+  testReroll: () => void;
   resolveTest: () => void;
   closeDocument: () => void;
 
@@ -449,10 +456,33 @@ export const useGame = create<GameState>((set, get) => ({
   },
   attackCancel: () => set({ pendingAttack: null }),
 
+  /** « Lancer » : effectue le jet du test en attente (hors combat). */
+  testRoll: () => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll != null) return; // déjà lancé
+    const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
+    set({ pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL } });
+  },
+
+  /** Dépense un point de Chance du testeur pour relancer le jet (LDB Destin). */
+  testReroll: () => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll == null) return;
+    const party = get().party;
+    const actor = party.find((c) => c.id === pt.actorId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
+    set({
+      pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL },
+      party: [...party],
+    });
+  },
+
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {
     const pt = get().pendingTest;
-    if (!pt) return;
+    if (!pt || pt.roll == null) return; // pas d'acquittement avant le jet
     set({ pendingTest: null });
     const branch = pt.success ? pt.onSuccess : pt.onFailure;
     if (branch && branch.length) applyEffects(get, set, branch);
@@ -566,21 +596,25 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
         break;
       }
       case 'test': {
-        // Test de compétence : le meilleur du groupe tente. Branche après acquittement.
+        // Test de compétence : le meilleur du groupe tente. Le jet attend « Lancer »
+        // dans la modale (testRoll), puis une Chance est possible avant l'acquittement.
         const best = partyBest(get().party, e.skill, e.characteristic);
         if (!best) break;
-        const res: TestResult = rollTest(best.value, e.difficulty ?? 'intermediaire');
-        const required = e.requireSL ?? 0;
-        const success = res.success && res.sl >= required;
+        const difficulty = e.difficulty ?? 'intermediaire';
         const label = e.label || e.skill || (e.characteristic ? `Test de ${e.characteristic}` : 'Test');
+        const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
         set({
           pendingTest: {
+            actorId: best.actor.id,
             actorName: best.actor.name,
             label,
-            roll: res.roll,
-            target: res.target,
-            success,
-            sl: res.sl,
+            skillValue: best.value,
+            difficulty,
+            requireSL: e.requireSL ?? 0,
+            target,
+            roll: null, // pas encore lancé
+            success: false,
+            sl: 0,
             onSuccess: e.onSuccess,
             onFailure: e.onFailure,
           },

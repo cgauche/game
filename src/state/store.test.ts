@@ -187,4 +187,40 @@ describe('Boucle de jeu (store)', () => {
     const enemyAfter = st.battle!.combatants.find((c) => c.id === enemy.id)!;
     expect(enemyAfter.wounds.current).toBeLessThan(before);
   });
+
+  it('un test de compétence hors combat : Lancer, Chance, puis acquittement', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.fortune = 2;
+    useGame.setState({
+      party: [hero],
+      flags: {},
+      pendingTest: {
+        actorId: hero.id,
+        actorName: hero.name,
+        label: 'Test de Force',
+        skillValue: 95,
+        difficulty: 'intermediaire',
+        requireSL: 0,
+        target: 95,
+        roll: null, // pas encore lancé
+        success: false,
+        sl: 0,
+        onSuccess: [{ type: 'setFlag', flag: 'reussi', value: true }],
+        onFailure: [],
+      },
+    });
+    // Acquittement bloqué tant que le jet n'a pas eu lieu.
+    useGame.getState().resolveTest();
+    expect(useGame.getState().pendingTest).not.toBeNull();
+    // « Lancer » : le jet se fait.
+    useGame.getState().testRoll();
+    expect(useGame.getState().pendingTest!.roll).not.toBeNull();
+    // Chance : relance et consomme un point.
+    useGame.getState().testReroll();
+    expect(useGame.getState().party[0].fortune).toBe(1);
+    expect(useGame.getState().pendingTest!.roll).not.toBeNull();
+    // Acquittement : ferme la modale.
+    useGame.getState().resolveTest();
+    expect(useGame.getState().pendingTest).toBeNull();
+  });
 });
