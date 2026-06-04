@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGame, activeCombatant } from '../state/store';
+import { useGame } from '../state/store';
 import { IsoStage } from '../gameIso/IsoStage';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';

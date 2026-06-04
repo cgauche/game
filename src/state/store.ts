@@ -4,9 +4,9 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ActiveEffect, CHAR_LABELS, CharKey } from '../engine/types';
+import { Combatant, ActiveEffect, CHAR_LABELS } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
-import { resolveMelee, resolveRanged, initiativeOrder, combatValue, defenseValue } from '../engine/combat';
+import { resolveMelee, resolveRanged, initiativeOrder, defenseValue } from '../engine/combat';
 import {
   resolveMagicMissile,
   resolveCasting,
@@ -25,7 +25,7 @@ import { recomputeLoadout } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition } from '../engine/conditions';
 import { findSpell } from '../data/index';
-import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } from './scene';
+import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, manhattan, Pt } from './path';
@@ -769,7 +769,10 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
 
   const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
-  if (heroes.length === 0) return checkBattleOver(get, set) as any;
+  if (heroes.length === 0) {
+    checkBattleOver(get, set);
+    return;
+  }
 
   const blocked = occupied(battle, enemy.id);
   // Premier Projectile magique connu et prêt : la détection a besoin des données

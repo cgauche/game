@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ConditionInstance } from './types';
+import { Combatant } from './types';
 
 export function addCondition(c: Combatant, name: string, value = 1): void {
   const existing = c.conditions.find((x) => x.name === name);

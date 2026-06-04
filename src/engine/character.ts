@@ -279,7 +279,7 @@ export function deriveArmour(trappingNames: string[]): ArmourPoints {
   return ap;
 }
 
-export function deriveWeapons(trappingNames: string[], chars: Characteristics): Weapon[] {
+export function deriveWeapons(trappingNames: string[], _chars: Characteristics): Weapon[] {
   const weapons: Weapon[] = [];
   for (const name of trappingNames) {
     const t = findTrapping(parseSkillRef(name).name);

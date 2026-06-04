@@ -2,7 +2,7 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, CharKey, Weapon, ArmourPoints } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../engine/types';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock } from './scene';
 

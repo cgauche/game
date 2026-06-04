@@ -42,8 +42,6 @@ export function hitLocation(reversed: number): HitLocation {
   return 'jambeD';
 }
 
-const tens = (n: number) => Math.floor(n / 10);
-
 /** Valeur de Compétence de combat (Caractéristique + avances pertinentes). */
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged'): number {
   const charKey = kind === 'melee' ? 'CC' : 'CT';

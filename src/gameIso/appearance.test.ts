@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hashSeed, composeAppearance, appearanceLayers } from './appearance';
 import { CREATURE_APPEARANCES } from './creatureAppearances';
-import { enemySprite, entitySprite, creatureNames, pnjSprite, objetSprite, propSprite } from './sprites';
+import { enemySprite, entitySprite, creatureNames, pnjSprite, propSprite } from './sprites';
 import creatureSprites from './creatureSprites.json';
 
 describe('hashSeed', () => {

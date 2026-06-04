@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { evaluateTest, resolveOpposed, rollTest } from './tests';
+import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
 import { createHero } from './character';
