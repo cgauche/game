@@ -120,6 +120,19 @@ describe('États en combat (LDB ch.16)', () => {
     endOfRound(c);
     expect(c.wounds.current).toBe(8);
   });
+  it('En flammes : le +1 par État en plus s’ajoute aux Dégâts AVANT réduction BE+PA (l.77)', () => {
+    // 3 États → « 1d10+2 » ; BE 7 absorbe tout jusqu’au plancher de 1 (et non 1+2 = 3, le bug).
+    const c = {
+      name: 'x',
+      conditions: [],
+      characteristics: { E: 70 },
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      wounds: { current: 20, max: 20 },
+    } as unknown as Combatant;
+    addCondition(c, 'En flammes', 3);
+    endOfRound(c, { int: () => 4 }); // d10 = 4 ⇒ (4+2) − 7 = −1 → plancher 1
+    expect(c.wounds.current).toBe(19); // 20 − 1, pas 20 − 3
+  });
 });
 
 describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {

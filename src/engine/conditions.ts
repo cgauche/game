@@ -83,7 +83,9 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const fire = stacks(c, 'En flammes');
   if (fire) {
     const minPA = Math.min(...Object.values(c.armour));
-    const dmg = Math.max(1, d10(rng) - bonus(effectiveChar(c, 'E')) - minPA) + (fire - 1);
+    // « 1d10+2 si 3 États » (l.77) : le +1/État en plus s'ajoute aux Dégâts AVANT la
+    // réduction BE+PA et le plancher de 1 — pas après.
+    const dmg = Math.max(1, d10(rng) + (fire - 1) - bonus(effectiveChar(c, 'E')) - minPA);
     c.wounds.current = Math.max(0, c.wounds.current - dmg);
     log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
   }
