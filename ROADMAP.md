@@ -116,14 +116,20 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
 
-- Actions complètes : **Charge, Attaque totale, Défense totale, Désengagement**, viser, ramasser.
-- **Avantage** complet (gain/perte, effets, réinitialisation à la fuite).
-- **Critiques & Maladresses** : tables de Blessures critiques par localisation (LDB p.172+).
-- **Distance** : portée réelle, ligne de vue, couvert, rechargement, munitions.
-- **Qualités/Défauts d'armes** appliqués (Perçante, Assommante, Défensive, Enroulement…).
-- Esquive vs Parade comme choix défensif réel ; armes à deux mains, bouclier.
-- États restants pleinement actifs (Empêtré, Aveuglé, En flammes, Empoisonné…).
-- Dépense de **Chance / Détermination** en jeu (relancer, ajouter du DR).
+- **Jets par MODALE** ✅ : l'attaque et les tests hors combat passent par une modale — on
+  clique « 🎲 Lancer » puis on peut dépenser un point de **Chance** pour relancer (LDB Destin).
+  L'attaque permet de **viser une localisation** (Complexe -10). *(Reste : modale de défense
+  réactive quand un héros est attaqué — choix Parade/Esquive + Chance, pause de l'IA.)*
+- Actions : ✅ **Défense totale** (« Sur la défensive » : +1 DR en défense, expire à son tour).
+  Restent : **Charge, Désengagement, ramasser**.
+- ✅ **Avantage** (gain +1/attaque réussie & à la fuite, -1 si aucun gain au Round ; perte totale K.O.).
+- **Critiques & Maladresses** : tables de Blessures critiques par localisation (LDB p.172+). *(non modélisé — laissé au MJ)*
+- **Distance** : ✅ **bandes de portée** (Bout portant→Extrême, hors-portée bloqué) ; reste ligne de vue, couvert, rechargement, munitions.
+- ✅ **Qualités/Défauts d'armes** (Précise, Pointue, Perforante, Empaleuse, Assommante, Défensive, À enroulement).
+- ✅ **Esquive vs Parade** comme choix défensif réel (meilleure valeur, Encombrement inclus) ; reste armes à 2 mains, bouclier.
+- ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dissipation, dégâts par round).
+- ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque + hors combat). Reste : Détermination, ajout direct de DR.
+- ✅ **Barre d'action en bas** (hotbar) qui suit le combattant actif (déplacer/attaquer/incanter/défensive/fin).
 - ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade —
   `state/ai.ts` pur+testé). Reste, lié aux actions ci-dessus : charge, désengagement, Avantage complet.
 
