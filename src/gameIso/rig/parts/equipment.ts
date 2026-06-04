@@ -3,6 +3,7 @@ import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
 import { WEAPON_EPEE } from './slice-soldat';
+import { weaponGroupKey } from './weaponGroup';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -21,27 +22,38 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
   return { weapons, armour, shield };
 }
 
-/** Famille d'arme inférée du nom + type. */
-function weaponFamily(w: Weapon): string {
-  // Nom normalisé (accents retirés) → patterns sans accent, robustes à l'encodage.
-  const n = w.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  if (/pistolet|arquebus|fusil|tromblon|mousquet|poudre|escopette/.test(n)) return 'poudre';
-  if (/fronde|fustibale/.test(n)) return 'fronde';
-  if (/fouet/.test(n)) return 'fouet';
-  if (/bombe|grenade|explos/.test(n)) return 'explosif';
-  if (/lasso/.test(n)) return 'lasso';
-  if (/bolas/.test(n)) return 'bolas';
-  if (/coup.?de.?poing|cestus|poing americain/.test(n)) return 'poing';
-  if (/main gauche|brise.?epee|dague de parade|parade/.test(n)) return 'parade';
-  if (/arbal/.test(n)) return 'arbalete';
-  if (/arc/.test(n)) return 'arc';
-  if (/dague|couteau|stylet|poignard/.test(n)) return 'dague';
-  if (/hache|pioche|cognee/.test(n)) return 'hache';
-  if (/masse|marteau|gourdin|fleau|maillet|matraque/.test(n)) return 'masse';
-  if (/lance|hallebarde|pique|epieu|javelot|fleche|flechette|trait/.test(n)) return 'lance';
-  if (/baton|canne/.test(n)) return 'baton';
-  if (/epee|rapiere|sabre|fleuret|zwei|espadon|estoc|cimeterre/.test(n)) return 'epee';
-  return w.type === 'ranged' ? 'arc' : 'epee';
+/**
+ * FORME d'art de l'arme (clé du registre WEAPONS). Le Groupe canonique (WFRP4)
+ * n'encode pas la forme (épée/hache/masse sont tous « Base ») : table EXPLICITE par
+ * libellé exact (canon + libellés génériques joués), repli sur la forme par défaut
+ * du Groupe — JAMAIS de parsing flou par sous-chaîne.
+ */
+const ART_BY_LABEL: Record<string, string> = {
+  dague: 'dague', couteau: 'dague', 'couteau de lancer': 'dague', flechette: 'dague', stylet: 'dague', poignard: 'dague',
+  epee: 'epee', 'epee courte': 'epee', 'epee batarde': 'epee', zweihander: 'epee', rapiere: 'epee', fleuret: 'epee', sabre: 'epee', espadon: 'epee',
+  hache: 'hache', 'hache de main': 'hache', hachette: 'hache', 'grande hache': 'hache', 'hache de lancer': 'hache', 'pioche a deux mains': 'hache', pioche: 'hache', cognee: 'hache',
+  masse: 'masse', massue: 'masse', gourdin: 'masse', marteau: 'masse', 'marteau de guerre': 'masse', 'marteau a bec-de-corbin': 'masse', rocher: 'masse', maillet: 'masse',
+  lance: 'lance', 'lance de cavalerie': 'lance', pique: 'lance', hallebarde: 'lance', javelot: 'lance', epieu: 'lance',
+  baton: 'baton', 'baton de combat': 'baton', canne: 'baton',
+  arc: 'arc', 'arc court': 'arc', 'arc long': 'arc', 'arc elfique': 'arc',
+  arbalete: 'arbalete', 'arbalete de poing': 'arbalete', 'arbalete lourde': 'arbalete',
+  fronde: 'fronde', fouet: 'fouet', lasso: 'fouet',
+  bombe: 'explosif', 'bombe incendiaire': 'explosif',
+  'mains nues': '', 'coup-de-poing': '', // poings : aucune arme dessinée
+};
+
+/** Forme par défaut d'un Groupe canonique (quand le libellé n'est pas dans la table). */
+const ART_BY_GROUP: Record<string, string> = {
+  base: 'epee', escrime: 'epee', deuxmains: 'epee',
+  cavalerie: 'lance', hast: 'lance', fleau: 'masse', parade: 'parade', bagarre: '',
+  arc: 'arc', arbalete: 'arbalete', poudre: 'poudre', ingenierie: 'poudre',
+  fronde: 'fronde', lancer: 'dague', entraves: 'fouet', explosifs: 'explosif',
+};
+
+export function weaponFamily(w: Weapon): string {
+  const n = w.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  if (n in ART_BY_LABEL) return ART_BY_LABEL[n];
+  return ART_BY_GROUP[weaponGroupKey(w)] ?? (w.type === 'ranged' ? 'arc' : 'epee');
 }
 
 /** Parts d'arme (dessinées dans le repère local de l'os `arme`, manche à l'origine). */
@@ -60,7 +72,9 @@ Object.assign(WEAPONS, GENERATED_WEAPONS);
 WEAPONS.epee = WEAPON_EPEE; // tranche verticale : épée en front/back/profile
 
 export function weaponPart(w: Weapon): PartArt {
-  return WEAPONS[weaponFamily(w)] ?? WEAPONS.epee;
+  const f = weaponFamily(w);
+  if (f === '') return ''; // mains nues : pas d'arme
+  return WEAPONS[f] ?? WEAPONS.epee;
 }
 
 export function shieldPart(_x: Weapon | ItemInstance): PartArt {

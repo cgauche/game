@@ -2,19 +2,12 @@ import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton } from './skeletons';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
-import type { Pose } from './poses';
+import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
-
-/** Somme de deux poses (deltas d'angles) — compose la pose de vue avec la pose d'anim. */
-function addPose(a: Pose, b: Pose): Pose {
-  const out: Pose = { ...a };
-  for (const k of Object.keys(b) as (keyof Pose)[]) out[k] = (out[k] ?? 0) + (b[k] ?? 0);
-  return out;
-}
 
 export interface ResolvedBone {
   id: BoneId;
