@@ -183,7 +183,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   best-of-2 (lecture art officiel + desc canon + consigne silhouette) : ~52/57 redessinés,
   fin du vert mutant par défaut, silhouettes reconnaissables. Restent perfectibles : Dragon
   (plus élancé), Manticore, Mutant.
-- Sons & musique, accessibilité, **code-splitting**, CI (lint+tests+build).
+- Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI** (tests+build ; lint à venir).
 
 ---
 
@@ -203,10 +203,18 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   variantes par type, rotation pleine selon `facing`).
 - **`reveal:'door'`** : mécanisme prêt (`transitionBack` + `makeInteriorScene`), mais les **scènes
   d'intérieur concrètes** restent à créer et lier dans un **projet multi-scènes** (cf. Jalon 6).
-- Primitives historiques `mur`/`bois` (tuiles) coexistent avec le nouveau système de bâtiments.
-- **Éclairage nocturne des fenêtres** couvert par typecheck + tests, mais **recette navigateur
-  non rejouée** (verrou Chrome) — à screenshoter quand le poste est libre.
-- Bundle volumineux — à code-splitter.
+- Primitives historiques `mur`/`bois` (tuiles) coexistent avec le nouveau système de bâtiments
+  (rendu spécial-casé en dur dans `IsoStage`/`Editor`, hors catalogue — à faire passer par le catalogue).
+- ✅ **Code mort retiré** : renderers obsolètes Phaser (`src/game/`) + three.js (`src/game3d/`)
+  supprimés ; dépendances `phaser`/`three`/`@types/three` retirées (~188 Mo de node_modules, ~900 l.).
+- ✅ **Code-splitting** : éditeur + rendu de jeu (`CampaignView`) + vendor en chunks async
+  (`React.lazy`) — démarrage allégé (chunk unique ~1,2 Mo → index 818 Ko + vendor 144 Ko, sprites
+  différés 188 Ko). Reste : les **tables de règles** (`src/data/*.json`, ~1 Mo) restent dans le
+  chunk initial (couplées au moteur pur — à découpler avant de pouvoir les différer).
+- ✅ **CI** (`.github/workflows/ci.yml`) : `build:data` → typecheck → tests → build sur push/PR.
+- ✅ **Éclairage nocturne des fenêtres** : recette navigateur rejouée (Playwright — verre ambré
+  `#f2c45a` + halo + flicker confirmés vs verre froid `#33414d` de jour) + test unitaire de la
+  branche `night` (`buildings.test.ts`).
 
 ## Principes directeurs
 

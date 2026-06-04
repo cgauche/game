@@ -30,4 +30,15 @@ describe('catalogue bâtiments', () => {
       expect(L.roof.length, `${id}.roof`).toBeGreaterThan(0);
     }
   });
+  it('éclaire les fenêtres la nuit (verre ambré + halo + classe flicker `warm`)', () => {
+    // de jour : verre froid, ni halo chaud ni animation de scintillement
+    const day = buildingLayers('maison', foot, { floors: 2 }, { dims });
+    expect(day.walls).toContain('#33414d');
+    expect(day.walls).not.toContain('class="warm"');
+    // de nuit (ctx.night) : verre ambré #f2c45a, classe `warm` (keyframe flicker), plus de verre froid
+    const night = buildingLayers('maison', foot, { floors: 2 }, { dims, night: true });
+    expect(night.walls).toContain('#f2c45a');
+    expect(night.walls).toContain('class="warm"');
+    expect(night.walls).not.toContain('#33414d');
+  });
 });

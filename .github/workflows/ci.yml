@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      # build:data régénère src/data/*.json (entrées de compilation TS) depuis
+      # Source/all-data.json — doit précéder typecheck et build.
+      - run: npm run build:data
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

@@ -1,5 +1,5 @@
 /**
- * Store central (Zustand) — relie l'UI React et le rendu Phaser.
+ * Store central (Zustand) — relie l'UI React et le rendu (SVG iso).
  * Gère les écrans, le groupe, l'exploration de scène, les dialogues et le
  * combat tactique au tour par tour (règles via src/engine).
  */

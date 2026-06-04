@@ -502,10 +502,6 @@ textarea:focus {
   overflow: hidden;
   min-width: 0;
 }
-.phaser-host canvas {
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
 .stage-hint {
   position: absolute;
   bottom: 18px;
