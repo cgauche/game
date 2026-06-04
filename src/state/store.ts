@@ -12,6 +12,7 @@ import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
 import { isOutOfAction, endOfRound, addCondition } from '../engine/conditions';
 import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } from './scene';
+import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, manhattan, Pt } from './path';
 import { bus, EVT } from './bus';
@@ -185,6 +186,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!isWalkable(scene, pt.x, pt.y)) return;
     set({ partyPos: pt });
     bus.emit(EVT.SCENE_DIRTY);
+    const door = doorAt(scene, pt.x, pt.y);
+    if (door && door.reveal === 'door' && door.interiorScene) {
+      get().transitionTo(door.interiorScene, door.entry);
+      return;
+    }
     checkTriggers(get, set);
   },
 

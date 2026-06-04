@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
+import { emptyScene } from './scene';
 
 function reset() {
   useGame.setState({
@@ -57,6 +58,29 @@ describe('Boucle de jeu (store)', () => {
     expect(enemies.length).toBe(3);
     expect(enemies[0].name).toBe('Mutant');
     expect(enemies[0].wounds.max).toBe(12); // profil Mutant LDB
+  });
+
+  it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
+    const interior = emptyScene(5, 5);
+    interior.id = 'interieur-test';
+    interior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 1, y: 1 } });
+    const exterior = emptyScene(8, 8);
+    exterior.id = 'exterieur-test';
+    exterior.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    exterior.buildings = [
+      {
+        id: 'chap',
+        type: 'chapelle',
+        foot: { x: 2, y: 2, w: 3, h: 3 },
+        reveal: 'door',
+        door: { x: 3, y: 4 },
+        interiorScene: 'interieur-test',
+      },
+    ];
+    useGame.getState().startScene(interior); // enregistre l'intérieur
+    useGame.getState().startScene(exterior); // charge l'extérieur (départ 0,0)
+    useGame.getState().moveParty({ x: 3, y: 4 }); // sur la porte
+    expect(useGame.getState().scene?.id).toBe('interieur-test');
   });
 
   it('une attaque de héros adjacent retire des Blessures', () => {
