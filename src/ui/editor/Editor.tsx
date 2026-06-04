@@ -13,11 +13,12 @@ import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { BuildingFeature, Trigger } from '../../state/scene';
+import { BuildingFeature, Trigger, CustomStatblock } from '../../state/scene';
 import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
+import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 const TERRAIN_IDS = Object.keys(TERRAIN_META);
 const KINDS: EntityKind[] = ['heroStart', 'personnage', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
@@ -260,7 +261,7 @@ export function Editor() {
     setScene({ ...scene, triggers: scene.triggers.map((t) => (t.id === selectedTrigger ? { ...t, ...patch } : t)) });
   const updateSelTRect = (patch: Partial<Trigger['rect']>) => updateSelT({ rect: { ...selT!.rect, ...patch } });
   const spawn = selectedSpawn ? scene.encounters[selectedSpawn.enc]?.enemies[selectedSpawn.idx] ?? null : null;
-  const updateSpawn = (patch: Partial<{ ref: string; pos: { x: number; y: number } }>) => {
+  const updateSpawn = (patch: Partial<{ ref: string; statblock: CustomStatblock; pos: { x: number; y: number } }>) => {
     if (!selectedSpawn) return;
     const { enc, idx } = selectedSpawn;
     setScene({
@@ -766,17 +767,34 @@ export function Editor() {
                 <p>
                   <b>{scene.encounters[selectedSpawn!.enc].id}</b> · ennemi @ ({spawn.pos.x}, {spawn.pos.y})
                 </p>
-                <label className="ed-field">
-                  Créature
-                  <select value={spawn.ref ?? ''} onChange={(e) => updateSpawn({ ref: e.target.value })}>
-                    <option value="">— créature —</option>
-                    {enemyCreatures.map((c) => (
-                      <option key={c.label} value={c.label}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                {spawn.statblock ? (
+                  <>
+                    <StatblockEditor stat={spawn.statblock} onChange={(sb) => updateSpawn({ statblock: sb })} />
+                    <button className="btn small" onClick={() => updateSpawn({ statblock: undefined })}>
+                      ↩ Utiliser une créature du bestiaire
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <label className="ed-field">
+                      Créature
+                      <select value={spawn.ref ?? ''} onChange={(e) => updateSpawn({ ref: e.target.value })}>
+                        <option value="">— créature —</option>
+                        {enemyCreatures.map((c) => (
+                          <option key={c.label} value={c.label}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      className="btn small"
+                      onClick={() => updateSpawn({ ref: undefined, statblock: emptyStatblock(spawn.ref || 'Ennemi') })}
+                    >
+                      ⚙️ Profil personnalisé…
+                    </button>
+                  </>
+                )}
                 <label className="ed-field">
                   X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
                 </label>
