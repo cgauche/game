@@ -9,7 +9,7 @@ export interface EquipCtx {
   shield?: Weapon | ItemInstance;
 }
 
-const isShield = (x: { name: string; qualities?: string[] }) =>
+export const isShield = (x: { name: string; qualities?: string[] }) =>
   (x.qualities ?? []).some((q) => /bouclier/i.test(q)) || /bouclier/i.test(x.name);
 
 export function equipFromCombatant(c: Combatant): EquipCtx {
@@ -21,15 +21,16 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
 
 /** Famille d'arme inférée du nom + type. */
 function weaponFamily(w: Weapon): string {
-  const n = w.name.toLowerCase();
-  if (/arc/.test(n)) return 'arc';
+  // Nom normalisé (accents retirés) → patterns sans accent, robustes à l'encodage.
+  const n = w.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   if (/arbal/.test(n)) return 'arbalete';
-  if (/dague|couteau/.test(n)) return 'dague';
-  if (/hache/.test(n)) return 'hache';
-  if (/masse|marteau|gourdin|fléau|fleau/.test(n)) return 'masse';
-  if (/lance|hallebarde|pique|épieu|epieu/.test(n)) return 'lance';
-  if (/bâton|baton/.test(n)) return 'baton';
-  if (/épée|epee|rapière|rapiere|sabre/.test(n)) return 'epee';
+  if (/arc/.test(n)) return 'arc';
+  if (/dague|couteau|main gauche|stylet|poignard/.test(n)) return 'dague';
+  if (/hache|pioche|cognee/.test(n)) return 'hache';
+  if (/masse|marteau|gourdin|fleau|maillet|matraque/.test(n)) return 'masse';
+  if (/lance|hallebarde|pique|epieu|javelot|fleche|flechette|trait/.test(n)) return 'lance';
+  if (/baton|canne/.test(n)) return 'baton';
+  if (/epee|rapiere|sabre|fleuret|zwei|espadon|estoc|cimeterre/.test(n)) return 'epee';
   return w.type === 'ranged' ? 'arc' : 'epee';
 }
 
@@ -53,12 +54,12 @@ export function shieldPart(_x: Weapon | ItemInstance): Part {
   return { svg: `<ellipse cx="0" cy="6" rx="11" ry="15" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.5"/><ellipse cx="0" cy="6" rx="3" ry="3" fill="#caa64a"/>` };
 }
 
-/** Matériau inféré du nom (sinon palier de PA). */
+/** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */
 function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'maille' | 'plaque' {
-  const n = item.name.toLowerCase();
-  if (/plaque|plastron|harnois|heaume/.test(n)) return 'plaque';
-  if (/maille|cotte|haubert/.test(n)) return 'maille';
+  const n = item.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   if (/cuir|jaque/.test(n)) return 'cuir';
+  if (/maille|cotte|haubert/.test(n)) return 'maille';
+  if (/plaque|plastron|harnois|heaume|brassard|acier|gantelet|greve/.test(n)) return 'plaque';
   if (/rembourr|gambison|matelass/.test(n)) return 'rembourre';
   const pa = item.pa ?? 0;
   return pa >= 4 ? 'plaque' : pa >= 2 ? 'maille' : pa >= 1 ? 'cuir' : 'rembourre';
@@ -84,7 +85,7 @@ export function armourPart(item: ItemInstance, slot: Slot): Part | null {
     case 'tete':   return { svg: `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>` };
     case 'torse':  return { svg: `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>` };
     case 'bras':   return { svg: `<rect x="-3.7" y="-2" width="7.4" height="30" rx="3" fill="${fill}"/>` };
-    case 'jambes': return { svg: `<rect x="-4.5" y="0" width="9" height="30" rx="3" fill="${fill}"/>` };
+    case 'jambes': return { svg: `<rect x="-4.5" y="0" width="9" height="46" rx="3" fill="${fill}"/>` };
     default:       return null;
   }
 }

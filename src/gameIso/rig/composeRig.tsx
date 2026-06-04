@@ -34,10 +34,16 @@ export function resolveRig(
   for (const id of BONE_IDS) {
     const b = sk[id];
     const r = REF[id];
-    const par = b.parent ? scaleOf[b.parent] : [1, 1];
-    const sx = r.thickness > 0.001 ? b.thickness / r.thickness : par[0];
-    const sy = r.length > 0.001 ? b.length / r.length : par[1];
-    scaleOf[id] = [sx, sy];
+    const par: [number, number] = b.parent ? scaleOf[b.parent] : [1, 1];
+    if (r.thickness <= 0.001 && r.length <= 0.001) {
+      // os d'attache (arme/bouclier) : échelle UNIFORME du parent → l'arme ne s'étire pas.
+      const u = (par[0] + par[1]) / 2;
+      scaleOf[id] = [u, u];
+    } else {
+      const sx = r.thickness > 0.001 ? b.thickness / r.thickness : par[0];
+      const sy = r.length > 0.001 ? b.length / r.length : par[1];
+      scaleOf[id] = [sx, sy];
+    }
   }
 
   const boneParts: Record<BoneId, ResolvedBone['parts']> = {} as Record<BoneId, ResolvedBone['parts']>;

@@ -3,7 +3,7 @@ import type { Part } from './types';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { careerClass, careerTenue } from './career';
-import { armourPart, weaponPart, shieldPart, type EquipCtx } from './equipment';
+import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
 
@@ -41,7 +41,7 @@ export function resolveParts(
   }
 
   // Mains : arme (1re arme non-bouclier) + bouclier.
-  const mainWeapon = equip.weapons.find((w) => !/bouclier/i.test(w.name));
+  const mainWeapon = equip.weapons.find((w) => !isShield(w));
   out.arme = mainWeapon ? weaponPart(mainWeapon) : { svg: '' };
   out.bouclier = equip.shield ? shieldPart(equip.shield) : { svg: '' };
 

@@ -52,5 +52,6 @@ describe('resolveRig — échelle des parts par os', () => {
     const arme = bones.find((b) => b.id === 'arme');
     expect(arme).toBeTruthy();
     expect(arme!.scale[0]).toBeGreaterThan(1); // l'Ogre agrandit aussi son arme
+    expect(arme!.scale[0]).toBe(arme!.scale[1]); // échelle UNIFORME → l'arme ne s'étire pas
   });
 });
