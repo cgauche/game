@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { hashSeed, composeAppearance, appearanceLayers } from './appearance';
 import { CREATURE_APPEARANCES } from './creatureAppearances';
+import { enemySprite } from './sprites';
+import creatureSprites from './creatureSprites.json';
 
 describe('hashSeed', () => {
   it('est déterministe pour une même chaîne', () => {
@@ -43,5 +45,18 @@ describe('composeAppearance', () => {
   it('appearanceLayers renvoie les calques connus, [] sinon', () => {
     expect(appearanceLayers(KEY).length).toBe(1);
     expect(appearanceLayers('CréatureInconnueXYZ')).toEqual([]);
+  });
+});
+
+describe('enemySprite — fallback monolithique', () => {
+  it('rend exactement le sprite JSON pour une créature non enrichie', () => {
+    const json = (creatureSprites as Record<string, string>)['Zombie'];
+    expect(enemySprite('Zombie')).toBe(json);
+  });
+  it('label vide → un sprite non vide (mutantStand)', () => {
+    expect(enemySprite('').length).toBeGreaterThan(0);
+  });
+  it('label inconnu → un sprite non vide (mutantStand)', () => {
+    expect(enemySprite('PasUneCréature').length).toBeGreaterThan(0);
   });
 });

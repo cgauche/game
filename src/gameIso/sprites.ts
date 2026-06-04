@@ -7,6 +7,7 @@ import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import { propSvg } from './catalog/decor';
+import { composeAppearance, type AppearancePins } from './appearance';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -159,9 +160,12 @@ const CREATURE_SPRITES = creatureSprites as Record<string, string>;
 const CREATURE_BY_NORM: Record<string, string> = {};
 for (const [k, v] of Object.entries(CREATURE_SPRITES)) CREATURE_BY_NORM[k.toLowerCase()] = v;
 
-/** Sprite d'une créature du bestiaire (généré depuis l'illustration officielle). */
-export function enemySprite(label: string): string {
+/** Sprite d'une créature : apparence par calques si enrichie (seed + pins),
+ *  sinon sprite monolithique du bestiaire, sinon mutant générique. */
+export function enemySprite(label: string, seed = 0, pins?: AppearancePins): string {
   if (!label) return mutantStand();
+  const composed = composeAppearance(label, seed, pins);
+  if (composed != null) return composed;
   return CREATURE_SPRITES[label] ?? CREATURE_BY_NORM[label.toLowerCase()] ?? mutantStand();
 }
 
