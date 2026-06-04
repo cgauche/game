@@ -41,6 +41,30 @@ export interface SceneEntity {
   loot?: string[];
 }
 
+export interface BuildingParams {
+  floors?: number;
+  roofMaterial?: 'tuile' | 'chaume' | 'ardoise';
+  timberColor?: string;
+  wallColor?: string;
+  variant?: number;
+}
+
+/** Bâtiment multi-tuiles (feature posée, façon « group » NWN). */
+export interface BuildingFeature {
+  id: string;
+  /** id de catalogue (cf. src/state/buildings.ts + src/gameIso/catalog/buildings.ts). */
+  type: string;
+  foot: { x: number; y: number; w: number; h: number };
+  facing?: Facing;
+  /** cutaway = toit qui se lève (intérieur in-scene) ; door = façade pleine + porte → transition. */
+  reveal: 'cutaway' | 'door';
+  door?: { x: number; y: number };
+  interiorScene?: string;
+  entry?: string;
+  params?: BuildingParams;
+  label?: string;
+}
+
 export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   | { type: 'giveItem'; item: string }
@@ -110,6 +134,8 @@ export interface Scene {
   /** Grille aplatie de longueur w×h (ligne par ligne). */
   tiles: Terrain[];
   entities: SceneEntity[];
+  /** Bâtiments multi-tuiles posés sur la grille (optionnel → [] par défaut). */
+  buildings?: BuildingFeature[];
   dialogues: Dialogue[];
   triggers: Trigger[];
   encounters: EncounterDef[];
@@ -140,6 +166,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     ambiance: 'jour',
     tiles: new Array(w * h).fill('herbe'),
     entities: [],
+    buildings: [],
     dialogues: [],
     triggers: [],
     encounters: [],
