@@ -1,0 +1,22 @@
+import type { Slot } from './bones';
+import type { Combatant } from '../../engine/types';
+import { hashSeed } from '../appearance';
+
+/** Descripteur d'apparence COSMÉTIQUE (type pur ; l'engine ne le lit jamais). */
+export interface Appearance {
+  species: string;
+  sex: 'M' | 'F';
+  build: number;                                   // 0..1
+  parts?: Partial<Record<Slot, number>>;           // overrides éditeur
+  seed?: number;
+}
+
+/** Apparence par défaut dérivée d'un Combatant (espèce + seed stable sur l'id). */
+export function defaultAppearance(c: Combatant): Appearance {
+  return {
+    species: c.species ?? 'Humain',
+    sex: 'M',
+    build: 0.5,
+    seed: hashSeed(c.id),
+  };
+}
