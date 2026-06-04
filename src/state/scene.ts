@@ -6,7 +6,7 @@
  *
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
-import { CharKey } from '../engine/types';
+import { CharKey, Difficulty } from '../engine/types';
 
 export type Terrain = 'sol' | 'herbe' | 'route' | 'bois' | 'eau' | 'mur' | 'porte' | 'plancher';
 
@@ -54,10 +54,24 @@ export interface SceneEntity {
 export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   | { type: 'giveItem'; item: string }
+  | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   | { type: 'startCombat'; encounter: string }
-  | { type: 'transition'; scene: string }
+  | { type: 'transition'; scene: string; entry?: string }
   | { type: 'startDialogue'; dialogue: string }
   | { type: 'journal'; text: string }
+  | { type: 'document'; title: string; text: string }
+  /** Test de compétence interactif : branche selon réussite/échec. */
+  | {
+      type: 'test';
+      skill?: string;
+      characteristic?: CharKey;
+      difficulty?: Difficulty;
+      /** DR minimum requis (par défaut 0 = simple réussite). */
+      requireSL?: number;
+      label?: string;
+      onSuccess?: Effect[];
+      onFailure?: Effect[];
+    }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
@@ -110,6 +124,8 @@ export interface Scene {
   triggers: Trigger[];
   encounters: EncounterDef[];
   flags: Record<string, boolean>;
+  /** Points d'arrivée nommés (pour les transitions depuis une autre scène). */
+  entryPoints?: Record<string, { x: number; y: number }>;
   /** Scène de départ pour la campagne enchaînée. */
   startMessage?: string;
 }

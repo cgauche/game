@@ -30,6 +30,11 @@ export const CHAR_LABELS: Record<CharKey, string> = {
 
 export type Characteristics = Record<CharKey, number>;
 
+/** Inverse de CHAR_LABELS : nom français complet → abréviation (pour les compétences). */
+export const CHAR_BY_LABEL: Record<string, CharKey> = Object.fromEntries(
+  (Object.entries(CHAR_LABELS) as [CharKey, string][]).map(([k, v]) => [v, k]),
+) as Record<string, CharKey>;
+
 /** Localisations d'impact (Tableau de Localisation, Livre de base p. 159). */
 export type HitLocation = 'tete' | 'brasG' | 'brasD' | 'corps' | 'jambeG' | 'jambeD';
 

@@ -737,6 +737,124 @@ textarea:focus {
   white-space: pre;
 }
 
+/* Bourse & inventaire (HUD) */
+.purse {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.purse .coins {
+  font-size: 13px;
+  color: var(--muted);
+}
+.purse .co {
+  color: var(--gold);
+}
+.purse .sc {
+  color: #cdd6df;
+}
+.purse .pa {
+  color: #c9905a;
+}
+.inventory .inv-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.inv-item {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+}
+.inv-list .empty {
+  color: #6f6685;
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+/* Modal de test de compétence */
+.test-modal {
+  width: 340px;
+  text-align: center;
+}
+.test-actor {
+  color: var(--muted);
+  margin: 4px 0 14px;
+}
+.test-result {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.test-result.ok {
+  background: rgba(46, 204, 113, 0.14);
+  border-color: var(--ok);
+}
+.test-result.fail {
+  background: rgba(192, 57, 43, 0.14);
+  border-color: var(--danger);
+}
+.test-result .dice {
+  font-size: 40px;
+  font-weight: 800;
+}
+.test-result .vs {
+  color: var(--muted);
+  font-size: 16px;
+}
+.test-result .verdict {
+  margin-left: 6px;
+  font-weight: 700;
+}
+.test-result.ok .verdict {
+  color: var(--ok);
+}
+.test-result.fail .verdict {
+  color: #ff7a6c;
+}
+
+/* Lecteur de document / handout */
+.document-modal {
+  width: 560px;
+  max-width: 92vw;
+  background: #efe6cf;
+  color: #2a2018;
+  border: 1px solid #b8a677;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.doc-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  text-align: center;
+  color: #5a2018;
+  border-bottom: 2px solid #b8a677;
+  padding-bottom: 10px;
+  margin-top: 0;
+}
+.doc-text {
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  max-height: 56vh;
+  overflow: auto;
+  margin: 14px 0;
+}
+.doc-text p {
+  margin: 8px 0;
+}
+.document-modal .btn {
+  background: #d8c9a0;
+  color: #2a2018;
+  border-color: #b8a677;
+  display: block;
+  margin: 0 auto;
+}
+
 /* Rendu isométrique du jeu — remplit tout l'espace dispo (caméra responsive) */
 .iso-stage {
   position: absolute;

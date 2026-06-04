@@ -2,6 +2,8 @@ import { useGame, activeCombatant } from '../state/store';
 import { IsoStage } from '../gameIso/IsoStage';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';
+import { TestModal } from './TestModal';
+import { DocumentModal } from './DocumentModal';
 import { Combatant } from '../engine/types';
 
 export function CampaignView() {
@@ -11,6 +13,8 @@ export function CampaignView() {
   const journal = useGame((s) => s.journal);
   const dialogue = useGame((s) => s.dialogue);
   const battle = useGame((s) => s.battle);
+  const inventory = useGame((s) => s.inventory);
+  const money = useGame((s) => s.money);
   const setScreen = useGame((s) => s.setScreen);
 
   return (
@@ -24,6 +28,23 @@ export function CampaignView() {
           {party.map((h) => (
             <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} />
           ))}
+        </div>
+        <div className="purse">
+          <span className="mini-title">Bourse</span>
+          <span className="coins">
+            <b className="co">{money.gold}</b> CO · <b className="sc">{money.silver}</b> SC · <b className="pa">{money.brass}</b> PA
+          </span>
+        </div>
+        <div className="inventory">
+          <div className="mini-title">Inventaire ({inventory.length})</div>
+          <div className="inv-list">
+            {inventory.length === 0 && <p className="empty">— vide —</p>}
+            {inventory.map((it, i) => (
+              <span className="inv-item" key={i}>
+                {it}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="journal">
           <div className="mini-title">Journal</div>
@@ -44,6 +65,8 @@ export function CampaignView() {
       </main>
 
       {mode === 'battle' && battle && <BattlePanel />}
+      <TestModal />
+      <DocumentModal />
     </div>
   );
 }

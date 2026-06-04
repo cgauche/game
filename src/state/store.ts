@@ -7,14 +7,40 @@ import { create } from 'zustand';
 import { Combatant } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
 import { resolveMelee, resolveRanged, initiativeOrder, combatValue } from '../engine/combat';
-import { rollTest } from '../engine/tests';
+import { rollTest, TestResult } from '../engine/tests';
+import { partyBest } from '../engine/skills';
 import { isOutOfAction, endOfRound, addCondition } from '../engine/conditions';
 import { Scene, Dialogue, Effect, Trigger, SceneEntity, tileAt, isWalkable } from './scene';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, manhattan, Pt } from './path';
 import { bus, EVT } from './bus';
+import { campaign } from '../scenes/campaign';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor';
+
+/** Registre des scènes (pour les transitions de campagne). */
+const sceneRegistry: Record<string, Scene> = {};
+for (const c of campaign) sceneRegistry[c.scene.id] = c.scene;
+function registerScene(s: Scene) {
+  sceneRegistry[s.id] = s;
+}
+
+export interface Money {
+  gold: number;
+  silver: number;
+  brass: number;
+}
+/** Test de compétence interactif en attente d'acquittement par le joueur. */
+export interface PendingTest {
+  actorName: string;
+  label: string;
+  roll: number;
+  target: number;
+  success: boolean;
+  sl: number;
+  onSuccess?: Effect[];
+  onFailure?: Effect[];
+}
 
 export interface BattleState {
   combatants: Combatant[];
@@ -41,14 +67,21 @@ interface GameState {
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   battle: BattleState | null;
   campaignSceneId: string | null;
+  inventory: string[];
+  money: Money;
+  pendingTest: PendingTest | null;
+  document: { title: string; text: string } | null;
 
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
   startScene: (scene: Scene) => void;
+  transitionTo: (sceneId: string, entry?: string) => void;
   moveParty: (pt: Pt) => void;
   interactEntity: (entityId: string) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
+  resolveTest: () => void;
+  closeDocument: () => void;
 
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
   battleSelectAction: (a: 'move' | 'attack' | null) => void;
@@ -71,13 +104,19 @@ export const useGame = create<GameState>((set, get) => ({
   dialogue: null,
   battle: null,
   campaignSceneId: null,
+  inventory: [],
+  money: { gold: 0, silver: 0, brass: 0 },
+  pendingTest: null,
+  document: null,
 
   setScreen: (s) => set({ screen: s }),
   setParty: (p) => set({ party: p }),
 
   startScene: (scene) => {
+    registerScene(scene);
     const start = scene.entities.find((e) => e.kind === 'heroStart');
     const pos = start ? { ...start.pos } : findFreeTile(scene);
+    // Démarrage d'une partie : on repart d'un état de campagne neuf.
     set({
       scene: JSON.parse(JSON.stringify(scene)),
       mode: 'exploration',
@@ -85,9 +124,41 @@ export const useGame = create<GameState>((set, get) => ({
       flags: { ...scene.flags },
       dialogue: null,
       battle: null,
+      pendingTest: null,
+      document: null,
+      inventory: [],
+      money: { gold: 0, silver: 5, brass: 0 },
       campaignSceneId: scene.id,
-      journal: scene.startMessage ? [scene.startMessage] : get().journal,
+      journal: scene.startMessage ? [scene.startMessage] : [],
     });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent). */
+  transitionTo: (sceneId, entry) => {
+    const target = sceneRegistry[sceneId];
+    if (!target) {
+      get().log(`(Scène « ${sceneId} » introuvable — transition ignorée.)`);
+      return;
+    }
+    const start =
+      (entry && target.entryPoints?.[entry]) ||
+      target.entities.find((e) => e.kind === 'heroStart')?.pos ||
+      findFreeTile(target);
+    set((s) => ({
+      scene: JSON.parse(JSON.stringify(target)),
+      mode: 'exploration',
+      partyPos: { ...start },
+      // flags persistants : on conserve l'état narratif et on ajoute les
+      // valeurs par défaut de la nouvelle scène pour les clés absentes.
+      flags: { ...target.flags, ...s.flags },
+      dialogue: null,
+      battle: null,
+      pendingTest: null,
+      document: null,
+      campaignSceneId: target.id,
+      journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
+    }));
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -114,6 +185,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
     } else if (ent.kind === 'objet') {
       const loot = ent.loot ?? [];
+      if (loot.length) set((s) => ({ inventory: [...s.inventory, ...loot] }));
       get().log(`Vous récupérez : ${loot.join(', ') || ent.label || 'un objet'}.`);
       removeEntity(get, set, entityId);
     }
@@ -212,6 +284,16 @@ export const useGame = create<GameState>((set, get) => ({
 
   battleEndTurn: () => advanceTurn(get, set),
 
+  /** Acquitte un test de compétence : applique la branche réussite/échec. */
+  resolveTest: () => {
+    const pt = get().pendingTest;
+    if (!pt) return;
+    set({ pendingTest: null });
+    const branch = pt.success ? pt.onSuccess : pt.onFailure;
+    if (branch && branch.length) applyEffects(get, set, branch);
+  },
+  closeDocument: () => set({ document: null }),
+
   log: (msg) => set((s) => ({ journal: [...s.journal.slice(-40), msg] })),
 }));
 
@@ -278,7 +360,23 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
         get().log(e.text);
         break;
       case 'giveItem':
+        set((s: GameState) => ({ inventory: [...s.inventory, e.item] }));
         get().log(`Objet obtenu : ${e.item}.`);
+        break;
+      case 'giveMoney': {
+        set((s: GameState) => ({
+          money: {
+            gold: s.money.gold + (e.gold ?? 0),
+            silver: s.money.silver + (e.silver ?? 0),
+            brass: s.money.brass + (e.brass ?? 0),
+          },
+        }));
+        const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} SC`, e.brass && `${e.brass} PA`].filter(Boolean);
+        if (parts.length) get().log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
+        break;
+      }
+      case 'document':
+        set({ document: { title: e.title, text: e.text } });
         break;
       case 'startDialogue': {
         const dlg = get().scene?.dialogues.find((d) => d.id === e.dialogue);
@@ -289,8 +387,30 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
         get().startCombat(e.encounter);
         break;
       case 'transition':
-        get().log(`Transition vers la scène « ${e.scene} » (à implémenter dans la campagne).`);
+        get().transitionTo(e.scene, e.entry);
         break;
+      case 'test': {
+        // Test de compétence : le meilleur du groupe tente. Branche après acquittement.
+        const best = partyBest(get().party, e.skill, e.characteristic);
+        if (!best) break;
+        const res: TestResult = rollTest(best.value, e.difficulty ?? 'intermediaire');
+        const required = e.requireSL ?? 0;
+        const success = res.success && res.sl >= required;
+        const label = e.label || e.skill || (e.characteristic ? `Test de ${e.characteristic}` : 'Test');
+        set({
+          pendingTest: {
+            actorName: best.actor.name,
+            label,
+            roll: res.roll,
+            target: res.target,
+            success,
+            sl: res.sl,
+            onSuccess: e.onSuccess,
+            onFailure: e.onFailure,
+          },
+        });
+        return; // la suite est portée par la branche (résolue à l'acquittement)
+      }
       case 'endDialogue':
         set({ dialogue: null });
         break;

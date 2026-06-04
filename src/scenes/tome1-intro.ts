@@ -84,6 +84,17 @@ function build(): Scene {
             choices: [
               { text: 'Nous cherchons une place pour Altdorf.', next: 'g2' },
               { text: 'Parlez-nous des autres voyageurs.', next: 'g3' },
+              {
+                text: 'Lire l’affiche placardée près du bar.',
+                effects: [
+                  {
+                    type: 'document',
+                    title: 'ON RECHERCHE',
+                    text:
+                      'AVIS À LA POPULATION\n\nSon Altesse le Prince Héritier Hergard von Tasseninck recherche des aventuriers courageux et loyaux pour une mission au service de l’Empire.\n\nForte récompense promise. Présentez-vous à Altdorf, au Palais, en mentionnant cette affiche.\n\nQue Sigmar guide vos pas.',
+                  },
+                ],
+              },
               { text: 'Plus tard. (Quitter)', effects: [{ type: 'endDialogue' }] },
             ],
           },
@@ -94,6 +105,26 @@ function build(): Scene {
               '« Altdorf ! La capitale ! Deux cochers logent ici cette nuit, Gunnar et Hultz. ' +
               'La diligence repart au matin — si vous tenez à votre place, soyez prêts à l’aube. »',
             choices: [
+              {
+                text: 'Marchander le prix de la place. (Marchandage)',
+                effects: [
+                  {
+                    type: 'test',
+                    skill: 'Marchandage',
+                    label: 'Marchandage du prix',
+                    difficulty: 'intermediaire',
+                    onSuccess: [
+                      { type: 'giveMoney', silver: 2 },
+                      { type: 'journal', text: 'Gustav grommelle puis consent à baisser le prix.' },
+                      { type: 'endDialogue' },
+                    ],
+                    onFailure: [
+                      { type: 'journal', text: '« Désolé, c’est le tarif, et c’est déjà une affaire ! »' },
+                      { type: 'endDialogue' },
+                    ],
+                  },
+                ],
+              },
               { text: '(Revenir)', next: 'g1' },
               { text: 'Merci, Gustav.', effects: [{ type: 'journal', text: 'La diligence pour Altdorf repart au matin.' }, { type: 'endDialogue' }] },
             ],
@@ -117,6 +148,17 @@ function build(): Scene {
         effects: [
           { type: 'journal', text: 'Sur la route, une diligence renversée… et des silhuettes difformes qui se repaissent des restes.' },
           { type: 'startCombat', encounter: 'enc-mutants' },
+        ],
+      },
+      {
+        // Transition vers la suite, une fois l'embuscade nettoyée.
+        id: 'sortie-est',
+        rect: { x: 21, y: 11, w: 1, h: 2 },
+        once: true,
+        condition: 'mutants_vaincus',
+        effects: [
+          { type: 'journal', text: 'La route s’enfonce vers Altdorf…' },
+          { type: 'transition', scene: 'tome1-route', entry: 'ouest' },
         ],
       },
     ],
