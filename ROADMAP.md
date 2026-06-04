@@ -36,6 +36,31 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **Workflow d'extraction de campagne** → `src/scenes/tome1-dossiers.json` (9 chapitres
   Tome 1 : scènes, PNJ, dialogues, rencontres, triggers ; matière première pour les scènes).
 
+## ✅ Jalon 0.6 — Tilesets, bâtiments & décors data-driven *(fait)*
+
+- **Catalogues extensibles** (registres par id, **sémantique pure ↔ présentation**, fallback)
+  pour **sols / bâtiments / décors** : ajouter du contenu = **une entrée de catalogue**, reprise
+  automatiquement par le jeu **et** l'éditeur — fini les unions `export type` figées et les `switch`.
+- **Sols enrichis + raccord d'arêtes** (crossers façon NWN) : `Terrain` = id de catalogue,
+  précédence de débordement, wedges de transition (`gameIso/ground.ts`) ; nouveaux sols
+  pavé / terre / dallage. Palette de l'éditeur générée depuis le catalogue.
+- **Bâtiments multi-tuiles procéduraux** (`gameIso/catalog/buildings.ts`) : maison à colombages,
+  taverne, forge, échoppe, chapelle, tour, manoir — rendu en **3 calques** (murs / intérieur / toit).
+- **Occlusion « admirable »** : **toit-cutaway** (le toit se fond quand le groupe entre — petits
+  bâtiments jouables in-scene) **+ porte → transition** vers une scène d'intérieur (monuments) ;
+  **choix par bâtiment** dans l'éditeur.
+- **Walkability d'empreinte** pure et testée (`state/buildings.ts` : périmètre bloquant, porte
+  franchissable, intérieur selon le mode `cutaway`/`door`).
+- **Décors / placeables procéduraux** (puits, charrette, fontaine, statue, lampadaire, étal,
+  feu de camp, tas de foin…) posés librement via le catalogue (`propSprite(ref)`).
+- **Éditeur générique piloté par catalogue** : palette sols/bâtiments auto-générée, **pose de
+  bâtiment par drag** (empreinte), inspecteur (params via `ParamFields` depuis `paramsSchema`,
+  bascule cutaway/porte, tuile-porte, scène d'intérieur), sélecteur de décor.
+- **Animations d'ambiance** portées d'`ambush.html` (`gameIso/anim.css` : respiration, flamme,
+  fumée de cheminée, enseigne qui balance).
+- **RNG de combat seedable** (`store.seedRng`) : combat enfin déterministe — flaky test éliminé,
+  socle pour la coop réseau.
+
 ---
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
@@ -75,14 +100,18 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **Entre deux aventures** : achats/marchandage, fabrication, activités, soins/maladies.
 - **Encombrement** appliqué (pénalités ; actuellement seulement affiché).
 
-## 🎯 Jalon 6 — Éditeur avancé *(largement entamé en Jalon 0.5)*
+## 🎯 Jalon 6 — Éditeur avancé *(largement entamé — Jalons 0.5 & 0.6)*
 
-- Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; sélectionner/
-  éditer une zone existante en cliquant dessus ; éditeur de statblocks ; **projet multi-scènes**.
+- Fait : palette à onglets, triggers/dialogues/rencontres structurés, outil Zone, **bâtiments &
+  décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment.
+- Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; sélectionner/éditer
+  une **zone trigger** existante en cliquant dessus ; éditeur de statblocks ; **projet multi-scènes**
+  (lier les scènes d'intérieur que `reveal:'door'` référence).
 
 ## 🎯 Jalon 7 — Coop en ligne
 
-- Du hotseat au **réseau** (WebSocket ou WebRTC). RNG seedé + état sérialisable déjà en place.
+- Du hotseat au **réseau** (WebSocket ou WebRTC). **RNG de combat seedable** (`store.seedRng`,
+  Jalon 0.6) + état sérialisable déjà en place.
 
 ## 🎯 Jalon 8 — Polish & production
 
@@ -100,6 +129,13 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Sprites de bestiaire de **qualité hétérogène** (générés par IA depuis réfs) — à trier via la galerie.
 - **Encombrement** affiché mais sans pénalités.
 - IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
+- **Art des bâtiments procédural** (silhouettes simples) — à enrichir vers le niveau d'`ambush.html`.
+- **`facing`** des bâtiments réglable dans l'inspecteur mais **pas encore lu** par le rendu (ni la
+  porte par défaut) — orientation/rotation à câbler.
+- **`reveal:'door'`** suppose des **scènes d'intérieur** dédiées : à créer et lier (cf. Jalon 6).
+- Primitives historiques `mur`/`bois` (tuiles) coexistent avec le nouveau système de bâtiments.
+- Recette visuelle interactive (pose de bâtiment, cutaway) restée à valider en navigateur (verrou
+  Chrome lors de la session ; logique couverte par tests unitaires).
 - Bundle volumineux — à code-splitter.
 
 ## Principes directeurs
