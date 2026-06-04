@@ -16,7 +16,13 @@ describe('catalogue bâtiments', () => {
     expect(L.walls).toBeDefined();
     expect(typeof L.roof).toBe('string');
   });
-  it('maison est dans le catalogue', () => {
-    expect(BUILDINGS.maison).toBeDefined();
+  it('tous les types meta ont un render produisant 3 calques', () => {
+    for (const id of ['maison', 'echoppe', 'taverne', 'forge', 'chapelle', 'tour', 'manoir']) {
+      expect(BUILDINGS[id], id).toBeDefined();
+      const L = buildingLayers(id, foot, { floors: 2 }, { dims });
+      expect(L.walls.length, `${id}.walls`).toBeGreaterThan(0);
+      expect(typeof L.interior, `${id}.interior`).toBe('string');
+      expect(L.roof.length, `${id}.roof`).toBeGreaterThan(0);
+    }
   });
 });
