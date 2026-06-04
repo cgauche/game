@@ -1,0 +1,167 @@
+/**
+ * Profil de rendu RIG d'un combattant ennemi/PNJ humanoïde — COSMÉTIQUE (l'engine
+ * n'en dépend jamais). Transforme un Combatant en (apparence, carrière, équipement,
+ * calques de mutation) pour le rendre via le rig au lieu du sprite monolithique.
+ *
+ * Décisions : voir docs/superpowers/specs/2026-06-05-F1-ennemis-rig-design.md
+ */
+import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../engine/types';
+import type { Appearance } from './appearance';
+import type { EquipCtx } from './parts/equipment';
+import type { RigOverlay } from './bones';
+import { equipFromCombatant } from './parts/equipment';
+import { hashSeed } from '../appearance';
+
+export interface EnemyRigProfile {
+  appearance: Appearance;
+  career: string;
+  equip: EquipCtx;
+  overlays?: RigOverlay[];
+}
+
+const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/**
+ * Indices de NON-rig : noms qui ressemblent à des humanoïdes mais qui ont une
+ * peau/tête non-humaine (peaux-vertes, skavens, hommes-bêtes, morts-vivants), ou
+ * de vraies bêtes/démons. Couvre les 57 entrées du bestiaire + mots-clés généraux.
+ * Un rig à tête humaine serait pire que leur sprite dédié → ils restent en sprite
+ * (et héritent du facing 8-dir via F2).
+ */
+// Bornes de mot (\b…\b) pour éviter les faux positifs de sous-chaîne (ex. « orc »
+// dans « sorcier », « gor » dans « rigori- »). Couvre les 57 entrées du bestiaire
+// non-humanoïdes + synonymes courants.
+const CREATURE_RE = new RegExp(
+  '\\b(' + [
+    // skavens / hommes-rats
+    'rat', 'skaven', 'homme.?rat', 'clans?', 'vermine',
+    // peaux-vertes
+    'orc', 'orque', 'gobelin', 'gobbo', 'snotling', 'peau.?verte', 'squig',
+    // hommes-bêtes
+    'gor', 'ungor', 'minotaure', 'homme.?bete', 'beastman', 'brey', 'bestigor',
+    // morts-vivants
+    'squelette', 'zombie', 'goule', 'vampire', 'spectre', 'fantome', 'banshee', 'momie',
+    'mort.?vivant', 'varghulf', 'liche', 'necarque',
+    // démons / Chaos « bête »
+    'demon', 'demonette', 'sanguinaire', 'khorne', 'slaanesh', 'nurgle', 'tzeentch',
+    'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
+    // bêtes
+    'loup', 'ours', 'chien', 'sanglier', 'serpent', 'araignee', 'basilic', 'dragon',
+    'griffon', 'hyppogriffe', 'hippogriffe', 'demigriffon', 'hydre', 'manticore', 'pegase',
+    'pieuvre', 'vouivre', 'fimir', 'geant', 'troll', 'pigeon', 'cheval',
+    'chauve.?souris', 'sangsue', 'crapaud',
+  ].join('|') + ')\\b',
+);
+
+/**
+ * Patterns de rôles humanoïdes à peau humaine, mappés vers une carrière (pour la
+ * tenue). Ordre = priorité. Le 1er match gagne pour la carrière.
+ */
+const ROLE_CAREERS: [RegExp, string][] = [
+  [/flagellant|zelote|zealot|penitent|fanatique flagell/, 'Flagellant'],
+  [/repurgateur|chasseur de sorcier|witch ?hunter/, 'Répurgateur'],
+  [/sorcier|magister|necromancien|hierophante|mage|enchanteur|invocateur/, 'Sorcier'],
+  [/cultiste|sectateur|adepte|fanatique|illumine|hereux|heretique/, 'Sorcier'],
+  [/pretre|prelat|moine|prieur|abbe|hierophante|sceur|soeur|nonne|clerc/, 'Nonne'],
+  [/noble|courtisan|aristocrate|seigneur|baron|comte|dame|patricien|bourgeois/, 'Noble'],
+  [/repurg/, 'Répurgateur'],
+  [/voleur|coupe-jarret|coupe jarret|larron|cambrioleur|detrousseur|tire-laine/, 'Voleur'],
+  [/bandit|brigand|pillard|racaille|spadassin|sbire|homme de main|deserteur|hors-la-loi|maraudeur|coupe-gorge/, 'Voleur'],
+  [/soldat|garde|milicien|mercenaire|sergent|capitaine|garnison|reitre|hallebardier|piquier|arbaletrier|archer|homme d.?armes|guerrier/, 'Soldat'],
+  [/batelier|marin|matelot|gabarier|passeur/, 'Batelier'],
+  [/mendiant|gueux|paysan|rustre|vagabond|miserable|manant/, 'Mendiant'],
+  [/mutant/, 'Mendiant'],
+];
+
+/** Classifieur cosmétique : 'rig' (humanoïde peau-humaine) ou 'creature' (sprite dédié). */
+export function classifyEnemy(name: string): 'rig' | 'creature' {
+  return CREATURE_RE.test(norm(name)) ? 'creature' : 'rig';
+}
+
+/** Espèce de rig détectée du nom (sinon Humain). */
+function detectSpecies(n: string): string {
+  if (/\bnain/.test(n)) return 'Nain';
+  if (/\bhalfling/.test(n)) return 'Halfling';
+  if (/haut.?elfe/.test(n)) return 'Haut-Elfe';
+  if (/elfe sylvain|elfe des bois/.test(n)) return 'Elfe sylvain';
+  if (/\belfe/.test(n)) return 'Haut-Elfe';
+  if (/\bgnome/.test(n)) return 'Gnome';
+  if (/\bogre/.test(n)) return 'Ogre';
+  return 'Humain';
+}
+
+/** Carrière (→ tenue) mappée du nom. */
+function detectCareer(n: string): string {
+  for (const [re, career] of ROLE_CAREERS) if (re.test(n)) return career;
+  return 'Soldat';
+}
+
+/** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
+function synthArmour(ap: ArmourPoints): ItemInstance[] {
+  const items: ItemInstance[] = [];
+  const piece = (uid: string, name: string, pa: number, locs: HitLocation[]) => {
+    items.push({ uid, name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
+  };
+  if (ap.corps > 0) piece('syn-corps', 'Protection (corps)', ap.corps, ['corps']);
+  if (ap.tete > 0) piece('syn-tete', 'Protection (tête)', ap.tete, ['tete']);
+  const bras = Math.max(ap.brasG, ap.brasD);
+  if (bras > 0) piece('syn-bras', 'Protection (bras)', bras, ['brasG', 'brasD']);
+  const jambes = Math.max(ap.jambeG, ap.jambeD);
+  if (jambes > 0) piece('syn-jambes', 'Protection (jambes)', jambes, ['jambeG', 'jambeD']);
+  return items;
+}
+
+// --- Calques de mutation (cosmétiques) ------------------------------------
+const M_HORN = '<path d="M3 -3 q5 -9 2 -16 q-5 5 -5 16 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.6"/>';
+const M_HORN2 = '<path d="M-3 -3 q-5 -9 -2 -16 q5 5 5 16 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.6"/>';
+const M_CLAW = '<path d="M-3 1 l1 8 M0 1 l0 9 M3 1 l-1 8" stroke="#5a3a2a" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+const M_EYE = '<ellipse cx="0" cy="-8" rx="3" ry="2" fill="#e8e0c0"/><circle cx="0" cy="-8" r="1.1" fill="#5a0a0a"/>';
+const M_TENTACLE = '<path d="M2 -2 q10 4 8 14 q-2 6 -6 4 q3 -6 -1 -10 q-3 -3 -1 -8z" fill="#7a8a5a" stroke="#3a4026" stroke-width="0.6"/>';
+
+const MUTATIONS: RigOverlay[] = [
+  { bone: 'tete', svg: M_HORN },
+  { bone: 'tete', svg: M_HORN2 },
+  { bone: 'mainD', svg: M_CLAW },
+  { bone: 'torse', svg: M_EYE },
+  { bone: 'epauleD', svg: M_TENTACLE },
+];
+
+/** 1 à 3 calques de mutation choisis de façon déterministe depuis le seed. */
+function mutationOverlays(seed: number): RigOverlay[] {
+  const count = 1 + (seed % 3); // 1..3
+  const out: RigOverlay[] = [];
+  for (let i = 0; i < count; i++) out.push(MUTATIONS[(seed + i * 5) % MUTATIONS.length]);
+  // déduplique par (bone+svg)
+  const seen = new Set<string>();
+  return out.filter((o) => {
+    const k = o.bone + o.svg;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/**
+ * Profil rig d'un combattant, ou null si non-humanoïde (→ garder enemySprite).
+ * PURE et déterministe (seed dérivé de l'id).
+ */
+export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
+  if (classifyEnemy(c.name) === 'creature') return null;
+  const n = norm(c.name);
+  const seed = hashSeed(c.id);
+  const species = c.species ?? detectSpecies(n);
+  const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M'; // ~28 % F
+  const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
+  const appearance: Appearance = c.appearance ?? { species, sex, build, seed };
+  const career = c.career ?? detectCareer(n);
+
+  // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
+  const base = equipFromCombatant(c);
+  const armour = base.armour.length ? base.armour : synthArmour(c.armour);
+  const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
+
+  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
+  const overlays = isMutant ? mutationOverlays(seed) : undefined;
+
+  return { appearance, career, equip, overlays };
+}

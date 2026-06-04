@@ -53,3 +53,10 @@ export const SLOT_LAYER: Record<Slot, number> = {
   visage: 0, cheveux: 1, tete: 2,
   bouclier: 0, arme: 0,
 };
+
+/** Calque cosmétique additionnel attaché à un os (mutations, accessoires).
+ *  Rendu PAR-DESSUS les parts, dans le repère local (échellé) de l'os. */
+export interface RigOverlay {
+  bone: BoneId;
+  svg: string;
+}

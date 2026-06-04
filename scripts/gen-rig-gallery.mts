@@ -50,6 +50,37 @@ for (const car of ['Garde', 'Noble', 'Répurgateur', 'Tueur', 'Médecin', 'Voleu
   cells.push(cell(car, { species: 'Humain', sex: 'M', build: 0.55, seed: 4 }, { weapons: [], armour: [] }, car));
 }
 
+// F1 : ennemis humanoïdes riggés (classifieur + dérivation). Arme + tenue + mutations.
+import { enemyRigProfile } from '../src/gameIso/rig/enemyProfile';
+import type { Combatant } from '../src/engine/types';
+function enemyCell(name: string, view: 'front' | 'back' | 'profile' = 'front') {
+  const c = {
+    id: `gal-${name}`, name, kind: 'enemy',
+    characteristics: {} as Combatant['characteristics'], wounds: { current: 10, max: 10 },
+    advantage: 0, conditions: [],
+    weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }],
+    armour: { tete: 2, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4,
+  } as Combatant;
+  const p = enemyRigProfile(c);
+  if (!p) return cell(`${name} (sprite)`, { species: 'Humain', sex: 'M', build: 0.5 }, { weapons: [], armour: [] }, 'Soldat', view);
+  const svg = renderToStaticMarkup(
+    React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
+      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
+      React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#2a1d22' }),
+      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.career, overlays: p.overlays, view }),
+    ),
+  );
+  const label = view === 'front' ? name : `${name} ${view}`;
+  return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#e9b;font:11px sans-serif">${label}</figcaption></figure>`;
+}
+for (const e of ['Bandit', 'Cultiste', 'Soldat', 'Garde', 'Flagellant', 'Noble', 'Répurgateur', 'Sorcier', 'Nain mercenaire', 'Voleur']) {
+  cells.push(enemyCell(e));
+}
+// Mutant : 3 vues + montre les calques de mutation.
+for (const v of ['front', 'back', 'profile'] as const) cells.push(enemyCell('Mutant', v));
+cells.push(enemyCell('Guerrier du Chaos'));
+
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Rig QC</title></head>
 <body style="background:#11141c;padding:16px">
 <h1 style="color:#eee;font:18px sans-serif">Galerie QC du rig — espèces × sexe + équipement</h1>

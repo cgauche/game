@@ -1,5 +1,5 @@
 import React from 'react';
-import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot } from './bones';
+import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton } from './skeletons';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import type { Pose } from './poses';
@@ -32,6 +32,7 @@ export function resolveRig(
   pose: Pose,
   career?: string,
   view: View = 'front',
+  overlays: RigOverlay[] = [],
 ): ResolvedBone[] {
   const sk = applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build);
   const world = worldTransforms(sk, addPose(VIEW_POSE[view], pose)); // pose de vue + pose d'anim
@@ -67,6 +68,11 @@ export function resolveRig(
     });
   }
 
+  // Calques cosmétiques (mutations…) par-dessus tout, dans le repère de leur os.
+  for (const ov of overlays) {
+    if (ov.svg) boneParts[ov.bone].push({ svg: ov.svg, layer: 99 });
+  }
+
   return BONE_IDS
     .map((id) => ({ id, matrix: world[id], scale: scaleOf[id], z: sk[id].z, parts: boneParts[id].sort((a, b) => a.layer - b.layer) }))
     .filter((b) => b.parts.length > 0)
@@ -74,14 +80,15 @@ export function resolveRig(
 }
 
 /** Composant : un <g data-bone> par os, transformable individuellement (anim C / postures D). */
-export function RigSprite({ appearance, equip, pose = {}, career, view = 'front' }: {
+export function RigSprite({ appearance, equip, pose = {}, career, view = 'front', overlays }: {
   appearance: Appearance;
   equip: EquipCtx;
   pose?: Pose;
   career?: string;
   view?: View;
+  overlays?: RigOverlay[];
 }): JSX.Element {
-  const bones = resolveRig(appearance, equip, pose, career, view);
+  const bones = resolveRig(appearance, equip, pose, career, view, overlays ?? []);
   return (
     <g className="rig">
       {bones.map((b) => (

@@ -9,12 +9,14 @@ import { equipFromCombatant } from './rig/parts/equipment';
 import { useRigClip } from './rig/anim/useRigClip';
 import type { ClipName } from './rig/anim/clips';
 import { facingView, screenDir, type View } from './rig/facing';
+import type { EnemyRigProfile } from './rig/enemyProfile';
 
 const CLIP_FOR_KIND: Record<string, ClipName> = { melee: 'melee', ranged: 'ranged', spell: 'cast' };
 const STEP_MS = 160; // ~ durée d'un pas (moveAlong dans le store)
 
-/** Token héros animé : rend RigSprite avec la pose courante, réagit aux événements du bus. */
-export function AnimatedRigToken({ combatant }: { combatant: Combatant }) {
+/** Token rig animé. Héros : dérive l'apparence du Combatant. Ennemi/PNJ humanoïde :
+ *  fournir `profile` (apparence/carrière/équipement/mutations dérivés). Réagit au bus par id. */
+export function AnimatedRigToken({ combatant, profile }: { combatant: Combatant; profile?: EnemyRigProfile }) {
   const { pose, play, hold } = useRigClip();
   const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
   const id = combatant.id;
@@ -66,9 +68,10 @@ export function AnimatedRigToken({ combatant }: { combatant: Combatant }) {
     // Facing : vue (front/back/profile) + miroir autour de l'axe de la boîte (x=60) si à gauche.
     <g transform={facing.mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
       <RigSprite
-        appearance={combatant.appearance ?? defaultAppearance(combatant)}
-        equip={equipFromCombatant(combatant)}
-        career={combatant.career}
+        appearance={profile?.appearance ?? combatant.appearance ?? defaultAppearance(combatant)}
+        equip={profile?.equip ?? equipFromCombatant(combatant)}
+        career={profile?.career ?? combatant.career}
+        overlays={profile?.overlays}
         pose={pose}
         view={facing.view}
       />

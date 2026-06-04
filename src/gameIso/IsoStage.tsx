@@ -31,6 +31,7 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
+import { enemyRigProfile } from './rig/enemyProfile';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -194,8 +195,10 @@ export function IsoStage() {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
-      if (isHero) {
-        const el = tokenNode(c.id, c.pos.x, c.pos.y, <AnimatedRigToken combatant={c} />, 0.62, ring, isOutOfAction(c));
+      const prof = isHero ? null : enemyRigProfile(c);
+      if (isHero || prof) {
+        // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims).
+        const el = tokenNode(c.id, c.pos.x, c.pos.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c));
         objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el });
       } else {
         const inner = enemySprite(c.name, hashSeed(c.id));
