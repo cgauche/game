@@ -1,4 +1,4 @@
-# Spec — Rig squelettique SVG & apparence composable (sous-projet A)
+# Spec — Rig squelettique SVG & apparence composable, pilotée par l'équipement (sous-projet A)
 
 *Date : 2026-06-04 · Projet : RPG WFRP4 web (`Foundry/Game`) · Branche : `feat/wfrp4-rpg-foundation`*
 
@@ -7,65 +7,64 @@
 L'utilisateur veut un système visuel de personnage riche : sprite distinct par race,
 variante mâle/femelle, morphologie paramétrable, têtes multiples, armures multiples,
 animations d'action (sort / distance / mêlée / esquive / parade / défense / prise de
-coup) et postures d'état (à terre, sonné, etc.).
+coup) et postures d'état (à terre, sonné, etc.). **Le sprite doit refléter l'équipement
+réellement porté** (armes, bouclier, armure par emplacement), la carrière fournissant la
+tenue par défaut là où aucune armure n'est portée.
 
 L'existant (`src/gameIso/`) est **surtout un proof-of-concept** : on a la licence de
-l'améliorer franchement, pas seulement d'empiler par-dessus. État réel constaté :
+l'améliorer franchement, pas seulement d'empiler par-dessus. `heroSprite` (les 5 fonctions
+JS `soldier/slayer/sorcier/halfling/witchHunter`) était un **stopgap « en attendant ce
+dev »** → son art est récupéré comme parts puis les fonctions sont **supprimées**.
+
+État réel constaté :
 
 - **Primitive de composition saine mais sous-exploitée.** `appearance.ts`
-  (`composeAppearance(name, seed, pins)`) tire 1 variante par calque via RNG seedable
-  et concatène des fragments SVG. Slots = chaînes libres. Testé.
-- **Les héros n'utilisent PAS cette primitive.** `heroSprite(c)` (`sprites.ts:142-157`)
-  branche sur 5 fonctions JS monolithiques (`soldier/slayer/sorcier/halfling/witchHunter`),
-  switch sur carrière puis espèce.
+  (`composeAppearance(name, seed, pins)`) tire 1 variante par calque via RNG seedable et
+  concatène des fragments SVG ; slots = chaînes libres ; testé. **Les héros ne l'utilisent
+  pas** (`heroSprite` branche sur 5 fonctions monolithiques, `sprites.ts:142-157`).
 - **Aucun** champ sexe/genre sur `Combatant`, aucune morphologie paramétrable, aucun slot
-  tête/armure, aucune animation d'action (seules keyframes d'ambiance dans `anim.css`),
-  aucune pose d'état (juste `opacity 0.4` si hors-combat).
-- **Le moteur fournit déjà les signaux logiques** : actions mêlée/distance/sort/focus,
-  modes de défense parade/esquive (`combat.ts`), conditions `À Terre`/`Sonné`/`Assourdi`/
-  `Étourdi`/`Hémorragique`/`Inconscient` (`conditions.ts`), bus `ANIM_ATTACK`/`ANIM_MOVE`/
-  `SCENE_DIRTY` (`bus.ts`).
-- **Rendu = injection de string SVG** via `dangerouslySetInnerHTML` dans un `<g>` par token
-  (`IsoStage.tsx:130`), re-stringifiée à chaque rendu. Fragile pour animer un os isolé.
+  tête/armure, **équipement non reflété visuellement** (`recomputeLoadout` = stats seules :
+  `Combatant.weapons` actives + `Combatant.armour` en PA par localisation).
+- **Le moteur fournit déjà les signaux logiques** pour la suite : actions mêlée/distance/
+  sort/focus, défense parade/esquive (`combat.ts`), conditions `À Terre`/`Sonné`/… 
+  (`conditions.ts`), bus `ANIM_ATTACK`/`ANIM_MOVE`/`SCENE_DIRTY` (`bus.ts`).
+- **Rendu = injection de string SVG** via `dangerouslySetInnerHTML` par token
+  (`IsoStage.tsx:130`), re-stringifiée à chaque rendu → fragile pour animer un os isolé.
 
-La liste de besoins recouvre 4 sous-projets indépendants :
+La liste de besoins recouvre **3 sous-projets** (l'« équipement visible » est fusionné
+dans A car l'apparence EST l'équipement + la carrière) :
 
-- **A — Apparence composable généralisée** *(ce spec, fondation)*
-- **B — Équipement visible** (`ItemInstance` → calques) — dépend de A
+- **A — Apparence composable pilotée par équipement + carrière** *(ce spec, fondation)*
 - **C — Animations d'action** (couche timeline abonnée au bus) — dépend de A + events moteur
 - **D — Postures & états visuels** (condition → pose + FX) — dépend de A
 
 **Objectif de ce spec (A complet) :** runtime de rig squelettique + modèle `Appearance` +
-remplacement des 5 sprites héros joués en M/F + UI créateur/éditeur pour régler l'apparence.
+**résolution des parts pilotée par l'équipement porté** (armes/bouclier/armure par
+emplacement, défaut carrière) + remplacement intégral du rendu héros pour **toutes les
+espèces jouables** en M/F + UI créateur/éditeur.
 
 ## 2. Décision de socle
 
-**Rig squelettique SVG, rendu en arbre de composants React** (décision validée avec
-l'utilisateur). Un personnage = arbre d'os nommés ; chaque os porte 1 part SVG (« slot »).
-Tout reste du SVG dessiné-main (conforme à la direction visuelle : isométrique « à la
-Baldur's Gate », jamais de carrés).
+**Rig squelettique SVG, rendu en arbre de composants React** (validé). Un personnage =
+arbre d'os nommés ; chaque os porte 1 part SVG (« slot »). Tout reste du SVG dessiné-main
+(direction visuelle : isométrique « à la Baldur's Gate », jamais de carrés).
 
-Pourquoi le rig : **toutes** les demandes en découlent d'un seul modèle —
-anim = interpolation d'angles d'os ; posture = preset d'angles ; morpho = longueur/
-épaisseur d'os ; M/F = jeu de proportions ; armure = part remplacée sur un os ;
-facing = miroir + sous-poses.
+Pourquoi le rig : **toutes** les demandes en découlent d'un seul modèle — anim =
+interpolation d'angles d'os ; posture = preset d'angles ; morpho = longueur/épaisseur d'os ;
+M/F = jeu de proportions ; **armure/arme = part résolue sur un os** ; facing = miroir.
 
-**Amélioration de socle vs le POC** : on rend le rig en **composant React SVG**
-(`<RigSprite>`), pas en string injectée. Chaque os devient un `<g>` réel, nommé et
-transformable individuellement — ce qui rend l'animation (C) et les postures (D)
-propres et bon marché, sans re-générer de string. Le chemin créatures monolithe reste
-en `innerHTML` : **seam propre, zéro régression bestiaire**.
+**Amélioration vs le POC** : rig rendu en **composant React SVG** (`<RigSprite>`), pas en
+string injectée. Chaque os = `<g data-bone>` réel, transformable individuellement → C
+(anim) et D (postures) propres, sans re-générer de string. Le chemin **créatures**
+monolithe reste en `innerHTML` : seam propre, zéro régression bestiaire. Les **héros**
+n'ont plus de chemin JS : ils passent toujours par le rig (fallback générique interne).
 
-Alternatives écartées : *calques SVG figés* (morpho/anim trop grossières) ;
-*sprite sheets raster* (contre la direction visuelle, tue la morpho paramétrable,
-pipeline d'assets lourd).
+Alternatives écartées : *calques SVG figés* (morpho/anim trop grossières) ; *sprite sheets
+raster* (contre la direction visuelle, tue la morpho paramétrable, pipeline lourd).
 
 ## 3. Modèle de données
 
-### 3.1 Os & registre de slots (enum typé)
-
-Fini les chaînes libres : un enum `BoneId` sert à la fois d'identité d'os et de registre
-de slots (supprime la dette « typos de slot »). Rig pragmatique ~14 os :
+### 3.1 Os & slots
 
 ```
 bassin ─ torse ─ cou ─ tete
@@ -76,7 +75,8 @@ bassin ─ torse ─ cou ─ tete
 ```
 
 ```ts
-// src/gameIso/rig/bones.ts — couche de RENDU (jamais importée par src/engine : règle #3)
+// src/gameIso/rig/bones.ts — couche de RENDU (n'est jamais importée par src/engine : règle #3 ;
+// l'inverse est permis : le rendu lit les TYPES purs de l'engine).
 export type BoneId =
   | 'bassin' | 'torse' | 'cou' | 'tete'
   | 'epauleG' | 'avantBrasG' | 'mainG'
@@ -88,32 +88,31 @@ export type BoneId =
 export interface Bone {
   id: BoneId;
   parent: BoneId | null;
-  /** point d'attache dans le repère LOCAL du parent (boîte 120×150). */
-  pivot: { x: number; y: number };
-  /** géométrie morphologique. */
-  length: number;
-  thickness: number;
-  /** angle au repos (degrés) ; surchargé par la Pose. */
-  angle: number;
-  /** ordre de tri intra-sprite (bras avant vs arrière, arme devant/derrière). */
-  z: number;
+  pivot: { x: number; y: number };   // attache dans le repère LOCAL du parent (boîte 120×150)
+  length: number; thickness: number;  // géométrie morphologique
+  angle: number;                      // angle au repos (deg), surchargé par la Pose
+  z: number;                          // tri intra-sprite (avant/arrière)
 }
 
 /**
- * Slot = part visuelle interchangeable. PAS 1:1 avec les os : un slot s'attache à
- * un (ou des) os via SLOT_BONE. Ex. `cheveux`/`casque` → os `tete` ; `torse`+`jambes`
- * (regroupés sous le label « Tenue » en UI) → os `torse`/`cuisseG`/`cuisseD`.
+ * Slots = parts visuelles. Trois familles :
+ *  - COSMÉTIQUE (toujours, espèce×sexe)      : visage, cheveux
+ *  - CORPS (équipement→sinon carrière)        : tete, bras, torse, jambes
+ *  - MAIN (équipement)                        : arme, bouclier
+ * `tete` = couvre-chef/casque (sinon rien : on voit visage+cheveux).
  */
 export type Slot =
-  | 'tete' | 'cheveux' | 'casque'
-  | 'torse' | 'jambes'
+  | 'visage' | 'cheveux'
+  | 'tete' | 'bras' | 'torse' | 'jambes'
   | 'arme' | 'bouclier';
 
-/** Os porteur de chaque slot (pour le placement FK des parts). */
-export const SLOT_BONE: Record<Slot, BoneId> = {
-  tete: 'tete', cheveux: 'tete', casque: 'tete',
-  torse: 'torse', jambes: 'bassin',
-  arme: 'arme', bouclier: 'bouclier',
+/** Os porteur(s) de chaque slot (parts symétriques bras/jambes dessinées une fois, mirroir G/D). */
+export const SLOT_BONES: Record<Slot, BoneId[]> = {
+  visage: ['tete'], cheveux: ['tete'], tete: ['tete'],
+  torse: ['torse'],
+  bras: ['epauleG', 'epauleD'],
+  jambes: ['cuisseG', 'cuisseD'],
+  arme: ['arme'], bouclier: ['bouclier'],
 };
 ```
 
@@ -123,183 +122,232 @@ export const SLOT_BONE: Record<Slot, BoneId> = {
 // src/gameIso/rig/skeletons.ts
 export type Skeleton = Record<BoneId, Bone>;
 
-/** Presets de proportions par espèce jouable et sexe. */
+/** Presets de proportions par espèce et sexe — COUVRE TOUTES les espèces jouables. */
 export function baseSkeleton(species: string, sex: 'M' | 'F'): Skeleton;
-//  Humain  : référence
-//  Nain    : trapu, jambes courtes, torse large
-//  Halfling: petit, rond
-//  Elfe    : élancé, membres longs
-//  F vs M  : épaules plus étroites, proportions ajustées (pas de différence de stats — WFRP4)
+//  Toutes les espèces de src/data/species.json (« autant que possible ») :
+//    Humain · Halfling (petit, rond) · Nain (trapu, jambes courtes, torse large) ·
+//    Gnome (très petit, grande tête) · Ogre (massif, jambes courtes) ·
+//    Haut-Elfe (grand, élancé) · Elfe sylvain (élancé, plus léger)
+//  Variantes régionales (Reiklander, clans…) → HÉRITENT via baseSpeciesOf(species).
+//  F vs M : proportions épaules/hanches — AUCUNE différence de stats (WFRP4).
 
-/** Applique la morphologie continue `build` (0..1 frêle→corpulent) au squelette. */
+/** « Humains (Reiklander) », « Nains (Norse) »… → espèce de base normalisée. */
+export function baseSpeciesOf(species: string): string;
+
+/** Morphologie continue `build` (0..1 frêle→corpulent) → échelle thickness (+ légèrement
+ *  length) ; pur, sans mutation de l'entrée. */
 export function applyBuild(sk: Skeleton, build: number): Skeleton;
-//  échelle thickness (et légèrement length) ; pur, sans mutation de l'entrée.
 ```
 
 ### 3.3 Pose
 
 ```ts
 // src/gameIso/rig/poses.ts
-/** Override d'angles d'os → cible d'animation (C) et de posture (D). */
-export type Pose = Partial<Record<BoneId, number>>;
-export const POSE_REPOS: Pose;   // pose neutre rendue par A
-// (les poses d'action/état seront ajoutées par C/D — A ne livre que le repos + le type)
+export type Pose = Partial<Record<BoneId, number>>;  // override d'angles → cible anim (C) / posture (D)
+export const POSE_REPOS: Pose;                        // pose neutre rendue par A
+// (poses d'action/état ajoutées par C/D — A ne livre que le repos + le type)
 ```
 
-### 3.4 Bibliothèque de parts
+### 3.4 Résolution des parts — **pilotée par l'équipement** (cœur de A)
+
+C'est la pièce maîtresse demandée. Une part par slot est choisie par **priorité
+décroissante** :
+
+1. **Override éditeur** : `appearance.parts[slot]` si défini (pin manuel — prime sur tout).
+2. **Équipement porté** (lu sur le `Combatant`) :
+   - `arme` ← arme active équipée (famille inférée du nom/qualités) ;
+   - `bouclier` ← bouclier équipé (qualité « Bouclier »/nom) — sinon vide ;
+   - `tete`/`bras`/`torse`/`jambes` ← **pièce d'armure équipée couvrant cet emplacement**
+     (`item.kind==='armor' && item.equipped && item.locs ⊇ loc`), variante par matériau/type
+     (cuir / maille / plaque / rembourré, inféré du nom ou du palier `pa`).
+3. **Carrière** : si **aucune armure** sur cet emplacement → la pièce de **tenue par défaut
+   de la classe de carrière** (`torse`/`jambes`/`bras`) ; `tete` non couverte → rien
+   (on voit `visage`+`cheveux`), sauf couvre-chef de classe (ex. chapeau de Sorcier).
+4. **Générique** : fallback rig si rien d'autre (le rig rend TOUJOURS quelque chose).
+
+`visage` et `cheveux` sont **toujours** résolus (espèce×sexe, variante via `parts`/seed) ;
+`cheveux` est masqué si le couvre-chef `tete` ferme la tête (heaume).
+
+Mapping emplacement WFRP4 → slot de corps :
+`tete→tete` · `brasG`/`brasD`→`bras` · `corps→torse` · `jambeG`/`jambeD`→`jambes`.
 
 ```ts
-// src/gameIso/rig/parts/index.ts
-/** Une part = fragment SVG dessiné dans le repère LOCAL de son os (pivot à l'origine). */
-export interface Part { svg: string; }
-/** Variantes par slot, indexées (parts[slot] = index). */
-export type PartLibrary = Record<Slot, Part[]>;
-export function partsFor(species: string, sex: 'M' | 'F', career?: string): PartLibrary;
-//  fournit les variantes disponibles + le set par défaut (carrière → tenue/arme).
+// src/gameIso/rig/parts/  — bibliothèques + résolveur
+export interface Part { svg: string; }            // dessiné dans le repère LOCAL de son os
+
+// Bibliothèques de variantes (data-driven) :
+export function armourPart(item: ItemInstance, slot: Slot): Part | null; // par matériau/type
+export function weaponPart(w: Weapon): Part;                              // famille d'arme
+export function shieldPart(item: ItemInstance | Weapon): Part;
+export function careerTenue(careerClass: string): Partial<Record<'torse'|'jambes'|'bras'|'tete', Part>>;
+export function cosmeticPart(slot: 'visage'|'cheveux', species: string, sex: 'M'|'F', idx: number): Part;
+
+/** Contexte d'équipement extrait d'un Combatant (rendu lit l'engine — direction permise). */
+export interface EquipCtx {
+  weapons: Weapon[];                 // armes actives
+  armour: ItemInstance[];            // pièces d'armure équipées (locs renseignés)
+  shield?: ItemInstance | Weapon;
+}
+export function equipFromCombatant(c: Combatant): EquipCtx;
+
+/** Applique la priorité override→équipement→carrière→générique. PUR. */
+export function resolveParts(
+  species: string, sex: 'M'|'F', career: string | undefined,
+  equip: EquipCtx, overrides: Partial<Record<Slot, number>>, seed: number,
+): Record<Slot, Part | null>;
+
+/** Classe d'une carrière (careers.json, champ `class`) → pilote la tenue. 8 classes :
+ *  Citadins, Courtisans, Guerriers, Itinérants, Lettrés, Riverains, Roublards, Ruraux. */
+export function careerClass(career: string): string;
 ```
 
-### 3.5 Descripteur d'apparence (découplé du moteur)
-
-L'apparence est **cosmétique** → type de données pur, l'engine l'ignore et ne l'importe
-pas (dépendance à sens unique préservée, règle #3).
+### 3.5 Descripteur d'apparence (cosmétique, découplé du moteur)
 
 ```ts
-// src/gameIso/rig/appearance.ts  (type pur ; ré-exporté pour usage UI/scene)
+// src/gameIso/rig/appearance.ts  (type PUR)
 export interface Appearance {
-  species: string;              // déjà présent sur Combatant (pilote les proportions de base)
+  species: string;   // pour les héros, reflète Combatant.species (fixé à la création)
   sex: 'M' | 'F';
-  build: number;                // 0..1 morpho continue
-  parts: Partial<Record<Slot, number>>;  // index de variante par slot ; absent → tiré au seed
-  seed?: number;                // auto-variété (réutilise hashSeed) si parts absent
+  build: number;     // 0..1 morpho continue
+  /** Overrides éditeur par slot (priment) ; absents → équipement→carrière→seed. */
+  parts?: Partial<Record<Slot, number>>;
+  seed?: number;     // auto-variété cosmétique (visage/cheveux) si non épinglé
 }
 ```
 
-Attache : on ajoute `appearance?: Appearance` sur `Combatant` **comme champ de données
-pur** (`src/engine/types.ts`) — l'engine ne le lit jamais, seul le rendu l'utilise.
-Les `SceneEntity` conservent `EntityAppearance {seed, pins}` ; la migration des entités
-de scène vers le rig est hors périmètre A.
+`appearance?: Appearance` est ajouté sur `Combatant` **comme champ de données pur**
+(`src/engine/types.ts`) — l'engine ne le lit jamais. L'**équipement** (lui aussi sur le
+`Combatant` : `weapons`/`items`/`armour`) est lu par le rendu via `equipFromCombatant`.
 
 ## 4. Composition & rendu
 
 ```ts
 // src/gameIso/rig/composeRig.tsx
-/** Pur : (apparence, pose) → squelette résolu + parts choisies, prêt à rendre. */
-export function resolveRig(appearance: Appearance, pose: Pose): ResolvedBone[];
+export function resolveRig(
+  appearance: Appearance, equip: EquipCtx, pose: Pose,
+): ResolvedBone[];
 //  1. sk = applyBuild(baseSkeleton(species, sex), build)
 //  2. FK : transform monde de chaque os (pivot + angle de pose, composé parent→enfant)
-//  3. part de chaque slot = parts[slot] ?? tirage(seed)
-//  4. tri par bone.z
+//  3. parts = resolveParts(species, sex, career, equip, overrides, seed)  ← pilotage équipement
+//  4. attache chaque part à son/ses os (SLOT_BONES, miroir G/D), tri par bone.z
 
-/** Composant React : émet un <g data-bone> par os, transformable individuellement. */
-export function RigSprite(props: { appearance: Appearance; pose?: Pose }): JSX.Element;
-//  <g data-bone="avantBrasD" transform="translate(x,y) rotate(deg)"> …part SVG… </g>
+export function RigSprite(props: {
+  appearance: Appearance; equip: EquipCtx; pose?: Pose;
+}): JSX.Element;
+//  émet un <g data-bone="…" transform="translate(x,y) rotate(deg)"> …part SVG… </g> par os
 ```
 
-`resolveRig` est **pur et déterministe** (même `(appearance, pose)` → même sortie) →
-testable sans DOM.
+`resolveRig`/`resolveParts` **purs et déterministes** (mêmes entrées → même sortie) →
+testables sans DOM.
 
 ## 5. Intégration rendu
 
-- `heroSprite` devient un aiguillage : si `c.appearance` présent → on rend `<RigSprite>` ;
-  sinon → fallback vers les 5 fonctions JS monolithiques actuelles (conservées).
-  *Conséquence :* `heroSprite` ne renvoie plus seulement une string. On introduit un
-  `heroSpriteNode(c): ReactNode` pour le chemin riggé ; l'ancien `heroSprite(c): string`
-  reste pour le fallback. (Détail d'API à finaliser au plan — l'important est le seam.)
-- `IsoStage.tsx` : le token héros (`:141`, `:152`) rend `<RigSprite>` quand l'apparence
-  existe. On ajoute une **variante de `token()` acceptant des enfants React** (même
-  ellipse d'ombre, anneau de sélection, `translate/scale`) en plus du chemin `innerHTML`.
-- Les créatures (`enemySprite` / monolithe) et les props **restent en `innerHTML`** :
-  aucune modification, aucune régression.
-- `<defs>` (DEFS) reste injecté une seule fois au niveau du stage (`IsoStage.tsx:230`) —
-  les parts du rig réutilisent les gradients partagés (`g_steel`, `g_flesh`, `g_cloak`…).
+- **Héros = toujours rig.** À la frontière de rendu, on construit
+  `appearance = c.appearance ?? defaultAppearance(c)` (dérivé de `species`+`sex`+`hashSeed`)
+  et `equip = equipFromCombatant(c)`, puis on rend `<RigSprite appearance equip />`. Les 5
+  fonctions JS de `heroSprite` sont **supprimées** (leur art migré en parts).
+- `IsoStage.tsx` : le token héros (`:141`, `:152`) rend `<RigSprite>`. On ajoute une
+  **variante de `token()` acceptant des enfants React** (même ombre, anneau, `translate/
+  scale`) à côté du chemin `innerHTML`.
+- **Créatures** (`enemySprite`/monolithe) et **props** : inchangées (`innerHTML`).
+- `<defs>` (DEFS) reste injecté une fois au stage (`IsoStage.tsx:230`) ; les parts
+  réutilisent les gradients partagés (`g_steel`, `g_flesh`, `g_cloak`…) + nouveaux gradients
+  matériaux (cuir, maille, plaque).
 
-## 6. Contenu à produire (matrice pilotée par données)
+## 6. Contenu à produire (data-driven, tractable)
 
-- **Espèces jouables riggées** : Humain, Nain, Halfling, Elfe (sylvain). Chacune = un
-  preset de proportions dans `baseSkeleton`.
-- **Sexe** : M/F par espèce (proportions + parts par défaut).
-- **Carrières** (sets de parts par défaut : tenue + arme) : Soldat, Tueur, Sorcier,
-  Voleur, Répurgateur.
-- **Parts interchangeables** (slots) : `tete`, `cheveux`, `casque`, `torse`, `jambes`,
-  `arme`, `bouclier` (cf. `SLOT_BONE`). En UI, `torse`+`jambes` sont groupés sous le
-  label « Tenue ».
+- **Squelettes** : 7 espèces × 2 sexes = 14 presets de proportions (`baseSkeleton`).
+- **Cosmétique** : `visage` + `cheveux/barbe`, plusieurs variantes par espèce×sexe.
+- **Armure par emplacement × matériau** : `tete/bras/torse/jambes` × {rembourré, cuir,
+  maille, plaque} ≈ 16 parts (+ casques/heaumes). Mappées depuis `item.locs`+nom/`pa`.
+- **Armes** : par famille (épée, hache, masse/marteau, dague, lance/hallebarde, fléau, arc,
+  arbalète, bâton…) ≈ 10-12 parts. **Boucliers** : 1-3.
+- **Tenues de carrière** : 8 classes (`careers.json`) → look `torse/jambes/bras` par défaut ;
+  surcharge pour carrières visuellement distinctives (Répurgateur, Tueur, Sorcier).
 
-**De-risk authoring :** on **découpe les 5 SVG héros existants** (`soldier/slayer/sorcier/
-halfling/witchHunter` dans `sprites.ts:51-114`) en parts d'os comme bibliothèque de départ —
-l'art validé existe déjà. L'enrichissement (têtes/tenues/armures supplémentaires) suit la
-**méthode best-of-2 par planches** (barre qualité bestiaire), réfs dans
-`art-ref/ldb/mapping.json`. C'est le poste d'effort principal et le risque n°1 de A.
+**De-risk authoring :** on **découpe les 5 SVG héros existants** (`sprites.ts:51-114`) comme
+bibliothèque de départ (soldat→tenue Guerriers + épée + casque ; sorcier→tenue Lettrés +
+bâton + chapeau ; tueur→torse nu + haches ; etc.). Enrichissement par **lots best-of-2 par
+planches** (barre qualité bestiaire), réfs `art-ref/ldb/mapping.json`. **Poste d'effort
+principal et risque n°1.** Tout slot non encore dessiné → part générique (le rig rend
+toujours).
 
 ## 7. UI (créateur + éditeur)
 
-- L'éditeur a déjà un bloc « Variante d'apparence » (pins par slot + 🎲 reroll seed,
-  `Editor.tsx:588-617`) pour les entités de scène. On crée un **panneau d'apparence héros**
-  réutilisable (composant partagé) avec : sélecteur **sexe** (M/F), slider **morphologie**
-  (`build` 0..1), sélecteurs de **parts** (tête / cheveux / tenue / casque / arme /
-  bouclier), aperçu live `<RigSprite>`, bouton 🎲.
-- Réutilisé dans le **créateur de personnage** (au moment du choix espèce/carrière).
-- Onglet si le panneau dépasse ~2 sections (règle UI #4).
+- **Panneau d'apparence héros** réutilisable (créateur + éditeur) : sexe (M/F), slider
+  morphologie (`build`), aperçu live `<RigSprite>`, bouton 🎲 (reroll seed cosmétique).
+- **Cosmétique éditable** : variantes `visage`/`cheveux`.
+- **Corps/arme/bouclier = reflet de l'équipement** (lecture seule par défaut, l'apparence
+  suit l'inventaire) avec **override manuel optionnel** par slot (pin éditeur, comme
+  `Editor.tsx:588-617` pour les entités de scène).
+- Onglets si le panneau dépasse ~2 sections (règle UI #4).
 
-## 8. Périmètre — ce que A NE fait PAS
+## 8. Périmètre — ce que A fait / ne fait PAS
 
-- A rend la **pose de repos** uniquement (le `.bob` respirant CSS reste). Les
-  **animations d'action = C** ; A ne livre que le type `Pose` + `POSE_REPOS`.
-- **Postures d'état = D** (condition → pose). A ne mappe pas les conditions.
-- **Équipement visible piloté par l'inventaire = B**. A expose le slot `tenue`/`arme`/
-  `casque` mais ne les dérive pas encore de `Combatant.items`.
-- **Facing combat = hors A** (orientation → C). Le rig est structuré pour le miroir G/D.
-- **Migration des créatures vers le rig = hors A** (elles restent monolithiques).
-- **Pas de modification du moteur de combat** (les bugs/manques relevés — advantage non
-  consommé, `À Terre` non retiré, qualités d'arme — sont hors sujet de A).
+**Dans A** : rig + morpho + M/F + toutes espèces + têtes/cheveux + **équipement visible
+(armes/bouclier/armure par emplacement) + tenue de carrière** + UI. Pose de **repos** rendue.
+
+**Hors A** :
+- **Animations d'action = C** (A ne livre que le type `Pose` + `POSE_REPOS` ; le `.bob`
+  respirant CSS reste).
+- **Postures d'état = D** (condition → pose).
+- **Facing combat** (orientation → C ; rig structuré pour le miroir G/D).
+- **Migration des créatures vers le rig** (restent monolithiques).
+- **Modification du moteur de combat** (les manques relevés — advantage non consommé,
+  `À Terre` non retiré, qualités d'arme — hors sujet).
 
 ## 9. Tests & recette
 
 - `src/gameIso/rig/rig.test.ts` (Vitest) :
-  - `resolveRig` **déterministe** : même `(appearance, pose)` → même sortie.
-  - proportions distinctes par espèce et par sexe (asserts sur longueurs/épaisseurs d'os).
-  - `parts` override le tirage au seed ; index hors-bornes ignoré proprement.
-  - `build` modifie `thickness`/`length` de façon monotone.
-  - FK : transform monde d'un os enfant = composition du parent (cas simple vérifiable).
+  - `resolveRig`/`resolveParts` **déterministes**.
+  - **Priorité de résolution** : armure équipée sur un emplacement prime sur la carrière ;
+    sans armure → part de carrière ; override `parts[slot]` prime sur les deux ; arme/
+    bouclier suivent l'équipement.
+  - proportions distinctes par espèce et par sexe ; `build` monotone sur thickness/length.
+  - FK : transform monde d'un os enfant = composition du parent ; miroir G/D des parts
+    symétriques.
 - `npm run typecheck` + `npm test` verts.
-- Recette navigateur (Playwright MCP) : créateur → régler sexe / morpho / tête / armure →
-  vérifier le rendu live in-game (bouton « 🧪 Test rapide ») → screenshot, **0 erreur
-  console**. (Piège connu : séparer clic-qui-change-l'état et action en deux `evaluate`.)
+- Recette navigateur (Playwright MCP) : créateur → régler sexe/morpho/cheveux ; **équiper
+  une arme puis une pièce d'armure et vérifier que le sprite change** in-game (bouton
+  « 🧪 Test rapide ») → screenshot, **0 erreur console**. (Piège : séparer le clic qui
+  change l'état et l'action en deux `evaluate`.)
 
 ## 10. Fichiers ajoutés / modifiés
 
 **Ajoutés** (`src/gameIso/rig/`) :
-- `bones.ts` — `BoneId`, `Bone`, `Slot`.
-- `skeletons.ts` — `baseSkeleton(species, sex)`, `applyBuild`.
+- `bones.ts` — `BoneId`, `Bone`, `Slot`, `SLOT_BONES`.
+- `skeletons.ts` — `baseSkeleton`, `baseSpeciesOf`, `applyBuild`.
 - `poses.ts` — `Pose`, `POSE_REPOS`.
-- `parts/` — bibliothèque SVG par slot (départ : découpe des 5 héros) + `partsFor()`.
-- `appearance.ts` — type `Appearance` (pur).
+- `appearance.ts` — type `Appearance` (pur), `defaultAppearance(c)`.
+- `parts/` — `armourPart`, `weaponPart`, `shieldPart`, `careerTenue`, `cosmeticPart`,
+  `careerClass`, `equipFromCombatant`, `resolveParts` + les bibliothèques SVG.
 - `composeRig.tsx` — `resolveRig` (pur) + `RigSprite` (React).
 - `rig.test.ts`.
 
 **Modifiés :**
-- `src/engine/types.ts` — `Combatant.appearance?: Appearance` (champ de données pur).
-- `src/gameIso/sprites.ts` — `heroSprite` aiguille vers le rig (fallback conservé) ;
-  `heroSpriteNode`.
-- `src/gameIso/IsoStage.tsx` — token héros via `<RigSprite>` + variante `token()` à
-  enfants React.
+- `src/engine/types.ts` — `Combatant.appearance?: Appearance` (donnée pure).
+- `src/gameIso/sprites.ts` — **suppression** des 5 fonctions JS héros + `HERO_BY_CAREER` ;
+  `heroSprite` retiré au profit du rendu rig (l'art migre dans `rig/parts/`).
+- `src/gameIso/IsoStage.tsx` — token héros via `<RigSprite>` + variante `token()` à enfants
+  React.
 - UI créateur + `src/ui/editor/Editor.tsx` — panneau d'apparence héros partagé.
-- `src/data/pregens.ts` — doter les pré-tirés d'une `appearance` par défaut (démo M/F).
+- `src/data/pregens.ts` — `appearance` par défaut sur les pré-tirés (démo M/F + équipement).
 
 ## 11. Risques & mitigations
 
 | Risque | Mitigation |
 |---|---|
-| **Authoring SVG = gros volume** (espèce×sexe×carrière×slots) | Démarrer en découpant les 5 SVG héros existants ; enrichir par lots best-of-2 ; ne pas tout couvrir d'un coup, `log`/noter ce qui reste en stub |
-| Deux chemins de rendu (React rig vs innerHTML créatures) | Seam explicite et documenté ; créatures intouchées ; tests sur les deux |
-| Morpho visuelle ≠ hitbox (1 case) | A reste cosmétique ; pas d'impact gameplay ; `build` borné pour rester lisible sur 1 tuile |
-| Stabilité du seed (id change à l'import/export) | `parts` explicites priment sur le seed ; les héros joués reçoivent une `appearance` explicite dans `pregens`/création |
-| FK SVG (transforms imbriqués) source de bugs visuels | Pose de repos d'abord ; test FK ; recette navigateur avant d'enchaîner sur C |
+| **Authoring SVG = gros volume** (espèces×sexe + armures×matériau + armes + tenues) | Démarrer en découpant les 5 SVG héros ; lots best-of-2 ; part générique par slot tant que non dessiné ; `log`/noter les stubs restants |
+| Mapping item→part imprécis (pas de champ « famille d'arme » / « matériau ») | Inférence nom + `qualities` + palier `pa` ; table explicite extensible ; défaut générique sûr |
+| Suppression de `heroSprite` casse un appelant | Recenser les appelants avant suppression ; le rig couvre tous les cas via fallback générique ; typecheck |
+| Hit-locations L/R (brasG/D, jambeG/D) → slot unique `bras`/`jambes` | Part dessinée une fois, miroir G/D ; si armure couvre un seul bras, on couvre les deux visuellement (cosmétique, pas gameplay) |
+| Morpho visuelle ≠ hitbox (1 case) | `build` borné ; cosmétique pur, aucun impact gameplay |
+| FK SVG (transforms imbriqués) bugs visuels | Pose de repos d'abord ; test FK + miroir ; recette navigateur avant C |
 
 ## 12. Ce que A débloque pour la suite
 
-- **B** : le slot `tenue`/`casque`/`arme` existe → mapper `Combatant.items` (équipé) vers
-  `appearance.parts`.
 - **C** : os nommés (`<g data-bone>`) + type `Pose` → cibles d'animation prêtes (tween
   d'angles) ; nécessitera 1-2 enrichissements d'events moteur (ex. `defenseMode` dans
   `ANIM_ATTACK`, un `CONDITION_CHANGED`) — spécifiés dans le spec C.
 - **D** : `POSE_*` presets (à terre, sonné…) consommés depuis `Combatant.conditions`.
+- *(L'« équipement visible », initialement prévu en sous-projet B, est livré dans A.)*
