@@ -19,11 +19,13 @@ import {
   buffDurationRounds,
   isMagicMissile,
   isArcaneSpell,
+  knowsCastingSkill,
   resolveCasting,
   resolveMagicMissile,
   resolveFocus,
   type SpellLike,
 } from './magic';
+import { rollMiscast } from './miscast';
 
 describe('Tests & DR', () => {
   it('réussite si jet ≤ cible, DR = différence des dizaines', () => {
@@ -238,13 +240,13 @@ describe('Magie — valeur d’incantation', () => {
 describe('Magie — résolution de l’incantation', () => {
   it('un Sort réussi mais avec DR < NI n’est pas lancé', () => {
     // Valeur 95 → réussite quasi certaine, mais DR max ~9 < NI 20.
-    const c = caster({ Int: 95 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const c = caster({ Int: 95 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
     const spell: SpellLike = { ...ARCANE, cn: 20 };
     const res = resolveCasting(c, spell, makeRNG(3));
     expect(res.cast).toBe(false);
   });
   it('cohérence : lancé ⇔ réussite et DR ≥ NI', () => {
-    const c = caster({ Int: 60 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const c = caster({ Int: 60 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
     for (let seed = 0; seed < 20; seed++) {
       const res = resolveCasting(c, FLECHETTE, makeRNG(seed));
       const success = res.roll <= res.target;
@@ -252,7 +254,7 @@ describe('Magie — résolution de l’incantation', () => {
     }
   });
   it('une Prière réussie est lancée sans seuil de NI', () => {
-    const c = caster({ Soc: 99 }, [{ name: 'Prière', characteristic: 'Soc', advances: 0 }]);
+    const c = caster({ Soc: 99 }, [{ name: 'Prière', characteristic: 'Soc', advances: 1 }]);
     const res = resolveCasting(c, PRIERE, makeRNG(2));
     expect(res.cast).toBe(res.roll <= res.target);
   });
@@ -260,7 +262,7 @@ describe('Magie — résolution de l’incantation', () => {
 
 describe('Magie — Projectile magique', () => {
   it('Dégâts = Dégâts du sort + DR + BFM, Localisation = jet inversé', () => {
-    const c = caster({ Int: 80, FM: 40 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const c = caster({ Int: 80, FM: 40 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
     const target = caster({ E: 30 }, [], 15);
     const spell: SpellLike = { ...FLECHETTE, desc: 'Projectile magique avec Dégâts +4.' };
     const res = resolveMagicMissile(c, target, spell, makeRNG(5));
@@ -274,7 +276,7 @@ describe('Magie — Projectile magique', () => {
 
 describe('Magie — Focalisation', () => {
   it('cumule un DR positif sur réussite', () => {
-    const c = caster({ FM: 90 }, [{ name: 'Focalisation', spec: 'Aqshy', characteristic: 'FM', advances: 0 }]);
+    const c = caster({ FM: 90 }, [{ name: 'Focalisation', spec: 'Aqshy', characteristic: 'FM', advances: 1 }]);
     const res = resolveFocus(c, ARCANE, makeRNG(4));
     expect(res.dr).toBeGreaterThanOrEqual(0);
     if (res.roll <= 90) expect(res.dr).toBe(Math.max(0, Math.floor(90 / 10) - Math.floor(res.roll / 10)));
@@ -337,7 +339,7 @@ describe('Magie — parseCharBuffs (bonus/pénalités de caractéristique)', () 
 describe('Magie — correctifs de fidélité (audit)', () => {
   // B1 — Projectile ignorant le Bonus d'Endurance : le BE n'est pas déduit.
   it('B1 : un Projectile « ignore le Bonus d’Endurance » ne déduit pas le BE', () => {
-    const c = caster({ Int: 80, FM: 30 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const c = caster({ Int: 80, FM: 30 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
     const target = caster({ E: 39 }, [], 20); // BE 3
     const spell: SpellLike = {
       label: 'Vortex d’âmes',
@@ -380,6 +382,58 @@ describe('Magie — correctifs de fidélité (audit)', () => {
   });
 });
 
+describe('Magie — compétences Avancées (gating)', () => {
+  it('knowsCastingSkill exige au moins 1 augmentation', () => {
+    const sansSkill = caster({ Int: 80 });
+    const zero = caster({ Int: 80 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
+    const ok = caster({ Int: 80 }, [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
+    expect(knowsCastingSkill(sansSkill, 'Langue', 'Magick')).toBe(false);
+    expect(knowsCastingSkill(zero, 'Langue', 'Magick')).toBe(false);
+    expect(knowsCastingSkill(ok, 'Langue', 'Magick')).toBe(true);
+  });
+  it('un Sort est refusé sans la compétence Avancée (pas de repli sur la Caractéristique)', () => {
+    const c = caster({ Int: 95 }); // aucune compétence Langue
+    const res = resolveCasting(c, FLECHETTE, makeRNG(1));
+    expect(res.cast).toBe(false);
+    expect(res.log).toContain('ne maîtrise pas');
+  });
+});
+
+describe('Magie — Incantations Imparfaites & Colère des dieux', () => {
+  it('chaque jet d’une table tombe sur une entrée nommée', () => {
+    for (const sev of ['mineure', 'majeure', 'colere'] as const) {
+      for (let seed = 0; seed < 30; seed++) {
+        const r = rollMiscast(sev, makeRNG(seed));
+        expect(r.name.length).toBeGreaterThan(0);
+        expect(r.log).toContain(sev === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite');
+      }
+    }
+  });
+  it('les effets mécaniques (États / Blessures) sont structurés', () => {
+    // Balaye assez de graines pour observer au moins une entrée à effet.
+    let sawCondition = false;
+    let sawWounds = false;
+    for (let seed = 0; seed < 200 && !(sawCondition && sawWounds); seed++) {
+      const r = rollMiscast('majeure', makeRNG(seed));
+      for (const op of r.ops) {
+        if (op.condition) sawCondition = true;
+        if (op.wounds != null) sawWounds = op.wounds >= 1;
+      }
+    }
+    expect(sawCondition).toBe(true);
+    expect(sawWounds).toBe(true);
+  });
+  it('la Colère ajoute +10 par Point de Péché au jet', () => {
+    // Avec assez de Péché, on peut atteindre les entrées >100 (Châtiment → reduceToZero).
+    let sawReduce = false;
+    for (let seed = 0; seed < 50 && !sawReduce; seed++) {
+      const r = rollMiscast('colere', makeRNG(seed), 10); // +100 → jet 101-200
+      if (r.ops.some((o) => o.reduceToZero)) sawReduce = true;
+    }
+    expect(sawReduce).toBe(true);
+  });
+});
+
 describe('Création de héros', () => {
   it('génère un personnage jouable et reproductible', () => {
     const hero = createHero({
@@ -392,8 +446,8 @@ describe('Création de héros', () => {
     expect(hero.skills.length).toBeGreaterThan(0);
     expect(hero.wounds.max).toBeGreaterThan(0);
     expect(hero.movement).toBe(4);
-    // 40 augmentations réparties par défaut (+5 × 8)
+    // 40 augmentations de carrière (+5 × 8) + 24 d'espèce (3×+5 + 3×+3, LDB l.510)
     const totalAdv = hero.skills.reduce((s, sk) => s + sk.advances, 0);
-    expect(totalAdv).toBe(40);
+    expect(totalAdv).toBe(64);
   });
 });

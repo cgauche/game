@@ -61,6 +61,28 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **RNG de combat seedable** (`store.seedRng`) : combat enfin déterministe — flaky test éliminé,
   socle pour la coop réseau.
 
+## ✅ Jalon 0.7 — Couche magie au combat *(fait)*
+
+- **Moteur d'incantation pur et testé** (`src/engine/magic.ts`) : routage du Test selon la branche
+  (Sorts → **Langue (Magick)** / Int ; Prières → **Prière** / Soc ; **Focalisation** / FM), seuil
+  **DR ≥ NI** pour les Sorts (succès simple pour les Prières), **Projectile magique** (Dégâts du sort
+  + DR + BFM, localisation = jet inversé, réduction BE+PA, flags *ignore PA / ignore Bonus
+  d'Endurance*), **Focalisation** (accumulation du DR → lancement à NI 0).
+- **Effets actifs temporisés** (`Combatant.activeEffects`) : buffs/malus de caractéristique,
+  **meilleur bonus + pire pénalité** sans cumul (LDB l.168), durées en rounds (littéral **et**
+  formule « (Bonus de X) Rounds »), décrément en fin de round ; soin, application/retrait d'États.
+- **Incantations Imparfaites & Colère des dieux** (`src/engine/miscast.ts`) : tables d100
+  table-driven (Mineure / Majeure / Colère, +10 par Point de Péché, relances cascade/multiplication).
+  **Fidélité stricte** : seuls les effets modélisés (États nommés, Blessures ignorant BE+PA,
+  réduction à 0 + Inconscient) sont auto-appliqués ; le reste (Corruption, Pénitence, perte de
+  Talents, invocation, mutations…) est **journalisé et laissé au MJ** — rien d'inventé.
+- **Compétences Avancées** : Prière/Langue/Focalisation exigent ≥ 1 augmentation, sinon le Test est
+  refusé (pas de repli sur la Caractéristique nue).
+- **UI** : action **« Incanter »** + liste de sorts + ciblage allié/ennemi/soi (`BattlePanel`,
+  `IsoStage`) ; deux pré-tirés incantateurs (Sorcier, Prêtre) dans « Test rapide ».
+- **Audit de fidélité multi-agents** (58 agents) → **4 correctifs** (ignore-BE, soin paramétré,
+  retrait d'État, durée non inventée) + **pire pénalité**, tous sourcés au Livre de base.
+
 ---
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
@@ -75,10 +97,17 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Dépense de **Chance / Détermination** en jeu (relancer, ajouter du DR).
 - IA d'ennemi enrichie (actuellement : approche + attaque).
 
-## 🎯 Jalon 2 — Magie & Religion
+## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
-- **Sorts** en combat (Incantation, canalisation), **Bénédictions & Miracles**, Corruption.
-- Données déjà présentes (`spells.json`) — reste l'intégration moteur + UI (grimoire, ciblage).
+- ✅ Sorts/Bénédictions/Miracles en combat, Incantation, Focalisation, Projectiles, effets actifs,
+  Incantations Imparfaites & Colère des dieux (socle), gating des compétences Avancées, UI Incanter.
+- Reste (fidélité fine, hors périmètre 0.7) : **tables d'Imparfaites/Colère pleinement mécaniques**
+  (aujourd'hui : entrées combat appliquées, le reste laissé au MJ), **effets modulés par le DR**
+  (« pour chaque +2 DR »), **États récurrents** (un par round), **durées d'États** en rounds,
+  **Points de Péché** + déclencheur Colère sur prière réussie, **risques de Focalisation**
+  (interruption Calme −20, contrecoup Critique, spécialisation par **Vent**), **Corruption/mutations**.
+- Reste (contenu/UI) : **grimoire** (apprentissage/mémorisation des sorts), ciblage de **zone**
+  (gabarits AoE), sorts à effet non chiffré (relance, arme magique, peur…) par identité de sort.
 
 ## 🎯 Jalon 3 — Création de personnage complète
 

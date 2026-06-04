@@ -8,8 +8,10 @@
  *  5) Possessions : équipement de classe + de carrière.
  *  Blessures, Mouvement, Destin/Résilience selon le Tableau des Attributs.
  *
- * Les compétences/talents *raciaux* (listés en prose, hors all-data.json) ne
- * sont pas appliqués automatiquement afin de ne rien inventer hors sources.
+ * Les compétences/talents *raciaux* sont appliqués (Livre de base, étape 4,
+ * l.510) : 3 Compétences d'espèce à +5 et 3 à +3 ; Talents d'espèce résolus
+ * (choix « A ou B », fixes, et « N Talent aléatoire » tirés sur le Tableau des
+ * Talents aléatoires d100 — données issues de Source/all-data.json).
  */
 import { RNG, defaultRNG, roll } from './dice';
 import { maxWounds } from './characteristics';
@@ -23,6 +25,7 @@ import {
   findTrapping,
   classes,
   careers,
+  talents as talentTable,
 } from '../data';
 
 const SKILL_CHAR: Record<string, CharKey> = {
@@ -51,6 +54,80 @@ function skillCharacteristic(name: string): CharKey {
   return 'Dex'; // repli prudent
 }
 
+/**
+ * Augmentations de Compétences d'espèce (Livre de base l.510) : 3 Compétences
+ * reçoivent +5, 3 autres +3. Par défaut les 3 premières / 3 suivantes de la
+ * liste d'espèce ; surchargeable.
+ */
+export function speciesSkillAdvanceMap(
+  sp: SpeciesData,
+  override?: { plus5: string[]; plus3: string[] },
+): Record<string, number> {
+  const plus5 = override?.plus5 ?? sp.skills.slice(0, 3);
+  const plus3 = override?.plus3 ?? sp.skills.slice(3, 6);
+  const map: Record<string, number> = {};
+  for (const s of plus5) map[s] = (map[s] ?? 0) + 5;
+  for (const s of plus3) map[s] = (map[s] ?? 0) + 3;
+  return map;
+}
+
+/** Tableau des Talents aléatoires (Livre de base) : talents avec borne d100, triés. */
+function randomTalentTable() {
+  return talentTable.filter((t) => t.rand != null).sort((a, b) => (a.rand as number) - (b.rand as number));
+}
+
+/**
+ * Tire un Talent sur le Tableau des Talents aléatoires (1d100). Relance si le
+ * talent est déjà possédé (Livre de base : « vous pouvez relancer »).
+ */
+export function rollRandomTalent(rng: RNG, owned: Set<string>): string | null {
+  const table = randomTalentTable();
+  if (!table.length) return null;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const r = roll(1, 100, rng);
+    const entry = table.find((t) => r <= (t.rand as number));
+    if (entry && !owned.has(entry.label)) return entry.label;
+  }
+  return null;
+}
+
+/**
+ * Résout les Talents d'espèce : « A ou B » → choix (défaut : le 1er), Talents
+ * fixes ajoutés tels quels, « N Talent aléatoire » → N tirages distincts sur
+ * le Tableau des Talents aléatoires.
+ */
+export function resolveSpeciesTalents(
+  sp: SpeciesData,
+  opts: { rng?: RNG; choices?: Record<string, string>; owned?: Iterable<string> } = {},
+): string[] {
+  const rng = opts.rng ?? defaultRNG;
+  const owned = new Set<string>(opts.owned ?? []);
+  const result: string[] = [];
+  const add = (name: string) => {
+    result.push(name);
+    owned.add(name);
+  };
+  for (const entry of sp.talents) {
+    const e = entry.trim();
+    const mRand = e.match(/^(\d+)\s+Talents?\s+al[ée]atoires?$/i);
+    if (mRand) {
+      const n = parseInt(mRand[1], 10);
+      for (let i = 0; i < n; i++) {
+        const t = rollRandomTalent(rng, owned);
+        if (t) add(t);
+      }
+      continue;
+    }
+    if (/\sou\s/i.test(e)) {
+      const options = e.split(/\s+ou\s+/i).map((s) => s.trim());
+      add(opts.choices?.[e] ?? options[0]);
+      continue;
+    }
+    add(e);
+  }
+  return result;
+}
+
 export interface CreateHeroOptions {
   speciesLabel: string;
   careerLabel: string;
@@ -61,6 +138,10 @@ export interface CreateHeroOptions {
   careerTalent?: string;
   /** Répartition des 40 augmentations (sinon +5 par compétence). */
   skillAdvances?: Record<string, number>;
+  /** Compétences d'espèce recevant +5/+3 (défaut : 3 premières / 3 suivantes de la liste). */
+  speciesSkillAdvances?: { plus5: string[]; plus3: string[] };
+  /** Pour les Talents d'espèce « A ou B » : le talent choisi, par entrée. */
+  speciesTalentChoices?: Record<string, string>;
   /** Répartition des points supplémentaires Destin/Résilience. */
   fateSplit?: { fate: number; resilience: number };
   motivation?: string;
@@ -96,10 +177,30 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     return { name, spec, characteristic: skillCharacteristic(name), advances: adv };
   });
 
-  // Talents : un seul au choix à la création.
+  // 4b) Compétences d'espèce (Livre de base l.510) : 3 à +5, 3 à +3 ; les
+  // augmentations s'ajoutent à celles de carrière si la compétence est partagée.
+  for (const [raw, adv] of Object.entries(speciesSkillAdvanceMap(sp, opts.speciesSkillAdvances))) {
+    const { name, spec } = parseSkillRef(raw);
+    const existing = skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
+    if (existing) existing.advances += adv;
+    else skills.push({ name, spec, characteristic: skillCharacteristic(name), advances: adv });
+  }
+
+  // Talents : un seul de carrière au choix à la création.
   const talentChoices = level?.talents ?? [];
   const chosenTalent = opts.careerTalent ?? talentChoices[0];
   const talents: TalentInstance[] = chosenTalent ? [{ name: chosenTalent, times: 1 }] : [];
+
+  // 4c) Talents d'espèce : choix « A ou B », fixes, et « N Talent aléatoire ».
+  for (const name of resolveSpeciesTalents(sp, {
+    rng,
+    choices: opts.speciesTalentChoices,
+    owned: talents.map((t) => t.name),
+  })) {
+    const existing = talents.find((t) => t.name === name);
+    if (existing) existing.times += 1;
+    else talents.push({ name, times: 1 });
+  }
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
   const classTrappings = classForCareer(opts.careerLabel)?.trappings ?? [];

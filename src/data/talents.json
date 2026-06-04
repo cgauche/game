@@ -8,6 +8,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 132
@@ -22,6 +23,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 132
@@ -36,6 +38,7 @@
     "addTalent": null,
     "addCharacteristic": "Sociabilité",
     "specs": [],
+    "rand": 3,
     "source": {
       "book": "LDB",
       "page": 132
@@ -50,6 +53,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 6,
     "source": {
       "book": "LDB",
       "page": 132
@@ -64,6 +68,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 9,
     "source": {
       "book": "LDB",
       "page": 132
@@ -78,6 +83,7 @@
     "addTalent": null,
     "addCharacteristic": "Corruption",
     "specs": [],
+    "rand": 13,
     "source": {
       "book": "LDB",
       "page": 132
@@ -92,6 +98,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 132
@@ -117,6 +124,7 @@
       "Tatouage",
       "Tissage"
     ],
+    "rand": 16,
     "source": {
       "book": "LDB",
       "page": 132
@@ -131,6 +139,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 132
@@ -145,6 +154,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 19,
     "source": {
       "book": "LDB",
       "page": 132
@@ -159,6 +169,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -173,6 +184,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -198,6 +210,7 @@
       "Ulric",
       "Verena"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -219,6 +232,7 @@
       "Toundra",
       "Régions boisées"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -233,6 +247,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 22,
     "source": {
       "book": "LDB",
       "page": 133
@@ -247,6 +262,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -261,6 +277,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 133
@@ -275,6 +292,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -289,6 +307,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -303,6 +322,7 @@
     "addTalent": null,
     "addCharacteristic": "Chance",
     "specs": [],
+    "rand": 26,
     "source": {
       "book": "LDB",
       "page": 134
@@ -317,6 +337,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -331,6 +352,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -345,6 +367,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -359,6 +382,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -373,6 +397,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -387,6 +412,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -401,6 +427,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -415,6 +442,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 134
@@ -429,6 +457,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -443,6 +472,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -457,6 +487,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -471,6 +502,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -485,6 +517,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -499,6 +532,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 29,
     "source": {
       "book": "LDB",
       "page": 135
@@ -513,6 +547,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -527,6 +562,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -541,6 +577,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -555,6 +592,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 135
@@ -569,6 +607,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -583,6 +622,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -597,6 +637,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -611,6 +652,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -625,6 +667,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -639,6 +682,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -653,6 +697,7 @@
     "addTalent": null,
     "addCharacteristic": "Dextérité",
     "specs": [],
+    "rand": 32,
     "source": {
       "book": "LDB",
       "page": 136
@@ -667,6 +712,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 36,
     "source": {
       "book": "LDB",
       "page": 136
@@ -681,6 +727,7 @@
     "addTalent": null,
     "addCharacteristic": "Blessure",
     "specs": [],
+    "rand": 40,
     "source": {
       "book": "LDB",
       "page": 136
@@ -695,6 +742,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -709,6 +757,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -723,6 +772,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 136
@@ -737,6 +787,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -751,6 +802,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -765,6 +817,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -779,6 +832,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -793,6 +847,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -807,6 +862,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -821,6 +877,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -835,6 +892,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -849,6 +907,7 @@
     "addTalent": "Frénésie",
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -863,6 +922,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -877,6 +937,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 137
@@ -891,6 +952,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -905,6 +967,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -919,6 +982,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -933,6 +997,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -947,6 +1012,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 43,
     "source": {
       "book": "LDB",
       "page": 138
@@ -961,6 +1027,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -975,6 +1042,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -989,6 +1057,7 @@
     "addTalent": null,
     "addCharacteristic": "Capacité de Combat",
     "specs": [],
+    "rand": 46,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1003,6 +1072,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1026,6 +1096,7 @@
       "Sigmarites",
       "Sorciers dissidents"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1040,6 +1111,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1054,6 +1126,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1068,6 +1141,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 138
@@ -1082,6 +1156,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 49,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1096,6 +1171,7 @@
     "addTalent": null,
     "addCharacteristic": "Force Mentale",
     "specs": [],
+    "rand": 52,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1110,6 +1186,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1124,6 +1201,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1138,6 +1216,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1152,6 +1231,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1166,6 +1246,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1191,6 +1272,7 @@
       "Ulric",
       "Verena"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1205,6 +1287,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 139
@@ -1219,6 +1302,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 55,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1233,6 +1317,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 58,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1247,6 +1332,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1261,6 +1347,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1275,6 +1362,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1289,6 +1377,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1316,6 +1405,7 @@
       "Démonologie",
       "Nécromancie"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1334,6 +1424,7 @@
       "Slaanesh",
       "Tzeentch"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1348,6 +1439,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 140
@@ -1362,6 +1454,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1376,6 +1469,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1435,6 +1529,7 @@
       "Verrier",
       "Vigneron"
     ],
+    "rand": 61,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1449,6 +1544,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1463,6 +1559,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1477,6 +1574,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1491,6 +1589,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1505,6 +1604,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1519,6 +1619,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 141
@@ -1533,6 +1634,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1547,6 +1649,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1561,6 +1664,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1575,6 +1679,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1589,6 +1694,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 63,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1603,6 +1709,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1617,6 +1724,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1631,6 +1739,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1645,6 +1754,7 @@
     "addTalent": null,
     "addCharacteristic": "Détermination",
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1659,6 +1769,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1673,6 +1784,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
@@ -1687,6 +1799,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 66,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1701,6 +1814,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1715,6 +1829,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1729,6 +1844,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1743,6 +1859,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1757,6 +1874,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1771,6 +1889,7 @@
     "addTalent": null,
     "addCharacteristic": "Intelligence",
     "specs": [],
+    "rand": 69,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1785,6 +1904,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 143
@@ -1799,6 +1919,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1813,6 +1934,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1827,6 +1949,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1841,6 +1964,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1855,6 +1979,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1869,6 +1994,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1883,6 +2009,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1897,6 +2024,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1911,6 +2039,7 @@
     "addTalent": null,
     "addCharacteristic": "Agilité",
     "specs": [],
+    "rand": 72,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1925,6 +2054,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1945,6 +2075,7 @@
       "Maladie",
       "Mutation"
     ],
+    "rand": 75,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1959,6 +2090,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1973,6 +2105,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 144
@@ -1987,6 +2120,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2022,6 +2156,7 @@
       "Sorcières",
       "Vampires"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2036,6 +2171,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2102,6 +2238,7 @@
       "Voies fluviales",
       "Épaves"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2125,6 +2262,7 @@
       "Serviteurs",
       "Soldats"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2139,6 +2277,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2153,6 +2292,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2173,6 +2313,7 @@
       "Toucher",
       "Vue"
     ],
+    "rand": 78,
     "source": {
       "book": "LDB",
       "page": 145
@@ -2187,6 +2328,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 81,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2201,6 +2343,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 85,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2215,6 +2358,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2229,6 +2373,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2243,6 +2388,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2257,6 +2403,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2271,6 +2418,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2285,6 +2433,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2299,6 +2448,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2313,6 +2463,7 @@
     "addTalent": null,
     "addCharacteristic": "Capacité de Tir",
     "specs": [],
+    "rand": 88,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2327,6 +2478,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2341,6 +2493,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2355,6 +2508,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2369,6 +2523,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2383,6 +2538,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2397,6 +2553,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 146
@@ -2411,6 +2568,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2470,6 +2628,7 @@
       "Verrier",
       "Vigneron"
     ],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2484,6 +2643,7 @@
     "addTalent": null,
     "addCharacteristic": "Force",
     "specs": [],
+    "rand": 91,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2498,6 +2658,7 @@
     "addTalent": null,
     "addCharacteristic": "Endurance",
     "specs": [],
+    "rand": 94,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2512,6 +2673,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2526,6 +2688,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2540,6 +2703,7 @@
     "addTalent": null,
     "addCharacteristic": "Mouvement",
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2554,6 +2718,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2568,6 +2733,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": 97,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2582,6 +2748,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2596,6 +2763,7 @@
     "addTalent": null,
     "addCharacteristic": "Initiative",
     "specs": [],
+    "rand": 100,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2610,6 +2778,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2624,6 +2793,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
@@ -2638,6 +2808,7 @@
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
+    "rand": null,
     "source": {
       "book": "ADE2",
       "page": 20
@@ -2657,6 +2828,7 @@
       "Stupéfiants",
       "Plaisir"
     ],
+    "rand": null,
     "source": {
       "book": "ADE2",
       "page": 20

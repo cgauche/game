@@ -27,6 +27,10 @@ export interface SpeciesData {
   fate: { fate: number; resilience: number; extra: number };
   small: boolean;
   baseChar: Partial<Record<CharKey, number>>;
+  /** Compétences d'espèce (Livre de base) : 3 reçoivent +5, 3 reçoivent +3. */
+  skills: string[];
+  /** Talents d'espèce : « A ou B » (choix), fixes, « N Talent aléatoire » (table d100). */
+  talents: string[];
   source: { book: string; page: number };
 }
 export interface ClassData {
@@ -64,6 +68,9 @@ export interface TalentData {
   max: string | null;
   test: string | null;
   desc: string;
+  specs?: string[];
+  /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
+  rand?: number | null;
   source: { book: string; page: number };
 }
 export interface TrappingData {

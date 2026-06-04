@@ -25,6 +25,25 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Charme",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Langue (Bretonnien)",
+      "Langue (Wastelander)",
+      "Marchandage",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Savoir (Reikland)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Perspicace ou Affable",
+      "Destinée",
+      "3 Talent aléatoire"
+    ],
     "source": {
       "book": "LDB",
       "page": 25
@@ -56,6 +75,25 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Charme",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Divertissement (Au choix)",
+      "Évaluation",
+      "Marchandage",
+      "Métier (Au choix)",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Savoir (Middenheim)",
+      "Subornation"
+    ],
+    "talents": [
+      "Destinée",
+      "Savoir-vivre (Au choix) ou Infatigable",
+      "3 Talent aléatoire"
+    ],
     "source": {
       "book": "Middenheim",
       "page": 151
@@ -87,6 +125,25 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Intimidation",
+      "Langue (Wastelander)",
+      "Marchandage",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Savoir (Middenland)",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Menaçant ou Guerrier né",
+      "Destinée ou Talent aléatoire",
+      "3 Talent aléatoire"
+    ],
     "source": {
       "book": "Middenheim",
       "page": 152
@@ -118,6 +175,26 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Langue (Norse)",
+      "Langue (Wastelander)",
+      "Marchandage",
+      "Métier (Au choix)",
+      "Natation",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Savoir (Nordland)",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Pêcheur ou Nomade",
+      "Cœur vaillant ou Très résistant",
+      "Destinée ou Talent aléatoire",
+      "2 Talent aléatoire"
+    ],
     "source": {
       "book": "Middenheim",
       "page": 153
@@ -149,6 +226,24 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Charme",
+      "Corps à corps (Base)",
+      "Évaluation",
+      "Langue (Arabyan)",
+      "Langue (Reikspiel)",
+      "Langue (Tiléen)",
+      "Marchandage",
+      "Projectiles (Arbalète)",
+      "Ragot",
+      "Savoir (Tilée)",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Ergoteur ou Pêcheur",
+      "Imperturbable ou Affable"
+    ],
     "source": {
       "book": "AA",
       "page": 55
@@ -180,6 +275,27 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Corps à corps (Escrime)",
+      "Langue (Au choix)",
+      "Projectiles (Arc)",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Savoir (Au choix)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Affable ou Perspicace",
+      "Coopératif ou Lire/Écrire",
+      "Destinée",
+      "Noblesse ou Âme pure",
+      "Savoir-vivre (Au choix)"
+    ],
     "source": {
       "book": "ADE3",
       "page": 83
@@ -211,6 +327,27 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Bagarre)",
+      "Discrétion (Urbaine)",
+      "Escamotage",
+      "Évaluation",
+      "Intimidation",
+      "Intuition",
+      "Langue (Bataille ou Voleur)",
+      "Marchandage",
+      "Projectiles (Poudre noire)",
+      "Ragot",
+      "Savoir (Reikland)"
+    ],
+    "talents": [
+      "Destinée",
+      "Doigts de fée ou Lire/Écrire",
+      "Ergoteur ou Fuite !",
+      "Perspicace ou Affable",
+      "Criminel ou Talent aléatoire"
+    ],
     "source": {
       "book": "ADE3",
       "page": 83
@@ -242,6 +379,27 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Discrétion (Urbaine)",
+      "Escamotage",
+      "Évaluation",
+      "Intimidation",
+      "Intuition",
+      "Langue (Classique)",
+      "Perception",
+      "Ragot",
+      "Savoir (Magie)",
+      "Savoir (Reikland)"
+    ],
+    "talents": [
+      "Destinée",
+      "Insignifiant ou Lire/Écrire",
+      "Perspicace ou Affable",
+      "Seconde vue ou Sixième sens",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE3",
       "page": 84
@@ -273,6 +431,28 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Corps à corps (Bagarre)",
+      "Escamotage",
+      "Évaluation",
+      "Intimidation",
+      "Intuition",
+      "Langue (Voleur)",
+      "Marchandage",
+      "Ragot",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Voile (Chaland)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Criminel ou Savoir-vivre (Marchands)",
+      "Destinée",
+      "Négociateur ou Menaçant",
+      "Perspicace ou Affable",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE3",
       "page": 84
@@ -304,6 +484,26 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Corps à corps (Base)",
+      "Langue (Reikspiel)",
+      "Langue (Wastelander)",
+      "Marchandage",
+      "Métier (Au choix)",
+      "Natation",
+      "Ragot",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Savoir (Norsca)",
+      "Voile (Au choix)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Guerrier né ou Pied marin",
+      "Pêcheur ou Seigneur de guerre",
+      "Résistance (Corruption)",
+      "2 Talent aléatoire"
+    ],
     "source": {
       "book": "SOC",
       "page": 56
@@ -335,6 +535,26 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Chevaucher (Au choix)",
+      "Corps à corps (Base)",
+      "Langue (Gospodarinyi)",
+      "Langue (Reikspiel)",
+      "Métier (Au choix)",
+      "Natation",
+      "Ragot",
+      "Ramer",
+      "Résistance à l'alcool",
+      "Savoir (Norsca)",
+      "Soin aux animaux",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Cavalier émérite ou Pied marin",
+      "Claquer le fouet ou Loup de mer",
+      "Résistance (Corruption)",
+      "2 Talent aléatoire"
+    ],
     "source": {
       "book": "SOC",
       "page": 56
@@ -366,6 +586,26 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Corps à corps (Deux-mains)",
+      "Divertissement (Narration)",
+      "Langue (Khorne)",
+      "Langue (Reikspiel)",
+      "Langue (Wastelander)",
+      "Natation",
+      "Ramer",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Charge berserk ou Fuite !",
+      "Déterminé ou Insignifiant",
+      "Résistance (Corruption)",
+      "2 Talent aléatoire"
+    ],
     "source": {
       "book": "SOC",
       "page": 56
@@ -397,6 +637,25 @@
       "Soc": 20,
       "M": 4
     },
+    "skills": [
+      "Calme",
+      "Charme",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Langue (Norscan)",
+      "Marchandage",
+      "Métier (Au choix)",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Savoir (Nordland)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Affable ou Perspicace",
+      "Destinée",
+      "3 Talent aléatoire"
+    ],
     "source": {
       "book": "Salzemund",
       "page": 142
@@ -428,6 +687,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Esquive",
+      "Intuition",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Métier (Cuisinier)",
+      "Pari",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "2 Talent aléatoire"
+    ],
     "source": {
       "book": "LDB",
       "page": 26
@@ -459,6 +739,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Calme",
+      "Intuition",
+      "Langue (Halfling)",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Savoir-vivre (Soldat) ou Sens aiguisé (Vue)",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 23
@@ -490,6 +791,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Calme",
+      "Intuition",
+      "Langue (Halfling)",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Sociable ou Voyageur aguerri",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 24
@@ -521,6 +843,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Pari",
+      "Savoir (Herbes)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Maître artisan (Fermiers) ou Costaud",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 25
@@ -552,6 +895,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Évaluation",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Pari"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Négociateur ou Savoir-vivre (Guilde)",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 25
@@ -583,6 +947,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Évaluation",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Métier (Au choix)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Maître artisan (Au choix) ou Doigts de fée",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 26
@@ -614,6 +999,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Ragot",
+      "Subornation"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Ergoteur ou Numismate",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 26
@@ -645,6 +1051,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Intuition",
+      "Pari",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Brouet ou Dur à cuire",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 27
@@ -676,6 +1103,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Intimidation",
+      "Marchandage",
+      "Subornation"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Criminel ou Savoir-vivre (Criminel ou Guilde)",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 28
@@ -707,6 +1155,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Maître artisan (Cuisinier) ou Négociateur",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 29
@@ -738,6 +1207,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Pari",
+      "Ragot",
+      "Résistance"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Insignifiant ou Savoir-vivre (Serviteurs)",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 30
@@ -769,6 +1259,27 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Commandement",
+      "Langue (Halfling)",
+      "Ragot",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Lire/Écrire ou Savoir-vivre (Érudits ou Nobles)",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "ADE1",
       "page": 31
@@ -800,6 +1311,26 @@
       "Soc": 30,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Escamotage",
+      "Métier (Cuisinier)",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Reikland)",
+      "Langue (Halfling)",
+      "Marchandage",
+      "Ragot",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Petit",
+      "Résistance (Corruption)",
+      "Sens aiguisé (Goût)",
+      "Vision nocturne",
+      "Lire/Écrire ou Savoir-vivre (Citadins ou Guilde)"
+    ],
     "source": {
       "book": "ADE1",
       "page": 32
@@ -831,6 +1362,27 @@
       "Soc": 10,
       "M": 3
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Évaluation",
+      "Intimidation",
+      "Langue (Khazalid)",
+      "Métier (Au choix)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Géologie)",
+      "Savoir (Métallurgie)",
+      "Savoir (Nains)"
+    ],
+    "talents": [
+      "Costaud",
+      "Déterminé ou Obstiné",
+      "Lire/Écrire ou Impitoyable",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "LDB",
       "page": 25
@@ -862,6 +1414,27 @@
       "Soc": 10,
       "M": 3
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Intimidation",
+      "Intuition",
+      "Langue (Khazalid)",
+      "Métier (Au choix)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Géologie)",
+      "Savoir (Métallurgie)",
+      "Savoir (Nains)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Costaud",
+      "Déterminé ou Maître artisan (Au choix)",
+      "Impitoyable ou Lire/Écrire",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "ADE3",
       "page": 83
@@ -893,6 +1466,27 @@
       "Soc": 10,
       "M": 3
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Escalade",
+      "Langue (Khazalid)",
+      "Langue (Norse)",
+      "Métier (Au choix)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Nains)",
+      "Voile (Au choix)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Costaud",
+      "Impitoyable ou Lire/Écrire",
+      "Noctambule ou Obstiné",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "SOC",
       "page": 41
@@ -924,6 +1518,27 @@
       "Soc": 10,
       "M": 3
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Intimidation",
+      "Langue (Khazalid)",
+      "Métier (Orfèvre)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Géologie)",
+      "Savoir (Métallurgie)",
+      "Savoir (Nains)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Costaud",
+      "Déterminé ou Obstiné",
+      "Impitoyable ou Lire/Écrire",
+      "Résistance à la Magie",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "Salzemund",
       "page": 142
@@ -955,6 +1570,27 @@
       "Soc": 10,
       "M": 3
     },
+    "skills": [
+      "Calme",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Intimidation",
+      "Langue (Khazalid)",
+      "Langue (Norscan)",
+      "Métier (Au choix)",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Nains)",
+      "Voile (Au choix)",
+      "Évaluation"
+    ],
+    "talents": [
+      "Costaud",
+      "Déterminé ou Obstiné",
+      "Résistance à la Magie",
+      "Vision nocturne",
+      "Talent aléatoire"
+    ],
     "source": {
       "book": "Salzemund",
       "page": 142
@@ -986,6 +1622,28 @@
       "Soc": 15,
       "M": 3
     },
+    "skills": [
+      "Charme",
+      "Discrétion (Au choix)",
+      "Focalisation (Ulgu)",
+      "Esquive",
+      "Langue (Ghassalli)",
+      "Langue (Magick)",
+      "Langue (Wastelander)",
+      "Marchandage",
+      "Ragot",
+      "Représentation (Au choix)",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Insignifiant ou Empreint d'Ulgu",
+      "Chanceux ou Imitation",
+      "Pêcheur ou Lire/Écrire",
+      "Petit",
+      "Seconde vue ou Sixième sens",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "NADJ",
       "page": 86
@@ -1017,6 +1675,29 @@
       "Soc": 10,
       "M": 6
     },
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Bagarre)",
+      "Corps à corps (Base)",
+      "Divertissement (Narration)",
+      "Intimidation",
+      "Langue (Grumbarth)",
+      "Orientation",
+      "Pistage",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Savoir (Ogres)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Combat déloyal",
+      "Massif",
+      "Résistance (Corruption)",
+      "Résistance (Poisons ingérés)",
+      "Très résistant ou Très fort",
+      "Vice (Nourriture)",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "ADE2",
       "page": 15
@@ -1048,6 +1729,27 @@
       "Soc": 20,
       "M": 5
     },
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Corps à corps (Base)",
+      "Divertissement (Chant)",
+      "Évaluation",
+      "Musicien (Au choix)",
+      "Langue (Elthárin)",
+      "Natation",
+      "Orientation",
+      "Perception",
+      "Projectiles (Arc)",
+      "Voile (Au choix)"
+    ],
+    "talents": [
+      "Lire/Écrire",
+      "Imperturbable ou Sociable",
+      "Sens aiguisé (Vue)",
+      "Seconde vue ou Sixième sens",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "LDB",
       "page": 27
@@ -1079,6 +1781,27 @@
       "Soc": 20,
       "M": 5
     },
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Discrétion (Rurale)",
+      "Divertissement (Chant)",
+      "Escalade",
+      "Intimidation",
+      "Langue (Elthárin)",
+      "Perception",
+      "Pistage",
+      "Projectiles (Arc)",
+      "Résistance",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Dur à cuire ou Seconde vue",
+      "Lire/Écrire ou Très résistant",
+      "Nomade",
+      "Sens aiguisé (Vue)",
+      "Vision nocturne"
+    ],
     "source": {
       "book": "LDB",
       "page": 28

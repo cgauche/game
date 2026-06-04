@@ -70,6 +70,18 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
 }
 
 /**
+ * Prière, Langue (Magick) et Focalisation sont des Compétences AVANCÉES : on ne
+ * peut tenter le Test que si l'on y possède au moins une Augmentation (Livre de
+ * base, 09 - Compétences : « Si ce n'est pas le cas, vous ne pouvez pas tenter le
+ * Test »). Sinon, aucune incantation possible — pas de repli sur la Caractéristique.
+ */
+export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
+  return c.skills.some(
+    (s) => s.name === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
+  );
+}
+
+/**
  * Dégâts d'un Projectile magique : « Dégât(s) +N ». Détecte les sorts qui
  * ignorent les PA et/ou le Bonus d'Endurance (ex. drain de Shyish, Vortex d'âmes,
  * sorts de Chamon — Livre de base, Magie des Couleurs).
@@ -193,6 +205,18 @@ export function resolveCasting(
   focusedNI0 = false,
 ): CastResult {
   const info = castInfo(spell);
+  if (!knowsCastingSkill(caster, info.skill, info.spec)) {
+    const skill = info.spec ? `${info.skill} (${info.spec})` : info.skill;
+    return {
+      cast: false,
+      roll: 0,
+      target: 0,
+      sl: 0,
+      isCritical: false,
+      isFumble: false,
+      log: `${caster.name} ne maîtrise pas ${skill} et ne peut pas incanter ${spell.label}.`,
+    };
+  }
   const value = castingValue(caster, info.skill, info.spec);
   const t = rollTest(value, difficulty, rng);
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
@@ -272,6 +296,9 @@ export function resolveFocus(
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
 ): FocusResult {
+  if (!knowsCastingSkill(caster, 'Focalisation')) {
+    return { dr: 0, isCritical: false, isFumble: false, roll: 0, log: `${caster.name} ne maîtrise pas Focalisation.` };
+  }
   const value = castingValue(caster, 'Focalisation');
   const t = rollTest(value, difficulty, rng);
   const dr = t.success ? Math.max(0, t.sl) : 0;

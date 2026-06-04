@@ -18,6 +18,7 @@ import {
   parseCharBuffs,
   buffDurationRounds,
 } from '../engine/magic';
+import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { rollTest, TestResult } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
@@ -555,6 +556,30 @@ function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
 /** Rounds attribués à un buff dont la durée (minutes/heures/jours) dépasse le combat. */
 const COMBAT_PERSIST = 9999;
 
+/**
+ * Tire sur la table d'Incantation Imparfaite / Colère des dieux et applique au
+ * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
+ * réduction à 0 + Inconscient). Retourne les lignes de journal.
+ */
+function applyMiscast(caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
+  const m = rollMiscast(severity, battleRng, sinPoints);
+  const lines = [m.log];
+  for (const op of m.ops) {
+    if (op.reduceToZero) {
+      caster.wounds.current = 0;
+      addCondition(caster, 'Inconscient');
+      lines.push(`${caster.name} : Blessures réduites à 0 (Inconscient).`);
+    } else if (op.wounds != null) {
+      caster.wounds.current = Math.max(0, caster.wounds.current - op.wounds);
+      lines.push(`${caster.name} subit ${op.wounds} Blessure(s) (ignorant BE et PA).`);
+    } else if (op.condition) {
+      addCondition(caster, op.condition.name, op.condition.value);
+      lines.push(`${caster.name} reçoit ${op.condition.value} État ${op.condition.name}.`);
+    }
+  }
+  return lines;
+}
+
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
 function castSpell(
   get: () => GameState,
@@ -579,7 +604,10 @@ function castSpell(
       target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
       if (res.isCritical && target.wounds.current > 0) addCondition(target, 'À Terre');
     }
-    if (res.isFumble) logLines.push(`${caster.name} subit une Incantation Imparfaite !`);
+    // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
+    // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
+    if (res.isFumble) logLines.push(...applyMiscast(caster, 'mineure'));
+    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(caster, 'mineure'));
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res });
     if (res.defenderDefeated) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
@@ -620,11 +648,11 @@ function castSpell(
       }
       // Sinon : l'effet du sort est purement narratif (déjà journalisé).
     } else if (res.isFumble) {
-      logLines.push(
-        castInfoIsPrayer(spell.type)
-          ? `${caster.name} provoque la Colère des dieux !`
-          : `${caster.name} subit une Incantation Imparfaite !`,
-      );
+      // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
+      logLines.push(...applyMiscast(caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
+    } else if (focusedNI0) {
+      // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
+      logLines.push(...applyMiscast(caster, 'mineure'));
     }
   }
 
@@ -658,9 +686,11 @@ function focusSpell(get: () => GameState, set: any, caster: Combatant, label: st
   } else {
     logLines.push(`Focalisation : ${caster.focus.dr}/${ni} DR.`);
   }
-  if (res.isFumble) logLines.push(`${caster.name} subit une Incantation Imparfaite !`);
+  // Maladresse en Focalisation → Incantation Imparfaite Majeure (Livre de base l.191).
+  if (res.isFumble) logLines.push(...applyMiscast(caster, 'majeure'));
   set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
   bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
 }
 
 function checkBattleOver(get: () => GameState, set: any): boolean {

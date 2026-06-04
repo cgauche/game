@@ -126,6 +126,11 @@ function main() {
       fate: SPECIES_FATE[s.refChar] ?? { fate: 0, resilience: 0, extra: 2 },
       small: PETIT.has(s.refChar),
       baseChar, // ex. { CC: 20, CT: 20, ... } — on ajoute 2d10 à la création
+      // Compétences/Talents raciaux (Livre de base, étape 4 de création) :
+      // liste de Compétences d'espèce (3 reçoivent +5, 3 reçoivent +3) et
+      // Talents (« A ou B » = choix, fixes, « N Talent aléatoire » = table d100).
+      skills: splitList(s.skills),
+      talents: splitList(s.talents),
       source: { book: s.book, page: s.page },
     };
   });
@@ -187,6 +192,9 @@ function main() {
     addTalent: norm(t.addTalent),
     addCharacteristic: norm(t.addCharacteristic),
     specs: splitList(t.specs),
+    // Borne haute de la plage d100 sur le Tableau des Talents aléatoires
+    // (Livre de base) : ex. Affable=3 → 01-03. null = hors table.
+    rand: norm(t.rand),
     source: { book: t.book, page: t.page },
   }));
   write('talents.json', talents, talents.length);
