@@ -3,7 +3,6 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import { propSvg } from './catalog/decor';
@@ -47,72 +46,6 @@ export function tree(x: number, y: number, dims: Dims): string {
     </g>`;
 }
 
-// --- Héros (poses debout) -------------------------------------------------
-function soldier() {
-  return `<g class="bob"><path d="M40 72 Q60 60 80 72 Q90 110 80 150 L60 140 L40 150 Q30 110 40 72 Z" fill="url(#g_cloak)"/>
-    <rect x="50" y="118" width="9" height="30" fill="#3a2c22"/><rect x="61" y="118" width="9" height="30" fill="#46362a"/>
-    <path d="M44 70 Q60 58 76 70 L80 116 Q60 126 40 116 Z" fill="url(#g_steel)" stroke="#3a4150" stroke-width="1.5"/>
-    <path d="M60 70 L60 116" stroke="#5a6478" stroke-width="1.4"/>
-    <path d="M42 74 Q26 88 28 112" stroke="url(#g_steelD)" stroke-width="10" fill="none" stroke-linecap="round"/>
-    <circle cx="26" cy="112" r="18" fill="#8a4030" stroke="#d8a93b" stroke-width="3"/><circle cx="26" cy="112" r="5" fill="#d8a93b"/>
-    <path d="M78 74 Q94 80 92 50" stroke="#9aa6b8" stroke-width="9" fill="none" stroke-linecap="round"/>
-    <rect x="89" y="14" width="6" height="38" rx="2" fill="url(#g_steel)" transform="rotate(8 92 33)"/>
-    <ellipse cx="44" cy="70" rx="12" ry="8" fill="url(#g_steelD)"/><ellipse cx="76" cy="70" rx="12" ry="8" fill="url(#g_steelD)"/>
-    <circle cx="60" cy="48" r="14" fill="#e2b48c"/>
-    <path d="M46 46 Q60 26 74 46 L74 38 Q60 24 46 38 Z" fill="url(#g_steel)" stroke="#3a4150"/>
-    <rect x="58" y="40" width="4" height="18" rx="2" fill="#7a8496"/>${e(55, 49, 1.6)}${e(65, 49, 1.6)}</g>`;
-}
-function slayer() {
-  return `<g class="bob"><path d="M44 96 L38 148 L56 148 L58 100 Z" fill="#5a3f28"/><path d="M70 96 L78 148 L60 148 L60 100 Z" fill="#4c3520"/>
-    <path d="M36 150 h22 l2 6 h-26z" fill="#241a12"/><path d="M80 150 h-22 l-2 6 h26z" fill="#1c140e"/>
-    <path d="M40 80 Q60 70 80 80 L84 100 Q60 108 36 100 Z" fill="#6b4a2b"/>
-    <path d="M34 50 Q60 38 86 50 Q92 74 82 92 Q60 100 38 92 Q28 74 34 50 Z" fill="url(#g_flesh)"/>
-    <path d="M46 58 q8 8 0 18 M74 58 q-8 8 0 18 M60 54 v34" stroke="#2f6db0" stroke-width="2.4" fill="none" opacity="0.85"/>
-    <path d="M36 56 Q16 70 12 46" stroke="url(#g_flesh)" stroke-width="11" fill="none" stroke-linecap="round"/>
-    <path d="M84 56 Q104 70 108 46" stroke="url(#g_flesh)" stroke-width="11" fill="none" stroke-linecap="round"/>
-    <g transform="translate(6 18) rotate(-18)"><rect x="-2" y="0" width="4" height="40" fill="#4a2f17"/><path d="M-16 0 q16 -14 16 14 q-16 -2 -16 -14z" fill="url(#g_axe)" stroke="#2a3038"/></g>
-    <g transform="translate(108 18) rotate(18) scale(-1,1)"><rect x="-2" y="0" width="4" height="40" fill="#4a2f17"/><path d="M-16 0 q16 -14 16 14 q-16 -2 -16 -14z" fill="url(#g_axe)" stroke="#2a3038"/></g>
-    <circle cx="60" cy="34" r="15" fill="#f0c49a"/>
-    <path d="M46 38 Q60 80 74 38 Q66 56 60 58 Q54 56 46 38 Z" fill="#c43f0a"/>
-    <path d="M60 -2 Q55 18 60 22 Q65 18 60 -2 Z" fill="url(#g_crest)"/>
-    <path d="M50 6 Q48 20 56 22 M70 6 Q72 20 64 22" stroke="url(#g_crest)" stroke-width="6" fill="none" stroke-linecap="round"/>${e(54, 34, 1.6)}${e(66, 34, 1.6)}</g>`;
-}
-function sorcier() {
-  return `<g class="bob"><path d="M40 70 Q60 60 80 70 L98 150 L22 150 Z" fill="url(#g_robe)"/>
-    <g fill="#cfe3ff" opacity="0.85"><circle cx="44" cy="112" r="1.6"/><circle cx="60" cy="130" r="2"/><circle cx="74" cy="118" r="1.6"/><circle cx="52" cy="142" r="1.6"/></g>
-    <path d="M44 84 Q30 92 30 122" stroke="url(#g_robe)" stroke-width="10" fill="none" stroke-linecap="round"/>
-    <rect x="27" y="18" width="5" height="112" rx="2" fill="#6a4a2a"/>
-    <circle class="glow" cx="29" cy="16" r="11" fill="url(#g_glow)"/><circle cx="29" cy="16" r="4.5" fill="#d6f7ff"/>
-    <path d="M76 84 Q90 92 88 112" stroke="url(#g_robe)" stroke-width="9" fill="none" stroke-linecap="round"/>
-    <path d="M46 56 Q60 28 74 56 Q72 76 60 80 Q48 76 46 56 Z" fill="url(#g_robe)"/>
-    <circle cx="60" cy="58" r="11" fill="#e2b48c"/><path d="M52 62 Q60 80 68 62 L66 78 Q60 86 54 78 Z" fill="#d8d8d8"/>${e(56, 57, 1.5)}${e(64, 57, 1.5)}</g>`;
-}
-function halfling() {
-  return `<g class="bob"><ellipse cx="50" cy="148" rx="12" ry="6" fill="#c8a06a"/><ellipse cx="72" cy="148" rx="12" ry="6" fill="#b8905a"/>
-    <rect x="46" y="120" width="12" height="26" rx="4" fill="#5a4630"/><rect x="62" y="120" width="12" height="26" rx="4" fill="#4c3a26"/>
-    <ellipse cx="60" cy="104" rx="26" ry="24" fill="#d8c9a0"/>
-    <path d="M40 92 Q60 84 80 92 L82 120 Q60 128 38 120 Z" fill="url(#g_hVest)"/>
-    <path d="M40 96 Q28 104 30 116" stroke="#d8c9a0" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <path d="M80 96 Q92 104 90 116" stroke="#d8c9a0" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <rect x="88" y="98" width="3" height="18" fill="#cfd6df" transform="rotate(22 89 107)"/>
-    <circle cx="60" cy="74" r="15" fill="#f0c8a0"/>
-    <path d="M44 72 q-2 -20 16 -20 q18 0 16 20 q-7 -9 -16 -9 q-9 0 -16 9z" fill="#7a4a22"/>
-    <circle cx="47" cy="72" r="4" fill="#7a4a22"/><circle cx="73" cy="72" r="4" fill="#7a4a22"/>${e(55, 74, 1.6)}${e(65, 74, 1.6)}</g>`;
-}
-function witchHunter() {
-  return `<g class="bob"><path d="M44 72 Q60 64 76 72 L92 150 L28 150 Z" fill="url(#g_coat)"/>
-    <rect x="50" y="120" width="9" height="30" fill="#1a140e"/><rect x="61" y="120" width="9" height="30" fill="#120e08"/>
-    <path d="M46 70 Q60 62 74 70 L78 104 Q60 110 42 104 Z" fill="url(#g_coat)"/><path d="M54 70 L60 92 L66 70 Z" fill="#e8e4da"/>
-    <rect x="42" y="100" width="36" height="6" fill="#3a2a18"/><path d="M60 106 l4 8 l-4 4 l-4 -4z" fill="#d8a93b"/>
-    <path d="M46 78 Q30 86 32 108" stroke="url(#g_coat)" stroke-width="9" fill="none" stroke-linecap="round"/>
-    <g transform="translate(24 104)"><rect x="-2" y="-3" width="20" height="6" rx="1" fill="#241a12"/><rect x="-7" y="0" width="9" height="11" rx="2" fill="#3a2a18"/><rect x="16" y="-2" width="9" height="4" fill="#4a4a52"/></g>
-    <path d="M74 78 Q90 86 88 112" stroke="url(#g_coat)" stroke-width="9" fill="none" stroke-linecap="round"/>
-    <line x1="88" y1="112" x2="102" y2="150" stroke="#cfd6df" stroke-width="2"/>
-    <circle cx="60" cy="56" r="12" fill="#e2b48c"/>
-    <path d="M38 50 q22 -7 44 0 q-7 5 -22 5 q-15 0 -22 -5z" fill="#15120c"/><path d="M49 50 q11 -24 22 0 z" fill="#15120c"/>
-    <rect x="55" y="39" width="10" height="3" fill="#d8a93b"/>${e(55, 56, 1.4)}${e(65, 56, 1.4)}</g>`;
-}
-
 // --- PNJ / props / objets --------------------------------------------------
 function villager() {
   return `<g class="bob"><path d="M44 80 Q60 70 76 80 L82 150 L38 150 Z" fill="#6a5a3a"/>
@@ -139,23 +72,6 @@ function mutantStand() {
 }
 
 // --- Registre -------------------------------------------------------------
-const HERO_BY_CAREER: Record<string, () => string> = {
-  Soldat: soldier,
-  Tueur: slayer,
-  Sorcier: sorcier,
-  'Sorcier de village': sorcier,
-  Voleur: halfling,
-  Répurgateur: witchHunter,
-};
-
-export function heroSprite(c: Combatant): string {
-  const byCareer = c.career && HERO_BY_CAREER[c.career];
-  if (byCareer) return byCareer();
-  if (c.species?.startsWith('Halfling')) return halfling();
-  if (c.species === 'Nains') return slayer();
-  return soldier();
-}
-
 const CREATURE_SPRITES = creatureSprites as Record<string, string>;
 const CREATURE_BY_NORM: Record<string, string> = {};
 for (const [k, v] of Object.entries(CREATURE_SPRITES)) CREATURE_BY_NORM[k.toLowerCase()] = v;
