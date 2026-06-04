@@ -114,7 +114,8 @@ export function IsoStage() {
     mode === 'battle' && battle
       ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
       : [partyPos];
-  for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies)));
+  const night = scene.ambiance === 'nuit';
+  for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
   const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);

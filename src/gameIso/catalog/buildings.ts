@@ -45,15 +45,20 @@ function wallFaces(c: Corners, H: number, wallC: string, edge: string): string {
   );
 }
 
-/** Fenêtres (une par face avant) + porte sur le mur du côté `facing`. */
-function openings(c: Corners, H: number, facing?: Facing): string {
-  const glass = '#33414d';
+/** Fenêtres (une par face avant) + porte sur le mur du côté `facing`. Éclairées la nuit. */
+function openings(c: Corners, H: number, facing?: Facing, night?: boolean): string {
+  const glass = night ? '#f2c45a' : '#33414d';
   const frame = '#2a2018';
   const wood = '#42301c';
   let s = '';
-  // fenêtres à volets, mi-hauteur, une par face avant
-  s += `<path d="${pane(c.O, c.S, H, 0.5, 0.07, 0.46, 0.72)}" fill="${glass}" stroke="${frame}" stroke-width="1.5"/>`;
-  s += `<path d="${pane(c.S, c.E, H, 0.5, 0.07, 0.46, 0.72)}" fill="${glass}" stroke="${frame}" stroke-width="1.5" opacity="0.92"/>`;
+  // fenêtres à volets, mi-hauteur, une par face avant (halo + flicker la nuit)
+  const win = (p0: number[], p1: number[], op = 1): string => {
+    const halo = night ? `<path d="${pane(p0, p1, H, 0.5, 0.13, 0.4, 0.78)}" fill="#f2c45a" opacity="0.22"/>` : '';
+    const pn = `<path d="${pane(p0, p1, H, 0.5, 0.07, 0.46, 0.72)}" fill="${glass}" stroke="${frame}" stroke-width="1.5" opacity="${op}"/>`;
+    return night ? `<g class="warm">${halo}${pn}</g>` : pn;
+  };
+  s += win(c.O, c.S);
+  s += win(c.S, c.E, 0.92);
   // porte : choix de la face avant selon facing (E → face droite ; sinon face gauche)
   const onRight = facing === 'E';
   const tC = onRight ? 0.5 : facing === 'S' ? 0.82 : 0.5;
@@ -119,7 +124,7 @@ const colombage: BuildingViz['render'] = (foot, params, ctx) => {
   const H = 40 * (params.floors ?? 2);
   const timber = params.timberColor ?? '#4a3220';
   const wallC = params.wallColor ?? '#d8c9a8';
-  const walls = groundShadow(c) + wallFaces(c, H, wallC, timber) + timberBraces(c, H, timber) + openings(c, H, ctx.facing);
+  const walls = groundShadow(c) + wallFaces(c, H, wallC, timber) + timberBraces(c, H, timber) + openings(c, H, ctx.facing, ctx.night);
   return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 34, params.roofMaterial ?? 'tuile') };
 };
 
@@ -140,7 +145,7 @@ const taverne: BuildingViz['render'] = (foot, params, ctx) => {
 const forge: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 38 * (params.floors ?? 1);
-  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#8a8378', '#4d4a44') + openings(c, H, ctx.facing);
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#8a8378', '#4d4a44') + openings(c, H, ctx.facing, ctx.night);
   // cheminée + fumée animée (coin E)
   const e = upXY(c.E, H);
   const ch = [e[0] - 10, e[1] - 6];
@@ -155,7 +160,7 @@ const forge: BuildingViz['render'] = (foot, params, ctx) => {
 const echoppe: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 34;
-  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#cdbd98', params.timberColor ?? '#5a3f24') + openings(c, H, ctx.facing);
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#cdbd98', params.timberColor ?? '#5a3f24') + openings(c, H, ctx.facing, ctx.night);
   // auvent rayé en façade (au-dessus de O→S)
   const a = upXY(c.O, H * 0.5);
   const b = upXY(c.S, H * 0.5);
@@ -166,7 +171,7 @@ const echoppe: BuildingViz['render'] = (foot, params, ctx) => {
 const chapelle: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 70;
-  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#b9b2a4', '#6a655c') + openings(c, H, ctx.facing);
+  const walls = groundShadow(c) + wallFaces(c, H, params.wallColor ?? '#b9b2a4', '#6a655c') + openings(c, H, ctx.facing, ctx.night);
   const apex = [(c.N[0] + c.S[0]) / 2, (c.N[1] + c.S[1]) / 2 - (H + 64)];
   const cross =
     `<line x1="${apex[0]}" y1="${apex[1]}" x2="${apex[0]}" y2="${apex[1] - 20}" stroke="#d8c27a" stroke-width="3"/>` +
@@ -205,7 +210,7 @@ const manoir: BuildingViz['render'] = (foot, params, ctx) => {
     groundShadow(c) +
     wallFaces(c, H, params.wallColor ?? '#cfc3a6', timber) +
     `<path d="M${up(c.O, H * 0.5)} L${up(c.S, H * 0.5)} L${up(c.E, H * 0.5)}" stroke="${timber}" stroke-width="2.5" fill="none" opacity="0.55"/>` +
-    openings(c, H, ctx.facing);
+    openings(c, H, ctx.facing, ctx.night);
   return { walls, interior: floorInterior(c), roof: hipRoof(c, H, 44, 'ardoise') };
 };
 

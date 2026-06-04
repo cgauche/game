@@ -394,7 +394,7 @@ export function Editor() {
                     if (t === 'mur') objs.push({ d: depth(x, y), el: <g key={`w${x}-${y}`} dangerouslySetInnerHTML={{ __html: wallBlock(x, y, dims) }} /> });
                     if (t === 'bois') objs.push({ d: depth(x, y) - 0.1, el: <g key={`t${x}-${y}`} dangerouslySetInnerHTML={{ __html: tree(x, y, dims) }} /> });
                   }
-                for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims));
+                for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, scene.ambiance === 'nuit'));
                 for (const e of scene.entities) {
                   if (e.kind === 'heroStart') {
                     const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);

@@ -10,6 +10,8 @@ export interface RenderCtx {
   dims: Dims;
   /** Orientation du bâtiment (place la porte visible côté façade). */
   facing?: Facing;
+  /** Scène nocturne → fenêtres éclairées. */
+  night?: boolean;
 }
 export type Rect = { x: number; y: number; w: number; h: number };
 

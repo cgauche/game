@@ -10,8 +10,8 @@ export function buildingDepth(b: BuildingFeature): number {
 }
 
 /** Objet trié { d, el } pour la z-list des deux canvases. */
-export function buildingObj(b: BuildingFeature, dims: Dims, hideRoof = false): { d: number; el: JSX.Element } {
-  const L = buildingLayers(b.type, b.foot, b.params ?? {}, { dims, facing: b.facing });
+export function buildingObj(b: BuildingFeature, dims: Dims, hideRoof = false, night = false): { d: number; el: JSX.Element } {
+  const L = buildingLayers(b.type, b.foot, b.params ?? {}, { dims, facing: b.facing, night });
   return {
     d: buildingDepth(b),
     el: (
