@@ -117,7 +117,10 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 - **Sprites de carrières** (héros) via workflow (réfs prêtes : `mapping.json` 64/71) ;
   **sprites composables** (l'équipement se voit) ; **animations** marche/attaque/mort.
-- Reprise des sprites de bestiaire ratés (galerie QC).
+- ✅ **Reprise des sprites de bestiaire ratés (galerie QC)** — régénérés via workflow
+  best-of-2 (lecture art officiel + desc canon + consigne silhouette) : ~52/57 redessinés,
+  fin du vert mutant par défaut, silhouettes reconnaissables. Restent perfectibles : Dragon
+  (plus élancé), Manticore, Mutant.
 - Sons & musique, accessibilité, **code-splitting**, CI (lint+tests+build).
 
 ---
@@ -126,7 +129,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 - Compétences/talents **raciaux** non appliqués à la création (données en prose).
 - **Sprites** par équipement non reflétés (sprites figés par carrière, pas composables).
-- Sprites de bestiaire de **qualité hétérogène** (générés par IA depuis réfs) — à trier via la galerie.
+- Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
+  restent quelques complexes perfectibles (Dragon, Manticore, Mutant). Le SVG dessiné main
+  plafonne sur les gros ailés.
 - **Encombrement** affiché mais sans pénalités.
 - IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
 - **Art des bâtiments procédural** (silhouettes simples) — à enrichir vers le niveau d'`ambush.html`.
