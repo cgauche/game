@@ -88,6 +88,9 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private render(force = false) {
+    // Garde-fou : ne jamais rendre sur une scène inactive/détruite (sinon
+    // this.add est null et une exception casse la boucle de combat).
+    if (!this.add || !this.sys || !this.sys.isActive()) return;
     const st = useGame.getState();
     const sc = st.scene;
     if (!sc) {
@@ -167,16 +170,16 @@ export class WorldScene extends Phaser.Scene {
         body.strokeCircle(TILE / 2, TILE / 2 - 2, TILE / 2 - 6);
         const txt = this.add.text(TILE / 2, TILE / 2 - 4, label, { fontSize: '13px', color: '#fff', fontStyle: 'bold' }).setOrigin(0.5);
         const hpbar = this.add.graphics();
-        hpbar.setData('isHp', true);
         c.add([body, txt, hpbar]);
-        c.setData('color', color);
+        // Référence directe (recherche par getData peu fiable selon les enfants).
+        (c as any).hpbar = hpbar;
         this.tokenLayer.add(c);
         this.tokens.set(id, c);
       }
       c.setPosition(ox + pos.x * TILE, oy + pos.y * TILE);
       c.setAlpha(dim ? 0.35 : 1);
       // Barre de vie
-      const hpbar = c.list.find((o: any) => o.getData && o.getData('isHp')) as Phaser.GameObjects.Graphics;
+      const hpbar = (c as any).hpbar as Phaser.GameObjects.Graphics;
       hpbar.clear();
       if (hp && hp.m > 0) {
         const w = TILE - 10;

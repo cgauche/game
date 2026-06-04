@@ -1,7 +1,19 @@
 import { useGame } from '../state/store';
+import { makePregens } from '../data/pregens';
+import { campaign } from '../scenes/campaign';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
+  const setParty = useGame((s) => s.setParty);
+  const startScene = useGame((s) => s.startScene);
+
+  /** Raccourci dev : équipe pré-tirée + scène de test, sans passer par les menus. */
+  const quickTest = () => {
+    setParty(makePregens().slice(0, 4));
+    startScene(campaign[0].scene);
+    setScreen('campaign');
+  };
+
   return (
     <div className="menu">
       <div className="menu-card">
@@ -13,6 +25,9 @@ export function MainMenu() {
           </button>
           <button className="btn" onClick={() => setScreen('editor')}>
             Éditeur de niveau
+          </button>
+          <button className="btn btn-test" onClick={quickTest}>
+            🧪 Test rapide — équipe pré-tirée + scène
           </button>
         </div>
         <p className="hint">

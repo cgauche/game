@@ -6,8 +6,8 @@ import { maxWounds } from '../engine/characteristics';
 import { makeRNG } from '../engine/dice';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../engine/types';
 
-/** Espèces jouables principales (mises en avant). */
-const CORE = ['Humains (Reiklander)', 'Nain', 'Halfling', 'Haut Elfe', 'Elfe Sylvain'];
+/** Espèces jouables principales (mises en avant) — labels exacts de la base. */
+const CORE = ['Humains (Reiklander)', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains'];
 
 export function CharacterCreator() {
   const party = useGame((s) => s.party);

@@ -59,6 +59,16 @@ body {
   border-color: var(--accent2);
   font-weight: 600;
 }
+.btn-test {
+  border-style: dashed;
+  border-color: #4a7a3a;
+  color: #aee0a0;
+  font-size: 13px;
+}
+.btn-test:hover:not(:disabled) {
+  background: #1e2c1a;
+  border-color: #6fae5a;
+}
 .btn.danger,
 .btn.danger.btn-primary {
   border-color: var(--danger);
@@ -723,4 +733,34 @@ textarea:focus {
   font-family: 'Consolas', monospace;
   font-size: 12px;
   white-space: pre;
+}
+
+/* Rendu isométrique du jeu */
+.iso-stage {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 28%, #1a1326, #0a0810);
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  touch-action: none;
+}
+.iso-stage .bob {
+  animation: isobob 3.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes isobob {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-1px) scaleY(1.025); }
+}
+.iso-stage .glow {
+  animation: isoglow 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes isoglow {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.35); opacity: 1; }
 }

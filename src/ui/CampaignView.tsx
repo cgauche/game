@@ -1,5 +1,5 @@
 import { useGame, activeCombatant } from '../state/store';
-import { PhaserGame } from '../game/PhaserGame';
+import { IsoStage } from '../gameIso/IsoStage';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';
 import { Combatant } from '../engine/types';
@@ -36,7 +36,7 @@ export function CampaignView() {
       </aside>
 
       <main className="stage">
-        <PhaserGame />
+        <IsoStage />
         {mode === 'exploration' && !dialogue && (
           <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
         )}
