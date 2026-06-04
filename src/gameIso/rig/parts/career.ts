@@ -1,6 +1,7 @@
 import careers from '../../../data/careers.json';
 import type { PartArt } from './types';
 import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
+import { SLICE_TENUES } from './slice-soldat';
 
 type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', PartArt>>;
 
@@ -55,6 +56,7 @@ export function careerTenue(cls: string): TenueSet {
 
 /** Tenue résolue pour une carrière : art PAR CARRIÈRE si dispo, sinon archétype de CLASSE. */
 export function careerTenueFor(career: string | undefined): TenueSet {
+  if (career && SLICE_TENUES[career]) return SLICE_TENUES[career]; // tranche verticale (vues)
   const gen = career ? GENERATED_CAREER_TENUES[career] : undefined;
   if (gen && Object.keys(gen).length) return gen;
   return careerTenue(careerClass(career ?? ''));

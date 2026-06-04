@@ -1,6 +1,7 @@
 import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
 import { GENERATED_HEADS } from './generated/heads';
+import { SLICE_HEADS } from './slice-soldat';
 
 const eye = (cx: number) =>
   `<ellipse cx="${cx}" cy="7" rx="1.4" ry="2" fill="url(#g_eye)"/><circle cx="${cx}" cy="7" r="0.8" fill="#140a06"/>`;
@@ -33,6 +34,8 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
  *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours. */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const base = baseSpeciesOf(species);
+  const slice = SLICE_HEADS[`${base}:${sex}`]; // tranche verticale (front/back/profile)
+  if (slice?.[slot] != null) return slice[slot];
   const gen = GENERATED_HEADS[`${base}:${sex}`];
   if (gen?.[slot] != null) return gen[slot]!; // PartArt (string = front, ou objet par vue)
   if (slot === 'visage') return pick(VISAGE, `${base}:${sex}`, 'default', idx);

@@ -2,6 +2,7 @@ import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engi
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
+import { WEAPON_EPEE } from './slice-soldat';
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -56,6 +57,7 @@ const WEAPONS: Record<string, PartArt> = {
 };
 // Familles d'armes dessinées par le workflow d'art (poudre, fronde, fouet, explosif…).
 Object.assign(WEAPONS, GENERATED_WEAPONS);
+WEAPONS.epee = WEAPON_EPEE; // tranche verticale : épée en front/back/profile
 
 export function weaponPart(w: Weapon): PartArt {
   return WEAPONS[weaponFamily(w)] ?? WEAPONS.epee;

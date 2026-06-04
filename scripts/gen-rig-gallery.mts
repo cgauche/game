@@ -16,12 +16,12 @@ const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, d
 const plate: ItemInstance = { uid: '1', name: 'Plastron de plaque', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
 const helm: ItemInstance = { uid: '2', name: 'Heaume', kind: 'armor', qualities: [], pa: 2, locs: ['tete'], enc: 1, equipped: true };
 
-function cell(label: string, app: Appearance, equip: EquipCtx, career: string) {
+function cell(label: string, app: Appearance, equip: EquipCtx, career: string, view: 'front' | 'back' | 'profile' = 'front') {
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
-      React.createElement(RigSprite, { appearance: app, equip, career }),
+      React.createElement(RigSprite, { appearance: app, equip, career, view }),
     ),
   );
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#cdd;font:11px sans-serif">${label}</figcaption></figure>`;
@@ -39,6 +39,11 @@ cells.push(cell('Humain M + hache+bouclier', { species: 'Humain', sex: 'M', buil
 cells.push(cell('Humain M + plaque+heaume', { species: 'Humain', sex: 'M', build: 0.6, seed: 3 }, { weapons: [wep('Épée', 'melee')], armour: [plate, helm] }, 'Soldat'));
 cells.push(cell('Humain F Sorcier + bâton', { species: 'Humain', sex: 'F', build: 0.4, seed: 5 }, { weapons: [wep('Bâton', 'melee')], armour: [] }, 'Sorcier'));
 cells.push(cell('Nain M + hache', { species: 'Nain', sex: 'M', build: 0.7, seed: 9 }, { weapons: [wep('Hache', 'melee')], armour: [] }, 'Soldat'));
+
+// Facing : Soldat humain en 3 vues (front/back/profile) — tranche verticale.
+for (const view of ['front', 'back', 'profile'] as const) {
+  cells.push(cell(`Soldat ${view}`, { species: 'Humain', sex: 'M', build: 0.55, seed: 4 }, { weapons: [wep('Épée', 'melee')], armour: [] }, 'Soldat', view));
+}
 
 // Tenues par carrière (sans équipement → la tenue de la carrière s'affiche).
 for (const car of ['Garde', 'Noble', 'Répurgateur', 'Tueur', 'Médecin', 'Voleur', 'Flagellant', 'Sorcier', 'Chevalier', 'Mendiant', 'Nonne', 'Batelier']) {
