@@ -82,7 +82,49 @@ const mutantLezard = `<g class="bob">
   <g stroke="#243a18" stroke-width="1.4" opacity="0.7" fill="none"><path d="M55 40 l5 6 M68 40 l-3 7 M62 52 l3 6"/></g>
 </g>`;
 
+// Type distinct : mutant à tête de CANIDÉ qui hurle — museau levé, gueule
+// ouverte, oreilles dressées, corps poilu brun. Silhouette « homme-bête ».
+const mutantChien = `<g class="bob">
+  <path d="M48 102 Q42 126 44 150 L56 150 Q56 128 58 104 Z" fill="#4a3a22"/><path d="M64 102 Q70 126 70 150 L82 150 Q80 128 76 104 Z" fill="#3e3019"/>
+  <path d="M40 150 L58 150 L58 143 Q49 141 40 145 Z" fill="#2a2012"/><path d="M66 150 L86 150 L86 144 Q77 141 66 146 Z" fill="#22190d"/>
+  <path d="M40 58 Q46 48 60 46 L78 46 Q90 50 90 64 Q92 86 84 104 Q60 112 38 104 Q34 82 40 58 Z" fill="#6e4a2c"/>
+  <path d="M44 98 l3 9 m6 -8 l2 10 m6 -9 l3 9 m7 -10 l2 10 m6 -10 l3 9" stroke="#4a3018" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M42 64 Q30 76 32 98" stroke="#6e4a2c" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M32 98 l-3 6 m3 -6 l1 7 m2 -7 l4 5" stroke="#3a2614" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M88 64 Q100 76 98 98" stroke="#6e4a2c" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M98 98 l3 6 m-3 -6 l-1 7 m-2 -7 l-4 5" stroke="#3a2614" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M56 52 Q54 42 60 36 L70 38 Q72 48 66 54 Z" fill="#6e4a2c"/>
+  <ellipse cx="62" cy="28" rx="11" ry="9" fill="#6e4a2c"/>
+  <path d="M64 19 l2 -12 l8 8 z" fill="#6e4a2c"/><path d="M71 20 l6 -10 l6 9 z" fill="#5a3a22"/>
+  <path d="M54 26 Q40 16 33 5 Q44 7 56 20 Q60 24 58 30 Z" fill="#5a3a22"/>
+  <path d="M40 14 Q35 20 40 27 Q48 25 53 20 Z" fill="#2a160f"/>
+  <circle cx="34" cy="6" r="2.6" fill="#1a0e06"/>
+  <ellipse cx="60" cy="26" rx="2.2" ry="1.7" fill="url(#g_eye)"/><circle cx="60" cy="26" r="1" fill="#140a06"/>
+  <path d="M42 16 l1.5 3 m4 -4 l1.5 3.5 m4 -3 l1.5 3" stroke="#e8dcc8" stroke-width="1" stroke-linecap="round"/>
+</g>`;
+// Type distinct : mutant à BRAS-TENTACULE asymétrique — un bras normal, un
+// énorme membre charnu qui s'enroule vers le haut, ventouses. Silhouette tordue.
+const mutantTentacule = `<g class="bob">
+  <path d="M48 104 Q42 126 44 150 L56 150 Q56 128 58 106 Z" fill="#4a3a22"/><path d="M64 104 Q70 126 70 150 L82 150 Q80 128 76 106 Z" fill="#3e3019"/>
+  <path d="M40 150 L58 150 L58 143 Q49 141 40 145 Z" fill="#2a2012"/><path d="M66 150 L86 150 L86 144 Q77 141 66 146 Z" fill="#22190d"/>
+  <path d="M42 60 Q46 50 60 48 L76 48 Q88 52 88 66 Q90 88 82 106 Q60 114 40 106 Q36 84 42 60 Z" fill="url(#g_flesh)"/>
+  <ellipse cx="54" cy="78" rx="5" ry="3.5" fill="#8a3a1e" opacity="0.8"/><ellipse cx="68" cy="88" rx="4" ry="3" fill="#8a3a1e" opacity="0.8"/>
+  <path d="M44 66 Q34 78 36 98" stroke="url(#g_flesh)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M36 98 q-3 6 -1 11 M40 98 q-2 6 0 11" stroke="#c98a64" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M82 64 Q110 58 114 36 Q116 20 104 18" fill="none" stroke="url(#g_flesh)" stroke-width="15" stroke-linecap="round"/>
+  <path d="M104 18 Q98 10 102 2" fill="none" stroke="#c98a64" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="98" cy="44" r="2.4" fill="#8a3a1e"/><circle cx="107" cy="32" r="2.2" fill="#8a3a1e"/><circle cx="92" cy="55" r="2.4" fill="#8a3a1e"/>
+  <path d="M52 44 Q48 30 58 26 Q64 24 70 28 Q76 36 70 46 Q72 54 60 54 Q50 52 52 44 Z" fill="url(#g_flesh)"/>
+  <path d="M58 26 Q54 14 50 6 Q58 10 60 24 Z" fill="#caa885"/>
+  <ellipse cx="58" cy="40" rx="3" ry="2.4" fill="url(#g_eye)"/><circle cx="58" cy="40" r="1.3" fill="#140a06"/>
+  <ellipse cx="67" cy="41" rx="1.8" ry="1.5" fill="url(#g_eye)"/><circle cx="67" cy="41" r="0.8" fill="#140a06"/>
+  <path d="M55 48 Q61 51 67 48" stroke="#3a1c10" stroke-width="1.2" fill="none"/>
+</g>`;
+
 export const CREATURE_APPEARANCES: Record<string, CreatureAppearance> = {
   Humain: { id: 'Humain', layers: [{ slot: 'tenue', variants: humainVariants }] },
-  Mutant: { id: 'Mutant', layers: [{ slot: 'forme', variants: [...mutantDebout, mutantCharognard, mutantLezard] }] },
+  Mutant: {
+    id: 'Mutant',
+    layers: [{ slot: 'forme', variants: [...mutantDebout, mutantCharognard, mutantLezard, mutantChien, mutantTentacule] }],
+  },
 };
