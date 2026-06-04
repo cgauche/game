@@ -83,6 +83,29 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **Audit de fidélité multi-agents** (58 agents) → **4 correctifs** (ignore-BE, soin paramétré,
   retrait d'État, durée non inventée) + **pire pénalité**, tous sourcés au Livre de base.
 
+## ✅ Jalon 0.8 — Apparences par calques, rôle découplé, décors d'embuscade *(fait)*
+
+- **Moteur d'apparence par calques** (`gameIso/appearance.ts`, pur + testé) : une créature =
+  liste de calques, chaque calque a N variantes ; `composeAppearance(name, seed, pins)` tire une
+  variante par calque via le **RNG seedable**, concatène. **Auto-variée au seed** (id de l'entité)
+  → une foule paraît variée sans réglage ; **override éditeur** par `pins` (slot → variante).
+  **Fallback** sur le sprite monolithique (`creatureSprites.json`) pour les créatures non enrichies.
+- **Apparence découplée du rôle** : `entitySprite(ent)` est la **source unique** de rendu d'entité,
+  partagée par le jeu (`IsoStage`) et l'éditeur (fin de la duplication). Un personnage porte
+  **n'importe quelle apparence** via `ref` ; le combat reste piloté par les **encounters** et
+  l'interaction par `dialogueId` — orthogonaux.
+- **Fusion `pnj` + `ennemi` → `kind: 'personnage'`** : la distinction ne portait plus que le sprite
+  par défaut. `EntityKind = heroStart | personnage | objet | prop` ; `normalizeEntityKind` assure la
+  **compat des scènes anciennes**. Inspecteur **unifié** (« Personnage » : apparence = bestiaire +
+  Villageois, dialogue/quête, variante de calque + 🎲). → débloque « **un pigeon qui donne une quête** ».
+- **Apparences enrichies (pilotes)** : **Humain** (4 tuniques par swap de palette, silhouette
+  préservée) ; **Mutant** (calque `forme` = **8 corps / 5 morphologies** : humanoïde à la hache ×4
+  teintes, charognard quadrupède, lézard arbalétrier, homme-chien hurlant, bras-tentacule — types
+  repris d'`ambush.html`). Le vert **est permis** pour un mutant Chaos à silhouette lisible.
+- **Décors d'embuscade** (`gameIso/catalog/decor.ts`) : `cadavre`, `mare-sang`, `cheval-mort`,
+  `epave-carrosse` — repris d'`ambush.html`, posables via la palette décor.
+- **Vérifié en navigateur** (Playwright) : éditeur, pigeon-quête, planches QC des nouveaux sprites.
+
 ---
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
@@ -132,7 +155,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 ## 🎯 Jalon 6 — Éditeur avancé *(largement entamé — Jalons 0.5 & 0.6)*
 
 - Fait : palette à onglets, triggers/dialogues/rencontres structurés, outil Zone, **bâtiments &
-  décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment.
+  décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment,
+  **kind `personnage` unifié** (apparence = ref bestiaire + variante de calque + dialogue/quête).
 - Reste : placer les ennemis d'une rencontre **sur la carte** ; **undo/redo** ; sélectionner/éditer
   une **zone trigger** existante en cliquant dessus ; éditeur de statblocks ; **projet multi-scènes**
   (lier les scènes d'intérieur que `reveal:'door'` référence).
@@ -161,6 +185,10 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
   restent quelques complexes perfectibles (Dragon, Manticore, Mutant). Le SVG dessiné main
   plafonne sur les gros ailés.
+- **Apparences par calques** en place (auto-variées au seed + override éditeur), mais seuls
+  **Humain** (tuniques) et **Mutant** (5 morphologies) sont enrichis — le reste du bestiaire
+  = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
+  perfectibles (corps « ballon », jambes fines).
 - **Encombrement** affiché mais sans pénalités.
 - IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
 - **Art des bâtiments procédural** (silhouettes simples) — à enrichir vers le niveau d'`ambush.html`.
