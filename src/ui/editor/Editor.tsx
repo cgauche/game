@@ -10,7 +10,7 @@ import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
 import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
-import { BUILDINGS_META, perimeterTiles } from '../../state/buildings';
+import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature } from '../../state/scene';
 import { campaign } from '../../scenes/campaign';
@@ -123,8 +123,9 @@ export function Editor() {
       id: `b-${Date.now().toString(36)}`,
       type: meta.id,
       foot: rect,
+      facing: 'S',
       reveal: meta.defaultReveal,
-      door: { x: rect.x + Math.floor(rect.w / 2), y: rect.y + rect.h - 1 },
+      door: defaultDoor(rect, 'S'),
       params: {},
       label: meta.label,
     };
@@ -474,8 +475,14 @@ export function Editor() {
                   <input value={selB.label ?? ''} onChange={(e) => updateSelB({ label: e.target.value })} />
                 </label>
                 <label className="ed-field">
-                  Orientation
-                  <select value={selB.facing ?? 'S'} onChange={(e) => updateSelB({ facing: e.target.value as BuildingFeature['facing'] })}>
+                  Orientation (place la porte)
+                  <select
+                    value={selB.facing ?? 'S'}
+                    onChange={(e) => {
+                      const f = e.target.value as BuildingFeature['facing'];
+                      updateSelB({ facing: f, door: defaultDoor(selB.foot, f) });
+                    }}
+                  >
                     <option value="N">Nord</option>
                     <option value="E">Est</option>
                     <option value="S">Sud</option>

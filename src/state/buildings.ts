@@ -1,6 +1,6 @@
 /** Registre PUR des bâtiments + helpers (sémantique : empreinte, porte, cutaway).
  *  Présentation (render SVG) → src/gameIso/catalog/buildings.ts, joint par `type` id. */
-import type { Scene, BuildingFeature } from './scene';
+import type { Scene, BuildingFeature, Facing } from './scene';
 
 export interface BuildingMeta {
   id: string;
@@ -53,6 +53,23 @@ export function buildingBlockedAt(scene: Scene, x: number, y: number): boolean {
 export function roofHidden(b: BuildingFeature, allies: { x: number; y: number }[]): boolean {
   if (b.reveal !== 'cutaway') return false;
   return allies.some((a) => inFoot(b, a.x, a.y));
+}
+
+/** Porte par défaut : milieu du mur du côté `facing` (défaut = Sud, vers la caméra). */
+export function defaultDoor(foot: { x: number; y: number; w: number; h: number }, facing: Facing = 'S'): { x: number; y: number } {
+  const midX = foot.x + Math.floor(foot.w / 2);
+  const midY = foot.y + Math.floor(foot.h / 2);
+  switch (facing) {
+    case 'N':
+      return { x: midX, y: foot.y };
+    case 'E':
+      return { x: foot.x + foot.w - 1, y: midY };
+    case 'O':
+      return { x: foot.x, y: midY };
+    case 'S':
+    default:
+      return { x: midX, y: foot.y + foot.h - 1 };
+  }
 }
 
 /** Tuiles du périmètre de l'empreinte (candidates pour la porte). */
