@@ -19,5 +19,6 @@ jobs:
       # Source/all-data.json — doit précéder typecheck et build.
       - run: npm run build:data
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
       - run: npm run build
