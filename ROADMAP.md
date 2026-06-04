@@ -134,8 +134,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 3 — Création de personnage complète
 
-- **Compétences/Talents raciaux** (prose LDB → base) ; étapes restantes (choix « A ou B »,
-  richesse initiale, détails, noms).
+- ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce
+  à +5, 3 à +3, additif ; talents fixes, choix « A ou B », et « N Talent aléatoire » tirés sur le
+  Tableau des Talents aléatoires d100). Restent : richesse initiale, détails physiques, noms.
 - **Avancement** : dépense d'XP, **changement de carrière**.
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
@@ -150,7 +151,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 - **Sauvegarde/chargement** (localStorage + export/import).
 - **Entre deux aventures** : achats/marchandage, fabrication, activités, soins/maladies.
-- **Encombrement** appliqué (pénalités ; actuellement seulement affiché).
+- ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
+  au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
+  voyage (échelle voyage, hors combat).
 
 ## 🎯 Jalon 6 — Éditeur avancé *(largement entamé — Jalons 0.5 & 0.6)*
 
@@ -180,7 +183,6 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## Dette technique connue
 
-- Compétences/talents **raciaux** non appliqués à la création (données en prose).
 - **Sprites** par équipement non reflétés (sprites figés par carrière, pas composables).
 - Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
   restent quelques complexes perfectibles (Dragon, Manticore, Mutant). Le SVG dessiné main
@@ -189,7 +191,6 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   **Humain** (tuniques) et **Mutant** (5 morphologies) sont enrichis — le reste du bestiaire
   = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
   perfectibles (corps « ballon », jambes fines).
-- **Encombrement** affiché mais sans pénalités.
 - IA d'ennemi minimale ; pas d'undo/redo dans l'éditeur ; rencontres placées via inputs (pas sur carte).
 - **Art des bâtiments procédural** (silhouettes simples) — à enrichir vers le niveau d'`ambush.html`.
 - **`facing`** des bâtiments réglable dans l'inspecteur mais **pas encore lu** par le rendu (ni la
