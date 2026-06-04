@@ -34,6 +34,7 @@ import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { enemyRigProfile } from './rig/enemyProfile';
 import { facingView, screenDir } from './rig/facing';
+import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -122,6 +123,9 @@ export function IsoStage() {
   type Proj = { key: number; from: { x: number; y: number }; to: { x: number; y: number }; kind: string };
   const [projs, setProjs] = useState<Proj[]>([]);
   const projId = useRef(0);
+  // Halos d'incantation de soutien (bénédiction/miracle) : pulsation sur la cible.
+  const [auras, setAuras] = useState<{ key: number; x: number; y: number }[]>([]);
+  const auraId = useRef(0);
   useEffect(() => {
     const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
       if (d.kind !== 'ranged' && d.kind !== 'spell') return;
@@ -129,6 +133,16 @@ export function IsoStage() {
       const from = b?.combatants.find((c) => c.id === d.from)?.pos;
       const to = b?.combatants.find((c) => c.id === d.to)?.pos;
       if (!from || !to) return;
+      if (d.kind === 'spell') {
+        const caster = b?.combatants.find((c) => c.id === d.from);
+        const tgt = b?.combatants.find((c) => c.id === d.to);
+        if (isSupportiveCast(caster?.kind, tgt?.kind, d.from === d.to)) {
+          const key = ++auraId.current; // soutien : halo sur la cible, pas de projectile
+          setAuras((a) => [...a, { key, x: to.x, y: to.y }]);
+          setTimeout(() => setAuras((a) => a.filter((x) => x.key !== key)), 620);
+          return;
+        }
+      }
       const key = ++projId.current;
       setProjs((p) => [...p, { key, from, to, kind: d.kind }]);
       setTimeout(() => setProjs((p) => p.filter((x) => x.key !== key)), 340);
@@ -368,6 +382,20 @@ export function IsoStage() {
                   <path d="M8 0 l-4 -2 v4 z" fill="#caa882" />
                 </g>
               )}
+            </g>
+          );
+        })}
+        {auras.map((au) => {
+          const { cx, cy } = tileCenter(au.x, au.y, dims);
+          return (
+            <g key={`au${au.key}`} transform={`translate(${cx},${cy - 18})`} pointerEvents="none">
+              <circle r={6} fill="url(#g_glow)" opacity={0.85}>
+                <animate attributeName="r" from="6" to="30" dur="0.6s" fill="freeze" />
+                <animate attributeName="opacity" from="0.85" to="0" dur="0.6s" fill="freeze" />
+              </circle>
+              <circle r={3} fill="#fff6c0" opacity={0.9}>
+                <animate attributeName="opacity" from="0.9" to="0" dur="0.6s" fill="freeze" />
+              </circle>
             </g>
           );
         })}

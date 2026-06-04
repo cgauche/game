@@ -9,6 +9,7 @@ import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { useRigClip } from './rig/anim/useRigClip';
 import { addPose } from './rig/poses';
 import { carryPose, weaponAttackClip, weaponParryClip, hasShieldEquipped } from './rig/anim/weaponClips';
+import { spellCastStyle, spellCastClip } from './rig/anim/spellClips';
 import { facingView, screenDir, type View } from './rig/facing';
 import type { EnemyRigProfile } from './rig/enemyProfile';
 
@@ -43,8 +44,11 @@ export function AnimatedRigToken({ combatant, profile }: { combatant: Combatant;
         const cs = useGame.getState().battle?.combatants;
         face(cs?.find((c) => c.id === d.from)?.pos, cs?.find((c) => c.id === d.to)?.pos);
         const onImpact = () => bus.emit(EVT.ANIM_IMPACT, { to: d.to, result: d.result });
-        if (d.kind === 'spell') play('cast', { onImpact }); // affiné par le brin H
-        else playClip(gest.current.attack, { onImpact }); // geste propre à l'arme
+        if (d.kind === 'spell') {
+          // Geste d'incantation selon la relation lanceur↔cible : bolt offensif vs bénédiction.
+          const style = spellCastStyle(cs?.find((c) => c.id === d.from)?.kind, cs?.find((c) => c.id === d.to)?.kind, d.from === d.to);
+          playClip(spellCastClip(style), { onImpact });
+        } else playClip(gest.current.attack, { onImpact }); // geste propre à l'arme
       } else if (d.to === id && !d.result?.hit) {
         if (d.defense === 'parade') playClip(gest.current.parry); // parade selon l'arme/bouclier
         else play('dodge');
