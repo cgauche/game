@@ -268,6 +268,9 @@ export function IsoStage() {
     const path = pathTo(sc, from, to, new Set());
     if (!path || path.length < 2) return;
     movingRef.current = true;
+    // Le déplacement d'exploration n'émet pas ANIM_MOVE côté store → on déclenche ici
+    // la marche du leader (token '__party') pour le chemin complet.
+    if (party[0]) bus.emit(EVT.ANIM_MOVE, { id: party[0].id, path });
     let i = 1;
     const step = () => {
       const st = useGame.getState();
