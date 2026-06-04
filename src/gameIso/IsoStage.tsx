@@ -32,6 +32,7 @@ import {
   objetSprite,
   propSprite,
 } from './sprites';
+import { hashSeed } from './appearance';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -137,14 +138,20 @@ export function IsoStage() {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
-      const inner = isHero ? heroSprite(c) : enemySprite(c.name);
+      const inner = isHero ? heroSprite(c) : enemySprite(c.name, hashSeed(c.id));
       objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c)) });
     }
   } else {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart') continue;
       const inner =
-        ent.kind === 'pnj' ? pnjSprite() : ent.kind === 'ennemi' ? enemySprite(ent.ref ?? '') : ent.kind === 'objet' ? objetSprite() : propSprite(ent.ref);
+        ent.kind === 'pnj'
+          ? pnjSprite()
+          : ent.kind === 'ennemi'
+            ? enemySprite(ent.ref ?? '', ent.appearance?.seed ?? hashSeed(ent.id), ent.appearance?.pins)
+            : ent.kind === 'objet'
+              ? objetSprite()
+              : propSprite(ent.ref);
       objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
     }
     // groupe (token = 1er héros)
