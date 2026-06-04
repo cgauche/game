@@ -543,8 +543,19 @@ function doAttack(get: () => GameState, set: any, attacker: Combatant, target: C
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
     if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
   }
-  if (res.advantageTo === 'attacker') attacker.advantage += 1;
-  if (res.advantageTo === 'defender') target.advantage += 1;
+  // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
+  // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
+  // un Test opposé ou en perdant une Blessure.
+  if (res.advantageTo === 'attacker') {
+    attacker.advantage += 1;
+    attacker.gainedAdvThisRound = true;
+  }
+  if (res.advantageTo === 'defender') {
+    target.advantage += 1;
+    target.gainedAdvThisRound = true;
+    attacker.advantage = 0; // l'attaquant a échoué au Test opposé
+  }
+  if (res.hit && res.woundsLost) target.advantage = 0; // perdre une Blessure → perte de tout Avantage
   const kind = weapon.type === 'ranged' ? 'ranged' : 'melee';
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
@@ -742,6 +753,12 @@ function advanceTurn(get: () => GameState, set: any) {
       round += 1;
       battle.log.push(`— Round ${round} —`);
       for (const c of battle.combatants) endOfRound(c).forEach((l) => battle!.log.push(l));
+      // Avantage : -1 si on n'en a gagné aucun ce Round (LDB Dépl. l.40 ; la perte sur
+      // infériorité numérique n'est pas modélisée — l'état Engagé ne l'est pas non plus).
+      for (const c of battle.combatants) {
+        if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
+        c.gainedAdvThisRound = false;
+      }
     }
     const next = battle.combatants.find((c) => c.id === battle!.order[turn]);
     if (next && !isOutOfAction(next)) break;

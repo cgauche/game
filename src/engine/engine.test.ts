@@ -1,8 +1,35 @@
 import { describe, it, expect } from 'vitest';
-import { makeRNG } from './dice';
+import { makeRNG, RNG } from './dice';
+import { Combatant } from './types';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee } from './combat';
+
+describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
+  const rngOf = (roll: number): RNG => ({ int: () => roll });
+  const mk = (cc: number, advantage = 0): Combatant => ({
+    id: 'c',
+    name: 'c',
+    kind: 'enemy',
+    characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 10, max: 10 },
+    advantage,
+    conditions: [],
+    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [],
+    talents: [],
+    movement: 4,
+  });
+  it('1 Avantage (+10) fait toucher là où 0 Avantage échoue (cible nue, même jet)', () => {
+    const target = mk(30);
+    // CC 40, jet 45 : sans Avantage cible=40 → échec ; +1 Avantage cible=50 → réussite.
+    const a0 = resolveMelee(mk(40, 0), target, mk(40).weapons[0], rngOf(45), { defense: 'none' });
+    const a1 = resolveMelee(mk(40, 1), target, mk(40).weapons[0], rngOf(45), { defense: 'none' });
+    expect(a0.hit).toBe(false);
+    expect(a1.hit).toBe(true);
+  });
+});
 import { createHero } from './character';
 import { DIFFICULTY_MODIFIERS } from './types';
 import type { ActiveEffect, Characteristics, Combatant, SkillInstance, Weapon } from './types';

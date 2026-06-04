@@ -147,6 +147,8 @@ export interface Combatant {
   // Combat tactique (grille)
   pos?: { x: number; y: number };
   initiative?: number;
+  /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
+  gainedAdvThisRound?: boolean;
   /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
    *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
   appearance?: import('../gameIso/rig/appearance').Appearance;
