@@ -82,8 +82,8 @@ export function armourPart(item: ItemInstance, slot: Slot): Part | null {
   const fill = MATERIAL_FILL[armourMaterial(item)];
   switch (slot) {
     case 'tete':   return { svg: `<path d="M-9 -2 Q0 -16 9 -2 L9 4 Q0 8 -9 4Z" fill="${fill}" stroke="#2a3038"/>` };
-    case 'torse':  return { svg: `<path d="M-13 0 Q0 -4 13 0 L11 34 Q0 38 -11 34Z" fill="${fill}" stroke="#2a3038"/>` };
-    case 'bras':   return { svg: `<rect x="-3.5" y="0" width="7" height="22" rx="3" fill="${fill}"/>` };
+    case 'torse':  return { svg: `<path d="M-14 -28 Q0 -33 14 -28 L13 4 L11 34 Q0 38 -11 34 L-13 4 Z" fill="${fill}" stroke="#2a3038" stroke-width="0.8"/>` };
+    case 'bras':   return { svg: `<rect x="-3.7" y="-2" width="7.4" height="30" rx="3" fill="${fill}"/>` };
     case 'jambes': return { svg: `<rect x="-4.5" y="0" width="9" height="30" rx="3" fill="${fill}"/>` };
     default:       return null;
   }
