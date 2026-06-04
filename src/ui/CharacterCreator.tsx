@@ -5,6 +5,8 @@ import { createHero, parseSkillRef, rollCharacteristics } from '../engine/charac
 import { maxWounds } from '../engine/characteristics';
 import { makeRNG } from '../engine/dice';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../engine/types';
+import { AppearancePanel } from './AppearancePanel';
+import type { Appearance } from '../gameIso/rig/appearance';
 
 /** Espèces jouables principales (mises en avant) — labels exacts de la base. */
 const CORE = ['Humains (Reiklander)', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains'];
@@ -24,11 +26,15 @@ export function CharacterCreator() {
   const [name, setName] = useState('');
   const [motivation, setMotivation] = useState('');
   const [seed, setSeed] = useState(() => Date.now() & 0xffff);
+  const [sex, setSex] = useState<'M' | 'F'>('M');
+  const [build, setBuild] = useState(0.5);
+  const [appSeed, setAppSeed] = useState(() => (Date.now() >> 4) & 0xffff);
   const [chars, setChars] = useState<Characteristics>(() =>
     rollCharacteristics(allSpecies.find((s) => s.label === 'Humains (Reiklander)')!, makeRNG(Date.now() & 0xffff)),
   );
 
   const sp = allSpecies.find((s) => s.label === speciesLabel)!;
+  const appearance: Appearance = { species: speciesLabel, sex, build, seed: appSeed };
   const level = firstLevel(careerLabel);
   const careerSkills = level?.skills ?? [];
   const careerTalents = level?.talents ?? [];
@@ -79,6 +85,7 @@ export function CharacterCreator() {
       skillAdvances: skillAdv,
       motivation: motivation.trim() || undefined,
     });
+    hero.appearance = { species: speciesLabel, sex, build, seed: appSeed };
     setParty([...party, hero]);
     setScreen('party');
   };
@@ -127,6 +134,19 @@ export function CharacterCreator() {
             Motivation
             <input value={motivation} onChange={(e) => setMotivation(e.target.value)} placeholder="Ex. Devoir, Vengeance…" />
           </label>
+          <div style={{ marginTop: 8 }}>
+            <span style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Apparence</span>
+            <AppearancePanel
+              value={appearance}
+              equip={{ weapons: [], armour: [] }}
+              career={careerLabel}
+              onChange={(a) => {
+                setSex(a.sex);
+                setBuild(a.build);
+                if (a.seed != null) setAppSeed(a.seed);
+              }}
+            />
+          </div>
           <div className="derived">
             <span>
               Blessures <b>{wounds}</b>
