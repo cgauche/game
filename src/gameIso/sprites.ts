@@ -3,10 +3,10 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { Terrain } from '../state/scene';
 import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
+import { TERRAIN_VIZ } from './catalog/terrain';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -19,16 +19,11 @@ export function placeSprite(inner: string, x: number, y: number, dims: Dims, sca
 }
 
 // --- Tuiles & décor de terrain --------------------------------------------
-export const TILE_GRAD: Record<Terrain, string> = {
-  herbe: 'g_grass',
-  sol: 'g_sol',
-  route: 'g_route',
-  plancher: 'g_plancher',
-  porte: 'g_porte',
-  eau: 'g_eau',
-  mur: 'g_sol',
-  bois: 'g_grass',
-};
+// Présentation des terrains : pilotée par le catalogue (catalog/terrain.ts).
+export { terrainGradient } from './catalog/terrain';
+export const TILE_GRAD: Record<string, string> = Object.fromEntries(
+  Object.entries(TERRAIN_VIZ).map(([k, v]) => [k, v.gradient]),
+);
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
@@ -202,6 +197,9 @@ export const DEFS = `
   <linearGradient id="g_plancher" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8a6638"/><stop offset="100%" stop-color="#6a4d28"/></linearGradient>
   <linearGradient id="g_porte" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a5a3a"/><stop offset="100%" stop-color="#5a3f24"/></linearGradient>
   <linearGradient id="g_eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2f5a8a"/><stop offset="100%" stop-color="#234a74"/></linearGradient>
+  <linearGradient id="g_terre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a5f3c"/><stop offset="100%" stop-color="#57452b"/></linearGradient>
+  <linearGradient id="g_dalle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a7a39d"/><stop offset="100%" stop-color="#7c7872"/></linearGradient>
+  <linearGradient id="g_pave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8f8d96"/><stop offset="100%" stop-color="#63616b"/></linearGradient>
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
   <linearGradient id="g_steelD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b94a6"/><stop offset="100%" stop-color="#444b5a"/></linearGradient>
   <linearGradient id="g_cloak" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8323a"/><stop offset="100%" stop-color="#5e1418"/></linearGradient>
