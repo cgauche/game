@@ -25,6 +25,12 @@ export interface CustomStatblock {
   traits?: string[];
 }
 
+/** Override d'apparence (sinon seed dérivé de l'id). pins : slot → index. */
+export interface EntityAppearance {
+  seed?: number;
+  pins?: Record<string, number>;
+}
+
 export interface SceneEntity {
   id: string;
   kind: EntityKind;
@@ -40,6 +46,8 @@ export interface SceneEntity {
   sprite?: string;
   /** Butin remis quand l'objet est ramassé. */
   loot?: string[];
+  /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
+  appearance?: EntityAppearance;
 }
 
 export interface BuildingParams {
