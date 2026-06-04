@@ -40,6 +40,11 @@ cells.push(cell('Humain M + plaque+heaume', { species: 'Humain', sex: 'M', build
 cells.push(cell('Humain F Sorcier + bâton', { species: 'Humain', sex: 'F', build: 0.4, seed: 5 }, { weapons: [wep('Bâton', 'melee')], armour: [] }, 'Sorcier'));
 cells.push(cell('Nain M + hache', { species: 'Nain', sex: 'M', build: 0.7, seed: 9 }, { weapons: [wep('Hache', 'melee')], armour: [] }, 'Soldat'));
 
+// Tenues par carrière (sans équipement → la tenue de la carrière s'affiche).
+for (const car of ['Garde', 'Noble', 'Répurgateur', 'Tueur', 'Médecin', 'Voleur', 'Flagellant', 'Sorcier', 'Chevalier', 'Mendiant', 'Nonne', 'Batelier']) {
+  cells.push(cell(car, { species: 'Humain', sex: 'M', build: 0.55, seed: 4 }, { weapons: [], armour: [] }, car));
+}
+
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Rig QC</title></head>
 <body style="background:#11141c;padding:16px">
 <h1 style="color:#eee;font:18px sans-serif">Galerie QC du rig — espèces × sexe + équipement</h1>

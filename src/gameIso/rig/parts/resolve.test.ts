@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveParts } from './resolve';
-import { careerTenue } from './career';
+import { careerTenueFor } from './career';
 import { armourPart } from './equipment';
 import type { EquipCtx } from './equipment';
 import type { ItemInstance, Weapon } from '../../../engine/types';
@@ -10,16 +10,16 @@ const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, d
 const plastron: ItemInstance = { uid: '1', name: 'Plastron', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
 
 describe('resolveParts — priorité', () => {
-  it('sans rien : torse = tenue de la carrière', () => {
+  it('sans rien : torse = tenue de la carrière (par-carrière)', () => {
     const r = resolveParts('Humain', 'M', 'Soldat', empty, {}, 1);
-    expect(r.torse?.svg).toBe(careerTenue('Guerriers').torse?.svg);
+    expect(r.torse?.svg).toBe(careerTenueFor('Soldat').torse?.svg);
   });
 
   it('armure équipée sur le corps PRIME sur la tenue de carrière', () => {
     const equip: EquipCtx = { weapons: [], armour: [plastron] };
     const r = resolveParts('Humain', 'M', 'Soldat', equip, {}, 1);
     expect(r.torse?.svg).toBe(armourPart(plastron, 'torse')?.svg);
-    expect(r.torse?.svg).not.toBe(careerTenue('Guerriers').torse?.svg);
+    expect(r.torse?.svg).not.toBe(careerTenueFor('Soldat').torse?.svg);
   });
 
   it('arme et bouclier suivent l’équipement', () => {

@@ -58,11 +58,12 @@ const banner = '// Généré par scripts/_ingest-rig-art.mjs depuis un workflow 
 mkdirSync('src/gameIso/rig/parts/generated', { recursive: true });
 
 if (careerResults.length) {
+  // Cible AUTO séparée : careerTenues.ts (couche de merge) garde la main + les overrides.
   writeFileSync(
-    'src/gameIso/rig/parts/generated/careerTenues.ts',
+    'src/gameIso/rig/parts/generated/careerTenuesAuto.ts',
     banner +
-      "/** Tenue par carrière : { 'Carrière': { torse?, jambes?, tete?, bras? } } (fragments SVG). */\n" +
-      "export const GENERATED_CAREER_TENUES: Record<string, Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', string>>> = " +
+      "/** Tenues de carrière GÉNÉRÉES (auto). Les overrides manuels vivent dans careerTenues.ts. */\n" +
+      "export const GENERATED_CAREER_TENUES_AUTO: Record<string, Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', string>>> = " +
       JSON.stringify(careerObj, null, 2) + ';\n',
   );
   console.log(`carrières: ${Object.keys(careerObj).length}`);
