@@ -61,7 +61,7 @@ const PROPS: Record<string, { sl: number; st: number; legs: number }> = {
   Humain:         { sl: 1.0,  st: 1.0,  legs: 1.0 },
   Halfling:       { sl: 0.66, st: 1.05, legs: 0.7 },
   Nain:           { sl: 0.74, st: 1.25, legs: 0.62 },
-  Gnome:          { sl: 0.5,  st: 1.0,  legs: 0.66 },
+  Gnome:          { sl: 0.5,  st: 0.72, legs: 0.66 },
   Ogre:           { sl: 1.35, st: 1.7,  legs: 0.8 },
   'Haut-Elfe':    { sl: 1.08, st: 0.92, legs: 1.12 },
   'Elfe sylvain': { sl: 1.05, st: 0.9,  legs: 1.12 },
@@ -87,6 +87,16 @@ function feminize(sk: Skeleton): Skeleton {
   out.cuisseG = { ...sk.cuisseG, pivot: { x: sk.cuisseG.pivot.x * 1.08, y: sk.cuisseG.pivot.y } };
   out.cuisseD = { ...sk.cuisseD, pivot: { x: sk.cuisseD.pivot.x * 1.08, y: sk.cuisseD.pivot.y } };
   return out;
+}
+
+/**
+ * Squelette de RÉFÉRENCE (humain M, build 0.5) — gabarit dont les parts SVG sont
+ * dessinées. Le rendu échelonne chaque part par (thickness/réf, length/réf).
+ */
+let _ref: Skeleton | null = null;
+export function referenceSkeleton(): Skeleton {
+  if (!_ref) _ref = applyBuild(baseSkeleton('Humain', 'M'), 0.5);
+  return _ref;
 }
 
 /** Morphologie continue : build 0..1 → épaississement (torse/membres). Pur, sans mutation. */
