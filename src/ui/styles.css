@@ -957,6 +957,80 @@ textarea:focus {
   width: 110px;
 }
 
+/* Palette : groupe logique + aperçu entité */
+.logic-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ent-preview {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 35%, #241830, #0e0b14);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+.editor-inspector textarea {
+  width: 100%;
+  height: 80px;
+}
+
+/* Éditeur de rencontres */
+.enc-modal {
+  width: 640px;
+  max-width: 94vw;
+  max-height: 88vh;
+  overflow: auto;
+}
+.enc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+.enc-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.enc-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.enc-id {
+  flex: 1;
+}
+.enemy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 8px;
+  border-left: 2px solid var(--danger);
+}
+.enemy-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.enemy-row select {
+  flex: 1;
+}
+.enemy-row label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.enemy-row input {
+  width: 44px;
+  padding: 4px;
+}
+
 /* Fiche de personnage / équipement */
 .party-hud-card.clickable {
   cursor: pointer;

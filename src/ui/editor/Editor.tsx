@@ -8,6 +8,7 @@ import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } fro
 import { DEFS, TILE_GRAD, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
+import { EncountersEditor } from './EncountersEditor';
 const TERRAINS: Terrain[] = ['herbe', 'sol', 'route', 'plancher', 'bois', 'eau', 'mur', 'porte'];
 const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
@@ -18,7 +19,8 @@ const KIND_LABEL: Record<EntityKind, string> = {
   prop: 'Décor',
 };
 
-type Tool = { mode: 'tile'; terrain: Terrain } | { mode: 'entity'; kind: EntityKind } | { mode: 'erase' };
+type Tool = { mode: 'tile'; terrain: Terrain } | { mode: 'entity'; kind: EntityKind } | { mode: 'erase' } | { mode: 'trigger' };
+type Rect = { x: number; y: number; w: number; h: number };
 
 export function Editor() {
   const setScreen = useGame((s) => s.setScreen);
@@ -33,6 +35,9 @@ export function Editor() {
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
   const [dlgOpen, setDlgOpen] = useState(false);
+  const [encOpen, setEncOpen] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [dragRect, setDragRect] = useState<Rect | null>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
@@ -86,6 +91,14 @@ export function Editor() {
       setScene({ ...scene, entities: [...scene.entities, ent] });
       setSelected(id);
     }
+  }
+
+  function rectFrom(a: { x: number; y: number }, b: { x: number; y: number }): Rect {
+    return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x) + 1, h: Math.abs(a.y - b.y) + 1 };
+  }
+  function addTrigger(rect: Rect) {
+    setScene({ ...scene, triggers: [...scene.triggers, { id: `trig-${Date.now().toString(36)}`, rect, once: true, effects: [] }] });
+    setTrigOpen(true); // ouvrir l'éditeur pour attacher les effets
   }
 
   const sel = scene.entities.find((e) => e.id === selected) ?? null;
@@ -215,15 +228,30 @@ export function Editor() {
             </button>
           </div>
 
-          <button className="btn small btn-primary" style={{ marginTop: 12 }} onClick={() => setTrigOpen(true)}>
-            🎯 Triggers &amp; effets
+          <div className="mini-title">Zones</div>
+          <button
+            className={`btn small ${tool.mode === 'trigger' ? 'btn-primary' : ''}`}
+            onClick={() => setTool({ mode: 'trigger' })}
+            title="Glisser sur la carte pour dessiner une zone de trigger"
+          >
+            🟦 Dessiner une zone (trigger)
           </button>
-          <button className="btn small btn-primary" style={{ marginTop: 6 }} onClick={() => setDlgOpen(true)}>
-            💬 Dialogues
-          </button>
-          <button className="btn small" style={{ marginTop: 6 }} onClick={openAdvanced}>
-            Rencontres / avancé (JSON)
-          </button>
+
+          <div className="mini-title">Logique de scène</div>
+          <div className="logic-buttons">
+            <button className="btn small btn-primary" onClick={() => setTrigOpen(true)}>
+              🎯 Triggers &amp; effets ({scene.triggers.length})
+            </button>
+            <button className="btn small btn-primary" onClick={() => setDlgOpen(true)}>
+              💬 Dialogues ({scene.dialogues.length})
+            </button>
+            <button className="btn small btn-primary" onClick={() => setEncOpen(true)}>
+              ⚔️ Rencontres ({scene.encounters.length})
+            </button>
+            <button className="btn small" onClick={openAdvanced}>
+              Avancé (JSON)
+            </button>
+          </div>
         </aside>
 
         <main className="editor-canvas-wrap">
@@ -234,12 +262,30 @@ export function Editor() {
             width={stage.w}
             height={stage.h}
             onPointerDown={(e) => {
-              setPainting(true);
-              applyAt(isoTile(e));
+              const p = isoTile(e);
+              if (tool.mode === 'trigger') {
+                dragStartRef.current = p;
+                setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
+              } else {
+                setPainting(true);
+                applyAt(p);
+              }
             }}
-            onPointerMove={(e) => painting && tool.mode === 'tile' && applyAt(isoTile(e))}
-            onPointerUp={() => setPainting(false)}
-            onPointerLeave={() => setPainting(false)}
+            onPointerMove={(e) => {
+              if (tool.mode === 'trigger' && dragStartRef.current) setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
+              else if (painting && tool.mode === 'tile') applyAt(isoTile(e));
+            }}
+            onPointerUp={(e) => {
+              if (tool.mode === 'trigger' && dragStartRef.current) addTrigger(rectFrom(dragStartRef.current, isoTile(e)));
+              dragStartRef.current = null;
+              setDragRect(null);
+              setPainting(false);
+            }}
+            onPointerLeave={() => {
+              dragStartRef.current = null;
+              setDragRect(null);
+              setPainting(false);
+            }}
           >
             <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
             <g>
@@ -303,6 +349,15 @@ export function Editor() {
               )}
             </g>
             {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
+            {dragRect && (
+              <g>
+                {Array.from({ length: dragRect.w * dragRect.h }, (_, i) => {
+                  const x = dragRect.x + (i % dragRect.w);
+                  const y = dragRect.y + Math.floor(i / dragRect.w);
+                  return <path key={`dr-${i}`} d={diamondPath(x, y, dims)} fill="rgba(78,195,224,0.35)" stroke="#4ec3e0" strokeWidth={1.5} />;
+                })}
+              </g>
+            )}
           </svg>
           <p className="hint">
             Peignez les tuiles (cliquer-glisser). Placez les entités. Les zones rouges en pointillés sont les triggers.
@@ -310,49 +365,86 @@ export function Editor() {
         </main>
 
         <aside className="editor-inspector">
-          <div className="mini-title">Entité sélectionnée</div>
           {sel ? (
-            <div className="inspector">
-              <p>
-                <b>{KIND_LABEL[sel.kind]}</b> @ ({sel.pos.x}, {sel.pos.y})
-              </p>
-              <label className="ed-field">
-                Libellé
-                <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
-              </label>
-              {sel.kind === 'ennemi' && (
+            <>
+              <div className="mini-title">Entité sélectionnée</div>
+              <div className="inspector">
+                <div className="ent-preview">
+                  <svg viewBox="0 0 120 150" width="84" height="105">
+                    <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
+                    {sel.kind === 'heroStart' ? (
+                      <text x="60" y="92" textAnchor="middle" fontSize="44" fill="#2ecc71">
+                        ★
+                      </text>
+                    ) : (
+                      <g dangerouslySetInnerHTML={{ __html: entitySvg(sel) }} />
+                    )}
+                  </svg>
+                </div>
+                <p>
+                  <b>{KIND_LABEL[sel.kind]}</b> @ ({sel.pos.x}, {sel.pos.y})
+                </p>
                 <label className="ed-field">
-                  Créature (bestiaire)
-                  <select value={sel.ref ?? ''} onChange={(e) => updateSel({ ref: e.target.value })}>
-                    {enemyCreatures.map((c) => (
-                      <option key={c.label} value={c.label}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
+                  Libellé
+                  <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
                 </label>
-              )}
-              {sel.kind === 'pnj' && (
-                <label className="ed-field">
-                  ID de dialogue
-                  <input value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value })} placeholder="dlg-…" />
-                </label>
-              )}
-              {sel.kind === 'objet' && (
-                <label className="ed-field">
-                  Butin (séparé par ;)
-                  <input
-                    value={(sel.loot ?? []).join('; ')}
-                    onChange={(e) => updateSel({ loot: e.target.value.split(';').map((s) => s.trim()).filter(Boolean) })}
-                  />
-                </label>
-              )}
-              <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
-                Supprimer
-              </button>
-            </div>
+                {sel.kind === 'ennemi' && (
+                  <label className="ed-field">
+                    Créature (bestiaire)
+                    <select value={sel.ref ?? ''} onChange={(e) => updateSel({ ref: e.target.value })}>
+                      {enemyCreatures.map((c) => (
+                        <option key={c.label} value={c.label}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {sel.kind === 'pnj' && (
+                  <label className="ed-field">
+                    Dialogue
+                    <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>
+                      <option value="">— aucun —</option>
+                      {scene.dialogues.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.id}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {sel.kind === 'objet' && (
+                  <label className="ed-field">
+                    Butin (séparé par ;)
+                    <input
+                      value={(sel.loot ?? []).join('; ')}
+                      onChange={(e) => updateSel({ loot: e.target.value.split(';').map((s) => s.trim()).filter(Boolean) })}
+                    />
+                  </label>
+                )}
+                <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
+                  Supprimer
+                </button>
+              </div>
+            </>
           ) : (
-            <p className="hint">Cliquez une entité sur la carte pour l'éditer.</p>
+            <>
+              <div className="mini-title">Scène</div>
+              <label className="ed-field">
+                Ambiance
+                <select value={scene.ambiance ?? 'jour'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
+                  <option value="jour">Jour</option>
+                  <option value="nuit">Nuit</option>
+                  <option value="interieur">Intérieur</option>
+                  <option value="foret">Forêt</option>
+                </select>
+              </label>
+              <label className="ed-field">
+                Message d'introduction
+                <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
+              </label>
+              <p className="hint">Cliquez une entité pour l'éditer. Outil « Zone » : glissez sur la carte pour créer un trigger.</p>
+            </>
           )}
         </aside>
       </div>
@@ -373,6 +465,15 @@ export function Editor() {
           encounters={scene.encounters}
           onSave={(d) => setScene({ ...scene, dialogues: d })}
           onClose={() => setDlgOpen(false)}
+        />
+      )}
+
+      {encOpen && (
+        <EncountersEditor
+          encounters={scene.encounters}
+          creatures={enemyCreatures}
+          onSave={(e) => setScene({ ...scene, encounters: e })}
+          onClose={() => setEncOpen(false)}
         />
       )}
 
