@@ -90,6 +90,28 @@ describe('entitySprite — apparence découplée du rôle', () => {
   });
 });
 
+describe('apparences enrichies (palette-swap, silhouette préservée)', () => {
+  it('Humain : un calque à plusieurs variantes', () => {
+    const layers = appearanceLayers('Humain');
+    expect(layers.length).toBeGreaterThanOrEqual(1);
+    expect(layers[0].variants.length).toBeGreaterThan(1);
+  });
+  it('Humain : le seed produit des apparences variées', () => {
+    const looks = new Set([0, 1, 2, 3, 4, 5, 6, 7].map((s) => composeAppearance('Humain', s)));
+    expect(looks.size).toBeGreaterThan(1);
+  });
+  it('Humain : chaque variante reste un SVG non vide', () => {
+    const layers = appearanceLayers('Humain');
+    for (let i = 0; i < layers[0].variants.length; i++)
+      expect(composeAppearance('Humain', 0, { [layers[0].slot]: i })!.length).toBeGreaterThan(50);
+  });
+  it('Mutant : plusieurs apparences, sans réintroduire le vert (#mut interdit)', () => {
+    const looks = new Set([0, 1, 2, 3, 4, 5].map((s) => composeAppearance('Mutant', s)));
+    expect(looks.size).toBeGreaterThan(1);
+    for (const v of looks) expect(v).not.toMatch(/url\(#mut\)/);
+  });
+});
+
 describe('entitySprite — kind unifié personnage', () => {
   it('personnage sans ref → villageois', () => {
     expect(entitySprite({ kind: 'personnage', id: 'c1' })).toBe(pnjSprite());
