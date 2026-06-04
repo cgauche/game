@@ -737,5 +737,5 @@ export function Editor() {
 }
 
 function entColor(kind: EntityKind): string {
-  return { heroStart: '#2ecc71', pnj: '#4aa3df', ennemi: '#c0392b', objet: '#f1c40f', prop: '#7f8c8d' }[kind];
+  return { heroStart: '#2ecc71', personnage: '#4aa3df', objet: '#f1c40f', prop: '#7f8c8d' }[kind];
 }
