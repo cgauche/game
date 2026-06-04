@@ -6,6 +6,7 @@ import { creatures } from '../../data';
 import { TERRAIN_COLORS } from '../../game/palette';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, TILE_GRAD, wallBlock, tree, placeSprite, pnjSprite, enemySprite, objetSprite, propSprite } from '../../gameIso/sprites';
+import { TriggersEditor } from './TriggersEditor';
 const TERRAINS: Terrain[] = ['herbe', 'sol', 'route', 'plancher', 'bois', 'eau', 'mur', 'porte'];
 const KINDS: EntityKind[] = ['heroStart', 'pnj', 'ennemi', 'objet', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
@@ -29,6 +30,7 @@ export function Editor() {
   const [painting, setPainting] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
+  const [trigOpen, setTrigOpen] = useState(false);
   const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
@@ -211,8 +213,11 @@ export function Editor() {
             </button>
           </div>
 
-          <button className="btn small" style={{ marginTop: 12 }} onClick={openAdvanced}>
-            Dialogues / Triggers / Combats (JSON)
+          <button className="btn small btn-primary" style={{ marginTop: 12 }} onClick={() => setTrigOpen(true)}>
+            🎯 Triggers &amp; effets
+          </button>
+          <button className="btn small" style={{ marginTop: 6 }} onClick={openAdvanced}>
+            Dialogues / Combats (JSON)
           </button>
         </aside>
 
@@ -346,6 +351,16 @@ export function Editor() {
           )}
         </aside>
       </div>
+
+      {trigOpen && (
+        <TriggersEditor
+          triggers={scene.triggers}
+          encounters={scene.encounters}
+          dialogues={scene.dialogues}
+          onSave={(t) => setScene({ ...scene, triggers: t })}
+          onClose={() => setTrigOpen(false)}
+        />
+      )}
 
       {advOpen && (
         <div className="modal-overlay" onClick={() => setAdvOpen(false)}>

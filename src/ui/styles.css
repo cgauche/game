@@ -745,6 +745,125 @@ textarea:focus {
   white-space: pre;
 }
 
+/* Éditeur de triggers & effets */
+.trig-modal {
+  width: 820px;
+  max-width: 95vw;
+  max-height: 88vh;
+  overflow: auto;
+}
+.trig-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+.trig-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.trig-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.trig-id {
+  width: 110px;
+}
+.trig-cond {
+  width: 150px;
+}
+.rect-fields,
+.money-fields {
+  display: flex;
+  gap: 4px;
+}
+.rect-fields label,
+.money-fields label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.rect-fields input,
+.money-fields input {
+  width: 44px;
+  padding: 4px;
+}
+.eff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+.eff-row {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px;
+}
+.eff-head {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.eff-head select {
+  flex: 1;
+}
+.eff-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.eff-fields input,
+.eff-fields select,
+.eff-fields textarea {
+  width: 100%;
+}
+.eff-fields textarea {
+  height: 70px;
+}
+.test-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tf-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tf-row .dr {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.tf-row .dr input {
+  width: 44px;
+}
+.branch {
+  border-left: 2px solid var(--border);
+  padding-left: 8px;
+}
+.branch-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+.branch-label.ok {
+  color: var(--ok);
+}
+.branch-label.fail {
+  color: #ff7a6c;
+}
+
 /* Fiche de personnage / équipement */
 .party-hud-card.clickable {
   cursor: pointer;
