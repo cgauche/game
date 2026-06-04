@@ -7,20 +7,10 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
+import { terrainWalkable } from './terrain';
 
-export type Terrain = 'sol' | 'herbe' | 'route' | 'bois' | 'eau' | 'mur' | 'porte' | 'plancher';
-
-/** Terrains franchissables (pour le déplacement sur la grille). */
-export const WALKABLE: Record<Terrain, boolean> = {
-  sol: true,
-  herbe: true,
-  route: true,
-  bois: false,
-  eau: false,
-  mur: false,
-  porte: true,
-  plancher: true,
-};
+/** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
+export type Terrain = string;
 
 export type Facing = 'N' | 'S' | 'E' | 'O';
 
@@ -138,7 +128,7 @@ export function tileAt(scene: Scene, x: number, y: number): Terrain {
 }
 
 export function isWalkable(scene: Scene, x: number, y: number): boolean {
-  return WALKABLE[tileAt(scene, x, y)] ?? false;
+  return terrainWalkable(tileAt(scene, x, y));
 }
 
 export function emptyScene(w = 20, h = 15): Scene {
