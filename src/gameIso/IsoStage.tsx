@@ -33,7 +33,7 @@ import {
   propSprite,
 } from './sprites';
 import { groundTile } from './ground';
-import { buildingLayers } from './catalog/buildings';
+import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
@@ -114,21 +114,7 @@ export function IsoStage() {
     mode === 'battle' && battle
       ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
       : [partyPos];
-  for (const b of scene.buildings ?? []) {
-    const L = buildingLayers(b.type, b.foot, b.params ?? {}, { dims });
-    const d = depth(b.foot.x + b.foot.w - 1, b.foot.y + b.foot.h - 1); // coin avant
-    const hideRoof = roofHidden(b, allies);
-    objs.push({
-      d,
-      el: (
-        <g key={`b-${b.id}`}>
-          <g dangerouslySetInnerHTML={{ __html: L.interior }} />
-          <g dangerouslySetInnerHTML={{ __html: L.walls }} />
-          <g style={{ transition: 'opacity 0.25s' }} opacity={hideRoof ? 0 : 1} dangerouslySetInnerHTML={{ __html: L.roof }} />
-        </g>
-      ),
-    });
-  }
+  for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies)));
 
   const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);

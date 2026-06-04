@@ -6,7 +6,6 @@
 import { Combatant } from '../engine/types';
 import { TW, TH, tileCenter, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
-import { TERRAIN_VIZ } from './catalog/terrain';
 import { propSvg } from './catalog/decor';
 
 const e = (cx: number, cy: number, r = 2) =>
@@ -22,9 +21,6 @@ export function placeSprite(inner: string, x: number, y: number, dims: Dims, sca
 // --- Tuiles & décor de terrain --------------------------------------------
 // Présentation des terrains : pilotée par le catalogue (catalog/terrain.ts).
 export { terrainGradient } from './catalog/terrain';
-export const TILE_GRAD: Record<string, string> = Object.fromEntries(
-  Object.entries(TERRAIN_VIZ).map(([k, v]) => [k, v.gradient]),
-);
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
@@ -126,11 +122,6 @@ function villager() {
     <path d="M46 52 Q60 36 74 52 Q70 44 60 44 Q50 44 46 52 Z" fill="#5a4427"/>${e(55, 56, 1.6)}${e(65, 56, 1.6)}
     <path d="M54 64 q6 4 12 0" stroke="#9a7a5a" stroke-width="1.5" fill="none"/></g>`;
 }
-function crate() {
-  return `<g><path d="M30 150 L30 110 L60 96 L90 110 L90 150 L60 164 Z" fill="#7a5a32"/>
-    <path d="M30 110 L60 124 L90 110 L60 96 Z" fill="#8a6a3c"/>
-    <path d="M60 124 L60 164 M30 110 L30 150 M90 110 L90 150" stroke="#3a2a18" stroke-width="2"/></g>`;
-}
 
 // --- Mutants (pose debout pour le combat tactique) ------------------------
 function mutantStand() {
@@ -178,7 +169,7 @@ export function pnjSprite(): string {
   return villager();
 }
 export function objetSprite(): string {
-  return crate();
+  return propSvg('caisse');
 }
 export function propSprite(ref?: string): string {
   return propSvg(ref ?? 'tonneau');

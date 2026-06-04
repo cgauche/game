@@ -47,7 +47,6 @@ export interface BuildingParams {
   roofMaterial?: 'tuile' | 'chaume' | 'ardoise';
   timberColor?: string;
   wallColor?: string;
-  variant?: number;
 }
 
 /** Bâtiment multi-tuiles (feature posée, façon « group » NWN). */

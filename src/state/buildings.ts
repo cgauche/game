@@ -54,3 +54,11 @@ export function roofHidden(b: BuildingFeature, allies: { x: number; y: number }[
   if (b.reveal !== 'cutaway') return false;
   return allies.some((a) => inFoot(b, a.x, a.y));
 }
+
+/** Tuiles du périmètre de l'empreinte (candidates pour la porte). */
+export function perimeterTiles(b: BuildingFeature): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let y = b.foot.y; y < b.foot.y + b.foot.h; y++)
+    for (let x = b.foot.x; x < b.foot.x + b.foot.w; x++) if (isPerimeter(b, x, y)) out.push({ x, y });
+  return out;
+}

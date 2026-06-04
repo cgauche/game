@@ -45,10 +45,24 @@ export function screenToTile(px: number, py: number, dims: Dims): { x: number; y
   return { x: Math.round((a + b) / 2), y: Math.round((b - a) / 2) };
 }
 
+/** Les 4 sommets (et le centre) du losange d'une tuile — source unique de la
+ *  géométrie TW/TH, partagée par diamondPath et le raccord d'arêtes (ground.ts). */
+export function diamondCorners(x: number, y: number, dims: Dims) {
+  const { cx, cy } = tileCenter(x, y, dims);
+  return {
+    cx,
+    cy,
+    top: [cx, cy - TH / 2] as [number, number],
+    right: [cx + TW / 2, cy] as [number, number],
+    bot: [cx, cy + TH / 2] as [number, number],
+    left: [cx - TW / 2, cy] as [number, number],
+  };
+}
+
 /** Chemin SVG d'un losange de sol centré sur la tuile. */
 export function diamondPath(x: number, y: number, dims: Dims): string {
-  const { cx, cy } = tileCenter(x, y, dims);
-  return `M${cx},${cy - TH / 2} L${cx + TW / 2},${cy} L${cx},${cy + TH / 2} L${cx - TW / 2},${cy} Z`;
+  const { top, right, bot, left } = diamondCorners(x, y, dims);
+  return `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
 }
 
 /** Profondeur de tri (plus grand = devant). */

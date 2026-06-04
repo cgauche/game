@@ -18,6 +18,8 @@ function footCorners(foot: Rect, ctx: RenderCtx) {
 type Corners = ReturnType<typeof footCorners>;
 const up = (p: number[], h: number) => `${p[0]},${p[1] - h}`;
 const pt = (p: number[]) => `${p[0]},${p[1]}`;
+/** Point décalé vers le haut, gardé en nombres (pas de round-trip via string). */
+const upXY = (p: number[], h: number): [number, number] => [p[0], p[1] - h];
 const mid = (a: number[], b: number[]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
 // --- Helpers de calques partagés ------------------------------------------
@@ -63,7 +65,7 @@ const colombage: BuildingViz['render'] = (foot, params, ctx) => {
 const taverne: BuildingViz['render'] = (foot, params, ctx) => {
   const c = footCorners(foot, ctx);
   const H = 40 * (params.floors ?? 2);
-  const base = colombage(foot, params, ctx);
+  const base = colombage(foot, params, ctx); // colombage applique déjà floors ?? 2
   // enseigne suspendue qui se balance (à mi-hauteur du mur droit)
   const m = mid(c.S, c.E);
   const sign =
@@ -79,7 +81,8 @@ const forge: BuildingViz['render'] = (foot, params, ctx) => {
   const H = 38 * (params.floors ?? 1);
   const walls = wallFaces(c, H, params.wallColor ?? '#8a8378', '#4d4a44');
   // cheminée + fumée animée (coin E)
-  const ch = [up(c.E, H).split(',').map(Number)[0] - 10, up(c.E, H).split(',').map(Number)[1] - 6];
+  const e = upXY(c.E, H);
+  const ch = [e[0] - 10, e[1] - 6];
   const chimney =
     `<rect x="${ch[0] - 6}" y="${ch[1] - 26}" width="14" height="30" fill="#5a5048" stroke="#2e2a25"/>` +
     `<g class="smoke" style="transform-box:fill-box;transform-origin:${ch[0]}px ${ch[1] - 26}px">` +
@@ -93,8 +96,8 @@ const echoppe: BuildingViz['render'] = (foot, params, ctx) => {
   const H = 34;
   const walls = wallFaces(c, H, params.wallColor ?? '#cdbd98', params.timberColor ?? '#5a3f24');
   // auvent rayé en façade (au-dessus de O→S)
-  const a = up(c.O, H * 0.5).split(',').map(Number);
-  const b = up(c.S, H * 0.5).split(',').map(Number);
+  const a = upXY(c.O, H * 0.5);
+  const b = upXY(c.S, H * 0.5);
   const awning = `<path d="M${pt(a)} L${pt(b)} L${b[0]},${b[1] + 16} L${a[0]},${a[1] + 16} Z" fill="#a8423a" opacity="0.85"/>`;
   return { walls: walls + awning, interior: floorInterior(c), roof: hipRoof(c, H, 18, roofOf(params)) };
 };

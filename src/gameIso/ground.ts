@@ -1,7 +1,7 @@
 import { Scene, tileAt } from '../state/scene';
 import { terrainPriority } from '../state/terrain';
 import { terrainGradient } from './catalog/terrain';
-import { Dims, tileCenter, diamondPath, TW, TH } from './iso';
+import { Dims, diamondCorners } from './iso';
 
 export type EdgeDir = 'N' | 'E' | 'S' | 'O';
 const NEIGHBOURS: Record<EdgeDir, [number, number]> = {
@@ -30,21 +30,20 @@ export function edgeBlends(scene: Scene, x: number, y: number): EdgeBlend[] {
 
 /** SVG d'une tuile de sol : losange de base + wedges de transition. */
 export function groundTile(scene: Scene, x: number, y: number, dims: Dims): string {
-  const base = `<path d="${diamondPath(x, y, dims)}" fill="url(#${terrainGradient(tileAt(scene, x, y))})" stroke="rgba(0,0,0,0.16)"/>`;
-  const { cx, cy } = tileCenter(x, y, dims);
-  // 4 sommets du losange
-  const top = [cx, cy - TH / 2];
-  const right = [cx + TW / 2, cy];
-  const bot = [cx, cy + TH / 2];
-  const left = [cx - TW / 2, cy];
-  // arête partagée par direction (paire de sommets)
-  const EDGE: Record<EdgeDir, number[][]> = {
+  const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims);
+  const base = `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(
+    tileAt(scene, x, y),
+  )})" stroke="rgba(0,0,0,0.16)"/>`;
+  const blends = edgeBlends(scene, x, y);
+  if (!blends.length) return base; // tuile sans voisin de plus haute précédence : pas de wedge
+  // arête partagée par direction (paire de sommets), repliée vers le centre à 40 %
+  const EDGE: Record<EdgeDir, [number, number][]> = {
     N: [top, right],
     E: [right, bot],
     S: [bot, left],
     O: [left, top],
   };
-  const wedges = edgeBlends(scene, x, y)
+  const wedges = blends
     .map(({ dir, terrain }) => {
       const [a, b] = EDGE[dir];
       const ia = [a[0] + (cx - a[0]) * 0.4, a[1] + (cy - a[1]) * 0.4];
