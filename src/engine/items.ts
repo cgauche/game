@@ -58,13 +58,21 @@ export function itemFromTrapping(label: string): ItemInstance | null {
   };
 }
 
-/** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance (Livre de base). */
+/** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
+ *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
-  return bonus(c.characteristics.F) + bonus(c.characteristics.E);
+  const costaud = (c.talents ?? []).find((t) => t.name.toLowerCase() === 'costaud')?.times ?? 0;
+  return bonus(c.characteristics.F) + bonus(c.characteristics.E) + costaud * 2;
 }
 
+/** Encombrement transporté. Les objets PORTÉS (armure équipée) voient leur Encombrement
+ *  réduit de 1 — souvent 0 une fois portés (LDB Encombrement l.22). Les armes tenues et
+ *  le matériel simplement transporté gardent leur Encombrement plein. */
 export function totalEncumbrance(c: Combatant): number {
-  return (c.items ?? []).reduce((s, i) => s + (i.enc || 0), 0);
+  return (c.items ?? []).reduce((s, i) => {
+    const worn = !!i.equipped && i.kind === 'armor';
+    return s + Math.max(0, (i.enc || 0) - (worn ? 1 : 0));
+  }, 0);
 }
 
 /** Armure vide : PA uniforme `ap` sur toutes les localisations (0 par défaut). */

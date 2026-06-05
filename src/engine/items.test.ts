@@ -28,6 +28,21 @@ describe('items — recomputeLoadout / encombrement', () => {
   it("maxEncumbrance = Bonus de Force + Bonus d'Endurance (LDB)", () => {
     expect(maxEncumbrance({ characteristics: { F: 35, E: 42 } } as unknown as Combatant)).toBe(3 + 4);
   });
+  it('maxEncumbrance : +2 par niveau de Costaud (LDB talents)', () => {
+    const c = { characteristics: { F: 30, E: 30 }, talents: [{ name: 'Costaud', times: 1 }] } as unknown as Combatant;
+    expect(maxEncumbrance(c)).toBe(3 + 3 + 2); // BF+BE + Costaud×2
+  });
+  it('totalEncumbrance : une armure ÉQUIPÉE (portée) compte −1 ; arme tenue et armure rangée non (LDB Enc. l.22)', () => {
+    const c = {
+      items: [
+        item({ name: 'Armure de cuir', kind: 'armor', enc: 1, equipped: true }), // portée → 0
+        item({ name: 'Cotte de mailles', kind: 'armor', enc: 2, equipped: true }), // portée → 1
+        item({ name: 'Plastron rangé', kind: 'armor', enc: 2, equipped: false }), // rangé → 2
+        item({ name: 'Épée', kind: 'melee', enc: 1, equipped: true }), // tenue, non « portée » → 1
+      ],
+    } as unknown as Combatant;
+    expect(totalEncumbrance(c)).toBe(0 + 1 + 2 + 1);
+  });
   it('itemFromTrapping : trapping inconnu → null', () => {
     expect(itemFromTrapping('Objet Totalement Imaginaire XYZ')).toBeNull();
   });
