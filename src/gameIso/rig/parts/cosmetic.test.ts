@@ -51,9 +51,11 @@ describe('cosmeticPart — vues dos/profil E·7 branchées', () => {
     const part = cosmeticPart('cheveux', 'Haut-Elfe', 'F', 0);
     expect(pickView(part, 'back')).not.toBe(pickView(part, 'front'));
   });
-  it('repli: une espèce sans vues garde le front pour back/profile', () => {
+  it('repli: une espèce sans tête générée a quand même un DOS correct (nuque, pas le visage de face)', () => {
     const part = cosmeticPart('visage', 'Gnome', 'M', 0); // pas de tête générée
-    expect(pickView(part, 'back')).toBe(pickView(part, 'front'));
+    const back = pickView(part, 'back');
+    expect(back).not.toBe(pickView(part, 'front')); // dos = nuque générique, pas le cercle de face
+    expect(back).not.toMatch(/g_eye/); // ni yeux luisants de dos
   });
 });
 
