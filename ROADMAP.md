@@ -128,7 +128,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **Distance** : ✅ **bandes de portée** (Bout portant→Extrême, hors-portée bloqué) ; reste ligne de vue, couvert, rechargement, munitions.
 - ✅ **Qualités/Défauts d'armes** (Précise, Pointue, Perforante, Empaleuse, Assommante, Défensive, À enroulement).
 - ✅ **Esquive vs Parade** comme choix défensif réel (meilleure valeur, Encombrement inclus) ; reste armes à 2 mains, bouclier.
-- ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dégâts par round ; **Sonné** = +1 Avantage à l'attaquant en mêlée + récupération par Test de Résistance puis Exténué — corrigés par l'audit de fidélité). *(Reste : Sonné « incapable d'Action » + demi-Mouvement = changement d'économie de tour à valider en jeu.)*
+- ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dégâts par round ; **Sonné** = +1 Avantage à l'attaquant en mêlée, récupération par Test de Résistance puis Exténué, **« incapable d'Action » + déplacement à demi-Mouvement** côté joueur ET IA — tous corrigés via audit de fidélité).
 - ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque + hors combat). Reste : Détermination, ajout direct de DR.
 - ✅ **Barre d'action en bas** (hotbar) qui suit le combattant actif (déplacer/attaquer/incanter/défensive/fin).
 - ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade —
