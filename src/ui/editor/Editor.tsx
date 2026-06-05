@@ -1103,6 +1103,7 @@ export function Editor() {
         <EncountersEditor
           encounters={scene.encounters}
           creatures={enemyCreatures}
+          dialogues={scene.dialogues}
           onSave={(e) => setScene({ ...scene, encounters: e })}
           onClose={() => setEncOpen(false)}
         />

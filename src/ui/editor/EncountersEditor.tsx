@@ -3,17 +3,20 @@
  * (créature du bestiaire + position sur la grille).
  */
 import { useState } from 'react';
-import { EncounterDef } from '../../state/scene';
+import { EncounterDef, Dialogue } from '../../state/scene';
 import { CreatureData } from '../../data';
+import { EffectList } from './EffectList';
 
 export function EncountersEditor({
   encounters,
   creatures,
+  dialogues,
   onSave,
   onClose,
 }: {
   encounters: EncounterDef[];
   creatures: CreatureData[];
+  dialogues: Dialogue[];
   onSave: (e: EncounterDef[]) => void;
   onClose: () => void;
 }) {
@@ -60,6 +63,14 @@ export function EncountersEditor({
                 >
                   + Ennemi
                 </button>
+              </div>
+              <div className="enc-victory">
+                <span className="mini-title">À la victoire (récompenses : PX, butin, flag…)</span>
+                <EffectList
+                  effects={enc.onVictory ?? []}
+                  onChange={(eff) => upd(ei, { onVictory: eff })}
+                  ctx={{ encounters: list, dialogues }}
+                />
               </div>
             </div>
           ))}
