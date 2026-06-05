@@ -17,7 +17,7 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { rollTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { reverseRoll, hitLocation } from './combat';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
@@ -219,6 +219,20 @@ export function resolveCasting(
   }
   const value = castingValue(caster, info.skill, info.spec);
   const t = rollTest(value, difficulty, rng);
+  return evaluateCasting(caster, spell, t, focusedNI0);
+}
+
+/**
+ * Évalue un résultat d'incantation à partir d'un jet DÉJÀ obtenu (rejouable pour la Chance « +1 DR »).
+ * Ne tire pas de dé : `t` porte le jet et le DR (déjà ajusté le cas échéant).
+ */
+export function evaluateCasting(
+  caster: Combatant,
+  spell: SpellLike,
+  t: TestResult,
+  focusedNI0 = false,
+): CastResult {
+  const info = castInfo(spell);
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const cast = t.success && (!info.requireNI || t.sl >= ni);
   const isCritical = t.isDouble && t.success;
@@ -251,6 +265,16 @@ export function resolveMagicMissile(
   focusedNI0 = false,
 ): MissileResult {
   const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0);
+  return evaluateMissile(caster, target, spell, cr);
+}
+
+/** Re-dérive les Dégâts d'un Projectile magique depuis un résultat d'incantation déjà obtenu. */
+export function evaluateMissile(
+  caster: Combatant,
+  target: Combatant,
+  spell: SpellLike,
+  cr: CastResult,
+): MissileResult {
   if (!cr.cast) {
     return { ...cr, hit: false, defenderDefeated: false };
   }
@@ -278,6 +302,31 @@ export function resolveMagicMissile(
       (cr.isCritical ? ' — CRITIQUE !' : '') +
       '.',
   };
+}
+
+/**
+ * Re-dérive une incantation figée avec un bonus de DR (Chance « +1 DR », ch.17 l.26) : on ne
+ * relance pas le d100 — le succès reste celui du jet propre ; on recalcule cast/NI et, pour un
+ * Projectile magique, les Dégâts. Cumulable (on ajoute `bonusSL` au DR courant).
+ */
+export function rederiveCastSL(
+  caster: Combatant,
+  target: Combatant,
+  spell: SpellLike,
+  current: CastResult & Partial<MissileResult>,
+  missile: boolean,
+  focusedNI0 = false,
+  bonusSL = 1,
+): CastResult & Partial<MissileResult> {
+  const t: TestResult = {
+    roll: current.roll,
+    target: current.target,
+    success: current.roll <= current.target,
+    sl: current.sl + bonusSL,
+    isDouble: current.roll === 100 || current.roll % 11 === 0,
+  };
+  const cr = evaluateCasting(caster, spell, t, focusedNI0);
+  return missile ? evaluateMissile(caster, target, spell, cr) : cr;
 }
 
 export interface FocusResult {

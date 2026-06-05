@@ -393,3 +393,32 @@ export function initiativeOrder(combatants: Combatant[]): Combatant[] {
     return b.characteristics.Ag - a.characteristics.Ag;
   });
 }
+
+/**
+ * Re-dérive une attaque NON opposée (tir OU mêlée passive) à partir d'un jet d'attaque DÉJÀ figé
+ * — pour la Chance « +1 DR » (ch.17 l.26) : le DR voulu est porté par `atk.sl`, on NE relance PAS
+ * le d100 (le succès reste celui du jet propre) et on recalcule uniquement les Dégâts.
+ */
+export function rederivePassiveAttack(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  atk: TestResult,
+  kind: 'melee' | 'ranged',
+  location?: HitLocation,
+): AttackResult {
+  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind), atk);
+  if (!atk.success) {
+    return {
+      hit: false,
+      attackerRoll: atk.roll,
+      attackerDetail: atkBd,
+      netSL: atk.sl,
+      critical: false,
+      advantageTo: kind === 'ranged' ? null : 'defender',
+      defenderDefeated: false,
+      log: kind === 'ranged' ? `${attacker.name} manque sa cible.` : `${attacker.name} manque ${defender.name}.`,
+    };
+  }
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+}
