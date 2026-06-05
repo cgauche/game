@@ -135,16 +135,18 @@ const RANGED_FLINCH = c([
 ]);
 
 // --- API -------------------------------------------------------------------
-/** Pose portée (repos) selon le Groupe — l'arme est tenue différemment au calme. */
+/** Pose portée (repos) selon le Groupe — l'arme est tenue différemment au calme.
+ *  Pour les armes À DISTANCE (arc/arbalète/poudre), on tient l'arme PRÊTE/épaulée
+ *  (bras levés en avant + os `arme` ramené à l'horizontale) au lieu de la laisser
+ *  pendre — sinon une arbalète ressemble à un bâton qui traîne. L'os `arme` est au
+ *  repos à 165° (pointe vers le bas) ; un delta de ~-75° l'amène à l'horizontale. */
 export function carryPose(w?: Weapon): Pose {
   if (!w) return {};
-  // L'arme pend naturellement (os arme au repos = pointe vers le bas) ; le carry ne
-  // règle que la position du bras, pas l'orientation de l'arme.
   switch (weaponGroupKey(w)) {
     case 'hast': case 'cavalerie': return { epauleD: 8, avantBrasD: -6 };
-    case 'arc': return { epauleD: 12, avantBrasD: 16 };
-    case 'arbalete': return { epauleD: 16, avantBrasD: 8 };
-    case 'poudre': case 'ingenierie': return { epauleD: 14, avantBrasD: 6 };
+    case 'arc': return { epauleG: 40, avantBrasG: -4, epauleD: 30, avantBrasD: 8, arme: -72 };
+    case 'arbalete': return { epauleD: 50, epauleG: 42, avantBrasD: -4, avantBrasG: 8, arme: -78 };
+    case 'poudre': case 'ingenierie': return { epauleD: 48, epauleG: 30, avantBrasD: -2, arme: -74 };
     case 'fronde': case 'lancer': case 'entraves': return { epauleD: 10 };
     case 'explosifs': return { epauleD: 8 };
     case 'deuxmains': case 'fleau': return { epauleD: 10, avantBrasD: 8 };
