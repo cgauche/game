@@ -121,8 +121,12 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   relancer (LDB Destin). L'attaque permet de **viser une localisation** (Complexe -10). Quand un
   ennemi frappe un héros en mêlée, le tour de l'IA est **suspendu** : le joueur choisit
   Parade/Esquive, relance sa défense par Chance, puis applique (l'IA reprend).
-- Actions : ✅ **Défense totale** (« Sur la défensive » : +1 DR en défense, expire à son tour).
-  Restent : **Charge, Désengagement, ramasser**.
+- Actions : ✅ **Défense totale** (« Sur la défensive »), ✅ **Charge** (se ruer au contact sur
+  la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** (sacrifier
+  l'Avantage, ou Test opposé d'Esquive + modale). Reste : **ramasser**.
+- ✅ **État Engagé** (LDB 13-Combat l.174-175) : posé sur toute attaque de mêlée, levé en fin de
+  Round sans coup échangé ; un Engagé ne se déplace plus librement (→ Désengagement). *(L'IA ne
+  fait pas de Désengagement et charge en portée de Marche — simplifications assumées.)*
 - ✅ **Avantage** (gain +1/attaque réussie & à la fuite, -1 si aucun gain au Round ; perte totale K.O.).
 - **Critiques & Maladresses** : tables de Blessures critiques par localisation (LDB p.172+). *(non modélisé — laissé au MJ)*
 - **Distance** : ✅ **bandes de portée** (Bout portant→Extrême, hors-portée bloqué) ; reste ligne de vue, couvert, rechargement, munitions.
