@@ -9,43 +9,40 @@
  */
 import type { Clip } from './clips';
 
-/** Animation phare : mutant accroupi qui dépèce/dévore un cadavre au sol. */
+/**
+ * Animation phare : créature qui DÉVORE une proie au sol. Le rig est un pantin 2D de
+ * FACE (les rotations sont dans le plan de l'image, pas de bascule en profondeur) → on
+ * NE peut PAS faire un vrai accroupi. On joue donc un mutant DEBOUT, jambes écartées,
+ * bras qui plongent vers le sol devant lui et reviennent (déchiquète), tête qui bobe.
+ * Le prop « cadavre » posé à côté complète la lecture.
+ */
 const feeding: Clip = {
   loop: true,
   steps: [
-    // penché bas, mains au sol sur la proie, jambes repliées (accroupi)
-    { pose: { torse: 34, tete: 32, bassin: 12, epauleD: 64, avantBrasD: 50, epauleG: 52, avantBrasG: 42, cuisseG: 40, cuisseD: 40, tibiaG: -32, tibiaD: -32 }, ms: 520, easing: 'easeInOut' },
-    // relève la tête en arrachant un morceau, bras qui tirent
-    { pose: { torse: 28, tete: 14, bassin: 12, epauleD: 54, avantBrasD: 34, epauleG: 44, avantBrasG: 30, cuisseG: 40, cuisseD: 40, tibiaG: -32, tibiaD: -32 }, ms: 360, easing: 'easeOut' },
-    // se repenche vers la proie
-    { pose: { torse: 34, tete: 30, bassin: 12, epauleD: 62, avantBrasD: 48, epauleG: 50, avantBrasG: 40, cuisseG: 40, cuisseD: 40, tibiaG: -32, tibiaD: -32 }, ms: 420, easing: 'easeInOut' },
+    // bras plongés bas-devant sur la proie, tête penchée, appui jambes écartées
+    { pose: { tete: 12, epauleD: 46, avantBrasD: 40, epauleG: 40, avantBrasG: 36, cuisseG: 12, cuisseD: -12, torse: 5 }, ms: 480, easing: 'easeInOut' },
+    // arrache un morceau : remonte bras et tête (déchiquète)
+    { pose: { tete: -4, epauleD: 24, avantBrasD: 16, epauleG: 20, avantBrasG: 14, cuisseG: 12, cuisseD: -12, torse: 3 }, ms: 300, easing: 'easeOut' },
+    // replonge sur la proie
+    { pose: { tete: 10, epauleD: 44, avantBrasD: 38, epauleG: 38, avantBrasG: 34, cuisseG: 12, cuisseD: -12, torse: 5 }, ms: 420, easing: 'easeInOut' },
   ],
 };
 
-/** Agenouillé en prière, tête baissée, mains jointes. */
+/** Recueilli en prière : DEBOUT, mains jointes levées devant le visage, léger balancement. */
 const praying: Clip = {
   loop: true,
   steps: [
-    { pose: { torse: 16, tete: 24, epauleG: -26, epauleD: -26, avantBrasG: -36, avantBrasD: -36, cuisseG: 42, tibiaG: -74, cuisseD: 8 }, ms: 1700, easing: 'easeInOut' },
-    { pose: { torse: 18, tete: 28, epauleG: -26, epauleD: -26, avantBrasG: -36, avantBrasD: -36, cuisseG: 42, tibiaG: -74, cuisseD: 8 }, ms: 1700, easing: 'easeInOut' },
+    { pose: { tete: 8, epauleG: -34, epauleD: -34, avantBrasG: -50, avantBrasD: -50, torse: 3 }, ms: 1700, easing: 'easeInOut' },
+    { pose: { tete: 12, epauleG: -36, epauleD: -36, avantBrasG: -52, avantBrasD: -52, torse: 5 }, ms: 1700, easing: 'easeInOut' },
   ],
 };
 
-/** Recroquevillé de terreur, bras au-dessus de la tête, léger tremblement. */
+/** Recroquevillé de terreur : bras au-dessus de la tête, pieds écartés, tremblement. */
 const cowering: Clip = {
   loop: true,
   steps: [
-    { pose: { torse: 26, tete: 18, bassin: 8, epauleG: -78, epauleD: -78, avantBrasG: -46, avantBrasD: -46, cuisseG: 30, cuisseD: 30, tibiaG: -24, tibiaD: -24 }, ms: 400, easing: 'easeInOut' },
-    { pose: { torse: 28, tete: 20, bassin: 8, epauleG: -82, epauleD: -74, avantBrasG: -48, avantBrasD: -44, cuisseG: 30, cuisseD: 30, tibiaG: -24, tibiaD: -24 }, ms: 400, easing: 'easeInOut' },
-  ],
-};
-
-/** Assis au sol, jambes repliées devant. */
-const sitting: Clip = {
-  loop: true,
-  steps: [
-    { pose: { bassin: 6, torse: 6, cuisseG: 80, cuisseD: 80, tibiaG: -72, tibiaD: -72, epauleG: 10, epauleD: 10 }, ms: 1900, easing: 'easeInOut' },
-    { pose: { bassin: 6, torse: 9, cuisseG: 80, cuisseD: 80, tibiaG: -72, tibiaD: -72, epauleG: 12, epauleD: 12 }, ms: 1900, easing: 'easeInOut' },
+    { pose: { tete: 14, epauleG: -82, epauleD: -82, avantBrasG: -48, avantBrasD: -48, cuisseG: 8, cuisseD: -8, torse: 4 }, ms: 400, easing: 'easeInOut' },
+    { pose: { tete: 16, epauleG: -84, epauleD: -78, avantBrasG: -50, avantBrasD: -46, cuisseG: 8, cuisseD: -8, torse: 6 }, ms: 400, easing: 'easeInOut' },
   ],
 };
 
@@ -58,15 +55,14 @@ const standing: Clip = {
   ],
 };
 
-export const AMBIENT_CLIPS: Record<string, Clip> = { feeding, praying, cowering, sitting, standing };
+export const AMBIENT_CLIPS: Record<string, Clip> = { feeding, praying, cowering, standing };
 
 /** Liste pour l'éditeur (clé + libellé FR). */
 export const AMBIENT_LIST: { key: string; label: string }[] = [
   { key: 'standing', label: 'Debout (respire)' },
   { key: 'feeding', label: 'Dévore un cadavre' },
-  { key: 'praying', label: 'En prière (agenouillé)' },
+  { key: 'praying', label: 'En prière (incliné)' },
   { key: 'cowering', label: 'Terrorisé (recroquevillé)' },
-  { key: 'sitting', label: 'Assis au sol' },
 ];
 
 export function ambientClip(key?: string | null): Clip | null {

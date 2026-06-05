@@ -99,7 +99,6 @@ function ambientCell(name: string, animKey: string, label: string) {
 cells.push(ambientCell('Mutant', 'feeding', 'Mutant dévore'));
 cells.push(ambientCell('Villageois', 'praying', 'Villageois prie'));
 cells.push(ambientCell('Cultiste', 'cowering', 'Cultiste terrorisé'));
-cells.push(ambientCell('Villageois', 'sitting', 'Assis au sol'));
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Rig QC</title></head>
 <body style="background:#11141c;padding:16px">
