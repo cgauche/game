@@ -2,18 +2,33 @@ import { tileCenter, TW, TH } from '../iso';
 import type { BuildingViz, BuildingLayers, RenderCtx, Rect, ParamField } from './types';
 import type { BuildingParams, Facing } from '../../state/scene';
 
-/** Coins écran (sol) de l'empreinte : grand losange N-E-S-O. */
-function footCorners(foot: Rect, ctx: RenderCtx) {
-  const n = tileCenter(foot.x, foot.y, ctx.dims);
-  const e = tileCenter(foot.x + foot.w - 1, foot.y, ctx.dims);
-  const s = tileCenter(foot.x + foot.w - 1, foot.y + foot.h - 1, ctx.dims);
-  const o = tileCenter(foot.x, foot.y + foot.h - 1, ctx.dims);
+/** Coins écran (sol) de l'empreinte, labellisés par POSITION ÉCRAN (rot-aware) :
+ *  le coin projeté le plus bas = S (face avant), le plus haut = N, etc. → murs/porte
+ *  toujours sur les faces face-caméra quelle que soit la rotation. */
+export function footCorners(foot: Rect, ctx: RenderCtx) {
+  const pts = [
+    tileCenter(foot.x, foot.y, ctx.dims),
+    tileCenter(foot.x + foot.w - 1, foot.y, ctx.dims),
+    tileCenter(foot.x + foot.w - 1, foot.y + foot.h - 1, ctx.dims),
+    tileCenter(foot.x, foot.y + foot.h - 1, ctx.dims),
+  ];
+  const top = pts.reduce((a, b) => (b.cy < a.cy ? b : a));
+  const bot = pts.reduce((a, b) => (b.cy > a.cy ? b : a));
+  const right = pts.reduce((a, b) => (b.cx > a.cx ? b : a));
+  const left = pts.reduce((a, b) => (b.cx < a.cx ? b : a));
   return {
-    N: [n.cx, n.cy - TH / 2] as number[],
-    E: [e.cx + TW / 2, e.cy] as number[],
-    S: [s.cx, s.cy + TH / 2] as number[],
-    O: [o.cx - TW / 2, o.cy] as number[],
+    N: [top.cx, top.cy - TH / 2] as number[],
+    E: [right.cx + TW / 2, right.cy] as number[],
+    S: [bot.cx, bot.cy + TH / 2] as number[],
+    O: [left.cx - TW / 2, left.cy] as number[],
   };
+}
+
+const FACING_ORDER: Facing[] = ['N', 'E', 'S', 'O'];
+/** Tourne une façade-monde dans le repère écran courant (cran horaire `rot`). */
+export function rotateFacing(f: Facing | undefined, rot: number): Facing | undefined {
+  if (!f) return undefined;
+  return FACING_ORDER[(FACING_ORDER.indexOf(f) + rot) & 3];
 }
 type Corners = ReturnType<typeof footCorners>;
 const up = (p: number[], h: number) => `${p[0]},${p[1] - h}`;
@@ -242,8 +257,10 @@ export const BUILDINGS: Record<string, BuildingViz> = {
 };
 
 export function buildingLayers(type: string, foot: Rect, params: BuildingParams, ctx: RenderCtx): BuildingLayers {
+  // La porte est posée selon une façade-monde ; on la tourne dans le repère écran courant.
+  const rctx: RenderCtx = { ...ctx, facing: rotateFacing(ctx.facing, ctx.dims.rot ?? 0) };
   const viz = BUILDINGS[type];
-  if (!viz) return colombage(foot, params, ctx); // fallback = maison générique
-  return viz.render(foot, params, ctx);
+  if (!viz) return colombage(foot, params, rctx); // fallback = maison générique
+  return viz.render(foot, params, rctx);
 }
 export type BuildingId = keyof typeof BUILDINGS;
