@@ -1,4 +1,5 @@
 import { BONE_IDS, type BoneId, type Bone, type Skeleton } from './bones';
+import { worldTransforms, apply } from './kinematics';
 
 function mk(spec: Record<BoneId, Omit<Bone, 'id'>>): Skeleton {
   const sk = {} as Skeleton;
@@ -97,6 +98,23 @@ let _ref: Skeleton | null = null;
 export function referenceSkeleton(): Skeleton {
   if (!_ref) _ref = applyBuild(baseSkeleton('Humain', 'M'), 0.5);
   return _ref;
+}
+
+/**
+ * Ancre les PIEDS au sol (y=floorY) quelle que soit la taille de l'espèce. Le scaling
+ * d'espèce déplace la racine (bassin) → sans ça, les petits (Nain/Gnome) flottent et
+ * les grands (Ogre) débordent sous la boîte. On calcule la position réelle du pied en
+ * FK (pose de repos) et on translate tout le squelette via le pivot du bassin.
+ */
+export function groundSkeleton(sk: Skeleton, floorY = 150): Skeleton {
+  const world = worldTransforms(sk, {});
+  const footY = Math.max(
+    apply(world.piedG, { x: 0, y: sk.piedG.length }).y,
+    apply(world.piedD, { x: 0, y: sk.piedD.length }).y,
+  );
+  const delta = floorY - footY;
+  if (Math.abs(delta) < 0.01) return sk;
+  return { ...sk, bassin: { ...sk.bassin, pivot: { x: sk.bassin.pivot.x, y: sk.bassin.pivot.y + delta } } };
 }
 
 /** Morphologie continue : build 0..1 → épaississement (torse/membres). Pur, sans mutation. */
