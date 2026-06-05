@@ -68,6 +68,10 @@ export interface Weapon {
   /** Portée en mètres (distance uniquement). */
   range?: number | null;
   qualities: string[];
+  /** Famille d'arme (pour la compatibilité des munitions). */
+  subType?: string;
+  /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
+  reload?: number;
 }
 
 /** Points d'Armure par localisation. */
@@ -109,6 +113,10 @@ export interface ItemInstance {
   enc: number; // encombrement
   equipped: boolean;
   desc?: string | null;
+  /** Munition : famille compatible (Arc/Arbalète/Poudre noire) — correspond à `Weapon.subType`. */
+  subType?: string;
+  /** Quantité (paquet de munitions, ex. « (12) » → 12). */
+  qty?: number;
 }
 
 export interface Combatant {
@@ -155,6 +163,12 @@ export interface Combatant {
   important?: boolean;
   /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */
   outOfRencontre?: boolean;
+  /** Munition sélectionnée pour l'arme à distance (uid d'un ItemInstance `kind 'ammo'`). */
+  ammoUid?: string;
+  /** Arme à distance chargée ? (Arc : toujours ; Recharge N : faux après un tir). */
+  loaded?: boolean;
+  /** DR cumulés du Test étendu de Projectiles vers `Weapon.reload` (Indice DR), pas un compteur d'Actions. */
+  reloadProgress?: number;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;
