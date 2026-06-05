@@ -54,6 +54,7 @@ export interface MonsterPartsSel {
 export interface ColorsSel {
   peau?: string;
   cheveux?: string;
+  yeux?: string; // iris
   vet1?: string; // vêtement principal
   vet2?: string; // vêtement secondaire
   cuir?: string;

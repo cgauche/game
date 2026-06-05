@@ -14,6 +14,7 @@
 export interface Palette {
   peau?: string;
   cheveux?: string;
+  yeux?: string; // iris
   vet1?: string; // vêtement principal
   vet2?: string; // vêtement secondaire / doublure
   cuir?: string;
@@ -24,6 +25,7 @@ export interface Palette {
 export const DEFAULT_PALETTE: Required<Palette> = {
   peau: '#e2b48c',
   cheveux: '#5a4427',
+  yeux: '#5a3e28',
   vet1: '#6a5a3a',
   vet2: '#4a3a22',
   cuir: '#5a3f24',
@@ -43,7 +45,7 @@ function scale(hex: string, f: number): string {
 const SHADES: [suffix: string, factor: number][] = [['', 1], ['O', 0.78], ['H', 1.18]];
 
 /** Emplacements de base (ordre stable). */
-export const SLOTS = ['peau', 'cheveux', 'vet1', 'vet2', 'cuir', 'metal'] as const;
+export const SLOTS = ['peau', 'cheveux', 'yeux', 'vet1', 'vet2', 'cuir', 'metal'] as const;
 export type Slot = (typeof SLOTS)[number];
 
 /**

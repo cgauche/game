@@ -1,6 +1,6 @@
 import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
-import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow } from './skeletons';
+import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
@@ -9,6 +9,7 @@ import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
 import { CAREER_PALETTES } from './parts/generated/careerPalettes';
+import { SPECIES_PALETTES } from './parts/generated/speciesPalettes';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
@@ -88,7 +89,10 @@ export function resolveRig(
   const SKIN_FROM_HEAD: Record<string, string> = { lezard: '#5d7a42', chien: '#6e4a2c' };
   const headSkin = appearance.monster?.tete ? SKIN_FROM_HEAD[appearance.monster.tete] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
-  const tmap = buildTokenMap(CAREER_PALETTES[career ?? ''] ?? {}, overrides);
+  // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
+  const speciesKey = `${baseSpeciesOf(appearance.species)}:${appearance.sex}`;
+  const stored = { ...(SPECIES_PALETTES[speciesKey] ?? {}), ...(CAREER_PALETTES[career ?? ''] ?? {}) };
+  const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 
   return BONE_IDS
