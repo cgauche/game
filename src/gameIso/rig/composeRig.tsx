@@ -34,7 +34,14 @@ export function resolveRig(
 ): ResolvedBone[] {
   let sk = groundSkeleton(applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build));
   if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
-  const world = worldTransforms(sk, addPose(VIEW_POSE[view], pose)); // pose de vue + pose d'anim
+  // De profil, le swing du bras DROIT (porteur de l'arme) éloigne la main → l'arme barre le
+  // torse. Quand une arme de MÊLÉE est tenue, on annule ce swing pour que le bras pende au
+  // côté (l'arme tombe à la verticale). Mêlée seulement : le distance garde sa pose de visée.
+  let viewPose = VIEW_POSE[view];
+  if (view === 'profile' && equip.weapons?.some((w) => w.type === 'melee')) {
+    viewPose = addPose(viewPose, { epauleD: 14, avantBrasD: 8 }); // contre epauleD-14 / avantBrasD-8
+  }
+  const world = worldTransforms(sk, addPose(viewPose, pose)); // pose de vue + pose d'anim
   const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
 
   // Échelle de rendu par os = (thickness/réf, length/réf). Os de longueur/épaisseur
