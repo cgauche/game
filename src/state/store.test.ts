@@ -22,6 +22,7 @@ function reset() {
     pendingTest: null,
     pendingAttack: null,
     pendingDefense: null,
+    pendingDisengage: null,
     document: null,
   });
 }
@@ -353,5 +354,224 @@ describe('Boucle de jeu (store)', () => {
     st = useGame.getState();
     expect(st.pendingDefense).toBeNull(); // aucune attaque → aucune modale de défense
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(woundsBefore); // héros intact
+  });
+
+  // ── Couche tactique : Engagé + Charge + Désengagement (LDB 13-Combat / 15-Déplacement) ──
+  const mh = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+  it('Engagé : une attaque de mêlée pose le lien des deux côtés (LDB 13-Combat l.174-175)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.characteristics.CC = 70;
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(2);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.pos = { x: E.pos!.x - 1, y: E.pos!.y };
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.engagedWith).toContain(E.id);
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.engagedWith).toContain(H.id);
+  });
+
+  it('Charge : se ruer au contact depuis 2 cases donne +2 Avantage et impose l’attaque (LDB 15-Dépl l.74-77)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(7);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.pos = { x: 6, y: 10 };
+    H.advantage = 0;
+    E.pos = { x: 8, y: 10 }; // 2 cases à l'est, couloir libre
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.getState().battleSelectAction('charge');
+    useGame.getState().battleClickEntity(E.id);
+    st = useGame.getState();
+    const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(Ha.advantage).toBe(2); // chargé de 2 cases (M4, seuil 2) → +2
+    expect(mh(Ha.pos!, E.pos!)).toBe(1); // arrivé au contact
+    expect(st.pendingAttack?.fromCharge).toBe(true);
+    expect(st.battle!.action).toBe('attack'); // l'attaque doit suivre (l.75)
+  });
+
+  it('Charge interdite si déjà Engagé (LDB 15-Dépl l.74)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.pos = { x: 6, y: 10 };
+    H.advantage = 0;
+    H.engagedWith = [E.id];
+    E.pos = { x: 8, y: 10 };
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.getState().battleSelectAction('charge');
+    useGame.getState().battleClickEntity(E.id);
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0); // pas de charge
+    expect(st.pendingAttack).toBeNull();
+  });
+
+  it('attackCancel est sans effet après une Charge (attaque obligatoire, LDB 15-Dépl l.75)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    useGame.setState({ pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: null, fromCharge: true } });
+    useGame.getState().attackCancel();
+    expect(useGame.getState().pendingAttack).not.toBeNull(); // toujours là (charge)
+  });
+
+  it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15-Dépl l.87)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(3);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    H.advantage = 2;
+    E.advantage = 0;
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.getState().battleDisengage();
+    st = useGame.getState();
+    const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(Ha.advantage).toBe(0); // Avantage sacrifié (l.87)
+    expect(Ha.engagedWith).toEqual([]); // libéré de tous
+    expect(st.battle!.acted).toBe(false); // A NE consomme PAS l'Action
+    expect(st.battle!.action).toBe('move'); // mouvement libre rouvert
+    expect(st.pendingDisengage).toBeNull();
+  });
+
+  it('Désengagement B échec : l’adversaire gagne +1 Avantage, fuite impossible, Action consommée (LDB 15-Dépl l.89)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({
+      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      pendingDisengage: {
+        moverId: H.id,
+        foeId: E.id,
+        mode: 'esquive',
+        atk: { roll: 30, target: 40, success: true, sl: 1, isDouble: false },
+        def: { roll: 80, target: 40, success: false, sl: -4, isDouble: false },
+        result: 'failure',
+      },
+    });
+    useGame.getState().disengageConfirm();
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(1); // adversaire +1 (l.89)
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.engagedWith).toContain(E.id); // toujours Engagé
+    expect(st.battle!.acted).toBe(true); // l'Esquive consomme l'Action
+    expect(st.pendingDisengage).toBeNull();
+  });
+
+  it('Désengagement B succès : +1 Avantage, libéré, Mouvement rouvert, Action consommée (LDB 15-Dépl l.89)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(3);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    H.advantage = 0;
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({
+      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      pendingDisengage: {
+        moverId: H.id,
+        foeId: E.id,
+        mode: 'esquive',
+        atk: { roll: 70, target: 40, success: false, sl: -3, isDouble: false },
+        def: { roll: 10, target: 40, success: true, sl: 3, isDouble: false },
+        result: 'success',
+      },
+    });
+    useGame.getState().disengageConfirm();
+    st = useGame.getState();
+    const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(Ha.advantage).toBe(1); // +1 Avantage (l.89)
+    expect(Ha.engagedWith).not.toContain(E.id); // libéré du foe testé
+    expect(st.battle!.acted).toBe(true); // Action consommée
+    expect(st.battle!.action).toBe('move'); // Mouvement rouvert
+  });
+
+  it('Désengagement B : la Chance relance l’Esquive (le jet du foe reste figé)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(4);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.fortune = 2;
+    useGame.setState({
+      pendingDisengage: {
+        moverId: H.id,
+        foeId: E.id,
+        mode: 'esquive',
+        atk: { roll: 35, target: 45, success: true, sl: 1, isDouble: false },
+        def: { roll: 90, target: 40, success: false, sl: -5, isDouble: false },
+        result: 'failure',
+      },
+    });
+    useGame.getState().disengageReroll();
+    const stx = useGame.getState();
+    expect(stx.battle!.combatants.find((c) => c.id === H.id)!.fortune).toBe(1); // 1 point dépensé
+    expect(stx.pendingDisengage!.atk!.roll).toBe(35); // jet du foe NON relancé
+  });
+
+  it('Engagé : sélectionner « Déplacer » entre dans le Désengagement (LDB 15-Dépl l.84)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(6);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    H.advantage = 0;
+    E.advantage = 1; // force l'option B (Avantage non supérieur)
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.getState().battleSelectAction('move');
+    st = useGame.getState();
+    expect(st.pendingDisengage).not.toBeNull(); // routé vers le Désengagement
+    expect(st.pendingDisengage!.mode).toBe('esquive');
   });
 });

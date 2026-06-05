@@ -11,12 +11,15 @@ import {
   resolveRanged,
   initiativeOrder,
   defenseValue,
+  combatValue,
   rollMeleeAttacker,
   rollMeleeDefender,
+  rollDisengageAttack,
   finishMelee,
   resolveMeleePassive,
   AttackResult,
 } from '../engine/combat';
+import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
 import {
   resolveMagicMissile,
   resolveCasting,
@@ -29,7 +32,7 @@ import {
   buffDurationRounds,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { rollTest, TestResult, opposedTest } from '../engine/tests';
+import { rollTest, TestResult, opposedTest, resolveOpposed } from '../engine/tests';
 import { effectiveChar } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
@@ -80,6 +83,7 @@ export interface PendingAttack {
   targetId: string;
   location: HitLocation | null;
   result: AttackResult | null; // null = pas encore lancé
+  fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
 }
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
@@ -95,13 +99,23 @@ export interface PendingDefense {
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
 }
+/** Désengagement en attente (LDB 15-Dépl l.84-89). Option A (Avantage) = résolue direct ;
+ *  option B (Esquive) = Test opposé Esquive du mover vs Corps à corps du foe, jet du foe figé. */
+export interface PendingDisengage {
+  moverId: string; // héros qui se désengage (actif)
+  foeId: string; // adversaire de référence (max Avantage en A, meilleure CC en B)
+  mode: 'avantage' | 'esquive';
+  atk: TestResult | null; // option B : jet de Corps à corps du foe, figé (jamais relancé)
+  def: TestResult | null; // option B : jet d'Esquive du mover
+  result: 'success' | 'failure' | null;
+}
 
 export interface BattleState {
   combatants: Combatant[];
   order: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -128,6 +142,7 @@ interface GameState {
   pendingTest: PendingTest | null;
   pendingAttack: PendingAttack | null;
   pendingDefense: PendingDefense | null;
+  pendingDisengage: PendingDisengage | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -151,7 +166,7 @@ interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | null) => void;
   battleSelectSpell: (label: string) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
@@ -172,6 +187,13 @@ interface GameState {
   defenseReroll: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
+  /** Désengagement (LDB 15-Dépl l.84-89) : quitter un combat où l'on est Engagé. */
+  battleDisengage: () => void;
+  disengageConfirmA: () => void;
+  disengageRoll: () => void;
+  disengageReroll: () => void;
+  disengageConfirm: () => void;
+  disengageCancel: () => void;
   log: (msg: string) => void;
 }
 
@@ -193,6 +215,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingTest: null,
   pendingAttack: null,
   pendingDefense: null,
+  pendingDisengage: null,
   document: null,
   previousScene: null,
 
@@ -229,6 +252,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingTest: null,
       pendingAttack: null,
       pendingDefense: null,
+      pendingDisengage: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -271,6 +295,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingTest: null,
       pendingAttack: null,
       pendingDefense: null,
+      pendingDisengage: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -342,6 +367,8 @@ export const useGame = create<GameState>((set, get) => ({
       pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
       advantage: 0,
       conditions: [],
+      engagedWith: [], // pas d'Engagement hérité d'un combat précédent
+      meleeThisRound: [],
       wounds: { ...h.wounds },
     })) as Combatant[];
     const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }));
@@ -364,7 +391,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null, pendingDisengage: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -378,8 +405,18 @@ export const useGame = create<GameState>((set, get) => ({
     if (a !== 'move' && a !== null && !canTakeAction(active)) return;
     let reach = new Map<string, number>();
     if (a === 'move' && !battle.moved) {
+      // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
+      if (isEngaged(active)) {
+        startDisengage(get, set, active);
+        return;
+      }
       const blocked = occupied(battle, active.id);
       reach = reachable(scene, active.pos!, effectiveMovement(active), blocked);
+    }
+    // Charge : seulement si pas déjà Engagé et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
+    if (a === 'charge' && !battle.moved && !isEngaged(active) && active.weapons[0]?.type === 'melee') {
+      const blocked = occupied(battle, active.id);
+      reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked);
     }
     // Quitter le mode incantation oublie le sort sélectionné.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
@@ -424,7 +461,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleClickEntity: (id) => {
-    const { battle } = get();
+    const { battle, scene } = get();
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
@@ -433,6 +470,27 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action === 'cast' && battle.selectedSpell) {
       // L'incantation peut viser un allié, un ennemi ou soi-même.
       castSpell(get, set, active, target, battle.selectedSpell);
+      return;
+    }
+    if (battle.action === 'charge') {
+      // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
+      if (!scene || target.kind === 'hero' || isEngaged(active)) return; // pas de Charge si déjà Engagé (l.74)
+      const blocked = occupied(battle, active.id);
+      const reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked); // portée de Course
+      const dest = bestAdjacentReachable(reach, target.pos!);
+      if (!dest) {
+        get().log('Cible hors de portée de Charge.');
+        return;
+      }
+      const distFrom = manhattan(active.pos!, target.pos!); // distance AVANT déplacement (l.77)
+      const adv = chargeAdvantage(effectiveMovement(active), distFrom);
+      const path = pathTo(scene, active.pos!, dest, blocked);
+      active.pos = { ...dest };
+      bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
+      active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
+      active.gainedAdvThisRound = true;
+      set({ battle: { ...battle, moved: true, action: 'attack', log: [...battle.log, `${active.name} charge ${target.name} (+${adv} Avantage).`] } });
+      set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
     }
     if (battle.action !== 'attack') return;
@@ -496,7 +554,11 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: null });
     if (attacker && target) applyAttackResult(get, set, attacker, target, attacker.weapons[0], pa.result);
   },
-  attackCancel: () => set({ pendingAttack: null }),
+  attackCancel: () => {
+    const pa = get().pendingAttack;
+    if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
+    set({ pendingAttack: null });
+  },
 
   // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
   defenseSetMode: (mode) => {
@@ -550,6 +612,86 @@ export const useGame = create<GameState>((set, get) => ({
     }
     resumeEnemyTurn(get, set);
   },
+
+  // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
+  battleDisengage: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !isEngaged(active)) return;
+    startDisengage(get, set, active);
+  },
+  // Option A : Avantage strictement supérieur (l.87) → ramener l'Avantage à 0, partir libre. L'Action N'EST PAS consommée.
+  disengageConfirmA: () => {
+    const { battle, scene, pendingDisengage: pd } = get();
+    if (!battle || !scene || !pd || pd.mode !== 'avantage') return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover) return set({ pendingDisengage: null });
+    const foes = (mover.engagedWith ?? [])
+      .map((id) => battle.combatants.find((c) => c.id === id))
+      .filter((c): c is Combatant => !!c);
+    mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87)
+    for (const f of foes) disengageFrom(mover, f); // se place hors de portée de TOUS (l.87)
+    const blocked = occupied(battle, mover.id);
+    set({
+      pendingDisengage: null,
+      battle: {
+        ...battle,
+        action: 'move', // mouvement libre rouvert, sans pénalité (l.87) ; Action préservée
+        reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked),
+        log: [...battle.log, `${mover.name} se désengage en sacrifiant son Avantage.`],
+      },
+    });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  // Option B : « Esquiver » → Test opposé Esquive (mover) vs Corps à corps (foe), jet du foe figé.
+  disengageRoll: () => {
+    const { battle, pendingDisengage: pd } = get();
+    if (!battle || !pd || pd.mode !== 'esquive' || pd.result) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover) return;
+    const def = rollMeleeDefender(mover, 'esquive', battleRng);
+    const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
+    set({ pendingDisengage: { ...pd, def, result: opp.winner === 'attacker' ? 'success' : 'failure' } });
+  },
+  // Chance du mover : relance UNIQUEMENT son Esquive (le jet du foe reste figé).
+  disengageReroll: () => {
+    const { battle, pendingDisengage: pd } = get();
+    if (!battle || !pd || !pd.result) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover || (mover.fortune ?? 0) <= 0) return;
+    mover.fortune = (mover.fortune ?? 0) - 1;
+    const def = rollMeleeDefender(mover, 'esquive', battleRng);
+    const opp = resolveOpposed(def, pd.atk!);
+    set({ pendingDisengage: { ...pd, def, result: opp.winner === 'attacker' ? 'success' : 'failure' }, battle: { ...battle } });
+  },
+  // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
+  disengageConfirm: () => {
+    const { battle, scene, pendingDisengage: pd } = get();
+    if (!battle || !scene || !pd || !pd.result) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    const foe = battle.combatants.find((c) => c.id === pd.foeId);
+    set({ pendingDisengage: null });
+    if (!mover || !foe) return;
+    const log = [...battle.log];
+    if (pd.result === 'success') {
+      mover.advantage += 1; // +1 Avantage (l.89)
+      mover.gainedAdvThisRound = true;
+      disengageFrom(mover, foe); // se libère du foe testé (l.89 « votre adversaire », singulier)
+      const blocked = occupied(battle, mover.id);
+      log.push(`${mover.name} se désengage (Esquive réussie, +1 Avantage).`);
+      set({
+        battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked), log },
+      });
+    } else {
+      foe.advantage += 1; // l'adversaire gagne +1, la fuite échoue (l.89)
+      foe.gainedAdvThisRound = true;
+      log.push(`${mover.name} échoue à se désengager ; ${foe.name} gagne +1 Avantage.`);
+      set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
+    }
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
 
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
   testRoll: () => {
@@ -753,6 +895,49 @@ function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLoc
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
  *  Avantage, animation, journal, fin de combat. */
+/** Lance le Désengagement d'un combattant Engagé (LDB 15-Dépl l.84-89) : option A
+ *  (Avantage > adversaires → résolue direct) ou option B (Test opposé d'Esquive vs le
+ *  foe le plus dangereux). No-op « rouvre le mouvement » si plus aucun foe vivant. */
+function startDisengage(get: () => GameState, set: any, mover: Combatant): void {
+  const battle = get().battle!;
+  const foes = (mover.engagedWith ?? [])
+    .map((id) => battle.combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c && !isOutOfAction(c));
+  if (!foes.length) {
+    // Lien d'Engagement périmé (foe mort/parti) : rouvrir simplement le déplacement normal.
+    const blocked = occupied(battle, mover.id);
+    set({ battle: { ...battle, action: 'move', reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
+    return;
+  }
+  const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
+  if (mover.advantage > maxFoeAdv) {
+    // Option A : Avantage strictement supérieur (l.87) — résolue sans modale.
+    set({ pendingDisengage: { moverId: mover.id, foeId: foes[0].id, mode: 'avantage', atk: null, def: null, result: null } });
+    get().disengageConfirmA();
+  } else {
+    // Option B : Test opposé d'Esquive contre le foe à la meilleure Compétence de Corps à corps (l.89).
+    const foe = foes.reduce((a, b) => (combatValue(b, 'melee') > combatValue(a, 'melee') ? b : a));
+    const atk = rollDisengageAttack(foe, battleRng); // jet du foe figé
+    set({ pendingDisengage: { moverId: mover.id, foeId: foe.id, mode: 'esquive', atk, def: null, result: null } });
+  }
+}
+
+/** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
+function bestAdjacentReachable(reach: Map<string, number>, target: Pt): Pt | null {
+  let best: Pt | null = null;
+  let bestD = Infinity;
+  for (const k of reach.keys()) {
+    const [x, y] = k.split(',').map(Number);
+    if (manhattan({ x, y }, target) !== 1) continue;
+    const d = reach.get(k)!;
+    if (d < bestD) {
+      bestD = d;
+      best = { x, y };
+    }
+  }
+  return best;
+}
+
 function applyAttackResult(
   get: () => GameState,
   set: any,
@@ -762,6 +947,7 @@ function applyAttackResult(
   res: AttackResult,
 ): void {
   const battle = get().battle!;
+  if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
   if (res.hit && res.woundsLost) {
     target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
     if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
@@ -1036,11 +1222,12 @@ function advanceTurn(get: () => GameState, set: any) {
       battle.log.push(`— Round ${round} —`);
       for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle!.log.push(l));
       // Avantage : -1 si on n'en a gagné aucun ce Round (LDB Dépl. l.40 ; la perte sur
-      // infériorité numérique n'est pas modélisée — l'état Engagé ne l'est pas non plus).
+      // infériorité numérique n'est pas modélisée).
       for (const c of battle.combatants) {
         if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
         c.gainedAdvThisRound = false;
       }
+      decayEngagement(battle.combatants); // Engagé tombe si aucun coup échangé ce Round (LDB 13-Combat l.175)
     }
     const next = battle.combatants.find((c) => c.id === battle!.order[turn]);
     if (next && !isOutOfAction(next)) break;
@@ -1123,14 +1310,25 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       attackThenAdvance(targetOf(action.targetId));
       return;
     case 'move': {
+      const wasEngaged = isEngaged(enemy);
+      const distBefore = manhattan(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked);
       enemy.pos = action.to;
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
-      if (canAct && manhattan(enemy.pos!, tgt.pos!) <= 1) attackThenAdvance(tgt);
-      else setTimeout(() => advanceTurn(get, set), 350);
+      if (canAct && manhattan(enemy.pos!, tgt.pos!) <= 1) {
+        // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
+        if (!wasEngaged) {
+          const adv = chargeAdvantage(effectiveMovement(enemy), distBefore);
+          if (adv) {
+            enemy.advantage += adv;
+            enemy.gainedAdvThisRound = true;
+          }
+        }
+        attackThenAdvance(tgt);
+      } else setTimeout(() => advanceTurn(get, set), 350);
       return;
     }
   }

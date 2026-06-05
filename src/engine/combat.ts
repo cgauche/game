@@ -113,6 +113,13 @@ export function rollMeleeDefender(
   return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0));
 }
 
+/** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
+ *  (LDB 15-Dépl l.89 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
+ *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
+export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
+  return rollTest(combatValue(foe, 'melee'), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe));
+}
+
 /** Combine un jet d'attaque et un jet de défense DÉJÀ obtenus en AttackResult
  *  (Test opposé). drAdjust : Défensive (déf.) +1 DR / À Enroulement (att.) -1 DR,
  *  en Parade uniquement. */

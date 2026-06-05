@@ -151,6 +151,12 @@ export interface Combatant {
   gainedAdvThisRound?: boolean;
   /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
   defensiveStance?: boolean;
+  /** Adversaires avec qui ce combattant est Engagé en mêlée (LDB 13-Combat l.174-175).
+   *  Relationnel et symétrique ; purgé par paire en fin de Round si aucune attaque échangée. */
+  engagedWith?: string[];
+  /** IDs avec qui une attaque de mêlée a été échangée CE Round (upkeep de fin de Round,
+   *  parallèle à gainedAdvThisRound) → sert à purger l'Engagement périmé (l.175). */
+  meleeThisRound?: string[];
   /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
    *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
   appearance?: import('../gameIso/rig/appearance').Appearance;

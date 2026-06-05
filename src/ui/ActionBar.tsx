@@ -2,6 +2,7 @@ import { useGame, activeCombatant } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
+import { isEngaged } from '../engine/engagement';
 
 const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
@@ -20,6 +21,7 @@ export function ActionBar() {
   const focusSpell = useGame((s) => s.battleFocusSpell);
   const endTurn = useGame((s) => s.battleEndTurn);
   const defendTotal = useGame((s) => s.battleDefendTotal);
+  const disengage = useGame((s) => s.battleDisengage);
   if (!battle || battle.over) return null;
   const active = activeCombatant(battle);
   if (!active) return null;
@@ -27,6 +29,8 @@ export function ActionBar() {
   const isHero = active.kind === 'hero';
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
+  const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
+  const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
 
@@ -35,9 +39,11 @@ export function ActionBar() {
       ? 'Cliquez une case bleue pour vous déplacer.'
       : battle.action === 'attack'
         ? "Cliquez un ennemi adjacent pour l'attaquer."
-        : battle.action === 'cast' && battle.selectedSpell
-          ? `Cliquez une cible pour lancer ${battle.selectedSpell}.`
-          : null;
+        : battle.action === 'charge'
+          ? 'Cliquez un ennemi à charger (jusqu’à 2× le Mouvement).'
+          : battle.action === 'cast' && battle.selectedSpell
+            ? `Cliquez une cible pour lancer ${battle.selectedSpell}.`
+            : null;
 
   return (
     <div className="action-bar">
@@ -104,6 +110,17 @@ export function ActionBar() {
               <span className="ab-ico">⚔️</span>
               <span className="ab-lbl">Attaquer{battle.acted && ' ✓'}</span>
             </button>
+            {canCharge && (
+              <button
+                className={`ab-slot ${battle.action === 'charge' ? 'on' : ''}`}
+                disabled={battle.moved || battle.acted || stunned}
+                onClick={() => selectAction(battle.action === 'charge' ? null : 'charge')}
+                title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer — gagne de l'Avantage (LDB Charge)"
+              >
+                <span className="ab-ico">🏃</span>
+                <span className="ab-lbl">Charger</span>
+              </button>
+            )}
             {hasSpells && (
               <button
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
@@ -123,6 +140,17 @@ export function ActionBar() {
               <span className="ab-ico">🛡️</span>
               <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
             </button>
+            {engaged && (
+              <button
+                className="ab-slot"
+                disabled={battle.acted}
+                onClick={disengage}
+                title="Quitter le corps à corps : sacrifier l'Avantage (si supérieur), sinon tenter une Esquive (LDB Désengagement)"
+              >
+                <span className="ab-ico">🚪</span>
+                <span className="ab-lbl">Se désengager</span>
+              </button>
+            )}
             <button className="ab-slot ab-end" onClick={endTurn}>
               <span className="ab-ico">⏭️</span>
               <span className="ab-lbl">Fin du tour</span>

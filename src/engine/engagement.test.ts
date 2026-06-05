@@ -1,0 +1,80 @@
+import { describe, it, expect } from 'vitest';
+import { Combatant } from './types';
+import { isEngaged, isEngagedWith, engage, disengageFrom, decayEngagement, chargeAdvantage } from './engagement';
+
+const mk = (id: string, wounds = 10): Combatant =>
+  ({ id, name: id, kind: 'enemy', wounds: { current: wounds, max: 10 }, conditions: [] }) as unknown as Combatant;
+
+describe('Engagé — pose / levée (LDB 13-Combat l.174-175)', () => {
+  it('engage() pose le lien des DEUX côtés + marque le coup ce Round ; idempotent', () => {
+    const a = mk('a');
+    const b = mk('b');
+    engage(a, b);
+    expect(isEngaged(a)).toBe(true);
+    expect(isEngaged(b)).toBe(true);
+    expect(isEngagedWith(a, 'b')).toBe(true);
+    expect(isEngagedWith(b, 'a')).toBe(true);
+    engage(a, b); // idempotent
+    expect(a.engagedWith).toEqual(['b']);
+    expect(a.meleeThisRound).toEqual(['b']);
+  });
+  it('disengageFrom() retire des deux côtés', () => {
+    const a = mk('a');
+    const b = mk('b');
+    engage(a, b);
+    disengageFrom(a, b);
+    expect(isEngaged(a)).toBe(false);
+    expect(isEngaged(b)).toBe(false);
+  });
+  it('decayEngagement : un lien rafraîchi ce Round SURVIT, un lien non rafraîchi TOMBE', () => {
+    const a = mk('a');
+    const b = mk('b');
+    const c = mk('c');
+    engage(a, b); // rafraîchi (meleeThisRound contient le lien)
+    a.engagedWith = ['b', 'c']; // c = lien hérité non rafraîchi
+    b.engagedWith = ['a'];
+    c.engagedWith = ['a'];
+    decayEngagement([a, b, c]);
+    expect(a.engagedWith).toEqual(['b']); // b survit, c tombe
+    expect(c.engagedWith).toEqual([]); // côté c aussi
+    expect(a.meleeThisRound).toEqual([]); // vidé après decay
+  });
+  it('decayEngagement : symétrie croisée — A a frappé B (mais pas B→A) → la paire SURVIT des deux côtés', () => {
+    const a = mk('a');
+    const b = mk('b');
+    a.engagedWith = ['b'];
+    b.engagedWith = ['a'];
+    a.meleeThisRound = ['b']; // seul A a frappé
+    b.meleeThisRound = [];
+    decayEngagement([a, b]);
+    expect(a.engagedWith).toEqual(['b']);
+    expect(b.engagedWith).toEqual(['a']); // survit grâce au snapshot croisé
+  });
+  it('decayEngagement : un lien vers un combattant hors d’action (Blessures ≤ 0) tombe', () => {
+    const a = mk('a');
+    const dead = mk('d', 0);
+    a.engagedWith = ['d'];
+    a.meleeThisRound = ['d'];
+    dead.engagedWith = ['a'];
+    decayEngagement([a, dead]);
+    expect(a.engagedWith).toEqual([]); // d mort → lien purgé
+  });
+});
+
+describe('chargeAdvantage — +1 base, +1 si de loin (LDB 15-Dépl l.74-77 ; 1 case = 2 m)', () => {
+  it('M=4 (Course 8, seuil ceil(2)=2) : table de vérité', () => {
+    expect(chargeAdvantage(4, 0)).toBe(0); // déjà au contact, pas de charge
+    expect(chargeAdvantage(4, 1)).toBe(1); // contact direct → +1
+    expect(chargeAdvantage(4, 2)).toBe(2); // ≥ seuil → +2
+    expect(chargeAdvantage(4, 8)).toBe(2); // limite de Course → +2
+    expect(chargeAdvantage(4, 9)).toBe(0); // hors de portée de Course
+  });
+  it('M=3 (Course 6, seuil ceil(1.5)=2) et M=5 (Course 10, seuil ceil(2.5)=3)', () => {
+    expect(chargeAdvantage(3, 1)).toBe(1);
+    expect(chargeAdvantage(3, 2)).toBe(2);
+    expect(chargeAdvantage(3, 6)).toBe(2);
+    expect(chargeAdvantage(3, 7)).toBe(0);
+    expect(chargeAdvantage(5, 2)).toBe(1); // seuil 3 → dist 2 reste +1
+    expect(chargeAdvantage(5, 3)).toBe(2);
+  });
+});
