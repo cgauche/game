@@ -1,6 +1,6 @@
 import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
-import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton } from './skeletons';
+import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow } from './skeletons';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
@@ -29,7 +29,8 @@ export function resolveRig(
   view: View = 'front',
   overlays: RigOverlay[] = [],
 ): ResolvedBone[] {
-  const sk = groundSkeleton(applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build));
+  let sk = groundSkeleton(applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build));
+  if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
   const world = worldTransforms(sk, addPose(VIEW_POSE[view], pose)); // pose de vue + pose d'anim
   const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
 

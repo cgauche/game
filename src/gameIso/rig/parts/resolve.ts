@@ -8,6 +8,27 @@ import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './e
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
 
+// --- Profil : silhouettes de CÔTÉ du corps (le pantin est de face ; de profil le
+// torse/les jambes doivent être plus étroits et le buste légèrement avancé). On les
+// teinte de la couleur dominante de la tenue → cohérent de profil pour TOUTE tenue
+// sans art dédié. Une tenue PEUT fournir `profile` sur son torse/jambes pour un
+// rendu détaillé (prioritaire). ---
+const PROFILE_TORSE = (c: string) =>
+  `<path d="M-5 -28 Q3 -31 7 -26 Q8.5 -10 6 4 L5 33 Q-1 37 -6 33 L-5 4 Q-7 -13 -5 -28 Z" fill="${c}" stroke="rgba(0,0,0,0.2)" stroke-width="0.6"/><path d="M-5 -2 Q-7 -13 -5 -28 Q-3 -30 -1 -29 L-1 4 Z" fill="#000" opacity="0.14"/>`;
+const PROFILE_JAMBE = (c: string) =>
+  `<path d="M-3.2 0 Q-4 24 -2.4 40 L-2.4 49 L3.2 49 Q4 24 3.2 0 Z" fill="${c}" stroke="rgba(0,0,0,0.18)" stroke-width="0.5"/>`;
+
+/** Couleur dominante d'un fragment SVG de tenue (1er hex, sinon palier gradient). */
+function dominantFill(svg: string): string {
+  const hex = svg.match(/fill="(#[0-9a-fA-F]{3,8})"/);
+  if (hex) return hex[1];
+  if (/g_steel\b|g_steelD/.test(svg)) return '#7e879a';
+  if (/g_cloak/.test(svg)) return '#7a1c20';
+  if (/g_robe/.test(svg)) return '#2a2f55';
+  return '#6a5a3a';
+}
+const hasProfileView = (p: PartArt | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
+
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
 // de face un bout arrondi, de dos un talon. Botte de cuir neutre (couvre la plupart
@@ -51,6 +72,13 @@ export function resolveParts(
     const armed = equip.armour.map((it) => armourPart(it, slot)).find((p) => p != null);
     if (armed != null) { out[slot] = P(armed); continue; }
     out[slot] = P(tenuePart ?? (slot === 'tete' ? '' : genericPart(slot)));
+  }
+
+  // Profil : remplace torse/jambes par la silhouette de côté (sauf si la tenue
+  // fournit déjà une vue `profile` détaillée). Teintée de la couleur de la tenue.
+  if (view === 'profile') {
+    if (!hasProfileView(tenue.torse) && out.torse?.svg) out.torse = { svg: PROFILE_TORSE(dominantFill(out.torse.svg)) };
+    if (!hasProfileView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: PROFILE_JAMBE(dominantFill(out.jambes.svg)) };
   }
 
   // Pieds : botte directionnelle (toujours), au-dessus du bas de jambe.

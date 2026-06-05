@@ -126,6 +126,21 @@ export function groundSkeleton(sk: Skeleton, floorY = 150): Skeleton {
   return { ...sk, bassin: { ...sk.bassin, pivot: { x: sk.bassin.pivot.x, y: sk.bassin.pivot.y + delta } } };
 }
 
+/** Profil : rapproche épaules/hanches de l'AXE. Le pantin est de face (épaules à ±14) ;
+ *  de profil le corps est étroit et les membres alignés sur la ligne médiane — sinon les
+ *  bras « flottent » loin du torse étroit. Ne touche pas les y (pieds restent au sol). */
+export function profileNarrow(sk: Skeleton): Skeleton {
+  const out = { ...sk };
+  const narrow = (id: BoneId, f: number) => {
+    out[id] = { ...sk[id], pivot: { x: sk[id].pivot.x * f, y: sk[id].pivot.y } };
+  };
+  narrow('epauleG', 0.32);
+  narrow('epauleD', 0.32);
+  narrow('cuisseG', 0.38);
+  narrow('cuisseD', 0.38);
+  return out;
+}
+
 /** Morphologie continue : build 0..1 → épaississement (torse/membres). Pur, sans mutation. */
 export function applyBuild(sk: Skeleton, build: number): Skeleton {
   const b = Math.max(0, Math.min(1, build));
