@@ -29,12 +29,13 @@ export function CharacterCreator() {
   const [sex, setSex] = useState<'M' | 'F'>('M');
   const [build, setBuild] = useState(0.5);
   const [appSeed, setAppSeed] = useState(() => (Date.now() >> 4) & 0xffff);
+  const [colors, setColors] = useState<Appearance['colors']>(undefined);
   const [chars, setChars] = useState<Characteristics>(() =>
     rollCharacteristics(allSpecies.find((s) => s.label === 'Humains (Reiklander)')!, makeRNG(Date.now() & 0xffff)),
   );
 
   const sp = allSpecies.find((s) => s.label === speciesLabel)!;
-  const appearance: Appearance = { species: speciesLabel, sex, build, seed: appSeed };
+  const appearance: Appearance = { species: speciesLabel, sex, build, seed: appSeed, colors };
   const level = firstLevel(careerLabel);
   const careerSkills = level?.skills ?? [];
   const careerTalents = level?.talents ?? [];
@@ -85,7 +86,7 @@ export function CharacterCreator() {
       skillAdvances: skillAdv,
       motivation: motivation.trim() || undefined,
     });
-    hero.appearance = { species: speciesLabel, sex, build, seed: appSeed };
+    hero.appearance = { species: speciesLabel, sex, build, seed: appSeed, colors };
     setParty([...party, hero]);
     setScreen('party');
   };
@@ -144,6 +145,7 @@ export function CharacterCreator() {
                 setSex(a.sex);
                 setBuild(a.build);
                 if (a.seed != null) setAppSeed(a.seed);
+                setColors(a.colors);
               }}
             />
           </div>

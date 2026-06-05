@@ -14,7 +14,7 @@
 import { execSync } from 'node:child_process';
 import { cpSync, rmSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, relative, sep } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const gameRoot = resolve(here, '..', '..');                         // Foundry/Game
@@ -38,10 +38,16 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-console.log(`▶ Copie dist/ → ${target}`);
+console.log(`▶ Copie dist/ → ${target} (hors qc/ : scratch QC non publié)`);
 rmSync(target, { recursive: true, force: true });
 mkdirSync(target, { recursive: true });
-cpSync(dist, target, { recursive: true });
+// Exclut le dossier qc/ (planches de rendu QC, non destinées à la prod). rmSync ci-dessus
+// purge l'ancien jeu/qc/ déjà publié ; le filtre l'empêche de revenir.
+const isQc = (src) => {
+  const rel = relative(dist, src);
+  return rel === 'qc' || rel.startsWith('qc' + sep);
+};
+cpSync(dist, target, { recursive: true, filter: (src) => !isQc(src) });
 console.log(`✓ Copié dans ${target}`);
 
 if (args.includes('--push')) {

@@ -2,6 +2,7 @@ import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
+import { ColorPalettePickers } from './ColorPalettePickers';
 
 /**
  * Panneau d'apparence réutilisable (créateur de personnage). Aperçu live du rig +
@@ -49,6 +50,7 @@ export function AppearancePanel({
         <button type="button" className="btn small" onClick={() => set({ seed: (value.seed ?? 0) + 1 })}>
           🎲 Variante (visage / cheveux)
         </button>
+        <ColorPalettePickers colors={value.colors} onColors={(patch) => set({ colors: { ...(value.colors ?? {}), ...patch } })} />
       </div>
     </div>
   );
