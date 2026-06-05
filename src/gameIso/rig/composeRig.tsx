@@ -5,6 +5,7 @@ import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
+import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
@@ -67,8 +68,8 @@ export function resolveRig(
   // miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
   if (appearance.monster) {
     const inj = monsterInjection(appearance.monster);
-    for (const [bone, svg] of Object.entries(inj.replace) as [BoneId, string][])
-      boneParts[bone] = [{ svg, layer: 5 }];
+    for (const [bone, part] of Object.entries(inj.replace) as [BoneId, import('./parts/types').PartArt][])
+      boneParts[bone] = [{ svg: pickView(part, view), layer: 5 }];
     for (const ov of inj.overlays) boneParts[ov.bone].push({ svg: ov.svg, layer: 98 });
   }
 

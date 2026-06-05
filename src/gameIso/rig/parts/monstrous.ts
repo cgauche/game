@@ -9,6 +9,7 @@
  * Aucune arme ici : l'arme reste de l'ÉQUIPEMENT (rendue par le rig si équipée).
  */
 import type { BoneId, RigOverlay } from '../bones';
+import type { PartArt } from './types';
 
 export type MonsterHead = 'chien' | 'lezard' | 'ogive' | 'minuscule';
 export type MonsterArm = 'tentacule' | 'griffe';
@@ -59,7 +60,49 @@ const HEAD_MINUSCULE = `<g>
   <ellipse cx="1.8" cy="8" rx="1" ry="1.4" fill="url(#g_eye)"/><circle cx="1.8" cy="8" r="0.5" fill="#140a06"/>
   <path d="M-1.5 11 q1.5 1.5 3 0" stroke="#7a5a3a" stroke-width="0.8" fill="none"/>
 </g>`;
-const HEADS: Record<MonsterHead, string> = { chien: HEAD_CHIEN, lezard: HEAD_LEZARD, ogive: HEAD_OGIVE, minuscule: HEAD_MINUSCULE };
+// Vues DOS (face cachée) et PROFIL (museau à droite ; le rig miroite pour la gauche)
+// → les têtes monstrueuses gèrent le facing 8-dir comme les têtes humaines.
+const CHIEN_BACK = `<g>
+  <path d="M-8 2 l-3 -11 l8 5 z" fill="#6e4a2c"/><path d="M8 2 l3 -11 l-8 5 z" fill="#6e4a2c"/>
+  <path d="M-8 1 Q0 -3 8 1 L4 13 L0 16 L-4 13 Z" fill="#5e3f24"/>
+  <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
+</g>`;
+const CHIEN_PROFILE = `<g>
+  <path d="M-6 1 l-3 -10 l7 4 z" fill="#5e3f24"/>
+  <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="#6e4a2c"/>
+  <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
+  <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
+  <path d="M9 10 q4 1 6 0" stroke="#1a0e06" stroke-width="0.7" fill="none"/>
+</g>`;
+const LEZARD_BACK = `<g>
+  <path d="M-7 0 l-1 -7 l5 4 z" fill="#445a30"/><path d="M0 -2 l-1 -7 l2 1 z" fill="#445a30"/><path d="M7 0 l1 -7 l-5 4 z" fill="#445a30"/>
+  <path d="M-7 2 Q0 -1 7 2 L3 13 L0 16 L-3 13 Z" fill="#506a38"/>
+  <path d="M0 2 L0 14" stroke="#3a5226" stroke-width="0.8" opacity="0.5"/>
+</g>`;
+const LEZARD_PROFILE = `<g>
+  <path d="M-6 0 l-1 -7 l4 4 z M-1 -2 l0 -6 l3 3 z" fill="#445a30"/>
+  <path d="M-6 2 Q-1 -2 4 1 L6 4 Q15 4 18 8 Q15 11 6 10 L2 14 L-2 15 L-6 12 Z" fill="#5d7a42"/>
+  <line x1="9" y1="9" x2="17" y2="9" stroke="#2a3a18" stroke-width="0.8"/>
+  <ellipse cx="2" cy="5" rx="1.6" ry="2.2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#1a1a08"/>
+</g>`;
+const OGIVE_BACK = `<g>
+  <path d="M-7 9 Q-8 -12 0 -17 Q8 -12 7 9 Q0 14 -7 9 Z" fill="#b3936f"/>
+  <path d="M0 -16 L0 12" stroke="#9a7a52" stroke-width="0.6" opacity="0.4"/>
+</g>`;
+const OGIVE_PROFILE = `<g>
+  <path d="M-6 9 Q-7 -11 1 -16 Q9 -11 7 9 Q1 13 -6 9 Z" fill="#caa885"/>
+  <ellipse cx="3" cy="6" rx="1.5" ry="2.1" fill="url(#g_eye)"/><circle cx="3" cy="6" r="0.8" fill="#140a06"/>
+  <path d="M4 11 q3 1 4 -1" stroke="#7a5a3a" stroke-width="0.9" fill="none"/>
+</g>`;
+const MINUSCULE_BACK = `<g><circle cx="0" cy="9" r="5" fill="#b3936f"/></g>`;
+const MINUSCULE_PROFILE = `<g><circle cx="0" cy="9" r="5" fill="#caa885"/><ellipse cx="2" cy="8" rx="1" ry="1.4" fill="url(#g_eye)"/><circle cx="2" cy="8" r="0.5" fill="#140a06"/></g>`;
+
+const HEADS: Record<MonsterHead, PartArt> = {
+  chien: { front: HEAD_CHIEN, back: CHIEN_BACK, profile: CHIEN_PROFILE },
+  lezard: { front: HEAD_LEZARD, back: LEZARD_BACK, profile: LEZARD_PROFILE },
+  ogive: { front: HEAD_OGIVE, back: OGIVE_BACK, profile: OGIVE_PROFILE },
+  minuscule: { front: HEAD_MINUSCULE, back: MINUSCULE_BACK, profile: MINUSCULE_PROFILE },
+};
 
 // --- Jambes (repère os `cuisse`, descend en +y ~50 ; symétrique → pas de miroir) ---
 const LEG_CHEVRE = `<g>
@@ -87,8 +130,8 @@ const OV_CORNES = `<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" str
 const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="url(#g_flesh)" stroke="#9a6a44" stroke-width="0.6"/>`;
 
 export interface MonsterInjection {
-  /** part SVG par os (remplace la part normale de l'os). */
-  replace: Partial<Record<BoneId, string>>;
+  /** part par os (remplace la part normale de l'os) — multi-vues (front/back/profile). */
+  replace: Partial<Record<BoneId, PartArt>>;
   /** calques additionnels. */
   overlays: RigOverlay[];
 }
@@ -96,7 +139,7 @@ export interface MonsterInjection {
 /** Traduit une sélection MonsterParts en surcharges par os + calques. Tolère les
  *  clés inconnues (ignorées) pour accepter les libellés libres de la scène. */
 export function monsterInjection(m: MonsterParts): MonsterInjection {
-  const replace: Partial<Record<BoneId, string>> = {};
+  const replace: Partial<Record<BoneId, PartArt>> = {};
   const overlays: RigOverlay[] = [];
   const head = m.tete ? HEADS[m.tete as MonsterHead] : undefined;
   const armG = m.brasG ? ARMS[m.brasG as MonsterArm] : undefined;

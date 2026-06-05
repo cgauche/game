@@ -40,7 +40,7 @@ export function RigToken({
   outOfAction?: boolean;
 }) {
   const rest = ambientAnim ? ambientClip(ambientAnim) ?? undefined : undefined;
-  const { pose, play, playClip, hold } = useRigClip(rest);
+  const { pose, play, playClip, hold, holdClip } = useRigClip(rest);
   const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
 
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
@@ -48,6 +48,10 @@ export function RigToken({
   const carry = carryPose(mainWeapon);
   const gest = useRef({ attack: weaponAttackClip(mainWeapon), parry: weaponParryClip(mainWeapon, shield) });
   gest.current = { attack: weaponAttackClip(mainWeapon), parry: weaponParryClip(mainWeapon, shield) };
+  const walkTimer = useRef(0);
+  // Retour au repos (idle de combat OU clip d'ambiance pour une entité de scène).
+  const restRef = useRef(rest);
+  restRef.current = rest;
 
   useEffect(() => {
     const face = (a?: { x: number; y: number }, b?: { x: number; y: number }) => {
@@ -78,13 +82,22 @@ export function RigToken({
       const p = d.path;
       if (p && p.length > 1) face(p[0], p[p.length - 1]);
       play('walk');
+      // La marche BOUCLE : sans retour explicite, les jambes pédalent indéfiniment.
+      // On revient au repos quand le déplacement est censé fini (durée ~ nb de pas).
+      window.clearTimeout(walkTimer.current);
+      const dur = Math.max(1, (p?.length ?? 1)) * STEP_MS;
+      walkTimer.current = window.setTimeout(() => {
+        if (restRef.current) holdClip(restRef.current);
+        else play('idle');
+      }, dur);
     });
     return () => {
       offAttack();
       offImpact();
       offMove();
+      window.clearTimeout(walkTimer.current);
     };
-  }, [id, play, playClip]);
+  }, [id, play, playClip, holdClip]);
 
   useEffect(() => {
     if (outOfAction) hold('fall');
