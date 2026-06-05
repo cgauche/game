@@ -268,7 +268,7 @@ export function IsoStage() {
     return (
       <g
         key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
+        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.82 : 1 }}
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
@@ -290,7 +290,7 @@ export function IsoStage() {
     return (
       <g
         key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
+        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.82 : 1 }}
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}

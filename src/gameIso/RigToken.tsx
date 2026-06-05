@@ -14,6 +14,11 @@ import type { RigOverlay } from './rig/bones';
 
 const STEP_MS = 160;
 
+/** Pose de CADAVRE (sprawl doux : tête qui roule, bras/jambes écartés). Combinée à une
+ *  bascule ~82° autour des pieds → corps allongé au sol. Override DUR (indépendant des
+ *  clips) pour qu'aucun event (touché, idle) ne « relève » le mort. cf. game-roll-modal. */
+const CORPSE_POSE = { tete: 18, torse: 6, epauleG: -30, epauleD: 24, avantBrasG: -14, avantBrasD: 10, cuisseG: 14, cuisseD: -10, tibiaG: 18, tibiaD: 6 } as const;
+
 /**
  * TOKEN RIG UNIQUE — sert le combat ET l'exploration (aucune différence visuelle
  * entre les modes : même squelette, mêmes parts, même apparence). Le rendu ne
@@ -40,7 +45,7 @@ export function RigToken({
   outOfAction?: boolean;
 }) {
   const rest = ambientAnim ? ambientClip(ambientAnim) ?? undefined : undefined;
-  const { pose, play, playClip, hold, holdClip } = useRigClip(rest);
+  const { pose, play, playClip, holdClip } = useRigClip(rest);
   const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
 
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
@@ -99,13 +104,13 @@ export function RigToken({
     };
   }, [id, play, playClip, holdClip]);
 
-  useEffect(() => {
-    if (outOfAction) hold('fall');
-  }, [outOfAction, hold]);
 
-  return (
+  const body = (
     <g transform={facing.mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={addPose(carry, pose)} view={facing.view} />
+      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(carry, pose)} view={facing.view} />
     </g>
   );
+  // Hors de combat = CADAVRE AU SOL : bascule de tout le rig ~82° autour des pieds
+  // (pivot rig-local ≈ (60,150)) → le corps s'allonge sur le sol au lieu de rester debout.
+  return outOfAction ? <g transform="rotate(82 60 150)">{body}</g> : body;
 }
