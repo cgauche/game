@@ -5,6 +5,7 @@
  */
 import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '../../gameIso/rig/parts/monstrous';
 import { ColorPalettePickers } from '../ColorPalettePickers';
+import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
@@ -14,19 +15,54 @@ export function MonsterPartsFields({
   monster,
   weapon,
   colors,
+  sex,
+  build,
+  parts,
   onMonster,
   onWeapon,
   onColors,
+  onSex,
+  onBuild,
+  onParts,
 }: {
   monster?: MonsterPartsSel;
   weapon?: string;
   colors?: ColorsSel;
+  sex?: 'M' | 'F';
+  build?: number;
+  parts?: { cheveux?: number; visage?: number };
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
   onWeapon: (w: string | undefined) => void;
   onColors: (patch: Partial<ColorsSel>) => void;
+  onSex?: (s: 'M' | 'F') => void;
+  onBuild?: (b: number) => void;
+  onParts?: (patch: { cheveux?: number; visage?: number }) => void;
 }) {
   return (
     <>
+      <div className="ed-field">
+        <span>Apparence (rig)</span>
+        <label className="ed-subfield">
+          Sexe
+          <select value={sex ?? 'M'} onChange={(e) => onSex?.(e.target.value as 'M' | 'F')}>
+            <option value="M">Masculin</option>
+            <option value="F">Féminin</option>
+          </select>
+        </label>
+        <label className="ed-subfield">
+          Carrure
+          <input type="range" min={0} max={1} step={0.05} value={build ?? 0.5} onChange={(e) => onBuild?.(Number(e.target.value))} />
+        </label>
+        <label className="ed-subfield">
+          Coiffure
+          <select value={parts?.cheveux ?? 0} onChange={(e) => onParts?.({ cheveux: Number(e.target.value) })}>
+            <option value={0}>Défaut (espèce)</option>
+            {HAIRSTYLES[sex ?? 'M'].map((h, i) => (
+              <option key={i} value={i + 1}>{h.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
       <div className="ed-field">
         <span>Mutations (rig humanoïde)</span>
         {([

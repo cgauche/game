@@ -15,7 +15,7 @@ export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dim
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const prof =
     ent.kind === 'personnage'
-      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors })
+      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build })
       : null;
   return (
     <g style={{ transform: `translate(${cx}px,${cy}px)` }}>

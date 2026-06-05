@@ -69,6 +69,11 @@ export interface EntityAppearance {
   monster?: MonsterPartsSel;
   /** Personnalisation couleur (peau/cheveux/vêtements). */
   colors?: ColorsSel;
+  /** Coiffure / visage épinglés (rig) : slot → index. */
+  parts?: { cheveux?: number; visage?: number };
+  /** Surcharges cosmétiques (sinon dérivées du seed). */
+  sex?: 'M' | 'F';
+  build?: number;
 }
 
 export interface SceneEntity {
