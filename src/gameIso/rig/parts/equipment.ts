@@ -2,8 +2,14 @@ import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engi
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
-import { WEAPON_EPEE } from './slice-soldat';
 import { weaponGroupKey } from './weaponGroup';
+
+/** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
+const EPEE_ART: PartArt = {
+  front: `<rect x="-1.5" y="-2" width="3" height="6" fill="#5a3f24"/><rect x="-1" y="-30" width="2" height="28" fill="url(#g_steel)"/><rect x="-5" y="-2" width="10" height="2.5" fill="#caa64a"/>`,
+  back: `<rect x="-1.5" y="-2" width="3" height="6" fill="#4a3320"/><rect x="-1" y="-30" width="2" height="28" fill="#6a7384"/>`,
+  profile: `<rect x="-1.2" y="-2" width="2.4" height="6" fill="#5a3f24"/><rect x="-0.8" y="-30" width="1.6" height="28" fill="url(#g_steel)"/>`,
+};
 
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
@@ -72,7 +78,7 @@ const WEAPONS: Record<string, PartArt> = {
 };
 // Familles d'armes dessinées par le workflow d'art (poudre, fronde, fouet, explosif…).
 Object.assign(WEAPONS, GENERATED_WEAPONS);
-WEAPONS.epee = WEAPON_EPEE; // tranche verticale : épée en front/back/profile
+WEAPONS.epee = EPEE_ART; // épée : front/back/profile
 // Réécritures lisibilité (audit aveugle) — formes reconnaissables au 1er coup d'œil.
 WEAPONS.arc = `<path d="M3 -28 Q-13 0 3 28" stroke="#6a4a2a" stroke-width="3" fill="none"/><line x1="3" y1="-28" x2="3" y2="28" stroke="#e8e0d0" stroke-width="1"/><line x1="3" y1="0" x2="-15" y2="0" stroke="#caa882" stroke-width="1.6"/><path d="M-15 0 l5 -2.5 v5 z" fill="#caa882"/>`;
 WEAPONS.arbalete = `<rect x="-1.6" y="-30" width="3.2" height="34" rx="1" fill="#5a3f24"/><path d="M-13 -23 Q0 -19 13 -23" stroke="#3a2a18" stroke-width="2.6" fill="none"/><line x1="-13" y1="-23" x2="13" y2="-23" stroke="#d8d0c0" stroke-width="0.8"/><rect x="-1" y="-32" width="2" height="11" fill="#caa882"/><path d="M0 -34 l1.6 4 -3.2 0 z" fill="#caa882"/>`;

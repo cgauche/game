@@ -2,7 +2,6 @@ import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
 import { GENERATED_HEADS } from './generated/heads';
 import HEAD_VIEWS_JSON from './generated/headViews.json';
-import { SLICE_HEADS } from './slice-soldat';
 
 // Vues dos/profil des têtes (E·7, générées par workflow) — composées au front existant.
 type HeadViewSet = { back?: string; profile?: string };
@@ -39,8 +38,6 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
  *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours. */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const base = baseSpeciesOf(species);
-  const slice = SLICE_HEADS[`${base}:${sex}`]; // tranche verticale (front/back/profile)
-  if (slice?.[slot] != null) return slice[slot];
   const gen = GENERATED_HEADS[`${base}:${sex}`];
   if (gen?.[slot] != null) {
     // Front généré + vues dos/profil (E·7) si disponibles → PartArt multi-vues.
