@@ -13,7 +13,7 @@
  */
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
-import { reachable, manhattan, Pt } from './path';
+import { reachable, manhattan, chebyshev, Pt } from './path';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
@@ -36,7 +36,7 @@ export interface EnemyTurnInput {
   offensiveSpell?: string;
 }
 
-const adjacent = (a: Pt, b: Pt) => manhattan(a, b) <= 1;
+const adjacent = (a: Pt, b: Pt) => chebyshev(a, b) <= 1; // portée de mêlée = Chebyshev (diagonale incluse)
 
 /**
  * Cible préférée : on sécurise les éliminations en visant les Blessures les plus

@@ -687,4 +687,23 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.action).toBe('move'); // peut courir (Mouvement de Course)
     expect(st.pendingDisengage).toBeNull();
   });
+
+  it('attaque en DIAGONALE : un ennemi diagonalement adjacent est à portée de mêlée (distance Chebyshev)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.characteristics.CC = 70;
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(2);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.pos = { x: E.pos!.x - 1, y: E.pos!.y - 1 }; // DIAGONALE : Chebyshev 1, mais manhattan 2
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.getState().battleClickEntity(E.id); // doit ouvrir la modale (avant : « hors de portée »)
+    st = useGame.getState();
+    expect(st.pendingAttack).not.toBeNull(); // attaque en diagonale autorisée
+    expect(st.pendingAttack!.targetId).toBe(E.id);
+  });
 });

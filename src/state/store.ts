@@ -43,7 +43,7 @@ import { findSpell } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
-import { reachable, pathTo, manhattan, Pt } from './path';
+import { reachable, pathTo, manhattan, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
@@ -327,7 +327,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene) return;
     const ent = scene.entities.find((e) => e.id === entityId);
     if (!ent) return;
-    if (manhattan(partyPos, ent.pos) > 1) {
+    if (chebyshev(partyPos, ent.pos) > 1) {
       get().log('Trop loin pour interagir.');
       return;
     }
@@ -501,7 +501,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     if (battle.action !== 'attack') return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
-    if (manhattan(active.pos!, target.pos!) > 1 && active.weapons[0]?.type === 'melee') {
+    if (chebyshev(active.pos!, target.pos!) > 1 && active.weapons[0]?.type === 'melee') {
       get().log('Cible hors de portée de mêlée.');
       return;
     }
@@ -934,11 +934,11 @@ function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
 function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
-  if (manhattan(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') return null;
+  if (chebyshev(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') return null;
   const weapon = attacker.weapons[0];
   const res =
     weapon.type === 'ranged'
-      ? resolveRanged(attacker, target, weapon, battleRng, manhattan(attacker.pos!, target.pos!), location)
+      ? resolveRanged(attacker, target, weapon, battleRng, chebyshev(attacker.pos!, target.pos!), location)
       : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target), location });
   return { res, weapon };
 }
@@ -989,7 +989,7 @@ function bestAdjacentReachable(reach: Map<string, number>, target: Pt): Pt | nul
   let bestD = Infinity;
   for (const k of reach.keys()) {
     const [x, y] = k.split(',').map(Number);
-    if (manhattan({ x, y }, target) !== 1) continue;
+    if (chebyshev({ x, y }, target) !== 1) continue;
     const d = reach.get(k)!;
     if (d < bestD) {
       bestD = d;
@@ -1054,7 +1054,7 @@ function maybeOpenDefense(set: any, attacker: Combatant, target: Combatant): boo
   const weapon = attacker.weapons[0];
   if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
   if (weapon?.type !== 'melee') return false;
-  if (manhattan(attacker.pos!, target.pos!) > 1) return false;
+  if (chebyshev(attacker.pos!, target.pos!) > 1) return false;
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   const atk = rollMeleeAttacker(attacker, target, weapon, battleRng); // jet d'attaque figé
@@ -1384,7 +1384,7 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
-      if (canAct && manhattan(enemy.pos!, tgt.pos!) <= 1) {
+      if (canAct && chebyshev(enemy.pos!, tgt.pos!) <= 1) {
         // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
         if (!wasEngaged) {
           const adv = chargeAdvantage(effectiveMovement(enemy), distBefore);
