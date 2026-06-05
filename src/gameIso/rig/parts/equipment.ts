@@ -70,6 +70,13 @@ const WEAPONS: Record<string, PartArt> = {
 // Familles d'armes dessinées par le workflow d'art (poudre, fronde, fouet, explosif…).
 Object.assign(WEAPONS, GENERATED_WEAPONS);
 WEAPONS.epee = WEAPON_EPEE; // tranche verticale : épée en front/back/profile
+// Réécritures lisibilité (audit aveugle) — formes reconnaissables au 1er coup d'œil.
+WEAPONS.arc = `<path d="M3 -28 Q-13 0 3 28" stroke="#6a4a2a" stroke-width="3" fill="none"/><line x1="3" y1="-28" x2="3" y2="28" stroke="#e8e0d0" stroke-width="1"/><line x1="3" y1="0" x2="-15" y2="0" stroke="#caa882" stroke-width="1.6"/><path d="M-15 0 l5 -2.5 v5 z" fill="#caa882"/>`;
+WEAPONS.arbalete = `<rect x="-1.6" y="-30" width="3.2" height="34" rx="1" fill="#5a3f24"/><path d="M-13 -23 Q0 -19 13 -23" stroke="#3a2a18" stroke-width="2.6" fill="none"/><line x1="-13" y1="-23" x2="13" y2="-23" stroke="#d8d0c0" stroke-width="0.8"/><rect x="-1" y="-32" width="2" height="11" fill="#caa882"/><path d="M0 -34 l1.6 4 -3.2 0 z" fill="#caa882"/>`;
+WEAPONS.poudre = `<rect x="-2" y="-30" width="4.2" height="22" rx="1" fill="url(#g_steelD)" stroke="#2a2018" stroke-width="0.4"/><circle cx="0" cy="-31" r="2.6" fill="#2a2a30"/><path d="M-2 -12 q-2 9 -7 13 q-3 2 -4 -1 q-1 -3 2 -6 l5 -8 z" fill="#5a3f24" stroke="#33241a" stroke-width="0.4"/><path d="M2.2 -16 q4 0 4 4" stroke="#caa64a" stroke-width="1.3" fill="none"/>`;
+WEAPONS.fronde = `<path d="M-5 -28 Q-2 -12 0 -2" stroke="#6a4a2a" stroke-width="1.3" fill="none"/><path d="M5 -28 Q2 -12 0 -2" stroke="#6a4a2a" stroke-width="1.3" fill="none"/><path d="M-4 -3 Q0 5 4 -3 Q0 0 -4 -3 z" fill="#7a5a3a" stroke="#4a3525" stroke-width="0.4"/><circle cx="0" cy="-2" r="2.6" fill="#8a929c" stroke="#3a4048" stroke-width="0.4"/>`;
+WEAPONS.fouet = `<rect x="-1.6" y="-3" width="3.2" height="11" rx="1.3" fill="#3a2a1a"/><path d="M0 -3 q11 -5 7 -16 q-3 -8 -11 -5 q-6 2 -3 8" stroke="#6a4a2a" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+WEAPONS.explosif = `<circle cx="0" cy="-7" r="8" fill="#2b2b30" stroke="#141418" stroke-width="0.6"/><ellipse cx="-2.6" cy="-9.6" rx="2.4" ry="1.6" fill="#54545f"/><path d="M5 -13 q4 -3 3 -8" stroke="#3a2a1a" stroke-width="1.6" fill="none"/><circle cx="8" cy="-22" r="2.4" fill="url(#g_glow)"/><circle cx="8" cy="-22" r="1.1" fill="#ffd34d"/>`;
 
 export function weaponPart(w: Weapon): PartArt {
   const f = weaponFamily(w);
