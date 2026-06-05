@@ -204,6 +204,8 @@ interface GameState {
   pendingDefense: PendingDefense | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
+  /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
+  pendingRoundStart: { round: number } | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -261,6 +263,11 @@ interface GameState {
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
   battleEndTurn: () => void;
+  /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
+   *  contre 1 point de Chance (pré-emption d'initiative). */
+  roundStartPromote: (heroId: string) => void;
+  /** Ferme la modale d'ordre de Round et reprend le combat (active le 1er combattant valide). */
+  confirmRoundStart: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
@@ -310,6 +317,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDisengage: null,
   pendingCast: null,
+  pendingRoundStart: null,
   document: null,
   previousScene: null,
 
@@ -800,6 +808,39 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleEndTurn: () => advanceTurn(get, set),
+
+  // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB ch.17 l.27) ──
+  roundStartPromote: (heroId) => {
+    const { battle, pendingRoundStart } = get();
+    if (!battle || !pendingRoundStart) return;
+    const hero = battle.combatants.find((c) => c.id === heroId);
+    if (!hero || hero.kind !== 'hero' || (hero.fortune ?? 0) <= 0) return;
+    if (battle.order[0] === heroId) return; // déjà en tête
+    hero.fortune = (hero.fortune ?? 0) - 1;
+    const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
+    set({ battle: { ...battle, order, log: [...battle.log, `${hero.name} choisit d'agir en premier (Chance).`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  confirmRoundStart: () => {
+    const battle = get().battle;
+    set({ pendingRoundStart: null });
+    if (!battle) return;
+    // Premier combattant valide de l'ordre (réordonné) à partir de l'index 0.
+    let turn = 0;
+    for (let i = 0; i < battle.order.length; i++) {
+      const c = battle.combatants.find((x) => x.id === battle.order[i]);
+      if (c && !isOutOfAction(c)) {
+        turn = i;
+        break;
+      }
+    }
+    const active = battle.combatants.find((c) => c.id === battle.order[turn]);
+    if (active) active.defensiveStance = false;
+    set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
+    if (checkBattleOver(get, set)) return;
+    bus.emit(EVT.SCENE_DIRTY);
+    maybeRunEnemyTurn(get, set);
+  },
 
   battleDefendTotal: () => {
     const battle = get().battle;
@@ -1769,6 +1810,15 @@ function advanceTurn(get: () => GameState, set: any) {
         c.gainedAdvThisRound = false;
       }
       decayEngagement(battle.combatants); // Engagé tombe si aucun coup échangé ce Round (LDB 13-Combat l.175)
+      // Chance, 3e usage (LDB ch.17 l.27) : si le combat continue et qu'un héros dispose de Chance,
+      // on suspend au début du Round pour la modale d'ordre (pré-emption d'initiative). La reprise
+      // est portée par confirmRoundStart (anti double-advance, comme la suspension de défense).
+      const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
+      const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
+      if (enemiesAlive && heroCanPreempt) {
+        set({ battle: { ...battle, turn, round, action: null, moved: false, acted: false, reachable: new Map() }, pendingRoundStart: { round } });
+        return;
+      }
     }
     const next = battle.combatants.find((c) => c.id === battle!.order[turn]);
     if (next && !isOutOfAction(next)) break;

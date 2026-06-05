@@ -24,6 +24,8 @@ function reset() {
     pendingAttack: null,
     pendingDefense: null,
     pendingDisengage: null,
+    pendingCast: null,
+    pendingRoundStart: null,
     document: null,
   });
 }
@@ -1162,5 +1164,69 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     useGame.getState().battlePickup('corps', 'trap:2');
     const bH = useGame.getState().battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.name === 'Tromblon')).toBe(false);
+  });
+});
+
+describe('Chance — 3e usage : pré-emption d’initiative en début de Round (LDB ch.17 l.27)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    reset();
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  function endOfRoundBattle(heroFortune: number) {
+    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    H.fortune = heroFortune;
+    H.pos = { x: 0, y: 0 };
+    const E: Combatant = JSON.parse(JSON.stringify(H));
+    E.id = 'enemy-0';
+    E.name = 'Gobelin';
+    E.kind = 'enemy';
+    E.fortune = 0;
+    E.pos = { x: 5, y: 5 };
+    const battle: BattleState = {
+      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
+      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
+    return { H, E };
+  }
+
+  it('fin du dernier tour du Round : si un héros a de la Chance, on suspend (pendingRoundStart)', () => {
+    endOfRoundBattle(1);
+    useGame.getState().battleEndTurn(); // H (dernier de l'ordre) finit → bascule au Round 2
+    const st = useGame.getState();
+    expect(st.pendingRoundStart).not.toBeNull();
+    expect(st.pendingRoundStart!.round).toBe(2);
+    expect(st.battle!.round).toBe(2);
+  });
+
+  it('aucune Chance : pas de suspension', () => {
+    endOfRoundBattle(0);
+    useGame.getState().battleEndTurn();
+    expect(useGame.getState().pendingRoundStart).toBeNull();
+  });
+
+  it('roundStartPromote place le héros en tête et dépense 1 Chance', () => {
+    const { H } = endOfRoundBattle(2);
+    useGame.getState().battleEndTurn();
+    useGame.getState().roundStartPromote(H.id);
+    const st = useGame.getState();
+    expect(st.battle!.order[0]).toBe(H.id);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.fortune).toBe(1);
+  });
+
+  it('confirmRoundStart ferme la modale et active le héros promu en premier', () => {
+    const { H } = endOfRoundBattle(1);
+    useGame.getState().battleEndTurn();
+    useGame.getState().roundStartPromote(H.id);
+    useGame.getState().confirmRoundStart();
+    const st = useGame.getState();
+    expect(st.pendingRoundStart).toBeNull();
+    expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // H agit en premier ce Round
   });
 });
