@@ -39,8 +39,12 @@ import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
+import { walkXY, walkDuration } from './walkPath';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
+const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 2.6;
 
 // Viewport virtuel : le SVG remplit tout l'espace dispo (preserveAspectRatio
 // slice) et la caméra recadre autour du point focal (groupe / combattant actif).
@@ -59,6 +63,44 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
+  const [zoom, setZoom] = useState(1);
+
+  // Marche visuelle : le token GLISSE le long du chemin (ANIM_MOVE) au lieu de se
+  // téléporter à la destination. walksRef = id → {path, start} ; rAF tant qu'actif.
+  const [, setWalkTick] = useState(0);
+  const walksRef = useRef<Record<string, { path: { x: number; y: number }[]; start: number }>>({});
+  const walkRaf = useRef(0);
+  useEffect(() => {
+    const tick = () => {
+      const now = performance.now();
+      let any = false;
+      for (const id of Object.keys(walksRef.current)) {
+        const w = walksRef.current[id];
+        if (now - w.start >= walkDuration(w.path, STEP_MS)) delete walksRef.current[id];
+        else any = true;
+      }
+      setWalkTick((t) => t + 1);
+      walkRaf.current = any ? requestAnimationFrame(tick) : 0;
+    };
+    const off = bus.on(EVT.ANIM_MOVE, (d: any) => {
+      if (!d?.path || d.path.length < 2) return;
+      walksRef.current[d.id] = { path: d.path, start: performance.now() };
+      if (!walkRaf.current) walkRaf.current = requestAnimationFrame(tick);
+    });
+    return () => { off(); if (walkRaf.current) cancelAnimationFrame(walkRaf.current); };
+  }, []);
+
+  // Zoom molette (listener non-passif pour pouvoir preventDefault le scroll de page).
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z - e.deltaY * 0.0015)));
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, []);
 
   // Dégâts flottants — déclenchés sur ANIM_IMPACT (timing de l'impact du clip), pas à l'émission.
   type Float = { key: number; x: number; y: number; text: string; crit: boolean };
@@ -194,13 +236,13 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean) => {
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean, walking?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy + TH / 2;
     return (
       <g
         key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
+        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
@@ -216,13 +258,13 @@ export function IsoStage() {
   };
 
   // Variante de token() hébergeant des enfants React (rig héros) — même ombre/anneau/échelle.
-  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean) => {
+  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy + TH / 2;
     return (
       <g
         key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
+        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.4 : 1 }}
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
@@ -231,21 +273,32 @@ export function IsoStage() {
     );
   };
 
+  // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en
+  // cours (anti-téléportation), sinon la position logique.
+  const wnow = performance.now();
+  const walkPosOf = (id: string, x: number, y: number) => {
+    const w = walksRef.current[id];
+    if (!w) return { x, y, walking: false };
+    const p = walkXY(w.path, wnow - w.start, STEP_MS);
+    return { x: p.x, y: p.y, walking: true };
+  };
+
   if (mode === 'battle' && battle) {
     let hi = 0;
     for (const c of battle.combatants) {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
+      const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       const prof = isHero ? null : enemyRigProfile(c);
       if (isHero || prof) {
         // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims).
-        const el = tokenNode(c.id, c.pos.x, c.pos.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c));
-        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el });
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c), wp.walking);
+        objs.push({ d: depth(wp.x, wp.y) + 0.5, el });
       } else {
         const f = creatureFacing[c.id] ?? { view: 'front' as const, mirror: false };
         const inner = creatureView(c.name, f.view, hashSeed(c.id));
-        objs.push({ d: depth(c.pos.x, c.pos.y) + 0.5, el: token(c.id, c.pos.x, c.pos.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror) });
+        objs.push({ d: depth(wp.x, wp.y) + 0.5, el: token(c.id, wp.x, wp.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror, wp.walking) });
       }
     }
   } else {
@@ -265,12 +318,13 @@ export function IsoStage() {
       const inner = entitySprite(ent);
       objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
     }
-    // groupe (token = 1er héros)
+    // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party[0];
+    const wp = leader ? walkPosOf(leader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
     const el = leader
-      ? tokenNode('__party', partyPos.x, partyPos.y, <AnimatedRigToken combatant={leader} />, 0.6, HERO_RING[0])
+      ? tokenNode('__party', wp.x, wp.y, <AnimatedRigToken combatant={leader} />, 0.6, HERO_RING[0], false, wp.walking)
       : token('__party', partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0]);
-    objs.push({ d: depth(partyPos.x, partyPos.y) + 0.5, el });
+    objs.push({ d: depth(wp.x, wp.y) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -301,7 +355,10 @@ export function IsoStage() {
     pt.x = ev.clientX;
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    const { x, y } = screenToTile(loc.x - cam.x, loc.y - cam.y, dims);
+    // Annule le zoom (scale autour du centre viewport) puis la translation caméra.
+    const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
+    const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
+    const { x, y } = screenToTile(gx, gy, dims);
     if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) return;
 
     if (st.mode === 'battle') {
@@ -351,7 +408,7 @@ export function IsoStage() {
       onPointerDown={onPointerDown}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
-      <g style={{ transform: `translate(${cam.x}px,${cam.y}px)`, transition: 'transform 0.45s ease-out' }}>
+      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: 'transform 0.3s ease-out' }}>
         <g>{floor}</g>
         <g>{highlights}</g>
         {mode === 'exploration' && !dialogue && (
@@ -415,6 +472,23 @@ export function IsoStage() {
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
+      {/* Boutons de zoom (fixes, hors caméra) — molette aussi. */}
+      <g transform={`translate(${VW - 58},16)`} style={{ cursor: 'pointer' }}>
+        <g onPointerDown={(e) => { e.stopPropagation(); setZoom((z) => Math.min(ZOOM_MAX, z + 0.3)); }}>
+          <rect width={42} height={42} rx={9} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
+          <text x={21} y={29} textAnchor="middle" fontSize={26} fill="#cfe6ff">+</text>
+        </g>
+        <g transform="translate(0,50)" onPointerDown={(e) => { e.stopPropagation(); setZoom((z) => Math.max(ZOOM_MIN, z - 0.3)); }}>
+          <rect width={42} height={42} rx={9} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
+          <text x={21} y={31} textAnchor="middle" fontSize={30} fill="#cfe6ff">−</text>
+        </g>
+        {zoom !== 1 && (
+          <g transform="translate(0,100)" onPointerDown={(e) => { e.stopPropagation(); setZoom(1); }}>
+            <rect width={42} height={26} rx={7} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
+            <text x={21} y={18} textAnchor="middle" fontSize={12} fill="#cfe6ff">1×</text>
+          </g>
+        )}
+      </g>
     </svg>
   );
 }
