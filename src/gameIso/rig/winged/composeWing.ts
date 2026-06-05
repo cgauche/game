@@ -31,10 +31,10 @@ export const WINGED_SPECIES: Record<string, QuadProps> = {
   },
   // Hippogriffe : avant-train d'aigle (tête + serres), arrière-train de CHEVAL (sabots),
   // brun fauve, ailes emplumées.
-  Hippogriffe: {
+  Hippogriffe: { // arrière de CHEVAL : robe CHÂTAIGNE + crinière (≠ griffon doré-lion)
     sl: 1.08, build: 'equine', girth: 0.92, bodyLen: 1.02, neckLen: 0.84, neckAngle: -44, legLen: 1.12,
     head: 'aigle', tail: 'crin', ears: 'pointues', foot: 'sabot', frontFoot: 'serre', wings: 'plumes',
-    stored: { corps: '#8a7048', corpsO: '#5e4a2c', corpsH: '#a98e5c', cheveux: '#4a3a22', cheveuxO: '#2c2114', cuir: '#caa23a' },
+    stored: { corps: '#6f4632', corpsO: '#48291c', corpsH: '#8c5e44', cheveux: '#33231a', cheveuxO: '#1d130c', cuir: '#caa23a' },
   },
   // Dragon : reptile ailé GÉANT (sl élevé) — tête à museau/cornes, queue écailleuse, serres,
   // ailes membraneuses. Écailles vertes (recoloriable → rouge/noir via la palette).

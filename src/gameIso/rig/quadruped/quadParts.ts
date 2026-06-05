@@ -153,8 +153,8 @@ function headProfile(p: QuadProps): string {
 function tail(p: QuadProps): string {
   if (p.tail === 'reptile') // longue queue écailleuse effilée + épines dorsales
     return `<path d="M0 -2 Q16 4 28 2 Q40 0 48 8 Q40 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>`;
-  if (p.tail === 'leonine') // queue de lion : fouet + toupet terminal
-    return `<path d="M0 0 Q12 6 16 16 Q18 26 12 30 Q15 22 9 14 Q3 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><circle cx="13" cy="28" r="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
+  if (p.tail === 'leonine') // queue de lion : fouet fin + GROS toupet terminal (tell de l'arrière félin)
+    return `<path d="M0 0 Q13 7 17 18 Q19 28 14 33 Q16 24 10 15 Q3 8 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M14 30 Q9 33 10 38 Q13 41 16 38 Q20 40 21 35 Q24 33 21 29 Q19 26 14 30 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'crin') return `<path d="M0 0 Q10 6 10 18 Q9 30 4 34 Q7 24 3 14 Q1 6 0 4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M0 0 Q10 6 13 18 Q15 28 9 31 Q12 22 6 14 Q2 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M11 16 Q16 24 10 30 Q12 22 8 16 Z" fill="@cheveux"/>`;
   if (p.tail === 'nue') return `<path d="M0 0 Q14 6 20 18 Q24 28 22 34" fill="none" stroke="#caa" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>`;
