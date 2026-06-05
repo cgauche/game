@@ -30,6 +30,18 @@ const CHEVEUX: Record<string, string[]> = {
   ],
 };
 
+// Vue de DOS générique : crâne COUVERT de cheveux (@cheveux) — corrige « cheveux invisibles
+// de dos » (avant : ovale de peau). La nuque/cou minimale (@peau) vient du visage de dos.
+const BACK_HAIR =
+  '<path d="M-9.7 6 Q-10.7 -9.5 0 -10 Q10.7 -9.5 9.7 6 Q9.3 11 6 12.4 Q0 13.4 -6 12.4 Q-9.3 11 -9.7 6Z" fill="@cheveux"/>' +
+  '<path d="M-9.7 6 Q-10.7 -9.5 0 -10 Q-6.5 -7.5 -7.8 0 Q-8.9 4 -9.7 6Z" fill="@cheveuxH" opacity="0.7"/>' +
+  '<path d="M0 -10 Q10.7 -9.5 9.7 6 Q8.4 0 6.6 -3.4 Q3.4 -7.4 0 -8Z" fill="@cheveuxO" opacity="0.7"/>' +
+  '<path d="M-5 9 Q0 11.5 5 9 M-6 4 Q0 6.5 6 4" stroke="@cheveuxO" stroke-width="0.5" fill="none" opacity="0.5"/>';
+// Nuque/cou vus de dos (le crâne est couvert par les cheveux ci-dessus).
+const BACK_NAPE =
+  '<path d="M-3.8 9.5 Q0 12 3.8 9.5 L3.2 17 Q0 18.6 -3.2 17Z" fill="@peau"/>' +
+  '<path d="M-3.6 11 Q0 12.6 3.6 11" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.5"/>';
+
 function pick(table: Record<string, string[]>, key: string, fallbackKey: string, idx: number): string {
   const arr = table[key] ?? table[fallbackKey] ?? Object.values(table)[0];
   return arr[idx >= 0 && idx < arr.length ? idx : 0];
@@ -46,14 +58,16 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
     const pool = [gen?.cheveux, ...(HAIRSTYLES[sex] ?? []).map((h) => h.svg)].filter((s): s is string => s != null);
     if (pool.length) {
       const i = ((idx % pool.length) + pool.length) % pool.length;
-      const views = i === 0 ? HEAD_VIEWS[key]?.cheveux : undefined; // dos/profil : seul le défaut espèce en a
-      return views ? { front: pool[i], ...views } : pool[i];
+      // DOS générique (crâne chevelu) pour TOUTES les coiffures ; profil par espèce si dispo.
+      const profile = HEAD_VIEWS[key]?.cheveux?.profile;
+      return { front: pool[i], back: BACK_HAIR, ...(profile ? { profile } : {}) };
     }
     return pick(CHEVEUX, key, 'Humain:M', idx);
   }
   if (gen?.visage != null) {
-    const views = HEAD_VIEWS[key]?.visage;
-    return views ? { front: gen.visage, ...views } : gen.visage;
+    // Visage de DOS = nuque seule (le crâne est couvert par les cheveux) ; profil par espèce.
+    const profile = HEAD_VIEWS[key]?.visage?.profile;
+    return { front: gen.visage, back: BACK_NAPE, ...(profile ? { profile } : {}) };
   }
   return pick(VISAGE, key, 'default', idx);
 }
