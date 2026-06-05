@@ -96,8 +96,9 @@ export function ActionBar() {
           <div className="ab-slots">
             <button
               className={`ab-slot ${battle.action === 'move' ? 'on' : ''}`}
-              disabled={battle.moved}
+              disabled={battle.moved || (engaged && battle.acted)}
               onClick={() => selectAction(battle.action === 'move' ? null : 'move')}
+              title={engaged ? 'Engagé : « Déplacer » lance un Désengagement (Esquive ou sacrifice d’Avantage)' : undefined}
             >
               <span className="ab-ico">🦶</span>
               <span className="ab-lbl">Déplacer{battle.moved && ' ✓'}</span>

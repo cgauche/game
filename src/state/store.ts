@@ -407,6 +407,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (a === 'move' && !battle.moved) {
       // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
       if (isEngaged(active)) {
+        // Si l'Action est déjà consommée (Esquive de Désengagement ratée/neutre, l.89), on ne
+        // peut pas retenter ce tour → no-op (sinon boucle infinie de Tests d'Esquive).
+        if (battle.acted) return;
         startDisengage(get, set, active);
         return;
       }

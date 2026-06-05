@@ -633,4 +633,23 @@ describe('Boucle de jeu (store)', () => {
     st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.engagedWith).toEqual([]); // libéré de E1 ET E2
   });
+
+  it('Désengagement raté (Action consommée) : re-cliquer « Déplacer » ne relance PAS l’Esquive (anti-boucle)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    const turn = st.battle!.order.indexOf(H.id);
+    // État après une tentative d'Esquive RATÉE : Action consommée (acted), héros toujours Engagé.
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: true }, pendingDisengage: null });
+    useGame.getState().battleSelectAction('move'); // re-clic « Déplacer »
+    st = useGame.getState();
+    expect(st.pendingDisengage).toBeNull(); // pas de NOUVELLE Esquive (l'Action est déjà dépensée)
+    expect(st.battle!.action).toBeNull(); // ni déplacement libre
+  });
 });
