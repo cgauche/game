@@ -8,6 +8,7 @@ import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { pathTo } from '../state/path';
+import { rangeBandModifier, rangeBandName } from '../engine/combat';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction } from '../engine/conditions';
 import { Combatant } from '../engine/types';
@@ -32,8 +33,11 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
+import { AnimatedQuadToken } from './AnimatedQuadToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
+import { bodyPlanOf } from './rig/bodyPlan';
+import { quadrupedSvg } from './rig/quadruped/composeQuad';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -43,6 +47,12 @@ import { walkXY, walkDuration } from './walkPath';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
+
+/** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
+const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+/** Teinte d'une bande de portée selon son modificateur (vert = facile → rouge = difficile). */
+const bandColor = (mod: number): string =>
+  mod >= 60 ? '#37c07a' : mod >= 40 ? '#7bd08a' : mod >= 0 ? '#d9cf5e' : mod >= -10 ? '#e0a04f' : '#c0563f';
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.6;
 
@@ -63,7 +73,45 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
-  const [zoom, setZoom] = useState(1);
+  const zoom = useGame((s) => s.zoom);
+  const setZoom = useGame((s) => s.setZoom);
+  // Rotation caméra (cran de 90°). `camRot` = cible (store, lu en live par le rig) ;
+  // `shownRot` = orientation AFFICHÉE, retardée pour masquer le ré-agencement sous le
+  // creux d'opacité de la transition « dim-and-turn ».
+  const camRot = useGame((s) => s.camRot);
+  const rotateCam = useGame((s) => s.rotateCam);
+  const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
+  const [turning, setTurning] = useState(false);
+  // Tuile survolée (pour l'infobulle de portée en mode tir).
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+  // Dépend de camRot SEUL (pas de shownRot) : sinon le swap de shownRot à mi-course
+  // re-déclenche l'effet et son cleanup annule le timer qui rétablit `turning=false`
+  // → la scène resterait sombre. `prevCamRot` filtre les re-rendus non liés.
+  const prevCamRot = useRef(camRot);
+  useEffect(() => {
+    if (prevCamRot.current === camRot) return;
+    prevCamRot.current = camRot;
+    setTurning(true);
+    const t1 = window.setTimeout(() => setShownRot(camRot), 130); // swap au creux
+    const t2 = window.setTimeout(() => setTurning(false), 260); // remontée
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [camRot]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (useGame.getState().dialogue) return;
+      const ae = document.activeElement as HTMLElement | null;
+      if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
+      // e.key (la LETTRE) → touches Q/E étiquetées, AZERTY comme QWERTY.
+      const k = e.key.toLowerCase();
+      if (k === 'e') rotateCam(1);
+      else if (k === 'q') rotateCam(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [rotateCam]);
 
   // Marche visuelle : le token GLISSE le long du chemin (ANIM_MOVE) au lieu de se
   // téléporter à la destination. walksRef = id → {path, start} ; rAF tant qu'actif.
@@ -96,7 +144,7 @@ export function IsoStage() {
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z - e.deltaY * 0.0015)));
+      setZoom(useGame.getState().zoom - e.deltaY * 0.0015); // le store borne [1, 2.6]
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -146,7 +194,9 @@ export function IsoStage() {
   useEffect(() => {
     const faceTo = (id: string, from?: { x: number; y: number }, to?: { x: number; y: number }) => {
       if (!from || !to) return;
-      const { dx, dy } = screenDir(from, to);
+      const st = useGame.getState();
+      const vd = st.scene ? { ...st.scene.dimensions, rot: st.camRot } : undefined;
+      const { dx, dy } = screenDir(from, to, vd);
       if (dx === 0 && dy === 0) return;
       setCreatureFacing((m) => ({ ...m, [id]: facingView(dx, dy) }));
     };
@@ -194,8 +244,16 @@ export function IsoStage() {
   }, []);
 
   if (!scene) return null;
-  const dims: Dims = scene.dimensions;
+  const dims: Dims = { ...scene.dimensions, rot: shownRot };
   const size = stageSize(dims);
+
+  // Tir en cours de visée : le combattant actif est un héros en mode « attaque » avec une arme à
+  // distance → on peint les bandes de portée + une infobulle au survol (lisibilité du tir).
+  const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
+  const aimWeapon =
+    mode === 'battle' && battle && battle.action === 'attack' && activeC?.kind === 'hero' && activeC.pos
+      ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
+      : undefined;
 
   // --- Couche sol (losanges + raccord d'arêtes) ---
   const floor: JSX.Element[] = [];
@@ -206,14 +264,24 @@ export function IsoStage() {
   // --- Surbrillances de combat ---
   const highlights: JSX.Element[] = [];
   if (mode === 'battle' && battle) {
+    // Bandes de portée concentriques autour du tireur (peintes SOUS les tokens).
+    if (aimWeapon && activeC?.pos) {
+      for (let y = 0; y < dims.h; y++)
+        for (let x = 0; x < dims.w; x++) {
+          const dist = cheb(activeC.pos, { x, y });
+          if (dist === 0) continue;
+          const m = rangeBandModifier(dist, aimWeapon.range!);
+          if (m == null) continue; // hors de portée → pas de teinte
+          highlights.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, dims)} fill={bandColor(m)} opacity={0.16} pointerEvents="none" />);
+        }
+    }
     for (const k of battle.reachable.keys()) {
       const [x, y] = k.split(',').map(Number);
       highlights.push(<path key={`h${k}`} d={diamondPath(x, y, dims)} fill="#4f8fe0" opacity={0.32} />);
     }
-    const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-    if (active?.pos)
+    if (activeC?.pos)
       highlights.push(
-        <path key="active" d={diamondPath(active.pos.x, active.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
+        <path key="active" d={diamondPath(activeC.pos.x, activeC.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
       );
   }
 
@@ -262,7 +330,7 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean, walking?: boolean) => {
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean, walking?: boolean, bakedDeath?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
     return (
@@ -273,9 +341,10 @@ export function IsoStage() {
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
         {/* calque fx (anim légère token entier pour les créatures) — sans transform de base.
-            MORT : on bascule ~78° autour des pieds (origine du groupe) → la créature s'allonge
-            au sol (comme les héros), et on coupe l'anim d'ambiance. */}
-        <g className={dim ? undefined : fx} transform={dim ? 'rotate(78)' : undefined}>
+            MORT : bascule ~78° autour des pieds → la créature s'allonge au sol (sprites
+            monolithiques + héros). `bakedDeath` = la pose de mort est DÉJÀ dans le modèle
+            (quadrupède effondré sur le flanc) → on ne bascule pas. */}
+        <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
           <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
             {/* miroir gauche/droite autour du centre de la boîte créature (x=80) */}
             <g transform={mirror ? 'translate(160,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: inner }} />
@@ -315,7 +384,7 @@ export function IsoStage() {
   // visibles pendant le combat. L'anim d'ambiance CSS (ent.anim) passe par le calque fx.
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
-    objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+    objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
   }
 
   if (mode === 'battle' && battle) {
@@ -329,11 +398,17 @@ export function IsoStage() {
       if (isHero || prof) {
         // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims).
         const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c), wp.walking);
-        objs.push({ d: depth(wp.x, wp.y) + 0.5, el });
+        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
+      } else if (bodyPlanOf(c.name) === 'quadruped') {
+        // Quadrupède → gabarit rigué ANIMÉ (démarche squelettique + morsure + 8-dir + mort
+        // sur le flanc + recolor). Facing/anim gérés dans AnimatedQuadToken via le bus.
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedQuadToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62, ring, isOutOfAction(c), wp.walking);
+        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
       } else {
+        // Créature exotique → sprite monolithique (legacy).
         const f = creatureFacing[c.id] ?? { view: 'front' as const, mirror: false };
         const inner = creatureView(c.name, f.view, hashSeed(c.id));
-        objs.push({ d: depth(wp.x, wp.y) + 0.5, el: token(c.id, wp.x, wp.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror, wp.walking) });
+        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el: token(c.id, wp.x, wp.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror, wp.walking) });
       }
     }
   } else {
@@ -344,15 +419,19 @@ export function IsoStage() {
       const seed = ent.appearance?.seed ?? hashSeed(ent.id);
       const prof =
         ent.kind === 'personnage'
-          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build })
+          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { career: ent.appearance?.career, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build })
           : null;
       if (prof) {
         objs.push({
-          d: depth(ent.pos.x, ent.pos.y) + 0.1,
+          d: depth(ent.pos.x, ent.pos.y, dims) + 0.1,
           el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} />, 0.58),
         });
       } else {
-        objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+        // Entité quadrupède (loup/cheval/… posé dans une scène) → gabarit rigué + recolor.
+        const refName = ent.ref ?? ent.label ?? '';
+        const isQuad = bodyPlanOf(refName) === 'quadruped';
+        const inner = isQuad ? quadrupedSvg(refName, 'front', { colors: ent.appearance?.colors }) : entitySprite(ent);
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55, undefined, false, ent.anim, undefined, undefined, isQuad) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
@@ -361,7 +440,7 @@ export function IsoStage() {
     const el = leader
       ? tokenNode('__party', wp.x, wp.y, <AnimatedRigToken combatant={leader} />, 0.6, HERO_RING[0], false, wp.walking)
       : token('__party', partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0]);
-    objs.push({ d: depth(wp.x, wp.y) + 0.5, el });
+    objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -382,21 +461,47 @@ export function IsoStage() {
   const fc = tileCenter(focus.x, focus.y, dims);
   const cam = { x: VW / 2 - fc.cx, y: VH / 2 - fc.cy };
 
-  // --- Interaction (clic → tuile) ---
-  const onPointerDown = (ev: React.PointerEvent) => {
-    const st = useGame.getState();
-    const sc = st.scene;
-    if (!sc || st.dialogue) return;
-    const svg = svgRef.current!;
+  // --- Interaction (clic / survol → tuile) ---
+  // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
+  const tileFromEvent = (ev: React.PointerEvent): { x: number; y: number } | null => {
+    const svg = svgRef.current;
+    if (!svg) return null;
     const pt = svg.createSVGPoint();
     pt.x = ev.clientX;
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    // Annule le zoom (scale autour du centre viewport) puis la translation caméra.
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
     const { x, y } = screenToTile(gx, gy, dims);
-    if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) return;
+    if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) return null;
+    return { x, y };
+  };
+
+  // Survol : suit la tuile sous le curseur quand on vise (infobulle de portée). Ne met à jour
+  // l'état que sur changement de tuile (pas à chaque pixel) → re-rendus bornés.
+  const onPointerMove = (ev: React.PointerEvent) => {
+    if (!aimWeapon) {
+      if (hover) setHover(null);
+      return;
+    }
+    const t = tileFromEvent(ev);
+    if (!t) {
+      if (hover) setHover(null);
+      return;
+    }
+    if (!hover || hover.x !== t.x || hover.y !== t.y) setHover(t);
+  };
+  const onPointerLeave = () => {
+    if (hover) setHover(null);
+  };
+
+  const onPointerDown = (ev: React.PointerEvent) => {
+    const st = useGame.getState();
+    const sc = st.scene;
+    if (!sc || st.dialogue) return;
+    const t = tileFromEvent(ev);
+    if (!t) return;
+    const { x, y } = t;
 
     if (st.mode === 'battle') {
       const occ = st.battle?.combatants.find((c) => c.pos && c.pos.x === x && c.pos.y === y && !isOutOfAction(c));
@@ -443,9 +548,11 @@ export function IsoStage() {
       viewBox={`0 0 ${VW} ${VH}`}
       preserveAspectRatio="xMidYMid slice"
       onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
-      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: 'transform 0.3s ease-out' }}>
+      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
         <g>{floor}</g>
         <g>{highlights}</g>
         {mode === 'exploration' && !dialogue && (
@@ -518,6 +625,28 @@ export function IsoStage() {
             </g>
           );
         })}
+        {/* Infobulle de portée au survol (mode tir) : « N m · Courte portée (+40) ». */}
+        {aimWeapon &&
+          activeC?.pos &&
+          hover &&
+          (() => {
+            const dist = cheb(activeC.pos!, hover);
+            if (dist === 0) return null;
+            const m = rangeBandModifier(dist, aimWeapon.range!);
+            const name = rangeBandName(dist, aimWeapon.range!);
+            const { cx, cy } = tileCenter(hover.x, hover.y, dims);
+            const label = m == null || !name ? `${dist * 2} m · hors de portée` : `${dist * 2} m · ${name} (${m >= 0 ? '+' : ''}${m})`;
+            const col = m == null ? '#888' : bandColor(m);
+            const w = label.length * 6.2 + 14;
+            return (
+              <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
+                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke={col} strokeWidth={1} />
+                <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
+                  {label}
+                </text>
+              </g>
+            );
+          })()}
       </g>
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
@@ -531,23 +660,6 @@ export function IsoStage() {
         </g>
       )}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
-      {/* Boutons de zoom (fixes, hors caméra) — molette aussi. */}
-      <g transform={`translate(${VW - 58},16)`} style={{ cursor: 'pointer' }}>
-        <g onPointerDown={(e) => { e.stopPropagation(); setZoom((z) => Math.min(ZOOM_MAX, z + 0.3)); }}>
-          <rect width={42} height={42} rx={9} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
-          <text x={21} y={29} textAnchor="middle" fontSize={26} fill="#cfe6ff">+</text>
-        </g>
-        <g transform="translate(0,50)" onPointerDown={(e) => { e.stopPropagation(); setZoom((z) => Math.max(ZOOM_MIN, z - 0.3)); }}>
-          <rect width={42} height={42} rx={9} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
-          <text x={21} y={31} textAnchor="middle" fontSize={30} fill="#cfe6ff">−</text>
-        </g>
-        {zoom !== 1 && (
-          <g transform="translate(0,100)" onPointerDown={(e) => { e.stopPropagation(); setZoom(1); }}>
-            <rect width={42} height={26} rx={7} fill="#1c2230" stroke="#3a4660" strokeWidth={1.5} opacity={0.92} />
-            <text x={21} y={18} textAnchor="middle" fontSize={12} fill="#cfe6ff">1×</text>
-          </g>
-        )}
-      </g>
     </svg>
   );
 }
