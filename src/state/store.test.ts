@@ -119,12 +119,19 @@ describe('Boucle de jeu (store)', () => {
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     const turn = st.battle!.order.indexOf(heroC.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Fléchette', acted: false } });
+    // Flux par modale : cliquer la cible OUVRE l'incantation (jet différé), n'applique rien.
     useGame.getState().battleClickEntity(enemy.id);
+    expect(useGame.getState().pendingCast).not.toBeNull();
+    expect(useGame.getState().battle!.acted).toBe(false); // pas encore lancé
+    useGame.getState().castRoll(); // « Lancer » : fige le jet
+    expect(useGame.getState().pendingCast!.result).not.toBeNull();
+    useGame.getState().castConfirm(); // « Appliquer » : résout
     st = useGame.getState();
-    // L'action est consommée et l'incantation est journalisée.
+    // L'action est consommée, l'incantation journalisée, et la modale fermée.
     expect(st.battle!.acted).toBe(true);
     expect(st.battle!.action).toBeNull();
     expect(st.battle!.log.some((l) => l.includes('Fléchette'))).toBe(true);
+    expect(st.pendingCast).toBeNull();
   });
 
   it('une Bénédiction de bonus pose un effet actif temporisé sur la cible', () => {
@@ -138,7 +145,9 @@ describe('Boucle de jeu (store)', () => {
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Bénédiction de Bataille', acted: false } });
-    useGame.getState().battleClickEntity(heroC.id); // se cibler soi-même
+    useGame.getState().battleClickEntity(heroC.id); // se cibler soi-même → ouvre la modale
+    useGame.getState().castRoll(); // « Lancer »
+    useGame.getState().castConfirm(); // « Appliquer »
     st = useGame.getState();
     const after = st.battle!.combatants.find((c) => c.id === heroC.id)!;
     const failed = st.battle!.log.some((l) => l.includes('échoue'));

@@ -31,6 +31,8 @@ import {
   parseConditionEffect,
   parseCharBuffs,
   buffDurationRounds,
+  type CastResult,
+  type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { rollTest, TestResult, opposedTest, resolveOpposed } from '../engine/tests';
@@ -140,6 +142,20 @@ export interface PendingDisengage {
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
 }
 
+/** Incantation en attente : flux par modale (sélection → « Lancer » jet figé → Chance → appliquer),
+ *  comme l'attaque. Tous les jets méritent leur modale. */
+export interface PendingCast {
+  casterId: string;
+  targetId: string;
+  spellLabel: string;
+  /** Projectile magique (résolution façon attaque) vs autre sort / prière. */
+  missile: boolean;
+  /** Sort focalisé à NI 0 (consommé à l'application). */
+  focused: boolean;
+  /** Résultat figé du jet d'incantation (null = pas encore lancé). */
+  result: (CastResult & Partial<MissileResult>) | null;
+}
+
 export interface BattleState {
   combatants: Combatant[];
   order: string[];
@@ -173,6 +189,7 @@ interface GameState {
   pendingAttack: PendingAttack | null;
   pendingDefense: PendingDefense | null;
   pendingDisengage: PendingDisengage | null;
+  pendingCast: PendingCast | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -211,6 +228,11 @@ interface GameState {
   battleSelectSpell: (label: string) => void;
   /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
   battleUseItem: (uid: string) => void;
+  /** Incantation par modale : « Lancer » fige le jet, Chance le relance, « Appliquer » résout. */
+  castRoll: () => void;
+  castReroll: () => void;
+  castConfirm: () => void;
+  castCancel: () => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
@@ -260,6 +282,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingAttack: null,
   pendingDefense: null,
   pendingDisengage: null,
+  pendingCast: null,
   document: null,
   previousScene: null,
 
@@ -553,7 +576,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null, pendingDisengage: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null, pendingDisengage: null, pendingCast: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -628,6 +651,42 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...log] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+
+  castRoll: () => {
+    const { battle, pendingCast: pc } = get();
+    if (!battle || !pc || pc.result) return;
+    const caster = battle.combatants.find((c) => c.id === pc.casterId);
+    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || !target || !spell) return;
+    const res = pc.missile
+      ? resolveMagicMissile(caster, target, spell, battleRng, pc.focused)
+      : resolveCasting(caster, spell, battleRng, 'intermediaire', pc.focused);
+    set({ pendingCast: { ...pc, result: res } });
+  },
+  castReroll: () => {
+    const { battle, pendingCast: pc } = get();
+    if (!battle || !pc || !pc.result) return;
+    const caster = battle.combatants.find((c) => c.id === pc.casterId);
+    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
+    caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
+    const res = pc.missile
+      ? resolveMagicMissile(caster, target, spell, battleRng, pc.focused)
+      : resolveCasting(caster, spell, battleRng, 'intermediaire', pc.focused);
+    set({ pendingCast: { ...pc, result: res }, battle: { ...battle } });
+  },
+  castConfirm: () => {
+    const { battle, pendingCast: pc } = get();
+    if (!battle || !pc || !pc.result) return;
+    const caster = battle.combatants.find((c) => c.id === pc.casterId);
+    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    set({ pendingCast: null });
+    if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused);
+  },
+  castCancel: () => set({ pendingCast: null }),
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
   battleFocusSpell: (label) => {
@@ -1356,6 +1415,7 @@ function applyMiscast(caster: Combatant, severity: MiscastSeverity, sinPoints = 
 }
 
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
+/** Ouvre la modale d'incantation (jet différé, façon attaque) : pose `pendingCast` sans lancer. */
 function castSpell(
   get: () => GameState,
   set: any,
@@ -1363,18 +1423,32 @@ function castSpell(
   target: Combatant,
   label: string,
 ) {
-  const battle = get().battle!;
   const spell = findSpell(label);
   if (!spell) {
     get().log(`Sort « ${label} » introuvable.`);
     return;
   }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
-  const logLines: string[] = [];
+  set({
+    pendingCast: { casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell), focused: focusedNI0, result: null },
+  });
+}
 
-  if (isMagicMissile(spell)) {
-    const res = resolveMagicMissile(caster, target, spell, battleRng, focusedNI0);
-    logLines.push(res.log);
+/** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
+function applyCast(
+  get: () => GameState,
+  set: any,
+  caster: Combatant,
+  target: Combatant,
+  spell: NonNullable<ReturnType<typeof findSpell>>,
+  res: CastResult & Partial<MissileResult>,
+  missile: boolean,
+  focusedNI0: boolean,
+) {
+  const battle = get().battle!;
+  const logLines: string[] = [res.log];
+
+  if (missile) {
     if (res.hit && res.woundsLost) {
       target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
       if (res.isCritical && target.wounds.current > 0) addCondition(target, 'À Terre');
@@ -1386,8 +1460,6 @@ function castSpell(
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', defense: 'none' });
     if (res.defenderDefeated) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
-    const res = resolveCasting(caster, spell, battleRng, 'intermediaire', focusedNI0);
-    logLines.push(res.log);
     if (res.cast) {
       const heal = parseHeal(spell.desc, caster);
       const buffs = parseCharBuffs(spell.desc);

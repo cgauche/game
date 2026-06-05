@@ -116,11 +116,13 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : ramasser-en-combat, tables de critiques)*
 
-- **Jets par MODALE** ✅ : attaque, tests hors combat ET **défense réactive** passent par une
-  modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de **Chance** pour
-  relancer (LDB Destin). L'attaque permet de **viser une localisation** (Complexe -10). Quand un
-  ennemi frappe un héros en mêlée, le tour de l'IA est **suspendu** : le joueur choisit
-  Parade/Esquive, relance sa défense par Chance, puis applique (l'IA reprend).
+- **Jets par MODALE** ✅ : attaque, tests hors combat, **défense réactive** ET **incantation/prière**
+  passent par une modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de
+  **Chance** pour relancer (LDB Destin). L'attaque permet de **viser une localisation** (Complexe -10).
+  Quand un ennemi frappe un héros en mêlée, le tour de l'IA est **suspendu** : le joueur choisit
+  Parade/Esquive, relance sa défense par Chance, puis applique (l'IA reprend). **La modale montre les
+  DEUX côtés du Test opposé** (base + modificateurs = cible · d100 · DR de l'attaquant ET du défenseur)
+  — fini le « un seul chiffre ». L'incantation a son flux différé `pendingCast` (NI, DR ≥ NI, Maladresse).
 - Actions : ✅ **Défense totale** (« Sur la défensive »), ✅ **Charge** (se ruer au contact sur
   la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** = menu de choix :
   *Sacrifier l'Avantage* / *Esquiver* (Test opposé, coûte l'Action) / ✅ **Fuir** (attaque gratuite

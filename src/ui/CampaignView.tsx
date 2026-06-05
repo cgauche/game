@@ -8,6 +8,7 @@ import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
 import { DefenseModal } from './DefenseModal';
 import { DisengageModal } from './DisengageModal';
+import { CastModal } from './CastModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { Combatant } from '../engine/types';
@@ -77,6 +78,7 @@ export function CampaignView() {
       <RollModal />
       <DefenseModal />
       <DisengageModal />
+      <CastModal />
       <DocumentModal />
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
     </div>
