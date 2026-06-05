@@ -43,7 +43,7 @@ import { findSpell } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
-import { reachable, pathTo, manhattan, chebyshev, Pt } from './path';
+import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
@@ -488,7 +488,7 @@ export const useGame = create<GameState>((set, get) => ({
         get().log('Cible hors de portée de Charge.');
         return;
       }
-      const distFrom = manhattan(active.pos!, target.pos!); // distance AVANT déplacement (l.77)
+      const distFrom = chebyshev(active.pos!, target.pos!); // distance de combat AVANT déplacement (l.77 ; ≤ 2M+1 pour toute charge valide)
       const adv = chargeAdvantage(effectiveMovement(active), distFrom);
       const path = pathTo(scene, active.pos!, dest, blocked);
       active.pos = { ...dest };
@@ -1377,7 +1377,7 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       //  • l'IA charge dans la portée de MARCHE (chooseEnemyAction borne le déplacement à M),
       //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
       const wasEngaged = isEngaged(enemy);
-      const distBefore = manhattan(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance AVANT le déplacement
+      const distBefore = chebyshev(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance de combat AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked);
       enemy.pos = action.to;
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
