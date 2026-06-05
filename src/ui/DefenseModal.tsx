@@ -2,6 +2,8 @@ import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { defenseValue } from '../engine/combat';
 import { RollLine } from './RollModal';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
 
 /**
  * Modale de défense réactive : quand un ennemi (IA) attaque un héros en mêlée, le
@@ -16,6 +18,7 @@ export function DefenseModal() {
   const setMode = useGame((s) => s.defenseSetMode);
   const roll = useGame((s) => s.defenseRoll);
   const reroll = useGame((s) => s.defenseReroll);
+  const bonusSL = useGame((s) => s.defenseBonusSL);
   const confirm = useGame((s) => s.defenseConfirm);
   const subir = useGame((s) => s.defenseCancel);
   if (!pd || !battle) return null;
@@ -24,6 +27,7 @@ export function DefenseModal() {
   if (!attacker || !defender) return null;
   const res = pd.result;
   const fortune = defender.fortune ?? 0; // Chance DU DÉFENSEUR (le héros)
+  const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
   const paradeVal = defenseValue(defender, 'parade');
   const esquiveVal = defenseValue(defender, 'esquive');
 
@@ -75,11 +79,7 @@ export function DefenseModal() {
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
-              {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer TA défense">
-                  🍀 Chance ({fortune})
-                </button>
-              )}
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

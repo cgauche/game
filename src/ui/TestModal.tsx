@@ -1,4 +1,6 @@
 import { useGame } from '../state/store';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
 
 /**
  * Test de compétence interactif (brique « tests », hors combat). On clique
@@ -10,10 +12,12 @@ export function TestModal() {
   const party = useGame((s) => s.party);
   const roll = useGame((s) => s.testRoll);
   const reroll = useGame((s) => s.testReroll);
+  const bonusSL = useGame((s) => s.testBonusSL);
   const resolve = useGame((s) => s.resolveTest);
   if (!pt) return null;
   const rolled = pt.roll != null;
   const fortune = party.find((c) => c.id === pt.actorId)?.fortune ?? 0;
+  const rerollable = rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled);
 
   return (
     <div className="modal-overlay">
@@ -40,11 +44,7 @@ export function TestModal() {
               </span>
             </div>
             <div className="modal-actions">
-              {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer le jet">
-                  🍀 Chance ({fortune})
-                </button>
-              )}
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <button className="btn btn-primary" onClick={resolve}>
                 Continuer
               </button>

@@ -1,6 +1,8 @@
 import { useGame } from '../state/store';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
 
 /**
  * Modale d'incantation (« tous les jets méritent leur modale ») : on sélectionne un sort + une
@@ -13,6 +15,7 @@ export function CastModal() {
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
+  const bonusSL = useGame((s) => s.castBonusSL);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
   if (!pc || !battle) return null;
@@ -22,6 +25,7 @@ export function CastModal() {
   if (!caster || !target || !spell) return null;
   const res = pc.result;
   const fortune = caster.fortune ?? 0;
+  const rerollable = !!res && canReroll(res.roll > res.target, !!pc.rerolled);
   const isPrayer = spell.cn == null;
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
@@ -85,11 +89,7 @@ export function CastModal() {
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
-              {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer l'incantation">
-                  🍀 Chance ({fortune})
-                </button>
-              )}
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

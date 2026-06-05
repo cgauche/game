@@ -1,5 +1,7 @@
 import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
 
 /**
  * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
@@ -13,6 +15,7 @@ export function DisengageModal() {
   const sacrifice = useGame((s) => s.disengageConfirmA);
   const esquiver = useGame((s) => s.disengageRoll);
   const reroll = useGame((s) => s.disengageReroll);
+  const bonusSL = useGame((s) => s.disengageBonusSL);
   const confirm = useGame((s) => s.disengageConfirm);
   const flee = useGame((s) => s.disengageFlee);
   const cancel = useGame((s) => s.disengageCancel);
@@ -22,6 +25,7 @@ export function DisengageModal() {
   if (!mover || !foe) return null;
   const fortune = mover.fortune ?? 0;
   const success = pd.result === 'success';
+  const rerollable = pd.phase === 'esquive' && canReroll(!pd.def?.success, !!pd.rerolled);
 
   return (
     <div className="modal-overlay">
@@ -70,11 +74,7 @@ export function DisengageModal() {
               </span>
             </div>
             <div className="modal-actions">
-              {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer ton Esquive">
-                  🍀 Chance ({fortune})
-                </button>
-              )}
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

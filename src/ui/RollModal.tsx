@@ -1,6 +1,8 @@
 import { useGame } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown } from '../engine/combat';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -40,6 +42,7 @@ export function RollModal() {
   const setLocation = useGame((s) => s.attackSetLocation);
   const roll = useGame((s) => s.attackRoll);
   const reroll = useGame((s) => s.attackReroll);
+  const bonusSL = useGame((s) => s.attackBonusSL);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
   if (!pa || !battle) return null;
@@ -49,6 +52,7 @@ export function RollModal() {
   const weapon = attacker.weapons[0];
   const res = pa.result;
   const fortune = attacker.fortune ?? 0;
+  const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
 
   return (
     <div className="modal-overlay">
@@ -105,11 +109,7 @@ export function RollModal() {
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
-              {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer VOTRE jet d'attaque">
-                  🍀 Chance ({fortune})
-                </button>
-              )}
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>
