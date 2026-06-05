@@ -28,7 +28,10 @@ names.forEach((name, r) => {
   COLS.forEach((col, ci) => {
     const inner = creatureView(name, col.v, hashSeed(name));
     // boîte créature ~120×150, pieds ~y150 ; MORT = bascule 78° autour des pieds (60,150).
-    const body = `<g transform="translate(6,${FEET - 150 * SC}) scale(${SC})">${col.dead ? `<g transform="rotate(78 60 150)">${inner}</g>` : inner}</g>`;
+    // Le corps basculé s'étend vers la droite → on recentre la cellule MORT (translate -52)
+    // pour l'afficher en entier (sinon il sort du cadre — défaut de PLANCHE, pas du jeu).
+    const tx = col.dead ? -52 : 6;
+    const body = `<g transform="translate(${tx},${FEET - 150 * SC}) scale(${SC})">${col.dead ? `<g transform="rotate(78 60 150)">${inner}</g>` : inner}</g>`;
     const x = 92 + ci * CW, y = 28 + r * CH;
     cells.push(`<g transform="translate(${x},${y})"><rect width="${CW - 4}" height="${CH - 12}" fill="#262d3b"/><line x1="0" y1="${FEET}" x2="${CW - 4}" y2="${FEET}" stroke="#e06a4a" stroke-width="0.5"/>${body}<text x="${(CW - 4) / 2}" y="${CH - 2}" text-anchor="middle" font-size="8" fill="#cdd" font-family="sans-serif">${col.l}</text></g>`);
   });
