@@ -49,6 +49,21 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
     expect(chooseEnemyAction(input(mk('e', 'enemy', { x: 5, y: 5 }), [])).kind).toBe('end');
   });
 
+  it('Engagé : arme à distance EN PREMIER mais arme de mêlée + adversaire au contact → frappe en mêlée, ne tire pas (LDB Armes l.297-298)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED, MELEE] }); // arbalète d'abord, puis épée
+    const adj = mk('adj', 'hero', { x: 5, y: 6 }, { wounds: { current: 8, max: 10 } }); // au contact
+    const far = mk('far', 'hero', { x: 1, y: 1 }, { wounds: { current: 2, max: 10 } }); // plus faible MAIS distant
+    const action = chooseEnemyAction(input(e, [adj, far]));
+    expect(action.kind).toBe('melee');
+    expect((action as { targetId: string }).targetId).toBe('adj'); // l'adversaire au contact, pas le faible distant
+  });
+
+  it('arme à distance, AUCUN adversaire au contact → tir sur le plus faible (comportement préservé)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED] });
+    const far = mk('far', 'hero', { x: 1, y: 1 }, { wounds: { current: 2, max: 10 } });
+    expect(chooseEnemyAction(input(e, [far])).kind).toBe('shoot');
+  });
+
   it('cible adjacente en mêlée → attaque', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 });
     const h = mk('h', 'hero', { x: 5, y: 6 });

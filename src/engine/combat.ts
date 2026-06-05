@@ -118,6 +118,23 @@ export interface AttackOptions {
 const hasQ = (w: Weapon | undefined, q: string): boolean =>
   !!w && w.qualities.some((x) => x.toLowerCase().startsWith(q.toLowerCase()));
 
+/** Atout Pistolet (LDB « Les armes » l.297-298 : « Vous pouvez utiliser cette arme pour attaquer
+ *  en Combat rapproché »). Seule une arme à distance possédant cet Atout peut tirer en étant
+ *  Engagé / au contact ; les autres armes à distance (arc, arbalète…) ne le peuvent pas. */
+export function canFireWhileEngaged(weapon: Weapon): boolean {
+  return weapon.type === 'ranged' && hasQ(weapon, 'Pistolet');
+}
+
+/** Choisit l'arme adaptée à la distance de la cible : au CONTACT (Combat rapproché) on privilégie
+ *  une arme de mêlée — une arme à distance n'y tire qu'avec l'Atout Pistolet (l.297-298) ; à
+ *  DISTANCE on privilégie une arme à distance. Dernier recours : la première arme. */
+export function attackWeapon(weapons: Weapon[], targetAdjacent: boolean): Weapon {
+  if (targetAdjacent) {
+    return weapons.find((w) => w.type === 'melee') ?? weapons.find(canFireWhileEngaged) ?? weapons[0];
+  }
+  return weapons.find((w) => w.type === 'ranged') ?? weapons[0];
+}
+
 /** Jet de l'ATTAQUANT seul (Précise +10, viser -10, Avantage×10, États) — n'inclut
  *  PAS le jet de défense : sert au flux par modale (jet figé, appelé UNE fois). */
 export function rollMeleeAttacker(

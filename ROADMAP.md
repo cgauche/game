@@ -133,7 +133,10 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - ✅ **Avantage** (gain +1/attaque réussie & à la fuite, -1 si aucun gain au Round ; perte totale K.O.).
 - **Critiques & Maladresses** : tables de Blessures critiques par localisation (LDB p.172+). *(non modélisé — laissé au MJ)*
 - **Distance** : ✅ **bandes de portée** (Bout portant→Extrême, hors-portée bloqué) ; reste ligne de vue, couvert, rechargement, munitions.
-- ✅ **Qualités/Défauts d'armes** (Précise, Pointue, Perforante, Empaleuse, Assommante, Défensive, À enroulement).
+- ✅ **Qualités/Défauts d'armes** (Précise, Pointue, Perforante, Empaleuse, Assommante, Défensive, À enroulement, **Pistolet**).
+- ✅ **Pas de tir en Combat rapproché** (LDB Armes l.297-298) : une arme à distance sans l'Atout **Pistolet**
+  ne tire pas en étant Engagé/au contact → l'arme est choisie selon la distance (`attackWeapon`), et
+  l'IA frappe en mêlée plutôt que de canarder au loin quand un adversaire est à son contact.
 - ✅ **Esquive vs Parade** comme choix défensif réel (meilleure valeur, Encombrement inclus) ; reste armes à 2 mains, bouclier.
 - ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dégâts par round ; **Sonné** = +1 Avantage à l'attaquant en mêlée, récupération par Test de Résistance puis Exténué, **« incapable d'Action » + déplacement à demi-Mouvement** côté joueur ET IA — tous corrigés via audit de fidélité).
 - ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque + hors combat). Reste : Détermination, ajout direct de DR.

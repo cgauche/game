@@ -55,11 +55,17 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (heroes.length === 0) return { kind: 'end' };
   const pos = enemy.pos!;
 
-  const isRanged = offensiveSpell == null && enemy.weapons[0]?.type === 'ranged';
+  const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
 
   // Un ennemi sans sort et sans arme ne peut rien faire d'utile.
   if (offensiveSpell == null && enemy.weapons.length === 0) return { kind: 'end' };
+
+  // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
+  // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
+  // C'est ce qui corrige l'arbalétrier qui canardait au loin alors qu'il était Engagé.
+  const adjacentFoes = heroes.filter((h) => adjacent(pos, h.pos!));
+  const canShoot = hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon);
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0).
   const reach = reachable(scene, pos, movement, blocked);
@@ -80,18 +86,21 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // modélisées). En mêlée : on préfère une cible frappable ce tour ; sinon on
   // approche le plus faible.
   let target: Combatant;
-  if (offensiveSpell != null || isRanged) {
+  if (offensiveSpell != null || canShoot) {
     target = weakestNearest(pos, heroes);
   } else {
-    const here = heroes.filter(meleeReachableNow);
+    // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe
+    // l'adversaire à son contact. Sinon, comportement de mêlée habituel (sécuriser le plus faible).
+    const heldInMelee = hasRanged && adjacentFoes.length > 0;
+    const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
     target = weakestNearest(pos, here.length ? here : heroes);
   }
 
   // --- Sort offensif : on lance sur la cible (résolu comme un projectile) ---
   if (offensiveSpell != null) return { kind: 'cast', targetId: target.id, spell: offensiveSpell };
 
-  // --- Arme à distance : tenir la position et tirer ------------------------
-  if (isRanged) return { kind: 'shoot', targetId: target.id };
+  // --- Arme à distance (hors Combat rapproché) : tenir la position et tirer ----
+  if (canShoot) return { kind: 'shoot', targetId: target.id };
 
   // --- Mêlée ---------------------------------------------------------------
   if (!hasMeleeWeapon) return { kind: 'end' };

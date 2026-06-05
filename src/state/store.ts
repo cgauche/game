@@ -18,6 +18,7 @@ import {
   resolveBackstabAttack,
   finishMelee,
   resolveMeleePassive,
+  attackWeapon,
   AttackResult,
 } from '../engine/combat';
 import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
@@ -1217,8 +1218,11 @@ function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
 function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
-  if (chebyshev(attacker.pos!, target.pos!) > 1 && attacker.weapons[0]?.type === 'melee') return null;
-  const weapon = attacker.weapons[0];
+  // Arme choisie selon la distance : mêlée au contact, distance sinon (Atout Pistolet pour tirer
+  // en Combat rapproché — LDB Armes l.297-298). Évite qu'un Engagé tire son arbalète au contact.
+  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+  const weapon = attackWeapon(attacker.weapons, adj);
+  if (!adj && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const res =
     weapon.type === 'ranged'
       ? resolveRanged(attacker, target, weapon, battleRng, chebyshev(attacker.pos!, target.pos!), location)
