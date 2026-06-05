@@ -5,24 +5,29 @@
  * silhouette : les sprites monolithiques officiels (Loup/Chien/Ours/Rat géant/Sanglier).
  */
 import type { View } from '../facing';
-import type { QuadBoneId, QuadProps } from './quadSkeleton';
+import type { QuadBoneId, QuadProps, QuadFoot } from './quadSkeleton';
 
 // ============================ helpers ============================
 const cap = (len: number, th: number, fill: string, stroke: string): string => {
   const r = th / 2;
   return `<path d="M${-r} 0 Q${-r} ${-r * 0.6} 0 ${-r * 0.6} Q${r} ${-r * 0.6} ${r} 0 L${r * 0.82} ${len} Q0 ${len + r * 0.7} ${-r * 0.82} ${len} Z" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
 };
-function hoof(foot: 'sabot' | 'patte', far: boolean): string {
+function hoof(foot: QuadFoot, far: boolean): string {
   const c = far ? '@cuirO' : '@cuir';
   if (foot === 'sabot') // sabot net : bloc trapézoïdal sombre + pince + couronne
     return `<path d="M-3.8 -2 L3.8 -2 L4.6 9 Q0 11.6 -4.6 9 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.6"/><path d="M-4.3 8.4 Q0 10.8 4.3 8.4 L3.9 11 Q0 12.6 -3.9 11Z" fill="#0e0b07" opacity="0.55"/><path d="M0 0 L0 9" stroke="#0e0b07" stroke-width="0.5" opacity="0.5"/>`;
+  if (foot === 'serre') // serre de rapace : tarse écailleux + 3 doigts griffus écartés + ergot arrière
+    return `<g><path d="M-2.6 -2 L2.6 -2 L1.8 4 L-1.8 4 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
+      `<path d="M-1.6 3 Q-6 6 -8 12 M0 4 Q0 9 0 13 M1.6 3 Q6 6 8 12 M-1.4 3 Q-4 5 -6 4" stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` +
+      `<path d="M-8 12 l-1.6 1.8 M0 13 l0 2 M8 12 l1.6 1.8 M-6 4 l-1.8 0.6" stroke="#0e0b07" stroke-width="1.2" stroke-linecap="round"/></g>`;
   // patte : coussinet large + 3 griffes marquées
   return `<g><path d="M-4.4 -2 Q-5.6 8 -2 10.5 L5.8 10.5 Q7.8 7 5.4 -2 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.6"/>` +
     `<path d="M-1.6 10.5 l-0.7 3.6 M2 10.5 l0 3.8 M5.2 10.5 l1.3 3.2" stroke="#15110c" stroke-width="1.4" stroke-linecap="round"/></g>`;
 }
-function footFront(foot: 'sabot' | 'patte', far: boolean): string {
+function footFront(foot: QuadFoot, far: boolean): string {
   const c = far ? '@cuirO' : '@cuir';
   if (foot === 'sabot') return `<ellipse cx="0" cy="3" rx="3.4" ry="3" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>`;
+  if (foot === 'serre') return `<path d="M0 0 Q-5 4 -6 9 M0 1 Q0 6 0 10 M0 0 Q5 4 6 9" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M-6 9 l-1.2 2 M0 10 l0 2.2 M6 9 l1.2 2" stroke="#0e0b07" stroke-width="1" stroke-linecap="round"/>`;
   return `<path d="M-3.4 0 Q-4 6 0 7 Q4 6 3.4 0 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/><path d="M-1.6 4 l0 3 M0 4 l0 3.4 M1.6 4 l0 3" stroke="#15110c" stroke-width="0.9" stroke-linecap="round"/>`;
 }
 // Articulation (épaule/genou/boulet) : pastille de la couleur du membre qui BOUCHE le trou
@@ -30,7 +35,7 @@ function footFront(foot: 'sabot' | 'patte', far: boolean): string {
 const joint = (body: string, cy: number, r: number) =>
   `<circle cx="0" cy="${cy.toFixed(1)}" r="${r}" fill="${body}" stroke="@corpsO" stroke-width="0.3"/>`;
 
-function legParts(far: boolean, foot: 'sabot' | 'patte', ll: number) {
+function legParts(far: boolean, foot: QuadFoot, ll: number) {
   const body = far ? '@corpsO' : '@corps';
   return {
     haut: joint(body, 0, 4.8) + cap(30 * ll, 9, body, '@corpsO'), // épaule/hanche → relie au corps
@@ -38,7 +43,7 @@ function legParts(far: boolean, foot: 'sabot' | 'patte', ll: number) {
     pied: `<g transform="translate(0,${22 * ll})">${hoof(foot, far)}</g>`,
   };
 }
-function legPartsFront(far: boolean, foot: 'sabot' | 'patte', ll: number) {
+function legPartsFront(far: boolean, foot: QuadFoot, ll: number) {
   const body = far ? '@corpsO' : '@corps';
   return {
     haut: joint(body, 0, far ? 4 : 4.5) + cap(30 * ll, far ? 7 : 8, body, '@corpsO'),
@@ -120,6 +125,20 @@ function earProfile(p: QuadProps, x: number, s: number): string {
 }
 function headProfile(p: QuadProps): string {
   const eye = `<ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/>`;
+  if (p.head === 'aigle') // tête emplumée + bec crochu jaune + œil féroce + sourcil saillant
+    return `<g transform="rotate(5)"><path d="M-7 -6 Q-9 6 -2 10 Q4 13 11 11 Q15 9 14 4 Q9 4 4 2 Q-1 0 -2 -6 Q-3 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+      `<path d="M10 4 Q19 3 21 7 Q19 9 15 9 Q12 12 10 9 Z" fill="#d4a82e" stroke="#7a5a18" stroke-width="0.5"/><path d="M19 7 Q21.5 8 20 11 Q17.5 11 16 8.5 Z" fill="#c79a26" stroke="#7a5a18" stroke-width="0.4"/>` +
+      `<path d="M10 9 Q14 10 17 9" stroke="#7a5a18" stroke-width="0.5" fill="none"/>` +
+      `<ellipse cx="6" cy="1.6" rx="2" ry="2.1" fill="#e8b820"/><circle cx="6.5" cy="1.6" r="0.95" fill="#0a0603"/><circle cx="6.9" cy="1" r="0.3" fill="#fff" opacity="0.8"/>` +
+      `<path d="M2 -1.4 Q6 -2.8 9.4 -0.6" stroke="@corpsO" stroke-width="1.3" fill="none"/>` +
+      `<path d="M-7 -4 q-3 2 -4 6 M-6 -1 q-3 3 -3 7 M-4 2 q-3 3 -2 7" stroke="@corpsO" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.7"/></g>`;
+  if (p.head === 'dragon') // long museau écailleux + cornes en arrière + crête + dents + œil fendu
+    return `<g transform="rotate(8)"><path d="M-8 -6 Q-10 7 -2 11 Q4 14 16 13 Q24 12 26 8 Q22 7 14 6 Q3 4 1 -4 Q0 -9 -8 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-6 -5 q-4 -8 -11 -10 q4 6 6 12 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/><path d="M-2 -6 q-3 -9 -9 -12 q3 7 5 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` +
+      `<ellipse cx="23" cy="9.4" rx="1.3" ry="1" fill="#1a0e08"/>` +
+      `<path d="M13 12 l0.8 2.2 M17 12 l0.8 2.2 M21 11 l0.6 1.8" stroke="#e8e0c8" stroke-width="0.7"/>` +
+      `<ellipse cx="4" cy="1.6" rx="1.8" ry="2.1" fill="#d8b820"/><ellipse cx="4" cy="1.6" rx="0.5" ry="1.9" fill="#0a0603"/>` +
+      `<path d="M-8 -6 l-2 -4 M-3.5 -6.6 l-1 -4 M1 -5.6 l-0.4 -4" stroke="@corpsO" stroke-width="1.5" stroke-linecap="round"/></g>`;
   if (p.head === 'cheval')
     return `<g transform="rotate(8)"><path d="M-7 -6 Q-9 6 -3 12 Q4 20 12 22 Q18 22 19 17 Q18 12 12 10 Q4 6 2 -4 Q0 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M12 10 Q18 12 19 17 Q18 20 14 20 Q10 18 11 12 Z" fill="@corpsO"/><ellipse cx="16" cy="17" rx="2" ry="1.5" fill="#1a0f08"/>${earProfile(p, -5, -1)}${earProfile(p, 0, 1)}<path d="M-6 -4 Q-2 -7 1 -3" fill="none" stroke="@cheveux" stroke-width="2" opacity="0.8"/>${eye}</g>`;
   if (p.head === 'loup')
@@ -132,6 +151,10 @@ function headProfile(p: QuadProps): string {
   return `<g transform="rotate(10)"><path d="M-7 -4 Q-9 6 0 10 Q9 13 15 11 Q19 9 17 5 Q12 4 8 3 Q1 2 0 -4 Q-1 -8 -7 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="15" cy="8" rx="3" ry="3.4" fill="@corpsO"/><ellipse cx="15" cy="8" rx="1" ry="1.4" fill="#140a06"/><path d="M12 11 q-2 5 -5 3" fill="none" stroke="#e8e0c8" stroke-width="1.6" stroke-linecap="round"/>${earProfile(p, -5, -1)}${earProfile(p, 0.5, 1)}${eye}</g>`;
 }
 function tail(p: QuadProps): string {
+  if (p.tail === 'reptile') // longue queue écailleuse effilée + épines dorsales
+    return `<path d="M0 -2 Q16 4 28 2 Q40 0 48 8 Q40 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>`;
+  if (p.tail === 'leonine') // queue de lion : fouet + toupet terminal
+    return `<path d="M0 0 Q12 6 16 16 Q18 26 12 30 Q15 22 9 14 Q3 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><circle cx="13" cy="28" r="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   if (p.tail === 'crin') return `<path d="M0 0 Q10 6 10 18 Q9 30 4 34 Q7 24 3 14 Q1 6 0 4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M0 0 Q10 6 13 18 Q15 28 9 31 Q12 22 6 14 Q2 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M11 16 Q16 24 10 30 Q12 22 8 16 Z" fill="@cheveux"/>`;
   if (p.tail === 'nue') return `<path d="M0 0 Q14 6 20 18 Q24 28 22 34" fill="none" stroke="#caa" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>`;
@@ -157,6 +180,21 @@ function earsFront(p: QuadProps): string {
 }
 function headFront(p: QuadProps): string {
   const ears = earsFront(p);
+  if (p.head === 'aigle') // face emplumée + bec crochu central + 2 yeux féroces jaunes
+    return `<g><path d="M-8 -12 Q-10 4 -3 12 Q0 15 3 12 Q10 4 8 -12 Q0 -15 -8 -12 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-2.4 8 L2.4 8 L1 15 Q0 17.2 -1 15 Z" fill="#d4a82e" stroke="#7a5a18" stroke-width="0.5"/><path d="M-1 14.6 Q0 17.2 1 14.6 L0.6 13 L-0.6 13 Z" fill="#9a7a28"/>` +
+      `<ellipse cx="-4.4" cy="-0.4" rx="1.9" ry="2.1" fill="#e8b820"/><circle cx="-4.4" cy="-0.2" r="0.95" fill="#0a0603"/>` +
+      `<ellipse cx="4.4" cy="-0.4" rx="1.9" ry="2.1" fill="#e8b820"/><circle cx="4.4" cy="-0.2" r="0.95" fill="#0a0603"/>` +
+      `<path d="M-7.4 -3.4 Q-4.4 -5.4 -1.6 -3.2 M7.4 -3.4 Q4.4 -5.4 1.6 -3.2" stroke="@corpsO" stroke-width="1.3" fill="none"/>` +
+      `<path d="M-8 -10 l-2.6 -3 M8 -10 l2.6 -3 M-6 -13 l-1.2 -3.4 M6 -13 l1.2 -3.4 M0 -14 l0 -3.4" stroke="@corpsO" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/></g>`;
+  if (p.head === 'dragon') // face reptilienne large + cornes + 2 yeux fendus + museau à dents
+    return `<g><path d="M-7 -10 q-3 -9 -10 -11 q4 6 6 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/><path d="M7 -10 q3 -9 10 -11 q-4 6 -6 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` +
+      `<path d="M-9 -10 Q-11 5 -4 13 Q0 16 4 13 Q11 5 9 -10 Q0 -14 -9 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<ellipse cx="0" cy="12" rx="5" ry="3.4" fill="@corpsO"/><ellipse cx="-2" cy="11.4" rx="0.9" ry="0.6" fill="#1a0e08"/><ellipse cx="2" cy="11.4" rx="0.9" ry="0.6" fill="#1a0e08"/>` +
+      `<path d="M-4 14.4 l0.6 2 M0 15 l0 2.2 M4 14.4 l-0.6 2" stroke="#e8e0c8" stroke-width="0.7"/>` +
+      `<ellipse cx="-5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="-5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
+      `<ellipse cx="5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
+      `<path d="M0 -13 l0 -3.4 M-3 -12 l-0.6 -3.4 M3 -12 l0.6 -3.4" stroke="@corpsO" stroke-width="1.3" stroke-linecap="round"/></g>`;
   if (p.head === 'cheval')
     return `<g>${ears}<path d="M-7 -14 Q-9 6 -4 16 Q0 19 4 16 Q9 6 7 -14 Q0 -17 -7 -14 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M-2 -15 Q0 -17 2 -15 L1.5 12 Q0 14 -1.5 12 Z" fill="@cheveux" opacity="0.6"/><ellipse cx="0" cy="13" rx="4.2" ry="3.2" fill="@corpsO"/><ellipse cx="-1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/><ellipse cx="1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/>${eyeF(-5, -2)}${eyeF(5, -2)}</g>`;
   if (p.head === 'loup' )
@@ -203,6 +241,8 @@ function bodyBack(p: QuadProps): string {
 }
 function tailBack(p: QuadProps): string {
   // queue vue de dos : pend au centre, sous la croupe.
+  if (p.tail === 'reptile') return `<path d="M-2.4 0 Q-3 18 -1 32 Q0 40 0 46 Q0 40 1 32 Q3 18 2.4 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
+  if (p.tail === 'leonine') return `<path d="M-2 0 Q-2 14 0 22 Q2 14 2 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><circle cx="0" cy="25" r="2.6" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   if (p.tail === 'crin') return `<path d="M-2 0 Q-3 16 -2 30 Q0 33 2 30 Q3 16 2 0 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M-3 0 Q-4 12 -2 24 Q0 28 2 24 Q4 12 3 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M-2 14 Q0 26 2 14 Z" fill="@cheveux"/>`;
   if (p.tail === 'nue') return `<path d="M0 0 Q-1 16 0 30 Q1 34 1 36" fill="none" stroke="#caa" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>`;
@@ -210,31 +250,79 @@ function tailBack(p: QuadProps): string {
   return `<path d="M0 0 Q-1 9 0 18 Q1 22 0 24" fill="none" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/><circle cx="0" cy="24" r="1.6" fill="@cheveux"/>`;
 }
 
+// ============================ AILES (gabarit ailé) ============================
+// Repère LOCAL = garrot. PROFIL : aile à demi repliée dressée vers le haut-arrière (-x/-y).
+// FACE/DOS : aile DÉPLOYÉE vers +x (l'aile gauche est miroitée scale(-1,1) au dispatch).
+function wingProfile(p: QuadProps, far: boolean): string {
+  const c = far ? '@corpsO' : '@corps';
+  if (p.wings === 'membrane') { // dragon : grande membrane à doigts dressée haut au-dessus du dos
+    return `<g opacity="${far ? 0.9 : 1}">` +
+      `<path d="M0 0 Q-4 -30 -16 -52 L-34 -8 Q-29 -5 -25 -1 Q-20 -5 -14 1 Q-7 -3 0 2 Z" fill="${c}" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M0 0 Q-8 -26 -16 -52" fill="none" stroke="@corpsO" stroke-width="2.8" stroke-linecap="round"/>` +
+      `<path d="M-16 -52 Q-26 -30 -34 -8 M-16 -52 Q-24 -28 -25 -1 M-16 -52 Q-16 -26 -14 1" fill="none" stroke="@corpsO" stroke-width="1.6" stroke-linecap="round"/>` +
+      `</g>`;
+  }
+  // plumes : grande aile emplumée dressée haut-arrière + rémiges en éventail + couvertures
+  return `<g>` +
+    `<path d="M0 2 Q-5 -18 -13 -34 Q-18 -44 -13 -49 Q-6 -43 -1 -28 Q2 -12 2 0 Z" fill="${c}" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M-13 -47 Q-27 -30 -32 0 L-26 2 Q-20 -24 -11 -43 Z" fill="${c}" stroke="@corpsO" stroke-width="0.5"/>` +
+    `<path d="M-11 -43 Q-23 -22 -25 8 L-19 10 Q-15 -18 -8 -39 Z" fill="${c}" stroke="@corpsO" stroke-width="0.5"/>` +
+    `<path d="M-8 -38 Q-17 -16 -17 13 L-11 14 Q-10 -14 -6 -35 Z" fill="${c}" stroke="@corpsO" stroke-width="0.5"/>` +
+    `<path d="M-2 -26 Q-8 -28 -11 -38 M0 -18 Q-6 -20 -9 -29 M2 -10 Q-4 -12 -6 -21" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.55"/>` +
+    `</g>`;
+}
+// Déployée (face/dos) — vers +x : grande aile qui s'élève ET s'étend (silhouette de rapace
+// déployant). Bras + surface + rémiges/doigts. (Aile G = miroir scale(-1,1) au dispatch.)
+function wingSpread(p: QuadProps): string {
+  if (p.wings === 'membrane') { // dragon : grande membrane à doigts, montant haut
+    return `<g>` +
+      `<path d="M0 0 Q18 -22 38 -22 Q54 -21 62 -10 L54 -7 Q50 -12 42 -4 Q38 -13 30 -2 Q24 -12 16 0 Q8 -6 0 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M0 0 Q28 -20 60 -11" fill="none" stroke="@corpsO" stroke-width="2.4" stroke-linecap="round"/>` +
+      `<path d="M38 -21 Q41 -12 42 -4 M30 -19 Q30 -11 30 -2 M16 -12 Q16 -6 16 0" fill="none" stroke="@corpsO" stroke-width="1.5" stroke-linecap="round"/>` +
+      `</g>`;
+  }
+  return `<g>` + // rapace : aile qui monte en arc + 4 rémiges digitées au bout
+    `<path d="M0 1 Q16 -16 34 -17 Q52 -18 62 -8 Q50 -4 34 -4 Q16 -2 3 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+    `<path d="M54 -9 Q62 -9 64 -3 L58 -2 Q52 -5 48 -6 Z M44 -14 Q52 -14 55 -7 L49 -6 Q44 -10 40 -11 Z M32 -16 Q40 -17 43 -10 L37 -9 Q32 -13 28 -13 Z M20 -16 Q27 -16 30 -10 L24 -9 Q20 -13 16 -12 Z" fill="@corps" stroke="@corpsO" stroke-width="0.4"/>` +
+    `<path d="M8 -4 Q24 -11 44 -10 M10 0 Q26 -5 42 -5" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.5"/>` +
+    `</g>`;
+}
+
 // ============================ dispatch ============================
 export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<QuadBoneId, string>> {
+  const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
+  // Ailes déployées (face/dos) : aileD à droite, aileG = même art miroité (scale -1).
+  const spreadWings = p.wings
+    ? { aileD: wingSpread(p), aileG: `<g transform="scale(-1,1)">${wingSpread(p)}</g>` }
+    : {};
   if (view === 'front') {
-    const n = legPartsFront(false, p.foot, p.legLen), f = legPartsFront(true, p.foot, p.legLen);
+    const n = legPartsFront(false, frontFoot, p.legLen), f = legPartsFront(true, p.foot, p.legLen);
     return {
+      ...spreadWings,
       tronc: bodyFront(p), tete: headFront(p),
       hautAvD: n.haut, basAvD: n.bas, piedAvD: n.pied, hautAvG: n.haut, basAvG: n.bas, piedAvG: n.pied,
       hautArD: f.haut, basArD: f.bas, piedArD: f.pied, hautArG: f.haut, basArG: f.bas, piedArG: f.pied,
     };
   }
   if (view === 'back') {
-    const n = legPartsFront(false, p.foot, p.legLen), f = legPartsFront(true, p.foot, p.legLen);
+    const n = legPartsFront(false, p.foot, p.legLen), f = legPartsFront(true, frontFoot, p.legLen);
     return {
+      ...spreadWings,
       tronc: bodyBack(p), tete: napeBack(p), queue: tailBack(p),
       hautArD: n.haut, basArD: n.bas, piedArD: n.pied, hautArG: n.haut, basArG: n.bas, piedArG: n.pied,
       hautAvD: f.haut, basAvD: f.bas, piedAvD: f.pied, hautAvG: f.haut, basAvG: f.bas, piedAvG: f.pied,
     };
   }
-  // profil
-  const nearF = legParts(false, p.foot, p.legLen), farF = legParts(true, p.foot, p.legLen);
+  // profil : pattes AVANT (frontFoot) près/loin, pattes ARRIÈRE (p.foot) près/loin.
+  const nearAv = legParts(false, frontFoot, p.legLen), farAv = legParts(true, frontFoot, p.legLen);
+  const nearAr = legParts(false, p.foot, p.legLen), farAr = legParts(true, p.foot, p.legLen);
+  const profWings = p.wings ? { aileD: wingProfile(p, false), aileG: wingProfile(p, true) } : {};
   return {
+    ...profWings,
     tronc: barrel(p), croupe: rump(p), encolure: neck(p), tete: headProfile(p), queue: tail(p),
-    hautAvD: nearF.haut, basAvD: nearF.bas, piedAvD: nearF.pied,
-    hautArD: nearF.haut, basArD: nearF.bas, piedArD: nearF.pied,
-    hautAvG: farF.haut, basAvG: farF.bas, piedAvG: farF.pied,
-    hautArG: farF.haut, basArG: farF.bas, piedArG: farF.pied,
+    hautAvD: nearAv.haut, basAvD: nearAv.bas, piedAvD: nearAv.pied,
+    hautArD: nearAr.haut, basArD: nearAr.bas, piedArD: nearAr.pied,
+    hautAvG: farAv.haut, basAvG: farAv.bas, piedAvG: farAv.pied,
+    hautArG: farAr.haut, basArG: farAr.bas, piedArG: farAr.pied,
   };
 }

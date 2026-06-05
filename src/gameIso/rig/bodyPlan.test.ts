@@ -17,10 +17,29 @@ describe('bodyPlanOf', () => {
       expect(bodyPlanOf(n)).toBe('biped');
     }
   });
+  it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
+    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Wyverne', 'Demigriffon']) {
+      expect(bodyPlanOf(n)).toBe('winged');
+    }
+  });
   it('exotiques/monstres pas encore rapatriés → monolithic', () => {
-    for (const n of ['Araignée géante', 'Serpent', 'Dragon', 'Démonette de Slaanesh']) {
+    for (const n of ['Araignée géante', 'Serpent', 'Démonette de Slaanesh']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
+  });
+});
+
+describe('planById(winged)', () => {
+  it('rend un griffon avec ailes + 4 pattes au sol', () => {
+    const bones = planById('winged').resolve('Griffon', 'profile', {});
+    expect(bones.length).toBeGreaterThan(8);
+    expect(bones.filter((b) => b.id.startsWith('pied')).length).toBe(4);
+    expect(bones.some((b) => b.id === 'aileD' || b.id === 'aileG')).toBe(true);
+  });
+  it('recolor : colors.corps change le markup du dragon', () => {
+    const a = planById('winged').resolve('Dragon', 'profile', {});
+    const b = planById('winged').resolve('Dragon', 'profile', {}, { colors: { corps: '#aa1133' } });
+    expect(JSON.stringify(a)).not.toEqual(JSON.stringify(b));
   });
 });
 

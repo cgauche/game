@@ -11,6 +11,7 @@ import type { EquipCtx } from './parts/equipment';
 import { classifyEnemy } from './enemyProfile';
 import { bipedPlan } from './bipedPlan';
 import { quadrupedPlan } from './quadruped/composeQuad';
+import { wingedPlan } from './winged/composeWing';
 
 export type BodyPlanId = 'biped' | 'quadruped' | 'winged';
 
@@ -37,7 +38,7 @@ export interface BodyPlan {
 const PLANS: Record<BodyPlanId, BodyPlan> = {
   biped: bipedPlan,
   quadruped: quadrupedPlan,
-  winged: quadrupedPlan, // Phase C : placeholder (le quadruped tient lieu de gabarit ailé en attendant)
+  winged: wingedPlan, // Phase C : gabarit ailé (griffon/pégase/hippogriffe/dragon)
 };
 export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];
@@ -46,10 +47,13 @@ export function planById(id: BodyPlanId): BodyPlan {
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 // Quadrupèdes couverts par le gabarit (testé AVANT le classifieur humanoïde).
 const QUAD_RE = /\b(cheval|chevaux|destrier|poney|jument|etalon|loup|louve|chien|matin|dogue|mastiff|charognard|sanglier|laie|marcassin|ours|ourse|rat geant|grand rat|felin|panthere|lion|lionne|tigre)\b/;
+// Ailés (testés AVANT quad/bipède : un griffon n'est ni un quadrupède nu ni un humanoïde).
+const WINGED_RE = /\b(griffon|gryphon|demigriffon|hippogriffe|hippogryphe|pegase|pégase|cheval aile|cheval ailé|dragon|wyverne|vouivre|drake)\b/;
 
 /** Plan corporel cosmétique d'un nom de créature. 'monolithic' = pas (encore) de plan dédié. */
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
   const n = norm(name);
+  if (WINGED_RE.test(n)) return 'winged';
   if (QUAD_RE.test(n)) return 'quadruped';
   return classifyEnemy(name) === 'rig' ? 'biped' : 'monolithic';
 }

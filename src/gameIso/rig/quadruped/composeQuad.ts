@@ -9,7 +9,7 @@ import { bonesToSvg } from '../renderBones';
 import { worldTransformsG, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap, type Palette } from '../palette';
 import {
-  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView, type QuadBoneId,
+  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView, type QuadBoneId, type QuadProps,
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
 import { QUAD_REST, quadWalkPose, quadBitePose, QUAD_DEATH } from './quadPose';
@@ -23,7 +23,17 @@ export function resolveQuad(
   pose: Record<string, number> = {},
   colors?: Palette,
 ): ResolvedBone[] {
-  const p = QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval;
+  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors);
+}
+
+/** Même rendu, mais à partir d'un PROPS direct (réutilisé par le gabarit AILÉ qui a son propre
+ *  catalogue d'espèces : un ailé = quadrupède + ailes via la même machinerie). PUR. */
+export function resolveQuadFromProps(
+  p: QuadProps,
+  view: View = 'profile',
+  pose: Record<string, number> = {},
+  colors?: Palette,
+): ResolvedBone[] {
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), view), pose);
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;
   const parts = quadParts(p, view);

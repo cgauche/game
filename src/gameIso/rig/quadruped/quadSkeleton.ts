@@ -9,6 +9,7 @@ import type { View } from '../facing';
 
 export type QuadBoneId =
   | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'queue'
+  | 'aileD' | 'aileG' // gabarit AILÉ : paire d'ailes (membrane/plumes) sur le garrot
   | 'hautAvD' | 'basAvD' | 'piedAvD' | 'hautAvG' | 'basAvG' | 'piedAvG'
   | 'hautArD' | 'basArD' | 'piedArD' | 'hautArG' | 'basArG' | 'piedArG';
 
@@ -21,19 +22,24 @@ export type QuadSkeleton = Record<QuadBoneId, QBone>;
 export type QuadPose = Partial<Record<QuadBoneId, number>>;
 
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
-export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine';
+export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic';
+export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon';
+export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
+export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine';
 export interface QuadProps {
   sl: number; // échelle globale (taille)
-  build: QuadBuild; // SILHOUETTE du corps (équin level / canin svelte / suidé bossu / rongeur arqué / ursin massif)
+  build: QuadBuild; // SILHOUETTE du corps (équin level / canin svelte / suidé bossu / rongeur arqué / ursin massif / félin / draconique)
   girth: number; // carrure : profondeur/épaisseur du corps (×, vertical)
   bodyLen: number; // allongement du tronc/croupe
   neckLen: number; // longueur d'encolure
   neckAngle: number; // inclinaison de l'encolure (deg ; négatif = redressée)
   legLen: number; // longueur des membres (hauteur sur pattes)
-  head: 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours';
-  tail: 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte';
+  head: QuadHead;
+  tail: QuadTail;
   ears: 'courtes' | 'pointues' | 'rondes';
-  foot: 'sabot' | 'patte';
+  foot: QuadFoot; // pied ARRIÈRE (et avant par défaut)
+  frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
+  wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
 }
 
@@ -106,6 +112,14 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     ...leg('hautAvD', 'basAvD', 'piedAvD', 'tronc', 24 * bl, 10, false),
     ...leg('hautArD', 'basArD', 'piedArD', 'croupe', -6 * bl, 10, false),
   };
+  // Ailes (gabarit AILÉ) : attachées au garrot (haut-avant du tronc). aileD = aile PROCHE
+  // (par-dessus le flanc, z élevé) ; aileG = aile LOINTAINE (derrière le corps, z bas). L'art
+  // est dessiné librement dans le repère de l'os (comme la queue). Length/thickness 0 = os
+  // d'attache (pas de FK de longueur). Angle de repos = aile à demi-repliée dressée vers l'arrière.
+  if (p.wings) {
+    sk.aileD = { parent: 'tronc', pivot: { x: 12 * bl, y: -15 }, angle: 0, length: 0, thickness: 0, z: 6 };
+    sk.aileG = { parent: 'tronc', pivot: { x: 9 * bl, y: -16 }, angle: 0, length: 0, thickness: 0, z: 2 };
+  }
   return sk as QuadSkeleton;
 }
 
@@ -139,6 +153,13 @@ export function quadSkeletonForView(sk: QuadSkeleton, view: View): QuadSkeleton 
   set('hautArD', front ? wFar : wNear, front ? zFar : zNear); set('hautArG', front ? -wFar : -wNear, front ? zFar : zNear);
   for (const id of ['basAvD', 'basAvG', 'basArD', 'basArG', 'piedAvD', 'piedAvG', 'piedArD', 'piedArG'] as QuadBoneId[]) {
     out[id] = { ...sk[id], angle: 0, z: out[id.startsWith('basAv') || id.startsWith('piedAv') ? 'hautAvD' : 'hautArD'].z };
+  }
+  // Ailes de face/dos : DÉPLOYÉES de part et d'autre du corps (droite +x / gauche -x), derrière
+  // le tronc (z bas) → silhouette d'oiseau de proie ailes ouvertes. Art symétrique (miroir géré
+  // par la part front/back de l'aile elle-même).
+  if (sk.aileD) {
+    out.aileD = { ...sk.aileD, pivot: { x: 10, y: -15 }, angle: 0, z: 2 };
+    out.aileG = { ...sk.aileG, pivot: { x: -10, y: -15 }, angle: 0, z: 2 };
   }
   return out;
 }
