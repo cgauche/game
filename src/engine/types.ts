@@ -153,6 +153,8 @@ export interface Combatant {
   dead?: boolean;
   /** PNJ important : utilise le système complet de critiques au lieu de la Mort Subite. */
   important?: boolean;
+  /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */
+  outOfRencontre?: boolean;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;
