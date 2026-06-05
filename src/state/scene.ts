@@ -50,12 +50,24 @@ export interface MonsterPartsSel {
   queue?: boolean;
 }
 
+/** Personnalisation couleur (emplacements sémantiques ; résolus par le rig). */
+export interface ColorsSel {
+  peau?: string;
+  cheveux?: string;
+  vet1?: string; // vêtement principal
+  vet2?: string; // vêtement secondaire
+  cuir?: string;
+  metal?: string;
+}
+
 /** Override d'apparence (sinon seed dérivé de l'id). pins : slot → index. */
 export interface EntityAppearance {
   seed?: number;
   pins?: Record<string, number>;
   /** Mutant modulaire : parts monstrueuses (rendu via le rig). */
   monster?: MonsterPartsSel;
+  /** Personnalisation couleur (peau/cheveux/vêtements). */
+  colors?: ColorsSel;
 }
 
 export interface SceneEntity {

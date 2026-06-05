@@ -342,7 +342,7 @@ export function IsoStage() {
       const seed = ent.appearance?.seed ?? hashSeed(ent.id);
       const prof =
         ent.kind === 'personnage'
-          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon })
+          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors })
           : null;
       if (prof) {
         objs.push({

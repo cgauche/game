@@ -134,9 +134,9 @@ export function spawnEnemy(
   else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique :
-  // parts monstrueux (mutant modulaire) + arme équipée affichée par le rig.
-  if (opts?.appearance?.monster) {
-    c.appearance = riggedAppearance(c.name, opts.appearance.seed ?? hashSeed(id), opts.appearance.monster);
+  // parts monstrueux (mutant modulaire) + couleurs (palette) + arme équipée.
+  if (opts?.appearance?.monster || opts?.appearance?.colors) {
+    c.appearance = riggedAppearance(c.name, opts.appearance.seed ?? hashSeed(id), opts.appearance.monster, undefined, opts.appearance.colors);
   }
   if (opts?.weapon) {
     c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];

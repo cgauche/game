@@ -108,11 +108,11 @@ function detectCareer(n: string): string {
 
 /** Apparence rig dérivée (espèce/sexe/carrure du nom+seed) + parts monstrueux.
  *  Source UNIQUE pour combat (spawn) et exploration (entité) → modèles identiques. */
-export function riggedAppearance(name: string, seed: number, monster?: MonsterParts, species?: string): Appearance {
+export function riggedAppearance(name: string, seed: number, monster?: MonsterParts, species?: string, colors?: import('./palette').Palette): Appearance {
   const n = norm(name);
   const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M';
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
-  return { species: species ?? detectSpecies(n), sex, build, seed, monster };
+  return { species: species ?? detectSpecies(n), sex, build, seed, monster, colors };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -198,11 +198,11 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { career?: string; monster?: MonsterParts; weapon?: string },
+  opts?: { career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette },
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const appearance: Appearance = riggedAppearance(name, seed, opts?.monster);
+  const appearance: Appearance = riggedAppearance(name, seed, opts?.monster, undefined, opts?.colors);
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
   const hasMonster = !!(opts?.monster && Object.keys(opts.monster).length);

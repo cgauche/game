@@ -804,8 +804,10 @@ export function Editor() {
                 <MonsterPartsFields
                   monster={spawn.appearance?.monster}
                   weapon={spawn.weapon}
+                  colors={spawn.appearance?.colors}
                   onMonster={(patch) => updateSpawn({ appearance: { ...spawn.appearance, monster: { ...(spawn.appearance?.monster ?? {}), ...patch } } })}
                   onWeapon={(w) => updateSpawn({ weapon: w })}
+                  onColors={(patch) => updateSpawn({ appearance: { ...spawn.appearance, colors: { ...(spawn.appearance?.colors ?? {}), ...patch } } })}
                 />
                 <label className="ed-field">
                   X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
@@ -921,7 +923,7 @@ export function Editor() {
                       </text>
                     ) : (() => {
                       const prof = sel.kind === 'personnage'
-                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { monster: sel.appearance?.monster, weapon: sel.weapon })
+                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { monster: sel.appearance?.monster, weapon: sel.weapon, colors: sel.appearance?.colors })
                         : null;
                       return prof
                         ? <AmbientRigToken profile={prof} anim={sel.anim ?? ''} id={`prev-${sel.id}`} />
@@ -998,8 +1000,10 @@ export function Editor() {
                     <MonsterPartsFields
                       monster={sel.appearance?.monster}
                       weapon={sel.weapon}
+                      colors={sel.appearance?.colors}
                       onMonster={(patch) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), ...patch } } })}
                       onWeapon={(w) => updateSel({ weapon: w })}
+                      onColors={(patch) => updateSel({ appearance: { ...sel.appearance, colors: { ...(sel.appearance?.colors ?? {}), ...patch } } })}
                     />
                     <label className="ed-field">
                       Dialogue / quête
