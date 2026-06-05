@@ -66,7 +66,7 @@ import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};

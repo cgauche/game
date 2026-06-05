@@ -1,18 +1,7 @@
 import { useGame } from '../state/store';
-import { makePregens } from '../data/pregens';
-import { ambushTest } from '../scenes/ambush-test';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
-  const setParty = useGame((s) => s.setParty);
-  const startScene = useGame((s) => s.startScene);
-
-  /** Raccourci dev : équipe pré-tirée + scène de test « L'Embuscade ». */
-  const quickTest = () => {
-    setParty(makePregens().slice(0, 4));
-    startScene(ambushTest);
-    setScreen('campaign');
-  };
 
   return (
     <div className="menu">
@@ -26,8 +15,8 @@ export function MainMenu() {
           <button className="btn" onClick={() => setScreen('editor')}>
             Éditeur de niveau
           </button>
-          <button className="btn btn-test" onClick={quickTest}>
-            🧪 Test rapide — équipe pré-tirée + scène
+          <button className="btn btn-test" onClick={() => setScreen('test')}>
+            🧪 Tests — scénarios
           </button>
           <a
             className="btn"

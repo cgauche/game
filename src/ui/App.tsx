@@ -9,6 +9,7 @@ import { CharacterCreator } from './CharacterCreator';
 // alléger le démarrage. Un joueur n'ouvre jamais l'éditeur.
 const CampaignView = lazy(() => import('./CampaignView').then((m) => ({ default: m.CampaignView })));
 const Editor = lazy(() => import('./editor/Editor').then((m) => ({ default: m.Editor })));
+const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) => ({ default: m.TestScenariosScreen })));
 
 export function App() {
   const screen = useGame((s) => s.screen);
@@ -20,6 +21,7 @@ export function App() {
         {screen === 'creator' && <CharacterCreator />}
         {screen === 'campaign' && <CampaignView />}
         {screen === 'editor' && <Editor />}
+        {screen === 'test' && <TestScenariosScreen />}
       </Suspense>
     </div>
   );
