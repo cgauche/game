@@ -332,10 +332,11 @@ function applyHit(
   const woundsLost = Math.max(1, damage - (tb + ap));
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
-  // Blessure critique : double réussi (déjà dans `critical`), Atout Empaleuse sur un
-  // multiple de 10 (l.282), ou Blessures perdues > Blessures MAX (13 - Combat.md).
+  // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
+  // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
+  // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
   const empale = hasQ(weapon, 'Empaleuse') && atkBd.roll % 10 === 0;
-  const isCritical = critical || empale || woundsLost > defender.wounds.max;
+  const isCritical = critical || empale;
   return {
     hit: true,
     attackerRoll: atkBd.roll,

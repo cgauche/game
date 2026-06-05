@@ -8,6 +8,7 @@ import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance } from '../engine/types';
+import { isOutOfAction } from '../engine/conditions';
 
 function reset() {
   useGame.setState({
@@ -1228,5 +1229,48 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     const st = useGame.getState();
     expect(st.pendingRoundStart).toBeNull();
     expect(st.battle!.order[st.battle!.turn]).toBe(H.id); // H agit en premier ce Round
+  });
+});
+
+describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function combat(heroOver: Partial<Combatant> = {}, enemyOver: Partial<Combatant> = {}) {
+    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    H.fortune = 0; // pas de pré-emption d'initiative dans ces tests
+    Object.assign(H, heroOver);
+    const E: Combatant = JSON.parse(JSON.stringify(H));
+    E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; Object.assign(E, enemyOver);
+    const battle: BattleState = {
+      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpell: null,
+      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
+    return { H, E };
+  }
+
+  it('overkill sur un HÉROS → Blessure critique (compteur++), tombe à 0 PB', () => {
+    const { H, E } = combat({ wounds: { current: 2, max: 12 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } });
+    useGame.getState().seedRng(2);
+    // L'IA (E) a frappé H en mêlée : jet d'attaque figé (réussi, fort DR) ; H « Subit ».
+    useGame.setState({
+      pendingDefense: { attackerId: E.id, defenderId: H.id, weapon: E.weapons[0], location: null,
+        atk: { roll: 5, target: 80, success: true, sl: 7, isDouble: false }, mode: 'parade', def: null, result: null },
+    });
+    useGame.getState().defenseCancel(); // « Subir » → applyAttackResult (overkill car 2 PB < dégâts)
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.criticalWounds).toBe(1); // une Blessure critique encaissée
+    expect(h.wounds.current).toBe(0); // tombé à 0 (ne passe jamais négatif)
+  });
+
+  it('héros Inconscient + 0 PB + critiques > BE → meurt en fin de Round (LDB 18 l.48-49)', () => {
+    const { H, E } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
+    useGame.setState({ battle: { ...useGame.getState().battle!, order: [E.id, H.id], turn: 1 } }); // H dernier → battleEndTurn franchit le Round
+    useGame.getState().seedRng(1);
+    useGame.getState().battleEndTurn();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.dead).toBe(true);
+    expect(isOutOfAction(h)).toBe(true);
   });
 });

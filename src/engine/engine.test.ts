@@ -401,15 +401,16 @@ describe('Test opposé (départage canon)', () => {
   });
 });
 
-describe('Blessure critique (dégâts > Blessures max)', () => {
-  it('un coup dépassant les Blessures totales déclenche un Critique', () => {
+describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement)', () => {
+  it('le moteur ne marque le critique que sur un double — l’OVERKILL est posé par le store (sur PB courants)', () => {
     const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: '+BF+20', qualities: [] };
     const a = dummy('Brute', { CC: 90, F: 40 }, 20, heavy);
     const d = dummy('Frêle', { CC: 20, E: 20 }, 3, heavy); // Blessures max 3
     const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });
     expect(res.hit).toBe(true);
-    expect(res.woundsLost!).toBeGreaterThan(d.wounds.max);
-    expect(res.critical).toBe(true);
+    expect(res.woundsLost!).toBeGreaterThan(d.wounds.max); // gros coup → overkill géré par le STORE, plus par applyHit
+    // `critical` du moteur = uniquement un double réussi (l'arme n'a pas l'Atout Empaleuse).
+    expect(res.critical).toBe(res.attackerRoll % 11 === 0 || res.attackerRoll === 100);
   });
 });
 

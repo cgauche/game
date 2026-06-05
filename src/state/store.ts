@@ -55,7 +55,8 @@ import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping } from '../engine/items';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath } from '../engine/conditions';
+import { rollCritical, critLocationRoll } from '../engine/critical';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
@@ -1507,6 +1508,36 @@ function bestAdjacentReachable(reach: Map<string, number>, target: Pt): Pt | nul
   return best;
 }
 
+/** Applique une Blessure critique (Coup Critique ou overkill) à `target` : PB (ignore BE+PA,
+ *  plancher 0) + États + compteur + létalité (LDB 18-Traumatisme). Mort Subite pour les figurants
+ *  en overkill. Pousse le journal dans `log`. */
+function applyCriticalToTarget(
+  target: Combatant,
+  location: HitLocation,
+  isCoupCritique: boolean,
+  overkill: number,
+  log: string[],
+): void {
+  if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
+    // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
+    target.wounds.current = 0;
+    if (!target.conditions.some((c) => c.name === 'Inconscient')) addCondition(target, 'Inconscient');
+    log.push(`${target.name} s'effondre, hors de combat.`);
+    return;
+  }
+  const loc = isCoupCritique ? critLocationRoll(battleRng) : location; // Coup Critique = localisation fraîche (l.62)
+  const crit = rollCritical(target, loc, battleRng, overkill);
+  target.criticalWounds = (target.criticalWounds ?? 0) + 1;
+  if (crit.lethal) {
+    target.dead = true; // résultat « Mort » instantané (le sauvetage par Destin sera branché ici plus tard)
+  } else {
+    target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
+    for (const c of crit.conditions) addCondition(target, c.name, c.value);
+  }
+  log.push(crit.log);
+  if (crit.note) log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
+}
+
 function applyAttackResult(
   get: () => GameState,
   set: any,
@@ -1517,9 +1548,16 @@ function applyAttackResult(
 ): void {
   const battle = get().battle!;
   if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
+  const critLog: string[] = [];
   if (res.hit && res.woundsLost) {
-    target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
-    if (res.critical && target.wounds.current > 0) addCondition(target, 'À Terre');
+    const currentBefore = target.wounds.current;
+    const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
+    target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
+    if (res.critical || overkill > 0) {
+      applyCriticalToTarget(target, res.location ?? 'corps', !!res.critical, Math.max(0, overkill), critLog);
+    } else if (target.wounds.current <= 0) {
+      applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
+    }
   }
   // Atout Assommante : une touche à la Tête → Test opposé Force/Résistance ; si
   // l'attaquant l'emporte, la cible gagne un État Sonné (LDB Les armes l.268).
@@ -1548,8 +1586,9 @@ function applyAttackResult(
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
   const log = [...battle.log, res.log];
+  log.push(...critLog);
   if (assommanteLog) log.push(assommanteLog);
-  if (res.defenderDefeated) log.push(`${target.name} est mis hors de combat !`);
+  if (isOutOfAction(target)) log.push(`${target.name} est mis hors de combat !`);
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
@@ -1675,15 +1714,21 @@ function applyCast(
 
   if (missile) {
     if (res.hit && res.woundsLost) {
-      target.wounds.current = Math.max(0, target.wounds.current - res.woundsLost);
-      if (res.isCritical && target.wounds.current > 0) addCondition(target, 'À Terre');
+      const currentBefore = target.wounds.current;
+      const overkill = res.woundsLost - currentBefore;
+      target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
+      if (res.isCritical || overkill > 0) {
+        applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines);
+      } else if (target.wounds.current <= 0) {
+        applyZeroWounds(target);
+      }
     }
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble) logLines.push(...applyMiscast(caster, 'mineure'));
     else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(caster, 'mineure'));
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', defense: 'none' });
-    if (res.defenderDefeated) logLines.push(`${target.name} est mis hors de combat !`);
+    if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
       const heal = parseHeal(spell.desc, caster);
@@ -1803,6 +1848,7 @@ function advanceTurn(get: () => GameState, set: any) {
       round += 1;
       battle.log.push(`— Round ${round} —`);
       for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle!.log.push(l));
+      for (const c of battle.combatants) tickDeath(c, battleRng).forEach((l) => battle!.log.push(l)); // 0 PB→Inconscient→mort (LDB 18 l.28,48-49)
       // Avantage : -1 si on n'en a gagné aucun ce Round (LDB Dépl. l.40 ; la perte sur
       // infériorité numérique n'est pas modélisée).
       for (const c of battle.combatants) {
