@@ -8,6 +8,16 @@ import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './e
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
 
+// Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
+// par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
+// de face un bout arrondi, de dos un talon. Botte de cuir neutre (couvre la plupart
+// des tenues). C'est ce qui manquait : les pieds changent enfin selon la direction.
+const FOOT: PartArt = {
+  front: `<path d="M-3.4 -1 Q-4.4 7 0 8 Q4.4 7 3.4 -1 Z" fill="#3a2614" stroke="#1f1408" stroke-width="0.6"/><path d="M-3.6 6.5 Q0 8.6 3.6 6.5 L3.4 8 Q0 9.4 -3.4 8 Z" fill="#241608"/>`,
+  back: `<path d="M-3.2 -1 Q-3.8 6 0 6.5 Q3.8 6 3.2 -1 Z" fill="#2e1f10" stroke="#1a1208" stroke-width="0.5"/>`,
+  profile: `<path d="M-3 -1 L-3 5 Q-3 7.4 0 7.4 L8.6 7.4 Q10.6 7.4 9.4 4 L5.4 1 Z" fill="#3a2614" stroke="#1f1408" stroke-width="0.6"/><path d="M-3 6.4 L9.6 6.4 L9.8 8 Q4 9 -3 8 Z" fill="#241608"/>`,
+};
+
 /**
  * Choisit une part par slot, par priorité :
  *   override éditeur > équipement porté > tenue de carrière > générique.
@@ -42,6 +52,9 @@ export function resolveParts(
     if (armed != null) { out[slot] = P(armed); continue; }
     out[slot] = P(tenuePart ?? (slot === 'tete' ? '' : genericPart(slot)));
   }
+
+  // Pieds : botte directionnelle (toujours), au-dessus du bas de jambe.
+  out.pied = P(FOOT);
 
   // Mains : arme (1re arme non-bouclier) + bouclier.
   const mainWeapon = equip.weapons.find((w) => !isShield(w));

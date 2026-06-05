@@ -10,6 +10,7 @@ export function genericPart(slot: Slot): PartArt {
     case 'torse':   return `<path d="M-13 -28 Q0 -32 13 -28 L12 4 L10 34 Q0 38 -10 34 L-12 4 Z" fill="#6a5a3a"/>`;
     case 'bras':    return `<rect x="-3" y="-2" width="6" height="34" rx="3" fill="#6a5a3a"/>`;
     case 'jambes':  return `<rect x="-4" y="0" width="8" height="50" rx="3" fill="#4c3a26"/>`;
+    case 'pied':    return ''; // le pied directionnel est fourni par resolveParts (FOOT)
     case 'arme':    return '';
     case 'bouclier':return '';
   }
