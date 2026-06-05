@@ -25,4 +25,11 @@ describe('screenDir', () => {
     expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 })).toEqual({ dx: 1, dy: 1 });
     expect(screenDir({ x: 0, y: 0 }, { x: 0, y: 1 })).toEqual({ dx: -1, dy: 1 });
   });
+
+  it('tourne les extrémités selon dims.rot', () => {
+    // sans dims = comportement actuel (rot 0)
+    expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 })).toEqual({ dx: 1, dy: 1 });
+    // rot 1 sur grille 3×3 : (0,0)->(0,2), (1,0)->(0,1) → dx=1, dy=-1
+    expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 }, { w: 3, h: 3, rot: 1 })).toEqual({ dx: 1, dy: -1 });
+  });
 });

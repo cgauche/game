@@ -1,3 +1,5 @@
+import { rotTile, type Dims } from '../iso';
+
 export type View = 'front' | 'back' | 'profile';
 
 /** Direction ÉCRAN (dx,dy px iso) → vue + miroir. PUR.
@@ -9,7 +11,14 @@ export function facingView(dx: number, dy: number): { view: View; mirror: boolea
   return { view, mirror: dx < 0 };
 }
 
-/** Vecteur direction ÉCRAN entre deux tuiles (iso : screenX ∝ x−y, screenY ∝ x+y). */
-export function screenDir(from: { x: number; y: number }, to: { x: number; y: number }) {
-  return { dx: to.x - to.y - (from.x - from.y), dy: to.x + to.y - (from.x + from.y) };
+/** Vecteur direction ÉCRAN entre deux tuiles, dans l'orientation caméra `dims` (rot). PUR.
+ *  (iso : screenX ∝ x−y, screenY ∝ x+y, sur les coords tournées.) */
+export function screenDir(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  dims?: Dims,
+) {
+  const a = dims ? rotTile(from.x, from.y, dims) : from;
+  const b = dims ? rotTile(to.x, to.y, dims) : to;
+  return { dx: b.x - b.y - (a.x - a.y), dy: b.x + b.y - (a.x + a.y) };
 }
