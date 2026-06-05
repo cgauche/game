@@ -28,6 +28,7 @@ function reset() {
     pendingCast: null,
     pendingRoundStart: null,
     pendingFateSave: null,
+    pendingReload: null,
     document: null,
   });
 }
@@ -1347,5 +1348,130 @@ describe('Résilience — « Je ne faillirai pas ! » (LDB ch.17 l.72)', () => {
     useGame.getState().testForceSuccess();
     expect(useGame.getState().pendingTest!.success).toBe(true);
     expect(useGame.getState().party[0].resilience).toBe(0);
+  });
+});
+
+describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    reset();
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  function archer() {
+    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    H.weapons = [{ name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
+    H.items = [{ uid: 'am1', name: 'Carreau', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arbalète', qty: 2 } as ItemInstance];
+    H.loaded = true;
+    H.pos = { x: 0, y: 0 };
+    const E: Combatant = JSON.parse(JSON.stringify(H));
+    E.id = 'enemy-0';
+    E.name = 'Cible';
+    E.kind = 'enemy';
+    E.pos = { x: 4, y: 0 };
+    E.items = [];
+    E.weapons = [{ name: 'Mains nues', type: 'melee', damage: '+BF', qualities: [] }];
+    const battle: BattleState = {
+      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: 'attack', selectedSpell: null,
+      reachable: new Map(), moved: true, acted: false, log: [], over: null,
+    };
+    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8), pendingReload: null, pendingAttack: null });
+    return { H, E };
+  }
+
+  it('tirer consomme 1 munition et décharge une arme à Recharge', () => {
+    const { H, E } = archer();
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id); // ouvre la modale d'attaque (chargé + munition OK)
+    expect(useGame.getState().pendingAttack).not.toBeNull();
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect((h.items ?? []).find((i) => i.uid === 'am1')!.qty).toBe(1); // 2 → 1
+    expect(h.loaded).toBe(false); // Recharge 1 → déchargé
+  });
+
+  it('arme déchargée : tir refusé (modale non ouverte)', () => {
+    const { H, E } = archer();
+    H.loaded = false;
+    useGame.getState().battleClickEntity(E.id);
+    expect(useGame.getState().pendingAttack).toBeNull();
+  });
+
+  it('battleReload OUVRE la modale (Test de Projectiles, Action pas encore consommée)', () => {
+    const { H } = archer();
+    H.loaded = false;
+    H.reloadProgress = 0;
+    useGame.getState().battleReload();
+    const pr = useGame.getState().pendingReload;
+    expect(pr).not.toBeNull();
+    expect(pr!.reload).toBe(1); // Indice DR
+    expect(pr!.roll).toBeNull(); // pas encore lancé
+    expect(useGame.getState().battle!.acted).toBe(false); // l'Action n'est consommée qu'à Appliquer
+  });
+
+  it('reloadRoll + reloadConfirm : cumule le DR (Test étendu), recharge à ≥ Indice, consomme l’Action', () => {
+    const { H } = archer();
+    H.loaded = false;
+    H.reloadProgress = 0;
+    useGame.getState().seedRng(2);
+    useGame.getState().battleReload();
+    useGame.getState().reloadRoll();
+    const pr = useGame.getState().pendingReload!;
+    expect(pr.roll).not.toBeNull();
+    const expected = Math.max(0, 0 + pr.sl); // formule du Test étendu (clamp à 0)
+    useGame.getState().reloadConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    if (expected >= 1) {
+      expect(h.loaded).toBe(true);
+      expect(h.reloadProgress).toBe(0);
+    } else {
+      expect(h.loaded).toBe(false);
+      expect(h.reloadProgress).toBe(expected);
+    }
+    expect(useGame.getState().battle!.acted).toBe(true);
+    expect(useGame.getState().pendingReload).toBeNull();
+  });
+
+  it('reloadConfirm : un DR insuffisant (Recharge 2) laisse l’arme déchargée et garde le progrès', () => {
+    const { H } = archer();
+    H.weapons = [{ name: 'Arbalète lourde', type: 'ranged', damage: '+9', range: 100, qualities: ['Recharge 2'], subType: 'Arbalète', reload: 2 }];
+    H.loaded = false;
+    H.reloadProgress = 0;
+    useGame.getState().seedRng(2);
+    useGame.getState().battleReload();
+    useGame.getState().reloadRoll();
+    const pr = useGame.getState().pendingReload!;
+    const expected = Math.max(0, 0 + pr.sl);
+    useGame.getState().reloadConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.loaded).toBe(expected >= 2);
+    expect(h.reloadProgress).toBe(expected >= 2 ? 0 : expected);
+  });
+
+  it('battleReload refusé si l’Action est déjà consommée', () => {
+    const { H } = archer();
+    H.loaded = false;
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
+    useGame.getState().battleReload();
+    expect(useGame.getState().pendingReload).toBeNull();
+  });
+
+  it('plus de munitions : tir refusé', () => {
+    const { H, E } = archer();
+    (H.items![0] as ItemInstance).qty = 0;
+    useGame.getState().battleClickEntity(E.id);
+    expect(useGame.getState().pendingAttack).toBeNull();
+  });
+
+  it('battleSelectAmmo change la munition utilisée', () => {
+    const { H } = archer();
+    H.items!.push({ uid: 'am2', name: 'Carreau perçant', kind: 'ammo', qualities: ['Perforante'], enc: 0, equipped: false, subType: 'Arbalète', qty: 3 } as ItemInstance);
+    useGame.getState().battleSelectAmmo('am2');
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.ammoUid).toBe('am2');
   });
 });

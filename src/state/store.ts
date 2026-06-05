@@ -4,7 +4,7 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, ItemInstance, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
 import {
   resolveMelee,
@@ -52,7 +52,7 @@ import {
   inCareerTalent,
 } from '../engine/advancement';
 import { partyBest } from '../engine/skills';
-import { recomputeLoadout, itemFromTrapping } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } from '../engine/items';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
@@ -115,6 +115,24 @@ export interface PendingTest {
   onSuccess?: Effect[];
   onFailure?: Effect[];
 }
+/** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
+ *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
+export interface PendingReload {
+  actorId: string;
+  actorName: string;
+  weaponName: string;
+  reload: number; // Indice DR cible
+  progressBefore: number; // DR déjà cumulés (Test étendu)
+  skillValue: number; // combatValue(active, 'ranged')
+  difficulty: Difficulty; // 'intermediaire' (le canon ne spécifie pas → défaut)
+  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
+  roll: number | null;
+  target: number; // cible effective après difficulté
+  sl: number; // DR du jet
+  success: boolean;
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
 /** Attaque en attente : la modale affiche « Lancer », puis le résultat + Chance. */
 export interface PendingAttack {
   attackerId: string;
@@ -176,7 +194,7 @@ export interface BattleState {
   order: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -202,6 +220,7 @@ interface GameState {
   money: Money;
   pendingTest: PendingTest | null;
   pendingAttack: PendingAttack | null;
+  pendingReload: PendingReload | null;
   pendingDefense: PendingDefense | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
@@ -245,7 +264,21 @@ interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | null) => void;
+  /** Recharger l'arme à distance (LDB 63-Armures l.28-29) : OUVRE la modale de Test étendu de Projectiles. */
+  battleReload: () => void;
+  /** Modale rechargement : « Lancer » effectue le Test de Projectiles (DR). */
+  reloadRoll: () => void;
+  /** Chance : relance le jet de rechargement raté (1 max). */
+  reloadReroll: () => void;
+  /** Chance « +1 DR » sur le jet de rechargement figé. */
+  reloadBonusSL: () => void;
+  /** « Appliquer » : cumule le DR (Test étendu), recharge si ≥ Indice, consomme l'Action. */
+  reloadConfirm: () => void;
+  /** Ferme la modale de rechargement sans coût (avant le jet). */
+  reloadCancel: () => void;
+  /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
+  battleSelectAmmo: (uid: string) => void;
   /** Détermination (Resolve, LDB ch.17 l.62-66) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
@@ -329,6 +362,7 @@ export const useGame = create<GameState>((set, get) => ({
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
   pendingAttack: null,
+  pendingReload: null,
   pendingDefense: null,
   pendingDisengage: null,
   pendingCast: null,
@@ -475,6 +509,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: null,
       pendingTest: null,
       pendingAttack: null,
+      pendingReload: null,
       pendingDefense: null,
       pendingDisengage: null,
       document: null,
@@ -518,6 +553,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: null,
       pendingTest: null,
       pendingAttack: null,
+      pendingReload: null,
       pendingDefense: null,
       pendingDisengage: null,
       document: null,
@@ -598,15 +634,23 @@ export const useGame = create<GameState>((set, get) => ({
     const enc = scene.encounters.find((e) => e.id === encounterId);
     if (!enc) return;
     // Placer les héros près de leur position de groupe, les ennemis selon l'encounter.
-    const heroes = party.map((h, i) => ({
-      ...JSON.parse(JSON.stringify(h)),
-      pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
-      advantage: 0,
-      conditions: [],
-      engagedWith: [], // pas d'Engagement hérité d'un combat précédent
-      meleeThisRound: [],
-      wounds: { ...h.wounds },
-    })) as Combatant[];
+    const heroes = party.map((h, i) => {
+      const c = {
+        ...JSON.parse(JSON.stringify(h)),
+        pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
+        advantage: 0,
+        conditions: [],
+        engagedWith: [], // pas d'Engagement hérité d'un combat précédent
+        meleeThisRound: [],
+        wounds: { ...h.wounds },
+      } as Combatant;
+      // Munition par défaut + arme à distance chargée au début du combat (le `loaded` ne sert qu'aux armes à Recharge).
+      const rw = c.weapons.find((w) => w.type === 'ranged');
+      c.loaded = true;
+      c.reloadProgress = 0;
+      if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
+      return c;
+    });
     const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
     const all = [...heroes, ...enemies];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
@@ -627,7 +671,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null, pendingDisengage: null, pendingCast: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -819,6 +863,20 @@ export const useGame = create<GameState>((set, get) => ({
       get().log('Cible hors de portée de mêlée.');
       return;
     }
+    // Tir héros : une munition compatible est toujours requise ; l'arme « chargée » ne concerne QUE les
+    // armes à défaut Recharge (un Arc, sans Recharge, tire chaque Round sans recharger — LDB Armes).
+    const adj = chebyshev(active.pos!, target.pos!) <= 1;
+    const w = attackWeapon(active.weapons, adj);
+    if (w.type === 'ranged' && active.kind === 'hero') {
+      if ((w.reload ?? 0) > 0 && !active.loaded) {
+        get().log(`${active.name} doit recharger ${w.name}.`);
+        return;
+      }
+      if (!selectedAmmo(active, w)) {
+        get().log(`${active.name} n'a plus de munitions pour ${w.name}.`);
+        return;
+      }
+    }
     // Ouvre la modale d'attaque (le jet se fait après le clic « Lancer »).
     set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null } });
   },
@@ -907,6 +965,85 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
     active.defensiveStance = true;
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  // ── Rechargement = Test étendu de Projectiles (LDB 63-Armures l.28-29 + 12-Tests l.199-211) — par modale ──
+  battleReload: () => {
+    const { battle } = get();
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+    const w = active.weapons.find((x) => x.type === 'ranged');
+    if (!w || (w.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
+    const skillValue = combatValue(active, 'ranged'); // CT + avances Projectiles (groupe d'arme)
+    set({
+      pendingReload: {
+        actorId: active.id,
+        actorName: active.name,
+        weaponName: w.name,
+        reload: w.reload ?? 0,
+        progressBefore: active.reloadProgress ?? 0,
+        skillValue,
+        difficulty: 'intermediaire',
+        roll: null,
+        target: skillValue + DIFFICULTY_MODIFIERS.intermediaire,
+        sl: 0,
+        success: false,
+      },
+    });
+  },
+  reloadRoll: () => {
+    const pr = get().pendingReload;
+    if (!pr || pr.roll != null) return; // déjà lancé
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success } });
+  },
+  reloadReroll: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    if (!canReroll(pr.roll > pr.target, !!pr.rerolled)) return; // jet raté, 1× max
+    const a = battle.combatants.find((c) => c.id === pr.actorId);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success, rerolled: true }, battle: { ...battle } });
+  },
+  reloadBonusSL: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    const a = battle.combatants.find((c) => c.id === pr.actorId);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    set({ pendingReload: { ...pr, sl: pr.sl + 1 }, battle: { ...battle } });
+  },
+  reloadConfirm: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    const a = battle.combatants.find((c) => c.id === pr.actorId);
+    set({ pendingReload: null });
+    if (!a) return;
+    const progress = Math.max(0, pr.progressBefore + pr.sl); // Test étendu : cumul des DR, plancher 0 (recommence)
+    let log: string;
+    if (progress >= pr.reload) {
+      a.loaded = true;
+      a.reloadProgress = 0;
+      log = `${a.name} a rechargé ${pr.weaponName}.`;
+    } else {
+      a.reloadProgress = progress;
+      log = `${a.name} recharge ${pr.weaponName} (${progress}/${pr.reload} DR).`;
+    }
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, log] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
+  battleSelectAmmo: (uid) => {
+    const { battle } = get();
+    if (!battle) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    active.ammoUid = uid;
+    set({ battle: { ...battle } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1016,8 +1153,7 @@ export const useGame = create<GameState>((set, get) => ({
     const r = pa.result;
     const ad = r.attackerDetail!;
     const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
-    const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
-    const weapon = attackWeapon(attacker.weapons, adj);
+    const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;
@@ -1034,7 +1170,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     set({ pendingAttack: null });
-    if (attacker && target) applyAttackResult(get, set, attacker, target, attacker.weapons[0], pa.result);
+    if (attacker && target) applyAttackResult(get, set, attacker, target, firedWeapon(attacker, target), pa.result);
   },
   attackCancel: () => {
     const pa = get().pendingAttack;
@@ -1196,8 +1332,7 @@ export const useGame = create<GameState>((set, get) => ({
     const ad = r.attackerDetail!;
     const defSL = r.defenderDetail?.sl ?? 0;
     const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
-    const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
-    const weapon = attackWeapon(attacker.weapons, adj);
+    const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;
@@ -1563,13 +1698,30 @@ function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void 
   }
 }
 
+/** Munition que le héros tirera : celle sélectionnée (`ammoUid`) si compatible, sinon la 1re compatible. */
+function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance | undefined {
+  const compat = compatibleAmmo(attacker, weapon);
+  return compat.find((a) => a.uid === attacker.ammoUid) ?? compat[0];
+}
+
+/** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
+ *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
+ *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
+function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
+  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+  const w = attackWeapon(attacker.weapons, adj);
+  if (w.type === 'ranged' && attacker.kind === 'hero') {
+    const ammo = selectedAmmo(attacker, w);
+    if (ammo) return weaponWithAmmo(w, ammo);
+  }
+  return w;
+}
+
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
 function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
-  // Arme choisie selon la distance : mêlée au contact, distance sinon (Atout Pistolet pour tirer
-  // en Combat rapproché — LDB Armes l.297-298). Évite qu'un Engagé tire son arbalète au contact.
   const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
-  const weapon = attackWeapon(attacker.weapons, adj);
+  const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
   if (!adj && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const res =
     weapon.type === 'ranged'
@@ -1694,6 +1846,20 @@ function applyAttackResult(
       applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
     }
   }
+  // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
+  if (weapon.type === 'ranged' && attacker.kind === 'hero') {
+    const used = selectedAmmo(attacker, weapon);
+    if (used && (used.qty ?? 0) > 0) {
+      used.qty = (used.qty ?? 0) - 1;
+      if (used.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== used.uid);
+    }
+    if ((weapon.reload ?? 0) > 0) {
+      attacker.loaded = false; // déchargé après le tir
+      attacker.reloadProgress = 0;
+    }
+  }
+  // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
+  if (res.hit && res.woundsLost && target.kind === 'hero' && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
   // Atout Assommante : une touche à la Tête → Test opposé Force/Résistance ; si
   // l'attaquant l'emporte, la cible gagne un État Sonné (LDB Les armes l.268).
   let assommanteLog: string | null = null;
