@@ -428,6 +428,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target) return;
+    applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
     const r = resolveAttack(attacker, target, pa.location ?? undefined);
     if (!r) {
       get().log('Cible hors de portée de mêlée.');
@@ -634,6 +635,16 @@ function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
   return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
 }
 
+/** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
+ *  AVANT son attaque (LDB États l.123) — ce +1 profite donc déjà au jet en cours puis
+ *  persiste. À appeler une seule fois par attaque (avant le 1er jet ; pas sur une relance). */
+function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void {
+  if (attacker.weapons[0]?.type === 'melee' && target.conditions.some((c) => c.name === 'Sonné')) {
+    attacker.advantage += 1;
+    attacker.gainedAdvThisRound = true;
+  }
+}
+
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
 function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
@@ -697,6 +708,7 @@ function applyAttackResult(
 
 /** Attaque instantanée (utilisée par l'IA ennemie) : résout puis applique. */
 function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): void {
+  applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   const r = resolveAttack(attacker, target);
   if (!r) {
     get().log('Cible hors de portée de mêlée.');

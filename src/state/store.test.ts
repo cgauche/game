@@ -223,4 +223,25 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().resolveTest();
     expect(useGame.getState().pendingTest).toBeNull();
   });
+
+  it('attaquer une cible Sonnée en mêlée donne +1 Avantage à l’attaquant (LDB États l.123)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(2);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    enemy.conditions.push({ name: 'Sonné', value: 1 });
+    heroC.advantage = 0;
+    heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y }; // adjacent
+    const turn = st.battle!.order.indexOf(heroC.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.getState().battleClickEntity(enemy.id); // ouvre la modale
+    useGame.getState().attackRoll(); // le +1 Sonné s'applique AVANT le jet
+    st = useGame.getState();
+    const heroAfter = st.battle!.combatants.find((c) => c.id === heroC.id)!;
+    expect(heroAfter.advantage).toBe(1);
+  });
 });
