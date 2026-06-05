@@ -29,6 +29,15 @@ export function MainMenu() {
           <button className="btn btn-test" onClick={quickTest}>
             🧪 Test rapide — équipe pré-tirée + scène
           </button>
+          <a
+            className="btn"
+            href="galeries.html"
+            target="_blank"
+            rel="noopener"
+            style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}
+          >
+            🎨 Galeries — sprites, animations &amp; bestiaire
+          </a>
         </div>
         <p className="hint">
           Composez un groupe de 4 aventuriers (créés ou pré-tirés), puis lancez l'ouverture de la campagne
