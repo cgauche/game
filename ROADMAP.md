@@ -139,8 +139,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   l'IA frappe en mêlée plutôt que de canarder au loin quand un adversaire est à son contact.
 - ✅ **Esquive vs Parade** comme choix défensif réel (meilleure valeur, Encombrement inclus) ; reste armes à 2 mains, bouclier.
 - ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dégâts par round ; **Sonné** = +1 Avantage à l'attaquant en mêlée, récupération par Test de Résistance puis Exténué, **« incapable d'Action » + déplacement à demi-Mouvement** côté joueur ET IA — tous corrigés via audit de fidélité).
-- ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque + hors combat). Reste : Détermination, ajout direct de DR.
-- ✅ **Barre d'action en bas** (hotbar) qui suit le combattant actif (déplacer/attaquer/incanter/défensive/fin).
+- ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque, **défense**, hors combat, **incantation**). Reste : Détermination, ajout direct de DR.
+- ✅ **Barre d'action en bas** (hotbar) qui suit le combattant actif (déplacer/attaquer/incanter/**utiliser un objet**/défensive/fin).
 - ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade, **Charge** —
   `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
   pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
@@ -176,11 +176,15 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
 
-- **Réécrire le vrai Chapitre 1** (soirée à l'auberge : Gustav, Isolde, Phillipe + partie de
-  cartes, inspection de la diligence, Document 1, départ) — **0 combat obligatoire**, social.
-- **Chapitre 2** = « Du Sang Sur la Route » (l'embuscade des mutants, séparée du Ch.1).
+- ✅ **Chapitre 2 — « Du Sang Sur la Route »** (`tome1-route.ts`, sourcé du ch.2 « Erreur sur la
+  personne ») : l'embuscade canonique sur **une carte multi-rencontres** — Rolf Hurtsis puis la
+  bande de Knud (statblocks **verbatim**, mutations par brigand), **XP/butin par rencontre**
+  (`onVictory`), **corps cherchables** (les 2 lettres + cotte de mailles + XP de découverte),
+  patrouilleurs de Pflaster (dialogue social). Test d'intégration vert.
+- **Reste — le vrai Chapitre 1** (soirée à l'auberge : Gustav, Isolde, Phillipe + partie de cartes,
+  inspection de la diligence, Document 1, départ) — **0 combat obligatoire**, social. ⚠️ `tome1-intro`
+  actuel n'est qu'une **démo** walk-to-trigger, pas le vrai Ch.1.
 - Puis Tomes 1-3, en s'appuyant sur `tome1-dossiers.json` et **l'éditeur** (tout est éditable).
-- ⚠️ Le `tome1-intro` actuel est une **démo** (walk-to-trigger), pas le vrai Ch.1.
 
 ## 🎯 Jalon 5 — Méta-jeu & persistance
 
@@ -241,12 +245,17 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
 - ✅ **Avancement XP — boucle complète** : moteur **+ câblage store** (grant/dépense/détection in-carrière) **+ panneau UI** (onglets Fiche/Avancement) **+ Effet `giveXp`** **+ octroi à la victoire éditable** (`EncounterDef.onVictory` → `applyEffects` au groupe, **authorable dans l'éditeur de rencontres** « À la victoire ») **+ octroi par jalon** (`giveXp` dans triggers/dialogues). Tout testé (engine + vue + actions store + rendu + éditeur).
-- ✅ **Butin / fouille par corps** (fidèle au ch.2 « Erreur sur la personne » — butin curé par cadavre sur carte multi-rencontres) : **objet cherchable** (`SceneEntity.search: Effect[]` — reste en place, fouillé une fois) + Effets **`giveXp`** (XP de découverte), **`giveTrapping`** (vrai objet à stats sur un héros, équipable depuis la fiche), `giveMoney`/`document`. Spoils de combat → **`EncounterDef.onVictory` par rencontre** ; butin trouvé → objet cherchable **par corps** — **rien n'est global à la scène**. Reste : potions **consommables** (effet d'usage) ; `giveItem` party-level (noms) inchangé.
+- ✅ **Butin / fouille par corps** (fidèle au ch.2 « Erreur sur la personne » — butin curé par cadavre sur carte multi-rencontres) : **objet cherchable** (`SceneEntity.search: Effect[]` — reste en place, fouillé une fois) + Effets **`giveXp`** (XP de découverte), **`giveTrapping`** (vrai objet à stats sur un héros, équipable depuis la fiche), `giveMoney`/`document`. Spoils de combat → **`EncounterDef.onVictory` par rencontre** ; butin trouvé → objet cherchable **par corps** — **rien n'est global à la scène**.
+- ✅ **Consommables en combat** : action **« 🧪 Utiliser »** dans la hotbar (`battleUseItem` + `engine/consumables.ts`) — effet **parsé du `desc`** du trapping (LDB p.307) : Potion de guérison = soin du **Bonus d'Endurance**, Potion de vitalité = retrait de l'État **Exténué** ; objet consommé, coûte l'Action ; liste groupée (plusieurs potions → ×N). *(`giveItem` party-level (noms) inchangé.)*
+- ✅ **Modales de jet lisibles + incantation** : la modale montre les **DEUX côtés du Test opposé**
+  (base + modificateurs = cible · d100 · DR de l'attaquant ET du défenseur — fini « un seul chiffre »),
+  l'**incantation a sa modale** (`pendingCast` : Lancer → NI/DR/Maladresse → Chance → Appliquer), et le
+  **tir interdit en Combat rapproché** (Atout Pistolet, LDB l.297-298 ; `attackWeapon` + IA).
 - **Combat — reste** : action **« ramasser » en plein combat** (récupérer une arme tombée au sol *pendant* un Round — **distinct** du pillage post-combat, désormais fait, cf. butin/fouille ci-dessus) ; **tables de Critiques & Maladresses** par localisation (LDB p.172+, aujourd'hui laissées au MJ). Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée). Détermination & ajout direct de DR (au-delà de la Chance).
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
-- **Vérif NAVIGATEUR du combat** : modales attaque/défense/hors-combat/**désengagement+Fuite**, hotbar, Engagé/Charge — logique couverte par tests, mais **passage live à l'œil non fait** ce cycle (penser au **hard reload** : le HMR du dev se périme souvent).
+- **Vérif NAVIGATEUR — dette du cycle** : toute l'UI livrée cette session est **couverte par tests/typecheck mais jamais vue en live** (profil Playwright monopolisé par la session rig parallèle). À repasser à l'œil : modales attaque/**détail des jets opposés**/défense/**incantation**, **panneau Avancement** (achat de PX), action **« Utiliser »** (potions), **fouille** de corps, éditeur **« À la victoire »**, scène **Chapitre 2**, hotbar, Engagé/Charge. *(Penser au **hard reload** : le HMR du dev se périme souvent.)*
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.
-- **Contenu jouable** (Jalon 4) : vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
+- **Contenu jouable** (Jalon 4) : ✅ **Chapitre 2** « Du Sang Sur la Route » livré et testé ; reste le vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
 
 ### Dette « historique » (détail)
