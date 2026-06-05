@@ -5,6 +5,7 @@
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, RNG, defaultRNG } from './dice';
+import { rollTest } from './tests';
 
 /** Nombre de pions (cumul) d'un État donné. */
 const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -89,9 +90,27 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     c.wounds.current = Math.max(0, c.wounds.current - dmg);
     log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
   }
+  // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
+  // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
+  // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).
+  const sonne = stacks(c, 'Sonné');
+  if (sonne) {
+    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
+    if (res.success) {
+      const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
+      removeCondition(c, 'Sonné', removed);
+      log.push(`${c.name} : ${removed} État(s) Sonné dissipé(s) (Résistance réussie).`);
+      if (!hasCondition(c, 'Sonné') && !hasCondition(c, 'Exténué')) {
+        addCondition(c, 'Exténué');
+        log.push(`${c.name} est Exténué (après avoir surmonté le dernier État Sonné).`);
+      }
+    } else {
+      log.push(`${c.name} reste Sonné (Résistance ratée).`);
+    }
+  }
   // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
-  // Sonné réclame en théorie un Test de Résistance (l.125) — simplifié ici à -1/Round.
-  for (const n of ['Aveuglé', 'Assourdi', 'Surpris', 'Sonné']) {
+  for (const n of ['Aveuglé', 'Assourdi', 'Surpris']) {
     if (hasCondition(c, n)) {
       removeCondition(c, n, 1);
       log.push(`${c.name} : un État ${n} se dissipe.`);

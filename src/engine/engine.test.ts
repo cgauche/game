@@ -133,6 +133,36 @@ describe('États en combat (LDB ch.16)', () => {
     endOfRound(c, { int: () => 4 }); // d10 = 4 ⇒ (4+2) − 7 = −1 → plancher 1
     expect(c.wounds.current).toBe(19); // 20 − 1, pas 20 − 3
   });
+  it('Sonné : Résistance réussie retire 1 État +1/DR puis octroie Exténué une fois nettoyé (l.125-127)', () => {
+    const c = {
+      name: 'x',
+      conditions: [],
+      skills: [],
+      characteristics: { E: 50 },
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      wounds: { current: 10, max: 10 },
+    } as unknown as Combatant;
+    addCondition(c, 'Sonné', 2);
+    // E 50, Sonné −10 → cible 40 ; jet 5 → réussite, DR = 4 → retire min(2, 1+4) = 2 → nettoyé.
+    endOfRound(c, { int: () => 5 });
+    expect(c.conditions.some((x) => x.name === 'Sonné')).toBe(false);
+    expect(c.conditions.some((x) => x.name === 'Exténué')).toBe(true);
+  });
+  it('Sonné : Résistance ratée conserve l’État et n’octroie pas d’Exténué (l.125)', () => {
+    const c = {
+      name: 'x',
+      conditions: [],
+      skills: [],
+      characteristics: { E: 30 },
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      wounds: { current: 10, max: 10 },
+    } as unknown as Combatant;
+    addCondition(c, 'Sonné', 1);
+    // E 30, Sonné −10 → cible 20 ; jet 95 → échec → reste Sonné, pas d’Exténué.
+    endOfRound(c, { int: () => 95 });
+    expect(c.conditions.some((x) => x.name === 'Sonné')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'Exténué')).toBe(false);
+  });
 });
 
 describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
