@@ -62,7 +62,7 @@ const WEAPONS: Record<string, PartArt> = {
   hache: `<rect x="-1.5" y="-2" width="3" height="30" fill="#4a2f17"/><path d="M-2 -28 q14 -10 14 12 q-14 -2 -14 -10z" fill="url(#g_axe)" stroke="#2a3038"/>`,
   masse: `<rect x="-1.5" y="-2" width="3" height="28" fill="#4a2f17"/><circle cx="0" cy="-28" r="6" fill="url(#g_steelD)"/>`,
   dague: `<rect x="-1.2" y="-1" width="2.4" height="4" fill="#4a2f17"/><rect x="-1" y="-15" width="2" height="14" fill="url(#g_steel)"/>`,
-  lance: `<rect x="-1.2" y="-2" width="2.4" height="44" fill="#6a4a2a"/><path d="M0 -50 L4 -40 L-4 -40Z" fill="url(#g_steel)"/>`,
+  lance: `<rect x="-1.5" y="-3" width="3" height="40" rx="1.2" fill="#6a4a2a"/><path d="M0 -52 L5 -40 L2 -34 L-2 -34 L-5 -40Z" fill="url(#g_steel)" stroke="#2a3038" stroke-width="0.5"/>`,
   baton: `<rect x="-1.6" y="-30" width="3.2" height="60" rx="1.5" fill="#6a4a2a"/><circle cx="0" cy="-30" r="4" fill="url(#g_glow)"/>`,
   arc: `<path d="M0 -26 Q14 0 0 26" stroke="#6a4a2a" stroke-width="2.4" fill="none"/><line x1="0" y1="-26" x2="0" y2="26" stroke="#d8d0c0" stroke-width="0.8"/>`,
   arbalete: `<rect x="-2" y="-4" width="4" height="20" fill="#5a3f24"/><path d="M-12 -4 H12" stroke="#3a2a18" stroke-width="3"/>`,
