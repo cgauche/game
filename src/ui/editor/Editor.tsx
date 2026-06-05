@@ -7,6 +7,13 @@ import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } fro
 import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
 import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
+import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS } from '../../gameIso/rig/parts/monstrous';
+import { EntityToken } from '../../gameIso/EntityToken';
+import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
+import { AmbientRigToken } from '../../gameIso/AmbientRigToken';
+
+// Armes équipables proposées dans l'éditeur (une par forme/groupe — affichées par le rig).
+const EDITOR_WEAPONS = ['Épée', 'Hache', 'Masse', 'Dague', 'Lance', 'Hallebarde', 'Bâton de combat', 'Arc', 'Arbalète', 'Pistolet', 'Fronde', 'Fouet'];
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -624,14 +631,14 @@ export function Editor() {
                       ),
                     });
                   } else {
-                    objs.push({ d: depth(e.pos.x, e.pos.y) + 0.5, el: <g key={e.id} dangerouslySetInnerHTML={{ __html: placeSprite(entitySvg(e), e.pos.x, e.pos.y, dims, 0.5) }} /> });
+                    objs.push({ d: depth(e.pos.x, e.pos.y) + 0.5, el: <EntityToken key={e.id} ent={e} dims={dims} /> });
                   }
                 }
                 // Ennemis des rencontres (points d'apparition) : visibles + cliquables.
                 for (const [encIdx, enc] of scene.encounters.entries()) {
                   enc.enemies.forEach((en, idx) => {
                     const isSel = selectedSpawn?.enc === encIdx && selectedSpawn?.idx === idx;
-                    const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos } as SceneEntity;
+                    const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos, appearance: en.appearance, weapon: en.weapon } as SceneEntity;
                     objs.push({
                       d: depth(en.pos.x, en.pos.y) + 0.45,
                       el: (
@@ -649,7 +656,7 @@ export function Editor() {
                             stroke={isSel ? '#ffe066' : '#c0392b'}
                             strokeWidth={isSel ? 2.5 : 1.5}
                           />
-                          <g dangerouslySetInnerHTML={{ __html: placeSprite(entitySvg(synth), en.pos.x, en.pos.y, dims, 0.5) }} />
+                          <EntityToken ent={synth} dims={dims} />
                         </g>
                       ),
                     });
@@ -908,9 +915,14 @@ export function Editor() {
                       <text x="60" y="92" textAnchor="middle" fontSize="44" fill="#2ecc71">
                         ★
                       </text>
-                    ) : (
-                      <g dangerouslySetInnerHTML={{ __html: entitySvg(sel) }} />
-                    )}
+                    ) : (() => {
+                      const prof = sel.kind === 'personnage'
+                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { monster: sel.appearance?.monster, weapon: sel.weapon })
+                        : null;
+                      return prof
+                        ? <AmbientRigToken profile={prof} anim={sel.anim ?? ''} id={`prev-${sel.id}`} />
+                        : <g dangerouslySetInnerHTML={{ __html: entitySvg(sel) }} />;
+                    })()}
                   </svg>
                 </div>
                 <p>
@@ -979,6 +991,54 @@ export function Editor() {
                         </button>
                       </div>
                     )}
+                    {/* Mutant modulaire : parts monstrueux par slot (rig humanoïde). */}
+                    <div className="ed-field">
+                      <span>Mutations (rig humanoïde)</span>
+                      {([
+                        ['Tête', 'tete', MONSTER_HEAD_OPTIONS],
+                        ['Bras gauche', 'brasG', MONSTER_ARM_OPTIONS],
+                        ['Bras droit', 'brasD', MONSTER_ARM_OPTIONS],
+                      ] as const).map(([lbl, slot, opts]) => (
+                        <label key={slot} className="ed-subfield">
+                          {lbl}
+                          <select
+                            value={sel.appearance?.monster?.[slot] ?? ''}
+                            onChange={(e) =>
+                              updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), [slot]: e.target.value || undefined } } })
+                            }
+                          >
+                            {opts.map((o) => (
+                              <option key={o.key} value={o.key}>{o.label}</option>
+                            ))}
+                          </select>
+                        </label>
+                      ))}
+                      <label className="ed-subfield">
+                        <input
+                          type="checkbox"
+                          checked={!!sel.appearance?.monster?.cornes}
+                          onChange={(e) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), cornes: e.target.checked || undefined } } })}
+                        />
+                        Cornes
+                      </label>
+                      <label className="ed-subfield">
+                        <input
+                          type="checkbox"
+                          checked={!!sel.appearance?.monster?.queue}
+                          onChange={(e) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), queue: e.target.checked || undefined } } })}
+                        />
+                        Queue
+                      </label>
+                    </div>
+                    <label className="ed-field">
+                      Arme équipée
+                      <select value={sel.weapon ?? ''} onChange={(e) => updateSel({ weapon: e.target.value || undefined })}>
+                        <option value="">— aucune —</option>
+                        {EDITOR_WEAPONS.map((w) => (
+                          <option key={w} value={w}>{w}</option>
+                        ))}
+                      </select>
+                    </label>
                     <label className="ed-field">
                       Dialogue / quête
                       <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>
