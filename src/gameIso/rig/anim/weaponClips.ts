@@ -133,6 +133,16 @@ const RANGED_FLINCH = c([
   { pose: { bassin: -14, torse: -9, tete: -5 }, ms: 110, easing: 'easeOut' },
   { pose: REST, ms: 220, easing: 'easeInOut' },
 ]);
+// Escrime : parade par opposition POINTE EN AVANT (raccord avec l'estoc), pas un lever haut.
+const FENCE_PARRY = c([
+  { pose: { epauleD: 14, avantBrasD: -10, torse: -2, arme: -18 }, ms: 80, easing: 'easeOut' },
+  { pose: REST, ms: 230, easing: 'easeInOut' },
+]);
+// Mains nues : on se COUVRE (les deux avant-bras remontent devant le visage), raccord avec la garde de boxe.
+const BARE_BLOCK = c([
+  { pose: { avantBrasD: -34, avantBrasG: -34, tete: 3, torse: 2 }, ms: 90, easing: 'easeOut' },
+  { pose: REST, ms: 240, easing: 'easeInOut' },
+]);
 
 // --- API -------------------------------------------------------------------
 /** Pose portée (repos) selon le Groupe — l'arme est tenue différemment au calme.
@@ -168,8 +178,10 @@ export function weaponParryClip(w?: Weapon, hasShield = false): Clip {
   if (hasShield) return SHIELD_PARRY;
   if (!w) return SWORD_GUARD;
   const f = weaponGroupKey(w);
-  if (TWO_HANDED.has(f)) return STAFF_BLOCK;
+  if (TWO_HANDED.has(f)) return STAFF_BLOCK; // raccord avec l'attaque à 2 mains
   if (RANGED_FAM.has(f)) return RANGED_FLINCH;
+  if (f === 'escrime') return FENCE_PARRY; // raccord avec l'estoc (pointe en avant)
+  if (f === 'bagarre') return BARE_BLOCK; // raccord avec la garde de poings
   return SWORD_GUARD;
 }
 
