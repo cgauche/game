@@ -28,15 +28,20 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
       'Bandit', 'Cultiste', 'Mutant', "Soldat de l'Empire", 'Guerrier du Chaos',
       'Humain', 'Nain', 'Flagellant', 'Noble', 'Sorcier', 'Répurgateur', 'Mercenaire',
       'Garde de la ville', 'Voleur', 'Sectateur', 'Halfling', 'Ogre',
+      // Phase B : skavens rapatriés dans le rig bipède (tête de rat + queue auto).
+      'Guerrier des clans', 'Rat ogre', 'Vermine de choc',
+      // Phase B : peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, gros/démons → rig.
+      'Orc', 'Gobelin', 'Snotling', 'Squelette', 'Zombie', 'Goule de crypte',
+      'Gor', 'Ungor', 'Minotaure', 'Chamane-Brey',
+      'Troll', 'Vampire', 'Sanguinaire de Khorne',
     ]) {
       expect(classifyEnemy(n), n).toBe('rig');
     }
   });
-  it('bêtes / morts-vivants / peaux-vertes / skavens / démons → créature', () => {
+  it('bêtes / morts-vivants non humanoïdes / démons exotiques → créature', () => {
     for (const n of [
-      'Rat géant', 'Orc', 'Gobelin', 'Snotling', 'Squelette', 'Zombie', 'Goule de crypte',
-      'Guerrier des clans', 'Rat ogre', 'Vermine de choc', 'Gor', 'Ungor', 'Minotaure',
-      'Troll', 'Dragon', 'Démonette de Slaanesh', 'Sanguinaire de Khorne', 'Loup', 'Ours',
+      'Rat géant', 'Dragon', 'Démonette de Slaanesh', 'Loup', 'Ours',
+      'Araignée géante', 'Spectre', 'Liche',
     ]) {
       expect(classifyEnemy(n), n).toBe('creature');
     }
@@ -65,6 +70,28 @@ describe('enemyRigProfile', () => {
     expect(enemyRigProfile(mkEnemy('Nain mercenaire'))!.appearance.species).toBe('Nain');
     expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('Humain');
     expect(enemyRigProfile(mkEnemy('Ogre brise-fer'))!.appearance.species).toBe('Ogre');
+  });
+
+  it('espèces monstrueuses Phase B détectées + tête monstrueuse auto', () => {
+    const cases: [string, string, string | undefined][] = [
+      ['Orc noir', 'Orc', 'orc'],
+      ['Gobelin de la nuit', 'Gobelin', 'gobelin'],
+      ['Snotling', 'Snotling', 'gobelin'],
+      ['Gor sauvage', 'Homme-bête', 'caprin'],
+      ['Ungor fourrageur', 'Homme-bête', 'caprin'],
+      ['Minotaure', 'Minotaure', 'taureau'],
+      ['Squelette guerrier', 'Squelette', 'crane'],
+      ['Zombie', 'Zombie', 'pourri'],
+      ['Goule de crypte', 'Goule', 'chien'],
+      ['Troll de pierre', 'Troll', 'troll'],
+      ['Sanguinaire de Khorne', 'Démon', 'demon'],
+      ['Vampire', 'Vampire', undefined], // humain pâle → pas de tête monstrueuse
+    ];
+    for (const [name, species, tete] of cases) {
+      const p = enemyRigProfile(mkEnemy(name))!;
+      expect(p.appearance.species, name).toBe(species);
+      expect(p.appearance.monster?.tete, name).toBe(tete);
+    }
   });
 
   it('carrière mappée pour la tenue', () => {

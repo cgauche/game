@@ -6,6 +6,8 @@ import type { View } from './facing';
 export const VIEW_POSE: Record<View, Pose> = {
   front: {},
   back: {},
-  // Profil : membres ramenés vers l'axe (un bras/jambe devant l'autre), léger pivot du torse.
-  profile: { epauleG: 14, epauleD: -14, avantBrasG: 8, avantBrasD: -8, cuisseG: 10, cuisseD: -10, torse: 4 },
+  // Profil : LÉGÈRE profondeur (un membre devant l'autre) — les bras PENDENT, ils ne se
+  // balancent pas. Un swing trop fort (±14) donnait « bras en arrière » au héros désarmé.
+  // Les jambes gardent une amorce de pas (naturel de profil). Léger pivot du torse.
+  profile: { epauleG: 6, epauleD: -4, avantBrasG: 4, avantBrasD: -3, cuisseG: 10, cuisseD: -10, torse: 4 },
 };

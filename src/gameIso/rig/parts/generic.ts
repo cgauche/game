@@ -11,6 +11,7 @@ export function genericPart(slot: Slot): PartArt {
     case 'bras':    return `<rect x="-3" y="-2" width="6" height="34" rx="3" fill="@peau"/>`;
     case 'jambes':  return `<rect x="-4" y="0" width="8" height="50" rx="3" fill="@vet1O"/>`;
     case 'pied':    return ''; // le pied directionnel est fourni par resolveParts (FOOT)
+    case 'main':    return ''; // la main directionnelle est fournie par resolveParts (HAND)
     case 'arme':    return '';
     case 'bouclier':return '';
   }

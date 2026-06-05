@@ -26,17 +26,39 @@ export function apply(m: Matrix, p: { x: number; y: number }) {
 }
 export const toSvg = (m: Matrix): string => `matrix(${m.map((n) => +n.toFixed(4)).join(' ')})`;
 
-/** Transform monde de chaque os (FK, racine = os sans parent). Itère les os du squelette fourni. */
-export function worldTransforms(sk: Skeleton, pose: Pose): Record<BoneId, Matrix> {
-  const out = {} as Record<BoneId, Matrix>;
-  const world = (id: BoneId): Matrix => {
+/**
+ * Os minimal pour la FK — INDÉPENDANT du gabarit (bipède/quadrupède/ailé). La cinématique
+ * n'a besoin que de la hiérarchie + pivot + angle ; la liste d'os concrète appartient au
+ * gabarit. C'est cette généricité qui permet « une seule machinerie, plusieurs squelettes ».
+ */
+export interface FKBone {
+  parent: string | null;
+  pivot: { x: number; y: number };
+  angle: number;
+}
+
+/**
+ * Transform monde de chaque os (FK, racine = os sans parent), pour TOUT squelette keyé par
+ * chaîne. `pose` = deltas d'angle additifs. Générique sur la liste d'os du gabarit.
+ */
+export function worldTransformsG<K extends string>(
+  sk: Record<K, FKBone>,
+  pose: Partial<Record<K, number>>,
+): Record<K, Matrix> {
+  const out = {} as Record<K, Matrix>;
+  const world = (id: K): Matrix => {
     if (out[id]) return out[id];
     const b = sk[id];
     const ang = b.angle + (pose[id] ?? 0); // pose = DELTA additif sur l'angle de repos
     const local = mul(translate(b.pivot.x, b.pivot.y), rotate(ang));
-    out[id] = b.parent ? mul(world(b.parent), local) : local;
+    out[id] = b.parent ? mul(world(b.parent as K), local) : local;
     return out[id];
   };
-  for (const id of Object.keys(sk) as BoneId[]) world(id);
+  for (const id of Object.keys(sk) as K[]) world(id);
   return out;
+}
+
+/** Transform monde de chaque os du squelette HUMANOÏDE (délègue à la FK générique). */
+export function worldTransforms(sk: Skeleton, pose: Pose): Record<BoneId, Matrix> {
+  return worldTransformsG(sk as Record<BoneId, FKBone>, pose) as Record<BoneId, Matrix>;
 }

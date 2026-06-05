@@ -71,8 +71,23 @@ export function careerTenue(cls: string): TenueSet {
   return TENUES[cls] ?? TENUES.Citadins;
 }
 
+/** Tenue « nue » (corps de chair, pas de vêtement) — torse/jambes peints en @peau, pour les
+ *  monstres sans habit (trolls, goules, snotlings). Le token suit la palette d'espèce. */
+const TENUE_NUE: TenueSet = {
+  torse: `<path d="M-13 -28 Q0 -32 13 -28 L12 4 L11 34 Q0 38 -11 34 L-12 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`,
+  jambes: `<path d="M-4.5 0 Q-5 26 -3 50 L4 50 Q5 26 4.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
+};
+
+/** Carrières à tenue DÉDIÉE proposables dans l'éditeur (+ « Nu »). Calculé au runtime →
+ *  inclut automatiquement toute tenue ajoutée (ex. « Skaven »). Sert au sélecteur de tenue
+ *  d'entité : un PNJ peut porter n'importe laquelle (découplage tenue ↔ nom). */
+export function tenueCareerNames(): string[] {
+  return [...Object.keys(GENERATED_CAREER_TENUES).sort((a, b) => a.localeCompare(b, 'fr')), 'Nu'];
+}
+
 /** Tenue résolue pour une carrière : art PAR CARRIÈRE si dispo, sinon archétype de CLASSE. */
 export function careerTenueFor(career: string | undefined): TenueSet {
+  if (career === 'Nu') return TENUE_NUE; // corps nu (monstres sans habit)
   const gen = career ? GENERATED_CAREER_TENUES[career] : undefined;
   if (gen && Object.keys(gen).length) return withViews(career!, gen); // + vues dos/profil (E·7)
   return careerTenue(careerClass(career ?? ''));

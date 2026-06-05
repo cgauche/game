@@ -19,6 +19,8 @@ export interface Palette {
   vet2?: string; // vêtement secondaire / doublure
   cuir?: string;
   metal?: string;
+  corps?: string; // robe/pelage/peau de corps des créatures (gabarits non-humains)
+  accent?: string; // détail vif (crête, langue, marque) — créatures
 }
 
 /** Palette par défaut (paysan générique) — base avant overrides espèce/carrière/mutation. */
@@ -30,6 +32,8 @@ export const DEFAULT_PALETTE: Required<Palette> = {
   vet2: '#4a3a22',
   cuir: '#5a3f24',
   metal: '#8b94a6',
+  corps: '#6b4a2e',
+  accent: '#c8923a',
 };
 
 /** Multiplie chaque canal RGB d'un hex par f (clamp 0..255) → assombrit (<1) / éclaircit (>1). */
@@ -45,7 +49,7 @@ function scale(hex: string, f: number): string {
 const SHADES: [suffix: string, factor: number][] = [['', 1], ['O', 0.78], ['H', 1.18]];
 
 /** Emplacements de base (ordre stable). */
-export const SLOTS = ['peau', 'cheveux', 'yeux', 'vet1', 'vet2', 'cuir', 'metal'] as const;
+export const SLOTS = ['peau', 'cheveux', 'yeux', 'vet1', 'vet2', 'cuir', 'metal', 'corps', 'accent'] as const;
 export type Slot = (typeof SLOTS)[number];
 
 /**

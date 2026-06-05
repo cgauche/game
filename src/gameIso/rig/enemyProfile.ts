@@ -43,22 +43,18 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 // non-humanoïdes + synonymes courants.
 const CREATURE_RE = new RegExp(
   '\\b(' + [
-    // skavens / hommes-rats
-    'rat', 'skaven', 'homme.?rat', 'clans?', 'vermine',
-    // peaux-vertes
-    'orc', 'orque', 'gobelin', 'gobbo', 'snotling', 'peau.?verte', 'squig',
-    // hommes-bêtes
-    'gor', 'ungor', 'minotaure', 'homme.?bete', 'beastman', 'brey', 'bestigor',
-    // morts-vivants
-    'squelette', 'zombie', 'goule', 'vampire', 'spectre', 'fantome', 'banshee', 'momie',
-    'mort.?vivant', 'varghulf', 'liche', 'necarque',
-    // démons / Chaos « bête »
-    'demon', 'demonette', 'sanguinaire', 'khorne', 'slaanesh', 'nurgle', 'tzeentch',
+    // (Phase B : skavens, peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, troll, ogre,
+    //  vampire, sanguinaire de Khorne → rig bipède → retirés d'ici → classifyEnemy='rig')
+    'squig',
+    // morts-vivants NON humanoïdes / non rapatriés
+    'spectre', 'fantome', 'banshee', 'varghulf', 'liche', 'necarque',
+    // démons / Chaos « bête » non rapatriés
+    'demonette', 'slaanesh', 'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
     // bêtes
     'loup', 'ours', 'chien', 'charognard', 'sanglier', 'serpent', 'araignee', 'basilic', 'dragon',
     'griffon', 'hyppogriffe', 'hippogriffe', 'demigriffon', 'hydre', 'manticore', 'pegase',
-    'pieuvre', 'vouivre', 'fimir', 'geant', 'troll', 'pigeon', 'cheval',
+    'pieuvre', 'vouivre', 'fimir', 'geant', 'pigeon', 'cheval',
     'chauve.?souris', 'sangsue', 'crapaud',
   ].join('|') + ')\\b',
 );
@@ -88,7 +84,9 @@ export function classifyEnemy(name: string): 'rig' | 'creature' {
   return CREATURE_RE.test(norm(name)) ? 'creature' : 'rig';
 }
 
-/** Espèce de rig détectée du nom (sinon Humain). */
+/** Espèce de rig détectée du nom (sinon Humain). L'ORDRE compte : les pièges de sous-chaîne
+ *  (« rat ogre » → Skaven avant ogre ; « goule » avant les bêtes) sont gérés en plaçant le
+ *  cas spécifique d'abord. */
 function detectSpecies(n: string): string {
   if (/\bnain/.test(n)) return 'Nain';
   if (/\bhalfling/.test(n)) return 'Halfling';
@@ -96,9 +94,38 @@ function detectSpecies(n: string): string {
   if (/elfe sylvain|elfe des bois/.test(n)) return 'Elfe sylvain';
   if (/\belfe/.test(n)) return 'Haut-Elfe';
   if (/\bgnome/.test(n)) return 'Gnome';
+  if (/skaven|homme.?rat|\brat\b|vermine|guerrier des clans|rat ogre/.test(n)) return 'Skaven'; // AVANT ogre (« rat ogre »)
+  // Morts-vivants humanoïdes
+  if (/squelette/.test(n)) return 'Squelette';
+  if (/goule|ghoul/.test(n)) return 'Goule'; // AVANT zombie/bêtes
+  if (/zombie/.test(n)) return 'Zombie';
+  if (/vampire|comte sanguin|comtesse sanguine/.test(n)) return 'Vampire';
+  // Hommes-bêtes
+  if (/minotaure/.test(n)) return 'Minotaure'; // AVANT homme-bête générique (tête de taureau)
+  if (/\bgor\b|ungor|bestigor|homme.?bete|beastman|brey|chamane.?brey/.test(n)) return 'Homme-bête';
+  // Peaux-vertes
+  if (/snotling/.test(n)) return 'Snotling'; // AVANT gobelin (« petit gobelin »)
+  if (/gobelin|gobbo|gobbe/.test(n)) return 'Gobelin';
+  if (/\borc\b|\borque\b|peau.?verte/.test(n)) return 'Orc';
+  // Gros / démons
+  if (/sanguinaire|khorne/.test(n)) return 'Démon';
+  if (/\btroll/.test(n)) return 'Troll';
   if (/\bogre/.test(n)) return 'Ogre';
   return 'Humain';
 }
+
+/** Tenue par défaut d'une ESPÈCE monstrueuse, quand le nom ne désigne pas un rôle précis.
+ *  Les morts-vivants nus / trolls / snotlings portent des hardes (Mendiant) ; le vampire une
+ *  robe (Noble). Les peaux-vertes et hommes-bêtes gardent l'armure de soldat. */
+const SPECIES_CAREER: Record<string, string> = {
+  Skaven: 'Skaven', // tenue dédiée : pelage + lamelles de récup (bras velus → poing raccordé)
+  Vampire: 'Noble',
+  Zombie: 'Mendiant', // hardes en lambeaux
+  Orc: 'Mendiant', Gobelin: 'Mendiant', // hardes/cuir brun (la tenue Soldat a un tabard rouge hardcodé non recolorable)
+  // Pelage couvrant tout le corps / mort-vivant nu / monstre sans habit → corps de chair.
+  'Homme-bête': 'Nu', Minotaure: 'Nu',
+  Squelette: 'Nu', Goule: 'Nu', Troll: 'Nu', Snotling: 'Nu', Ogre: 'Nu', Démon: 'Nu',
+};
 
 /** Carrière (→ tenue) mappée du nom. */
 function detectCareer(n: string): string {
@@ -168,6 +195,44 @@ function mutationOverlays(seed: number): RigOverlay[] {
   });
 }
 
+/** Parts monstrueuses AUTO par espèce (Phase B) : une espèce monstrueuse implique sa tête/
+ *  queue sans config manuelle (un « Guerrier des clans » est rendu homme-rat d'office). */
+const SPECIES_AUTO_MONSTER: Record<string, MonsterParts> = {
+  Skaven: { tete: 'rat', queue: true },
+  // Peaux-vertes (oreilles/défenses dans la tête ; pas de queue sauf snotling).
+  Orc: { tete: 'orc' },
+  Gobelin: { tete: 'gobelin' },
+  Snotling: { tete: 'gobelin', queue: true },
+  // Hommes-bêtes : cornes + jambes de chèvre + queue.
+  'Homme-bête': { tete: 'caprin', cornes: true, jambes: 'chevre', queue: true },
+  Minotaure: { tete: 'taureau', cornes: true, jambes: 'chevre', queue: true },
+  // Morts-vivants.
+  Squelette: { tete: 'crane', cotes: true },
+  Zombie: { tete: 'pourri', plaie: true },
+  Goule: { tete: 'chien', cotes: true }, // museau de charognard
+  // Gros / démons (Vampire = humain pâle → pas de tête monstrueuse : visage humain + col de
+  // cape + crocs, géré par overlays/palette).
+  Troll: { tete: 'troll' },
+  Ogre: { tete: 'ogre', ventre: true },
+  Vampire: { cape: true },
+  Démon: { tete: 'demon', cornes: true, membresRouges: true },
+};
+
+/** Coiffure/visage épinglés par espèce (sinon le tirage de seed donne une coiffure aléatoire
+ *  peu adaptée). Le vampire = cheveux lissés en arrière (idx 1), visage soigné. */
+const SPECIES_PARTS: Record<string, Appearance['parts']> = {
+  Vampire: { cheveux: 1, visage: 0 },
+};
+/** Sexe forcé par espèce (aristocrate vampire = masculin par défaut). */
+const SPECIES_SEX: Record<string, 'M' | 'F'> = { Vampire: 'M' };
+
+/** Surcharges de couleur par espèce (sur la tenue) — les peaux-vertes et hommes-bêtes portent
+ *  du cuir/bois brun, pas l'écarlate impérial de la tenue Soldat (vet2 rouge → cuir brun). */
+const SPECIES_COLORS: Record<string, import('./palette').Palette> = {
+  Orc: { vet1: '#5a4a30', vet2: '#3a2a1c', cuir: '#5a3f24' }, // hardes cuir/toile brunes
+  Gobelin: { vet1: '#3a5a28', vet2: '#5a3f24', cuir: '#4a3320' }, // hardes vert-brun
+};
+
 /**
  * Profil rig d'un combattant, ou null si non-humanoïde (→ garder enemySprite).
  * PURE et déterministe (seed dérivé de l'id).
@@ -177,15 +242,17 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const n = norm(c.name);
   const seed = hashSeed(c.id);
   const species = c.species ?? detectSpecies(n);
-  const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M'; // ~28 % F
+  const sex: 'M' | 'F' = SPECIES_SEX[species] ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
-  const appearance: Appearance = c.appearance ?? { species, sex, build, seed };
-  // Un mutant (parts monstrueux explicites OU nom mutant) n'est PAS un soldat en
-  // plaque : sa tenue par défaut est des hardes (Mendiant), pas l'armure. Sinon un
-  // mutant nommé (« Knud Cratinx ») tombait sur la carrière Soldat par défaut.
+  const autoMon = SPECIES_AUTO_MONSTER[species];
+  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: SPECIES_PARTS[species], colors: SPECIES_COLORS[species] };
+  const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
+  // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
+  // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
-  const hasMonster = !!(c.appearance?.monster && Object.keys(c.appearance.monster).length);
-  const career = c.career ?? (hasMonster || isMutant ? 'Mendiant' : detectCareer(n));
+  const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
+  const isHumanMutant = isMutant || (hasMonster && species === 'Humain');
+  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (SPECIES_CAREER[species] ?? detectCareer(n)));
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -210,14 +277,20 @@ export function entityRigProfile(
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const appearance: Appearance = riggedAppearance(name, seed, { monster: opts?.monster, colors: opts?.colors, parts: opts?.parts, sex: opts?.sex, build: opts?.build });
+  const species = detectSpecies(n);
+  const monster = opts?.monster ?? SPECIES_AUTO_MONSTER[species]; // auto skaven/… si non précisé
+  const appearance: Appearance = riggedAppearance(name, seed, {
+    monster, colors: opts?.colors ?? SPECIES_COLORS[species],
+    parts: opts?.parts ?? SPECIES_PARTS[species],
+    sex: opts?.sex ?? SPECIES_SEX[species], build: opts?.build,
+  });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
-  const hasMonster = !!(opts?.monster && Object.keys(opts.monster).length);
+  const hasMonster = !!(monster && Object.keys(monster).length);
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: opts?.career ?? detectCareer(n),
+    career: opts?.career ?? SPECIES_CAREER[species] ?? detectCareer(n),
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
     overlays: isMutant && !hasMonster ? mutationOverlays(seed) : undefined,
   };

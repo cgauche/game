@@ -35,7 +35,7 @@ export type Skeleton = Record<BoneId, Bone>;
 /** Parts visuelles interchangeables. */
 export type Slot =
   | 'visage' | 'cheveux'
-  | 'tete' | 'bras' | 'torse' | 'jambes' | 'pied'
+  | 'tete' | 'bras' | 'torse' | 'jambes' | 'pied' | 'main'
   | 'arme' | 'bouclier';
 
 /** Os porteur(s) d'un slot. Le 2e os d'une paire (…D) est rendu en miroir. */
@@ -45,12 +45,13 @@ export const SLOT_BONES: Record<Slot, BoneId[]> = {
   bras: ['epauleG', 'epauleD'],
   jambes: ['cuisseG', 'cuisseD'],
   pied: ['piedG', 'piedD'],
+  main: ['mainG', 'mainD'], // mains : agrippent l'arme/le bouclier (sinon l'arme « flotte »)
   arme: ['arme'], bouclier: ['bouclier'],
 };
 
 /** Ordre de calque d'un slot À L'INTÉRIEUR d'un même os (petit = dessous). */
 export const SLOT_LAYER: Record<Slot, number> = {
-  jambes: 0, torse: 1, bras: 2, pied: 0,
+  jambes: 0, torse: 1, bras: 2, pied: 0, main: 0,
   visage: 0, cheveux: 1, tete: 2,
   bouclier: 0, arme: 0,
 };
@@ -60,4 +61,7 @@ export const SLOT_LAYER: Record<Slot, number> = {
 export interface RigOverlay {
   bone: BoneId;
   svg: string;
+  /** dessiné DERRIÈRE la part de l'os (cornes derrière la tête, queue derrière le bassin,
+   *  ventre derrière le torse) au lieu de par-dessus. */
+  behind?: boolean;
 }

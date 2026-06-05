@@ -34,9 +34,16 @@ function scaleSkeleton(sk: Skeleton, sl: number, st: number): Skeleton {
   const out = {} as Skeleton;
   for (const id of BONE_IDS) {
     const b = sk[id];
+    // La RACINE (bassin, parent null) est l'ANCRE ABSOLUE de la figure : son pivot.x = 60 est
+    // l'axe de symétrie = centre de la boîte 120 large (le token ancre rig-x=60 sur la case).
+    // Mettre ce x à l'échelle décentrerait toute la figure (Minotaure/Ogre st=1.7 → bassin à
+    // x=102 → la silhouette débordait à droite de sa case). On garde donc le pivot.x de la
+    // racine ; seuls les pivots des os ENFANTS (offsets RELATIFS : épaules ±14, hanches ±9)
+    // s'échelonnent en x pour élargir la carrure.
+    const isRoot = b.parent == null;
     out[id] = {
       ...b,
-      pivot: { x: b.pivot.x * st, y: b.pivot.y * sl },
+      pivot: { x: isRoot ? b.pivot.x : b.pivot.x * st, y: b.pivot.y * sl },
       length: b.length * sl,
       thickness: b.thickness * st,
     };
@@ -54,18 +61,46 @@ export function baseSpeciesOf(species: string): string {
   if (s.startsWith('halfling')) return 'Halfling';
   if (s.startsWith('gnome')) return 'Gnome';
   if (s.startsWith('ogre')) return 'Ogre';
+  if (s.startsWith('skaven')) return 'Skaven';
+  // Phase B : familles monstrueuses bipèdes (carrure dédiée dans PROPS).
+  if (s.startsWith('orc')) return 'Orc';
+  if (s.startsWith('gobelin')) return 'Gobelin';
+  if (s.startsWith('snotling')) return 'Snotling';
+  if (s.startsWith('minotaure')) return 'Minotaure';
+  if (s.startsWith('homme')) return 'Homme-bête';
+  if (s.startsWith('squelette')) return 'Squelette';
+  if (s.startsWith('zombie')) return 'Zombie';
+  if (s.startsWith('goule')) return 'Goule';
+  if (s.startsWith('troll')) return 'Troll';
+  if (s.startsWith('vampire')) return 'Vampire';
+  if (s.startsWith('démon') || s.startsWith('demon')) return 'Démon';
   return 'Humain';
 }
 
-/** Facteurs (longueur globale, épaisseur globale, longueur jambes) par espèce. */
-const PROPS: Record<string, { sl: number; st: number; legs: number }> = {
+/** Facteurs (longueur globale, épaisseur globale, longueur jambes, longueur bras opt.,
+ *  taille de tête opt.) par espèce. `head` agrandit la tête RELATIVEMENT au corps (gremlins :
+ *  Snotling/Gobelin ont une grosse tête sur un petit corps). */
+const PROPS: Record<string, { sl: number; st: number; legs: number; arms?: number; head?: number }> = {
   Humain:         { sl: 1.0,  st: 1.0,  legs: 1.0 },
   Halfling:       { sl: 0.66, st: 1.05, legs: 0.7 },
   Nain:           { sl: 0.74, st: 1.25, legs: 0.62 },
   Gnome:          { sl: 0.5,  st: 0.72, legs: 0.66 },
   Ogre:           { sl: 1.35, st: 1.7,  legs: 0.8 },
+  Skaven:         { sl: 0.92, st: 1.0,  legs: 0.82 }, // homme-rat voûté, un peu sous l'humain, pattes courtes
   'Haut-Elfe':    { sl: 1.08, st: 0.92, legs: 1.12 },
   'Elfe sylvain': { sl: 1.05, st: 0.9,  legs: 1.12 },
+  // Phase B — familles monstrueuses bipèdes :
+  Orc:            { sl: 1.05, st: 1.5,  legs: 0.78 }, // massif épaules larges, voûté, jambes courtes trapues
+  Gobelin:        { sl: 0.74, st: 0.92, legs: 0.78, head: 1.3 }, // petit fourbe, grosse tête, menu voûté
+  Snotling:       { sl: 0.46, st: 1.05, legs: 0.66, head: 1.9 }, // minuscule dodu, énorme tête de gremlin
+  'Homme-bête':   { sl: 1.02, st: 1.35, legs: 0.92 }, // trapu musclé voûté
+  Minotaure:      { sl: 1.32, st: 1.7,  legs: 0.9 },  // colossal, épaules surdimensionnées
+  Squelette:      { sl: 1.0,  st: 0.74, legs: 1.0 },  // décharné, membres grêles
+  Zombie:         { sl: 0.98, st: 1.08, legs: 0.92 }, // trapu voûté
+  Goule:          { sl: 0.96, st: 0.92, legs: 0.9 },  // maigre noueux, semi-quadrupède
+  Troll:          { sl: 1.45, st: 1.7,  legs: 0.7, arms: 1.5 }, // énorme torse, bras démesurés jusqu'au sol, petites jambes
+  Vampire:        { sl: 1.04, st: 0.96, legs: 1.0 },  // élancé aristocratique
+  Démon:          { sl: 1.06, st: 0.92, legs: 1.06 }, // élancé nerveux, membres longs
 };
 
 export function baseSkeleton(species: string, sex: 'M' | 'F'): Skeleton {
@@ -84,6 +119,19 @@ export function baseSkeleton(species: string, sex: 'M' | 'F'): Skeleton {
     for (const id of ['tibiaG', 'tibiaD', 'piedG', 'piedD'] as BoneId[])
       sk[id] = { ...sk[id], pivot: { x: sk[id].pivot.x, y: sk[id].pivot.y * p.legs } };
   }
+  // Bras allongés (ex. Troll, bras jusqu'au sol) — même logique que les jambes : longueur des
+  // os + pivot des joints enfants (avant-bras sur épaule, main sur avant-bras).
+  const arms = p.arms ?? 1;
+  if (arms !== 1) {
+    for (const id of ['epauleG', 'avantBrasG', 'epauleD', 'avantBrasD'] as BoneId[])
+      sk[id] = { ...sk[id], length: sk[id].length * arms };
+    for (const id of ['avantBrasG', 'avantBrasD', 'mainG', 'mainD'] as BoneId[])
+      sk[id] = { ...sk[id], pivot: { x: sk[id].pivot.x, y: sk[id].pivot.y * arms } };
+  }
+  // Tête surdimensionnée (gremlins) : la PART tête se rend à l'échelle (thickness/réf,
+  // length/réf) de l'os `tete` → on agrandit cet os pour une grosse tête sur petit corps.
+  const head = p.head ?? 1;
+  if (head !== 1) sk.tete = { ...sk.tete, length: sk.tete.length * head, thickness: sk.tete.thickness * head };
   if (sex === 'F') sk = feminize(sk);
   return sk;
 }
