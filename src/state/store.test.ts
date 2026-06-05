@@ -235,6 +235,8 @@ describe('Boucle de jeu (store)', () => {
     // « Lancer » : le jet se fait.
     useGame.getState().testRoll();
     expect(useGame.getState().pendingTest!.roll).not.toBeNull();
+    // Forcer un jet propre RATÉ (cible 95) pour exercer la relance (gate « jet raté », LDB ch.12 l.29-31).
+    useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false } });
     // Chance : relance et consomme un point.
     useGame.getState().testReroll();
     expect(useGame.getState().party[0].fortune).toBe(1);
@@ -291,6 +293,8 @@ describe('Boucle de jeu (store)', () => {
     let pd = useGame.getState().pendingDefense!;
     expect(pd.result).not.toBeNull();
     expect(pd.def).not.toBeNull();
+    // Forcer une défense propre RATÉE pour exercer la relance (gate « jet raté », LDB ch.12 l.29-31).
+    useGame.setState({ pendingDefense: { ...pd, def: { ...pd.def!, success: false } } });
     const atkRoll = pd.atk.roll;
     useGame.getState().defenseReroll(); // Chance : relance la DÉFENSE
     pd = useGame.getState().pendingDefense!;
@@ -1009,5 +1013,62 @@ describe('Utiliser un consommable en combat (store)', () => {
     const b = useGame.getState().battle!;
     expect(b.combatants[0].wounds.current).toBe(5); // inchangé
     expect(b.combatants[0].items!.find((i) => i.uid === 'p3')).toBeTruthy(); // pas consommé
+  });
+});
+
+describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12 l.56 + l.29-31)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    reset();
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('testReroll : refusée si le d100 propre est réussi (roll ≤ cible)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.fortune = 2;
+    useGame.setState({
+      party: [hero],
+      pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 0, target: 50, roll: 20, success: true, sl: 3, rerolled: false, onSuccess: [], onFailure: [] },
+    });
+    useGame.getState().testReroll();
+    expect(useGame.getState().party[0].fortune).toBe(2); // rien dépensé (jet réussi)
+    expect(useGame.getState().pendingTest!.roll).toBe(20); // jet inchangé
+  });
+
+  it('testReroll : autorisée une seule fois sur un jet raté', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.fortune = 2;
+    useGame.setState({
+      party: [hero],
+      pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 5, difficulty: 'intermediaire',
+        requireSL: 0, target: 5, roll: 95, success: false, sl: -9, rerolled: false, onSuccess: [], onFailure: [] },
+    });
+    useGame.getState().testReroll(); // 1re relance OK (jet raté)
+    expect(useGame.getState().party[0].fortune).toBe(1);
+    expect(useGame.getState().pendingTest!.rerolled).toBe(true);
+    useGame.getState().testReroll(); // 2e relance refusée (déjà relancé)
+    expect(useGame.getState().party[0].fortune).toBe(1); // pas de 2e dépense
+  });
+
+  it('testBonusSL : +1 DR fait passer un Test à requireSL, et est cumulable', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.fortune = 3;
+    useGame.setState({
+      party: [hero],
+      pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 2, target: 50, roll: 45, success: false, sl: 0, rerolled: false, onSuccess: [], onFailure: [] },
+    });
+    useGame.getState().testBonusSL(); // DR 0 → 1 (< 2)
+    expect(useGame.getState().party[0].fortune).toBe(2);
+    expect(useGame.getState().pendingTest!.success).toBe(false);
+    useGame.getState().testBonusSL(); // DR 1 → 2 (≥ requireSL 2) → succès
+    expect(useGame.getState().party[0].fortune).toBe(1);
+    expect(useGame.getState().pendingTest!.sl).toBe(2);
+    expect(useGame.getState().pendingTest!.success).toBe(true);
   });
 });

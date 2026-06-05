@@ -19,6 +19,7 @@ import {
   finishMelee,
   resolveMeleePassive,
   attackWeapon,
+  rederivePassiveAttack,
   AttackResult,
 } from '../engine/combat';
 import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
@@ -32,11 +33,13 @@ import {
   parseConditionEffect,
   parseCharBuffs,
   buffDurationRounds,
+  rederiveCastSL,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { rollTest, TestResult, opposedTest, resolveOpposed } from '../engine/tests';
+import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds } from '../engine/characteristics';
 import {
   buyCharAdvance as engineBuyCharAdvance,
@@ -106,6 +109,8 @@ export interface PendingTest {
   roll: number | null;
   success: boolean;
   sl: number;
+  /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
+  rerolled?: boolean;
   onSuccess?: Effect[];
   onFailure?: Effect[];
 }
@@ -115,6 +120,8 @@ export interface PendingAttack {
   targetId: string;
   location: HitLocation | null;
   result: AttackResult | null; // null = pas encore lancé
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
   fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
 }
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
@@ -130,6 +137,8 @@ export interface PendingDefense {
   mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
 }
 /** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
@@ -141,6 +150,8 @@ export interface PendingDisengage {
   atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // Esquive : jet d'Esquive du mover
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
+  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
 }
 
 /** Incantation en attente : flux par modale (sélection → « Lancer » jet figé → Chance → appliquer),
@@ -155,6 +166,8 @@ export interface PendingCast {
   focused: boolean;
   /** Résultat figé du jet d'incantation (null = pas encore lancé). */
   result: (CastResult & Partial<MissileResult>) | null;
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
 }
 
 export interface BattleState {
@@ -219,6 +232,8 @@ interface GameState {
   closeDialogue: () => void;
   testRoll: () => void;
   testReroll: () => void;
+  /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
+  testBonusSL: () => void;
   resolveTest: () => void;
   closeDocument: () => void;
 
@@ -232,6 +247,7 @@ interface GameState {
   /** Incantation par modale : « Lancer » fige le jet, Chance le relance, « Appliquer » résout. */
   castRoll: () => void;
   castReroll: () => void;
+  castBonusSL: () => void;
   castConfirm: () => void;
   castCancel: () => void;
   battleFocusSpell: (label: string) => void;
@@ -244,6 +260,7 @@ interface GameState {
   attackSetLocation: (loc: HitLocation | null) => void;
   attackRoll: () => void;
   attackReroll: () => void;
+  attackBonusSL: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
   /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
@@ -251,6 +268,7 @@ interface GameState {
   defenseSetMode: (mode: 'parade' | 'esquive') => void;
   defenseRoll: () => void;
   defenseReroll: () => void;
+  defenseBonusSL: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
   /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
@@ -258,6 +276,7 @@ interface GameState {
   disengageConfirmA: () => void; // Sacrifier l'Avantage
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   disengageReroll: () => void;
+  disengageBonusSL: () => void;
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageCancel: () => void;
@@ -668,6 +687,8 @@ export const useGame = create<GameState>((set, get) => ({
   castReroll: () => {
     const { battle, pendingCast: pc } = get();
     if (!battle || !pc || !pc.result) return;
+    // Échec d'incantation = d100 propre > cible (roll > target), 1× max.
+    if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
     const caster = battle.combatants.find((c) => c.id === pc.casterId);
     const target = battle.combatants.find((c) => c.id === pc.targetId);
     const spell = findSpell(pc.spellLabel);
@@ -676,6 +697,18 @@ export const useGame = create<GameState>((set, get) => ({
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng, pc.focused)
       : resolveCasting(caster, spell, battleRng, 'intermediaire', pc.focused);
+    set({ pendingCast: { ...pc, result: res, rerolled: true }, battle: { ...battle } });
+  },
+  /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
+  castBonusSL: () => {
+    const { battle, pendingCast: pc } = get();
+    if (!battle || !pc || !pc.result) return;
+    const caster = battle.combatants.find((c) => c.id === pc.casterId);
+    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
+    caster.fortune = (caster.fortune ?? 0) - 1;
+    const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
     set({ pendingCast: { ...pc, result: res }, battle: { ...battle } });
   },
   castConfirm: () => {
@@ -794,12 +827,37 @@ export const useGame = create<GameState>((set, get) => ({
   attackReroll: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
+    // Relance si le jet d'attaque propre est raté (succès du d100 de l'attaquant), 1× max.
+    if (!canReroll(!pa.result.attackerDetail?.success, !!pa.rerolled)) return;
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
-    attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB Destin)
+    attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
     const r = resolveAttack(attacker, target, pa.location ?? undefined);
-    if (r) set({ pendingAttack: { ...pa, result: r.res }, battle: { ...battle } });
+    if (r) set({ pendingAttack: { ...pa, result: r.res, rerolled: true }, battle: { ...battle } });
+  },
+  /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */
+  attackBonusSL: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result || !pa.result.attackerDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
+    attacker.fortune = (attacker.fortune ?? 0) - 1;
+    const r = pa.result;
+    const ad = r.attackerDetail!;
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
+    const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+    const weapon = attackWeapon(attacker.weapons, adj);
+    let res: AttackResult;
+    if (r.defenderDetail) {
+      const dd = r.defenderDetail;
+      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
+    } else {
+      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
+    }
+    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
   },
   attackConfirm: () => {
     const { battle, pendingAttack: pa } = get();
@@ -836,13 +894,27 @@ export const useGame = create<GameState>((set, get) => ({
     // Dépense d'un point de Chance du DÉFENSEUR : relance UNIQUEMENT la défense (LDB Destin).
     const { battle, pendingDefense: pd } = get();
     if (!battle || !pd || !pd.result) return;
+    if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // défense propre ratée, 1× max
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
     const def = rollMeleeDefender(defender, pd.mode, battleRng);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
-    set({ pendingDefense: { ...pd, def, result: res }, battle: { ...battle } });
+    set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
+  },
+  /** Chance « +1 DR » du défenseur : +1 DR à SA défense figée (le jet d'attaque reste figé). */
+  defenseBonusSL: () => {
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.result || !pd.result.defenderDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
+    defender.fortune = (defender.fortune ?? 0) - 1;
+    const dd = pd.result.defenderDetail!;
+    const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
+    set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },
   defenseConfirm: () => {
     // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
@@ -913,12 +985,24 @@ export const useGame = create<GameState>((set, get) => ({
   disengageReroll: () => {
     const { battle, pendingDisengage: pd } = get();
     if (!battle || !pd || !pd.result) return;
+    if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // Esquive propre ratée, 1× max
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover || (mover.fortune ?? 0) <= 0) return;
     mover.fortune = (mover.fortune ?? 0) - 1;
     const def = rollMeleeDefender(mover, 'esquive', battleRng);
     const opp = resolveOpposed(def, pd.atk!);
-    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
+    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner), rerolled: true }, battle: { ...battle } });
+  },
+  /** Chance « +1 DR » du mover : +1 DR à l'Esquive figée (le jet du foe reste figé). */
+  disengageBonusSL: () => {
+    const { battle, pendingDisengage: pd } = get();
+    if (!battle || !pd || !pd.result || !pd.def) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover || (mover.fortune ?? 0) <= 0) return;
+    mover.fortune = (mover.fortune ?? 0) - 1;
+    const def2: TestResult = { ...pd.def, sl: pd.def.sl + 1 };
+    const opp = resolveOpposed(def2, pd.atk!);
+    set({ pendingDisengage: { ...pd, def: def2, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
   },
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
   disengageConfirm: () => {
@@ -1004,15 +1088,29 @@ export const useGame = create<GameState>((set, get) => ({
   testReroll: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll == null) return;
+    // Relance réservée à un d100 propre RATÉ (roll > cible), une seule fois (LDB ch.12 l.56 + l.29-31).
+    if (!canReroll(pt.roll > pt.target, !!pt.rerolled)) return;
     const party = get().party;
     const actor = party.find((c) => c.id === pt.actorId);
     if (!actor || (actor.fortune ?? 0) <= 0) return;
     actor.fortune = (actor.fortune ?? 0) - 1;
     const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
     set({
-      pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL },
+      pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL, rerolled: true },
       party: [...party],
     });
+  },
+
+  /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
+  testBonusSL: () => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll == null) return;
+    const party = get().party;
+    const actor = party.find((c) => c.id === pt.actorId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const sl = pt.sl + 1;
+    set({ pendingTest: { ...pt, sl, success: pt.roll <= pt.target && sl >= pt.requireSL }, party: [...party] });
   },
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
