@@ -210,6 +210,8 @@ interface GameState {
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
+  camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
+  rotateCam: (dir: 1 | -1) => void;
   partyPos: Pt;
   flags: Record<string, boolean>;
   journal: string[];
@@ -352,6 +354,8 @@ export const useGame = create<GameState>((set, get) => ({
   party: [],
   scene: null,
   mode: 'exploration',
+  camRot: 0,
+  rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
   partyPos: { x: 0, y: 0 },
   flags: {},
   journal: [],

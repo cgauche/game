@@ -1525,3 +1525,17 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(h.reloadProgress).toBe(0); // rechargement interrompu
   });
 });
+
+describe('camRot (rotation caméra — état de vue)', () => {
+  it('démarre à 0, tourne horaire/anti-horaire en bouclant sur 4', () => {
+    useGame.setState({ camRot: 0 });
+    useGame.getState().rotateCam(1);
+    expect(useGame.getState().camRot).toBe(1);
+    useGame.getState().rotateCam(1);
+    useGame.getState().rotateCam(1);
+    useGame.getState().rotateCam(1);
+    expect(useGame.getState().camRot).toBe(0); // 4 crans = tour complet
+    useGame.getState().rotateCam(-1);
+    expect(useGame.getState().camRot).toBe(3); // boucle négative
+  });
+});
