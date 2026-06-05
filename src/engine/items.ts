@@ -42,6 +42,7 @@ export function itemFromTrapping(label: string): ItemInstance | null {
           .map((s) => s.trim())
           .flatMap((p) => ARMOUR_LOC[p] ?? [])
       : undefined;
+  const qtyMatch = (t.prefix ?? '').match(/\((\d+)\)/); // « (12) » → 12 (taille du paquet de munitions)
   return {
     uid: newUid(),
     name: t.label,
@@ -55,6 +56,8 @@ export function itemFromTrapping(label: string): ItemInstance | null {
     enc: t.enc ?? 0,
     equipped: false,
     desc: t.desc,
+    subType: t.subType ?? undefined,
+    qty: kind === 'ammo' ? (qtyMatch ? parseInt(qtyMatch[1], 10) : 1) : undefined,
   };
 }
 
@@ -86,8 +89,12 @@ export function recomputeLoadout(c: Combatant): void {
   const weapons: Weapon[] = [];
   for (const it of items) {
     if (!it.equipped) continue;
-    if (it.kind === 'melee' || it.kind === 'ranged')
-      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities });
+    if (it.kind === 'melee' || it.kind === 'ranged') {
+      // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
+      const reloadQ = it.qualities.find((q) => /^recharge/i.test(q)); // « Recharge 2 »
+      const reload = reloadQ ? parseInt(reloadQ.match(/\d+/)?.[0] ?? '0', 10) : 0;
+      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload });
+    }
   }
   // Mains nues toujours disponibles en dernier recours.
   weapons.push({ name: 'Mains nues', type: 'melee', damage: '+BF-2', reach: 'Très courte', qualities: [] });
@@ -125,4 +132,19 @@ export function buildInventory(trappingNames: string[]): ItemInstance[] {
   if (ranged.length) ranged[0].equipped = true;
   for (const a of items) if (a.kind === 'armor') a.equipped = true;
   return items;
+}
+
+/** Munitions de l'inventaire compatibles avec une arme à distance (même famille, qty>0). */
+export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
+  if (weapon.type !== 'ranged') return [];
+  return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && i.subType === weapon.subType);
+}
+
+/** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (concaténés —
+ *  `parseWeaponDamage` somme les nombres) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
+export function weaponWithAmmo(weapon: Weapon, ammo: ItemInstance): Weapon {
+  const extra = ammo.damage ?? '';
+  const qualities = [...weapon.qualities];
+  for (const q of ammo.qualities) if (!qualities.includes(q)) qualities.push(q);
+  return { ...weapon, damage: `${weapon.damage}${extra}`, qualities };
 }

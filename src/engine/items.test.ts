@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping } from './items';
-import { Combatant, ItemInstance } from './types';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour } from './items';
+import { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'misc', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
@@ -45,5 +45,54 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('itemFromTrapping : trapping inconnu → null', () => {
     expect(itemFromTrapping('Objet Totalement Imaginaire XYZ')).toBeNull();
+  });
+});
+
+describe('Munitions & rechargement', () => {
+  it('itemFromTrapping lit subType + qty (préfixe) pour une munition', () => {
+    const fleche = itemFromTrapping('Flèche')!;
+    expect(fleche.kind).toBe('ammo');
+    expect(fleche.subType).toBe('Arc');
+    expect(fleche.qty).toBe(12);
+    expect(fleche.qualities).toContain('Empaleuse');
+  });
+  it('weaponWithAmmo combine Dégâts (concaténés) et fusionne les Atouts', () => {
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [], subType: 'Arc', reload: 0 };
+    const fleche = itemFromTrapping('Flèche')!;
+    const w = weaponWithAmmo(arc, fleche);
+    expect(w.qualities).toContain('Empaleuse');
+    // La Flèche n'a pas de modificateur de Dégâts → reste +9.
+    expect(w.damage).toBe('+9');
+  });
+  it('compatibleAmmo filtre par subType et qty>0', () => {
+    const c = { items: [itemFromTrapping('Flèche'), itemFromTrapping('Carreau')] } as unknown as Combatant;
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', qualities: [], subType: 'Arc', reload: 0 };
+    const list = compatibleAmmo(c, arc);
+    expect(list.length).toBe(1);
+    expect(list[0].name).toBe('Flèche');
+  });
+  it('recomputeLoadout dérive reload depuis « Recharge N » + subType', () => {
+    const c = {
+      items: [{ ...itemFromTrapping('Tromblon')!, equipped: true }],
+      weapons: [],
+      armour: emptyArmour(),
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    const tromblon = c.weapons.find((w) => w.name === 'Tromblon')!;
+    expect(tromblon.reload).toBe(2);
+    expect(tromblon.subType).toBe('Poudre noire');
+  });
+  it('recomputeLoadout : Arc (sans « Recharge ») → reload 0', () => {
+    const c = {
+      items: [{ ...itemFromTrapping('Arc')!, equipped: true }],
+      weapons: [],
+      armour: emptyArmour(),
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    const arc = c.weapons.find((w) => w.name === 'Arc')!;
+    expect(arc.reload).toBe(0);
+    expect(arc.subType).toBe('Arc');
   });
 });
