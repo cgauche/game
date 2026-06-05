@@ -175,7 +175,7 @@ export interface BattleState {
   order: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -240,7 +240,14 @@ interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | null) => void;
+  /** Détermination (Resolve, LDB ch.17 l.62-66) : retire un État de l'actif (+1 PB si À Terre).
+   *  Ne consomme PAS l'Action. */
+  battleSpendResolve: (conditionName: string) => void;
+  /** Ramasser UN objet au sol pendant un Round (LDB ch.13 l.115-116) : applique au combattant
+   *  actif un item ramassable d'une entité `objet` adjacente. Consomme l'Action, pas d'auto-équipe.
+   *  `key` = `trap:<index dans search>` ou `loot:<index dans loot>`. */
+  battlePickup: (entityId: string, key: string) => void;
   battleSelectSpell: (label: string) => void;
   /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
   battleUseItem: (uid: string) => void;
@@ -606,8 +613,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
-    // Sonné : pas d'Action (attaque/incantation) ; seul le déplacement reste possible (LDB États l.123).
-    if (a !== 'move' && a !== null && !canTakeAction(active)) return;
+    // Sonné : pas d'Action (attaque/incantation) ; déplacement ET Détermination restent possibles
+    // (la Détermination ne coûte pas l'Action et peut retirer le Sonné lui-même, LDB ch.17 l.62-66).
+    if (a !== 'move' && a !== 'resolve' && a !== null && !canTakeAction(active)) return;
     let reach = new Map<string, number>();
     if (a === 'move' && !battle.moved) {
       // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
@@ -801,6 +809,69 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
     active.defensiveStance = true;
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB ch.17 l.62-66) ──
+  battleSpendResolve: (conditionName) => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
+    if (!active.conditions.some((c) => c.name === conditionName)) return;
+    active.resolve = (active.resolve ?? 0) - 1;
+    removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.64
+    let extra = '';
+    if (conditionName === 'À Terre') {
+      active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
+      extra = ' (+1 PB en se relevant)';
+    }
+    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  // ── Ramasser un objet au sol pendant un Round (un à la fois, LDB ch.13 l.115-116) ──
+  battlePickup: (entityId, key) => {
+    const { battle, scene } = get();
+    if (!battle || battle.over || battle.acted || !scene) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !canTakeAction(active)) return; // ramasser = une Action
+    if (get().flags[`__fouille_${entityId}`]) return; // déjà entièrement fouillé en exploration
+    const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'objet');
+    if (!ent || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
+    const [kind, idxStr] = key.split(':');
+    const idx = Number(idxStr);
+    let label = '';
+    if (kind === 'loot') {
+      const name = (ent.loot ?? [])[idx];
+      if (!name) return;
+      label = name;
+      ent.loot = (ent.loot ?? []).filter((_, i) => i !== idx); // consommé du pool
+      set((s) => ({ inventory: [...s.inventory, name] }));
+    } else if (kind === 'trap') {
+      const eff = (ent.search ?? [])[idx];
+      if (!eff || eff.type !== 'giveTrapping') return;
+      const it = itemFromTrapping(eff.trapping);
+      if (!it) {
+        get().log(`Objet inconnu : « ${eff.trapping} ».`);
+        return;
+      }
+      label = it.name;
+      // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
+      active.items = [...(active.items ?? []), it];
+      recomputeLoadout(active);
+      ent.search = (ent.search ?? []).filter((_, i) => i !== idx); // retire du pool partagé
+      set((s) => ({
+        party: s.party.map((h) => {
+          if (h.id !== active.id) return h;
+          const clone: Combatant = JSON.parse(JSON.stringify(h));
+          clone.items = [...(clone.items ?? []), itemFromTrapping(eff.trapping)!];
+          recomputeLoadout(clone);
+          return clone;
+        }),
+      }));
+    } else return;
+    set({ scene: { ...scene }, battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1155,6 +1226,17 @@ function removeEntity(get: () => GameState, set: any, id: string) {
   scene.entities = scene.entities.filter((e) => e.id !== id);
   set({ scene: { ...scene } });
   bus.emit(EVT.SCENE_DIRTY);
+}
+
+/** Items ramassables d'une entité `objet` : noms de `loot` + trappings du `search`.
+ *  `key` = `loot:<i>` (nom dans inventaire de groupe) ou `trap:<i>` (vrai objet à stats). */
+function entityPickables(ent: { loot?: string[]; search?: Effect[] }): { key: string; label: string }[] {
+  const out: { key: string; label: string }[] = [];
+  (ent.loot ?? []).forEach((name, i) => out.push({ key: `loot:${i}`, label: name }));
+  (ent.search ?? []).forEach((e, i) => {
+    if (e.type === 'giveTrapping') out.push({ key: `trap:${i}`, label: e.trapping });
+  });
+  return out;
 }
 
 function checkTriggers(get: () => GameState, set: any) {
@@ -1798,4 +1880,4 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   }
 }
 
-export { activeCombatant };
+export { activeCombatant, entityPickables };

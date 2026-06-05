@@ -1072,3 +1072,95 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
     expect(useGame.getState().pendingTest!.success).toBe(true);
   });
 });
+
+describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', () => {
+  beforeEach(() => reset());
+
+  const mkBattle = (h: Combatant, over = {}): BattleState => ({
+    combatants: [h], order: [h.id], turn: 0, round: 1, action: null, selectedSpell: null,
+    reachable: new Map(), moved: false, acted: false, log: [], over: null, ...over,
+  });
+
+  it('retire un État, ne consomme pas l’Action, décrémente la Détermination', () => {
+    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 2;
+    h.conditions = [{ name: 'Aveuglé', value: 1 }];
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleSpendResolve('Aveuglé');
+    const b = useGame.getState().battle!;
+    expect(b.combatants[0].conditions.find((c) => c.name === 'Aveuglé')).toBeUndefined();
+    expect(b.combatants[0].resolve).toBe(1);
+    expect(b.acted).toBe(false); // ne coûte pas l'Action
+  });
+
+  it('retirer À Terre fait regagner 1 PB (l.66)', () => {
+    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 1;
+    h.conditions = [{ name: 'À Terre', value: 1 }];
+    h.wounds = { current: 5, max: 12 };
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleSpendResolve('À Terre');
+    const c0 = useGame.getState().battle!.combatants[0];
+    expect(c0.conditions.find((c) => c.name === 'À Terre')).toBeUndefined();
+    expect(c0.wounds.current).toBe(6); // +1 PB
+  });
+
+  it('sans Détermination : aucun effet', () => {
+    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 0;
+    h.conditions = [{ name: 'Aveuglé', value: 1 }];
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleSpendResolve('Aveuglé');
+    expect(useGame.getState().battle!.combatants[0].conditions.find((c) => c.name === 'Aveuglé')).toBeTruthy();
+  });
+});
+
+describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116)', () => {
+  beforeEach(() => reset());
+
+  function setup() {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.items = hero.items ?? [];
+    hero.pos = { x: 0, y: 0 };
+    const scene = emptyScene(8, 8);
+    scene.id = 'pickup-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({
+      id: 'corps', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Cocher',
+      search: [
+        { type: 'journal', text: 'Son tromblon repose à côté.' }, // index 0
+        { type: 'giveTrapping', trapping: 'Dague' }, // index 1
+        { type: 'giveTrapping', trapping: 'Tromblon' }, // index 2
+      ],
+    });
+    const bh: Combatant = JSON.parse(JSON.stringify(hero));
+    const battle: BattleState = {
+      combatants: [bh], order: [bh.id], turn: 0, round: 1, action: 'pickup', selectedSpell: null,
+      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {}, inventory: [] });
+    return bh;
+  }
+
+  it('ramasse UN objet : il arrive dans l’inventaire (battle + party), consomme l’Action, retire du pool', () => {
+    const bh = setup();
+    useGame.getState().battlePickup('corps', 'trap:2'); // index 2 = Tromblon
+    const st = useGame.getState();
+    const bH = st.battle!.combatants.find((c) => c.id === bh.id)!;
+    expect((bH.items ?? []).some((i) => i.name === 'Tromblon')).toBe(true); // utilisable ce combat
+    expect((st.party[0].items ?? []).some((i) => i.name === 'Tromblon')).toBe(true); // persiste
+    expect((bH.items ?? []).filter((i) => i.name === 'Tromblon').length).toBe(1); // un SEUL objet ramassé
+    expect(st.battle!.acted).toBe(true); // coûte l'Action
+    const corps = st.scene!.entities.find((e) => e.id === 'corps')!;
+    expect((corps.search ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Tromblon')).toBe(false);
+    expect((corps.search ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Dague')).toBe(true);
+  });
+
+  it('refusé si l’Action est déjà consommée', () => {
+    const bh = setup();
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
+    useGame.getState().battlePickup('corps', 'trap:2');
+    const bH = useGame.getState().battle!.combatants.find((c) => c.id === bh.id)!;
+    expect((bH.items ?? []).some((i) => i.name === 'Tromblon')).toBe(false);
+  });
+});
