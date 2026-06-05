@@ -30,11 +30,11 @@
 - **ActionBar** : slot **« 🎯 Viser »** (héros, arme à distance équipée, `!aiming`) → `battleAim` ; indicateur « visée » quand `aiming`. (La grille « Localisation visée » reste inchangée — c'est le tir à −10, distinct.)
 - CSS chips + slot.
 
-## Task 3 — `IsoStage` : overlay de bandes + infobulle au survol  ⏸️ EN ATTENTE
+## Task 3 — `IsoStage` : overlay de bandes + infobulle au survol  ✅ FAIT
 
-> **Reporté (2026-06-06)** : `IsoStage.tsx` est en cours de réécriture par la session parallèle
-> (caméra rotation/zoom : `camRot`/`rotateCam`/`ViewControls`, projection `depth`/`screenDir`
-> rot-aware). À faire une fois leur IsoStage stabilisé, en s'appuyant sur la projection rot-aware.
+> Réalisé une fois l'IsoStage parallèle (caméra rotation/zoom) finalisé, en réutilisant sa projection
+> rot-aware (`tileFromEvent` partagé clic/survol). En mode attaque + arme à distance active : bandes
+> concentriques teintées par `rangeBandModifier` + infobulle « N m · bande (+/−M) » au survol.
 
 - En mode `action==='attack'` avec une arme à distance active : peindre les **bandes concentriques** (Bout portant/Courte/Moyenne/Longue/Extrême) autour du tireur (teintes), via `rangeBandModifier` par case (distance chebyshev).
 - **Infobulle au survol** d'une case en mode tir : « N m · `bande` (+/−M) ». Suit le curseur.
