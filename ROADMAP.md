@@ -114,7 +114,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ---
 
-## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
+## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : ramasser, tables de critiques)*
 
 - **Jets par MODALE** ✅ : attaque, tests hors combat ET **défense réactive** passent par une
   modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de **Chance** pour
@@ -122,8 +122,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   ennemi frappe un héros en mêlée, le tour de l'IA est **suspendu** : le joueur choisit
   Parade/Esquive, relance sa défense par Chance, puis applique (l'IA reprend).
 - Actions : ✅ **Défense totale** (« Sur la défensive »), ✅ **Charge** (se ruer au contact sur
-  la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** (sacrifier
-  l'Avantage, ou Test opposé d'Esquive + modale). Reste : **ramasser**.
+  la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** = menu de choix :
+  *Sacrifier l'Avantage* / *Esquiver* (Test opposé, coûte l'Action) / ✅ **Fuir** (attaque gratuite
+  dans le dos +20, Test de Calme ou État Brisé, puis Mouvement de Course) / *Renoncer*. Reste : **ramasser**.
 - ✅ **État Engagé** (LDB 13-Combat l.174-175) : posé sur toute attaque de mêlée, levé en fin de
   Round sans coup échangé ; un Engagé ne se déplace plus librement (→ Désengagement). *(L'IA ne
   fait pas de Désengagement et charge en portée de Marche — simplifications assumées.)*
@@ -135,8 +136,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - ✅ **États pleinement actifs en combat** (pénalités de test non-cumul, bonus attaquant, dégâts par round ; **Sonné** = +1 Avantage à l'attaquant en mêlée, récupération par Test de Résistance puis Exténué, **« incapable d'Action » + déplacement à demi-Mouvement** côté joueur ET IA — tous corrigés via audit de fidélité).
 - ✅ Dépense de **Chance** en jeu (relancer le jet — modales attaque + hors combat). Reste : Détermination, ajout direct de DR.
 - ✅ **Barre d'action en bas** (hotbar) qui suit le combattant actif (déplacer/attaquer/incanter/défensive/fin).
-- ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade —
-  `state/ai.ts` pur+testé). Reste, lié aux actions ci-dessus : charge, désengagement, Avantage complet.
+- ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade, **Charge** —
+  `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
+  pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
 
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
@@ -155,7 +157,12 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce
   à +5, 3 à +3, additif ; talents fixes, choix « A ou B », et « N Talent aléatoire » tirés sur le
   Tableau des Talents aléatoires d100). Restent : richesse initiale, détails physiques, noms.
-- **Avancement** : dépense d'XP, **changement de carrière**.
+- ✅ **Avancement — MOTEUR** (`engine/advancement.ts`, testé, verbatim LDB Carrières l.31-137) :
+  coûts d'Augmentation Caractéristique/Compétence par bandes de 5 (25→520 / 10→440), **hors-carrière ×2**,
+  Talents (100 + 100×déjà-acheté), **changement de carrière** (complétion = 5×niveau d'Augmentations,
+  100 PX si complété / 200 sinon). Champs `xp`/`charAdvances`/`careerLevel` ajoutés.
+  ⏳ **Reste (prévu autre session)** : câblage store (`grantXp` + actions de dépense + **détection
+  in-carrière** depuis `careerLevels.json`) + **panneau UI d'avancement** dans la fiche de perso.
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
 
@@ -200,6 +207,18 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 ---
 
 ## Dette technique connue
+
+### Reste à faire — synthèse *(màj après le bloc combat)*
+
+- **Avancement XP** : moteur fait ; reste **câblage store** (grant + dépense + détection in-carrière depuis `careerLevels.json`) + **panneau UI** dans la fiche. → *prévu dans une autre session*.
+- **Combat — reste** : action **« ramasser »** ; **tables de Critiques & Maladresses** par localisation (LDB p.172+, aujourd'hui laissées au MJ). Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée). Détermination & ajout direct de DR (au-delà de la Chance).
+- **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
+- **Vérif NAVIGATEUR du combat** : modales attaque/défense/hors-combat/**désengagement+Fuite**, hotbar, Engagé/Charge — logique couverte par tests, mais **passage live à l'œil non fait** ce cycle (penser au **hard reload** : le HMR du dev se périme souvent).
+- **Sprites/animations** (Jalon 8) : sprites **composables** (équipement visible) + animations — chantier de l'**autre session**.
+- **Contenu jouable** (Jalon 4) : vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
+- **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
+
+### Dette « historique » (détail)
 
 - **Sprites** par équipement non reflétés (sprites figés par carrière, pas composables).
 - Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
