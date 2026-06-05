@@ -300,6 +300,12 @@ interface GameState {
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   disengageReroll: () => void;
   disengageBonusSL: () => void;
+  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (opposé : DR +1).
+  testForceSuccess: () => void;
+  attackForceSuccess: () => void;
+  defenseForceSuccess: () => void;
+  castForceSuccess: () => void;
+  disengageForceSuccess: () => void;
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageCancel: () => void;
@@ -1167,6 +1173,76 @@ export const useGame = create<GameState>((set, get) => ({
     const opp = resolveOpposed(def2, pd.atk!);
     set({ pendingDisengage: { ...pd, def: def2, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
   },
+
+  // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (opposé : DR +1) ──
+  testForceSuccess: () => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll == null) return;
+    const party = get().party;
+    const actor = party.find((c) => c.id === pt.actorId);
+    if (!actor || (actor.resilience ?? 0) <= 0) return;
+    actor.resilience = (actor.resilience ?? 0) - 1;
+    const sl = Math.max(pt.sl, pt.requireSL, 1);
+    set({ pendingTest: { ...pt, success: true, sl }, party: [...party] });
+  },
+  attackForceSuccess: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result || !pa.result.attackerDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || !target || (attacker.resilience ?? 0) <= 0) return;
+    attacker.resilience = (attacker.resilience ?? 0) - 1;
+    const r = pa.result;
+    const ad = r.attackerDetail!;
+    const defSL = r.defenderDetail?.sl ?? 0;
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
+    const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+    const weapon = attackWeapon(attacker.weapons, adj);
+    let res: AttackResult;
+    if (r.defenderDetail) {
+      const dd = r.defenderDetail;
+      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
+    } else {
+      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
+    }
+    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
+  },
+  defenseForceSuccess: () => {
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.result || !pd.result.defenderDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender || (defender.resilience ?? 0) <= 0) return;
+    defender.resilience = (defender.resilience ?? 0) - 1;
+    const dd = pd.result.defenderDetail!;
+    const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, pd.atk.sl + 1, 1), isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
+    set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
+  },
+  castForceSuccess: () => {
+    const { battle, pendingCast: pc } = get();
+    if (!battle || !pc || !pc.result) return;
+    const caster = battle.combatants.find((c) => c.id === pc.casterId);
+    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
+    caster.resilience = (caster.resilience ?? 0) - 1;
+    const ni = pc.focused ? 0 : spell.cn ?? 0;
+    const cur = pc.result;
+    const bonusNeeded = Math.max(1, ni - cur.sl); // au moins le NI ; on force aussi un d100 propre réussi
+    const res = rederiveCastSL(caster, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, pc.missile, pc.focused, bonusNeeded);
+    set({ pendingCast: { ...pc, result: res }, battle: { ...battle } });
+  },
+  disengageForceSuccess: () => {
+    const { battle, pendingDisengage: pd } = get();
+    if (!battle || !pd || !pd.result || !pd.def) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover || (mover.resilience ?? 0) <= 0) return;
+    mover.resilience = (mover.resilience ?? 0) - 1;
+    set({ pendingDisengage: { ...pd, result: 'success' }, battle: { ...battle } }); // l'emporte (LDB ch.17 l.72)
+  },
+
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
   disengageConfirm: () => {
     const { battle, scene, pendingDisengage: pd } = get();

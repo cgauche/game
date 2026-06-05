@@ -1331,3 +1331,21 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.dead).toBe(true);
   });
 });
+
+describe('Résilience — « Je ne faillirai pas ! » (LDB ch.17 l.72)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('force un Test hors combat raté en succès, Résilience −1', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    hero.resilience = 1;
+    useGame.setState({
+      party: [hero],
+      pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 30, difficulty: 'intermediaire',
+        requireSL: 0, target: 30, roll: 95, success: false, sl: -6, rerolled: false, onSuccess: [], onFailure: [] },
+    });
+    useGame.getState().testForceSuccess();
+    expect(useGame.getState().pendingTest!.success).toBe(true);
+    expect(useGame.getState().party[0].resilience).toBe(0);
+  });
+});
