@@ -7,6 +7,7 @@ import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
+import { resolveTokens, type Palette } from './palette';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
@@ -78,6 +79,14 @@ export function resolveRig(
   for (const ov of overlays) {
     if (ov.svg) boneParts[ov.bone].push({ svg: ov.svg, layer: 99 });
   }
+
+  // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.
+  // Peau par défaut déduite de la tête monstrueuse (lézard=vert, chien=fauve) pour que
+  // la chair du CORPS s'accorde à la tête ; surchargée par appearance.colors.
+  const SKIN_FROM_HEAD: Record<string, string> = { lezard: '#5d7a42', chien: '#6e4a2c' };
+  const headSkin = appearance.monster?.tete ? SKIN_FROM_HEAD[appearance.monster.tete] : undefined;
+  const palette: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
+  for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: resolveTokens(p.svg, palette) }));
 
   return BONE_IDS
     .map((id) => ({ id, matrix: world[id], scale: scaleOf[id], z: sk[id].z, parts: boneParts[id].sort((a, b) => a.layer - b.layer) }))
