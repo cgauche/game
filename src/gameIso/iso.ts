@@ -15,9 +15,49 @@ export function originY() {
   return SPRITE_HEADROOM;
 }
 
+export type Rot = 0 | 1 | 2 | 3;
+
 export interface Dims {
   w: number;
   h: number;
+  rot?: Rot; // orientation caméra (cran de 90° horaire) ; absent ⇒ 0
+}
+
+/** Dimensions effectives à l'écran : pour rot impair, une grille W×H tournée occupe H×W. */
+export function effDims(dims: Dims): { w: number; h: number } {
+  return (dims.rot ?? 0) % 2 === 0 ? { w: dims.w, h: dims.h } : { w: dims.h, h: dims.w };
+}
+
+/** Coordonnée de tuile tournée (grille → espace écran tourné). PUR. */
+export function rotTile(x: number, y: number, dims: Dims): { x: number; y: number } {
+  const W = dims.w,
+    H = dims.h;
+  switch (dims.rot ?? 0) {
+    case 1:
+      return { x: y, y: W - 1 - x };
+    case 2:
+      return { x: W - 1 - x, y: H - 1 - y };
+    case 3:
+      return { x: H - 1 - y, y: x };
+    default:
+      return { x, y };
+  }
+}
+
+/** Inverse de rotTile (espace écran tourné → grille). PUR. */
+export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: number } {
+  const W = dims.w,
+    H = dims.h;
+  switch (dims.rot ?? 0) {
+    case 1:
+      return { x: W - 1 - y, y: x };
+    case 2:
+      return { x: W - 1 - x, y: H - 1 - y };
+    case 3:
+      return { x: y, y: H - 1 - x };
+    default:
+      return { x, y };
+  }
 }
 
 /** Centre écran d'une tuile (x,y). */
