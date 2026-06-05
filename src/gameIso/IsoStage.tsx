@@ -50,9 +50,10 @@ const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
 
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-/** Teinte d'une bande de portée selon son modificateur (vert = facile → rouge = difficile). */
+/** Teinte d'une bande de portée selon son modificateur. Palette froide→chaude qui CONTRASTE avec
+ *  l'herbe (cyan/bleu = proche/facile → orange/rouge = loin/difficile ; le vert se noierait au sol). */
 const bandColor = (mod: number): string =>
-  mod >= 60 ? '#37c07a' : mod >= 40 ? '#7bd08a' : mod >= 0 ? '#d9cf5e' : mod >= -10 ? '#e0a04f' : '#c0563f';
+  mod >= 60 ? '#46e0c0' : mod >= 40 ? '#5aa6ff' : mod >= 0 ? '#e6d24a' : mod >= -10 ? '#e8973f' : '#e0533a';
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.6;
 
@@ -272,7 +273,7 @@ export function IsoStage() {
           if (dist === 0) continue;
           const m = rangeBandModifier(dist, aimWeapon.range!);
           if (m == null) continue; // hors de portée → pas de teinte
-          highlights.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, dims)} fill={bandColor(m)} opacity={0.16} pointerEvents="none" />);
+          highlights.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, dims)} fill={bandColor(m)} opacity={0.26} pointerEvents="none" />);
         }
     }
     for (const k of battle.reachable.keys()) {
