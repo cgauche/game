@@ -44,8 +44,10 @@ node scripts/gen-gallery.mjs   # galerie QC des sprites -> public/sprites-galler
 ```
 
 **Vérification** : après une feature UI, valider dans le navigateur (Playwright MCP) — charger
-`localhost:5173`, dérouler le flux, vérifier `console` (0 erreur) et screenshoter. Un **bouton
-« 🧪 Test rapide »** dans le menu charge une équipe pré-tirée + la scène directement.
+`localhost:5173`, dérouler le flux, vérifier `console` (0 erreur) et screenshoter. Le menu
+**« 🧪 Tests — scénarios »** ouvre un choix de scénarios de test (groupe fixé + scène adaptée,
+combat direct) ; **passer par le scénario adapté, sinon en créer un** — un scénario = un fichier
+dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
 ## Architecture (où trouver quoi)
 
