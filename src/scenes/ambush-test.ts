@@ -107,15 +107,15 @@ function build(): Scene {
       { id: 'sang2', kind: 'prop', pos: { x: 15, y: 7 }, ref: 'mare-sang', anim: 'gush' },
       { id: 'sang3', kind: 'prop', pos: { x: 16, y: 8 }, ref: 'mare-sang' },
       { id: 'sang4', kind: 'prop', pos: { x: 12, y: 8 }, ref: 'mare-sang' },
-      // — Mutants HUMANOÏDES : riggés + parts monstrueux choisis par slot (tête/bras),
-      //   comme on construit un PJ. L'arme est de l'ÉQUIPEMENT (le reptilien porte une
-      //   arbalète, tenue prête). Aux MÊMES positions que l'encounter (raccord combat). —
-      { id: 'mut-feed', kind: 'personnage', pos: { x: 13, y: 8 }, ref: 'Mutant', appearance: { monster: { brasD: 'griffe' } }, anim: 'feeding', label: 'Mutant qui dévore' },
-      { id: 'mut-tentacule', kind: 'personnage', pos: { x: 14, y: 7 }, ref: 'Mutant', appearance: { monster: { brasG: 'tentacule' } }, anim: 'feeding', label: 'Mutant à tentacule' },
-      { id: 'mut-chien', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mutant à tête de chien' },
-      { id: 'mut-lezard', kind: 'personnage', pos: { x: 18, y: 6 }, ref: 'Mutant', appearance: { monster: { tete: 'lezard', cornes: true } }, weapon: 'Arbalète', anim: 'standing', label: 'Mutant reptilien (arbalète)' },
-      // — Charognard quadrupède : créature NON-bipède → sprite monolithique. —
-      { id: 'charognard', kind: 'personnage', pos: { x: 11, y: 8 }, ref: 'Charognard', anim: 'feed', label: 'Charognard' },
+      // — La bande de Knud Cratinx (fidèle à « L'ennemi dans l'Ombre » ch.2). Mutants
+      //   HUMANOÏDES riggés : mutation = part monstrueuse (tête de chien, écailles…),
+      //   arme = équipement (l'arbalète du reptilien, la hache qui mutile l'attelage).
+      //   Mêmes positions que l'encounter (raccord visuel à l'entrée en combat). —
+      { id: 'knud', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'Mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing', label: 'Knud Cratinx — chef à la peau écailleuse' },
+      { id: 'mikael', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mikael — tête de chien, hurle à la mort' },
+      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'Mutant', appearance: { monster: { brasD: 'griffe' } }, anim: 'feeding', label: 'Erik — pieds fourchus, dévore un cadavre' },
+      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'Mutant', anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
+      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'Mutant', weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
     ],
     dialogues,
     triggers: [
@@ -129,17 +129,43 @@ function build(): Scene {
     encounters: [
       {
         id: 'enc-mutants',
-        // Mêmes parts/équipement qu'en exploration → modèles identiques en combat.
+        // Statblocs CUSTOM fidèles à L'ennemi dans l'Ombre ch.2 (stats VF vérifiées).
+        // L'arme vient des Traits ; l'apparence (mutation) est séparée des stats ;
+        // mêmes positions/parts qu'en exploration → modèles identiques en combat.
         enemies: [
-          { ref: 'Mutant', pos: { x: 13, y: 8 }, appearance: { monster: { brasD: 'griffe' } } },
-          { ref: 'Mutant', pos: { x: 14, y: 7 }, appearance: { monster: { brasG: 'tentacule' } } },
-          { ref: 'Mutant', pos: { x: 16, y: 7 }, appearance: { monster: { tete: 'chien' } } },
-          { ref: 'Mutant', pos: { x: 18, y: 6 }, appearance: { monster: { tete: 'lezard', cornes: true } }, weapon: 'Arbalète' },
-          { ref: 'Charognard', pos: { x: 11, y: 8 } },
+          {
+            // Chef : reste en retrait, tire à l'arbalète (À distance dans le Trait).
+            pos: { x: 17, y: 6 },
+            appearance: { monster: { tete: 'lezard' } },
+            statblock: {
+              name: 'Knud Cratinx',
+              char: { M: 4, CC: 36, CT: 43, F: 39, E: 32, I: 35, Ag: 33, Dex: 29, Int: 33, FM: 35, Soc: 30, B: 12 },
+              traits: ['À distance (Arbalète) +9 (60)', 'Arme (Épée) +7', 'Corruption (Mineure)', 'Mutation (Écailles épineuses)'],
+            },
+          },
+          {
+            pos: { x: 16, y: 7 },
+            appearance: { monster: { tete: 'chien' } },
+            statblock: { name: 'Mikael', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 1 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Tête de chien)'] },
+          },
+          {
+            pos: { x: 14, y: 8 },
+            appearance: { monster: { brasD: 'griffe' } },
+            statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Pattes de chèvre)'] },
+          },
+          {
+            pos: { x: 15, y: 7 },
+            statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Tête en ogive)'] },
+          },
+          {
+            // « Mutile l'attelage à la hache » → arme dans le Trait (type Hache).
+            pos: { x: 12, y: 7 },
+            statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: ['Arme (Hache) +7', 'Corruption (Mineure)', 'Mutation (Crétin)'] },
+          },
         ],
         onVictory: [
           { type: 'setFlag', flag: 'embuscade_nettoyee' },
-          { type: 'journal', text: 'Les charognards gisent à leur tour. La route, enfin, se tait.' },
+          { type: 'journal', text: 'La bande de Knud Cratinx gît à son tour. La route, enfin, se tait.' },
         ],
       },
     ],

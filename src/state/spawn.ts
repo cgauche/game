@@ -18,18 +18,54 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
   return chars;
 }
 
-/** Parse les traits d'arme d'une créature en armes jouables. */
+const normTrait = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+/**
+ * Attaques NATURELLES (FR) : pas d'arme tenue par le rig (la « part » du corps fait
+ * foi — griffes, morsure, tentacule…). Le rendu n'affiche donc pas d'objet en main.
+ */
+const NATURAL_WEAPON = new Set([
+  'morsure', 'griffes', 'griffe', 'poings', 'mains nues', 'tentacule', 'tentacules',
+  'bec', 'dard', 'corne', 'cornes', 'queue', 'pietinement', 'crachat',
+]);
+
+/**
+ * Parse UN trait d'arme WFRP4 (français) en arme jouable, ou null. Gère le TYPE
+ * entre parenthèses (l'armement des monstres est dans les Traits) :
+ *   « Arme +7 », « Arme (Épée) +7 », « Arme (Dague) +4 », « Arme (griffes) »,
+ *   « À distance (Arbalète) +9 (60) », « À distance +8 (50) », « Morsure +9 ».
+ * Le `name` = le TYPE quand il est manufacturé (→ le rig tient cette arme) ; sinon
+ * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
+ */
+export function weaponFromTrait(t: string): Weapon | null {
+  let m: RegExpMatchArray | null;
+  if ((m = t.match(/^À distance(?:\s*\(([^)]+)\))?\s*\+(\d+)(?:\s*\((\d+)\))?/i))) {
+    const type = m[1]?.trim();
+    const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: `+${m[2]}`, qualities: [] };
+    if (m[3]) w.range = Number(m[3]);
+    return w;
+  }
+  if ((m = t.match(/^Arme(?:\s*\(([^)]+)\))?\s*(?:\+(\d+))?/i))) {
+    const type = m[1]?.trim();
+    const damage = m[2] ? `+${m[2]}` : '+BF';
+    if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
+    return { name: type ?? 'Arme', type: 'melee', damage, qualities: [] };
+  }
+  if ((m = t.match(/^(Morsure|Griffes?|Tentacules?|Bec|Dard|Cornes?|Queue|Pi[ée]tinement|Crachat)\s*\+?(\d+)?/i))) {
+    const ranged = /crachat/i.test(m[1]);
+    return { name: m[1], type: ranged ? 'ranged' : 'melee', damage: m[2] ? `+${m[2]}` : '+BF', qualities: [] };
+  }
+  return null;
+}
+
+/** Parse les traits d'arme d'une créature en armes jouables (mêlée + distance). */
 function weaponsFromTraits(traits: string[]): Weapon[] {
   const weapons: Weapon[] = [];
   for (const t of traits) {
-    const melee = t.match(/^Arme\s*\+(\d+)/i);
-    if (melee) weapons.push({ name: 'Arme naturelle', type: 'melee', damage: `+${melee[1]}`, qualities: [] });
-    const ranged = t.match(/^À distance\s*\+(\d+)\s*\((\d+)\)/i);
-    if (ranged)
-      weapons.push({ name: 'Attaque à distance', type: 'ranged', damage: `+${ranged[1]}`, range: Number(ranged[2]), qualities: [] });
+    const w = weaponFromTrait(t);
+    if (w) weapons.push(w);
   }
-  if (weapons.length === 0)
-    weapons.push({ name: 'Arme', type: 'melee', damage: '+BF', qualities: [] });
+  if (weapons.length === 0) weapons.push({ name: 'Arme', type: 'melee', damage: '+BF', qualities: [] });
   return weapons;
 }
 
@@ -74,7 +110,9 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     wounds: { current: wounds, max: wounds },
     advantage: 0,
     conditions: [],
-    weapons: [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
+    // Armes : depuis les Traits si fournis (« Arme (Épée) +7 », « À distance (Arbalète) +9 (60) »),
+    // sinon une arme générique au dégât indiqué.
+    weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
     skills: [],
     talents: [],

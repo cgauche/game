@@ -7,13 +7,10 @@ import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } fro
 import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
 import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
-import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS } from '../../gameIso/rig/parts/monstrous';
+import { MonsterPartsFields } from './MonsterPartsFields';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
 import { AmbientRigToken } from '../../gameIso/AmbientRigToken';
-
-// Armes équipables proposées dans l'éditeur (une par forme/groupe — affichées par le rig).
-const EDITOR_WEAPONS = ['Épée', 'Hache', 'Masse', 'Dague', 'Lance', 'Hallebarde', 'Bâton de combat', 'Arc', 'Arbalète', 'Pistolet', 'Fronde', 'Fouet'];
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -21,7 +18,7 @@ import { TERRAINS as TERRAIN_META } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
-import { BuildingFeature, Trigger, CustomStatblock } from '../../state/scene';
+import { BuildingFeature, Trigger, CustomStatblock, EncounterDef } from '../../state/scene';
 import { ParamFields } from './ParamFields';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
@@ -269,7 +266,7 @@ export function Editor() {
     setScene({ ...scene, triggers: scene.triggers.map((t) => (t.id === selectedTrigger ? { ...t, ...patch } : t)) });
   const updateSelTRect = (patch: Partial<Trigger['rect']>) => updateSelT({ rect: { ...selT!.rect, ...patch } });
   const spawn = selectedSpawn ? scene.encounters[selectedSpawn.enc]?.enemies[selectedSpawn.idx] ?? null : null;
-  const updateSpawn = (patch: Partial<{ ref: string; statblock: CustomStatblock; pos: { x: number; y: number } }>) => {
+  const updateSpawn = (patch: Partial<EncounterDef['enemies'][number]>) => {
     if (!selectedSpawn) return;
     const { enc, idx } = selectedSpawn;
     setScene({
@@ -803,6 +800,12 @@ export function Editor() {
                     </button>
                   </>
                 )}
+                <MonsterPartsFields
+                  monster={spawn.appearance?.monster}
+                  weapon={spawn.weapon}
+                  onMonster={(patch) => updateSpawn({ appearance: { ...spawn.appearance, monster: { ...(spawn.appearance?.monster ?? {}), ...patch } } })}
+                  onWeapon={(w) => updateSpawn({ weapon: w })}
+                />
                 <label className="ed-field">
                   X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
                 </label>
@@ -991,54 +994,12 @@ export function Editor() {
                         </button>
                       </div>
                     )}
-                    {/* Mutant modulaire : parts monstrueux par slot (rig humanoïde). */}
-                    <div className="ed-field">
-                      <span>Mutations (rig humanoïde)</span>
-                      {([
-                        ['Tête', 'tete', MONSTER_HEAD_OPTIONS],
-                        ['Bras gauche', 'brasG', MONSTER_ARM_OPTIONS],
-                        ['Bras droit', 'brasD', MONSTER_ARM_OPTIONS],
-                      ] as const).map(([lbl, slot, opts]) => (
-                        <label key={slot} className="ed-subfield">
-                          {lbl}
-                          <select
-                            value={sel.appearance?.monster?.[slot] ?? ''}
-                            onChange={(e) =>
-                              updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), [slot]: e.target.value || undefined } } })
-                            }
-                          >
-                            {opts.map((o) => (
-                              <option key={o.key} value={o.key}>{o.label}</option>
-                            ))}
-                          </select>
-                        </label>
-                      ))}
-                      <label className="ed-subfield">
-                        <input
-                          type="checkbox"
-                          checked={!!sel.appearance?.monster?.cornes}
-                          onChange={(e) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), cornes: e.target.checked || undefined } } })}
-                        />
-                        Cornes
-                      </label>
-                      <label className="ed-subfield">
-                        <input
-                          type="checkbox"
-                          checked={!!sel.appearance?.monster?.queue}
-                          onChange={(e) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), queue: e.target.checked || undefined } } })}
-                        />
-                        Queue
-                      </label>
-                    </div>
-                    <label className="ed-field">
-                      Arme équipée
-                      <select value={sel.weapon ?? ''} onChange={(e) => updateSel({ weapon: e.target.value || undefined })}>
-                        <option value="">— aucune —</option>
-                        {EDITOR_WEAPONS.map((w) => (
-                          <option key={w} value={w}>{w}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <MonsterPartsFields
+                      monster={sel.appearance?.monster}
+                      weapon={sel.weapon}
+                      onMonster={(patch) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), ...patch } } })}
+                      onWeapon={(w) => updateSel({ weapon: w })}
+                    />
                     <label className="ed-field">
                       Dialogue / quête
                       <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>

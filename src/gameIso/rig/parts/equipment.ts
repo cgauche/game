@@ -40,6 +40,9 @@ const ART_BY_LABEL: Record<string, string> = {
   fronde: 'fronde', fouet: 'fouet', lasso: 'fouet',
   bombe: 'explosif', 'bombe incendiaire': 'explosif',
   'mains nues': '', 'coup-de-poing': '', // poings : aucune arme dessinée
+  // Attaques NATURELLES (traits) : aucune arme tenue — la part du corps fait foi.
+  poings: '', morsure: '', griffes: '', griffe: '', tentacule: '', tentacules: '',
+  bec: '', dard: '', corne: '', cornes: '', queue: '', pietinement: '', crachat: '',
 };
 
 /** Forme par défaut d'un Groupe canonique (quand le libellé n'est pas dans la table). */
