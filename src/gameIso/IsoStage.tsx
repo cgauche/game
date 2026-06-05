@@ -272,8 +272,10 @@ export function IsoStage() {
       >
         <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
         {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
-        {/* calque fx (anim légère token entier pour les créatures) — sans transform de base */}
-        <g className={fx}>
+        {/* calque fx (anim légère token entier pour les créatures) — sans transform de base.
+            MORT : on bascule ~78° autour des pieds (origine du groupe) → la créature s'allonge
+            au sol (comme les héros), et on coupe l'anim d'ambiance. */}
+        <g className={dim ? undefined : fx} transform={dim ? 'rotate(78)' : undefined}>
           <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
             {/* miroir gauche/droite autour du centre de la boîte créature (x=80) */}
             <g transform={mirror ? 'translate(160,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: inner }} />
