@@ -38,6 +38,12 @@ const BACK_HAIR =
   '<path d="M-9.7 6 Q-10.7 -9.5 0 -10 Q-6.5 -7.5 -7.8 0 Q-8.9 4 -9.7 6Z" fill="@cheveuxH" opacity="0.7"/>' +
   '<path d="M0 -10 Q10.7 -9.5 9.7 6 Q8.4 0 6.6 -3.4 Q3.4 -7.4 0 -8Z" fill="@cheveuxO" opacity="0.7"/>' +
   '<path d="M-5 9 Q0 11.5 5 9 M-6 4 Q0 6.5 6 4" stroke="@cheveuxO" stroke-width="0.5" fill="none" opacity="0.5"/>';
+// Vue de PROFIL générique : calotte de cheveux (couronne) qui NE retombe PAS sur le visage
+// — corrige « mèche devant le visage qui couvre la bouche » des vues de profil générées.
+const PROFILE_HAIR =
+  '<path d="M-9.4 6 Q-10.4 -9.5 0 -10 Q10.4 -9.5 9.4 6 Q8.6 -1.5 6 -3 Q0 -4.6 -6 -3 Q-8.6 -1.5 -9.4 6Z" fill="@cheveux"/>' +
+  '<path d="M-9.4 6 Q-10.4 -9.5 0 -10 Q-6 -7.5 -7.6 0 Q-8.6 3 -9.4 6Z" fill="@cheveuxH" opacity="0.7"/>' +
+  '<path d="M0 -10 Q10.4 -9.5 9.4 6 Q8.4 -1 6.6 -3.6 Q3.4 -5 0 -4.2Z" fill="@cheveuxO" opacity="0.6"/>';
 // Nuque/cou vus de dos (le crâne est couvert par les cheveux ci-dessus).
 const BACK_NAPE =
   '<path d="M-3.8 9.5 Q0 12 3.8 9.5 L3.2 17 Q0 18.6 -3.2 17Z" fill="@peau"/>' +
@@ -59,9 +65,8 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
     const pool = [gen?.cheveux, ...(HAIRSTYLES[sex] ?? []).map((h) => h.svg)].filter((s): s is string => s != null);
     if (pool.length) {
       const i = ((idx % pool.length) + pool.length) % pool.length;
-      // DOS générique (crâne chevelu) pour TOUTES les coiffures ; profil par espèce si dispo.
-      const profile = HEAD_VIEWS[key]?.cheveux?.profile;
-      return { front: pool[i], back: BACK_HAIR, ...(profile ? { profile } : {}) };
+      // DOS générique (crâne chevelu) + PROFIL générique (couronne, pas sur le visage).
+      return { front: pool[i], back: BACK_HAIR, profile: PROFILE_HAIR };
     }
     return { front: pick(CHEVEUX, key, 'Humain:M', idx), back: BACK_HAIR };
   }
