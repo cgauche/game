@@ -1,16 +1,16 @@
 import { useGame } from '../state/store';
 import { makePregens } from '../data/pregens';
-import { campaign } from '../scenes/campaign';
+import { ambushTest } from '../scenes/ambush-test';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
   const setParty = useGame((s) => s.setParty);
   const startScene = useGame((s) => s.startScene);
 
-  /** Raccourci dev : équipe pré-tirée + scène de test, sans passer par les menus. */
+  /** Raccourci dev : équipe pré-tirée + scène de test « L'Embuscade ». */
   const quickTest = () => {
     setParty(makePregens().slice(0, 4));
-    startScene(campaign[0].scene);
+    startScene(ambushTest);
     setScreen('campaign');
   };
 
