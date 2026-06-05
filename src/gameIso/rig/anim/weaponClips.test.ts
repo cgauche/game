@@ -49,8 +49,8 @@ describe('carryPose — l’arme est tenue différemment au repos', () => {
   it('arc et arme de base diffèrent', () => {
     expect(carryPose(w('Arc long', 'ranged'))).not.toEqual(carryPose(w('Dague')));
   });
-  it('arme d’hast (Pique) oriente la hampe (bone arme)', () => {
-    expect(carryPose(w('Pique')).arme).toBeDefined();
+  it('arme d’hast (Pique) ajuste la position du bras', () => {
+    expect(carryPose(w('Pique')).epauleD).toBeDefined();
   });
   it('sans arme → pose neutre', () => {
     expect(carryPose(undefined)).toEqual({});

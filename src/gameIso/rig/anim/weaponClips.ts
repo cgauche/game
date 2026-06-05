@@ -138,9 +138,11 @@ const RANGED_FLINCH = c([
 /** Pose portée (repos) selon le Groupe — l'arme est tenue différemment au calme. */
 export function carryPose(w?: Weapon): Pose {
   if (!w) return {};
+  // L'arme pend naturellement (os arme au repos = pointe vers le bas) ; le carry ne
+  // règle que la position du bras, pas l'orientation de l'arme.
   switch (weaponGroupKey(w)) {
-    case 'hast': case 'cavalerie': return { arme: -26, epauleD: 8, avantBrasD: -6 };
-    case 'arc': return { epauleD: 12, avantBrasD: 16, arme: 18 };
+    case 'hast': case 'cavalerie': return { epauleD: 8, avantBrasD: -6 };
+    case 'arc': return { epauleD: 12, avantBrasD: 16 };
     case 'arbalete': return { epauleD: 16, avantBrasD: 8 };
     case 'poudre': case 'ingenierie': return { epauleD: 14, avantBrasD: 6 };
     case 'fronde': case 'lancer': case 'entraves': return { epauleD: 10 };
