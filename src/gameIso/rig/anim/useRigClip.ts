@@ -11,10 +11,15 @@ interface Active {
   hold: boolean;
 }
 
-/** Anime le rig : boucle rAF qui échantillonne le clip courant en Pose. play()/hold(). */
-export function useRigClip() {
+/** Anime le rig : boucle rAF qui échantillonne le clip courant en Pose. play()/hold().
+ *  `restClip` = posture de REPOS (sinon idle) : un clip d'ambiance (dévore/hurle…) vers
+ *  lequel on retombe après chaque geste — un seul token sert combat ET exploration. */
+export function useRigClip(restClip?: Clip) {
   const [pose, setPose] = useState<Pose>({});
-  const active = useRef<Active>({ clip: CLIPS.idle, start: 0, impactDone: true, hold: false });
+  const rest = useRef<Clip | undefined>(restClip);
+  rest.current = restClip;
+  const restState = (): Active => ({ clip: rest.current ?? CLIPS.idle, start: performance.now(), impactDone: true, hold: !!rest.current });
+  const active = useRef<Active>({ clip: restClip ?? CLIPS.idle, start: 0, impactDone: true, hold: !!restClip });
   const raf = useRef(0);
 
   useEffect(() => {
@@ -32,7 +37,7 @@ export function useRigClip() {
       }
       if (done && !clip.loop && !a.hold) {
         a.onDone?.();
-        active.current = { clip: CLIPS.idle, start: now, impactDone: true, hold: false };
+        active.current = restState(); // retombe au repos (idle OU clip d'ambiance)
       }
       if (mounted) raf.current = requestAnimationFrame(loop);
     };

@@ -107,12 +107,15 @@ function build(): Scene {
       { id: 'sang2', kind: 'prop', pos: { x: 15, y: 7 }, ref: 'mare-sang', anim: 'gush' },
       { id: 'sang3', kind: 'prop', pos: { x: 16, y: 8 }, ref: 'mare-sang' },
       { id: 'sang4', kind: 'prop', pos: { x: 12, y: 8 }, ref: 'mare-sang' },
-      // — Mutants : morphologies VARIÉES (calque 'forme') + animation d'ambiance CSS,
-      //   aux MÊMES positions que l'encounter (raccord à l'entrée en combat). —
-      { id: 'mut-charognard', kind: 'personnage', pos: { x: 13, y: 8 }, ref: 'Mutant', appearance: { pins: { forme: 4 } }, anim: 'feed', label: 'Charognard quadrupède' },
-      { id: 'mut-chien', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { pins: { forme: 6 } }, anim: 'howl', label: 'Mutant hurleur' },
-      { id: 'mut-tentacule', kind: 'personnage', pos: { x: 14, y: 7 }, ref: 'Mutant', appearance: { pins: { forme: 7 } }, anim: 'wrap', label: 'Mutant à tentacule' },
-      { id: 'mut-lezard', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'Mutant', appearance: { pins: { forme: 5 } }, anim: 'breathe', label: 'Mutant reptilien' },
+      // — Mutants HUMANOÏDES : riggés + parts monstrueux choisis par slot (tête/bras),
+      //   comme on construit un PJ. L'arme est de l'ÉQUIPEMENT (le reptilien porte une
+      //   arbalète, tenue prête). Aux MÊMES positions que l'encounter (raccord combat). —
+      { id: 'mut-feed', kind: 'personnage', pos: { x: 13, y: 8 }, ref: 'Mutant', appearance: { monster: { brasD: 'griffe' } }, anim: 'feeding', label: 'Mutant qui dévore' },
+      { id: 'mut-tentacule', kind: 'personnage', pos: { x: 14, y: 7 }, ref: 'Mutant', appearance: { monster: { brasG: 'tentacule' } }, anim: 'feeding', label: 'Mutant à tentacule' },
+      { id: 'mut-chien', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mutant à tête de chien' },
+      { id: 'mut-lezard', kind: 'personnage', pos: { x: 18, y: 6 }, ref: 'Mutant', appearance: { monster: { tete: 'lezard', cornes: true } }, weapon: 'Arbalète', anim: 'standing', label: 'Mutant reptilien (arbalète)' },
+      // — Charognard quadrupède : créature NON-bipède → sprite monolithique. —
+      { id: 'charognard', kind: 'personnage', pos: { x: 11, y: 8 }, ref: 'Charognard', anim: 'feed', label: 'Charognard' },
     ],
     dialogues,
     triggers: [
@@ -126,11 +129,13 @@ function build(): Scene {
     encounters: [
       {
         id: 'enc-mutants',
+        // Mêmes parts/équipement qu'en exploration → modèles identiques en combat.
         enemies: [
-          { ref: 'Mutant', pos: { x: 13, y: 8 } },
-          { ref: 'Mutant', pos: { x: 16, y: 7 } },
-          { ref: 'Mutant', pos: { x: 14, y: 7 } },
-          { ref: 'Mutant', pos: { x: 17, y: 6 } },
+          { ref: 'Mutant', pos: { x: 13, y: 8 }, appearance: { monster: { brasD: 'griffe' } } },
+          { ref: 'Mutant', pos: { x: 14, y: 7 }, appearance: { monster: { brasG: 'tentacule' } } },
+          { ref: 'Mutant', pos: { x: 16, y: 7 }, appearance: { monster: { tete: 'chien' } } },
+          { ref: 'Mutant', pos: { x: 18, y: 6 }, appearance: { monster: { tete: 'lezard', cornes: true } }, weapon: 'Arbalète' },
+          { ref: 'Charognard', pos: { x: 11, y: 8 } },
         ],
         onVictory: [
           { type: 'setFlag', flag: 'embuscade_nettoyee' },

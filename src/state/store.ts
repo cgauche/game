@@ -374,7 +374,7 @@ export const useGame = create<GameState>((set, get) => ({
       meleeThisRound: [],
       wounds: { ...h.wounds },
     })) as Combatant[];
-    const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }));
+    const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
     const all = [...heroes, ...enemies];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
     for (const c of all) c.initiative = c.characteristics.I + battleRng.int(1, 10);

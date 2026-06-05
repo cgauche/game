@@ -32,7 +32,8 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
-import { enemyRigProfile } from './rig/enemyProfile';
+import { AmbientRigToken } from './AmbientRigToken';
+import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -336,8 +337,21 @@ export function IsoStage() {
   } else {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue; // props déjà rendus (au-dessus)
-      // Apparence par CALQUES (variantes Mutant…) + animation d'ambiance CSS (calque fx).
-      objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+      // Humanoïde (biped) → RIG (cohérent avec le combat) : parts monstrueux + arme
+      // équipée + clip d'ambiance. Non-biped/créature → sprite monolithique + anim CSS.
+      const seed = ent.appearance?.seed ?? hashSeed(ent.id);
+      const prof =
+        ent.kind === 'personnage'
+          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { monster: ent.appearance?.monster, weapon: ent.weapon })
+          : null;
+      if (prof) {
+        objs.push({
+          d: depth(ent.pos.x, ent.pos.y) + 0.1,
+          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} />, 0.58),
+        });
+      } else {
+        objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+      }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party[0];

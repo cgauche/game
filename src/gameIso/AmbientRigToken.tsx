@@ -1,44 +1,19 @@
-import { useEffect } from 'react';
-import { RigSprite } from './rig/composeRig';
-import { useRigClip } from './rig/anim/useRigClip';
-import { ambientClip } from './rig/anim/ambientClips';
 import type { EnemyRigProfile } from './rig/enemyProfile';
-import type { View } from './rig/facing';
+import { RigToken } from './RigToken';
 
 /**
- * Token rig jouant une animation d'AMBIANCE en boucle (brin I), hors combat — pour
- * les entités de scène (ex. mutant qui dévore un cadavre). Pas d'abonnement au bus :
- * l'animation tourne en continu selon le clip choisi dans l'éditeur.
+ * Adaptateur d'une entité de scène humanoïde (profil + clip d'ambiance) vers le token
+ * rig UNIQUE. Conservé pour compatibilité ; toute la logique de rendu est dans RigToken.
  */
-export function AmbientRigToken({
-  profile,
-  anim,
-  view = 'front',
-  mirror = false,
-}: {
-  profile: EnemyRigProfile;
-  anim: string;
-  view?: View;
-  mirror?: boolean;
-}) {
-  const { pose, holdClip, hold } = useRigClip();
-
-  useEffect(() => {
-    const clip = ambientClip(anim);
-    if (clip) holdClip(clip);
-    else hold('idle');
-  }, [anim, holdClip, hold]);
-
+export function AmbientRigToken({ profile, anim, id = 'ambient' }: { profile: EnemyRigProfile; anim: string; id?: string }) {
   return (
-    <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-      <RigSprite
-        appearance={profile.appearance}
-        equip={profile.equip}
-        career={profile.career}
-        overlays={profile.overlays}
-        pose={pose}
-        view={view}
-      />
-    </g>
+    <RigToken
+      id={id}
+      appearance={profile.appearance}
+      equip={profile.equip}
+      career={profile.career}
+      overlays={profile.overlays}
+      ambientAnim={anim}
+    />
   );
 }

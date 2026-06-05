@@ -10,7 +10,17 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import type { RigOverlay } from './bones';
 import { equipFromCombatant } from './parts/equipment';
+import { weaponGroupKey } from './parts/weaponGroup';
+import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
+
+const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
+/** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
+export function weaponFromLabel(label: string): import('../../engine/types').Weapon {
+  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: '+0', qualities: [] };
+  if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
+  return w;
+}
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -46,7 +56,7 @@ const CREATURE_RE = new RegExp(
     'demon', 'demonette', 'sanguinaire', 'khorne', 'slaanesh', 'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
     // bêtes
-    'loup', 'ours', 'chien', 'sanglier', 'serpent', 'araignee', 'basilic', 'dragon',
+    'loup', 'ours', 'chien', 'charognard', 'sanglier', 'serpent', 'araignee', 'basilic', 'dragon',
     'griffon', 'hyppogriffe', 'hippogriffe', 'demigriffon', 'hydre', 'manticore', 'pegase',
     'pieuvre', 'vouivre', 'fimir', 'geant', 'troll', 'pigeon', 'cheval',
     'chauve.?souris', 'sangsue', 'crapaud',
@@ -94,6 +104,15 @@ function detectSpecies(n: string): string {
 function detectCareer(n: string): string {
   for (const [re, career] of ROLE_CAREERS) if (re.test(n)) return career;
   return 'Soldat';
+}
+
+/** Apparence rig dérivée (espèce/sexe/carrure du nom+seed) + parts monstrueux.
+ *  Source UNIQUE pour combat (spawn) et exploration (entité) → modèles identiques. */
+export function riggedAppearance(name: string, seed: number, monster?: MonsterParts, species?: string): Appearance {
+  const n = norm(name);
+  const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M';
+  const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
+  return { species: species ?? detectSpecies(n), sex, build, seed, monster };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -171,17 +190,22 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
  * combat (mains libres, pour les poses d'ambiance), apparence dérivée du nom + seed.
  * null si le nom désigne une créature non-humanoïde.
  */
-export function entityRigProfile(name: string, seed: number, career?: string): EnemyRigProfile | null {
+export function entityRigProfile(
+  name: string,
+  seed: number,
+  opts?: { career?: string; monster?: MonsterParts; weapon?: string },
+): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M';
-  const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
-  const appearance: Appearance = { species: detectSpecies(n), sex, build, seed };
+  const appearance: Appearance = riggedAppearance(name, seed, opts?.monster);
+  // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
+  // n'est choisi (sinon on respecte le « mutant construit » à la main).
+  const hasMonster = !!(opts?.monster && Object.keys(opts.monster).length);
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: career ?? detectCareer(n),
-    equip: { weapons: [], armour: [] },
-    overlays: isMutant ? mutationOverlays(seed) : undefined,
+    career: opts?.career ?? detectCareer(n),
+    equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
+    overlays: isMutant && !hasMonster ? mutationOverlays(seed) : undefined,
   };
 }

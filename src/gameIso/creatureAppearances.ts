@@ -140,4 +140,10 @@ export const CREATURE_APPEARANCES: Record<string, CreatureAppearance> = {
     id: 'Mutant',
     layers: [{ slot: 'forme', variants: [...mutantDebout, mutantCharognard, mutantLezard, mutantChien, mutantTentacule] }],
   },
+  // Charognard quadrupède : créature NON-bipède → sprite monolithique dédié (les
+  // mutants humanoïdes passent désormais par le rig + parts). Une seule forme.
+  Charognard: {
+    id: 'Charognard',
+    layers: [{ slot: 'forme', variants: [mutantCharognard] }],
+  },
 };

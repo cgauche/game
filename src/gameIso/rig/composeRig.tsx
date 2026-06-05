@@ -5,6 +5,7 @@ import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
+import { monsterInjection } from './parts/monstrous';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
@@ -59,6 +60,16 @@ export function resolveRig(
     SLOT_BONES[slot].forEach((bid, idx) => {
       boneParts[bid].push({ svg: part.svg, layer: SLOT_LAYER[slot], mirror: idx === 1 });
     });
+  }
+
+  // Parts MONSTRUEUSES (mutant modulaire) : REMPLACENT la part normale de l'os ciblé
+  // (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique). Aucun
+  // miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
+  if (appearance.monster) {
+    const inj = monsterInjection(appearance.monster);
+    for (const [bone, svg] of Object.entries(inj.replace) as [BoneId, string][])
+      boneParts[bone] = [{ svg, layer: 5 }];
+    for (const ov of inj.overlays) boneParts[ov.bone].push({ svg: ov.svg, layer: 98 });
   }
 
   // Calques cosmétiques (mutations…) par-dessus tout, dans le repère de leur os.

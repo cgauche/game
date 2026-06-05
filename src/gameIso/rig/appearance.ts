@@ -1,6 +1,7 @@
 import type { Slot } from './bones';
 import type { Combatant } from '../../engine/types';
 import { hashSeed } from '../appearance';
+import type { MonsterParts } from './parts/monstrous';
 
 /** Descripteur d'apparence COSMÉTIQUE (type pur ; l'engine ne le lit jamais). */
 export interface Appearance {
@@ -8,6 +9,7 @@ export interface Appearance {
   sex: 'M' | 'F';
   build: number;                                   // 0..1
   parts?: Partial<Record<Slot, number>>;           // overrides éditeur
+  monster?: MonsterParts;                          // parts monstrueux par slot (mutant modulaire)
   seed?: number;
 }
 

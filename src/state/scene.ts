@@ -39,10 +39,22 @@ export interface CustomStatblock {
   traits?: string[];
 }
 
+/** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).
+ *  Type structurel (pas d'import rendu) ; les valeurs valides sont offertes par l'éditeur. */
+export interface MonsterPartsSel {
+  tete?: string;       // 'chien' | 'lezard' | …
+  brasG?: string;      // 'tentacule' | 'griffe' | …
+  brasD?: string;
+  cornes?: boolean;
+  queue?: boolean;
+}
+
 /** Override d'apparence (sinon seed dérivé de l'id). pins : slot → index. */
 export interface EntityAppearance {
   seed?: number;
   pins?: Record<string, number>;
+  /** Mutant modulaire : parts monstrueuses (rendu via le rig). */
+  monster?: MonsterPartsSel;
 }
 
 export interface SceneEntity {
@@ -64,6 +76,8 @@ export interface SceneEntity {
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
   anim?: string;
+  /** Arme ÉQUIPÉE (libellé) — affichée par le rig (tenue prête si à distance). Ex. 'Arbalète'. */
+  weapon?: string;
 }
 
 export interface BuildingParams {
@@ -146,7 +160,15 @@ export interface Trigger {
 
 export interface EncounterDef {
   id: string;
-  enemies: { ref?: string; statblock?: CustomStatblock; pos: { x: number; y: number } }[];
+  enemies: {
+    ref?: string;
+    statblock?: CustomStatblock;
+    pos: { x: number; y: number };
+    /** Apparence (mutant modulaire : parts monstrueux) → même modèle qu'en exploration. */
+    appearance?: EntityAppearance;
+    /** Arme équipée (libellé) → affichée par le rig en combat. */
+    weapon?: string;
+  }[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];
 }

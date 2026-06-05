@@ -46,6 +46,15 @@ const cowering: Clip = {
   ],
 };
 
+/** Hurle à la lune : tête rejetée en arrière (tete < 0), buste cambré, épaules ouvertes. */
+const howling: Clip = {
+  loop: true,
+  steps: [
+    { pose: { tete: -16, torse: -6, epauleG: 18, epauleD: 18, avantBrasG: 8, avantBrasD: 8 }, ms: 900, easing: 'easeInOut' },
+    { pose: { tete: -24, torse: -9, epauleG: 24, epauleD: 24, avantBrasG: 10, avantBrasD: 10 }, ms: 700, easing: 'easeInOut' },
+  ],
+};
+
 /** Respiration subtile debout (idem idle de combat). */
 const standing: Clip = {
   loop: true,
@@ -55,16 +64,24 @@ const standing: Clip = {
   ],
 };
 
-export const AMBIENT_CLIPS: Record<string, Clip> = { feeding, praying, cowering, standing };
+export const AMBIENT_CLIPS: Record<string, Clip> = { feeding, praying, cowering, standing, howling };
+
+/** Alias : clés d'ambiance courtes (partagées avec les sprites monolithiques CSS)
+ *  → clip rig correspondant, pour qu'une même `anim` marche dans les deux rendus. */
+const ALIASES: Record<string, string> = {
+  feed: 'feeding', howl: 'howling', breathe: 'standing', sway: 'standing', wrap: 'standing',
+};
 
 /** Liste pour l'éditeur (clé + libellé FR). */
 export const AMBIENT_LIST: { key: string; label: string }[] = [
   { key: 'standing', label: 'Debout (respire)' },
   { key: 'feeding', label: 'Dévore un cadavre' },
+  { key: 'howling', label: 'Hurle (tête levée)' },
   { key: 'praying', label: 'En prière (incliné)' },
   { key: 'cowering', label: 'Terrorisé (recroquevillé)' },
 ];
 
 export function ambientClip(key?: string | null): Clip | null {
-  return key ? AMBIENT_CLIPS[key] ?? null : null;
+  if (!key) return null;
+  return AMBIENT_CLIPS[key] ?? AMBIENT_CLIPS[ALIASES[key]] ?? null;
 }

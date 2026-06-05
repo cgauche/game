@@ -4,8 +4,10 @@
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../engine/types';
 import { findCreature, CreatureData } from '../data';
-import { CustomStatblock } from './scene';
+import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
+import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
+import { hashSeed } from '../gameIso/appearance';
 
 function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): Characteristics {
   const chars = {} as Characteristics;
@@ -86,12 +88,20 @@ export function spawnEnemy(
   statblock: CustomStatblock | undefined,
   id: string,
   pos: { x: number; y: number },
+  opts?: { appearance?: EntityAppearance; weapon?: string },
 ): Combatant {
-  if (statblock) return statblockToCombatant(statblock, id, pos);
-  if (ref) {
-    const c = findCreature(ref);
-    if (c) return creatureToCombatant(c, id, pos);
+  let c: Combatant;
+  if (statblock) c = statblockToCombatant(statblock, id, pos);
+  else if (ref && findCreature(ref)) c = creatureToCombatant(findCreature(ref)!, id, pos);
+  else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
+
+  // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique :
+  // parts monstrueux (mutant modulaire) + arme équipée affichée par le rig.
+  if (opts?.appearance?.monster) {
+    c.appearance = riggedAppearance(c.name, opts.appearance.seed ?? hashSeed(id), opts.appearance.monster);
   }
-  // Repli : un humain de base.
-  return statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos);
+  if (opts?.weapon) {
+    c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];
+  }
+  return c;
 }
