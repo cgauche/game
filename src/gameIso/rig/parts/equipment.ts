@@ -58,11 +58,11 @@ export function weaponFamily(w: Weapon): string {
 
 /** Parts d'arme (dessinées dans le repère local de l'os `arme`, manche à l'origine). */
 const WEAPONS: Record<string, PartArt> = {
-  epee: `<rect x="-1.5" y="-2" width="3" height="6" fill="#5a3f24"/><rect x="-1" y="-30" width="2" height="28" fill="url(#g_steel)"/><rect x="-5" y="-2" width="10" height="2.5" fill="#caa64a"/>`,
-  hache: `<rect x="-1.5" y="-2" width="3" height="30" fill="#4a2f17"/><path d="M-2 -28 q14 -10 14 12 q-14 -2 -14 -10z" fill="url(#g_axe)" stroke="#2a3038"/>`,
-  masse: `<rect x="-1.5" y="-2" width="3" height="28" fill="#4a2f17"/><circle cx="0" cy="-28" r="6" fill="url(#g_steelD)"/>`,
-  dague: `<rect x="-1.2" y="-1" width="2.4" height="4" fill="#4a2f17"/><rect x="-1" y="-15" width="2" height="14" fill="url(#g_steel)"/>`,
-  lance: `<rect x="-1.5" y="-3" width="3" height="40" rx="1.2" fill="#6a4a2a"/><path d="M0 -52 L5 -40 L2 -34 L-2 -34 L-5 -40Z" fill="url(#g_steel)" stroke="#2a3038" stroke-width="0.5"/>`,
+  epee: `<rect x="-1.7" y="-2" width="3.4" height="7" rx="1" fill="#5a3f24"/><rect x="-5.5" y="-3.5" width="11" height="2.8" rx="1" fill="#caa64a"/><path d="M-2.3 -3 L2.3 -3 L2 -30 L0 -35 L-2 -30 Z" fill="url(#g_steel)" stroke="#2a3038" stroke-width="0.4"/>`,
+  hache: `<rect x="-1.7" y="-30" width="3.4" height="36" rx="1.4" fill="#4a2f17"/><path d="M-1 -33 Q17 -35 14 -19 Q17 -4 -1 -9 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.6"/><path d="M-1 -31 Q-8 -32 -8 -24 Q-8 -16 -1 -17 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.5" opacity="0.9"/>`,
+  masse: `<rect x="-1.7" y="-26" width="3.4" height="32" rx="1.4" fill="#4a2f17"/><circle cx="0" cy="-28" r="6" fill="url(#g_steelD)" stroke="#2a3038" stroke-width="0.5"/><path d="M0 -37 l2.6 3.5 -5.2 0 z M0 -19 l2.6 -3.5 -5.2 0 z M-9.5 -28 l3.5 2.6 0 -5.2 z M9.5 -28 l-3.5 2.6 0 -5.2 z" fill="#aab2bd" stroke="#2a3038" stroke-width="0.3"/>`,
+  dague: `<rect x="-1.4" y="-1" width="2.8" height="6" rx="0.9" fill="#4a2f17"/><rect x="-4" y="-2" width="8" height="2" rx="0.9" fill="#6a5238"/><path d="M-1.9 -2 L1.9 -2 L1.6 -16 L0 -20 L-1.6 -16 Z" fill="url(#g_steel)" stroke="#2a3038" stroke-width="0.3"/>`,
+  lance: `<rect x="-1.7" y="-30" width="3.4" height="40" rx="1.5" fill="#6a4a2a"/><path d="M0 -50 L5.5 -37 L2 -29 L-2 -29 L-5.5 -37 Z" fill="url(#g_steel)" stroke="#2a3038" stroke-width="0.5"/>`,
   baton: `<rect x="-1.6" y="-30" width="3.2" height="60" rx="1.5" fill="#6a4a2a"/><circle cx="0" cy="-30" r="4" fill="url(#g_glow)"/>`,
   arc: `<path d="M0 -26 Q14 0 0 26" stroke="#6a4a2a" stroke-width="2.4" fill="none"/><line x1="0" y1="-26" x2="0" y2="26" stroke="#d8d0c0" stroke-width="0.8"/>`,
   arbalete: `<rect x="-2" y="-4" width="4" height="20" fill="#5a3f24"/><path d="M-12 -4 H12" stroke="#3a2a18" stroke-width="3"/>`,
