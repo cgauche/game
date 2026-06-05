@@ -1,4 +1,5 @@
 import { useGame, activeCombatant } from '../state/store';
+import { isOutOfAction } from '../engine/conditions';
 import { campaign } from '../scenes/campaign';
 
 /**
@@ -33,14 +34,22 @@ export function BattlePanel() {
       <div className="initiative-track">
         {battle.order.map((id, i) => {
           const c = battle.combatants.find((x) => x.id === id)!;
-          const out = c.wounds.current <= 0;
+          const out = isOutOfAction(c);
+          const vital = c.dead
+            ? '☠️'
+            : c.conditions.some((x) => x.name === 'Inconscient')
+              ? '😵'
+              : c.wounds.current <= 0
+                ? '🩸'
+                : '';
           return (
             <span
               key={id}
               className={`init-chip ${c.kind} ${i === battle.turn ? 'current' : ''} ${out ? 'out' : ''}`}
-              title={`Init ${c.initiative}`}
+              title={`Init ${c.initiative} · ${c.wounds.current}/${c.wounds.max} PB${c.criticalWounds ? ` · ${c.criticalWounds} critique(s)` : ''}`}
             >
               {c.name}
+              {vital && ` ${vital}`}
             </span>
           );
         })}
