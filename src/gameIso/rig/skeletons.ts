@@ -72,9 +72,18 @@ export function baseSkeleton(species: string, sex: 'M' | 'F'): Skeleton {
   const base = baseSpeciesOf(species);
   const p = PROPS[base] ?? PROPS.Humain;
   let sk = scaleSkeleton(HUMAIN_M, p.sl, p.st);
-  // jambes spécifiques (Nain/Halfling courtes, Elfe longues)
-  for (const id of ['cuisseG', 'tibiaG', 'cuisseD', 'tibiaD'] as BoneId[])
-    sk[id] = { ...sk[id], length: sk[id].length * p.legs };
+  // Jambes spécifiques (Nain/Halfling courtes, Elfe longues). On raccourcit la
+  // LONGUEUR des os de jambe ET le pivot des joints enfants (tibia sur cuisse,
+  // pied sur tibia) : dans le gabarit de réf, tibia.pivot.y == cuisse.length, etc.
+  // Sans ça, le chaînage FK reste à la longueur d'origine → membres déconnectés
+  // (la part dessinée est plus courte que l'écart des joints) ET pieds qui flottent
+  // (la FK place le pied plus bas que la jambe réellement dessinée).
+  if (p.legs !== 1) {
+    for (const id of ['cuisseG', 'tibiaG', 'cuisseD', 'tibiaD'] as BoneId[])
+      sk[id] = { ...sk[id], length: sk[id].length * p.legs };
+    for (const id of ['tibiaG', 'tibiaD', 'piedG', 'piedD'] as BoneId[])
+      sk[id] = { ...sk[id], pivot: { x: sk[id].pivot.x, y: sk[id].pivot.y * p.legs } };
+  }
   if (sex === 'F') sk = feminize(sk);
   return sk;
 }

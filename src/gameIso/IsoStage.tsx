@@ -220,11 +220,37 @@ export function IsoStage() {
   type Obj = { d: number; el: JSX.Element };
   const objs: Obj[] = [];
 
+  // Tuiles occupées par un ACTEUR (héros/ennemi/pnj) — pour estomper l'arbre/mur
+  // qui les masquerait. Un occulteur haut (arbre ~5 tuiles) peint par-dessus un
+  // acteur situé DERRIÈRE (depth plus faible) et dans sa colonne écran → on le rend
+  // semi-transparent pour qu'on voie toujours le personnage (« à la Baldur's Gate »).
+  const actorTiles: { x: number; y: number }[] = [];
+  if (mode === 'battle' && battle) {
+    for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
+  } else {
+    actorTiles.push(partyPos);
+    for (const ent of scene.entities) if (ent.kind === 'personnage') actorTiles.push(ent.pos);
+  }
+  const occludesActor = (tx: number, ty: number) =>
+    actorTiles.some(
+      (a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7,
+    );
+
   // décor statique
   for (let y = 0; y < dims.h; y++)
     for (let x = 0; x < dims.w; x++) {
       const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
-      if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
+      if (ov)
+        objs.push({
+          d: ov.d,
+          el: (
+            <g
+              key={`ov${x}-${y}`}
+              style={{ opacity: occludesActor(x, y) ? 0.4 : 1, transition: 'opacity 0.25s' }}
+              dangerouslySetInnerHTML={{ __html: ov.html }}
+            />
+          ),
+        });
     }
 
   // bâtiments multi-tuiles (toit togglable pour le cutaway)
@@ -237,7 +263,7 @@ export function IsoStage() {
 
   const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean, walking?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
-    const feetY = cy + TH / 2;
+    const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
     return (
       <g
         key={id}
@@ -259,7 +285,7 @@ export function IsoStage() {
   // Variante de token() hébergeant des enfants React (rig héros) — même ombre/anneau/échelle.
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
-    const feetY = cy + TH / 2;
+    const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
     return (
       <g
         key={id}
@@ -410,6 +436,19 @@ export function IsoStage() {
           <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
         )}
         <g>{objs.map((o) => o.el)}</g>
+        {/* Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance). */}
+        {scene.entities
+          .filter((e) => e.kind === 'prop' && e.ref === 'cadavre')
+          .map((e) => {
+            const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
+            return (
+              <g key={`flies-${e.id}`} transform={`translate(${cx},${cy - 14})`} pointerEvents="none">
+                {['f1', 'f2', 'f3'].map((f) => (
+                  <circle key={f} className={`fly ${f}`} r={1.5} fill="#0d0d0d" />
+                ))}
+              </g>
+            );
+          })}
         {floats.map((f) => {
           const { cx, cy } = tileCenter(f.x, f.y, dims);
           return (
@@ -466,6 +505,15 @@ export function IsoStage() {
       </g>
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />
+      {/* Corbeau qui traverse le ciel (extérieurs) — vie d'ambiance. */}
+      {scene.ambiance !== 'interieur' && (
+        <g className="crow" style={{ transform: 'translate(-140px,90px)' }} pointerEvents="none">
+          <ellipse cx={0} cy={0} rx={7} ry={3} fill="#0a0a0a" />
+          <path className="wing" d="M-2 0 q-14 -8 -22 -2 q12 4 22 2" fill="#0a0a0a" />
+          <path className="wing" d="M2 0 q14 -8 22 -2 q-12 4 -22 2" fill="#0a0a0a" />
+          <circle cx={6} cy={-1} r={2.4} fill="#0a0a0a" />
+        </g>
+      )}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
       {/* Boutons de zoom (fixes, hors caméra) — molette aussi. */}
       <g transform={`translate(${VW - 58},16)`} style={{ cursor: 'pointer' }}>
