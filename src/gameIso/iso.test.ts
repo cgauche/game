@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -88,6 +88,20 @@ describe('projection rot-aware', () => {
           expect(cy).toBeGreaterThanOrEqual(0);
           expect(cy).toBeLessThanOrEqual(stage.h);
         }
+    }
+  });
+});
+
+describe('depth rot-aware', () => {
+  it('le tri depth suit la position écran (cy) pour les 4 rotations', () => {
+    for (const rot of [0, 1, 2, 3] as const) {
+      const dims: Dims = { w: 5, h: 5, rot };
+      const tiles: { d: number; cy: number }[] = [];
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++)
+          tiles.push({ d: depth(x, y, dims), cy: tileCenter(x, y, dims).cy });
+      const byDepth = [...tiles].sort((a, b) => a.d - b.d).map((t) => t.cy);
+      for (let i = 1; i < byDepth.length; i++) expect(byDepth[i]).toBeGreaterThanOrEqual(byDepth[i - 1]);
     }
   });
 });

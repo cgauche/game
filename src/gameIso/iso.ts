@@ -110,7 +110,9 @@ export function diamondPath(x: number, y: number, dims: Dims): string {
   return `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
 }
 
-/** Profondeur de tri (plus grand = devant). */
-export function depth(x: number, y: number) {
-  return x + y;
+/** Profondeur de tri (plus grand = devant), dans l'orientation courante.
+ *  `dims` optionnel : absent ⇒ rot 0 (rétro-compat des appelants non encore migrés). */
+export function depth(x: number, y: number, dims?: Dims) {
+  const r = dims ? rotTile(x, y, dims) : { x, y };
+  return r.x + r.y;
 }

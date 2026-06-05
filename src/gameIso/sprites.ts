@@ -38,7 +38,7 @@ const TERRAIN_OVERLAYS: Record<string, { render: (x: number, y: number, dims: Di
 /** Relief d'un terrain (mur/bois…) prêt à empiler avec sa profondeur, ou null si plat. */
 export function terrainOverlay(id: string, x: number, y: number, dims: Dims): { d: number; html: string } | null {
   const ov = TERRAIN_OVERLAYS[id];
-  return ov ? { d: depth(x, y) + ov.depthBias, html: ov.render(x, y, dims) } : null;
+  return ov ? { d: depth(x, y, dims) + ov.depthBias, html: ov.render(x, y, dims) } : null;
 }
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
