@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { careerClass, careerTenue } from './career';
+import { careerClass, careerTenue, careerTenueFor } from './career';
 import { pickView } from './types';
 
 describe('careerClass', () => {
@@ -19,5 +19,20 @@ describe('careerTenue', () => {
       expect(pickView(t.torse, 'front')).toContain('<');
       expect(pickView(t.jambes, 'front')).toContain('<');
     }
+  });
+});
+
+describe('careerTenueFor — vues dos/profil E·7 branchées', () => {
+  it('le torse d’une carrière générée expose back/profile distincts du front', () => {
+    const t = careerTenueFor('Noble'); // Noble a des vues générées
+    const front = pickView(t.torse, 'front');
+    expect(front).toContain('<');
+    expect(pickView(t.torse, 'back')).not.toBe(front);
+    expect(pickView(t.torse, 'profile')).not.toBe(front);
+  });
+  it('le front reste identique (compose, n’écrase pas)', () => {
+    // pickView front d’une carrière avec vues == le front généré d’origine (non altéré)
+    const front = pickView(careerTenueFor('Soldat').torse, 'front');
+    expect(front.length).toBeGreaterThan(20);
   });
 });

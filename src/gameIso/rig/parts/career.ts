@@ -1,9 +1,27 @@
 import careers from '../../../data/careers.json';
 import type { PartArt } from './types';
 import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
+import TENUE_VIEWS_JSON from './generated/tenueViews.json';
 import { SLICE_TENUES } from './slice-soldat';
 
 type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', PartArt>>;
+
+// Vues dos/profil des tenues (E·7, générées) — composées au front existant (torse/tête).
+type TenueViewSet = { back?: string; profile?: string };
+const TENUE_VIEWS = TENUE_VIEWS_JSON as Record<string, Partial<Record<'torse' | 'tete', TenueViewSet>>>;
+
+/** Compose les vues dos/profil (si dispo) aux slots string d'une tenue. */
+function withViews(career: string, set: TenueSet): TenueSet {
+  const v = TENUE_VIEWS[career];
+  if (!v) return set;
+  const out: TenueSet = { ...set };
+  for (const slot of ['torse', 'tete'] as const) {
+    const front = set[slot];
+    const views = v[slot];
+    if (typeof front === 'string' && views && (views.back || views.profile)) out[slot] = { front, ...views };
+  }
+  return out;
+}
 
 type CareerRow = { label: string; class: string };
 const BY_LABEL: Record<string, string> = {};
@@ -58,6 +76,6 @@ export function careerTenue(cls: string): TenueSet {
 export function careerTenueFor(career: string | undefined): TenueSet {
   if (career && SLICE_TENUES[career]) return SLICE_TENUES[career]; // tranche verticale (vues)
   const gen = career ? GENERATED_CAREER_TENUES[career] : undefined;
-  if (gen && Object.keys(gen).length) return gen;
+  if (gen && Object.keys(gen).length) return withViews(career!, gen); // + vues dos/profil (E·7)
   return careerTenue(careerClass(career ?? ''));
 }
