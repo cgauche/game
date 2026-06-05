@@ -20,6 +20,7 @@ import { BUILDINGS_META, perimeterTiles, defaultDoor } from '../../state/buildin
 import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature, Trigger, CustomStatblock, EncounterDef } from '../../state/scene';
 import { ParamFields } from './ParamFields';
+import { EffectList } from './EffectList';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
@@ -1014,13 +1015,23 @@ export function Editor() {
                   </>
                 )}
                 {sel.kind === 'objet' && (
-                  <label className="ed-field">
-                    Butin (séparé par ;)
-                    <input
-                      value={(sel.loot ?? []).join('; ')}
-                      onChange={(e) => updateSel({ loot: e.target.value.split(';').map((s) => s.trim()).filter(Boolean) })}
-                    />
-                  </label>
+                  <>
+                    <label className="ed-field">
+                      Butin simple (ramassé, l'objet disparaît ; séparé par ;)
+                      <input
+                        value={(sel.loot ?? []).join('; ')}
+                        onChange={(e) => updateSel({ loot: e.target.value.split(';').map((s) => s.trim()).filter(Boolean) })}
+                      />
+                    </label>
+                    <div className="ed-field">
+                      <span className="mini-title">Fouille (Effets) — le corps reste, fouillé une fois</span>
+                      <EffectList
+                        effects={sel.search ?? []}
+                        onChange={(eff) => updateSel({ search: eff })}
+                        ctx={{ encounters: scene.encounters, dialogues: scene.dialogues }}
+                      />
+                    </div>
+                  </>
                 )}
                 {sel.kind === 'prop' && (
                   <label className="ed-field">

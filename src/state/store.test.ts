@@ -834,3 +834,55 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(st.party.find((h) => h.id === 'b')!.xp).toBe(150);
   });
 });
+
+describe('Fouille / butin par objet cherchable (store)', () => {
+  beforeEach(() => reset());
+
+  const looter = (): Combatant => ({ id: 'a', name: 'A', xp: 0 }) as unknown as Combatant;
+
+  it('fouiller un objet à Effets applique les Effets, laisse le corps en place, et ne se refait pas', () => {
+    const scene = emptyScene(6, 6);
+    scene.id = 'fouille-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({
+      id: 'cadavre',
+      kind: 'objet',
+      pos: { x: 1, y: 0 },
+      label: 'Cadavre du cocher',
+      search: [
+        { type: 'giveMoney', gold: 2 },
+        { type: 'giveXp', amount: 10 },
+      ],
+    });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+
+    useGame.getState().interactEntity('cadavre');
+    let st = useGame.getState();
+    expect(st.money.gold).toBe(2);
+    expect(st.party[0].xp).toBe(10);
+    expect(st.scene!.entities.find((e) => e.id === 'cadavre')).toBeTruthy(); // le corps RESTE
+
+    // Re-fouille : aucun double octroi
+    useGame.getState().interactEntity('cadavre');
+    st = useGame.getState();
+    expect(st.money.gold).toBe(2);
+    expect(st.party[0].xp).toBe(10);
+  });
+
+  it('objet legacy à `loot` (noms) : ramassage dans l’inventaire + disparition (compat conservée)', () => {
+    const scene = emptyScene(6, 6);
+    scene.id = 'loot-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({ id: 'coffre', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Coffre', loot: ['Fiole', 'Lettre'] });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
+
+    useGame.getState().interactEntity('coffre');
+    const st = useGame.getState();
+    expect(st.inventory).toEqual(expect.arrayContaining(['Fiole', 'Lettre']));
+    expect(st.scene!.entities.find((e) => e.id === 'coffre')).toBeUndefined(); // ramassé → disparaît
+  });
+});

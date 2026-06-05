@@ -71,8 +71,11 @@ export interface SceneEntity {
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;
-  /** Butin remis quand l'objet est ramassé. */
+  /** Butin remis quand l'objet est ramassé (ramassage simple : l'objet disparaît). */
   loot?: string[];
+  /** Fouille à Effets (corps, coffre, meuble…) : Effets appliqués quand on cherche l'objet.
+   *  Contrairement à `loot`, l'objet RESTE en place et est marqué « fouillé » (une seule fois). */
+  search?: Effect[];
   /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */

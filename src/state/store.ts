@@ -479,6 +479,18 @@ export const useGame = create<GameState>((set, get) => ({
       const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
       if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
     } else if (ent.kind === 'objet') {
+      // Fouille à Effets (corps, coffre…) : le corps RESTE, marqué « fouillé » une seule fois.
+      if (ent.search && ent.search.length) {
+        if (get().flags[`__fouille_${entityId}`]) {
+          get().log(`${ent.label ?? 'Déjà fouillé'} : rien de plus à trouver.`);
+          return;
+        }
+        get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
+        applyEffects(get, set, ent.search);
+        set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } }));
+        return;
+      }
+      // Ramassage simple (legacy) : ajout à l'inventaire de groupe, l'objet disparaît.
       const loot = ent.loot ?? [];
       if (loot.length) set((s) => ({ inventory: [...s.inventory, ...loot] }));
       get().log(`Vous récupérez : ${loot.join(', ') || ent.label || 'un objet'}.`);
