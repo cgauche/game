@@ -1,12 +1,15 @@
 /**
- * SCÈNE DE TEST — « L'Embuscade » (fidèle à `public/ambush.html`).
+ * SCÈNE DE TEST — « Du Sang sur la Route » (fidèle à `public/ambush.html`).
  *
- * Sur une route forestière, une diligence renversée : des MUTANTS dévorent les
- * cadavres, ANIMÉS avant tout combat (clip d'ambiance « feeding »). En entrant dans
- * la zone d'approche → un DIALOGUE se déclenche ; à la fin du dialogue → le COMBAT
- * démarre contre ces mêmes mutants (mêmes positions → transition transparente).
+ * Une diligence éventrée en travers d'une route forestière ; ses passagers gisent,
+ * dépecés. Des MUTANTS de morphologies variées (charognard quadrupède, homme-chien
+ * hurlant, bras-tentacule, reptilien) se repaissent des cadavres — modèles par CALQUES
+ * (variantes choisies via `appearance.pins.forme`) et animés en CSS (feed/howl/wrap…),
+ * comme dans ambush.html. L'approche déclenche un DIALOGUE ; sa fin lance le COMBAT.
+ * Le décor (épave, corps, sang) reste visible pendant le combat.
  *
- * Document au schéma `Scene` : ouvrable et modifiable dans l'éditeur de niveau.
+ * Document au schéma `Scene` : entièrement reproductible dans l'éditeur (ref bestiaire +
+ * variante d'apparence + animation d'ambiance + zone-trigger + dialogue + rencontre).
  */
 import { Scene, Terrain, Dialogue } from '../state/scene';
 
@@ -19,19 +22,21 @@ function build(): Scene {
     if (x >= 0 && y >= 0 && x < W && y < H) tiles[y * W + x] = t;
   };
 
-  // Grand-route est-ouest (deux rangées) — le couloir d'embuscade.
+  // Grand-route est-ouest (deux rangées) — l'unique trouée dans les bois.
   for (let x = 0; x < W; x++) {
     set(x, 6, 'route');
     set(x, 7, 'route');
   }
-  // Lisière de forêt dense (bloquante) au nord et au sud : on est pris au piège.
+  // Forêt dense et oppressante qui enferme la route (nord + sud).
   for (let x = 0; x < W; x++) {
     set(x, 0, 'bois');
+    set(x, 1, 'bois');
     set(x, 13, 'bois');
-    if (x % 2 === 0) set(x, 1, 'bois');
-    if (x % 2 === 1) set(x, 12, 'bois');
+    set(x, 12, 'bois');
+    if (x % 2 === 0) set(x, 2, 'bois');
+    if (x % 3 === 0) set(x, 11, 'bois');
   }
-  for (const [x, y] of [[3, 3], [7, 2], [11, 3], [16, 2], [4, 10], [9, 11], [13, 10], [17, 11]] as const) set(x, y, 'bois');
+  for (const [x, y] of [[4, 3], [9, 3], [14, 3], [18, 2], [3, 10], [8, 10], [13, 9], [18, 10]] as const) set(x, y, 'bois');
 
   const dialogues: Dialogue[] = [
     {
@@ -41,26 +46,29 @@ function build(): Scene {
         {
           id: 'a1',
           text:
-            "La diligence gît renversée en travers de la route, un cheval éventré sous les brancards. " +
-            "Des silhouettes difformes se penchent sur les cadavres et s'en repaissent en grognant. " +
-            "L'une d'elles relève une gueule ensanglantée — et vous fixe.",
+            "La forêt se referme sur la route. Plus loin, une diligence gît renversée, l'attelage " +
+            "éventré, les bagages crevés et répandus dans la boue. Penchées sur les corps des voyageurs, " +
+            "des silhouettes difformes s'en repaissent à pleines dents — l'une, à quatre pattes, fouille " +
+            "un ventre ouvert ; une autre, museau dressé, hurle vers la canopée. Une gueule ensanglantée " +
+            "se tourne lentement vers vous.",
           choices: [
             {
-              text: 'Dégainer et charger avant qu’elles ne réagissent.',
+              text: 'Fondre sur les charognards avant qu’ils ne se ruent.',
               effects: [
-                { type: 'journal', text: 'Vous fondez sur les charognards.' },
+                { type: 'journal', text: "Vous chargez — l'acier contre la chair corrompue." },
                 { type: 'endDialogue' },
                 { type: 'startCombat', encounter: 'enc-mutants' },
               ],
             },
-            { text: 'Reculer lentement vers le couvert…', next: 'a2' },
+            { text: 'Reculer sans bruit vers le couvert…', next: 'a2' },
           ],
         },
         {
           id: 'a2',
           text:
-            'Trop tard : les créatures ont flairé le sang frais. Elles abandonnent leur festin ' +
-            'et bondissent vers vous en hurlant.',
+            'Une branche craque sous votre botte. Aussitôt les créatures relèvent la tête, naseaux ' +
+            'frémissants — elles ont flairé le sang neuf. Elles abandonnent leur festin et bondissent ' +
+            'vers vous en hurlant, gueules béantes.',
           choices: [
             {
               text: 'Au combat !',
@@ -77,35 +85,40 @@ function build(): Scene {
 
   return {
     id: 'ambush-test',
-    nom: "L'Embuscade — scène de test",
+    nom: 'Du Sang sur la Route — scène de test',
     description:
-      "Route forestière. Une diligence renversée et des mutants qui dévorent les cadavres. " +
-      "L'approche déclenche un dialogue, dont la fin lance le combat.",
+      'Route forestière. Une diligence éventrée, ses passagers dépecés, des mutants de toutes ' +
+      "formes qui s'en repaissent. L'approche déclenche un dialogue, dont la fin lance le combat.",
     dimensions: { w: W, h: H },
     ambiance: 'foret',
     tiles,
     startMessage:
-      'Au détour des arbres, une diligence renversée… et des formes difformes penchées sur les corps.',
+      'Au détour des arbres, une diligence renversée, des corps éparpillés… et des formes difformes ' +
+      'penchées dessus, qui se relèvent en grognant.',
     entities: [
       { id: 'start', kind: 'heroStart', pos: { x: 2, y: 7 } },
-      // Décor d'embuscade (props repris d'ambush.html).
-      { id: 'epave', kind: 'prop', pos: { x: 15, y: 6 }, ref: 'epave-carrosse', label: 'Diligence renversée' },
-      { id: 'cheval', kind: 'prop', pos: { x: 13, y: 7 }, ref: 'cheval-mort', label: 'Cheval éventré' },
-      { id: 'corps1', kind: 'prop', pos: { x: 14, y: 8 }, ref: 'cadavre', label: 'Cadavre' },
-      { id: 'corps2', kind: 'prop', pos: { x: 16, y: 8 }, ref: 'cadavre', label: 'Cadavre' },
-      { id: 'sang1', kind: 'prop', pos: { x: 15, y: 7 }, ref: 'mare-sang' },
-      { id: 'sang2', kind: 'prop', pos: { x: 14, y: 6 }, ref: 'mare-sang' },
-      // Mutants PRÉSENTS et ANIMÉS (dévorent) — mêmes positions que l'encounter pour
-      // un raccord transparent quand le combat démarre.
-      { id: 'mut1', kind: 'personnage', pos: { x: 14, y: 7 }, ref: 'Mutant', anim: 'feeding', label: 'Mutant charognard' },
-      { id: 'mut2', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', anim: 'feeding', label: 'Mutant charognard' },
-      { id: 'mut3', kind: 'personnage', pos: { x: 15, y: 8 }, ref: 'Mutant', anim: 'feeding', label: 'Mutant charognard' },
+      // — Carnage : la diligence, l'attelage, les voyageurs, le sang —
+      { id: 'epave', kind: 'prop', pos: { x: 15, y: 6 }, ref: 'epave-carrosse', label: 'Diligence éventrée' },
+      { id: 'cheval', kind: 'prop', pos: { x: 12, y: 6 }, ref: 'cheval-mort', label: 'Attelage éventré' },
+      { id: 'corps1', kind: 'prop', pos: { x: 11, y: 7 }, ref: 'cadavre', label: 'Voyageur dépecé' },
+      { id: 'corps2', kind: 'prop', pos: { x: 14, y: 8 }, ref: 'cadavre', label: 'Voyageur dépecé' },
+      { id: 'corps3', kind: 'prop', pos: { x: 17, y: 7 }, ref: 'cadavre', label: 'Voyageur dépecé' },
+      { id: 'sang1', kind: 'prop', pos: { x: 13, y: 7 }, ref: 'mare-sang', anim: 'gush' },
+      { id: 'sang2', kind: 'prop', pos: { x: 15, y: 7 }, ref: 'mare-sang', anim: 'gush' },
+      { id: 'sang3', kind: 'prop', pos: { x: 16, y: 8 }, ref: 'mare-sang' },
+      { id: 'sang4', kind: 'prop', pos: { x: 12, y: 8 }, ref: 'mare-sang' },
+      // — Mutants : morphologies VARIÉES (calque 'forme') + animation d'ambiance CSS,
+      //   aux MÊMES positions que l'encounter (raccord à l'entrée en combat). —
+      { id: 'mut-charognard', kind: 'personnage', pos: { x: 13, y: 8 }, ref: 'Mutant', appearance: { pins: { forme: 4 } }, anim: 'feed', label: 'Charognard quadrupède' },
+      { id: 'mut-chien', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { pins: { forme: 6 } }, anim: 'howl', label: 'Mutant hurleur' },
+      { id: 'mut-tentacule', kind: 'personnage', pos: { x: 14, y: 7 }, ref: 'Mutant', appearance: { pins: { forme: 7 } }, anim: 'wrap', label: 'Mutant à tentacule' },
+      { id: 'mut-lezard', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'Mutant', appearance: { pins: { forme: 5 } }, anim: 'breathe', label: 'Mutant reptilien' },
     ],
     dialogues,
     triggers: [
       {
         id: 'approche',
-        rect: { x: 9, y: 6, w: 3, h: 2 },
+        rect: { x: 8, y: 6, w: 3, h: 2 },
         once: true,
         effects: [{ type: 'startDialogue', dialogue: 'dlg-ambush' }],
       },
@@ -114,13 +127,14 @@ function build(): Scene {
       {
         id: 'enc-mutants',
         enemies: [
-          { ref: 'Mutant', pos: { x: 14, y: 7 } },
+          { ref: 'Mutant', pos: { x: 13, y: 8 } },
           { ref: 'Mutant', pos: { x: 16, y: 7 } },
-          { ref: 'Mutant', pos: { x: 15, y: 8 } },
+          { ref: 'Mutant', pos: { x: 14, y: 7 } },
+          { ref: 'Mutant', pos: { x: 17, y: 6 } },
         ],
         onVictory: [
           { type: 'setFlag', flag: 'embuscade_nettoyee' },
-          { type: 'journal', text: 'Les charognards gisent. La route est de nouveau sûre.' },
+          { type: 'journal', text: 'Les charognards gisent à leur tour. La route, enfin, se tait.' },
         ],
       },
     ],

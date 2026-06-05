@@ -32,8 +32,7 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
-import { AmbientRigToken } from './AmbientRigToken';
-import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
+import { enemyRigProfile } from './rig/enemyProfile';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -283,6 +282,13 @@ export function IsoStage() {
     return { x: p.x, y: p.y, walking: true };
   };
 
+  // Décors (props : épave, cadavres, sang…) rendus dans LES DEUX modes → restent
+  // visibles pendant le combat. L'anim d'ambiance CSS (ent.anim) passe par le calque fx.
+  for (const ent of scene.entities) {
+    if (ent.kind !== 'prop') continue;
+    objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+  }
+
   if (mode === 'battle' && battle) {
     let hi = 0;
     for (const c of battle.combatants) {
@@ -303,20 +309,9 @@ export function IsoStage() {
     }
   } else {
     for (const ent of scene.entities) {
-      if (ent.kind === 'heroStart') continue;
-      // Entité humanoïde avec animation d'ambiance → rig animé (ex. mutant qui dévore).
-      if (ent.kind === 'personnage' && ent.anim) {
-        const prof = entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', ent.appearance?.seed ?? hashSeed(ent.id));
-        if (prof) {
-          objs.push({
-            d: depth(ent.pos.x, ent.pos.y),
-            el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim} />, 0.55),
-          });
-          continue;
-        }
-      }
-      const inner = entitySprite(ent);
-      objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55) });
+      if (ent.kind === 'heroStart' || ent.kind === 'prop') continue; // props déjà rendus (au-dessus)
+      // Apparence par CALQUES (variantes Mutant…) + animation d'ambiance CSS (calque fx).
+      objs.push({ d: depth(ent.pos.x, ent.pos.y), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party[0];

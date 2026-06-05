@@ -6,7 +6,7 @@ import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
 import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
-import { AMBIENT_LIST } from '../../gameIso/rig/anim/ambientClips';
+import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -939,8 +939,7 @@ export function Editor() {
                     <label className="ed-field">
                       Animation d'ambiance
                       <select value={sel.anim ?? ''} onChange={(e) => updateSel({ anim: e.target.value || undefined })}>
-                        <option value="">— aucune (sprite fixe) —</option>
-                        {AMBIENT_LIST.map((a) => (
+                        {SCENE_ANIMS.map((a) => (
                           <option key={a.key} value={a.key}>
                             {a.label}
                           </option>
