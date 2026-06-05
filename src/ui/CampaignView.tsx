@@ -6,6 +6,7 @@ import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
+import { ReloadModal } from './ReloadModal';
 import { DefenseModal } from './DefenseModal';
 import { RoundStartModal } from './RoundStartModal';
 import { FateSaveModal } from './FateSaveModal';
@@ -78,6 +79,7 @@ export function CampaignView() {
       {mode === 'battle' && battle && <BattlePanel />}
       <TestModal />
       <RollModal />
+      <ReloadModal />
       <DefenseModal />
       <DisengageModal />
       <CastModal />

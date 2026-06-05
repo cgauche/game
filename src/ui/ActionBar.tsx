@@ -4,6 +4,7 @@ import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { itemUse } from '../engine/consumables';
+import { compatibleAmmo } from '../engine/items';
 
 const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
@@ -26,6 +27,8 @@ export function ActionBar() {
   const useItem = useGame((s) => s.battleUseItem);
   const spendResolve = useGame((s) => s.battleSpendResolve);
   const pickup = useGame((s) => s.battlePickup);
+  const reload = useGame((s) => s.battleReload);
+  const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
   if (!battle || battle.over) return null;
@@ -64,6 +67,11 @@ export function ActionBar() {
           )
           .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })))
       : [];
+
+  // Tir : arme à distance active, son rechargement (défaut Recharge uniquement) et ses munitions compatibles.
+  const rangedW = isHero ? active.weapons.find((w) => w.type === 'ranged') : undefined;
+  const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !active.loaded; // l'Arc (reload 0) ne recharge jamais
+  const ammoChoices = isHero && rangedW ? compatibleAmmo(active, rangedW) : [];
 
   const hint =
     battle.action === 'move'
@@ -136,6 +144,21 @@ export function ActionBar() {
             <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
               <button className="btn btn-sm" onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet (coûte l'Action) — LDB Combat">
                 ✋ {g.label}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {ammoChoices.length > 0 && battle.action === 'ammo' && (
+        <div className="ab-spells">
+          {ammoChoices.map((a) => (
+            <div key={a.uid} className="ab-spell-row">
+              <button
+                className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`}
+                onClick={() => selectAmmo(a.uid)}
+                title={(a.qualities ?? []).join(', ')}
+              >
+                🏹 {a.name} ×{a.qty}
               </button>
             </div>
           ))}
@@ -248,6 +271,27 @@ export function ActionBar() {
               >
                 <span className="ab-ico">✋</span>
                 <span className="ab-lbl">Ramasser{battle.acted && ' ✓'}</span>
+              </button>
+            )}
+            {needsReload && (
+              <button
+                className="ab-slot"
+                disabled={battle.acted || stunned}
+                onClick={reload}
+                title="Recharger l'arme à distance (Test étendu de Projectiles — coûte l'Action)"
+              >
+                <span className="ab-ico">🔄</span>
+                <span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</span>
+              </button>
+            )}
+            {ammoChoices.length > 1 && (
+              <button
+                className={`ab-slot ${battle.action === 'ammo' ? 'on' : ''}`}
+                onClick={() => selectAction(battle.action === 'ammo' ? null : 'ammo')}
+                title="Choisir la munition à tirer (Atouts du tir variables)"
+              >
+                <span className="ab-ico">🏹</span>
+                <span className="ab-lbl">Munition</span>
               </button>
             )}
             <button className="ab-slot ab-end" onClick={endTurn}>
