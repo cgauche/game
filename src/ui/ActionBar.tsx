@@ -29,6 +29,7 @@ export function ActionBar() {
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
+  const aim = useGame((s) => s.battleAim);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
   if (!battle || battle.over) return null;
@@ -271,6 +272,17 @@ export function ActionBar() {
               >
                 <span className="ab-ico">✋</span>
                 <span className="ab-lbl">Ramasser{battle.acted && ' ✓'}</span>
+              </button>
+            )}
+            {rangedW && (
+              <button
+                className={`ab-slot ${active.aiming ? 'on' : ''}`}
+                disabled={battle.acted || stunned || active.aiming}
+                onClick={aim}
+                title="Viser : +20 (Accessible) à votre prochain tir — coûte l'Action, sans jet (LDB Difficultés)"
+              >
+                <span className="ab-ico">🎯</span>
+                <span className="ab-lbl">{active.aiming ? 'En joue ✓' : 'Viser'}</span>
               </button>
             )}
             {needsReload && (

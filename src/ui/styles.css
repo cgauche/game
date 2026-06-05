@@ -1769,6 +1769,33 @@ textarea:focus {
 .rm-roll.fail .rm-roll-sl {
   color: #e07a63;
 }
+.rm-roll-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rm-roll-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 10px 2px;
+}
+.rm-mod {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+}
+.rm-mod.pos {
+  color: #6fce8e;
+  border-color: #2f6a44;
+}
+.rm-mod.neg {
+  color: #e07a63;
+  border-color: #7a3a2f;
+}
 .rm-verdict {
   text-align: center;
   font-weight: 700;

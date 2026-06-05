@@ -24,4 +24,23 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     expect(html).toContain('67'); // d100
     expect(html).toContain('✗'); // échec
   });
+
+  it('détaille les modificateurs étiquetés quand ils reconcilient le total', () => {
+    const html = renderToStaticMarkup(
+      <RollLine
+        d={{ label: 'Projectiles', base: 38, modifier: 60, target: 98, roll: 50, success: true, sl: 4, mods: [{ label: 'Courte portée', value: 40 }, { label: 'Viser', value: 20 }] }}
+      />,
+    );
+    expect(html).toContain('Courte portée');
+    expect(html).toContain('Viser');
+    expect(html).toContain('+40');
+    expect(html).toContain('+20');
+  });
+
+  it('n’affiche PAS le détail si les mods ne reconcilient pas le total (ex. rederive partiel)', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20 }] }} />,
+    );
+    expect(html).not.toContain('Viser'); // 20 ≠ 40 → repli sur l'affichage groupé
+  });
 });
