@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -41,5 +41,53 @@ describe('effDims', () => {
   it('rot impair = w/h permutés', () => {
     expect(effDims({ w: 5, h: 3, rot: 1 })).toEqual({ w: 3, h: 5 });
     expect(effDims({ w: 5, h: 3, rot: 3 })).toEqual({ w: 3, h: 5 });
+  });
+});
+
+describe('projection rot-aware', () => {
+  const ROTS = [0, 1, 2, 3] as const;
+
+  it('screenToTile inverse tileCenter pour les 4 rotations', () => {
+    for (const rot of ROTS) {
+      const dims: Dims = { w: 6, h: 4, rot };
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++) {
+          const { cx, cy } = tileCenter(x, y, dims);
+          expect(screenToTile(cx, cy, dims)).toEqual({ x, y });
+        }
+    }
+  });
+
+  it('la rotation change réellement la projection écran', () => {
+    // une tuile non centrale doit projeter ailleurs sous rot 1 que sous rot 0
+    const a = tileCenter(1, 0, { w: 6, h: 4, rot: 0 });
+    const b = tileCenter(1, 0, { w: 6, h: 4, rot: 1 });
+    expect(b).not.toEqual(a);
+    // et la tuile au sommet de l'écran (min cy) change avec la rotation
+    const topTile = (rot: 0 | 1) => {
+      let best = { x: 0, y: 0, cy: Infinity };
+      for (let x = 0; x < 6; x++)
+        for (let y = 0; y < 4; y++) {
+          const { cy } = tileCenter(x, y, { w: 6, h: 4, rot });
+          if (cy < best.cy) best = { x, y, cy };
+        }
+      return { x: best.x, y: best.y };
+    };
+    expect(topTile(1)).not.toEqual(topTile(0));
+  });
+
+  it('toutes les tuiles tiennent dans stageSize pour les 4 rotations', () => {
+    for (const rot of ROTS) {
+      const dims: Dims = { w: 6, h: 4, rot };
+      const stage = stageSize(dims);
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++) {
+          const { cx, cy } = tileCenter(x, y, dims);
+          expect(cx).toBeGreaterThanOrEqual(0);
+          expect(cx).toBeLessThanOrEqual(stage.w);
+          expect(cy).toBeGreaterThanOrEqual(0);
+          expect(cy).toBeLessThanOrEqual(stage.h);
+        }
+    }
   });
 });

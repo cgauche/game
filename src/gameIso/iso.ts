@@ -7,9 +7,10 @@ export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
 export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
 
-/** Marge à gauche pour que la tuile la plus à gauche (x=0,y=h-1) reste visible. */
-export function originX(h: number) {
-  return (h - 1) * (TW / 2) + TW / 2;
+/** Marge à gauche pour que la tuile la plus à gauche reste visible (dimensions effectives). */
+export function originX(dims: Dims) {
+  const ed = effDims(dims);
+  return (ed.h - 1) * (TW / 2) + TW / 2;
 }
 export function originY() {
   return SPRITE_HEADROOM;
@@ -60,29 +61,33 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
   }
 }
 
-/** Centre écran d'une tuile (x,y). */
+/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra. */
 export function tileCenter(x: number, y: number, dims: Dims): { cx: number; cy: number } {
+  const r = rotTile(x, y, dims);
   return {
-    cx: originX(dims.h) + (x - y) * (TW / 2),
-    cy: originY() + (x + y) * (TH / 2),
+    cx: originX(dims) + (r.x - r.y) * (TW / 2),
+    cy: originY() + (r.x + r.y) * (TH / 2),
   };
 }
 
-/** Taille totale du canvas SVG pour une carte donnée. */
+/** Taille totale du canvas SVG pour une carte donnée (dimensions effectives). */
 export function stageSize(dims: Dims): { w: number; h: number } {
+  const ed = effDims(dims);
   return {
-    w: (dims.w + dims.h) * (TW / 2) + TW,
-    h: (dims.w + dims.h) * (TH / 2) + SPRITE_HEADROOM + TH,
+    w: (ed.w + ed.h) * (TW / 2) + TW,
+    h: (ed.w + ed.h) * (TH / 2) + SPRITE_HEADROOM + TH,
   };
 }
 
-/** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières. */
+/** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières (dé-tourne). */
 export function screenToTile(px: number, py: number, dims: Dims): { x: number; y: number } {
-  const dx = px - originX(dims.h);
+  const dx = px - originX(dims);
   const dy = py - originY();
   const a = dx / (TW / 2);
   const b = dy / (TH / 2);
-  return { x: Math.round((a + b) / 2), y: Math.round((b - a) / 2) };
+  const rx = Math.round((a + b) / 2);
+  const ry = Math.round((b - a) / 2);
+  return unrotTile(rx, ry, dims);
 }
 
 /** Les 4 sommets (et le centre) du losange d'une tuile — source unique de la
