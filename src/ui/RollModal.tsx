@@ -3,6 +3,7 @@ import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
+import { ResilienceButton } from './ResilienceButton';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -43,6 +44,7 @@ export function RollModal() {
   const roll = useGame((s) => s.attackRoll);
   const reroll = useGame((s) => s.attackReroll);
   const bonusSL = useGame((s) => s.attackBonusSL);
+  const forceSuccess = useGame((s) => s.attackForceSuccess);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
   if (!pa || !battle) return null;
@@ -110,6 +112,7 @@ export function RollModal() {
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ResilienceButton resilience={attacker.resilience ?? 0} show={!!res && !res.hit} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

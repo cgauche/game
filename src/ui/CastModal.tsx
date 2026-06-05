@@ -3,6 +3,7 @@ import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
+import { ResilienceButton } from './ResilienceButton';
 
 /**
  * Modale d'incantation (« tous les jets méritent leur modale ») : on sélectionne un sort + une
@@ -16,6 +17,7 @@ export function CastModal() {
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
+  const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
   if (!pc || !battle) return null;
@@ -90,6 +92,7 @@ export function CastModal() {
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ResilienceButton resilience={caster.resilience ?? 0} show={!!res && !res.cast} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

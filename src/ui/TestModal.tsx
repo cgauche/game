@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
+import { ResilienceButton } from './ResilienceButton';
 
 /**
  * Test de compétence interactif (brique « tests », hors combat). On clique
@@ -13,11 +14,13 @@ export function TestModal() {
   const roll = useGame((s) => s.testRoll);
   const reroll = useGame((s) => s.testReroll);
   const bonusSL = useGame((s) => s.testBonusSL);
+  const forceSuccess = useGame((s) => s.testForceSuccess);
   const resolve = useGame((s) => s.resolveTest);
   if (!pt) return null;
   const rolled = pt.roll != null;
   const fortune = party.find((c) => c.id === pt.actorId)?.fortune ?? 0;
   const rerollable = rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled);
+  const resilience = party.find((c) => c.id === pt.actorId)?.resilience ?? 0;
 
   return (
     <div className="modal-overlay">
@@ -45,6 +48,7 @@ export function TestModal() {
             </div>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ResilienceButton resilience={resilience} show={rolled && !pt.success} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={resolve}>
                 Continuer
               </button>

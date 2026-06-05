@@ -4,6 +4,7 @@ import { defenseValue } from '../engine/combat';
 import { RollLine } from './RollModal';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
+import { ResilienceButton } from './ResilienceButton';
 
 /**
  * Modale de défense réactive : quand un ennemi (IA) attaque un héros en mêlée, le
@@ -19,6 +20,7 @@ export function DefenseModal() {
   const roll = useGame((s) => s.defenseRoll);
   const reroll = useGame((s) => s.defenseReroll);
   const bonusSL = useGame((s) => s.defenseBonusSL);
+  const forceSuccess = useGame((s) => s.defenseForceSuccess);
   const confirm = useGame((s) => s.defenseConfirm);
   const subir = useGame((s) => s.defenseCancel);
   if (!pd || !battle) return null;
@@ -80,6 +82,7 @@ export function DefenseModal() {
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ResilienceButton resilience={defender.resilience ?? 0} show={!!res && res.hit} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>

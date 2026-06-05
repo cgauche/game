@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
+import { ResilienceButton } from './ResilienceButton';
 
 /**
  * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
@@ -16,6 +17,7 @@ export function DisengageModal() {
   const esquiver = useGame((s) => s.disengageRoll);
   const reroll = useGame((s) => s.disengageReroll);
   const bonusSL = useGame((s) => s.disengageBonusSL);
+  const forceSuccess = useGame((s) => s.disengageForceSuccess);
   const confirm = useGame((s) => s.disengageConfirm);
   const flee = useGame((s) => s.disengageFlee);
   const cancel = useGame((s) => s.disengageCancel);
@@ -75,6 +77,7 @@ export function DisengageModal() {
             </div>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ResilienceButton resilience={mover.resilience ?? 0} show={pd.phase === 'esquive' && pd.result !== 'success'} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer
               </button>
