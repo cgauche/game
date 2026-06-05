@@ -21,8 +21,11 @@ rendu est en paper-doll 2.5D à vues discrètes, incompatible avec un angle arbi
   les consomme — jeu (`IsoStage.tsx`) **et** éditeur (`ui/editor/Editor.tsx`, qui
   importe `iso.ts` ligne 6 et partage `buildingObj`/`terrainOverlay`/`groundTile`).
 - **Le facing des personnages est dérivé de la direction ÉCRAN** (`facing.ts`
-  `facingView(dx,dy)`), pas de la grille → il se recalcule tout seul quand la
-  projection tourne. **Gratuit.**
+  `facingView(dx,dy)`), pas de la grille. MAIS `screenDir` (`facing.ts:13`)
+  recalcule la projection `x−y / x+y` **à la main**, sans `rot` → il faut le rendre
+  rot-aware (tourner ses deux extrémités par `rot`). Changement localisé (1 fonction
+  + ses 3 appelants : `RigToken`, `AnimatedQuadToken`, `IsoStage`), pas gratuit mais
+  petit.
 - **Seul occultant directionnel = les bâtiments.** `footCorners` (`catalog/buildings.ts:6`)
   dessine murs/porte sur les 2 faces avant (O→S, S→E) identifiées par **identité de
   coin grille**. En tournant, ces faces ne seraient plus face caméra → on verrait
@@ -98,9 +101,13 @@ export interface Dims { w: number; h: number; rot?: Rot } // rot absent ⇒ 0 (r
 
 ### 3. État + entrée + caméra
 
-- **État de vue éphémère** : champ `camRot: Rot` dans le store `useGame`. **Jamais
-  sérialisé dans le document de scène.** (Au store plutôt qu'en local IsoStage pour
-  permettre une boussole HUD ultérieure et un partage jeu/éditeur cohérent.)
+- **État de vue éphémère** : champ `camRot: 0|1|2|3` dans le store `useGame`, action
+  `rotateCam(dir)`. **Jamais sérialisé dans le document de scène.** Au store (et non
+  en local IsoStage) **parce que le facing est calculé dans des callbacks bus** au
+  fond de `RigToken`/`AnimatedQuadToken` : ils lisent `useGame.getState().camRot` en
+  live, sans threading de props. L'**éditeur** garde au contraire un `rot` **local**
+  (ses entités sont statiques — pas de `ANIM_MOVE` → pas de calcul de facing à
+  corriger ; il n'a besoin que de projection + picking rot-aware).
 - **Entrée Q / E** : handler clavier.
   - `E` (horaire) : `camRot = (camRot + 1) & 3`
   - `Q` (anti-horaire) : `camRot = (camRot + 3) & 3`
