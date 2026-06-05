@@ -143,15 +143,17 @@ const RANGED_FLINCH = c([
 export function carryPose(w?: Weapon): Pose {
   if (!w) return {};
   switch (weaponGroupKey(w)) {
-    case 'hast': case 'cavalerie': return { epauleD: 8, avantBrasD: -6 };
+    case 'hast': case 'cavalerie': return { epauleD: 22, avantBrasD: 12, epauleG: 28, avantBrasG: 18, arme: -10, torse: 3 }; // hast à 2 mains, en avant
     case 'arc': return { epauleG: 40, avantBrasG: -4, epauleD: 30, avantBrasD: 8, arme: -72 };
     case 'arbalete': return { epauleD: 50, epauleG: 42, avantBrasD: -4, avantBrasG: 8, arme: -78 };
     case 'poudre': case 'ingenierie': return { epauleD: 48, epauleG: 30, avantBrasD: -2, arme: -74 };
     case 'fronde': case 'lancer': case 'entraves': return { epauleD: 10 };
     case 'explosifs': return { epauleD: 8 };
-    case 'deuxmains': case 'fleau': return { epauleD: 10, avantBrasD: 8 };
-    case 'bagarre': return {};
-    default: return { epauleD: 6, avantBrasD: 6 }; // base/escrime/parade
+    // GARDE de combat À DEUX MAINS : les deux bras en avant, mains vers l'arme, lame relevée.
+    case 'deuxmains': case 'fleau': return { epauleD: 28, avantBrasD: 26, epauleG: 34, avantBrasG: 30, arme: -22, torse: 4 };
+    case 'bagarre': return { epauleD: 20, avantBrasD: 26, epauleG: 20, avantBrasG: 26, torse: 3 }; // poings levés
+    // GARDE à 1 main : arme relevée devant, main gauche en appui (prêt à en découdre).
+    default: return { epauleD: 26, avantBrasD: 24, epauleG: 30, avantBrasG: 24, arme: -34, torse: 3 }; // base/escrime/parade
   }
 }
 
