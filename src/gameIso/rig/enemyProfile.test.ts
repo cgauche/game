@@ -82,7 +82,7 @@ describe('enemyRigProfile', () => {
       ['Minotaure', 'Minotaure', 'taureau'],
       ['Squelette guerrier', 'Squelette', 'crane'],
       ['Zombie', 'Zombie', 'pourri'],
-      ['Goule de crypte', 'Goule', 'chien'],
+      ['Goule de crypte', 'Goule', 'goule'],
       ['Troll de pierre', 'Troll', 'troll'],
       ['Sanguinaire de Khorne', 'Démon', 'demon'],
       ['Vampire', 'Vampire', undefined], // humain pâle → pas de tête monstrueuse

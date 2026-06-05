@@ -119,12 +119,13 @@ function detectSpecies(n: string): string {
  *  robe (Noble). Les peaux-vertes et hommes-bêtes gardent l'armure de soldat. */
 const SPECIES_CAREER: Record<string, string> = {
   Skaven: 'Skaven', // tenue dédiée : pelage + lamelles de récup (bras velus → poing raccordé)
-  Vampire: 'Noble',
+  Vampire: 'Vampire', // tenue dédiée : manteau sombre à col haut (réutilisable pour tout humanoïde)
   Zombie: 'Mendiant', // hardes en lambeaux
   Orc: 'Mendiant', Gobelin: 'Mendiant', // hardes/cuir brun (la tenue Soldat a un tabard rouge hardcodé non recolorable)
   // Pelage couvrant tout le corps / mort-vivant nu / monstre sans habit → corps de chair.
   'Homme-bête': 'Nu', Minotaure: 'Nu',
-  Squelette: 'Nu', Goule: 'Nu', Troll: 'Nu', Snotling: 'Nu', Ogre: 'Nu', Démon: 'Nu',
+  Squelette: 'Squelette', // tenue dédiée : ossature (cage thoracique + os des membres)
+  Goule: 'Nu', Troll: 'Nu', Snotling: 'Nu', Ogre: 'Nu', Démon: 'Nu',
 };
 
 /** Carrière (→ tenue) mappée du nom. */
@@ -207,12 +208,12 @@ const SPECIES_AUTO_MONSTER: Record<string, MonsterParts> = {
   'Homme-bête': { tete: 'caprin', cornes: true, jambes: 'chevre', queue: true },
   Minotaure: { tete: 'taureau', cornes: true, jambes: 'chevre', queue: true },
   // Morts-vivants.
-  Squelette: { tete: 'crane', cotes: true },
+  Squelette: { tete: 'crane' }, // côtes fournies par la tenue dédiée (cage thoracique)
   Zombie: { tete: 'pourri', plaie: true },
-  Goule: { tete: 'chien', cotes: true }, // museau de charognard
+  Goule: { tete: 'goule', griffes: true }, // humanoïde décharné à gueule de crocs (PAS un chien) + griffes
   // Gros / démons (Vampire = humain pâle → pas de tête monstrueuse : visage humain + col de
   // cape + crocs, géré par overlays/palette).
-  Troll: { tete: 'troll' },
+  Troll: { tete: 'troll', verrues: true }, // peau verruqueuse + ventre pâle (anti-blob)
   Ogre: { tete: 'ogre', ventre: true },
   Vampire: { cape: true },
   Démon: { tete: 'demon', cornes: true, membresRouges: true },
@@ -231,6 +232,9 @@ const SPECIES_SEX: Record<string, 'M' | 'F'> = { Vampire: 'M' };
 const SPECIES_COLORS: Record<string, import('./palette').Palette> = {
   Orc: { vet1: '#5a4a30', vet2: '#3a2a1c', cuir: '#5a3f24' }, // hardes cuir/toile brunes
   Gobelin: { vet1: '#3a5a28', vet2: '#5a3f24', cuir: '#4a3320' }, // hardes vert-brun
+  // Vampire : robe d'aristocrate NOIRE à parements cramoisis (pas l'écarlate d'officier qui le
+  // faisait lire « noble humain ») → silhouette de comte vampire avec le col de cape dressé.
+  Vampire: { vet1: '#241018', vet2: '#6a0e18', cuir: '#1a0e12', metal: '#8a8f9e' },
 };
 
 /**

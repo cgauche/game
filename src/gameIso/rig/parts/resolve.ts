@@ -125,8 +125,10 @@ export function resolveParts(
     if (!hasProfileView(tenue.tete) && out.tete?.svg) out.tete = { svg: PROFILE_TETE(dominantCloth(out.tete.svg)) };
   }
 
-  // Pieds : botte de cuir (habillés) ou pied nu griffu (monstres nus, carrière « Nu »).
-  out.pied = P(career === 'Nu' ? CLAWFOOT : FOOT);
+  // Pieds : botte de cuir (habillés) ou pied nu (monstres sans chaussure : « Nu » + squelette
+  // osseux) → CLAWFOOT en @peau (chair/os) à griffes/orteils sombres.
+  const bareFoot = career === 'Nu' || career === 'Squelette';
+  out.pied = P(bareFoot ? CLAWFOOT : FOOT);
 
   // Mains : petit poing à chaque poignet → agrippe l'arme/le bouclier (sinon l'arme
   // « flotte dans le vide » au bout de la manche). Sous l'arme (z) = la main tient.

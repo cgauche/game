@@ -15,7 +15,7 @@ export type MonsterHead =
   | 'chien' | 'lezard' | 'ogive' | 'minuscule' | 'rat'
   | 'orc' | 'gobelin'
   | 'caprin' | 'taureau'
-  | 'crane' | 'pourri'
+  | 'crane' | 'pourri' | 'goule'
   | 'troll' | 'ogre' | 'demon';
 export type MonsterArm = 'tentacule' | 'griffe';
 export type MonsterLeg = 'chevre';
@@ -31,6 +31,8 @@ export interface MonsterParts {
   cornes?: boolean;
   queue?: boolean;
   cotes?: boolean; // côtes apparentes (mort-vivant)
+  griffes?: boolean; // longues griffes aux mains (goule)
+  verrues?: boolean; // peau verruqueuse + ventre pâle (troll) — casse l'aplat « blob »
   plaie?: boolean; // plaie de chair exposée (zombie)
   ventre?: boolean; // énorme ventre à gutplate (ogre)
   cape?: boolean; // col de cape dressé en éventail + crocs (vampire)
@@ -278,6 +280,34 @@ const POURRI_PROFILE = `<g>
   <ellipse cx="7" cy="9.5" rx="2.2" ry="2.4" fill="#1c0e08"/>
   <path d="M5.5 7.6 l0 3.8 M7.5 7.6 l0 3.8" stroke="#cabfa8" stroke-width="0.6"/>
 </g>`;
+// Tête de GOULE de crypte : humanoïde dégénéré décharné (PAS un chien) — crâne chauve gris-vert,
+// tempes/joues creusées, orbites enfoncées sombres à petit œil pâle, nez réduit en fentes, large
+// gueule lippue pleine de crocs, oreilles pointues. @peau = gris-vert d'espèce. Os `tete`.
+const HEAD_GOULE = `<g>
+  <path d="M-7 2 Q-8 -10 0 -11 Q8 -10 7 2 Q6 8 3 10 L2 14 Q0 16 -2 14 L-3 10 Q-6 8 -7 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-6 4 Q-4.5 7 -3.4 10 M6 4 Q4.5 7 3.4 10" fill="none" stroke="@peauO" stroke-width="1" opacity="0.5"/>
+  <ellipse cx="-3.2" cy="3" rx="2.3" ry="2.7" fill="#120e0a"/><ellipse cx="3.2" cy="3" rx="2.3" ry="2.7" fill="#120e0a"/>
+  <circle cx="-3.2" cy="3.6" r="0.9" fill="#e8e6cf"/><circle cx="3.2" cy="3.6" r="0.9" fill="#e8e6cf"/>
+  <circle cx="-3.1" cy="3.6" r="0.4" fill="#3a1410"/><circle cx="3.3" cy="3.6" r="0.4" fill="#3a1410"/>
+  <path d="M-0.8 7 l0 1.8 M0.8 7 l0 1.8" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 11 Q0 10.4 5 11 Q4.4 14.6 0 15.4 Q-4.4 14.6 -5 11 Z" fill="#26120e"/>
+  <path d="M-3.6 11 l0.8 2.3 l0.8 -2.3 Z M-0.5 11 l0.8 2.6 l0.8 -2.6 Z M2.4 11 l0.7 2.1 l0.7 -2.1 Z" fill="#e6ddc4"/>
+  <path d="M-2.6 15 l0.5 -1.6 l0.6 1.6 M1 15 l0.5 -1.6 l0.6 1.6" fill="none" stroke="#e6ddc4" stroke-width="0.6"/>
+  <path d="M-7 0 l-3.4 -3 l2.2 4.4 z M7 0 l3.4 -3 l-2.2 4.4 z" fill="@peau" stroke="@peauO" stroke-width="0.4"/>
+</g>`;
+const GOULE_BACK = `<g>
+  <path d="M-7 2 Q-8 -10 0 -11 Q8 -10 7 2 Q6 9 0 12 Q-6 9 -7 2 Z" fill="@peauO"/>
+  <path d="M-6 -3 Q0 -5 6 -3" stroke="@peau" stroke-width="0.5" opacity="0.4" fill="none"/>
+  <path d="M0 -8 L0 10" stroke="@peau" stroke-width="0.6" opacity="0.35"/>
+  <path d="M-7 0 l-3.4 -3 l2.2 4.4 z M7 0 l3.4 -3 l-2.2 4.4 z" fill="@peauO"/>
+</g>`;
+const GOULE_PROFILE = `<g>
+  <path d="M-6 2 Q-7 -10 1 -11 Q8 -10 8 0 L9 4 Q8 8 5 9 L5 13 Q2 15 0 13 L-1 10 Q-6 9 -6 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <ellipse cx="2.2" cy="3" rx="2" ry="2.5" fill="#120e0a"/><circle cx="2.4" cy="3.6" r="0.8" fill="#e8e6cf"/><circle cx="2.5" cy="3.6" r="0.35" fill="#3a1410"/>
+  <path d="M3 11 Q7 10.4 9 12 Q6.8 14 4 13.4 Z" fill="#26120e"/>
+  <path d="M4 11.2 l0.4 1.9 M5.8 11 l0.5 2.1 M7.6 11.4 l0.4 1.7" stroke="#e6ddc4" stroke-width="0.6"/>
+  <path d="M-6 -1 l-3.4 -3 l2.2 4.4 z" fill="@peau" stroke="@peauO" stroke-width="0.4"/>
+</g>`;
 // === GROS / DÉMONS ==========================================================
 // Tête de TROLL : petite tête batracienne sans cou, gros yeux globuleux haut placés,
 // énorme gueule édentée tordue à crocs. @peau = vert forêt. Os `tete`.
@@ -355,6 +385,7 @@ const HEADS: Record<MonsterHead, PartArt> = {
   taureau: { front: HEAD_TAUREAU, back: TAUREAU_BACK, profile: TAUREAU_PROFILE },
   crane: { front: HEAD_CRANE, back: CRANE_BACK, profile: CRANE_PROFILE },
   pourri: { front: HEAD_POURRI, back: POURRI_BACK, profile: POURRI_PROFILE },
+  goule: { front: HEAD_GOULE, back: GOULE_BACK, profile: GOULE_PROFILE },
   troll: { front: HEAD_TROLL, back: TROLL_BACK, profile: TROLL_PROFILE },
   ogre: { front: HEAD_OGRE, back: OGRE_BACK, profile: OGRE_PROFILE },
   demon: { front: HEAD_DEMON, back: DEMON_BACK, profile: DEMON_PROFILE },
@@ -390,18 +421,41 @@ const OV_CORNES_TAUREAU = `<path d="M-7 -5 Q-16 -10 -16 -22 Q-11 -15 -4 -8 Z" fi
 // Longues cornes noires lisses recourbées vers l'arrière (démon de Khorne).
 const OV_CORNES_DEMON = `<path d="M-5 -6 Q-13 -12 -10 -26 Q-6 -16 -3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/><path d="M5 -6 Q13 -12 10 -26 Q6 -16 3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/>`;
 const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
+// Queue de RAT (skaven) — longue, NUE, ROSE, en S, traînant au sol : c'est LE tell de
+// silhouette du skaven (sans elle il lit comme un nain trapu brun). Repère os `bassin`.
+const OV_QUEUE_RAT = `<path d="M0 3 Q16 6 22 18 Q26 28 20 34 Q24 26 17 21 Q9 17 1 14 Z" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.7"/><path d="M2 5 Q15 8 20 18" fill="none" stroke="#b87f74" stroke-width="0.6" opacity="0.6"/><path d="M6 9 q1 1 0 2 M11 12 q1 1 0 2 M16 16 q1 1 0 2" stroke="#9a6a60" stroke-width="0.5" fill="none" opacity="0.6"/>`;
 // Côtes apparentes (mort-vivant) — calque sur le torse, repère os `torse` (haut ~ -28..-2).
 // Sillons SOMBRES (creux entre les côtes) + fine arête claire au-dessus (relief) + sternum
 // sombre : sur un corps en os/chair claire, des nervures @peauH (claires) disparaissaient —
 // il faut des CREUX sombres pour que la cage thoracique se lise.
 const OV_COTES = `<g><path d="M-7 -22 Q0 -19 7 -22 M-8 -16 Q0 -12 8 -16 M-8 -10 Q0 -6 8 -10 M-7 -4 Q0 0 7 -4" stroke="#2e2a1e" stroke-width="1.3" fill="none" opacity="0.7"/><path d="M-7 -20.6 Q0 -17.6 7 -20.6 M-8 -14.6 Q0 -10.6 8 -14.6 M-8 -8.6 Q0 -4.6 8 -8.6" stroke="@peauH" stroke-width="0.55" fill="none" opacity="0.65"/><path d="M0 -24 L0 -1" stroke="#2e2a1e" stroke-width="1.1" opacity="0.6"/></g>`;
+// Longues griffes recourbées aux mains (goule) — calque sur l'os `main` (poignet origine,
+// doigts vers +y). Griffes sombres dépassant des doigts.
+const OV_GRIFFES = `<path d="M-2.6 3.4 q-1.4 3 -1.2 6 M-0.9 4.4 q-0.5 3.4 -0.2 6.4 M0.9 4.4 q0.5 3.4 0.2 6.4 M2.6 3.4 q1.4 3 1.2 6" stroke="#241a12" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
 // Plaie de chair rouge exposée (zombie) — calque torse.
 const OV_PLAIE = `<ellipse cx="-2" cy="-10" rx="3" ry="4" fill="#7a1010"/><ellipse cx="-2" cy="-10" rx="1.6" ry="2.6" fill="#b03a2e"/>`;
+// Peau verruqueuse + ventre pâle (troll) — calque torse : ventre clair (@peauH) + pustules/lumps
+// dépareillés (@peauO ombre + @peauH reflet) → la masse verte uniforme cesse de lire « blob ».
+const OV_VERRUES = `<g>`
+  + `<ellipse cx="0" cy="6" rx="9" ry="12" fill="@peauH" opacity="0.35"/>`
+  + `<circle cx="-7" cy="-14" r="1.7" fill="@peauO"/><circle cx="-6.3" cy="-14.7" r="0.7" fill="@peauH" opacity="0.7"/>`
+  + `<circle cx="6" cy="-11" r="1.9" fill="@peauO"/><circle cx="6.7" cy="-11.7" r="0.8" fill="@peauH" opacity="0.7"/>`
+  + `<circle cx="-3" cy="-3" r="1.4" fill="@peauO"/><circle cx="-2.5" cy="-3.5" r="0.6" fill="@peauH" opacity="0.7"/>`
+  + `<circle cx="8" cy="2" r="1.6" fill="@peauO"/><circle cx="8.6" cy="1.4" r="0.6" fill="@peauH" opacity="0.7"/>`
+  + `<circle cx="-8" cy="1" r="1.3" fill="@peauO"/>`
+  + `<circle cx="2" cy="-17" r="1.3" fill="@peauO"/><circle cx="2.6" cy="-17.6" r="0.6" fill="@peauH" opacity="0.7"/>`
+  + `<circle cx="4" cy="14" r="1.4" fill="@peauO"/>`
+  + `</g>`;
 // Énorme ventre globulaire à gutplate (ogre) — calque bassin/torse bas. Repère os `torse`.
 const OV_VENTRE = `<g><ellipse cx="0" cy="4" rx="20" ry="17" fill="@peau" stroke="@peauO" stroke-width="0.8"/><ellipse cx="0" cy="6" rx="13" ry="11" fill="@metal" stroke="#3a4048" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#5a6068" stroke="#3a4048" stroke-width="0.6"/><circle cx="0" cy="6" r="1.4" fill="#2a3036"/></g>`;
 // Col de cape dressé en éventail (vampire) — calque DERRIÈRE le torse (col Dracula montant
 // derrière la nuque/les épaules). Repère os `torse` (nuque ≈ y -30, épaules ≈ ±14 à y -26).
-const OV_COL_CAPE = `<g><path d="M-4 -26 L-19 -34 Q-17 -22 -7 -20 Z" fill="#5a0e15" stroke="#2a060a" stroke-width="0.7"/><path d="M4 -26 L19 -34 Q17 -22 7 -20 Z" fill="#5a0e15" stroke="#2a060a" stroke-width="0.7"/><path d="M-5 -25 L-15 -31 Q-13 -22 -7 -21 Z" fill="#7a1620" opacity="0.6"/><path d="M5 -25 L15 -31 Q13 -22 7 -21 Z" fill="#7a1620" opacity="0.6"/></g>`;
+const OV_COL_CAPE = `<g>`
+  + `<path d="M-3 -27 L-23 -43 Q-25 -25 -8 -19 Z" fill="#15060a" stroke="#000" stroke-width="0.6"/>`
+  + `<path d="M3 -27 L23 -43 Q25 -25 8 -19 Z" fill="#15060a" stroke="#000" stroke-width="0.6"/>`
+  + `<path d="M-4 -26 L-18 -38 Q-19 -25 -8 -20 Z" fill="#6a0e18" opacity="0.9"/>`
+  + `<path d="M4 -26 L18 -38 Q19 -25 8 -20 Z" fill="#6a0e18" opacity="0.9"/>`
+  + `</g>`;
 // Crocs de vampire (calque sur la tête, par-dessus le visage humain).
 const OV_CROCS = `<path d="M-2 11 l-0.5 2.4 l1 0 z M2 11 l0.5 2.4 l-1 0 z" fill="#f4ecd8" stroke="#b8a888" stroke-width="0.3"/>`;
 // Membres rouge sang (démon de Khorne bicolore) — calques sur épaules/cuisses (repère os).
@@ -419,8 +473,10 @@ export interface MonsterInjection {
 }
 
 /** Traduit une sélection MonsterParts en surcharges par os + calques. Tolère les
- *  clés inconnues (ignorées) pour accepter les libellés libres de la scène. */
-export function monsterInjection(m: MonsterParts): MonsterInjection {
+ *  clés inconnues (ignorées) pour accepter les libellés libres de la scène.
+ *  `view` : certains calques sont propres à une vue (les crocs du vampire = détail de FACE ;
+ *  les dessiner de dos/de profil les ferait flotter sur la nuque ou hors du museau). */
+export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'profile' = 'front'): MonsterInjection {
   const replace: Partial<Record<BoneId, PartArt>> = {};
   const overlays: RigOverlay[] = [];
   const head = m.tete ? HEADS[m.tete as MonsterHead] : undefined;
@@ -440,11 +496,17 @@ export function monsterInjection(m: MonsterParts): MonsterInjection {
       : OV_CORNES;
     overlays.push({ bone: 'tete', svg: cornes, behind: true });
   }
-  if (m.queue) overlays.push({ bone: 'bassin', svg: OV_QUEUE, behind: true });
+  // Queue : rose et longue pour un homme-rat (tell skaven), sinon queue générique en pelage.
+  if (m.queue) overlays.push({ bone: 'bassin', svg: m.tete === 'rat' ? OV_QUEUE_RAT : OV_QUEUE, behind: true });
   if (m.cotes) overlays.push({ bone: 'torse', svg: OV_COTES });
+  if (m.griffes) { overlays.push({ bone: 'mainG', svg: OV_GRIFFES }); overlays.push({ bone: 'mainD', svg: OV_GRIFFES }); }
   if (m.plaie) overlays.push({ bone: 'torse', svg: OV_PLAIE });
+  if (m.verrues) overlays.push({ bone: 'torse', svg: OV_VERRUES });
   if (m.ventre) overlays.push({ bone: 'torse', svg: OV_VENTRE, behind: true });
-  if (m.cape) { overlays.push({ bone: 'torse', svg: OV_COL_CAPE, behind: true }); overlays.push({ bone: 'tete', svg: OV_CROCS }); }
+  // Cape : le col haut est désormais dans la TENUE Vampire (réutilisable) ; ici on ne garde que
+  // les CROCS, détail de visage propre au vampire, en vue de FACE seulement (sinon ils flottaient
+  // sur la nuque de dos / hors du museau de profil).
+  if (m.cape && view === 'front') overlays.push({ bone: 'tete', svg: OV_CROCS });
   if (m.membresRouges) {
     overlays.push({ bone: 'epauleG', svg: OV_BRAS_ROUGE });
     overlays.push({ bone: 'epauleD', svg: OV_BRAS_ROUGE });
@@ -463,6 +525,7 @@ export const MONSTER_HEAD_OPTIONS: { key: '' | MonsterHead; label: string }[] = 
   { key: 'orc', label: 'Orc' }, { key: 'gobelin', label: 'Gobelin' },
   { key: 'caprin', label: 'Caprine (homme-bête)' }, { key: 'taureau', label: 'Taureau (minotaure)' },
   { key: 'crane', label: 'Crâne (squelette)' }, { key: 'pourri', label: 'Chair pourrie (zombie)' },
+  { key: 'goule', label: 'Goule (décharné, crocs)' },
   { key: 'troll', label: 'Troll (batracien)' }, { key: 'ogre', label: 'Ogre (prognathe)' },
   { key: 'demon', label: 'Démon (cornu, gueule)' },
 ];

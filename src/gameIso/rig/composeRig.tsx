@@ -108,7 +108,7 @@ export function resolveRig(
   // (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique). Aucun
   // miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
   if (appearance.monster) {
-    const inj = monsterInjection(appearance.monster);
+    const inj = monsterInjection(appearance.monster, view);
     for (const [bone, part] of Object.entries(inj.replace) as [BoneId, import('./parts/types').PartArt][])
       boneParts[bone] = [{ svg: pickView(part, view), layer: 5 }];
     // `behind` → calque SOUS la part de l'os (cornes derrière la tête, queue/ventre derrière le

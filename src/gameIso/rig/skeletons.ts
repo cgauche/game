@@ -86,7 +86,7 @@ const PROPS: Record<string, { sl: number; st: number; legs: number; arms?: numbe
   Nain:           { sl: 0.74, st: 1.25, legs: 0.62 },
   Gnome:          { sl: 0.5,  st: 0.72, legs: 0.66 },
   Ogre:           { sl: 1.35, st: 1.7,  legs: 0.8 },
-  Skaven:         { sl: 0.92, st: 1.0,  legs: 0.82 }, // homme-rat voûté, un peu sous l'humain, pattes courtes
+  Skaven:         { sl: 0.96, st: 0.84, legs: 0.92 }, // homme-rat voûté ÉLANCÉ (anti-nain : maigre, pas trapu), longue queue rose
   'Haut-Elfe':    { sl: 1.08, st: 0.92, legs: 1.12 },
   'Elfe sylvain': { sl: 1.05, st: 0.9,  legs: 1.12 },
   // Phase B — familles monstrueuses bipèdes :
@@ -98,7 +98,7 @@ const PROPS: Record<string, { sl: number; st: number; legs: number; arms?: numbe
   Squelette:      { sl: 1.0,  st: 0.74, legs: 1.0 },  // décharné, membres grêles
   Zombie:         { sl: 0.98, st: 1.08, legs: 0.92 }, // trapu voûté
   Goule:          { sl: 0.96, st: 0.92, legs: 0.9 },  // maigre noueux, semi-quadrupède
-  Troll:          { sl: 1.45, st: 1.7,  legs: 0.7, arms: 1.5 }, // énorme torse, bras démesurés jusqu'au sol, petites jambes
+  Troll:          { sl: 1.45, st: 1.55, legs: 0.7, arms: 1.6 }, // grand, bras démesurés jusqu'au sol, petites jambes, moins « blob »
   Vampire:        { sl: 1.04, st: 0.96, legs: 1.0 },  // élancé aristocratique
   Démon:          { sl: 1.06, st: 0.92, legs: 1.06 }, // élancé nerveux, membres longs
 };

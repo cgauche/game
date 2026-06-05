@@ -16,8 +16,8 @@ export const SPECIES_PALETTES: Record<string, StoredPalette> = {
   "Haut-Elfe:F": { peau: "#ecc6a0", peauO: "#c79b75", cheveux: "#b88c38", cheveuxH: "#e6cd7e" },
   "Elfe sylvain:M": { peau: "#cdbd92", peauO: "#a89464", peauH: "#d8c9a0", cheveux: "#3c2e1a", cheveuxH: "#6b7a3a", cheveuxO: "#4a3a22" },
   "Elfe sylvain:F": { peau: "#d8c9a0", peauO: "#8a7a52", peauH: "#e2d2a8", cheveux: "#5a4a2c", cheveuxH: "#7a6642", cheveuxO: "#4a3c22" },
-  "Skaven:M": { peau: "#6e4a2e", peauO: "#50341f", peauH: "#8a6038", cheveux: "#2a2018", cheveuxO: "#161009", cheveuxH: "#3a2c1e" },
-  "Skaven:F": { peau: "#6e4a2e", peauO: "#50341f", peauH: "#8a6038", cheveux: "#2a2018", cheveuxO: "#161009", cheveuxH: "#3a2c1e" },
+  "Skaven:M": { peau: "#6f6354", peauO: "#4c4338", peauH: "#8c7f6c", cheveux: "#2a2018", cheveuxO: "#161009", cheveuxH: "#3a2c1e" },
+  "Skaven:F": { peau: "#6f6354", peauO: "#4c4338", peauH: "#8c7f6c", cheveux: "#2a2018", cheveuxO: "#161009", cheveuxH: "#3a2c1e" },
 
   // === Phase B — familles monstrueuses bipèdes ===
   // Peaux-vertes (pelage/peau verte ; cheveux sombres car peu visibles, tête couvre tout).
@@ -35,10 +35,10 @@ export const SPECIES_PALETTES: Record<string, StoredPalette> = {
   // Morts-vivants.
   "Squelette:M": { peau: "#d8ccab", peauO: "#a89c80", peauH: "#ece2c6", cheveux: "#8a8f9e", cheveuxO: "#5a5e68", cheveuxH: "#aab0bc" },
   "Squelette:F": { peau: "#d8ccab", peauO: "#a89c80", peauH: "#ece2c6", cheveux: "#8a8f9e", cheveuxO: "#5a5e68", cheveuxH: "#aab0bc" },
-  "Zombie:M": { peau: "#7c8c63", peauO: "#5a5e4a", peauH: "#94a47a", cheveux: "#454c36", cheveuxO: "#2c3024", cheveuxH: "#5a6248" },
-  "Zombie:F": { peau: "#7c8c63", peauO: "#5a5e4a", peauH: "#94a47a", cheveux: "#454c36", cheveuxO: "#2c3024", cheveuxH: "#5a6248" },
-  "Goule:M": { peau: "#8a9484", peauO: "#4f5b4a", peauH: "#a6b09c", cheveux: "#3a3e34", cheveuxO: "#22241e", cheveuxH: "#4e5246" },
-  "Goule:F": { peau: "#8a9484", peauO: "#4f5b4a", peauH: "#a6b09c", cheveux: "#3a3e34", cheveuxO: "#22241e", cheveuxH: "#4e5246" },
+  "Zombie:M": { peau: "#8e8a7a", peauO: "#605c4d", peauH: "#a8a390", cheveux: "#454c36", cheveuxO: "#2c3024", cheveuxH: "#5a6248" },
+  "Zombie:F": { peau: "#8e8a7a", peauO: "#605c4d", peauH: "#a8a390", cheveux: "#454c36", cheveuxO: "#2c3024", cheveuxH: "#5a6248" },
+  "Goule:M": { peau: "#9ca0a2", peauO: "#696d70", peauH: "#bcc0c2", cheveux: "#3a3e34", cheveuxO: "#22241e", cheveuxH: "#4e5246" },
+  "Goule:F": { peau: "#9ca0a2", peauO: "#696d70", peauH: "#bcc0c2", cheveux: "#3a3e34", cheveuxO: "#22241e", cheveuxH: "#4e5246" },
   // Gros / démons.
   "Troll:M": { peau: "#4a6b34", peauO: "#324a22", peauH: "#658a48", cheveux: "#2a3818", cheveuxO: "#18240e", cheveuxH: "#3a4c24" },
   "Troll:F": { peau: "#4a6b34", peauO: "#324a22", peauH: "#658a48", cheveux: "#2a3818", cheveuxO: "#18240e", cheveuxH: "#3a4c24" },

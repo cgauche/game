@@ -133,6 +133,125 @@ const MANUAL: Record<string, TenueSlots> = {
         + `</g>`,
     },
   },
+  // Squelette (mort-vivant décharné) : le corps EST une ossature — torse = cage thoracique
+  // (cavité SOMBRE + côtes/sternum/colonne en os @peau), membres = os longs grêles à articulations
+  // (rotule/coude renflés, fût d'os fin). Sans ça le corps crème plein lisait comme une MOMIE
+  // bandée. Tête de crâne via SPECIES_AUTO_MONSTER ; pieds nus osseux via la règle bareFoot.
+  Squelette: {
+    torse: {
+      front: `<g stroke-linejoin="round">`
+        + `<path d="M-12 -27 Q0 -30 12 -27 L11 2 Q10 16 5 22 L-5 22 Q-10 16 -11 2Z" fill="#17140e" stroke="@peauO" stroke-width="0.7"/>`
+        + `<path d="M-11 -24 Q-5 -20 0 -21 Q5 -20 11 -24" fill="none" stroke="@peau" stroke-width="2.2" stroke-linecap="round"/>`
+        + `<path d="M0 -21 L0 -3" stroke="@peau" stroke-width="2.6" stroke-linecap="round"/>`
+        + `<path d="M-0.5 -18 Q-7 -19 -10 -12 M0.5 -18 Q7 -19 10 -12" fill="none" stroke="@peau" stroke-width="1.8" stroke-linecap="round"/>`
+        + `<path d="M-0.5 -13 Q-8 -14 -10.5 -6 M0.5 -13 Q8 -14 10.5 -6" fill="none" stroke="@peau" stroke-width="1.8" stroke-linecap="round"/>`
+        + `<path d="M-0.5 -8 Q-8 -9 -9.5 -0.5 M0.5 -8 Q8 -9 9.5 -0.5" fill="none" stroke="@peau" stroke-width="1.7" stroke-linecap="round"/>`
+        + `<path d="M-0.5 -3 Q-6 -4 -7.5 4 M0.5 -3 Q6 -4 7.5 4" fill="none" stroke="@peau" stroke-width="1.6" stroke-linecap="round"/>`
+        + `<path d="M-8 8 Q-10 16 -4 21 Q0 19 4 21 Q10 16 8 8 Q4 12 0 11 Q-4 12 -8 8Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M0 11 L0 19" stroke="@peauO" stroke-width="0.9"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-12 -27 Q0 -30 12 -27 L11 2 Q10 16 5 22 L-5 22 Q-10 16 -11 2Z" fill="#1d1a13" stroke="@peauO" stroke-width="0.7"/>`
+        + `<path d="M0 -25 L0 20" stroke="@peau" stroke-width="2.8" stroke-linecap="round"/>`
+        + `<path d="M-2 -22 h4 M-2 -17 h4 M-2.4 -12 h4.8 M-2.4 -7 h4.8 M-2 -2 h4 M-2 3 h4 M-1.6 8 h3.2" stroke="@peauO" stroke-width="1" opacity="0.7"/>`
+        + `<path d="M-10 -23 Q-3 -22 -3 -14 Q-8 -13 -10 -23Z M10 -23 Q3 -22 3 -14 Q8 -13 10 -23Z" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M0 -16 Q-7 -16 -9 -10 M0 -16 Q7 -16 9 -10 M0 -10 Q-8 -10 -9 -4 M0 -10 Q8 -10 9 -4" fill="none" stroke="@peauO" stroke-width="1.2" opacity="0.7"/>`
+        + `<path d="M-8 9 Q-9 16 -4 20 L4 20 Q9 16 8 9 Q4 12 0 11 Q-4 12 -8 9Z" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`
+        + `</g>`,
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-5 -27 Q5 -30 8 -25 Q8 -8 6 2 L5 22 Q0 24 -5 22 Q-6 4 -5 -27Z" fill="#17140e" stroke="@peauO" stroke-width="0.7"/>`
+        + `<path d="M-4 -25 Q-5 -2 -4 20" fill="none" stroke="@peau" stroke-width="2.4" stroke-linecap="round"/>`
+        + `<path d="M6 -22 Q6.5 -8 5 0" fill="none" stroke="@peau" stroke-width="1.7" stroke-linecap="round"/>`
+        + `<path d="M-3.5 -18 Q3 -19 6 -14 M-4 -12 Q3 -13 6.5 -7 M-4 -6 Q3 -7 6 -1 M-3.5 0 Q2 -1 4.5 5" fill="none" stroke="@peau" stroke-width="1.5" stroke-linecap="round"/>`
+        + `<path d="M-4 8 Q-5 16 0 20 Q5 17 5 9 Q1 12 -4 8Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `</g>`,
+    },
+    bras: {
+      front: `<g stroke-linejoin="round">`
+        + `<path d="M-2.4 -1 Q-3 7 -2 13 L2 13 Q3 7 2.4 -1Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0" cy="15" r="2.4" fill="@peauH" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M-2 17 Q-2.4 25 -1.6 31 L1.6 31 Q2.4 25 2 17Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M0 17 L0 31" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-2.4 -1 Q-3 7 -2 13 L2 13 Q3 7 2.4 -1Z" fill="@peauO" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0" cy="15" r="2.4" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M-2 17 Q-2.4 25 -1.6 31 L1.6 31 Q2.4 25 2 17Z" fill="@peauO" stroke="@peauO" stroke-width="0.6"/>`
+        + `</g>`,
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-2 -1 Q-2.6 7 -1.8 13 L2 13 Q2.6 7 2.2 -1Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0.2" cy="15" r="2.2" fill="@peauH" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M-1.8 17 Q-2.2 25 -1.4 31 L1.8 31 Q2.2 25 1.9 17Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `</g>`,
+    },
+    jambes: {
+      front: `<g stroke-linejoin="round">`
+        + `<path d="M-3 0 Q-3.6 12 -2.4 21 L2.4 21 Q3.6 12 3 0Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0" cy="24" r="3" fill="@peauH" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M-2.6 27 Q-3 39 -2 49 L2 49 Q3 39 2.6 27Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M0.8 28 Q1 39 0.8 48" stroke="@peauO" stroke-width="0.5" opacity="0.5" fill="none"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-3 0 Q-3.6 12 -2.4 21 L2.4 21 Q3.6 12 3 0Z" fill="@peauO" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0" cy="24" r="3" fill="@peauO" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M-2.6 27 Q-3 39 -2 49 L2 49 Q3 39 2.6 27Z" fill="@peauO" stroke="@peauO" stroke-width="0.6"/>`
+        + `</g>`,
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-2.6 0 Q-3.2 12 -2 21 L2.6 21 Q3.2 12 2.8 0Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<circle cx="0.3" cy="24" r="2.8" fill="@peauH" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M-2.2 27 Q-2.6 39 -1.6 49 L2.4 49 Q2.8 39 2.4 27Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `</g>`,
+    },
+  },
+  // Vampire (aristocrate) : manteau de cour SOMBRE (@vet1) à plastron/parements CRAMOISIS
+  // (@vet2), fermoir d'acier à la gorge, et un COL HAUT en éventail dressé derrière la nuque
+  // (silhouette de comte). Tenue SÉLECTIONNABLE pour n'importe quel humanoïde (le costume est
+  // découplé de l'espèce) ; les crocs restent un détail de visage propre au Vampire (monster.cape).
+  Vampire: {
+    torse: {
+      front: `<g stroke-linejoin="round">`
+        + `<path d="M-3 -27 L-22 -42 Q-24 -25 -8 -20 Z" fill="@vet1O" stroke="#000" stroke-width="0.5"/>`
+        + `<path d="M3 -27 L22 -42 Q24 -25 8 -20 Z" fill="@vet1O" stroke="#000" stroke-width="0.5"/>`
+        + `<path d="M-4 -26 L-17 -37 Q-18 -25 -8 -21 Z" fill="@vet2" opacity="0.9"/>`
+        + `<path d="M4 -26 L17 -37 Q18 -25 8 -21 Z" fill="@vet2" opacity="0.9"/>`
+        + `<path d="M-13 -27 Q0 -31 13 -27 L12 4 L10 34 Q0 38 -10 34 L-12 4Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>`
+        + `<path d="M-4 -23 L4 -23 L3 30 L-3 30Z" fill="@vet2" stroke="@vet2O" stroke-width="0.5"/>`
+        + `<path d="M-4 -23 L-9 -9 L-7 4 M4 -23 L9 -9 L7 4" fill="none" stroke="@vet1H" stroke-width="0.8" opacity="0.5"/>`
+        + `<path d="M-2 -22 L2 -22 L1.4 -18 L-1.4 -18Z" fill="@metal" stroke="@metalO" stroke-width="0.4"/>`
+        + `<circle cx="0" cy="-8" r="0.9" fill="@metal"/><circle cx="0" cy="0" r="0.9" fill="@metal"/><circle cx="0" cy="8" r="0.9" fill="@metal"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-3 -27 L-22 -42 Q-24 -25 -8 -20 Z" fill="@vet1" stroke="#000" stroke-width="0.5"/>`
+        + `<path d="M3 -27 L22 -42 Q24 -25 8 -20 Z" fill="@vet1" stroke="#000" stroke-width="0.5"/>`
+        + `<path d="M-4 -25 L-15 -35 Q-16 -25 -8 -21 Z" fill="@vet2O" opacity="0.7"/>`
+        + `<path d="M4 -25 L15 -35 Q16 -25 8 -21 Z" fill="@vet2O" opacity="0.7"/>`
+        + `<path d="M-13 -27 Q0 -31 13 -27 L12 4 L10 34 Q0 38 -10 34 L-12 4Z" fill="@vet1O" stroke="@vet1O" stroke-width="0.7"/>`
+        + `<path d="M0 -22 Q1 4 0 32" fill="none" stroke="#000" stroke-width="0.8" opacity="0.5"/>`
+        + `</g>`,
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-4 -27 L-16 -40 Q-17 -25 -7 -20 Z" fill="@vet1O" stroke="#000" stroke-width="0.5"/>`
+        + `<path d="M-5 -28 Q3 -31 7 -26 Q8.5 -10 6 4 L5 33 Q-1 37 -6 33 L-5 4 Q-7 -13 -5 -28Z" fill="@vet1" stroke="@vet1O" stroke-width="0.6"/>`
+        + `<path d="M3 -26 Q5 -8 4 30" fill="none" stroke="@vet2" stroke-width="2.2" opacity="0.85"/>`
+        + `<circle cx="2" cy="-6" r="0.8" fill="@metal"/><circle cx="2" cy="4" r="0.8" fill="@metal"/>`
+        + `</g>`,
+    },
+    jambes: {
+      front: `<g stroke-linejoin="round">`
+        + `<path d="M-4.5 0 Q-5 24 -3.4 38 L3.4 38 Q5 24 4.5 0Z" fill="@vet1" stroke="@vet1O" stroke-width="0.6"/>`
+        + `<path d="M0 2 Q-0.4 20 0 36" stroke="@vet1O" stroke-width="0.6" opacity="0.4" fill="none"/>`
+        + `<path d="M-3.6 38 Q0 36 3.6 38 L4 50 Q0 52 -4 50Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>`
+        + `<path d="M-3.8 41 Q0 39.4 3.8 41" fill="none" stroke="@cuirO" stroke-width="0.6" opacity="0.6"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-4.5 0 Q-5 24 -3.4 38 L3.4 38 Q5 24 4.5 0Z" fill="@vet1O" stroke="@vet1O" stroke-width="0.6"/>`
+        + `<path d="M-3.6 38 Q0 36 3.6 38 L4 50 Q0 52 -4 50Z" fill="@cuirO" stroke="@cuirO" stroke-width="0.6"/>`
+        + `</g>`,
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-3.4 0 Q-4 24 -2.6 38 L3.4 38 Q4 24 3.6 0Z" fill="@vet1" stroke="@vet1O" stroke-width="0.6"/>`
+        + `<path d="M-2.6 38 Q0 36 3.6 38 L8 50 Q4 52 -2.8 50Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>`
+        + `</g>`,
+    },
+  },
   Garde: {
     // Gambeson matelassé bleu ardoise + buffle de cuir, gorgerin d'acier à médaillon crâne,
     // baudrier de cuir en croix, cape rouge drapée sur l'épaule gauche (vu de dos).
