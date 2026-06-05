@@ -30,12 +30,13 @@ export function CharacterCreator() {
   const [build, setBuild] = useState(0.5);
   const [appSeed, setAppSeed] = useState(() => (Date.now() >> 4) & 0xffff);
   const [colors, setColors] = useState<Appearance['colors']>(undefined);
+  const [parts, setParts] = useState<Appearance['parts']>(undefined);
   const [chars, setChars] = useState<Characteristics>(() =>
     rollCharacteristics(allSpecies.find((s) => s.label === 'Humains (Reiklander)')!, makeRNG(Date.now() & 0xffff)),
   );
 
   const sp = allSpecies.find((s) => s.label === speciesLabel)!;
-  const appearance: Appearance = { species: speciesLabel, sex, build, seed: appSeed, colors };
+  const appearance: Appearance = { species: speciesLabel, sex, build, seed: appSeed, colors, parts };
   const level = firstLevel(careerLabel);
   const careerSkills = level?.skills ?? [];
   const careerTalents = level?.talents ?? [];
@@ -86,7 +87,7 @@ export function CharacterCreator() {
       skillAdvances: skillAdv,
       motivation: motivation.trim() || undefined,
     });
-    hero.appearance = { species: speciesLabel, sex, build, seed: appSeed, colors };
+    hero.appearance = { species: speciesLabel, sex, build, seed: appSeed, colors, parts };
     setParty([...party, hero]);
     setScreen('party');
   };
@@ -146,6 +147,7 @@ export function CharacterCreator() {
                 setBuild(a.build);
                 if (a.seed != null) setAppSeed(a.seed);
                 setColors(a.colors);
+                setParts(a.parts);
               }}
             />
           </div>

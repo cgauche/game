@@ -11,11 +11,17 @@ describe('cosmeticPart', () => {
     expect(sv('visage', 'Humain', 'M', 0)).toContain('<');
     expect(sv('cheveux', 'Humain', 'M', 0)).toContain('<');
   });
-  it('art généré par espèce : déterministe (index ignoré quand une tête existe)', () => {
-    const a = sv('cheveux', 'Humain', 'M', 0);
-    const b = sv('cheveux', 'Humain', 'M', 5);
+  it('visage généré : déterministe (1 visage par espèce, index ignoré)', () => {
+    const a = sv('visage', 'Humain', 'M', 0);
+    const b = sv('visage', 'Humain', 'M', 5);
     expect(a).toBe(b);
     expect(a.length).toBeGreaterThan(20);
+  });
+  it('cheveux : l’index choisit une coiffure dans le pool (0 = défaut espèce)', () => {
+    const def = sv('cheveux', 'Humain', 'M', 0);
+    const pool1 = sv('cheveux', 'Humain', 'M', 1);
+    expect(def.length).toBeGreaterThan(20);
+    expect(pool1).not.toBe(def); // l'index sélectionne une autre coiffure
   });
   it('normalise les variantes régionales vers l’espèce de base', () => {
     expect(sv('visage', 'Humains (Reiklander)', 'M', 0)).toBe(sv('visage', 'Humain', 'M', 0));

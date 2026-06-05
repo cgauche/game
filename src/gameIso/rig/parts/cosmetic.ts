@@ -1,6 +1,7 @@
 import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
 import { GENERATED_HEADS } from './generated/heads';
+import { HAIRSTYLES } from './generated/hairstyles';
 import HEAD_VIEWS_JSON from './generated/headViews.json';
 
 // Vues dos/profil des têtes (E·7, générées par workflow) — composées au front existant.
@@ -35,15 +36,24 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
 }
 
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
- *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours. */
+ *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours.
+ *  CHEVEUX : choix dans [défaut espèce, ...pool de coiffures partagé] via idx (pins/seed). */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const base = baseSpeciesOf(species);
-  const gen = GENERATED_HEADS[`${base}:${sex}`];
-  if (gen?.[slot] != null) {
-    // Front généré + vues dos/profil (E·7) si disponibles → PartArt multi-vues.
-    const views = HEAD_VIEWS[`${base}:${sex}`]?.[slot];
-    return views ? { front: gen[slot]!, ...views } : gen[slot]!;
+  const key = `${base}:${sex}`;
+  const gen = GENERATED_HEADS[key];
+  if (slot === 'cheveux') {
+    const pool = [gen?.cheveux, ...(HAIRSTYLES[sex] ?? []).map((h) => h.svg)].filter((s): s is string => s != null);
+    if (pool.length) {
+      const i = ((idx % pool.length) + pool.length) % pool.length;
+      const views = i === 0 ? HEAD_VIEWS[key]?.cheveux : undefined; // dos/profil : seul le défaut espèce en a
+      return views ? { front: pool[i], ...views } : pool[i];
+    }
+    return pick(CHEVEUX, key, 'Humain:M', idx);
   }
-  if (slot === 'visage') return pick(VISAGE, `${base}:${sex}`, 'default', idx);
-  return pick(CHEVEUX, `${base}:${sex}`, 'Humain:M', idx);
+  if (gen?.visage != null) {
+    const views = HEAD_VIEWS[key]?.visage;
+    return views ? { front: gen.visage, ...views } : gen.visage;
+  }
+  return pick(VISAGE, key, 'default', idx);
 }

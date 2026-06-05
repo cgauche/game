@@ -3,6 +3,7 @@ import { DEFS } from '../gameIso/sprites';
 import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
+import { HAIRSTYLES } from '../gameIso/rig/parts/generated/hairstyles';
 
 /**
  * Panneau d'apparence réutilisable (créateur de personnage). Aperçu live du rig +
@@ -47,8 +48,22 @@ export function AppearancePanel({
             onChange={(e) => set({ build: Number(e.target.value) })}
           />
         </label>
+        <label>
+          Coiffure
+          <select
+            value={value.parts?.cheveux ?? 0}
+            onChange={(e) => set({ parts: { ...value.parts, cheveux: Number(e.target.value) } })}
+          >
+            <option value={0}>Défaut (espèce)</option>
+            {HAIRSTYLES[value.sex].map((h, i) => (
+              <option key={i} value={i + 1}>
+                {h.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" className="btn small" onClick={() => set({ seed: (value.seed ?? 0) + 1 })}>
-          🎲 Variante (visage / cheveux)
+          🎲 Variante (visage)
         </button>
         <ColorPalettePickers colors={value.colors} onColors={(patch) => set({ colors: { ...(value.colors ?? {}), ...patch } })} />
       </div>
