@@ -3,7 +3,7 @@
  * Bras D, Cornes, Queue) + Arme équipée. Utilisé par l'inspecteur d'entité ET par
  * l'inspecteur de spawn de rencontre → mêmes contrôles, séparation apparence↔stats.
  */
-import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS } from '../../gameIso/rig/parts/monstrous';
+import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '../../gameIso/rig/parts/monstrous';
 import type { MonsterPartsSel } from '../../state/scene';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
@@ -28,6 +28,7 @@ export function MonsterPartsFields({
           ['Tête', 'tete', MONSTER_HEAD_OPTIONS],
           ['Bras gauche', 'brasG', MONSTER_ARM_OPTIONS],
           ['Bras droit', 'brasD', MONSTER_ARM_OPTIONS],
+          ['Jambes', 'jambes', MONSTER_LEG_OPTIONS],
         ] as const).map(([lbl, slot, opts]) => (
           <label key={slot} className="ed-subfield">
             {lbl}

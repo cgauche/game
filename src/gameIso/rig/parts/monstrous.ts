@@ -10,8 +10,9 @@
  */
 import type { BoneId, RigOverlay } from '../bones';
 
-export type MonsterHead = 'chien' | 'lezard';
+export type MonsterHead = 'chien' | 'lezard' | 'ogive' | 'minuscule';
 export type MonsterArm = 'tentacule' | 'griffe';
+export type MonsterLeg = 'chevre';
 
 /** Sélection monstrueuse par slot (sur Appearance.monster). Tout est optionnel.
  *  Champs en `string` (libellés libres venant de la scène/éditeur) ; les lookups
@@ -20,6 +21,7 @@ export interface MonsterParts {
   tete?: string;
   brasG?: string;
   brasD?: string;
+  jambes?: string;
   cornes?: boolean;
   queue?: boolean;
 }
@@ -42,7 +44,32 @@ const HEAD_LEZARD = `<g>
   <line x1="-3" y1="13" x2="3" y2="13" stroke="#2a3a18" stroke-width="0.8"/>
   <circle cx="-1.4" cy="11" r="0.5" fill="#1a2410"/><circle cx="1.4" cy="11" r="0.5" fill="#1a2410"/>
 </g>`;
-const HEADS: Record<MonsterHead, string> = { chien: HEAD_CHIEN, lezard: HEAD_LEZARD };
+// Tête en ogive (« tête pointue ») : crâne allongé conique.
+const HEAD_OGIVE = `<g>
+  <path d="M-7 9 Q-8 -12 0 -17 Q8 -12 7 9 Q0 14 -7 9 Z" fill="#caa885"/>
+  <path d="M-7 9 Q0 12 7 9" stroke="#9a7a52" stroke-width="0.6" fill="none" opacity="0.6"/>
+  <ellipse cx="-3" cy="6" rx="1.5" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="6" r="0.8" fill="#140a06"/>
+  <ellipse cx="3" cy="6" rx="1.5" ry="2.1" fill="url(#g_eye)"/><circle cx="3" cy="6" r="0.8" fill="#140a06"/>
+  <path d="M-3 11 q3 2 6 0" stroke="#7a5a3a" stroke-width="1" fill="none"/>
+</g>`;
+// Tête minuscule (« crétin ») : petite tête perchée sur le cou, mâchoire molle.
+const HEAD_MINUSCULE = `<g>
+  <circle cx="0" cy="9" r="5" fill="#caa885"/>
+  <ellipse cx="-1.8" cy="8" rx="1" ry="1.4" fill="url(#g_eye)"/><circle cx="-1.8" cy="8" r="0.5" fill="#140a06"/>
+  <ellipse cx="1.8" cy="8" rx="1" ry="1.4" fill="url(#g_eye)"/><circle cx="1.8" cy="8" r="0.5" fill="#140a06"/>
+  <path d="M-1.5 11 q1.5 1.5 3 0" stroke="#7a5a3a" stroke-width="0.8" fill="none"/>
+</g>`;
+const HEADS: Record<MonsterHead, string> = { chien: HEAD_CHIEN, lezard: HEAD_LEZARD, ogive: HEAD_OGIVE, minuscule: HEAD_MINUSCULE };
+
+// --- Jambes (repère os `cuisse`, descend en +y ~50 ; symétrique → pas de miroir) ---
+const LEG_CHEVRE = `<g>
+  <path d="M-4 0 Q-6 16 -3 26 L3 26 Q6 16 4 0 Z" fill="#6e5a3a"/>
+  <path d="M-3 6 l1 14 M2 6 l-1 14" stroke="#4a3a22" stroke-width="0.8" opacity="0.5"/>
+  <path d="M-2.4 26 L-3.2 44 L3.2 44 L2.4 26 Z" fill="#4a3a22"/>
+  <path d="M-4 44 L4 44 L5 51 L0 49 L-5 51 Z" fill="#241814"/>
+  <line x1="0" y1="45" x2="0" y2="50" stroke="#0e0805" stroke-width="1"/>
+</g>`;
+const LEGS: Record<MonsterLeg, string> = { chevre: LEG_CHEVRE };
 
 // --- Bras (repère os `epaule`, descend en +y) ------------------------------
 const ARM_TENTACULE = `<g>
@@ -74,9 +101,11 @@ export function monsterInjection(m: MonsterParts): MonsterInjection {
   const head = m.tete ? HEADS[m.tete as MonsterHead] : undefined;
   const armG = m.brasG ? ARMS[m.brasG as MonsterArm] : undefined;
   const armD = m.brasD ? ARMS[m.brasD as MonsterArm] : undefined;
+  const legs = m.jambes ? LEGS[m.jambes as MonsterLeg] : undefined;
   if (head) replace.tete = head;
   if (armG) replace.epauleG = armG;
   if (armD) replace.epauleD = armD;
+  if (legs) { replace.cuisseG = legs; replace.cuisseD = legs; } // 2 jambes (symétrique)
   if (m.cornes) overlays.push({ bone: 'tete', svg: OV_CORNES });
   if (m.queue) overlays.push({ bone: 'bassin', svg: OV_QUEUE });
   return { replace, overlays };
@@ -85,7 +114,11 @@ export function monsterInjection(m: MonsterParts): MonsterInjection {
 /** Catalogues pour l'éditeur (libellés FR). '' = humain / aucun. */
 export const MONSTER_HEAD_OPTIONS: { key: '' | MonsterHead; label: string }[] = [
   { key: '', label: 'Humaine' }, { key: 'chien', label: 'Chien / loup' }, { key: 'lezard', label: 'Reptilien' },
+  { key: 'ogive', label: 'Tête en ogive' }, { key: 'minuscule', label: 'Tête minuscule (crétin)' },
 ];
 export const MONSTER_ARM_OPTIONS: { key: '' | MonsterArm; label: string }[] = [
   { key: '', label: 'Humain' }, { key: 'tentacule', label: 'Tentacule' }, { key: 'griffe', label: 'Griffe' },
+];
+export const MONSTER_LEG_OPTIONS: { key: '' | MonsterLeg; label: string }[] = [
+  { key: '', label: 'Humaines' }, { key: 'chevre', label: 'Pattes de chèvre' },
 ];

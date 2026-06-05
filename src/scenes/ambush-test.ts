@@ -113,9 +113,9 @@ function build(): Scene {
       //   Mêmes positions que l'encounter (raccord visuel à l'entrée en combat). —
       { id: 'knud', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'Mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing', label: 'Knud Cratinx — chef à la peau écailleuse' },
       { id: 'mikael', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mikael — tête de chien, hurle à la mort' },
-      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'Mutant', appearance: { monster: { brasD: 'griffe' } }, anim: 'feeding', label: 'Erik — pieds fourchus, dévore un cadavre' },
-      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'Mutant', anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
-      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'Mutant', weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
+      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'Mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding', label: 'Erik — pattes de chèvre, dévore un cadavre' },
+      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
+      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'minuscule' } }, weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
     ],
     dialogues,
     triggers: [
@@ -150,16 +150,18 @@ function build(): Scene {
           },
           {
             pos: { x: 14, y: 8 },
-            appearance: { monster: { brasD: 'griffe' } },
+            appearance: { monster: { jambes: 'chevre' } },
             statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Pattes de chèvre)'] },
           },
           {
             pos: { x: 15, y: 7 },
+            appearance: { monster: { tete: 'ogive' } },
             statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Tête en ogive)'] },
           },
           {
             // « Mutile l'attelage à la hache » → arme dans le Trait (type Hache).
             pos: { x: 12, y: 7 },
+            appearance: { monster: { tete: 'minuscule' } },
             statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: ['Arme (Hache) +7', 'Corruption (Mineure)', 'Mutation (Crétin)'] },
           },
         ],

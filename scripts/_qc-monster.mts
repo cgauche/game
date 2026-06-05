@@ -12,14 +12,14 @@ import type { Weapon } from '../src/engine/types';
 
 type Case = { label: string; monster: MonsterParts; weapon?: [string, 'melee' | 'ranged'] };
 const CASES: Case[] = [
-  { label: 'Tête chien', monster: { tete: 'chien' } },
-  { label: 'Tête lézard', monster: { tete: 'lezard' } },
+  { label: 'Knud (lézard+arbalète)', monster: { tete: 'lezard' }, weapon: ['Arbalète', 'ranged'] },
+  { label: 'Mikael (tête chien)', monster: { tete: 'chien' } },
+  { label: 'Johann (tête ogive)', monster: { tete: 'ogive' } },
+  { label: 'Terenz (crétin+hache)', monster: { tete: 'minuscule' }, weapon: ['Hache', 'melee'] },
+  { label: 'Erik (pattes de chèvre)', monster: { jambes: 'chevre' } },
   { label: 'Tentacule (bras G)', monster: { brasG: 'tentacule' } },
-  { label: 'Griffe (bras D)', monster: { brasD: 'griffe' } },
-  { label: 'Lézard + arbalète', monster: { tete: 'lezard', brasG: 'griffe' }, weapon: ['Arbalète', 'ranged'] },
-  { label: 'Chien + cornes + queue', monster: { tete: 'chien', cornes: true, queue: true } },
-  { label: 'Chien + tentacule + arc', monster: { tete: 'chien', brasG: 'tentacule' }, weapon: ['Arc long', 'ranged'] },
-  { label: 'Combo complet', monster: { tete: 'lezard', brasG: 'tentacule', brasD: 'griffe', cornes: true, queue: true } },
+  { label: 'Cornes + queue', monster: { tete: 'chien', cornes: true, queue: true } },
+  { label: 'Combo complet', monster: { tete: 'lezard', brasG: 'tentacule', brasD: 'griffe', jambes: 'chevre', cornes: true, queue: true } },
 ];
 const cells = CASES.map((cse, i) => {
   const app: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4, monster: cse.monster };

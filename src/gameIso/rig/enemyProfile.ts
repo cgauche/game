@@ -172,15 +172,20 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const sex: 'M' | 'F' = seed % 7 < 2 ? 'F' : 'M'; // ~28 % F
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
   const appearance: Appearance = c.appearance ?? { species, sex, build, seed };
-  const career = c.career ?? detectCareer(n);
+  // Un mutant (parts monstrueux explicites OU nom mutant) n'est PAS un soldat en
+  // plaque : sa tenue par défaut est des hardes (Mendiant), pas l'armure. Sinon un
+  // mutant nommé (« Knud Cratinx ») tombait sur la carrière Soldat par défaut.
+  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
+  const hasMonster = !!(c.appearance?.monster && Object.keys(c.appearance.monster).length);
+  const career = c.career ?? (hasMonster || isMutant ? 'Mendiant' : detectCareer(n));
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
   const armour = base.armour.length ? base.armour : synthArmour(c.armour);
   const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
 
-  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
-  const overlays = isMutant ? mutationOverlays(seed) : undefined;
+  // Calques de mutation aléatoires SEULEMENT si pas de parts monstrueux explicites.
+  const overlays = isMutant && !hasMonster ? mutationOverlays(seed) : undefined;
 
   return { appearance, career, equip, overlays };
 }
