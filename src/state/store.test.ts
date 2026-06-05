@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useGame } from './store';
+import { useGame, type BattleState } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -7,7 +7,7 @@ import { tome1Auberge } from '../scenes/tome1-auberge';
 import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
-import type { Combatant } from '../engine/types';
+import type { Combatant, ItemInstance } from '../engine/types';
 
 function reset() {
   useGame.setState({
@@ -923,5 +923,82 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(dague).toBeTruthy();
     expect(dague!.kind).toBe('melee'); // objet à stats, pas un simple nom
     expect(dague!.equipped).toBe(false); // ramassé, à équiper soi-même
+  });
+});
+
+describe('Utiliser un consommable en combat (store)', () => {
+  beforeEach(() => reset());
+
+  const combatHero = (over: Partial<Combatant> = {}): Combatant =>
+    ({
+      id: 'h',
+      name: 'H',
+      kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, // BE = 3
+      wounds: { current: 5, max: 12 },
+      advantage: 0,
+      conditions: [],
+      weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      items: [],
+      skills: [],
+      talents: [],
+      movement: 4,
+      ...over,
+    }) as unknown as Combatant;
+
+  const potion = (uid: string, name: string, desc: string) =>
+    ({ uid, name, kind: 'misc', qualities: [], enc: 0, equipped: false, desc }) as ItemInstance;
+
+  const mkBattle = (h: Combatant, over = {}): BattleState => ({
+    combatants: [h],
+    order: [h.id],
+    turn: 0,
+    round: 1,
+    action: 'use',
+    selectedSpell: null,
+    reachable: new Map(),
+    moved: false,
+    acted: false,
+    log: [],
+    over: null,
+    ...over,
+  });
+
+  it('Potion de guérison : soigne du Bonus d’Endurance, consomme l’objet, coûte l’Action', () => {
+    const h = combatHero({
+      wounds: { current: 5, max: 12 },
+      items: [potion('p1', 'Potion de guérison', "récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance.")],
+    });
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleUseItem('p1');
+    const b = useGame.getState().battle!;
+    expect(b.combatants[0].wounds.current).toBe(8); // 5 + BE(35) = 8
+    expect(b.combatants[0].items!.find((i) => i.uid === 'p1')).toBeUndefined();
+    expect(b.acted).toBe(true);
+  });
+
+  it('Potion de vitalité : retire l’État Exténué (toutes les piles)', () => {
+    const h = combatHero({
+      conditions: [{ name: 'Exténué', value: 2 }],
+      items: [potion('p2', 'Potion de vitalité', 'Boire cette décoction retire instantanément tout État Exténué.')],
+    });
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleUseItem('p2');
+    const b = useGame.getState().battle!;
+    expect(b.combatants[0].conditions.find((c) => c.name === 'Exténué')).toBeUndefined();
+    expect(b.acted).toBe(true);
+  });
+
+  it('Action déjà consommée : aucune utilisation (objet conservé)', () => {
+    const h = combatHero({
+      wounds: { current: 5, max: 12 },
+      items: [potion('p3', 'Potion de guérison', "récupérez un nombre de Points de Blessure égal à votre Bonus d'Endurance.")],
+    });
+    useGame.setState({ mode: 'battle', battle: mkBattle(h, { acted: true }) });
+    useGame.getState().battleUseItem('p3');
+    const b = useGame.getState().battle!;
+    expect(b.combatants[0].wounds.current).toBe(5); // inchangé
+    expect(b.combatants[0].items!.find((i) => i.uid === 'p3')).toBeTruthy(); // pas consommé
   });
 });

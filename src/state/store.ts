@@ -47,6 +47,7 @@ import {
 } from '../engine/advancement';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping } from '../engine/items';
+import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction } from '../engine/conditions';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
@@ -144,7 +145,7 @@ export interface BattleState {
   order: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -206,8 +207,10 @@ interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | null) => void;
   battleSelectSpell: (label: string) => void;
+  /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
+  battleUseItem: (uid: string) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
@@ -593,6 +596,36 @@ export const useGame = create<GameState>((set, get) => ({
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || battle.acted) return;
     set({ battle: { ...battle, action: 'cast', selectedSpell: label, reachable: new Map() } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  battleUseItem: (uid) => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    if (battle.acted || !canTakeAction(active)) return; // boire = une Action ; Sonné = pas d'Action
+    const it = (active.items ?? []).find((i) => i.uid === uid);
+    if (!it) return;
+    const eff = itemUse(it, active);
+    if (!eff) return;
+    const log: string[] = [`${active.name} utilise : ${it.name}.`];
+    if (eff.heal != null && eff.heal > 0) {
+      const before = active.wounds.current;
+      active.wounds.current = Math.min(active.wounds.max, active.wounds.current + eff.heal);
+      log.push(`${active.name} regagne ${active.wounds.current - before} Blessure(s).`);
+    }
+    if (eff.removeCondition) {
+      const cond = active.conditions.find((c) => c.name === eff.removeCondition);
+      if (cond) {
+        removeCondition(active, eff.removeCondition, cond.value); // retire toutes les piles de l'État
+        log.push(`${active.name} n'est plus ${eff.removeCondition}.`);
+      } else {
+        log.push(`${active.name} n'a pas l'État ${eff.removeCondition}.`);
+      }
+    }
+    active.items = (active.items ?? []).filter((i) => i.uid !== uid); // consommé
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...log] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 

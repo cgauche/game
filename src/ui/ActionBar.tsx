@@ -3,6 +3,7 @@ import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
+import { itemUse } from '../engine/consumables';
 
 const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
@@ -22,6 +23,7 @@ export function ActionBar() {
   const endTurn = useGame((s) => s.battleEndTurn);
   const defendTotal = useGame((s) => s.battleDefendTotal);
   const disengage = useGame((s) => s.battleDisengage);
+  const useItem = useGame((s) => s.battleUseItem);
   if (!battle || battle.over) return null;
   const active = activeCombatant(battle);
   if (!active) return null;
@@ -33,6 +35,15 @@ export function ActionBar() {
   const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
+
+  // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
+  const usable = isHero ? (active.items ?? []).filter((it) => itemUse(it, active) != null) : [];
+  const usableGroups = Object.values(
+    usable.reduce<Record<string, { name: string; uids: string[]; desc?: string }>>((acc, it) => {
+      (acc[it.name] ??= { name: it.name, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
+      return acc;
+    }, {}),
+  );
 
   const hint =
     battle.action === 'move'
@@ -73,6 +84,18 @@ export function ActionBar() {
               </div>
             );
           })}
+        </div>
+      )}
+      {usableGroups.length > 0 && battle.action === 'use' && (
+        <div className="ab-spells">
+          {usableGroups.map((g) => (
+            <div key={g.name} className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => useItem(g.uids[0])} title={g.desc}>
+                🧪 {g.name}
+                {g.uids.length > 1 ? ` ×${g.uids.length}` : ''}
+              </button>
+            </div>
+          ))}
         </div>
       )}
       {stunned && isHero && <div className="ab-hint">Sonné : aucune Action ce tour (déplacement à demi-Mouvement).</div>}
@@ -141,6 +164,17 @@ export function ActionBar() {
               <span className="ab-ico">🛡️</span>
               <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
             </button>
+            {usableGroups.length > 0 && (
+              <button
+                className={`ab-slot ${battle.action === 'use' ? 'on' : ''}`}
+                disabled={battle.acted || stunned}
+                onClick={() => selectAction(battle.action === 'use' ? null : 'use')}
+                title="Boire/utiliser un objet (potion…) — coûte l'Action"
+              >
+                <span className="ab-ico">🧪</span>
+                <span className="ab-lbl">Utiliser{battle.acted && ' ✓'}</span>
+              </button>
+            )}
             {engaged && (
               <button
                 className="ab-slot"
