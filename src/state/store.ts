@@ -212,6 +212,8 @@ interface GameState {
   mode: 'exploration' | 'battle';
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   rotateCam: (dir: 1 | -1) => void;
+  zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
+  setZoom: (z: number) => void;
   partyPos: Pt;
   flags: Record<string, boolean>;
   journal: string[];
@@ -358,6 +360,8 @@ export const useGame = create<GameState>((set, get) => ({
   mode: 'exploration',
   camRot: 0,
   rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
+  zoom: 1,
+  setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(1, z)) }),
   partyPos: { x: 0, y: 0 },
   flags: {},
   journal: [],
