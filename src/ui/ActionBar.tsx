@@ -1,4 +1,4 @@
-import { useGame, activeCombatant } from '../state/store';
+import { useGame, activeCombatant, entityPickables } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
@@ -24,6 +24,10 @@ export function ActionBar() {
   const defendTotal = useGame((s) => s.battleDefendTotal);
   const disengage = useGame((s) => s.battleDisengage);
   const useItem = useGame((s) => s.battleUseItem);
+  const spendResolve = useGame((s) => s.battleSpendResolve);
+  const pickup = useGame((s) => s.battlePickup);
+  const scene = useGame((s) => s.scene);
+  const flags = useGame((s) => s.flags);
   if (!battle || battle.over) return null;
   const active = activeCombatant(battle);
   if (!active) return null;
@@ -44,6 +48,22 @@ export function ActionBar() {
       return acc;
     }, {}),
   );
+
+  // Détermination (Resolve) : États retirables de l'actif (LDB ch.17 l.62-66).
+  const resolve = isHero ? active.resolve ?? 0 : 0;
+  const removableConditions = isHero && resolve > 0 ? active.conditions : [];
+  // Objets au sol ramassables sur/adjacents à la case du combattant actif (LDB ch.13 l.115-116).
+  const groundItems =
+    isHero && active.pos
+      ? (scene?.entities ?? [])
+          .filter(
+            (e) =>
+              e.kind === 'objet' &&
+              Math.max(Math.abs(e.pos.x - active.pos!.x), Math.abs(e.pos.y - active.pos!.y)) <= 1 &&
+              !flags[`__fouille_${e.id}`],
+          )
+          .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })))
+      : [];
 
   const hint =
     battle.action === 'move'
@@ -93,6 +113,29 @@ export function ActionBar() {
               <button className="btn btn-sm" onClick={() => useItem(g.uids[0])} title={g.desc}>
                 🧪 {g.name}
                 {g.uids.length > 1 ? ` ×${g.uids.length}` : ''}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {removableConditions.length > 0 && battle.action === 'resolve' && (
+        <div className="ab-spells">
+          {removableConditions.map((c) => (
+            <div key={c.name} className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => spendResolve(c.name)} title="Dépense un point de Détermination pour retirer cet État (LDB Destin)">
+                ✊ Retirer {c.name}
+                {c.value > 1 ? ` (${c.value})` : ''}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {groundItems.length > 0 && battle.action === 'pickup' && (
+        <div className="ab-spells">
+          {groundItems.map((g) => (
+            <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet (coûte l'Action) — LDB Combat">
+                ✋ {g.label}
               </button>
             </div>
           ))}
@@ -184,6 +227,27 @@ export function ActionBar() {
               >
                 <span className="ab-ico">🚪</span>
                 <span className="ab-lbl">Se désengager</span>
+              </button>
+            )}
+            {removableConditions.length > 0 && (
+              <button
+                className={`ab-slot ${battle.action === 'resolve' ? 'on' : ''}`}
+                onClick={() => selectAction(battle.action === 'resolve' ? null : 'resolve')}
+                title="Détermination : retirer un État (ne coûte pas l'Action) — LDB Destin"
+              >
+                <span className="ab-ico">✊</span>
+                <span className="ab-lbl">Détermination ({resolve})</span>
+              </button>
+            )}
+            {groundItems.length > 0 && (
+              <button
+                className={`ab-slot ${battle.action === 'pickup' ? 'on' : ''}`}
+                disabled={battle.acted || stunned}
+                onClick={() => selectAction(battle.action === 'pickup' ? null : 'pickup')}
+                title="Ramasser un objet au sol adjacent (coûte l'Action) — LDB Combat"
+              >
+                <span className="ab-ico">✋</span>
+                <span className="ab-lbl">Ramasser{battle.acted && ' ✓'}</span>
               </button>
             )}
             <button className="ab-slot ab-end" onClick={endTurn}>
