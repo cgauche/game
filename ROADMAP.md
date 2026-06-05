@@ -116,10 +116,11 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(prochain)*
 
-- **Jets par MODALE** ✅ : l'attaque et les tests hors combat passent par une modale — on
-  clique « 🎲 Lancer » puis on peut dépenser un point de **Chance** pour relancer (LDB Destin).
-  L'attaque permet de **viser une localisation** (Complexe -10). *(Reste : modale de défense
-  réactive quand un héros est attaqué — choix Parade/Esquive + Chance, pause de l'IA.)*
+- **Jets par MODALE** ✅ : attaque, tests hors combat ET **défense réactive** passent par une
+  modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de **Chance** pour
+  relancer (LDB Destin). L'attaque permet de **viser une localisation** (Complexe -10). Quand un
+  ennemi frappe un héros en mêlée, le tour de l'IA est **suspendu** : le joueur choisit
+  Parade/Esquive, relance sa défense par Chance, puis applique (l'IA reprend).
 - Actions : ✅ **Défense totale** (« Sur la défensive » : +1 DR en défense, expire à son tour).
   Restent : **Charge, Désengagement, ramasser**.
 - ✅ **Avantage** (gain +1/attaque réussie & à la fuite, -1 si aucun gain au Round ; perte totale K.O.).
