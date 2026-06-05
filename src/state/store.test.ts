@@ -253,4 +253,105 @@ describe('Boucle de jeu (store)', () => {
     const heroAfter = st.battle!.combatants.find((c) => c.id === heroC.id)!;
     expect(heroAfter.advantage).toBe(1);
   });
+
+  it('défense réactive : Défendre → résultat ; Chance relance la défense (attaque FIGÉE) ; Appliquer ferme', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(4);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.fortune = 2;
+    useGame.setState({
+      pendingDefense: {
+        attackerId: E.id,
+        defenderId: H.id,
+        weapon: E.weapons[0],
+        location: null,
+        atk: { roll: 35, target: 50, success: true, sl: 1, isDouble: false },
+        mode: 'parade',
+        def: null,
+        result: null,
+      },
+    });
+    useGame.getState().defenseRoll(); // « Défendre » : roule la défense + résout
+    let pd = useGame.getState().pendingDefense!;
+    expect(pd.result).not.toBeNull();
+    expect(pd.def).not.toBeNull();
+    const atkRoll = pd.atk.roll;
+    useGame.getState().defenseReroll(); // Chance : relance la DÉFENSE
+    pd = useGame.getState().pendingDefense!;
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.fortune).toBe(1); // 1 point dépensé
+    expect(pd.atk.roll).toBe(atkRoll); // l'attaque (pd.atk) n'est JAMAIS relancée
+    useGame.getState().defenseConfirm(); // Appliquer → ferme
+    expect(useGame.getState().pendingDefense).toBeNull();
+  });
+
+  it('un ennemi qui attaque un héros en mêlée OUVRE la modale de défense (tour de l’IA suspendu)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(5);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent au héros
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0; // un seul ennemi vivant
+    useGame.setState({
+      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
+      pendingDefense: null,
+    });
+    useGame.getState().battleEndTurn(); // H finit son tour → advanceTurn → E actif → IA
+    vi.advanceTimersByTime(2000); // laisse tourner les setTimeout de l'IA (450 + 350)
+    st = useGame.getState();
+    expect(st.pendingDefense).not.toBeNull();
+    expect(st.pendingDefense!.defenderId).toBe(H.id);
+    expect(st.pendingDefense!.result).toBeNull(); // figé sur le choix, pas encore défendu
+    expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur l'attaquant (non avancé)
+  });
+
+  it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB États l.123)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    H.conditions.push({ name: 'Sonné', value: 1 });
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.getState().battleSelectAction('attack');
+    expect(useGame.getState().battle!.action).toBeNull(); // Action refusée (Sonné)
+    useGame.getState().battleSelectAction('move'); // le déplacement reste permis
+    expect(useGame.getState().battle!.action).toBe('move');
+  });
+
+  it('Sonné : un ennemi renonce à son Action — pas d’attaque, pas de modale de défense', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(5);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent
+    E.conditions.push({ name: 'Sonné', value: 1 }); // l'ennemi est Sonné
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
+    const woundsBefore = H.wounds.current;
+    useGame.setState({
+      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
+      pendingDefense: null,
+    });
+    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Sonné → renonce
+    vi.advanceTimersByTime(2000);
+    st = useGame.getState();
+    expect(st.pendingDefense).toBeNull(); // aucune attaque → aucune modale de défense
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(woundsBefore); // héros intact
+  });
 });

@@ -1,6 +1,7 @@
 import { useGame, activeCombatant } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
+import { canTakeAction } from '../engine/conditions';
 
 const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 
@@ -25,6 +26,7 @@ export function ActionBar() {
 
   const isHero = active.kind === 'hero';
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
+  const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
 
@@ -67,6 +69,7 @@ export function ActionBar() {
           })}
         </div>
       )}
+      {stunned && isHero && <div className="ab-hint">Sonné : aucune Action ce tour (déplacement à demi-Mouvement).</div>}
       {hint && <div className="ab-hint">{hint}</div>}
 
       <div className="ab-bar">
@@ -95,7 +98,7 @@ export function ActionBar() {
             </button>
             <button
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
-              disabled={battle.acted}
+              disabled={battle.acted || stunned}
               onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
             >
               <span className="ab-ico">⚔️</span>
@@ -104,7 +107,7 @@ export function ActionBar() {
             {hasSpells && (
               <button
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
-                disabled={battle.acted}
+                disabled={battle.acted || stunned}
                 onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
               >
                 <span className="ab-ico">✨</span>
@@ -113,7 +116,7 @@ export function ActionBar() {
             )}
             <button
               className="ab-slot"
-              disabled={battle.acted}
+              disabled={battle.acted || stunned}
               onClick={defendTotal}
               title="+20 à tous vos Tests de défense jusqu'à votre prochain tour"
             >

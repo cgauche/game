@@ -71,6 +71,14 @@ describe('effectiveMovement', () => {
     expect(effectiveMovement(combatant({ movement: 2, enc: 8 }))).toBe(2); // min(2, max(1,3)) = 2
     expect(effectiveMovement(combatant({ movement: 3, enc: 14 }))).toBe(2); // min(3, max(1,2)) = 2
   });
+  it('Sonné : déplacement réduit de moitié, arrondi à l’inférieur (LDB États l.123)', () => {
+    const c = combatant({ movement: 4, enc: 0 });
+    c.conditions.push({ name: 'Sonné', value: 1 });
+    expect(effectiveMovement(c)).toBe(2); // 4 → 2
+    const odd = combatant({ movement: 3, enc: 0 });
+    odd.conditions.push({ name: 'Sonné', value: 1 });
+    expect(effectiveMovement(odd)).toBe(1); // floor(3/2) = 1
+  });
 });
 
 describe('agilityTestPenalty', () => {

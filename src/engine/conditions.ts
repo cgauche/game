@@ -62,6 +62,12 @@ export function cannotDefend(c: Combatant): boolean {
   return hasCondition(c, 'Surpris');
 }
 
+/** Sonné : « vous êtes incapable d'effectuer votre Action » (LDB États l.123). Le combattant
+ *  peut encore se déplacer (à demi-Mouvement, cf. effectiveMovement) mais ne peut pas agir. */
+export function canTakeAction(c: Combatant): boolean {
+  return !hasCondition(c, 'Sonné');
+}
+
 /**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
  * dissipation des États temporaires (LDB ch.16). Retourne un journal.

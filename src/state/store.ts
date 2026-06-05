@@ -34,7 +34,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction } from '../engine/conditions';
 import { findSpell } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
@@ -374,6 +374,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Sonné : pas d'Action (attaque/incantation) ; seul le déplacement reste possible (LDB États l.123).
+    if (a !== 'move' && a !== null && !canTakeAction(active)) return;
     let reach = new Map<string, number>();
     if (a === 'move' && !battle.moved) {
       const blocked = occupied(battle, active.id);
@@ -450,6 +452,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
     active.defensiveStance = true;
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
     bus.emit(EVT.SCENE_DIRTY);
@@ -1089,6 +1092,7 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     offensiveSpell,
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
+  const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
   const attackThenAdvance = (target: Combatant) => {
@@ -1102,15 +1106,20 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     }, 350);
   };
 
+  // Sonné : l'ennemi ne peut pas agir → il renonce à son Action (l'éventuel déplacement
+  // a déjà été réduit de moitié via effectiveMovement). Le « move » plus bas garde son
+  // déplacement mais n'attaque pas en arrivant.
   switch (action.kind) {
     case 'end':
       return advanceTurn(get, set);
     case 'cast':
+      if (!canAct) return advanceTurn(get, set);
       castSpell(get, set, enemy, targetOf(action.targetId), action.spell);
       setTimeout(() => advanceTurn(get, set), 500);
       return;
     case 'shoot':
     case 'melee':
+      if (!canAct) return advanceTurn(get, set);
       attackThenAdvance(targetOf(action.targetId));
       return;
     case 'move': {
@@ -1120,7 +1129,7 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
-      if (manhattan(enemy.pos!, tgt.pos!) <= 1) attackThenAdvance(tgt);
+      if (canAct && manhattan(enemy.pos!, tgt.pos!) <= 1) attackThenAdvance(tgt);
       else setTimeout(() => advanceTurn(get, set), 350);
       return;
     }

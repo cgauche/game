@@ -18,6 +18,7 @@
  */
 import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
+import { hasCondition } from './conditions';
 
 export interface EncumbrancePenalties {
   /** Palier de surcharge : 0 (aucune) à 3 (immobilisé). */
@@ -55,8 +56,9 @@ export function encumbrancePenalties(c: Combatant): EncumbrancePenalties {
 export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
   if (p.immobile) return 0;
-  if (p.tier === 0) return c.movement;
-  return Math.min(c.movement, Math.max(c.movement - p.movePenalty, p.moveFloor));
+  const base = p.tier === 0 ? c.movement : Math.min(c.movement, Math.max(c.movement - p.movePenalty, p.moveFloor));
+  // Sonné : « vous ne pouvez vous déplacer que de la moitié de votre Mouvement » (LDB États l.123).
+  return hasCondition(c, 'Sonné') ? Math.floor(base / 2) : base;
 }
 
 /** Modificateur signé aux tests d'Agilité dû à l'Encombrement (0 / −10 / −20). */
