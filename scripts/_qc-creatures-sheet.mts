@@ -6,7 +6,7 @@ import { creatureView, DEFS } from '../src/gameIso/sprites';
 import creatureViews from '../src/gameIso/creatureViews.json';
 import { hashSeed } from '../src/gameIso/appearance';
 
-const names = Object.keys(creatureViews as Record<string, unknown>).sort();
+const allNames = Object.keys(creatureViews as Record<string, unknown>).sort();
 const SC = 1.0;
 const CW = 132, CH = 150, FEET = 132;
 const COLS = [
@@ -15,6 +15,13 @@ const COLS = [
   { l: 'dos', v: 'back' as const, dead: false },
   { l: 'MORT', v: 'front' as const, dead: true },
 ];
+// Découpe en lots lisibles pour l'audit (1 image par lot).
+const BATCH = 16;
+const batches: string[][] = [];
+for (let i = 0; i < allNames.length; i += BATCH) batches.push(allNames.slice(i, i + BATCH));
+batches.forEach((names, bi) => renderSheet(names, bi + 1));
+
+function renderSheet(names: string[], bi: number): void {
 const cells: string[] = [];
 names.forEach((name, r) => {
   cells.push(`<text x="4" y="${28 + r * CH + CH / 2}" font-size="8" fill="#9fb0c8" font-family="sans-serif">${name.slice(0, 16)}</text>`);
@@ -28,6 +35,7 @@ names.forEach((name, r) => {
 });
 mkdirSync('public/qc/sheets', { recursive: true });
 const W = 92 + COLS.length * CW, H = 28 + names.length * CH;
-const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="18" font-size="14" fill="#d8a93b" font-family="sans-serif">F — Créatures : 8-dir + position mort (${names.length})</text>${cells.join('')}</svg>`;
-writeFileSync('public/qc/sheets/F-creatures.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: Math.min(2200, W * 2) } }).render().asPng());
-console.log(`OK → public/qc/sheets/F-creatures.png (${names.length} créatures)`);
+const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="12" y="18" font-size="14" fill="#d8a93b" font-family="sans-serif">F${bi} — Créatures : 8-dir + position mort (${names.length})</text>${cells.join('')}</svg>`;
+writeFileSync(`public/qc/sheets/F-creatures-${bi}.png`, new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W * 2 } }).render().asPng());
+console.log(`OK → public/qc/sheets/F-creatures-${bi}.png (${names.length} créatures)`);
+}
