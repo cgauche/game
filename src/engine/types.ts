@@ -144,6 +144,15 @@ export interface Combatant {
   resilience?: number;
   resolve?: number;
   motivation?: string;
+  // Traumatisme (LDB 18) — modèle de mort
+  /** Nombre de Blessures critiques cumulées (mort si > Bonus d'Endurance + Inconscient + 0 PB). */
+  criticalWounds?: number;
+  /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
+  roundsAtZero?: number;
+  /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
+  dead?: boolean;
+  /** PNJ important : utilise le système complet de critiques au lieu de la Mort Subite. */
+  important?: boolean;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;

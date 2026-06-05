@@ -132,6 +132,44 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   return log;
 }
 
+/** Un figurant (non-héros, non-important) sort directement à 0 PB (Mort Subite, LDB 18 l.51-54). */
+export function usesSuddenDeath(c: Combatant): boolean {
+  return c.kind !== 'hero' && !c.important;
+}
+
+/** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite). Un héros à 0 PB
+ *  reste actif (À Terre) — il n'est PAS hors de combat (LDB 18-Traumatisme l.28). */
 export function isOutOfAction(c: Combatant): boolean {
-  return c.wounds.current <= 0 || hasCondition(c, 'Inconscient');
+  return c.dead === true || hasCondition(c, 'Inconscient') || (usesSuddenDeath(c) && c.wounds.current <= 0);
+}
+
+/** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0. */
+export function applyZeroWounds(c: Combatant): void {
+  if (c.wounds.current <= 0 && !hasCondition(c, 'À Terre')) addCondition(c, 'À Terre');
+}
+
+/**
+ * Upkeep de mort en fin de Round (LDB 18 l.28, l.48-49) — héros/importants seulement :
+ *  - à 0 PB non soigné : roundsAtZero++ ; après (Bonus d'Endurance) Rounds → Inconscient ;
+ *  - Inconscient + 0 PB + (criticalWounds > BE) → mort.
+ * Retourne le journal. (`_rng` réservé pour de futurs Tests ; non utilisé ici.)
+ */
+export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
+  const log: string[] = [];
+  if (c.dead || usesSuddenDeath(c)) return log;
+  const be = bonus(effectiveChar(c, 'E'));
+  if (c.wounds.current > 0) {
+    c.roundsAtZero = 0;
+    return log;
+  }
+  c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
+  if (c.roundsAtZero > be && !hasCondition(c, 'Inconscient')) {
+    addCondition(c, 'Inconscient');
+    log.push(`${c.name} perd connaissance (0 PB depuis ${c.roundsAtZero} Rounds).`);
+  }
+  if (hasCondition(c, 'Inconscient') && (c.criticalWounds ?? 0) > be) {
+    c.dead = true;
+    log.push(`${c.name} succombe à ses blessures.`);
+  }
+  return log;
 }
