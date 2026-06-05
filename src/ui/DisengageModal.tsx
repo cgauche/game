@@ -45,7 +45,13 @@ export function DisengageModal() {
           <>
             <div className={`test-result ${success ? 'ok' : 'fail'}`}>
               <span className="dice">{pd.def!.roll === 100 ? '00' : String(pd.def!.roll).padStart(2, '0')}</span>
-              <span className="verdict">{success ? 'Désengagé ! (+1 Avantage)' : "Échec — l'adversaire gagne l'Avantage"}</span>
+              <span className="verdict">
+                {pd.result === 'success'
+                  ? 'Désengagé ! (+1 Avantage)'
+                  : pd.result === 'tie'
+                    ? 'Échange neutre — tu restes au contact'
+                    : "Échec — l'adversaire gagne l'Avantage"}
+              </span>
             </div>
             <div className="modal-actions">
               {fortune > 0 && (

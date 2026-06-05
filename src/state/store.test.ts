@@ -574,4 +574,63 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingDisengage).not.toBeNull(); // routé vers le Désengagement
     expect(st.pendingDisengage!.mode).toBe('esquive');
   });
+
+  it('Désengagement B égalité parfaite : statu quo — ni fuite, ni Avantage à l’adversaire', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({
+      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      pendingDisengage: {
+        moverId: H.id,
+        foeId: E.id,
+        mode: 'esquive',
+        atk: { roll: 40, target: 40, success: true, sl: 0, isDouble: false },
+        def: { roll: 40, target: 40, success: true, sl: 0, isDouble: false },
+        result: 'tie',
+      },
+    });
+    useGame.getState().disengageConfirm();
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // statu quo : pas de +1 à l'adversaire
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.engagedWith).toContain(E.id); // reste Engagé
+    expect(st.battle!.acted).toBe(true); // l'Esquive tentée consomme l'Action
+  });
+
+  it('Désengagement B succès en multi-engagement : libère TOUS les adversaires (cohérent avec A)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(3);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const enemies = st.battle!.combatants.filter((c) => c.kind === 'enemy');
+    const [E1, E2] = enemies;
+    H.engagedWith = [E1.id, E2.id];
+    E1.engagedWith = [H.id];
+    E2.engagedWith = [H.id];
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({
+      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      pendingDisengage: {
+        moverId: H.id,
+        foeId: E1.id, // testé contre E1
+        mode: 'esquive',
+        atk: { roll: 70, target: 40, success: false, sl: -3, isDouble: false },
+        def: { roll: 10, target: 40, success: true, sl: 3, isDouble: false },
+        result: 'success',
+      },
+    });
+    useGame.getState().disengageConfirm();
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.engagedWith).toEqual([]); // libéré de E1 ET E2
+  });
 });

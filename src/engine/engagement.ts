@@ -64,6 +64,9 @@ export function chargeAdvantage(movementCases: number, distFromCases: number): 0
   const M = movementCases;
   const courseTiles = M * 2; // Course = 2M cases
   const farThreshold = Math.ceil(M / 2); // M mètres = M/2 cases, arrondi supérieur (« au moins »)
-  if (distFromCases < 1 || distFromCases > courseTiles) return 0;
+  // La charge ARRIVE sur une case ADJACENTE à la cible : la case d'arrivée est à 1 de moins
+  // que la cible, donc une charge valide va jusqu'à une distance-cible de 2M+1 (arrivée à 2M,
+  // dans la portée de Course). Au-delà, aucune case d'arrivée n'est atteignable → 0.
+  if (distFromCases < 1 || distFromCases > courseTiles + 1) return 0;
   return distFromCases >= farThreshold ? 2 : 1;
 }

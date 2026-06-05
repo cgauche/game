@@ -107,7 +107,7 @@ export interface PendingDisengage {
   mode: 'avantage' | 'esquive';
   atk: TestResult | null; // option B : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // option B : jet d'Esquive du mover
-  result: 'success' | 'failure' | null;
+  result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
 }
 
 export interface BattleState {
@@ -652,7 +652,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!mover) return;
     const def = rollMeleeDefender(mover, 'esquive', battleRng);
     const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
-    set({ pendingDisengage: { ...pd, def, result: opp.winner === 'attacker' ? 'success' : 'failure' } });
+    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner) } });
   },
   // Chance du mover : relance UNIQUEMENT son Esquive (le jet du foe reste figé).
   disengageReroll: () => {
@@ -663,7 +663,7 @@ export const useGame = create<GameState>((set, get) => ({
     mover.fortune = (mover.fortune ?? 0) - 1;
     const def = rollMeleeDefender(mover, 'esquive', battleRng);
     const opp = resolveOpposed(def, pd.atk!);
-    set({ pendingDisengage: { ...pd, def, result: opp.winner === 'attacker' ? 'success' : 'failure' }, battle: { ...battle } });
+    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
   },
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
   disengageConfirm: () => {
@@ -677,12 +677,22 @@ export const useGame = create<GameState>((set, get) => ({
     if (pd.result === 'success') {
       mover.advantage += 1; // +1 Avantage (l.89)
       mover.gainedAdvThisRound = true;
-      disengageFrom(mover, foe); // se libère du foe testé (l.89 « votre adversaire », singulier)
+      // Esquive réussie = on s'extrait du corps à corps → libéré de TOUS les Engagements
+      // (cohérent avec l'option A, qui libère aussi tous les foes).
+      const foes = (mover.engagedWith ?? [])
+        .map((id) => battle.combatants.find((c) => c.id === id))
+        .filter((c): c is Combatant => !!c);
+      for (const f of foes) disengageFrom(mover, f);
       const blocked = occupied(battle, mover.id);
       log.push(`${mover.name} se désengage (Esquive réussie, +1 Avantage).`);
       set({
         battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked), log },
       });
+    } else if (pd.result === 'tie') {
+      // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
+      // l'adversaire non plus (LDB Tests). L'Action est consommée par la tentative d'Esquive.
+      log.push(`${mover.name} : échange neutre, le désengagement échoue (personne ne prend l'avantage).`);
+      set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
     } else {
       foe.advantage += 1; // l'adversaire gagne +1, la fuite échoue (l.89)
       foe.gainedAdvThisRound = true;
@@ -895,6 +905,12 @@ function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLoc
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
  *  Avantage, animation, journal, fin de combat. */
+/** Issue du Test opposé d'Esquive du Désengagement : le mover est l'« attaquant » du test ;
+ *  une égalité parfaite (tie) = statu quo (ni fuite, ni avantage à l'adversaire — LDB Tests). */
+function disengageOutcome(winner: 'attacker' | 'defender' | 'tie'): 'success' | 'failure' | 'tie' {
+  return winner === 'attacker' ? 'success' : winner === 'tie' ? 'tie' : 'failure';
+}
+
 /** Lance le Désengagement d'un combattant Engagé (LDB 15-Dépl l.84-89) : option A
  *  (Avantage > adversaires → résolue direct) ou option B (Test opposé d'Esquive vs le
  *  foe le plus dangereux). No-op « rouvre le mouvement » si plus aucun foe vivant. */
@@ -1310,6 +1326,11 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       attackThenAdvance(targetOf(action.targetId));
       return;
     case 'move': {
+      // Simplifications IA assumées (sévérité mineure, relevées par la revue de fidélité) :
+      //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15-Dépl l.84-89) : un
+      //    ennemi Engagé qui se repositionne ne paie pas l'Esquive/le sacrifice d'Avantage.
+      //  • l'IA charge dans la portée de MARCHE (chooseEnemyAction borne le déplacement à M),
+      //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
       const wasEngaged = isEngaged(enemy);
       const distBefore = manhattan(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked);
