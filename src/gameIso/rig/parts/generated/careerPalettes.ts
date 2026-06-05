@@ -1,13 +1,76 @@
 /**
- * Palettes par DÉFAUT des tenues de carrière — GÉNÉRÉ (workflow de classification couleur).
- * NE PAS éditer à la main : régénéré par `scripts/_tokenize-tenues.mjs` à partir de la
- * classification `careerColorMap.ts`.
+ * Palettes par DÉFAUT des tenues de carrière — GÉNÉRÉ par scripts/_tokenize-tenues.mjs
+ * à partir de la classification couleur (workflow). NE PAS éditer à la main.
  *
- * Pour chaque carrière, les hex EXACTS d'origine par token (`vet1`, `vet1O`, `vet1H`,
- * `cuir`, `metal`, `peau`…). Fusionnés SOUS les surcharges utilisateur dans `composeRig`
- * → rendu par défaut identique à l'art dessiné, recoloriage cohérent quand l'utilisateur
- * choisit une couleur. Une carrière absente → palette globale par défaut (DEFAULT_PALETTE).
+ * Pour chaque carrière, le hex EXACT d'origine par token (vet1, vet1O, vet1H, cuir,
+ * metal, peau…). Fusionné SOUS les surcharges utilisateur dans composeRig → rendu par
+ * défaut identique à l'art dessiné, recoloriage cohérent quand l'utilisateur choisit.
  */
 import type { StoredPalette } from '../../palette';
 
-export const CAREER_PALETTES: Record<string, StoredPalette> = {};
+export const CAREER_PALETTES: Record<string, StoredPalette> = {
+  "Agitateur": { vet1O: "#23283a", vet2: "#8a7d52", vet2O: "#7a6f48", vet1: "#3a3f55", vet2H: "#cabf90", cuirO: "#3a352a", vet1H: "#4a5068", cuir: "#5a5446", metal: "#7a3a2a", metalO: "#4a2018", metalH: "#9a5040", peau: "#d6cda0" },
+  "Artisan": { vet1O: "#3a2614", metalH: "#caa64a", peau: "#caa882", cuirO: "#4a3420", vet1: "#5a3c22", metal: "#2a3038", cuir: "#8a6a40", vet1H: "#9a7a4c" },
+  "Bourgeois": { metalH: "#d8c070", cuirO: "#3a2614", cuir: "#6a4a2a", vet1O: "#3a4720", metal: "#c9a23a", metalO: "#6e5212", vet1H: "#8a9a4a", vet2: "#b8a05a", vet2O: "#7a6630", vet1: "#5a6a32", vet2H: "#e8e0d0" },
+  "Enquêteur": { vet1O: "#6e4d1c", vet1: "#b9893f", vet2O: "#34204a", cuirO: "#2a241c", vet1H: "#d9c47e", vet2: "#5b3a72", vet2H: "#6a4684", metalO: "#3a342a", cuir: "#4a3318", metal: "#c9a24e" },
+  "Marchand": { vet1: "#caa24a", vet1O: "#7a5a1a", vet1H: "#d8b85a", vet2: "#8fc2bf", vet2O: "#5f9c98", vet2H: "#bfe2df", cuir: "#6a4a2a", cuirO: "#3a2614", metalH: "#e8d27a", metalO: "#8a6a1a", peau: "#c8a878", peauO: "#8a5a38" },
+  "Mendiant": { vet1: "#5a4d2e", vet1H: "#9c8d6c", vet1O: "#4f4226", vet2: "#8c7d5b", vet2H: "#a89a78", vet2O: "#75663f" },
+  "Milicien": { vet1: "#caa64a", vet1O: "#3a2a16", cuirO: "#3a2614", cuir: "#7a5a32", cuirH: "#6d4a28", vet2O: "#4a1013", vet2: "#7a1e22", vet1H: "#8f6c3e", metalH: "#c9c0a0", metalO: "#5a5038", vet2H: "#9a2a2e" },
+  "Ratier": { vet1: "#5a3f22", vet1O: "#4a3318", metal: "#c8a24a", metalO: "#6a4a18", vet1H: "#8a6438", cuir: "#7a5a30", vet2O: "#5e1a1c", vet2H: "#cdbf98", cuirO: "#3f3527", cuirH: "#9a6038", vet2: "#a13b3d", metalH: "#9a7820" },
+  "Artiste": { vet1: "#5a3018", vet1O: "#3a2410", metalH: "#caa64a", vet2H: "#ece2c8", vet2O: "#b8a878", metal: "#7a5a18", vet2: "#e6d4a8", cuir: "#7a5226", cuirO: "#5a3a1e", peauH: "#e8e0d0", cuirH: "#6a4424", peau: "#9a6a3a", peauO: "#5a3a1c", cheveuxO: "#241408", cheveux: "#4a3220", cheveuxH: "#6a4a30" },
+  "Conseiller": { vet2: "#e6e2d4", metalH: "#caa24a", metal: "#8a6a1e", vet1: "#2f6f6a", vet1O: "#235451", vet2O: "#b8b3a2", cuirO: "#3a2412", vet2H: "#f4f0e6", vet1H: "#c9d6c4", cuir: "#7a4a26", cuirH: "#9a6a3a" },
+  "Duelliste": { cuirO: "#3a2917", cuir: "#5a4127", metalH: "#c9a24a", cuirH: "#7a5836", metalO: "#5a3f1a" },
+  "Émissaire": { vet1O: "#8fa2b4", metal: "#e8c454", metalH: "#fff0b0", vet1: "#9fb0c0", metalO: "#c79a2e", cuirO: "#4a3018", vet1H: "#b8c6d4", cuir: "#a87a3e", cuirH: "#b08a52" },
+  "Espion": { metalH: "#caa84e", vet1O: "#3a2818", vet1H: "#b0996e", vet1: "#7a6440", metalO: "#3a4150", metal: "#c2a35a", vet2: "#2c3c46", vet2O: "#1c2a32", vet2H: "#3a4e58", cuirO: "#3a281a", cuir: "#5a3f26" },
+  "Intendant": { vet1: "#e7dab6", vet1O: "#9c855a", vet2: "#a83030", vet1H: "#d9c79c", vet2H: "#3f7a3c", vet2O: "#27521f", cuirO: "#3e2c15", cuir: "#6a4a22", metal: "#d8a83a", metalH: "#e0b440", metalO: "#7a5a1c" },
+  "Noble": { metal: "#caa64a", metalH: "#d8b75a", vet1O: "#7a141a", vet2: "#efe6cf", metalO: "#a8843a", vet1: "#a8323a", cuirO: "#2a1408", vet1H: "#b0303a", cuir: "#3a2616" },
+  "Serviteur": { vet2: "#d8cdb0", vet1: "#6a4a2a", vet1O: "#3e2a14", vet2O: "#a89c82", cuirO: "#8c7c5c", vet2H: "#e6ddc6", vet1H: "#7a5630", cuir: "#8a6a3a", cuirH: "#b8a888" },
+  "Cavalier": { metalO: "#2a3038", metalH: "#dfe7f2", cuirO: "#3a1c12", metal: "#cfd8e6", cuir: "#7a3a26" },
+  "Chevalier": { metal: "#caa64a", metalO: "#7a5a1a", cuirO: "#2a2018", vet2: "#c75a26", vet2H: "#c2742e", vet2O: "#6a3a14", metalH: "#9c855a", vet1: "#2f5a8a", vet1O: "#a8323a", cuir: "#6a4a2a", vet1H: "#c9a675" },
+  "Garde": { metalO: "#2a3038", metalH: "#cdd4df", vet1: "#3a4658", vet1O: "#222a36", metal: "#5a6272", cuir: "#43301f", vet2O: "#4a1014", cuirO: "#4a3520", cuirH: "#8c6a3e" },
+  "Gladiateur": { cuirO: "#3d2a16", peau: "#caa46a", cuir: "#5a3f24", peauO: "#7a4a28", peauH: "#c98a5a", vet1O: "#9a8c6a", vet1H: "#e0d6bf", cuirH: "#b87a4a", metalO: "#2a3038", vet1: "#8a6e44", vet2: "#a82a22", vet2O: "#6a1812", vet2H: "#d24a3a" },
+  "Prêtre guerrier": { vet1O: "#2a3038", vet2O: "#4a0f12", cuir: "#5a3f24", vet2: "#7a1c20", metal: "#caa64a", metalO: "#7a5a18", vet1H: "#eef3fb", vet1: "#eaf0fa", metalH: "#d8cfa8", cuirO: "#2a1a0e" },
+  "Soldat": { vet1O: "#2f3744", metal: "#caa64a", vet1H: "#cdd6e2", cuirH: "#c4bfae", cuir: "#5a3f24", vet2O: "#8a1c22", vet2: "#b0323a", cuirO: "#3e2a16", metalH: "#f2efe6" },
+  "Spadassin": { vet1: "#9c7a44", vet1O: "#6a4a26", metalH: "#caa64a", metal: "#8a6a26", vet2: "#d8d2c2", vet2H: "#cfc8b6", vet2O: "#a89c84", cuir: "#5a3c1f", cuirO: "#3a2613" },
+  "Tueur": { vet1: "#a06a44", vet1H: "#8a5a38", vet1O: "#5a3a1f", metalH: "#c8a24a", metal: "#8a6a20", cuir: "#4a2e16", cuirO: "#2a1809", vet2: "#4a4a2c", vet2O: "#2c2c18" },
+  "Chasseur de primes": { cuirO: "#2e1f10", metal: "#cfae62", cuirH: "#caa46a", cuir: "#5a4118", vet1O: "#7e3f1c", vet2O: "#3e4a2a", vet2H: "#5c6a44", metalH: "#9aa6c2", metalO: "#5e6a86", vet1: "#c47238", vet1H: "#d68a4a", vet2: "#56653e" },
+  "Cocher": { metal: "#caa24a", cuirO: "#2a1c10", cuir: "#7a5a30", metalO: "#7a5a20", vet2: "#7a3a26", cuirH: "#8a5a2a", vet2H: "#b04a2a", vet2O: "#5a2418", metalH: "#b8932e" },
+  "Colporteur": { vet1: "#6f6230", vet1O: "#3c3216", vet1H: "#9a8a52", vet2H: "#cfc4a4", vet2: "#7e8650", cuir: "#8a6a36", cuirO: "#4a3414", peau: "#b8956a", vet2O: "#454a26" },
+  "Flagellant": { vet1O: "#8a7a50", vet1H: "#e8e0c8", peau: "#caa782", cuir: "#5b4a36", cheveuxO: "#1c1814", vet2: "#9a2820", vet2O: "#8e1c16", cuirO: "#4a3320", vet1: "#d8cba0", metalH: "#ffd24a", metal: "#caa050", cheveux: "#2a2622" },
+  "Messager": { vet1O: "#8a7c58", vet1: "#d6c9a4", vet1H: "#e3d8b6", vet2O: "#22405a", vet2: "#52533f", cuir: "#4a3320", cuirO: "#2c1d10", metalH: "#caa64a", metal: "#8a6e22", vet2H: "#73745d", peau: "#e2b48c", peauO: "#d6a880" },
+  "Patrouilleur routier": { vet1O: "#241a0e", cuir: "#6a4a2a", metalH: "#caa64a", metal: "#7a5a18", cuirO: "#1f160c", vet1: "#6e5d39", vet1H: "#a3915f", metalO: "#2a3038", cuirH: "#8a6438" },
+  "Répurgateur": { metal: "#3a4150", metalO: "#2a2f3a", cuir: "#3e2917", cuirO: "#1c1009", metalH: "#d8c27a", cuirH: "#5a3d22", vet2: "#7a1c20" },
+  "Saltimbanque": { metal: "#c9a23e", vet1: "#dccfa6", metalO: "#8a6a1e", vet2: "#8c2a24", vet1H: "#ece3c8", vet1O: "#b8aa82", metalH: "#caa64a", vet2H: "#a8323a", vet2O: "#46120f" },
+  "Apothicaire": { vet1O: "#8a5e6e", vet1H: "#c79aaa", cuir: "#5a3f24", vet1: "#b08193", vet2O: "#b8b09a", cuirO: "#3a2614", cuirH: "#8a7a5a", vet2H: "#e7e0cc", vet2: "#cfc7af", metalH: "#caa64a", metal: "#806124" },
+  "Érudit": { metalH: "#caa64a", vet1O: "#5e2a14", vet2O: "#b9a878", vet2: "#e6d8b8", vet2H: "#efe6cb", vet1: "#9c4a26", vet1H: "#a8512b", cuir: "#6e4018", cuirH: "#c07a3a", cuirO: "#3a2818", peau: "#d8b88c", peauO: "#a07a4a" },
+  "Ingénieur": { vet1: "#caa64a", metalH: "#cdd4df", cuirO: "#3a2616", vet1O: "#6a4f16", cuir: "#8c6a3e", vet1H: "#e6c878", metalO: "#2a3038", metal: "#9aa2ae", peauO: "#8a5a38", vet2: "#8a3a18", vet2O: "#4e1d0c", vet2H: "#b8552a" },
+  "Juriste": { cuirO: "#3a2c14", vet1O: "#3a481c", vet1: "#5a6a2e", vet2: "#b59a5e", vet2O: "#6a5128", vet2H: "#c9ad6c", metalH: "#caa64a", cheveux: "#2b2a26", cheveuxO: "#161512", cuir: "#8a6f3a", cheveuxH: "#48463e" },
+  "Médecin": { vet1: "#7a1c22", vet1O: "#3e0e12", vet1H: "#b94650", vet2O: "#36401a", vet2: "#c9b487", metalH: "#caa64a", vet2H: "#e3d4ab", cuirO: "#3a2614", cuir: "#6a4a2a", cuirH: "#8a6440" },
+  "Nonne": { vet1: "#cdc2a6", vet1O: "#9c906f", vet2: "#7a5436", vet2O: "#3a2415", cheveux: "#aebfce", cheveuxO: "#8295a6", cheveuxH: "#d3dde7", metalH: "#caa64a", metal: "#8a6e2a", metalO: "#7a5e1e", cuirO: "#321f12", cuir: "#5a3a26" },
+  "Prêtre": { vet1O: "#3a260f", vet1: "#8a5e2c", metalH: "#caa64a", metal: "#7a5c22", vet1H: "#9a6c34", cuir: "#3a2614", cuirO: "#1c120a", peau: "#c79e72", peauO: "#9a6c44" },
+  "Sorcier": { vet1O: "#6f6650", vet2O: "#1d2615", metal: "#caa64a", metalO: "#8a6e22", vet1: "#9d9580", vet2: "#3d4a32", vet2H: "#586a45", vet1H: "#b9b09a", cuir: "#8a6a40", cuirO: "#523e22", metalH: "#f0d676", cuirH: "#74553a" },
+  "Batelier": { cuirO: "#241a10", vet1: "#8a7c3c", cuir: "#3a2c1c", vet1O: "#6b5f2e", cuirH: "#7a5a30", vet2O: "#6e3211", metalH: "#cdd4df", vet1H: "#a8853c", vet2: "#b85a22", vet2H: "#d8884a" },
+  "Contrebandier": { metalH: "#caa64a", cuirO: "#3a2010", vet2O: "#4a1014", vet1: "#7a4528", vet1O: "#3f2412", vet1H: "#9c6638", cheveuxO: "#33301a", vet2: "#7a2026", cuir: "#6a3f28", metalO: "#39414e", vet2H: "#8c2a30", cheveux: "#5d5a2e", cheveuxH: "#857f3c" },
+  "Débardeur": { cuir: "#7a4a2c", cuirH: "#9a6440", metalH: "#caa64a", metal: "#7a5616", peauO: "#8a5a36", cuirO: "#5a3c20", vet1O: "#39431c", vet1H: "#8a9a4a", metalO: "#523a0e", vet1: "#5a5a32" },
+  "Femme du fleuve": { vet1O: "#23253a", metalH: "#caa64a", vet1: "#2e3148", vet1H: "#3f4360", metal: "#6e5420", cuirO: "#150f09", cuir: "#7a5a34", cuirH: "#8c6a3e", vet2H: "#474c6a", vet2O: "#4a1014", vet2: "#c84a52" },
+  "Marin": { vet1O: "#33401a", vet1: "#5c6b2c", vet1H: "#7f8f48", vet2O: "#1a2c44", vet2: "#2f4a6e", vet2H: "#3a5878", cuir: "#caa878", cuirO: "#9a7a4e", cuirH: "#b89868", peauO: "#9a6038", peauH: "#f0c69a", metal: "#c9b066", metalO: "#7a6420", metalH: "#cdab52" },
+  "Naufrageur": { vet1: "#a86a3e", vet1O: "#9a5a32", vet1H: "#8a7048", peauO: "#8a4f2a", cuir: "#6a5636", cuirO: "#1a1108", cuirH: "#7a6a4a", metal: "#caa64a", metalO: "#7a6020", vet2: "#9a3a2a" },
+  "Nautonier": { vet1: "#5a6a2c", metalH: "#c9b06a", metalO: "#8a6a1e", cuirO: "#3a260f", cuir: "#5a3a20", vet1O: "#33401a", vet2O: "#4a1014", vet2: "#7e2026", metal: "#cdb24c", vet1H: "#86963e", vet2H: "#c2363e" },
+  "Patrouilleur fluvial": { metal: "#9a884e", metalH: "#cdd4df", metalO: "#5a6272", cuirO: "#1c130b", cuir: "#6a4e2e", vet1O: "#27403f", vet1: "#3d5a5a", vet1H: "#4f6e6c", cuirH: "#86603a" },
+  "Charlatan": { vet1O: "#5e2510", vet1: "#a8431d", vet1H: "#bd5226", metal: "#caa64a", vet2: "#f0e2c4", vet2O: "#c9b48a", metalO: "#2a313c", cuir: "#6e4a26", cuirO: "#3e2814", metalH: "#6a7689", cuirH: "#7a5734", vet2H: "#e8dcc0" },
+  "Entremetteur": { cuirO: "#4a3520", metal: "#caa64a", metalO: "#7a6020", vet1O: "#6a5a3a", vet2: "#742e20", vet2O: "#3f160d", cuir: "#7a5a34", metalH: "#b9942e", vet2H: "#8a3a2a", vet1: "#b59a5c", vet1H: "#c4a968", cuirH: "#8c6738" },
+  "Hors-la-loi": { vet2O: "#2c3413", cuirO: "#241a10", vet2: "#374017", vet1: "#6a4a2a", vet1O: "#3e2a16", vet1H: "#7a5630", metal: "#caa64a", cuir: "#4a3119", cuirH: "#6a4628", vet2H: "#5a662c" },
+  "Pilleur de tombes": { vet2O: "#1a3a37", vet1O: "#2e3814", vet2: "#274a48", vet2H: "#356561", vet1H: "#5a6a2e", vet1: "#314c2a", cuir: "#5a5238", cuirH: "#7a6438", cuirO: "#2f2417", metal: "#8a7038" },
+  "Rançonneur": { metal: "#caa64a", metalO: "#7a5a1e", cuirO: "#4a2814", metalH: "#e6c668", vet2O: "#566872", vet1O: "#5a3219", cuir: "#5a3a20", cheveuxO: "#3a2614", vet2: "#8ba0ac", vet2H: "#a6bcc6", vet1: "#7a4a28", cheveux: "#5a3a22", vet1H: "#b06a40", cuirH: "#86603a", peau: "#d8b48a", peauO: "#a07a52", peauH: "#cbb896", cheveuxH: "#82603a" },
+  "Receleur": { vet1O: "#33414f", metalO: "#7a6020", metal: "#caa64a", vet1: "#5a6f86", vet1H: "#67809a", vet2O: "#33210f", cuirO: "#3f2a16", vet2: "#5a3c20", vet2H: "#6e4a28", cuir: "#7a4b28", cuirH: "#8e5a32" },
+  "Sorcier dissident": { vet2: "#9aa06a", vet1: "#cfc6b6", vet1O: "#b5aa96", vet1H: "#e8e2d2", vet2H: "#9b8a8f", vet2O: "#6b5e5a", metal: "#caa64a", cuirO: "#5e5052", cuir: "#6e6062" },
+  "Voleur": { vet1O: "#3f2c16", metal: "#caa050", vet1: "#5a4226", vet1H: "#8a6638", cuirO: "#241a0e", vet2O: "#2a3040", metalH: "#cdd4df", vet2H: "#4a5266", vet2: "#3c4456", metalO: "#7a6020", cuir: "#2e2012", cuirH: "#a07a44" },
+  "Bailli": { cuir: "#7a5e34", cuirO: "#5e4528", metal: "#c8902e", vet1O: "#5a3a1e", vet1: "#6e4a26", metalO: "#6a4410", vet2O: "#4a1408", peauO: "#9a8c64", vet2: "#2a2c54", vet2H: "#34376a", vet1H: "#7a3216", metalH: "#e8c45a", peau: "#c9a86a", peauH: "#e0c890" },
+  "Chasseur": { vet1O: "#2f3a18", cuir: "#8a6a40", metal: "#caa64a", cuirO: "#3a2818", vet1: "#3f5020", vet1H: "#46521f", cuirH: "#7a5a34" },
+  "Éclaireur": { cuir: "#3a2c1a", cuirO: "#281e12", vet1O: "#2f3a16", cuirH: "#5a4a2c", vet1: "#3c4a1e", vet1H: "#566a2c", metal: "#a87a2c", metalO: "#6a4c18", metalH: "#caa64a" },
+  "Herboriste": { cuirO: "#241a10", vet1H: "#6f8f4a", vet1: "#5a7a3a", vet1O: "#36521f", vet2H: "#efe9d6", vet2O: "#bfb89f", vet2: "#cfc8b0", cuir: "#5a3f24", cuirH: "#7a5734", metal: "#b89c2e", metalH: "#caa64a", metalO: "#8a6e26" },
+  "Mineur": { vet2O: "#8a7d54", vet2: "#bdb288", vet2H: "#cabf9a", metal: "#caa64a", cuirO: "#4a2c16", cuir: "#8a6a42", vet1O: "#39451a", vet1: "#5a6a2e", vet1H: "#62742f", cuirH: "#8c6638", metalH: "#ffd34d" },
+  "Mystique": { vet2: "#cabf9a", cuir: "#3a2c1c", vet1O: "#2c2e1a", metal: "#caa030", vet1: "#3e4226", vet2O: "#8a7c52", vet1H: "#6a6c44", cuirO: "#291d0f", cuirH: "#52402a", vet2H: "#d8cea8", metalO: "#7a5a10" },
+  "Sorcier de village": { vet2O: "#2c3818", vet2: "#3a4a20", vet1O: "#4c4c26", vet1: "#5a5a30", vet1H: "#7e7e48", cuir: "#5c4226", cuirO: "#352213", metalH: "#a89048", metal: "#b08a3a", metalO: "#6e521e" },
+  "Villageois": { vet1: "#5b4a26", vet1O: "#33240f", vet1H: "#7d6838", vet2O: "#4a3318", vet2: "#6a4a2a", vet2H: "#cfc4a0", metal: "#9c7e34", metalH: "#caa64a", cuir: "#7a3a2a", cuirO: "#4a1f14" }
+};
