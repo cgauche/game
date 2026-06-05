@@ -885,4 +885,43 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(st.inventory).toEqual(expect.arrayContaining(['Fiole', 'Lettre']));
     expect(st.scene!.entities.find((e) => e.id === 'coffre')).toBeUndefined(); // ramassé → disparaît
   });
+
+  it('Effet giveTrapping : crée un VRAI objet à stats sur le héros (non équipé, depuis trappings.json)', () => {
+    const heroWithBag = (): Combatant =>
+      ({
+        id: 'a',
+        name: 'A',
+        kind: 'hero',
+        characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+        wounds: { current: 12, max: 12 },
+        advantage: 0,
+        conditions: [],
+        weapons: [],
+        armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+        items: [],
+        skills: [],
+        talents: [],
+        movement: 4,
+      }) as unknown as Combatant;
+    const scene = emptyScene(6, 6);
+    scene.id = 'gt-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({
+      id: 'cadavre',
+      kind: 'objet',
+      pos: { x: 1, y: 0 },
+      label: 'Cadavre du cocher',
+      search: [{ type: 'giveTrapping', trapping: 'Dague' }],
+    });
+    useGame.setState({ party: [heroWithBag()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
+
+    useGame.getState().interactEntity('cadavre');
+    const hero = useGame.getState().party[0];
+    const dague = (hero.items ?? []).find((i) => i.name === 'Dague');
+    expect(dague).toBeTruthy();
+    expect(dague!.kind).toBe('melee'); // objet à stats, pas un simple nom
+    expect(dague!.equipped).toBe(false); // ramassé, à équiper soi-même
+  });
 });

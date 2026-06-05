@@ -114,7 +114,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ---
 
-## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : ramasser, tables de critiques)*
+## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : ramasser-en-combat, tables de critiques)*
 
 - **Jets par MODALE** ✅ : attaque, tests hors combat ET **défense réactive** passent par une
   modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de **Chance** pour
@@ -124,7 +124,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - Actions : ✅ **Défense totale** (« Sur la défensive »), ✅ **Charge** (se ruer au contact sur
   la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** = menu de choix :
   *Sacrifier l'Avantage* / *Esquiver* (Test opposé, coûte l'Action) / ✅ **Fuir** (attaque gratuite
-  dans le dos +20, Test de Calme ou État Brisé, puis Mouvement de Course) / *Renoncer*. Reste : **ramasser**.
+  dans le dos +20, Test de Calme ou État Brisé, puis Mouvement de Course) / *Renoncer*. Reste : **ramasser en plein combat** (arme tombée au sol durant un Round ; le pillage *après* combat = exploration, cf. objets cherchables `search` Jalon 4).
 - ✅ **État Engagé** (LDB 13-Combat l.174-175) : posé sur toute attaque de mêlée, levé en fin de
   Round sans coup échangé ; un Engagé ne se déplace plus librement (→ Désengagement). *(L'IA ne
   fait pas de Désengagement et charge en portée de Marche — simplifications assumées.)*
@@ -236,7 +236,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
 - ✅ **Avancement XP** : moteur **+ câblage store** (grant/dépense/détection in-carrière) **+ panneau UI** (onglets Fiche/Avancement) **+ Effet `giveXp`** — fait et testé (engine + vue + actions store + rendu). Reste : octroi **automatique** d'XP (victoire de combat / jalon de campagne) au-delà de l'Effet manuel/éditeur.
-- **Combat — reste** : action **« ramasser »** ; **tables de Critiques & Maladresses** par localisation (LDB p.172+, aujourd'hui laissées au MJ). Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée). Détermination & ajout direct de DR (au-delà de la Chance).
+- ✅ **Butin / fouille par corps** (fidèle au ch.2 « Erreur sur la personne » — butin curé par cadavre sur carte multi-rencontres) : **objet cherchable** (`SceneEntity.search: Effect[]` — reste en place, fouillé une fois) + Effets **`giveXp`** (XP de découverte), **`giveTrapping`** (vrai objet à stats sur un héros, équipable depuis la fiche), `giveMoney`/`document`. Spoils de combat → **`EncounterDef.onVictory` par rencontre** ; butin trouvé → objet cherchable **par corps** — **rien n'est global à la scène**. Reste : potions **consommables** (effet d'usage) ; `giveItem` party-level (noms) inchangé.
+- **Combat — reste** : action **« ramasser » en plein combat** (récupérer une arme tombée au sol *pendant* un Round — **distinct** du pillage post-combat, désormais fait, cf. butin/fouille ci-dessus) ; **tables de Critiques & Maladresses** par localisation (LDB p.172+, aujourd'hui laissées au MJ). Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée). Détermination & ajout direct de DR (au-delà de la Chance).
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
 - **Vérif NAVIGATEUR du combat** : modales attaque/défense/hors-combat/**désengagement+Fuite**, hotbar, Engagé/Charge — logique couverte par tests, mais **passage live à l'œil non fait** ce cycle (penser au **hard reload** : le HMR du dev se périme souvent).
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.

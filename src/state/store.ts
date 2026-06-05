@@ -46,7 +46,7 @@ import {
   inCareerTalent,
 } from '../engine/advancement';
 import { partyBest } from '../engine/skills';
-import { recomputeLoadout } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction } from '../engine/conditions';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
@@ -1023,6 +1023,31 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
         }));
         get().log(`Groupe : +${e.amount} PX.`);
         break;
+      case 'giveTrapping': {
+        const it = itemFromTrapping(e.trapping);
+        if (!it) {
+          get().log(`Objet inconnu : « ${e.trapping} ».`);
+          break;
+        }
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
+          const target = idx >= 0 ? idx : 0;
+          who = s.party[target].name;
+          return {
+            party: s.party.map((h, i) => {
+              if (i !== target) return h;
+              const clone: Combatant = JSON.parse(JSON.stringify(h));
+              clone.items = [...(clone.items ?? []), it]; // arrive NON équipé
+              recomputeLoadout(clone); // met à jour l'encombrement
+              return clone;
+            }),
+          };
+        });
+        get().log(`${who || 'Le groupe'} récupère : ${it.name}.`);
+        break;
+      }
       case 'document':
         set({ document: { title: e.title, text: e.text } });
         break;

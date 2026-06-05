@@ -110,6 +110,9 @@ export interface BuildingFeature {
 export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   | { type: 'giveItem'; item: string }
+  /** Donne un VRAI objet à stats (depuis trappings.json) à un héros (défaut : le premier).
+   *  L'objet arrive NON équipé dans son inventaire — à équiper via la fiche. */
+  | { type: 'giveTrapping'; trapping: string; heroId?: string }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
   | { type: 'giveXp'; amount: number }
