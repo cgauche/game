@@ -163,6 +163,9 @@ export interface Combatant {
   important?: boolean;
   /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */
   outOfRencontre?: boolean;
+  // NB : `ammoUid`/`loaded`/`reloadProgress` sont au niveau du combattant, pas de l'arme. Le modèle
+  // suppose UNE arme à distance équipée à la fois (le tir et le rechargement ciblent la 1re `ranged`
+  // via `attackWeapon`/`battleReload`). À porter sur l'arme si on autorise un jour 2 armes à distance.
   /** Munition sélectionnée pour l'arme à distance (uid d'un ItemInstance `kind 'ammo'`). */
   ammoUid?: string;
   /** Arme à distance chargée ? (Arc : toujours ; Recharge N : faux après un tir). */

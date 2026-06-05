@@ -859,14 +859,16 @@ export const useGame = create<GameState>((set, get) => ({
     }
     if (battle.action !== 'attack') return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
-    if (chebyshev(active.pos!, target.pos!) > 1 && active.weapons[0]?.type === 'melee') {
-      get().log('Cible hors de portée de mêlée.');
+    // Arme effectivement employée selon la distance (mêlée au contact, distance sinon) — PAS weapons[0],
+    // sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB Armes l.297-298).
+    const adj = chebyshev(active.pos!, target.pos!) <= 1;
+    const w = attackWeapon(active.weapons, adj);
+    if (!adj && w.type === 'melee') {
+      get().log('Cible hors de portée de mêlée.'); // aucune arme à distance dispo → mêlée hors de portée
       return;
     }
     // Tir héros : une munition compatible est toujours requise ; l'arme « chargée » ne concerne QUE les
     // armes à défaut Recharge (un Arc, sans Recharge, tire chaque Round sans recharger — LDB Armes).
-    const adj = chebyshev(active.pos!, target.pos!) <= 1;
-    const w = attackWeapon(active.weapons, adj);
     if (w.type === 'ranged' && active.kind === 'hero') {
       if ((w.reload ?? 0) > 0 && !active.loaded) {
         get().log(`${active.name} doit recharger ${w.name}.`);

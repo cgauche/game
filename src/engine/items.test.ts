@@ -71,6 +71,13 @@ describe('Munitions & rechargement', () => {
     expect(list.length).toBe(1);
     expect(list[0].name).toBe('Flèche');
   });
+  it('compatibleAmmo : Poudre noire ET Ingénierie acceptent les munitions « Poudre noire et ingénierie » (LDB 62 l.150)', () => {
+    const c = { items: [itemFromTrapping('Balle et Poudre')] } as unknown as Combatant;
+    const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+8', qualities: ['Pistolet'], subType: 'Poudre noire', reload: 1 };
+    const arqRep: Weapon = { name: 'Arquebus à répétition', type: 'ranged', damage: '+9', qualities: [], subType: 'Ingénierie', reload: 5 };
+    expect(compatibleAmmo(c, pistolet).map((a) => a.name)).toContain('Balle et Poudre');
+    expect(compatibleAmmo(c, arqRep).map((a) => a.name)).toContain('Balle et Poudre');
+  });
   it('recomputeLoadout dérive reload depuis « Recharge N » + subType', () => {
     const c = {
       items: [{ ...itemFromTrapping('Tromblon')!, equipped: true }],

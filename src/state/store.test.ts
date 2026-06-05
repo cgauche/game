@@ -1474,4 +1474,54 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     useGame.getState().battleSelectAmmo('am2');
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.ammoUid).toBe('am2');
   });
+
+  it('héros mixte (mêlée en weapons[0] + arc) peut tirer une cible éloignée (gate via attackWeapon)', () => {
+    const { H, E } = archer();
+    H.weapons = [
+      { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] },
+      { name: 'Arc', type: 'ranged', damage: '+BF+3', range: 60, qualities: [], subType: 'Arc', reload: 0 },
+    ];
+    H.items = [{ uid: 'fl1', name: 'Flèche', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance];
+    H.loaded = true;
+    H.ammoUid = 'fl1';
+    useGame.getState().battleClickEntity(E.id); // E à (4,0) → l'Arc (weapons[1]) doit s'employer, pas « hors de portée de mêlée »
+    expect(useGame.getState().pendingAttack).not.toBeNull();
+  });
+
+  it('reloadConfirm : cumul sous 0 → reloadProgress revient à 0 (Test étendu « recommence », 12-Tests l.200)', () => {
+    const { H } = archer();
+    H.loaded = false;
+    H.reloadProgress = 1;
+    useGame.setState({
+      pendingReload: {
+        actorId: H.id, actorName: H.name, weaponName: 'Arbalète lourde', reload: 2, progressBefore: 1,
+        skillValue: 40, difficulty: 'intermediaire', roll: 95, target: 40, sl: -2, success: false,
+      },
+    });
+    useGame.getState().reloadConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.reloadProgress).toBe(0); // 1 + (-2) = -1 → plancher 0
+    expect(h.loaded).toBe(false);
+  });
+
+  it('interruption : un héros touché en plein rechargement repart de zéro (63-Armures l.29)', () => {
+    const { H, E } = archer();
+    H.reloadProgress = 1;
+    H.loaded = false;
+    H.pos = { x: 1, y: 0 };
+    E.pos = { x: 0, y: 0 }; // adjacents
+    E.characteristics.F = 60; // gros frappeur → la touche inflige des Blessures
+    const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };
+    useGame.setState({
+      pendingDefense: {
+        attackerId: E.id, defenderId: H.id,
+        weapon: { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] },
+        location: 'corps', atk, mode: 'esquive', def: null, result: null,
+      },
+    });
+    useGame.getState().defenseCancel(); // « Subir » → resolveMeleePassive + applyAttackResult
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.wounds.current).toBeLessThan(h.wounds.max); // a bien encaissé une touche
+    expect(h.reloadProgress).toBe(0); // rechargement interrompu
+  });
 });

@@ -134,10 +134,23 @@ export function buildInventory(trappingNames: string[]): ItemInstance[] {
   return items;
 }
 
-/** Munitions de l'inventaire compatibles avec une arme à distance (même famille, qty>0). */
+/** Famille de munitions canonique. Les armes à **Poudre noire** ET d'**Ingénierie** partagent les
+ *  mêmes munitions (« Poudre noire et ingénierie ») — le LDB les regroupe sous « Armes à Poudre
+ *  noire et d'Ingénierie » (62-Les armes l.150, l.174-175). Les autres familles (Arc/Arbalète/
+ *  Fronde) correspondent à l'identique. Sans cette normalisation, une arme à feu (subType « Poudre
+ *  noire ») ne trouverait jamais sa munition (subType « Poudre noire et ingénierie »). */
+export function ammoFamily(subType?: string): string {
+  const s = (subType ?? '').toLowerCase();
+  if (s.includes('poudre noire') || s.includes('ingénierie') || s.includes('ingenierie')) return 'poudre-ingenierie';
+  return s;
+}
+
+/** Munitions de l'inventaire compatibles avec une arme à distance (même famille canonique, qty>0). */
 export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   if (weapon.type !== 'ranged') return [];
-  return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && i.subType === weapon.subType);
+  const fam = ammoFamily(weapon.subType);
+  if (!fam) return [];
+  return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam);
 }
 
 /** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (concaténés —
