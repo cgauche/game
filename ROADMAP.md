@@ -114,7 +114,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ---
 
-## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : ramasser-en-combat, tables de critiques)*
+## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : Maladresses, distance fine, Destin/Résilience sacrifiés)*
 
 - **Jets par MODALE** ✅ : attaque, tests hors combat, **défense réactive** ET **incantation/prière**
   passent par une modale — « 🎲 Lancer » / « 🛡️ Défendre » puis dépense possible d'un point de
@@ -131,7 +131,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   Round sans coup échangé ; un Engagé ne se déplace plus librement (→ Désengagement). *(L'IA ne
   fait pas de Désengagement et charge en portée de Marche — simplifications assumées.)*
 - ✅ **Avantage** (gain +1/attaque réussie & à la fuite, -1 si aucun gain au Round ; perte totale K.O.).
-- **Critiques & Maladresses** : tables de Blessures critiques par localisation (LDB p.172+). *(non modélisé — laissé au MJ)*
+- **Critiques** ✅ : tables de Blessures critiques par localisation (LDB 18-Traumatisme, verbatim) — **0 PB ≠ mort** (À Terre→Inconscient après BE rounds→mort si critiques cumulées > BE), déclenchées par **overkill** (dégâts > PB courants, −20 si > BE) ou **double**, **Mort Subite** pour les figurants ; effets long terme (amputation/fracture/déchirure) journalisés (→ Jalon 5). `isOutOfAction` corrigé (`wounds≤0` ne tue plus un héros). **Maladresses** : reste.
 - **Distance** : ✅ **bandes de portée** (Bout portant→Extrême, hors-portée bloqué) ; reste ligne de vue, couvert, rechargement, munitions.
 - ✅ **Qualités/Défauts d'armes** (Précise, Pointue, Perforante, Empaleuse, Assommante, Défensive, À enroulement, **Pistolet**).
 - ✅ **Pas de tir en Combat rapproché** (LDB Armes l.297-298) : une arme à distance sans l'Atout **Pistolet**
@@ -251,7 +251,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   (base + modificateurs = cible · d100 · DR de l'attaquant ET du défenseur — fini « un seul chiffre »),
   l'**incantation a sa modale** (`pendingCast` : Lancer → NI/DR/Maladresse → Chance → Appliquer), et le
   **tir interdit en Combat rapproché** (Atout Pistolet, LDB l.297-298 ; `attackWeapon` + IA).
-- **Combat — reste** : ✅ **« ramasser » en plein combat** (un objet au sol *à la fois*, réutilise `objet`/`search`, persiste party — `battlePickup`) ; ✅ **Chance étendue** : relance **1×/Test sur jet propre raté** (fix de 2 bugs), **+1 DR** cumulable, **Détermination** = retirer un État (+1 PB si À Terre, n'importe quel État : Surpris/À Terre/Hémorragique…). Reste : **tables de Critiques & Maladresses** par localisation (LDB p.172+, laissées au MJ) ; Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée) ; Destin/Résilience **sacrifiés** (« Meurs un autre jour », « Je ne faillirai pas !… »). *(✅ 3ᵉ usage de la Chance — pré-emption d'initiative en début de Round — fait.)*
+- **Combat — reste** : ✅ **« ramasser » en plein combat** (un objet au sol *à la fois*, réutilise `objet`/`search`, persiste party — `battlePickup`) ; ✅ **Chance étendue** : relance **1×/Test sur jet propre raté** (fix de 2 bugs), **+1 DR** cumulable, **Détermination** = retirer un État (+1 PB si À Terre, n'importe quel État : Surpris/À Terre/Hémorragique…). ✅ **Blessures critiques & mort** (LDB 18-Traumatisme : 0 PB ≠ mort → À Terre→Inconscient→mort si critiques > BE, overkill/double, tables par localisation, Mort Subite figurants ; `isOutOfAction` corrigé). Reste : **Maladresses** ; Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée) ; Destin/Résilience **sacrifiés** (« Meurs un autre jour », « Je ne faillirai pas !… »). *(✅ 3ᵉ usage de la Chance — pré-emption d'initiative en début de Round — fait.)*
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
 - **Vérif NAVIGATEUR — dette du cycle** : toute l'UI livrée cette session est **couverte par tests/typecheck mais jamais vue en live** (profil Playwright monopolisé par la session rig parallèle). À repasser à l'œil : modales attaque/**détail des jets opposés**/défense/**incantation**, **panneau Avancement** (achat de PX), action **« Utiliser »** (potions), **fouille** de corps, éditeur **« À la victoire »**, scène **Chapitre 2**, hotbar, Engagé/Charge. *(Penser au **hard reload** : le HMR du dev se périme souvent.)*
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.
