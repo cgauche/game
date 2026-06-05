@@ -29,6 +29,28 @@ describe('cosmeticPart', () => {
   });
 });
 
+describe('cosmeticPart — vues dos/profil E·7 branchées', () => {
+  it('une espèce avec vues générées expose back/profile distincts du front', () => {
+    const part = cosmeticPart('visage', 'Nain', 'M', 0); // Nain:M a des vues générées
+    expect(typeof part).toBe('object'); // PartArt multi-vues
+    const front = pickView(part, 'front');
+    expect(front).toContain('<');
+    expect(pickView(part, 'back')).not.toBe(front);
+    expect(pickView(part, 'profile')).not.toBe(front);
+  });
+  it('la vue de DOS du visage n’a pas d’yeux', () => {
+    expect(pickView(cosmeticPart('visage', 'Nain', 'M', 0), 'back')).not.toMatch(/g_eye/);
+  });
+  it('les cheveux exposent aussi des vues', () => {
+    const part = cosmeticPart('cheveux', 'Haut-Elfe', 'F', 0);
+    expect(pickView(part, 'back')).not.toBe(pickView(part, 'front'));
+  });
+  it('repli: une espèce sans vues garde le front pour back/profile', () => {
+    const part = cosmeticPart('visage', 'Gnome', 'M', 0); // pas de tête générée
+    expect(pickView(part, 'back')).toBe(pickView(part, 'front'));
+  });
+});
+
 describe('genericPart', () => {
   it('fournit un vêtement fallback pour les slots de corps habillés', () => {
     for (const s of ['torse', 'bras', 'jambes'] as const)

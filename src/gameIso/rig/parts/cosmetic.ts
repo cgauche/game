@@ -1,7 +1,12 @@
 import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
 import { GENERATED_HEADS } from './generated/heads';
+import HEAD_VIEWS_JSON from './generated/headViews.json';
 import { SLICE_HEADS } from './slice-soldat';
+
+// Vues dos/profil des têtes (E·7, générées par workflow) — composées au front existant.
+type HeadViewSet = { back?: string; profile?: string };
+const HEAD_VIEWS = HEAD_VIEWS_JSON as Record<string, { visage?: HeadViewSet; cheveux?: HeadViewSet }>;
 
 const eye = (cx: number) =>
   `<ellipse cx="${cx}" cy="7" rx="1.4" ry="2" fill="url(#g_eye)"/><circle cx="${cx}" cy="7" r="0.8" fill="#140a06"/>`;
@@ -37,7 +42,11 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
   const slice = SLICE_HEADS[`${base}:${sex}`]; // tranche verticale (front/back/profile)
   if (slice?.[slot] != null) return slice[slot];
   const gen = GENERATED_HEADS[`${base}:${sex}`];
-  if (gen?.[slot] != null) return gen[slot]!; // PartArt (string = front, ou objet par vue)
+  if (gen?.[slot] != null) {
+    // Front généré + vues dos/profil (E·7) si disponibles → PartArt multi-vues.
+    const views = HEAD_VIEWS[`${base}:${sex}`]?.[slot];
+    return views ? { front: gen[slot]!, ...views } : gen[slot]!;
+  }
   if (slot === 'visage') return pick(VISAGE, `${base}:${sex}`, 'default', idx);
   return pick(CHEVEUX, `${base}:${sex}`, 'Humain:M', idx);
 }
