@@ -62,6 +62,22 @@ export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
   return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + agilityTestPenalty(c);
 }
 
+/** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
+export interface RollBreakdown {
+  /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
+  label: string;
+  /** Valeur de Compétence/Caractéristique de base (avant modificateurs). */
+  base: number;
+  /** Somme des modificateurs appliqués (Avantage, viser, États, portée, Atouts…). */
+  modifier: number;
+  /** Valeur cible effective (= base + modificateurs) : on réussit si jet ≤ cible. */
+  target: number;
+  roll: number;
+  success: boolean;
+  /** Degrés de Réussite de CE jet (positif = réussite). */
+  sl: number;
+}
+
 export interface AttackResult {
   hit: boolean;
   attackerRoll: number;
@@ -74,8 +90,23 @@ export interface AttackResult {
   /** +1 Avantage gagné par l'attaquant (true) ou le défenseur (false), null = aucun. */
   advantageTo: 'attacker' | 'defender' | null;
   defenderDefeated: boolean;
+  /** Détail du jet d'attaque (cible, d100, DR) — pour la modale. */
+  attackerDetail?: RollBreakdown;
+  /** Détail du jet de défense en Test opposé (cible, d100, DR) — absent si non opposé. */
+  defenderDetail?: RollBreakdown;
   log: string;
 }
+
+const bd = (label: string, base: number, t: TestResult): RollBreakdown => ({
+  label,
+  base,
+  modifier: t.target - base,
+  target: t.target,
+  roll: t.roll,
+  success: t.success,
+  sl: t.sl,
+});
+const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
 
 export interface AttackOptions {
   defense?: 'parade' | 'esquive' | 'none';
@@ -143,6 +174,8 @@ export function finishMelee(
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk);
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def);
 
   if (opp.winner === 'defender') {
     return {
@@ -153,6 +186,8 @@ export function finishMelee(
       critical: false,
       advantageTo: 'defender',
       defenderDefeated: false,
+      attackerDetail: atkBd,
+      defenderDetail: defBd,
       log: `${attacker.name} rate son attaque ; ${defender.name} gagne +1 Avantage.`,
     };
   }
@@ -166,12 +201,15 @@ export function finishMelee(
       critical: false,
       advantageTo: null,
       defenderDefeated: false,
+      attackerDetail: atkBd,
+      defenderDetail: defBd,
       log: `Échange neutre : ni ${attacker.name} ni ${defender.name} ne prend l'avantage.`,
     };
   }
   const critical = atk.isDouble && atk.success;
-  const res = applyHit(attacker, defender, weapon, atk.roll, opp.netSL, critical, location);
+  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location);
   res.defenderRoll = def.roll;
+  res.defenderDetail = defBd;
   return res;
 }
 
@@ -184,8 +222,9 @@ export function resolveMeleePassive(
   atk: TestResult,
   location?: HitLocation,
 ): AttackResult {
-  if (!atk.success) return miss(attacker, defender, atk.roll, 'defender');
-  return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, location);
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk);
+  if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
 }
 
 /** Résout une attaque de mêlée (Test opposé de Corps à corps). Orchestrateur :
@@ -239,10 +278,12 @@ export function resolveRanged(
   const precise = hasQ(weapon, 'Précise') ? 10 : 0;
   const aimed = location ? -10 : 0;
   const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod + precise + aimed);
+  const atkBd = bd('Projectiles', atkVal, atk);
   if (!atk.success) {
     return {
       hit: false,
       attackerRoll: atk.roll,
+      attackerDetail: atkBd,
       netSL: atk.sl,
       critical: false,
       advantageTo: null, // pas d'Avantage au défenseur en combat à distance
@@ -250,19 +291,19 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, location);
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
 }
 
 function applyHit(
   attacker: Combatant,
   defender: Combatant,
   weapon: Weapon,
-  attackerRoll: number,
+  atkBd: RollBreakdown,
   dr: number,
   critical: boolean,
   forcedLoc?: HitLocation,
 ): AttackResult {
-  const loc = forcedLoc ?? hitLocation(reverseRoll(attackerRoll));
+  const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = parseWeaponDamage(weapon.damage, sb);
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
@@ -276,11 +317,12 @@ function applyHit(
   const defeated = newWounds <= 0;
   // Blessure critique : double réussi (déjà dans `critical`), Atout Empaleuse sur un
   // multiple de 10 (l.282), ou Blessures perdues > Blessures MAX (13 - Combat.md).
-  const empale = hasQ(weapon, 'Empaleuse') && attackerRoll % 10 === 0;
+  const empale = hasQ(weapon, 'Empaleuse') && atkBd.roll % 10 === 0;
   const isCritical = critical || empale || woundsLost > defender.wounds.max;
   return {
     hit: true,
-    attackerRoll,
+    attackerRoll: atkBd.roll,
+    attackerDetail: atkBd,
     netSL: dr,
     location: loc,
     damage,
@@ -299,12 +341,13 @@ function applyHit(
 function miss(
   attacker: Combatant,
   defender: Combatant,
-  roll: number,
+  atkBd: RollBreakdown,
   advantageTo: 'attacker' | 'defender' | null,
 ): AttackResult {
   return {
     hit: false,
-    attackerRoll: roll,
+    attackerRoll: atkBd.roll,
+    attackerDetail: atkBd,
     netSL: 0,
     critical: false,
     advantageTo,

@@ -1,12 +1,38 @@
 import { useGame } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
+import { RollBreakdown } from '../engine/combat';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
+
+/** Une ligne de jet : base + modificateurs = cible · d100 · DR (✓/✗). */
+export function RollLine({ d }: { d: RollBreakdown }) {
+  const roll = d.roll === 100 ? '00' : String(d.roll).padStart(2, '0');
+  const mod = d.modifier === 0 ? '' : ` ${d.modifier > 0 ? '+' : '−'}${Math.abs(d.modifier)}`;
+  return (
+    <div className={`rm-roll ${d.success ? 'ok' : 'fail'}`}>
+      <span className="rm-roll-label">{d.label}</span>
+      <span className="rm-roll-calc" title="Compétence de base + modificateurs (Avantage, viser, États…) = cible à ne pas dépasser">
+        {d.base}
+        {mod} = <b>{d.target}</b>
+      </span>
+      <span className="rm-roll-dice">
+        🎲 <b>{roll}</b>
+      </span>
+      <span className="rm-roll-sl">
+        {d.success ? '✓' : '✗'} {d.sl >= 0 ? '+' : '−'}
+        {Math.abs(d.sl)} DR
+      </span>
+    </div>
+  );
+}
 
 /**
  * Modale d'attaque : on choisit la localisation visée (Complexe -10), on clique
  * « Lancer » pour faire le jet, puis on peut dépenser un point de Chance pour
  * relancer avant d'appliquer le résultat (LDB Destin / Combat).
+ *
+ * La mêlée est un TEST OPPOSÉ : on affiche donc les DEUX jets (attaquant ET défenseur),
+ * leur cible (base + modificateurs) et leur DR — c'est le DR net qui décide.
  */
 export function RollModal() {
   const pa = useGame((s) => s.pendingAttack);
@@ -42,11 +68,7 @@ export function RollModal() {
                   Au hasard
                 </button>
                 {LOCS.map((l) => (
-                  <button
-                    key={l}
-                    className={`btn small ${pa.location === l ? 'btn-primary' : ''}`}
-                    onClick={() => setLocation(l)}
-                  >
+                  <button key={l} className={`btn small ${pa.location === l ? 'btn-primary' : ''}`} onClick={() => setLocation(l)}>
                     {HIT_LOCATION_LABELS[l]}
                   </button>
                 ))}
@@ -63,18 +85,28 @@ export function RollModal() {
           </>
         ) : (
           <>
-            <div className={`test-result ${res.hit ? 'ok' : 'fail'}`}>
-              <span className="dice">{res.attackerRoll === 100 ? '00' : String(res.attackerRoll).padStart(2, '0')}</span>
-              <span className="verdict">
-                {res.hit ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}` : 'Manqué'}
-                {res.hit && res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}
-                {res.critical ? ' · CRITIQUE' : ''}
-              </span>
+            <div className="rm-rolls">
+              {res.attackerDetail && <RollLine d={res.attackerDetail} />}
+              {res.defenderDetail && <RollLine d={res.defenderDetail} />}
+            </div>
+            <div className={`rm-verdict ${res.hit ? 'ok' : 'fail'}`}>
+              {res.hit ? (
+                <>
+                  Touché{res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}
+                  {res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}
+                  {res.defenderDetail ? ` · DR net +${res.netSL}` : ''}
+                  {res.critical ? ' · CRITIQUE' : ''}
+                </>
+              ) : res.defenderDetail ? (
+                'Défense réussie — coup paré / esquivé'
+              ) : (
+                'Manqué'
+              )}
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
               {fortune > 0 && (
-                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer le jet">
+                <button className="btn" onClick={reroll} title="Dépense un point de Chance pour relancer VOTRE jet d'attaque">
                   🍀 Chance ({fortune})
                 </button>
               )}

@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { defenseValue } from '../engine/combat';
+import { RollLine } from './RollModal';
 
 /**
  * Modale de défense réactive : quand un ennemi (IA) attaque un héros en mêlée, le
@@ -59,16 +60,18 @@ export function DefenseModal() {
           </>
         ) : (
           <>
+            {/* Test opposé : on montre le jet de l'attaquant ET celui du défenseur. */}
+            <div className="rm-rolls">
+              {res.attackerDetail && <RollLine d={res.attackerDetail} />}
+              {res.defenderDetail && <RollLine d={res.defenderDetail} />}
+            </div>
             {/* Défense réussie (res.hit === false) = succès du héros → classe « ok ». */}
-            <div className={`test-result ${res.hit ? 'fail' : 'ok'}`}>
-              <span className="dice">{pd.def!.roll === 100 ? '00' : String(pd.def!.roll).padStart(2, '0')}</span>
-              <span className="verdict">
-                {res.hit
-                  ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}${res.critical ? ' · CRITIQUE' : ''}`
-                  : pd.mode === 'parade'
-                    ? 'Paré !'
-                    : 'Esquivé !'}
-              </span>
+            <div className={`rm-verdict ${res.hit ? 'fail' : 'ok'}`}>
+              {res.hit
+                ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}${res.critical ? ' · CRITIQUE' : ''}`
+                : pd.mode === 'parade'
+                  ? 'Paré !'
+                  : 'Esquivé !'}
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">

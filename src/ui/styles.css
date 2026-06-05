@@ -1719,3 +1719,68 @@ textarea:focus {
 .adv-change select {
   flex: 1;
 }
+
+/* ── Modale de jet : détail des DEUX côtés (Test opposé) ── */
+.rm-rolls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+.rm-roll {
+  display: grid;
+  grid-template-columns: 1.1fr 1.5fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  font-size: 13px;
+}
+.rm-roll.ok {
+  border-left: 3px solid #5db87a;
+}
+.rm-roll.fail {
+  border-left: 3px solid #c0563f;
+}
+.rm-roll-label {
+  font-weight: 600;
+}
+.rm-roll-calc {
+  color: var(--muted);
+}
+.rm-roll-calc b {
+  color: var(--text);
+}
+.rm-roll-dice {
+  font-variant-numeric: tabular-nums;
+}
+.rm-roll-dice b {
+  font-size: 16px;
+}
+.rm-roll-sl {
+  text-align: right;
+  font-weight: 600;
+}
+.rm-roll.ok .rm-roll-sl {
+  color: #6fce8e;
+}
+.rm-roll.fail .rm-roll-sl {
+  color: #e07a63;
+}
+.rm-verdict {
+  text-align: center;
+  font-weight: 700;
+  padding: 8px;
+  border-radius: 8px;
+  margin: 4px 0 8px;
+}
+.rm-verdict.ok {
+  background: rgba(93, 184, 122, 0.16);
+  color: #8fe0a8;
+}
+.rm-verdict.fail {
+  background: rgba(192, 86, 63, 0.16);
+  color: #e89a86;
+}
