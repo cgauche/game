@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -19,13 +19,22 @@ function reset() {
     journal: [],
     dialogue: null,
     battle: null,
+    pendingTest: null,
+    pendingAttack: null,
+    pendingDefense: null,
+    document: null,
   });
 }
 
 describe('Boucle de jeu (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.clearAllTimers(); // purge tout timer fuité d'un test précédent (startCombat arme maybeRunEnemyTurn)
     reset();
+  });
+  afterEach(() => {
+    vi.clearAllTimers(); // les setTimeout d'IA (resumeEnemyTurn, attackThenAdvance) ne fuient pas vers le test suivant
+    vi.useRealTimers();
   });
 
   it('charge une scène et place le groupe au départ', () => {

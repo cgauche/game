@@ -6,7 +6,17 @@
 import { create } from 'zustand';
 import { Combatant, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
-import { resolveMelee, resolveRanged, initiativeOrder, defenseValue, AttackResult } from '../engine/combat';
+import {
+  resolveMelee,
+  resolveRanged,
+  initiativeOrder,
+  defenseValue,
+  rollMeleeAttacker,
+  rollMeleeDefender,
+  finishMelee,
+  resolveMeleePassive,
+  AttackResult,
+} from '../engine/combat';
 import {
   resolveMagicMissile,
   resolveCasting,
@@ -24,7 +34,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend } from '../engine/conditions';
 import { findSpell } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
@@ -71,6 +81,20 @@ export interface PendingAttack {
   location: HitLocation | null;
   result: AttackResult | null; // null = pas encore lancé
 }
+/** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
+ *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
+ *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
+ *  suspendu tant que `pendingDefense` est non-null. */
+export interface PendingDefense {
+  attackerId: string; // ennemi
+  defenderId: string; // héros
+  weapon: Weapon; // arme active de l'attaquant, figée
+  location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
+  atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
+  mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
+  def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
+  result: AttackResult | null; // calculé par finishMelee après « Défendre »
+}
 
 export interface BattleState {
   combatants: Combatant[];
@@ -103,6 +127,7 @@ interface GameState {
   money: Money;
   pendingTest: PendingTest | null;
   pendingAttack: PendingAttack | null;
+  pendingDefense: PendingDefense | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -140,6 +165,13 @@ interface GameState {
   attackReroll: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
+  /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
+   *  dépenser une Chance, appliquer ; « Subir » = défense passive. */
+  defenseSetMode: (mode: 'parade' | 'esquive') => void;
+  defenseRoll: () => void;
+  defenseReroll: () => void;
+  defenseConfirm: () => void;
+  defenseCancel: () => void;
   log: (msg: string) => void;
 }
 
@@ -160,6 +192,7 @@ export const useGame = create<GameState>((set, get) => ({
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
   pendingAttack: null,
+  pendingDefense: null,
   document: null,
   previousScene: null,
 
@@ -194,6 +227,8 @@ export const useGame = create<GameState>((set, get) => ({
       dialogue: null,
       battle: null,
       pendingTest: null,
+      pendingAttack: null,
+      pendingDefense: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -234,6 +269,8 @@ export const useGame = create<GameState>((set, get) => ({
       dialogue: null,
       battle: null,
       pendingTest: null,
+      pendingAttack: null,
+      pendingDefense: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -326,7 +363,8 @@ export const useGame = create<GameState>((set, get) => ({
       over: null,
       onVictory: onVictory ?? enc.onVictory,
     };
-    set({ battle, mode: 'battle' });
+    // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
+    set({ battle, mode: 'battle', pendingAttack: null, pendingDefense: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -456,6 +494,59 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && target) applyAttackResult(get, set, attacker, target, attacker.weapons[0], pa.result);
   },
   attackCancel: () => set({ pendingAttack: null }),
+
+  // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
+  defenseSetMode: (mode) => {
+    const pd = get().pendingDefense;
+    if (!pd || pd.result) return; // le mode ne change plus après le jet
+    set({ pendingDefense: { ...pd, mode } });
+  },
+  defenseRoll: () => {
+    // « Défendre » : roule la défense du héros et résout le Test opposé (atk figé).
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || pd.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender) return;
+    const def = rollMeleeDefender(defender, pd.mode, battleRng);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
+    set({ pendingDefense: { ...pd, def, result: res } });
+  },
+  defenseReroll: () => {
+    // Dépense d'un point de Chance du DÉFENSEUR : relance UNIQUEMENT la défense (LDB Destin).
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
+    defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
+    const def = rollMeleeDefender(defender, pd.mode, battleRng);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
+    set({ pendingDefense: { ...pd, def, result: res }, battle: { ...battle } });
+  },
+  defenseConfirm: () => {
+    // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
+    if (attacker && defender) applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+    resumeEnemyTurn(get, set);
+  },
+  defenseCancel: () => {
+    // « Subir » : défense passive (aucune réaction), puis reprise du tour de l'IA.
+    const { battle, pendingDefense: pd } = get();
+    if (!pd) return;
+    const attacker = battle?.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle?.combatants.find((c) => c.id === pd.defenderId);
+    set({ pendingDefense: null });
+    if (attacker && defender) {
+      const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
+      applyAttackResult(get, set, attacker, defender, pd.weapon, res);
+    }
+    resumeEnemyTurn(get, set);
+  },
 
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
   testRoll: () => {
@@ -706,15 +797,44 @@ function applyAttackResult(
   checkBattleOver(get, set);
 }
 
-/** Attaque instantanée (utilisée par l'IA ennemie) : résout puis applique. */
-function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): void {
+/** Ouvre la modale de défense réactive si l'attaque est : ennemi → héros, en mêlée,
+ *  à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
+ *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
+function maybeOpenDefense(set: any, attacker: Combatant, target: Combatant): boolean {
+  const weapon = attacker.weapons[0];
+  if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
+  if (weapon?.type !== 'melee') return false;
+  if (manhattan(attacker.pos!, target.pos!) > 1) return false;
+  if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
+  applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
+  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng); // jet d'attaque figé
+  set({
+    pendingDefense: {
+      attackerId: attacker.id,
+      defenderId: target.id,
+      weapon,
+      location: null, // l'IA ne vise pas de localisation
+      atk,
+      mode: bestDefenseMode(target),
+      def: null,
+      result: null,
+    },
+  });
+  return true;
+}
+
+/** Attaque de l'IA : ouvre la modale de défense (→ true, tour SUSPENDU) si la cible
+ *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
+function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
+  if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   const r = resolveAttack(attacker, target);
   if (!r) {
     get().log('Cible hors de portée de mêlée.');
-    return;
+    return false;
   }
   applyAttackResult(get, set, attacker, target, r.weapon, r.res);
+  return false;
 }
 
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
@@ -891,6 +1011,14 @@ function checkBattleOver(get: () => GameState, set: any): boolean {
   return false;
 }
 
+/** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
+ *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
+function resumeEnemyTurn(get: () => GameState, set: any): void {
+  const b = get().battle;
+  if (!b || b.over) return;
+  setTimeout(() => advanceTurn(get, set), 500);
+}
+
 function advanceTurn(get: () => GameState, set: any) {
   let battle = get().battle;
   if (!battle || battle.over) return;
@@ -967,8 +1095,10 @@ function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     setTimeout(() => {
       const b = get().battle;
       if (!b || b.over) return;
-      doAttack(get, set, enemy, target);
-      setTimeout(() => advanceTurn(get, set), 500);
+      const suspended = doAttack(get, set, enemy, target);
+      // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
+      // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
+      if (!suspended) setTimeout(() => advanceTurn(get, set), 500);
     }, 350);
   };
 

@@ -6,6 +6,7 @@ import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
+import { DefenseModal } from './DefenseModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { Combatant } from '../engine/types';
@@ -73,6 +74,7 @@ export function CampaignView() {
       {mode === 'battle' && battle && <BattlePanel />}
       <TestModal />
       <RollModal />
+      <DefenseModal />
       <DocumentModal />
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
     </div>

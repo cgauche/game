@@ -7,7 +7,7 @@
  *          4) Application = Dégâts − (Bonus d'Endurance + PA de la localisation)
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, resolveOpposed } from './tests';
+import { rollTest, resolveOpposed, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
@@ -87,30 +87,44 @@ export interface AttackOptions {
 const hasQ = (w: Weapon | undefined, q: string): boolean =>
   !!w && w.qualities.some((x) => x.toLowerCase().startsWith(q.toLowerCase()));
 
-/** Résout une attaque de mêlée (Test opposé de Corps à corps). */
-export function resolveMelee(
+/** Jet de l'ATTAQUANT seul (Précise +10, viser -10, Avantage×10, États) — n'inclut
+ *  PAS le jet de défense : sert au flux par modale (jet figé, appelé UNE fois). */
+export function rollMeleeAttacker(
   attacker: Combatant,
   defender: Combatant,
   weapon: Weapon,
   rng: RNG = defaultRNG,
-  opts: AttackOptions = {},
-): AttackResult {
-  const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
+  location?: HitLocation,
+): TestResult {
   const atkVal = combatValue(attacker, 'melee');
   const precise = hasQ(weapon, 'Précise') ? 10 : 0; // Atout Précise : +10 au Test (l.304)
-  const aimed = opts.location ? -10 : 0; // viser une localisation = Complexe -10 (LDB Combat l.104)
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise + aimed);
+  const aimed = location ? -10 : 0; // viser une localisation = Complexe -10 (LDB Combat l.104)
+  return rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise + aimed);
+}
 
-  if (defenseMode === 'none') {
-    // Cible sans défense : un simple succès suffit à toucher.
-    if (!atk.success) {
-      return miss(attacker, defender, atk.roll, 'defender');
-    }
-    return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, opts.location);
-  }
+/** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
+ *  « Sur la défensive » +20). C'est le SEUL jet relancé par un point de Chance. */
+export function rollMeleeDefender(
+  defender: Combatant,
+  mode: 'parade' | 'esquive',
+  rng: RNG = defaultRNG,
+): TestResult {
+  const defVal = defenseValue(defender, mode);
+  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0));
+}
 
-  const defVal = defenseValue(defender, defenseMode);
-  const def = rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0));
+/** Combine un jet d'attaque et un jet de défense DÉJÀ obtenus en AttackResult
+ *  (Test opposé). drAdjust : Défensive (déf.) +1 DR / À Enroulement (att.) -1 DR,
+ *  en Parade uniquement. */
+export function finishMelee(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  atk: TestResult,
+  def: TestResult,
+  defenseMode: 'parade' | 'esquive',
+  location?: HitLocation,
+): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
@@ -142,9 +156,38 @@ export function resolveMelee(
     };
   }
   const critical = atk.isDouble && atk.success;
-  const res = applyHit(attacker, defender, weapon, atk.roll, opp.netSL, critical, opts.location);
+  const res = applyHit(attacker, defender, weapon, atk.roll, opp.netSL, critical, location);
   res.defenderRoll = def.roll;
   return res;
+}
+
+/** Issue d'une attaque de mêlée SANS défense (Surpris, ou « Subir ») à partir
+ *  d'un jet d'attaque déjà obtenu : un simple succès suffit à toucher. */
+export function resolveMeleePassive(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  atk: TestResult,
+  location?: HitLocation,
+): AttackResult {
+  if (!atk.success) return miss(attacker, defender, atk.roll, 'defender');
+  return applyHit(attacker, defender, weapon, atk.roll, atk.sl, atk.isDouble && atk.success, location);
+}
+
+/** Résout une attaque de mêlée (Test opposé de Corps à corps). Orchestrateur :
+ *  jet d'attaque PUIS jet de défense (ordre RNG inchangé) ; voie instantanée. */
+export function resolveMelee(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  rng: RNG = defaultRNG,
+  opts: AttackOptions = {},
+): AttackResult {
+  const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
+  const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location);
+  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location);
+  const def = rollMeleeDefender(defender, defenseMode, rng);
+  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location);
 }
 
 /**

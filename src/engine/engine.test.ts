@@ -3,7 +3,17 @@ import { makeRNG, RNG } from './dice';
 import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
-import { reverseRoll, hitLocation, parseWeaponDamage, resolveMelee, rangeBandModifier } from './combat';
+import {
+  reverseRoll,
+  hitLocation,
+  parseWeaponDamage,
+  resolveMelee,
+  rangeBandModifier,
+  rollMeleeAttacker,
+  rollMeleeDefender,
+  finishMelee,
+  resolveMeleePassive,
+} from './combat';
 
 describe('Portée des tirs (LDB Difficultés de Combat ; 1 case = 2 m)', () => {
   it('Bout portant +60, Courte +40, Moyenne/Longue +0, Extrême -30, au-delà = null', () => {
@@ -65,6 +75,64 @@ describe("Atouts d'arme (LDB Les armes)", () => {
     const prec = fighter(40, { qualities: ['Précise'] }); // +10 → cible 50, jet 45 → réussite
     expect(resolveMelee(plain, def, plain.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(false);
     expect(resolveMelee(prec, def, prec.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(true);
+  });
+});
+
+describe('Découpe de la résolution de mêlée (split attaquant/défenseur)', () => {
+  const fighter = (cc: number, weapon: Partial<Weapon> = {}): Combatant =>
+    ({
+      id: 'x',
+      name: 'x',
+      kind: 'enemy',
+      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 20, max: 20 },
+      advantage: 0,
+      conditions: [],
+      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      skills: [],
+      talents: [],
+      movement: 4,
+    }) as unknown as Combatant;
+
+  it('resolveMelee ≡ rollMeleeAttacker → rollMeleeDefender → finishMelee (Parade, même seed, même ordre RNG)', () => {
+    const a = fighter(55);
+    const d = fighter(45);
+    const full = resolveMelee(a, d, a.weapons[0], makeRNG(7), { defense: 'parade' });
+    const rng = makeRNG(7);
+    const atk = rollMeleeAttacker(a, d, a.weapons[0], rng);
+    const def = rollMeleeDefender(d, 'parade', rng);
+    expect(finishMelee(a, d, a.weapons[0], atk, def, 'parade')).toEqual(full);
+  });
+  it('resolveMelee ≡ split (Esquive)', () => {
+    const a = fighter(55);
+    const d = fighter(45);
+    const full = resolveMelee(a, d, a.weapons[0], makeRNG(11), { defense: 'esquive' });
+    const rng = makeRNG(11);
+    const atk = rollMeleeAttacker(a, d, a.weapons[0], rng);
+    const def = rollMeleeDefender(d, 'esquive', rng);
+    expect(finishMelee(a, d, a.weapons[0], atk, def, 'esquive')).toEqual(full);
+  });
+  it('le jet d’attaque est FIGÉ : même atk + def différents → même attackerRoll, defenderRoll différents', () => {
+    const a = fighter(55);
+    const d = fighter(45);
+    const atk = rollMeleeAttacker(a, d, a.weapons[0], makeRNG(3));
+    const def1 = rollMeleeDefender(d, 'parade', makeRNG(20));
+    const def2 = rollMeleeDefender(d, 'parade', makeRNG(99));
+    const r1 = finishMelee(a, d, a.weapons[0], atk, def1, 'parade');
+    const r2 = finishMelee(a, d, a.weapons[0], atk, def2, 'parade');
+    expect(r1.attackerRoll).toBe(atk.roll);
+    expect(r2.attackerRoll).toBe(atk.roll); // l'attaque ne change pas quand on relance la défense
+    expect(r1.defenderRoll).not.toBe(r2.defenderRoll);
+  });
+  it('resolveMeleePassive : un succès touche, un échec rate (Avantage au défenseur)', () => {
+    const a = fighter(80);
+    const d = fighter(30);
+    const hit = resolveMeleePassive(a, d, a.weapons[0], { roll: 5, target: 80, success: true, sl: 7, isDouble: false });
+    expect(hit.hit).toBe(true);
+    const miss = resolveMeleePassive(a, d, a.weapons[0], { roll: 95, target: 80, success: false, sl: -2, isDouble: false });
+    expect(miss.hit).toBe(false);
+    expect(miss.advantageTo).toBe('defender');
   });
 });
 
