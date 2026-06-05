@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Munitions = équipement (`kind 'ammo'`, `subType`/`qty`) avec choix du joueur ; le tir combine arme + munition (Dégâts + Atouts, ex. Empaleuse de la Flèche) ; rechargement via la qualité « Recharge N » (état chargé/déchargé + action Recharger). **Héros uniquement** — les ennemis restent abstraits (tirent librement).
+**Goal:** Munitions = équipement (`kind 'ammo'`, `subType`/`qty`) avec choix du joueur ; le tir combine arme + munition (Dégâts + Atouts, ex. Empaleuse de la Flèche) ; rechargement via le défaut « Recharge N » = **Test étendu de Projectiles** (état chargé/déchargé, action Recharger **par modale** — cumul de DR jusqu'à l'Indice). **Héros uniquement** — les ennemis restent abstraits (tirent librement).
 
-**Architecture :** helpers purs dans `items.ts` (`weaponWithAmmo`, `compatibleAmmo`, parse `subType`/`qty`/`reload`) ; le store augmente l'arme avec la munition choisie à la résolution, gate le tir sur chargé+munition, consomme à l'application, et expose `battleReload`/`battleSelectAmmo` ; UI dans `ActionBar` (slot Recharger + sous‑liste munitions).
+**Architecture :** helpers purs dans `items.ts` (`weaponWithAmmo`, `compatibleAmmo`, parse `subType`/`qty`/`reload`) ; le store centralise la combinaison arme+munition dans `firedWeapon`, gate le tir sur chargé+munition, consomme à l'application, et expose un flux de rechargement **par modale** (`pendingReload` : `battleReload`/`reloadRoll`/`reloadReroll`/`reloadBonusSL`/`reloadConfirm`/`reloadCancel`) + `battleSelectAmmo` ; UI dans `ActionBar` (slot Recharger qui ouvre la modale + sous‑liste munitions) + `ReloadModal`.
 
 **Tech Stack :** Vite + TS + React, Zustand, Vitest. Données : `src/data/trappings.json` (armes : qualité « Recharge N » ; munitions : `type 'ammunition'`, `subType`, préfixe `(N)`).
 
@@ -41,7 +41,7 @@
   ammoUid?: string;
   /** Arme à distance chargée ? (Arc : toujours ; Recharge N : faux après un tir). */
   loaded?: boolean;
-  /** Actions de rechargement déjà accumulées (vers `Weapon.reload`). */
+  /** DR cumulés du Test étendu de Projectiles vers `Weapon.reload` (Indice DR), pas un compteur d'Actions. */
   reloadProgress?: number;
 ```
 
@@ -173,7 +173,9 @@ git commit -m "feat(combat): items — parse munition (subType/qty), reload depu
 
 ---
 
-## Task 3 : Store — tir avec munition, rechargement, sélection (héros)
+## Task 3 : Store — tir avec munition (gate+combine+consume) + rechargement par MODALE (Test étendu de Projectiles) + sélection (héros)
+
+> **Corrigé 2026-06-05 :** recharger n'est PAS « N Actions silencieuses » mais un **Test étendu de Projectiles** (`63 - Armures.md` l.28-29 + `12 - Tests.md` l.199-211) → **un jet → une modale** (`pendingReload`). `reloadProgress` = DR cumulés.
 
 **Files:**
 - Modify: `src/state/store.ts`
@@ -181,7 +183,7 @@ git commit -m "feat(combat): items — parse munition (subType/qty), reload depu
 
 - [ ] **Step 1 : Écrire les tests (échec attendu)** — ajouter un `describe` à `store.test.ts` :
 ```ts
-describe('Munitions & rechargement (héros, LDB Armes)', () => {
+describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -197,14 +199,14 @@ describe('Munitions & rechargement (héros, LDB Armes)', () => {
       combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: 'attack', selectedSpell: null,
       reachable: new Map(), moved: true, acted: false, log: [], over: null,
     };
-    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
+    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8), pendingReload: null, pendingAttack: null });
     return { H, E };
   }
 
   it('tirer consomme 1 munition et décharge une arme à Recharge', () => {
     const { H, E } = archer();
     useGame.getState().seedRng(2);
-    useGame.getState().battleClickEntity(E.id); // ouvre la modale (chargé + munition OK)
+    useGame.getState().battleClickEntity(E.id); // ouvre la modale d'attaque (chargé + munition OK)
     expect(useGame.getState().pendingAttack).not.toBeNull();
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();
@@ -220,13 +222,55 @@ describe('Munitions & rechargement (héros, LDB Armes)', () => {
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
-  it('battleReload : N Actions pour recharger', () => {
+  it('battleReload OUVRE la modale (Test de Projectiles, Action pas encore consommée)', () => {
     const { H } = archer();
     H.loaded = false; H.reloadProgress = 0;
     useGame.getState().battleReload();
+    const pr = useGame.getState().pendingReload;
+    expect(pr).not.toBeNull();
+    expect(pr!.reload).toBe(1);        // Indice DR
+    expect(pr!.roll).toBeNull();       // pas encore lancé
+    expect(useGame.getState().battle!.acted).toBe(false); // l'Action n'est consommée qu'à Appliquer
+  });
+
+  it('reloadRoll + reloadConfirm : cumule le DR (Test étendu), recharge à ≥ Indice, consomme l’Action', () => {
+    const { H } = archer();
+    H.loaded = false; H.reloadProgress = 0;
+    useGame.getState().seedRng(2);
+    useGame.getState().battleReload();
+    useGame.getState().reloadRoll();
+    const pr = useGame.getState().pendingReload!;
+    expect(pr.roll).not.toBeNull();
+    const expected = Math.max(0, 0 + pr.sl); // formule du Test étendu (clamp à 0)
+    useGame.getState().reloadConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.loaded).toBe(true); // Recharge 1 → 1 Action suffit
+    if (expected >= 1) { expect(h.loaded).toBe(true); expect(h.reloadProgress).toBe(0); }
+    else { expect(h.loaded).toBe(false); expect(h.reloadProgress).toBe(expected); }
     expect(useGame.getState().battle!.acted).toBe(true);
+    expect(useGame.getState().pendingReload).toBeNull();
+  });
+
+  it('reloadConfirm : un DR insuffisant (Recharge 2) laisse l’arme déchargée et garde le progrès', () => {
+    const { H } = archer();
+    H.weapons = [{ name: 'Arbalète lourde', type: 'ranged', damage: '+9', range: 100, qualities: ['Recharge 2'], subType: 'Arbalète', reload: 2 }];
+    H.loaded = false; H.reloadProgress = 0;
+    useGame.getState().seedRng(2);
+    useGame.getState().battleReload();
+    useGame.getState().reloadRoll();
+    const pr = useGame.getState().pendingReload!;
+    const expected = Math.max(0, 0 + pr.sl);
+    useGame.getState().reloadConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.reloadProgress).toBe(Math.min(expected, 2) >= 2 ? 0 : expected);
+    expect(h.loaded).toBe(expected >= 2);
+  });
+
+  it('battleReload refusé si l’Action est déjà consommée', () => {
+    const { H } = archer();
+    H.loaded = false;
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
+    useGame.getState().battleReload();
+    expect(useGame.getState().pendingReload).toBeNull();
   });
 
   it('plus de munitions : tir refusé', () => {
@@ -245,44 +289,68 @@ describe('Munitions & rechargement (héros, LDB Armes)', () => {
 });
 ```
 
-- [ ] **Step 2 : Lancer → échec** (`battleReload`/`battleSelectAmmo` manquants, pas de gate ammo).
+- [ ] **Step 2 : Lancer → échec** (`pendingReload`/`battleReload`/`reloadRoll`/`reloadConfirm`/`battleSelectAmmo` manquants, pas de gate ammo).
 
-Run: `npx vitest run src/state/store.test.ts`
-Expected: FAIL.
+Run: `npx vitest run src/state/store.test.ts` — Expected: FAIL.
 
-- [ ] **Step 3 : Imports + déclarations.** Ajouter à l'import `../engine/items` (l.52) : `weaponWithAmmo, compatibleAmmo`. Déclarer dans `GameState` (près de `battleSelectAction`) :
+- [ ] **Step 3 : Imports + types + déclarations.**
+  - Import `../engine/items` : ajouter `weaponWithAmmo, compatibleAmmo`. (`rollTest`, `canReroll`, `Difficulty` déjà importés.)
+  - Interface `PendingReload` (près de `PendingTest`) :
 ```ts
-  /** Recharge l'arme à distance du combattant actif (coûte l'Action ; Recharge N). */
-  battleReload: () => void;
-  /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
-  battleSelectAmmo: (uid: string) => void;
+export interface PendingReload {
+  actorId: string;
+  actorName: string;
+  weaponName: string;
+  reload: number;          // Indice DR cible
+  progressBefore: number;  // DR déjà cumulés (Test étendu)
+  skillValue: number;      // combatValue(active,'ranged')
+  difficulty: Difficulty;  // 'intermediaire' (canon silencieux)
+  roll: number | null;     // null tant que pas lancé
+  target: number;          // cible effective (pour Chance)
+  sl: number;              // DR du jet
+  success: boolean;
+  rerolled?: boolean;
+}
 ```
-Étendre l'union `BattleState.action` et la signature `battleSelectAction` avec `| 'ammo'` (comme `'resolve'`/`'pickup'`).
+  - `GameState` : `pendingReload: PendingReload | null;` + déclarations `battleReload/reloadRoll/reloadReroll/reloadBonusSL/reloadConfirm/reloadCancel/battleSelectAmmo`. Init `pendingReload: null` dans l'état + dans tous les resets (`reset`, `startCombat`, `startScene`…).
+  - Étendre l'union `BattleState.action` et `battleSelectAction` avec `| 'ammo'`.
 
-- [ ] **Step 4 : Helper module `selectedAmmo` + gate du tir.** Ajouter (près de `resolveAttack`) :
+- [ ] **Step 4 : Helpers module `selectedAmmo` + `firedWeapon`** (près de `resolveAttack`) :
 ```ts
-/** Munition que le héros tirera : celle sélectionnée (ammoUid) si compatible, sinon la 1re compatible. */
 function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance | undefined {
   const compat = compatibleAmmo(attacker, weapon);
   return compat.find((a) => a.uid === attacker.ammoUid) ?? compat[0];
 }
-```
-Dans `resolveAttack`, après le choix de `weapon`, augmenter avec la munition pour un **héros** :
-```ts
-  let fireWeapon = weapon;
-  if (weapon.type === 'ranged' && attacker.kind === 'hero') {
-    const ammo = selectedAmmo(attacker, weapon);
-    if (ammo) fireWeapon = weaponWithAmmo(weapon, ammo);
+/** Arme effectivement tirée : mêlée au contact / distance sinon, AUGMENTÉE de la munition pour un héros. */
+function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
+  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+  const w = attackWeapon(attacker.weapons, adj);
+  if (w.type === 'ranged' && attacker.kind === 'hero') {
+    const ammo = selectedAmmo(attacker, w);
+    if (ammo) return weaponWithAmmo(w, ammo);
   }
-  const res =
-    fireWeapon.type === 'ranged'
-      ? resolveRanged(attacker, target, fireWeapon, battleRng, chebyshev(attacker.pos!, target.pos!), location)
-      : resolveMelee(attacker, target, fireWeapon, battleRng, { defense: bestDefenseMode(target), location });
-  return { res, weapon: fireWeapon };
+  return w;
+}
 ```
-(remplacer l'ancien calcul de `res` + `return`).
 
-- [ ] **Step 5 : Gate dans `battleClickEntity` (tir héros).** Dans la branche `battle.action === 'attack'` ranged, avant `set({ pendingAttack… })`, ajouter le contrôle chargé+munition. Repérer le bloc qui ouvre la modale d'attaque ; juste avant, insérer :
+- [ ] **Step 5 : `resolveAttack` utilise `firedWeapon`** (centralise la combinaison) :
+```ts
+function resolveAttack(attacker, target, location) {
+  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+  const weapon = firedWeapon(attacker, target);
+  if (!adj && weapon.type === 'melee') return null;
+  const res = weapon.type === 'ranged'
+    ? resolveRanged(attacker, target, weapon, battleRng, chebyshev(attacker.pos!, target.pos!), location)
+    : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target), location });
+  return { res, weapon };
+}
+```
+
+- [ ] **Step 6 : `attackBonusSL` + `attackConfirm` utilisent `firedWeapon`** (sinon l'arme tirée ≠ `weapons[0]` casse Empaleuse + consommation) :
+  - `attackBonusSL` : remplacer `const weapon = attackWeapon(attacker.weapons, adj);` par `const weapon = firedWeapon(attacker, target);`.
+  - `attackConfirm` : remplacer `attacker.weapons[0]` par `firedWeapon(attacker, target)`.
+
+- [ ] **Step 7 : Gate du tir dans `battleClickEntity`** (branche `'attack'` ranged héros, après la vérif de portée de mêlée, avant `set({ pendingAttack })`) :
 ```ts
     const adj = chebyshev(active.pos!, target.pos!) <= 1;
     const w = attackWeapon(active.weapons, adj);
@@ -291,22 +359,24 @@ Dans `resolveAttack`, après le choix de `weapon`, augmenter avec la munition po
       if (!selectedAmmo(active, w)) { get().log(`${active.name} n'a plus de munitions pour ${w.name}.`); return; }
     }
 ```
-(placer après la vérif de portée de mêlée existante.)
 
-- [ ] **Step 6 : Consommation à l'application (`applyAttackResult`).** Après le bloc de Dégâts/critique, ajouter (héros + arme à distance) :
+- [ ] **Step 8 : Consommation + interruption dans `applyAttackResult`.** Après le bloc Dégâts/critique :
 ```ts
+  // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
-    const ammo = (attacker.items ?? []).find((i) => i.uid === (selectedAmmoUid(attacker, weapon)));
-    if (ammo && (ammo.qty ?? 0) > 0) {
-      ammo.qty = (ammo.qty ?? 0) - 1;
-      if (ammo.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== ammo.uid);
+    const used = selectedAmmo(attacker, weapon);
+    if (used && (used.qty ?? 0) > 0) {
+      used.qty = (used.qty ?? 0) - 1;
+      if (used.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== used.uid);
     }
-    if ((weapon.reload ?? 0) > 0) { attacker.loaded = false; attacker.reloadProgress = 0; } // déchargé après le tir
+    if ((weapon.reload ?? 0) > 0) { attacker.loaded = false; attacker.reloadProgress = 0; }
   }
+  // Interruption (63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
+  if (res.hit && res.woundsLost && target.kind === 'hero' && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
 ```
-où `selectedAmmoUid(attacker, weapon)` = `selectedAmmo(attacker, weapon)?.uid`. (Définir un mini‑helper ou inliner `selectedAmmo(attacker, weapon)?.uid`.) NB : `weapon` ici est l'arme augmentée (porte `reload`/`subType`).
+(`weapon` passé est désormais l'arme augmentée — porte `reload`/`subType`.)
 
-- [ ] **Step 7 : Implémenter `battleReload` + `battleSelectAmmo`** (dans l'objet store, près de `battleDefendTotal`) :
+- [ ] **Step 9 : `battleReload` (modale) + `reloadRoll/Reroll/BonusSL/Confirm/Cancel` + `battleSelectAmmo`** (près de `battleDefendTotal`) :
 ```ts
   battleReload: () => {
     const { battle } = get();
@@ -314,17 +384,53 @@ où `selectedAmmoUid(attacker, weapon)` = `selectedAmmo(attacker, weapon)?.uid`.
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
     const w = active.weapons.find((x) => x.type === 'ranged');
-    if (!w || (w.reload ?? 0) <= 0) return; // rien à recharger
-    active.reloadProgress = (active.reloadProgress ?? 0) + 1;
-    let log = `${active.name} recharge ${w.name} (${active.reloadProgress}/${w.reload}).`;
-    if (active.reloadProgress >= (w.reload ?? 0)) {
-      active.loaded = true;
-      active.reloadProgress = 0;
-      log = `${active.name} a rechargé ${w.name}.`;
-    }
+    if (!w || (w.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger
+    const skillValue = combatValue(active, 'ranged');
+    set({ pendingReload: {
+      actorId: active.id, actorName: active.name, weaponName: w.name,
+      reload: w.reload ?? 0, progressBefore: active.reloadProgress ?? 0,
+      skillValue, difficulty: 'intermediaire', roll: null,
+      target: skillValue + DIFFICULTY_MODIFIERS.intermediaire, sl: 0, success: false,
+    } });
+  },
+  reloadRoll: () => {
+    const pr = get().pendingReload;
+    if (!pr || pr.roll != null) return;
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success } });
+  },
+  reloadReroll: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    if (!canReroll(pr.roll > pr.target, !!pr.rerolled)) return;
+    const a = activeCombatant(battle);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success, rerolled: true }, battle: { ...battle } });
+  },
+  reloadBonusSL: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    const a = activeCombatant(battle);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    set({ pendingReload: { ...pr, sl: pr.sl + 1 }, battle: { ...battle } });
+  },
+  reloadConfirm: () => {
+    const { battle, pendingReload: pr } = get();
+    if (!battle || !pr || pr.roll == null) return;
+    const a = activeCombatant(battle);
+    set({ pendingReload: null });
+    if (!a) return;
+    let progress = Math.max(0, pr.progressBefore + pr.sl); // Test étendu : cumul, plancher 0 (recommence)
+    let log: string;
+    if (progress >= pr.reload) { a.loaded = true; a.reloadProgress = 0; log = `${a.name} a rechargé ${pr.weaponName}.`; }
+    else { a.reloadProgress = progress; log = `${a.name} recharge ${pr.weaponName} (${progress}/${pr.reload} DR).`; }
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, log] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+  reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
   battleSelectAmmo: (uid) => {
     const { battle } = get();
     if (!battle) return;
@@ -336,52 +442,104 @@ où `selectedAmmoUid(attacker, weapon)` = `selectedAmmo(attacker, weapon)?.uid`.
   },
 ```
 
-- [ ] **Step 8 : Init au début du combat (`startCombat`).** Dans la construction des `heroes` (le `party.map`), après le clone, initialiser chargé + munition :
+- [ ] **Step 10 : Init au début du combat (`startCombat`).** Remplacer le `party.map((h, i) => ({ … }))` par une forme qui initialise chargé + munition :
 ```ts
     const heroes = party.map((h, i) => {
       const c = { ...JSON.parse(JSON.stringify(h)), pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) }, advantage: 0, conditions: [], engagedWith: [], meleeThisRound: [], wounds: { ...h.wounds } } as Combatant;
       const rw = c.weapons.find((w) => w.type === 'ranged');
-      c.loaded = true; // arme à distance supposée chargée au début du combat
-      c.reloadProgress = 0;
+      c.loaded = true; c.reloadProgress = 0;
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     }) as Combatant[];
 ```
-(remplace l'actuel `party.map((h, i) => ({ ...JSON.parse(...), … }))`).
 
-- [ ] **Step 9 : Lancer → succès + régression.**
+- [ ] **Step 11 : Lancer → succès + régression.**
 
 Run: `npx vitest run src/state/store.test.ts` puis `npm test`.
-Expected: PASS. Vérifier que le tir **ennemi** existant (embuscade tromblon) reste inchangé (gate ammo = héros uniquement).
+Expected: PASS. Vérifier que le tir **ennemi** existant (embuscade tromblon) reste inchangé (gate/consommation = héros uniquement).
 
-- [ ] **Step 10 : Typecheck + commit**
+- [ ] **Step 12 : Typecheck + commit**
 
 Run: `npm run typecheck`
 ```bash
 git add src/state/store.ts src/state/store.test.ts
-git commit -m "feat(combat): tir héros consomme une munition (arme+munition combinées) + Recharger + sélection ; init au combat"
+git commit -m "feat(combat): tir héros munition (arme+munition) + Recharger = Test étendu de Projectiles (modale) + sélection ; init au combat"
 ```
 
 ---
 
-## Task 4 : UI — slot Recharger + sous‑liste munitions
+## Task 4 : UI — slot Recharger (ouvre la modale) + `ReloadModal` + sous‑liste munitions
 
 **Files:**
-- Modify: `src/ui/ActionBar.tsx`
+- Modify: `src/ui/ActionBar.tsx`, `src/ui/CampaignView.tsx`
+- Create: `src/ui/ReloadModal.tsx`
 
-- [ ] **Step 1 : Hooks + données.** Ajouter les hooks :
+- [ ] **Step 1 : `ReloadModal.tsx`** (calqué sur `TestModal`/`RollModal`, fortune lue depuis `battle.combatants`) :
+```tsx
+import { useGame } from '../state/store';
+import { canReroll } from '../engine/fortune';
+import { ChanceButtons } from './ChanceButtons';
+
+/** Rechargement = Test étendu de Projectiles (LDB 63-Armures l.28-29) : Lancer → DR → Chance → Appliquer. */
+export function ReloadModal() {
+  const pr = useGame((s) => s.pendingReload);
+  const battle = useGame((s) => s.battle);
+  const roll = useGame((s) => s.reloadRoll);
+  const reroll = useGame((s) => s.reloadReroll);
+  const bonusSL = useGame((s) => s.reloadBonusSL);
+  const confirm = useGame((s) => s.reloadConfirm);
+  const cancel = useGame((s) => s.reloadCancel);
+  if (!pr || !battle) return null;
+  const actor = battle.combatants.find((c) => c.id === pr.actorId);
+  const fortune = actor?.fortune ?? 0;
+  const rolled = pr.roll != null;
+  const rerollable = rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled);
+  const after = Math.max(0, pr.progressBefore + pr.sl);
+  const done = after >= pr.reload;
+  return (
+    <div className="modal-overlay">
+      <div className="modal test-modal">
+        <h3>Recharger — {pr.weaponName}</h3>
+        <p className="test-actor"><strong>{pr.actorName}</strong> — Projectiles, cible {pr.target} · {pr.progressBefore}/{pr.reload} DR</p>
+        {!rolled ? (
+          <div className="modal-actions">
+            <button className="btn" onClick={cancel}>Annuler</button>
+            <button className="btn btn-primary" onClick={roll}>🎲 Lancer</button>
+          </div>
+        ) : (
+          <>
+            <div className={`test-result ${pr.success ? 'ok' : 'fail'}`}>
+              <span className="dice">{pr.roll === 100 ? '00' : String(pr.roll).padStart(2, '0')}</span>
+              <span className="vs">/ {pr.target}</span>
+              <span className="verdict">{pr.success ? 'Réussite' : 'Échec'} ({pr.sl >= 0 ? '+' : ''}{pr.sl} DR) → {done ? 'rechargé ✓' : `${after}/${pr.reload} DR`}</span>
+            </div>
+            <div className="modal-actions">
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <button className="btn btn-primary" onClick={confirm}>Appliquer</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+- [ ] **Step 2 : Monter la modale** dans `CampaignView.tsx` (import + `<ReloadModal />` à côté de `<RollModal />`).
+
+- [ ] **Step 3 : ActionBar — hooks + données.**
 ```ts
   const reload = useGame((s) => s.battleReload);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
 ```
-Importer le helper : `import { compatibleAmmo } from '../engine/items';`. Après `groundItems`, calculer (héros) :
+`import { compatibleAmmo } from '../engine/items';`. Après `groundItems` (héros) :
 ```ts
   const rangedW = isHero ? active.weapons.find((w) => w.type === 'ranged') : undefined;
   const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !active.loaded;
   const ammoChoices = isHero && rangedW ? compatibleAmmo(active, rangedW) : [];
 ```
 
-- [ ] **Step 2 : Sous‑liste munitions (mode `'ammo'`)** — après la sous‑liste `pickup` :
+- [ ] **Step 4 : Sous‑liste munitions (mode `'ammo'`)** — après la sous‑liste `pickup` :
 ```tsx
       {ammoChoices.length > 0 && battle.action === 'ammo' && (
         <div className="ab-spells">
@@ -396,12 +554,12 @@ Importer le helper : `import { compatibleAmmo } from '../engine/items';`. Après
       )}
 ```
 
-- [ ] **Step 3 : Slots hotbar** — avant « Fin du tour », ajouter Recharger + Munition :
+- [ ] **Step 5 : Slots hotbar** — avant « Fin du tour », ajouter Recharger (ouvre la modale) + Munition :
 ```tsx
             {needsReload && (
-              <button className="ab-slot" disabled={battle.acted || stunned} onClick={reload} title="Recharger l'arme à distance (coûte l'Action)">
+              <button className="ab-slot" disabled={battle.acted || stunned} onClick={reload} title="Recharger l'arme à distance (Test étendu de Projectiles — coûte l'Action)">
                 <span className="ab-ico">🔄</span>
-                <span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload})` : ''}</span>
+                <span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</span>
               </button>
             )}
             {ammoChoices.length > 1 && (
@@ -412,12 +570,12 @@ Importer le helper : `import { compatibleAmmo } from '../engine/items';`. Après
             )}
 ```
 
-- [ ] **Step 4 : Typecheck + commit**
+- [ ] **Step 6 : Typecheck + commit**
 
 Run: `npm run typecheck`
 ```bash
-git add src/ui/ActionBar.tsx
-git commit -m "feat(ui): hotbar — Recharger (Recharge N) + sélecteur de munition (héros)"
+git add src/ui/ActionBar.tsx src/ui/ReloadModal.tsx src/ui/CampaignView.tsx
+git commit -m "feat(ui): hotbar Recharger → modale de Test de Projectiles (ReloadModal) + sélecteur de munition (héros)"
 ```
 
 ---
@@ -431,9 +589,10 @@ git commit -m "feat(ui): hotbar — Recharger (Recharge N) + sélecteur de munit
 
 ---
 
-## Auto-revue du plan (effectuée)
+## Auto-revue du plan (effectuée + révision 2026-06-05)
 
-- **Couverture spec :** types (Task 1) · parse subType/qty + reload + weaponWithAmmo/compatibleAmmo (Task 2) · tir héros (combine+gate+consume) + Recharger + sélection + init combat (Task 3) · UI (Task 4) · ROADMAP (Task 5). ✓
-- **Décalage assumé vs spec :** munitions/rechargement = **héros uniquement** (ennemis abstraits, tirent librement) — évite le spawn de munitions ennemies + l'IA de rechargement, zéro régression sur le tir ennemi. À noter dans la ROADMAP.
-- **Cohérence des types :** `ItemInstance.subType/qty`, `Weapon.subType/reload`, `Combatant.ammoUid/loaded/reloadProgress` (Task 1) ↔ `weaponWithAmmo`/`compatibleAmmo`/`selectedAmmo` (Tasks 2-3) ↔ `battleReload`/`battleSelectAmmo` + union `'ammo'` (Task 3) ↔ ActionBar (Task 4). `resolveAttack` retourne désormais l'arme **augmentée** (`fireWeapon`) — `applyAttackResult` la reçoit et lit `reload`.
-- **Risque :** modif de `resolveAttack`/`applyAttackResult` (chemin commun héros+ennemi) — gate `attacker.kind === 'hero'` partout pour ne pas toucher les ennemis ; régression `npm test` à la Task 3 Step 9.
+- **Correction majeure (feedback utilisateur) :** recharger demande **un jet** → le plan initial (« N Actions silencieuses ») était faux. Sourcé : `63 - Armures.md` l.28-29 (*Recharge (Indice)* = **Test étendu de Projectiles**, cumul de **Indice DR**, interruption → recommence) + `12 - Tests.md` l.199-211 (cumul DR, plancher 0). Invariante projet : **si y'a un jet, y'a la modale** → flux `pendingReload` complet (Lancer→DR→Chance→Appliquer) + `ReloadModal`.
+- **Couverture spec :** types (Task 1) · parse subType/qty + reload + weaponWithAmmo/compatibleAmmo (Task 2) · tir héros (combine via `firedWeapon`+gate+consume) + rechargement modale (Task 3) · UI + ReloadModal (Task 4) · ROADMAP (Task 5). ✓
+- **Décalage assumé vs spec :** munitions/rechargement = **héros uniquement** (ennemis abstraits, tirent librement) — zéro régression sur le tir ennemi.
+- **Bug latent corrigé :** `attackConfirm`/`attackBonusSL` passaient `attacker.weapons[0]` (≠ arme tirée si la distance n'est pas en `[0]`) → la consommation de munition et l'Empaleuse échouaient. `firedWeapon(attacker, target)` centralise la sélection+augmentation et est utilisé par `resolveAttack`, `attackBonusSL`, `attackConfirm`.
+- **Risque :** modif de `resolveAttack`/`applyAttackResult` (chemin commun héros+ennemi) — gate `attacker.kind === 'hero'` partout ; régression `npm test` à la Task 3 Step 11.
