@@ -1,6 +1,6 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-05. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-06-06. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
 les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauche/game`.
 
@@ -111,6 +111,29 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - **Décors d'embuscade** (`gameIso/catalog/decor.ts`) : `cadavre`, `mare-sang`, `cheval-mort`,
   `epave-carrosse` — repris d'`ambush.html`, posables via la palette décor.
 - **Vérifié en navigateur** (Playwright) : éditeur, pigeon-quête, planches QC des nouveaux sprites.
+
+## ✅ Jalon 0.9 — Caméra : rotation 90° & contrôles de vue partagés *(fait)*
+
+- **Rotation caméra par crans de 90°** (4 orientations cardinales) en **jeu ET éditeur** : `rot` est
+  un **paramètre de vue** porté par `Dims`, appliqué dans la **projection centralisée** (`gameIso/iso.ts` :
+  `rotTile`/`unrotTile`/`effDims`, puis `tileCenter`/`screenToTile`/`depth` rot-aware — **purs + testés**,
+  round-trip picking & cadrage sur les 4 rotations). **La donnée de scène reste intacte** (état de vue,
+  non sérialisé). Touches **Q/E** (la *lettre* — AZERTY comme QWERTY) + boutons.
+- **Occlusion correcte sous tous les angles** (le but premier) : les bâtiments labellisent leurs faces
+  **par position écran** (`footCorners` trié ; porte tournée par `rot` via `rotateFacing`) → murs/porte
+  **toujours face caméra**, jamais d'arrière ni de transparence. **Facing du rig rot-aware**
+  (`screenDir(dims)` tourne ses extrémités ; `camRot` lu *en live* depuis le store par `RigToken`/
+  `AnimatedQuadToken` — pas de threading de props).
+- **Transition « dim-and-turn »** (jeu) : la rotation iso 90° n'étant **pas** une rotation 2D rigide
+  (le monde se ré-agence), creux d'opacité + dézoom bref masquent le swap ; **snap** côté éditeur.
+- **Zoom éditeur** (absent jusqu'ici) : **molette** ancrée au curseur + **pan** (clic-milieu / **Espace**
+  + glisser) + **reset**, piloté par le **`viewBox`** — le picking (`getScreenCTM().inverse()`) en tient
+  compte donc **inchangé**, zéro modif du placement.
+- **Boutons de vue PARTAGÉS** jeu ⇄ éditeur (`ui/ViewControls.tsx`, overlay HTML : zoom **+ / − / 1×**
+  + rotation **⟲ / ⟳**) ; le `zoom` du jeu **remonté dans le store** pour piloter le même composant.
+  **Vérifié au navigateur** (Playwright : zoom, rotation sans scène figée, occlusion, molette/pan/reset).
+- *(Parties pures **commitées** — `iso.ts`/`buildings.ts`/`facing.ts`/`store.ts`/`ViewControls.tsx` ;
+  le **câblage React** vit dans `IsoStage`/`Editor`/`CampaignView`, à committer avec le WIP rendu en cours.)*
 
 ---
 
