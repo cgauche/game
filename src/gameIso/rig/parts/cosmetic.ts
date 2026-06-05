@@ -8,25 +8,26 @@ import HEAD_VIEWS_JSON from './generated/headViews.json';
 type HeadViewSet = { back?: string; profile?: string };
 const HEAD_VIEWS = HEAD_VIEWS_JSON as Record<string, { visage?: HeadViewSet; cheveux?: HeadViewSet }>;
 
+// Œil de secours : blanc + iris @yeux + pupille (PAS le gradient monstre g_eye).
 const eye = (cx: number) =>
-  `<ellipse cx="${cx}" cy="7" rx="1.4" ry="2" fill="url(#g_eye)"/><circle cx="${cx}" cy="7" r="0.8" fill="#140a06"/>`;
+  `<ellipse cx="${cx}" cy="7" rx="2" ry="1.3" fill="#f3ede1"/><circle cx="${cx}" cy="7" r="1.1" fill="@yeux"/><circle cx="${cx}" cy="7" r="0.6" fill="#140a06"/>`;
 
 const VISAGE: Record<string, string[]> = {
   default: [
-    `<circle cx="0" cy="7" r="9" fill="#e2b48c"/>${eye(-3)}${eye(3)}`,
-    `<circle cx="0" cy="7" r="9" fill="#d9a87e"/>${eye(-3)}${eye(3)}`,
+    `<circle cx="0" cy="7" r="9" fill="@peau"/>${eye(-3)}${eye(3)}`,
+    `<circle cx="0" cy="7" r="9" fill="@peauO"/>${eye(-3)}${eye(3)}`,
   ],
 };
 
 const CHEVEUX: Record<string, string[]> = {
   'Humain:M': [
-    `<path d="M-9 6 Q0 -7 9 6 Q5 -1 0 -1 Q-5 -1 -9 6Z" fill="#5a4427"/>`,
-    `<path d="M-9 7 Q-10 -8 0 -8 Q10 -8 9 7 Q4 -2 0 -2 Q-4 -2 -9 7Z" fill="#2f2418"/>`,
-    `<path d="M-9 6 Q0 -6 9 6 L9 12 Q0 8 -9 12Z" fill="#7a4a22"/>`,
+    `<path d="M-9 6 Q0 -7 9 6 Q5 -1 0 -1 Q-5 -1 -9 6Z" fill="@cheveux"/>`,
+    `<path d="M-9 7 Q-10 -8 0 -8 Q10 -8 9 7 Q4 -2 0 -2 Q-4 -2 -9 7Z" fill="@cheveuxO"/>`,
+    `<path d="M-9 6 Q0 -6 9 6 L9 12 Q0 8 -9 12Z" fill="@cheveux"/>`,
   ],
   'Humain:F': [
-    `<path d="M-10 4 Q0 -8 10 4 L11 22 Q6 18 5 6 Q0 2 -5 6 Q-6 18 -11 22Z" fill="#3a2a18"/>`,
-    `<path d="M-10 4 Q0 -9 10 4 L10 16 Q0 10 -10 16Z" fill="#9a6a2a"/>`,
+    `<path d="M-10 4 Q0 -8 10 4 L11 22 Q6 18 5 6 Q0 2 -5 6 Q-6 18 -11 22Z" fill="@cheveux"/>`,
+    `<path d="M-10 4 Q0 -9 10 4 L10 16 Q0 10 -10 16Z" fill="@cheveuxH"/>`,
   ],
 };
 
@@ -62,12 +63,13 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
       const profile = HEAD_VIEWS[key]?.cheveux?.profile;
       return { front: pool[i], back: BACK_HAIR, ...(profile ? { profile } : {}) };
     }
-    return pick(CHEVEUX, key, 'Humain:M', idx);
+    return { front: pick(CHEVEUX, key, 'Humain:M', idx), back: BACK_HAIR };
   }
   if (gen?.visage != null) {
     // Visage de DOS = nuque seule (le crâne est couvert par les cheveux) ; profil par espèce.
     const profile = HEAD_VIEWS[key]?.visage?.profile;
     return { front: gen.visage, back: BACK_NAPE, ...(profile ? { profile } : {}) };
   }
-  return pick(VISAGE, key, 'default', idx);
+  // Secours (espèce sans tête générée, ex. Ogre) : nuque de dos, pas le visage de face.
+  return { front: pick(VISAGE, key, 'default', idx), back: BACK_NAPE };
 }
