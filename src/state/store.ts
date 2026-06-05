@@ -314,6 +314,8 @@ interface GameState {
   fateAccept: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
+  /** Action « Viser » (sans jet) : +20 (Accessible) au prochain tir tant que c'est la dernière action. */
+  battleAim: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;
   attackRoll: () => void;
@@ -748,6 +750,7 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
     active.items = (active.items ?? []).filter((i) => i.uid !== uid); // consommé
+    active.aiming = false; // une autre action que le tir gâche la visée
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...log] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -970,7 +973,20 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
     active.defensiveStance = true;
+    active.aiming = false; // une autre action que le tir gâche la visée
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  // ── Action Viser (LDB table des Difficultés, 14 - _GoBack.md l.90 : +20 au prochain tir, sans jet) ──
+  battleAim: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+    if (!active.weapons.some((w) => w.type === 'ranged')) return; // viser = pour le tir
+    active.aiming = true;
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} vise soigneusement (+20 au prochain tir).`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1029,6 +1045,7 @@ export const useGame = create<GameState>((set, get) => ({
     const a = battle.combatants.find((c) => c.id === pr.actorId);
     set({ pendingReload: null });
     if (!a) return;
+    a.aiming = false; // recharger est une autre action → la visée est perdue
     const progress = Math.max(0, pr.progressBefore + pr.sl); // Test étendu : cumul des DR, plancher 0 (recommence)
     let log: string;
     if (progress >= pr.reload) {
@@ -1839,6 +1856,7 @@ function applyAttackResult(
   res: AttackResult,
 ): void {
   const battle = get().battle!;
+  attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
   if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
   const critLog: string[] = [];
   if (res.hit && res.woundsLost) {

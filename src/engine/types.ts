@@ -187,6 +187,9 @@ export interface Combatant {
   gainedAdvThisRound?: boolean;
   /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
   defensiveStance?: boolean;
+  /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
+   *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */
+  aiming?: boolean;
   /** Adversaires avec qui ce combattant est Engagé en mêlée (LDB 13-Combat l.174-175).
    *  Relationnel et symétrique ; purgé par paire en fin de Round si aucune attaque échangée. */
   engagedWith?: string[];

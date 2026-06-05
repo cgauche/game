@@ -1504,6 +1504,31 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(h.loaded).toBe(false);
   });
 
+  it('action Viser : pose aiming SANS jet, +20 au tir, puis consommée', () => {
+    const { H, E } = archer();
+    useGame.getState().battleAim();
+    const h1 = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h1.aiming).toBe(true);
+    expect(useGame.getState().battle!.acted).toBe(true);
+    expect(useGame.getState().pendingReload).toBeNull(); // « pas de Test exigé pour viser »
+    // Tirer : le détail du jet inclut « Viser +20 », puis aiming est consommée.
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: false, action: 'attack' } });
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().attackRoll();
+    const pa = useGame.getState().pendingAttack!;
+    expect((pa.result!.attackerDetail!.mods ?? []).some((m) => m.label === 'Viser' && m.value === 20)).toBe(true);
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBe(false);
+  });
+
+  it('Viser refusé sans arme à distance', () => {
+    const { H } = archer();
+    H.weapons = [{ name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] }];
+    useGame.getState().battleAim();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBeFalsy();
+  });
+
   it('interruption : un héros touché en plein rechargement repart de zéro (63-Armures l.29)', () => {
     const { H, E } = archer();
     H.reloadProgress = 1;

@@ -63,6 +63,12 @@ export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
+/** Un modificateur étiqueté du jet (pour l'affichage détaillé : « Courte portée +40 »). */
+export interface ModLine {
+  label: string;
+  value: number;
+}
+
 export interface RollBreakdown {
   /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
   label: string;
@@ -70,6 +76,8 @@ export interface RollBreakdown {
   base: number;
   /** Somme des modificateurs appliqués (Avantage, viser, États, portée, Atouts…). */
   modifier: number;
+  /** Détail étiqueté des modificateurs (somme = `modifier` quand renseigné). */
+  mods?: ModLine[];
   /** Valeur cible effective (= base + modificateurs) : on réussit si jet ≤ cible. */
   target: number;
   roll: number;
@@ -97,16 +105,63 @@ export interface AttackResult {
   log: string;
 }
 
-const bd = (label: string, base: number, t: TestResult): RollBreakdown => ({
+const bd = (label: string, base: number, t: TestResult, mods?: ModLine[]): RollBreakdown => ({
   label,
   base,
   modifier: t.target - base,
+  mods,
   target: t.target,
   roll: t.roll,
   success: t.success,
   sl: t.sl,
 });
 const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
+
+const sumMods = (mods: ModLine[]): number => mods.reduce((s, m) => s + m.value, 0);
+
+/**
+ * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
+ * l'UI les affiche). Toutes les valeurs sont sourcées dans la table des Difficultés de Combat
+ * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
+ * (Armes l.304), Localisation visée −10 (l.104), Cible vulnérable À Terre/Surpris +20 (l.93).
+ */
+export function attackModifiers(
+  attacker: Combatant,
+  target: Combatant | null,
+  weapon: Weapon,
+  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number },
+): ModLine[] {
+  const out: ModLine[] = [];
+  const adv = attacker.advantage * 10;
+  if (adv) out.push({ label: 'Avantage', value: adv });
+  const pen = combatTestPenalty(attacker);
+  if (pen) out.push({ label: 'État', value: pen });
+  if (opts.kind === 'ranged') {
+    if (opts.distanceTiles != null && weapon.range) {
+      const m = rangeBandModifier(opts.distanceTiles, weapon.range);
+      const name = rangeBandName(opts.distanceTiles, weapon.range);
+      if (m != null && m !== 0 && name) out.push({ label: name, value: m });
+    }
+    if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
+  } else if (target) {
+    const vuln = meleeAttackerBonus(target);
+    if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
+  }
+  if (hasQ(weapon, 'Précise')) out.push({ label: 'Précise', value: 10 });
+  if (opts.location) out.push({ label: 'Localisation visée', value: -10 });
+  return out;
+}
+
+/** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). */
+export function defenseModifiers(defender: Combatant, _mode: 'parade' | 'esquive'): ModLine[] {
+  const out: ModLine[] = [];
+  const adv = defender.advantage * 10;
+  if (adv) out.push({ label: 'Avantage', value: adv });
+  const pen = combatTestPenalty(defender);
+  if (pen) out.push({ label: 'État', value: pen });
+  if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20 });
+  return out;
+}
 
 export interface AttackOptions {
   defense?: 'parade' | 'esquive' | 'none';
@@ -145,9 +200,7 @@ export function rollMeleeAttacker(
   location?: HitLocation,
 ): TestResult {
   const atkVal = combatValue(attacker, 'melee');
-  const precise = hasQ(weapon, 'Précise') ? 10 : 0; // Atout Précise : +10 au Test (l.304)
-  const aimed = location ? -10 : 0; // viser une localisation = Complexe -10 (LDB Combat l.104)
-  return rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + meleeAttackerBonus(defender) + precise + aimed);
+  return rollTest(atkVal, 'intermediaire', rng, sumMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location })));
 }
 
 /** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
@@ -191,8 +244,8 @@ export function finishMelee(
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk);
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def);
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location }));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode));
 
   if (opp.winner === 'defender') {
     return {
@@ -239,7 +292,7 @@ export function resolveMeleePassive(
   atk: TestResult,
   location?: HitLocation,
 ): AttackResult {
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk);
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
 }
@@ -261,17 +314,30 @@ export function resolveMelee(
 }
 
 /**
- * Modificateur de portée d'un tir (LDB « Difficultés de Combat ») : Bout portant
- * (≤ Portée÷10) +60, Courte (≤ Portée÷2) +40, Moyenne/Longue (≤ Portée×2) +0,
- * Extrême (≤ Portée×3) -30 ; au-delà = hors de portée (null). Échelle 1 case = 2 m
+ * Modificateur de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md`
+ * l.82-118, transcrite ici) : Bout portant (≤ Portée÷10) **+60** (l.82), Courte (≤ Portée÷2)
+ * **+40** (l.88), Moyenne (≤ Portée) **+0** (l.96), Longue (≤ Portée×2) **−10** (l.99),
+ * Extrême (≤ Portée×3) **−30** (l.118) ; au-delà = hors de portée (null). Échelle 1 case = 2 m
  * (LDB Déplacement l.55). `rangeMeters` = Portée de l'arme en mètres.
  */
 export function rangeBandModifier(distanceTiles: number, rangeMeters: number): number | null {
   const m = distanceTiles * 2;
-  if (m <= rangeMeters / 10) return 60;
-  if (m <= rangeMeters / 2) return 40;
-  if (m <= rangeMeters * 2) return 0;
-  if (m <= rangeMeters * 3) return -30;
+  if (m <= rangeMeters / 10) return 60; // Bout portant — Très Facile
+  if (m <= rangeMeters / 2) return 40; // Courte — Facile
+  if (m <= rangeMeters) return 0; // Moyenne — Intermédiaire
+  if (m <= rangeMeters * 2) return -10; // Longue — Complexe
+  if (m <= rangeMeters * 3) return -30; // Extrême — Très Difficile
+  return null;
+}
+
+/** Nom de la bande de portée (mêmes seuils que `rangeBandModifier`) — pour l'affichage. */
+export function rangeBandName(distanceTiles: number, rangeMeters: number): string | null {
+  const m = distanceTiles * 2;
+  if (m <= rangeMeters / 10) return 'Bout portant';
+  if (m <= rangeMeters / 2) return 'Courte portée';
+  if (m <= rangeMeters) return 'Moyenne';
+  if (m <= rangeMeters * 2) return 'Longue';
+  if (m <= rangeMeters * 3) return 'Extrême';
   return null;
 }
 
@@ -285,17 +351,11 @@ export function resolveRanged(
   location?: HitLocation,
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged');
-  let bandMod = 0;
-  if (distanceTiles != null && weapon.range) {
-    const m = rangeBandModifier(distanceTiles, weapon.range);
-    if (m == null)
-      return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
-    bandMod = m;
-  }
-  const precise = hasQ(weapon, 'Précise') ? 10 : 0;
-  const aimed = location ? -10 : 0;
-  const atk = rollTest(atkVal, 'intermediaire', rng, attacker.advantage * 10 + combatTestPenalty(attacker) + bandMod + precise + aimed);
-  const atkBd = bd('Projectiles', atkVal, atk);
+  if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
+    return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles });
+  const atk = rollTest(atkVal, 'intermediaire', rng, sumMods(mods));
+  const atkBd = bd('Projectiles', atkVal, atk, mods);
   if (!atk.success) {
     return {
       hit: false,
@@ -408,7 +468,9 @@ export function rederivePassiveAttack(
   kind: 'melee' | 'ranged',
   location?: HitLocation,
 ): AttackResult {
-  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind), atk);
+  // Sans la distance ici, le détail des modificateurs d'un tir omet la bande de portée → la somme
+  // ne reconcilie pas et l'UI retombe sur l'affichage groupé (garde côté RollLine). En mêlée c'est complet.
+  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
   if (!atk.success) {
     return {
       hit: false,
