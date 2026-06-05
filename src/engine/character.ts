@@ -238,6 +238,11 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     resilience,
     resolve: resilience,
     motivation: opts.motivation,
+    // Avancement : aucune Augmentation de Caractéristique à la création (création = espèce + 2d10) ;
+    // les PX sont attribués en jeu, on démarre Niveau de Carrière 1.
+    xp: 0,
+    charAdvances: {},
+    careerLevel: 1,
   };
   recomputeLoadout(hero); // dérive weapons/armour/encombrement de l'équipement
   return hero;

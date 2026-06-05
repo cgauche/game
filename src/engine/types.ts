@@ -144,6 +144,14 @@ export interface Combatant {
   resilience?: number;
   resolve?: number;
   motivation?: string;
+  // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
+  /** PX disponibles à dépenser. */
+  xp?: number;
+  /** Augmentations de Caractéristique DÉJÀ achetées par caractéristique (≠ valeur courante :
+   *  sert au coût de la prochaine Augmentation, qui dépend du nombre déjà acheté, l.69). */
+  charAdvances?: Partial<Record<CharKey, number>>;
+  /** Niveau de Carrière courant (défaut 1) — détermine le schéma in-carrière pour le coût. */
+  careerLevel?: number;
   // Combat tactique (grille)
   pos?: { x: number; y: number };
   initiative?: number;
