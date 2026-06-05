@@ -1,20 +1,22 @@
 import { useGame } from '../state/store';
+import { defenseValue, combatValue } from '../engine/combat';
 
 /**
- * Modale de Désengagement, option « Esquive » (LDB 15-Dépl l.89) : quand un héros Engagé
- * n'a pas l'Avantage supérieur, quitter le combat exige un Test OPPOSÉ — son Esquive contre
- * le Corps à corps de l'adversaire. On clique « Esquiver » (le jet du héros se fait alors),
- * on peut dépenser un point de Chance pour le relancer (le jet de l'adversaire reste figé),
- * puis « Appliquer ». L'option « Avantage » se résout sans modale (pas affichée ici).
+ * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
+ * l'Avantage / Esquiver / Fuir / Renoncer. Si « Esquiver » → phase « esquive » : le jet
+ * du mover est résolu (Test opposé), on peut dépenser une Chance, puis Appliquer.
+ * « Fuir » résout l'attaque dans le dos immédiatement (pas de phase intermédiaire).
  */
 export function DisengageModal() {
   const pd = useGame((s) => s.pendingDisengage);
   const battle = useGame((s) => s.battle);
-  const roll = useGame((s) => s.disengageRoll);
+  const sacrifice = useGame((s) => s.disengageConfirmA);
+  const esquiver = useGame((s) => s.disengageRoll);
   const reroll = useGame((s) => s.disengageReroll);
   const confirm = useGame((s) => s.disengageConfirm);
+  const flee = useGame((s) => s.disengageFlee);
   const cancel = useGame((s) => s.disengageCancel);
-  if (!pd || pd.mode !== 'esquive' || !battle) return null;
+  if (!pd || !battle) return null;
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!mover || !foe) return null;
@@ -24,20 +26,34 @@ export function DisengageModal() {
   return (
     <div className="modal-overlay">
       <div className="modal roll-modal">
-        <h3>Désengagement</h3>
+        <h3>Se désengager</h3>
         <p className="rm-vs">
-          <strong>{mover.name}</strong> tente de se désengager de <strong>{foe.name}</strong>
+          <strong>{mover.name}</strong> veut quitter le corps à corps avec <strong>{foe.name}</strong>
         </p>
 
-        {!pd.result ? (
+        {pd.phase === 'choice' ? (
           <>
-            <p className="rm-log">Test opposé : votre Esquive contre le Corps à corps de l'adversaire (LDB 15-Dépl l.89).</p>
+            <p className="rm-log">
+              Esquive {defenseValue(mover, 'esquive')} contre Corps à corps {combatValue(foe, 'melee')} de l'adversaire.
+            </p>
+            <div className="rm-loc">
+              <div className="rm-loc-grid">
+                {pd.canSacrifice && (
+                  <button className="btn small" onClick={sacrifice} title="Tu as l'Avantage supérieur : pars librement, sans coût d'Action">
+                    Sacrifier l'Avantage
+                  </button>
+                )}
+                <button className="btn small btn-primary" onClick={esquiver} title="Test opposé d'Esquive — coûte ton Action">
+                  🤸 Esquiver
+                </button>
+                <button className="btn small" onClick={flee} title="Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours">
+                  🏃 Fuir (coup dans le dos)
+                </button>
+              </div>
+            </div>
             <div className="modal-actions">
               <button className="btn" onClick={cancel}>
                 Renoncer
-              </button>
-              <button className="btn btn-primary" onClick={roll}>
-                🤸 Esquiver
               </button>
             </div>
           </>

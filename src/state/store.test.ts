@@ -455,12 +455,15 @@ describe('Boucle de jeu (store)', () => {
     E.advantage = 0;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
-    useGame.getState().battleDisengage();
+    useGame.getState().battleDisengage(); // ouvre le menu de choix
+    expect(useGame.getState().pendingDisengage!.phase).toBe('choice');
+    expect(useGame.getState().pendingDisengage!.canSacrifice).toBe(true); // Avantage supérieur → option dispo
+    useGame.getState().disengageConfirmA(); // « Sacrifier l'Avantage »
     st = useGame.getState();
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ha.advantage).toBe(0); // Avantage sacrifié (l.87)
     expect(Ha.engagedWith).toEqual([]); // libéré de tous
-    expect(st.battle!.acted).toBe(false); // A NE consomme PAS l'Action
+    expect(st.battle!.acted).toBe(false); // « Sacrifier » NE consomme PAS l'Action
     expect(st.battle!.action).toBe('move'); // mouvement libre rouvert
     expect(st.pendingDisengage).toBeNull();
   });
@@ -481,7 +484,8 @@ describe('Boucle de jeu (store)', () => {
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
-        mode: 'esquive',
+        phase: 'esquive',
+        canSacrifice: false,
         atk: { roll: 30, target: 40, success: true, sl: 1, isDouble: false },
         def: { roll: 80, target: 40, success: false, sl: -4, isDouble: false },
         result: 'failure',
@@ -513,7 +517,8 @@ describe('Boucle de jeu (store)', () => {
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
-        mode: 'esquive',
+        phase: 'esquive',
+        canSacrifice: false,
         atk: { roll: 70, target: 40, success: false, sl: -3, isDouble: false },
         def: { roll: 10, target: 40, success: true, sl: 3, isDouble: false },
         result: 'success',
@@ -542,7 +547,8 @@ describe('Boucle de jeu (store)', () => {
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
-        mode: 'esquive',
+        phase: 'esquive',
+        canSacrifice: false,
         atk: { roll: 35, target: 45, success: true, sl: 1, isDouble: false },
         def: { roll: 90, target: 40, success: false, sl: -5, isDouble: false },
         result: 'failure',
@@ -572,7 +578,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().battleSelectAction('move');
     st = useGame.getState();
     expect(st.pendingDisengage).not.toBeNull(); // routé vers le Désengagement
-    expect(st.pendingDisengage!.mode).toBe('esquive');
+    expect(st.pendingDisengage!.phase).toBe('choice'); // « Déplacer » Engagé ouvre le menu de désengagement
   });
 
   it('Désengagement B égalité parfaite : statu quo — ni fuite, ni Avantage à l’adversaire', () => {
@@ -591,7 +597,8 @@ describe('Boucle de jeu (store)', () => {
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
-        mode: 'esquive',
+        phase: 'esquive',
+        canSacrifice: false,
         atk: { roll: 40, target: 40, success: true, sl: 0, isDouble: false },
         def: { roll: 40, target: 40, success: true, sl: 0, isDouble: false },
         result: 'tie',
@@ -623,7 +630,8 @@ describe('Boucle de jeu (store)', () => {
       pendingDisengage: {
         moverId: H.id,
         foeId: E1.id, // testé contre E1
-        mode: 'esquive',
+        phase: 'esquive',
+        canSacrifice: false,
         atk: { roll: 70, target: 40, success: false, sl: -3, isDouble: false },
         def: { roll: 10, target: 40, success: true, sl: 3, isDouble: false },
         result: 'success',
@@ -651,5 +659,32 @@ describe('Boucle de jeu (store)', () => {
     st = useGame.getState();
     expect(st.pendingDisengage).toBeNull(); // pas de NOUVELLE Esquive (l'Action est déjà dépensée)
     expect(st.battle!.action).toBeNull(); // ni déplacement libre
+  });
+
+  it('Désengagement — Fuir : adversaire +1 Avantage + attaque dans le dos, puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(5);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    H.engagedWith = [E.id];
+    E.engagedWith = [H.id];
+    const eAdvBefore = E.advantage;
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({
+      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      pendingDisengage: { moverId: H.id, foeId: E.id, canSacrifice: false, phase: 'choice', atk: null, def: null, result: null },
+    });
+    useGame.getState().disengageFlee();
+    st = useGame.getState();
+    const Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
+    const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 1); // +1 immédiat (l.101), +1 de plus si touché
+    expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
+    expect(st.battle!.action).toBe('move'); // peut courir (Mouvement de Course)
+    expect(st.pendingDisengage).toBeNull();
   });
 });

@@ -15,6 +15,7 @@ import {
   rollMeleeAttacker,
   rollMeleeDefender,
   rollDisengageAttack,
+  resolveBackstabAttack,
   finishMelee,
   resolveMeleePassive,
   AttackResult,
@@ -99,14 +100,15 @@ export interface PendingDefense {
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
 }
-/** Désengagement en attente (LDB 15-Dépl l.84-89). Option A (Avantage) = résolue direct ;
- *  option B (Esquive) = Test opposé Esquive du mover vs Corps à corps du foe, jet du foe figé. */
+/** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
+ *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
 export interface PendingDisengage {
   moverId: string; // héros qui se désengage (actif)
-  foeId: string; // adversaire de référence (max Avantage en A, meilleure CC en B)
-  mode: 'avantage' | 'esquive';
-  atk: TestResult | null; // option B : jet de Corps à corps du foe, figé (jamais relancé)
-  def: TestResult | null; // option B : jet d'Esquive du mover
+  foeId: string; // adversaire de référence (meilleure CC) pour l'Esquive et la Fuite
+  canSacrifice: boolean; // Avantage > tous les foes Engagés → option « Sacrifier l'Avantage » dispo
+  phase: 'choice' | 'esquive'; // 'choice' = menu d'options ; 'esquive' = Test d'Esquive en cours
+  atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
+  def: TestResult | null; // Esquive : jet d'Esquive du mover
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
 }
 
@@ -187,12 +189,13 @@ interface GameState {
   defenseReroll: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
-  /** Désengagement (LDB 15-Dépl l.84-89) : quitter un combat où l'on est Engagé. */
+  /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
   battleDisengage: () => void;
-  disengageConfirmA: () => void;
-  disengageRoll: () => void;
+  disengageConfirmA: () => void; // Sacrifier l'Avantage
+  disengageRoll: () => void; // Esquiver (lance le Test opposé)
   disengageReroll: () => void;
-  disengageConfirm: () => void;
+  disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
+  disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageCancel: () => void;
   log: (msg: string) => void;
 }
@@ -624,10 +627,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || !isEngaged(active)) return;
     startDisengage(get, set, active);
   },
-  // Option A : Avantage strictement supérieur (l.87) → ramener l'Avantage à 0, partir libre. L'Action N'EST PAS consommée.
+  // « Sacrifier l'Avantage » (l.87) → ramener l'Avantage à 0, partir libre. L'Action N'EST PAS consommée.
   disengageConfirmA: () => {
     const { battle, scene, pendingDisengage: pd } = get();
-    if (!battle || !scene || !pd || pd.mode !== 'avantage') return;
+    if (!battle || !scene || !pd || !pd.canSacrifice) return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover) return set({ pendingDisengage: null });
     const foes = (mover.engagedWith ?? [])
@@ -647,15 +650,15 @@ export const useGame = create<GameState>((set, get) => ({
     });
     bus.emit(EVT.SCENE_DIRTY);
   },
-  // Option B : « Esquiver » → Test opposé Esquive (mover) vs Corps à corps (foe), jet du foe figé.
+  // « Esquiver » → Test opposé Esquive (mover) vs Corps à corps (foe), jet du foe figé. Passe en phase 'esquive'.
   disengageRoll: () => {
     const { battle, pendingDisengage: pd } = get();
-    if (!battle || !pd || pd.mode !== 'esquive' || pd.result) return;
+    if (!battle || !pd || pd.phase !== 'choice') return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover) return;
     const def = rollMeleeDefender(mover, 'esquive', battleRng);
     const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
-    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner) } });
+    set({ pendingDisengage: { ...pd, phase: 'esquive', def, result: disengageOutcome(opp.winner) } });
   },
   // Chance du mover : relance UNIQUEMENT son Esquive (le jet du foe reste figé).
   disengageReroll: () => {
@@ -703,6 +706,40 @@ export const useGame = create<GameState>((set, get) => ({
       set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
     }
     bus.emit(EVT.SCENE_DIRTY);
+  },
+  // « Fuir » (LDB 15-Dépl l.98-109) : l'adversaire gagne +1 Avantage + une attaque gratuite dans
+  // le dos (+20) ; si elle touche, +1 Avantage de plus et Test de Calme ou État Brisé ; puis on
+  // se libère de TOUS les Engagements et on peut courir (Mouvement de Course).
+  disengageFlee: () => {
+    const { battle, scene, pendingDisengage: pd } = get();
+    if (!battle || !scene || !pd) return;
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    const foe = battle.combatants.find((c) => c.id === pd.foeId);
+    set({ pendingDisengage: null });
+    if (!mover || !foe) return;
+    const log = [...battle.log];
+    foe.advantage += 1; // l'adversaire gagne immédiatement +1 Avantage (l.101)
+    foe.gainedAdvThisRound = true;
+    const res = resolveBackstabAttack(foe, mover, battleRng);
+    log.push(`${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`);
+    if (res.hit && res.woundsLost) {
+      mover.wounds.current = Math.max(0, mover.wounds.current - res.woundsLost);
+      foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
+      // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
+      const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
+      const ct = rollTest(calme, 'intermediaire', battleRng);
+      if (!ct.success) {
+        const broken = 1 + Math.max(0, -ct.sl);
+        addCondition(mover, 'Brisé', broken);
+        log.push(`${mover.name} panique : ${broken} État(s) Brisé.`);
+      }
+    }
+    const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+    for (const f of foes) disengageFrom(mover, f);
+    const blocked = occupied(battle, mover.id);
+    set({ battle: { ...battle, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover) * 2, blocked), log } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
   },
   disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
 
@@ -929,16 +966,21 @@ function startDisengage(get: () => GameState, set: any, mover: Combatant): void 
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
-  if (mover.advantage > maxFoeAdv) {
-    // Option A : Avantage strictement supérieur (l.87) — résolue sans modale.
-    set({ pendingDisengage: { moverId: mover.id, foeId: foes[0].id, mode: 'avantage', atk: null, def: null, result: null } });
-    get().disengageConfirmA();
-  } else {
-    // Option B : Test opposé d'Esquive contre le foe à la meilleure Compétence de Corps à corps (l.89).
-    const foe = foes.reduce((a, b) => (combatValue(b, 'melee') > combatValue(a, 'melee') ? b : a));
-    const atk = rollDisengageAttack(foe, battleRng); // jet du foe figé
-    set({ pendingDisengage: { moverId: mover.id, foeId: foe.id, mode: 'esquive', atk, def: null, result: null } });
-  }
+  // Ouvre le MENU de choix. L'adversaire de référence (Esquive opposée + cible de la Fuite) =
+  // le foe Engagé à la meilleure Compétence de Corps à corps (l.89). Son jet de CC est figé d'avance.
+  const foe = foes.reduce((a, b) => (combatValue(b, 'melee') > combatValue(a, 'melee') ? b : a));
+  const atk = rollDisengageAttack(foe, battleRng);
+  set({
+    pendingDisengage: {
+      moverId: mover.id,
+      foeId: foe.id,
+      canSacrifice: mover.advantage > maxFoeAdv, // Avantage strictement supérieur (l.87)
+      phase: 'choice',
+      atk,
+      def: null,
+      result: null,
+    },
+  });
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */

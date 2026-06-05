@@ -120,6 +120,13 @@ export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): Test
   return rollTest(combatValue(foe, 'melee'), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe));
 }
 
+/** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
+ *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
+export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
+  const atk = rollTest(combatValue(foe, 'melee'), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe) + 20);
+  return resolveMeleePassive(foe, target, foe.weapons[0], atk);
+}
+
 /** Combine un jet d'attaque et un jet de défense DÉJÀ obtenus en AttackResult
  *  (Test opposé). drAdjust : Défensive (déf.) +1 DR / À Enroulement (att.) -1 DR,
  *  en Parade uniquement. */
