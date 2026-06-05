@@ -42,15 +42,16 @@ function scale(hex: string, f: number): string {
 // Suffixes de teinte : base, Ombre (assombri), Highlight (éclairci).
 const SHADES: [suffix: string, factor: number][] = [['', 1], ['O', 0.78], ['H', 1.18]];
 
-/** Construit la table token→hex pour une palette (slot + slotO + slotH chacun). */
-function tokenMap(p: Palette): Record<string, string> {
-  const full = { ...DEFAULT_PALETTE, ...stripUndef(p) };
-  const out: Record<string, string> = {};
-  for (const [slot, base] of Object.entries(full)) {
-    for (const [suf, f] of SHADES) out[slot + suf] = f === 1 ? base : scale(base, f);
-  }
-  return out;
-}
+/** Emplacements de base (ordre stable). */
+export const SLOTS = ['peau', 'cheveux', 'vet1', 'vet2', 'cuir', 'metal'] as const;
+export type Slot = (typeof SLOTS)[number];
+
+/**
+ * Palette STOCKÉE d'une tenue/tête : peut contenir non seulement les bases (`vet1`,
+ * `cuir`…) mais aussi les ombres/reflets EXACTS d'origine (`vet1O`, `vet1H`, `cuirO`…).
+ * Sert de DÉFAUT par-carrière → rendu identique à l'art dessiné, sans perte.
+ */
+export type StoredPalette = Record<string, string>;
 
 function stripUndef(p: Palette): Palette {
   const out: Palette = {};
@@ -58,10 +59,41 @@ function stripUndef(p: Palette): Palette {
   return out;
 }
 
-/** Remplace les tokens `@slot` / `@slotO` / `@slotH` d'un fragment SVG par les couleurs
- *  de la palette. Un token inconnu est laissé tel quel (no-op). */
-export function resolveTokens(svg: string, palette: Palette): string {
+/**
+ * Table finale token→hex. Règle par slot :
+ *  - slot NON surchargé par l'utilisateur → on rend l'ombre/reflet EXACT stocké
+ *    (`stored.vet1O`…) s'il existe → rendu par défaut identique à l'art ; sinon dérivé.
+ *  - slot surchargé (`overrides.vet1`) → TOUTE la famille (base+O+H) est DÉRIVÉE de la
+ *    couleur choisie → recoloriage cohérent (les ombres suivent).
+ */
+export function buildTokenMap(stored: StoredPalette, overrides: Palette = {}): Record<string, string> {
+  const ov = stripUndef(overrides);
+  const out: Record<string, string> = {};
+  for (const slot of SLOTS) {
+    const userBase = ov[slot];
+    const base = userBase ?? stored[slot] ?? DEFAULT_PALETTE[slot];
+    for (const [suf, f] of SHADES) {
+      const token = slot + suf;
+      if (userBase != null) {
+        out[token] = f === 1 ? userBase : scale(userBase, f); // recolor → dérivé du choix
+      } else {
+        out[token] = stored[token] ?? (f === 1 ? base : scale(base, f)); // défaut → exact sinon dérivé
+      }
+    }
+  }
+  return out;
+}
+
+/** Substitue les tokens `@slot`/`@slotO`/`@slotH` d'un fragment SVG via une table prête.
+ *  Un token inconnu est laissé tel quel (no-op). Construire la table 1× par rig. */
+export function applyTokenMap(svg: string, map: Record<string, string>): string {
   if (!svg.includes('@')) return svg;
-  const m = tokenMap(palette);
-  return svg.replace(/@([a-zA-Z]\w*)/g, (whole, key: string) => m[key] ?? whole);
+  return svg.replace(/@([a-zA-Z]\w*)/g, (whole, key: string) => map[key] ?? whole);
+}
+
+/** Commodité : (overrides, stored?) → SVG résolu. Pour 1 fragment ; sinon préférer
+ *  buildTokenMap + applyTokenMap (table réutilisée). */
+export function resolveTokens(svg: string, overrides: Palette, stored: StoredPalette = {}): string {
+  if (!svg.includes('@')) return svg;
+  return applyTokenMap(svg, buildTokenMap(stored, overrides));
 }
