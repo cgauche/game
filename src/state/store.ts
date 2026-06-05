@@ -55,7 +55,7 @@ import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping } from '../engine/items';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
@@ -207,6 +207,8 @@ interface GameState {
   pendingCast: PendingCast | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
   pendingRoundStart: { round: number } | null;
+  /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
+  pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number } | null;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -269,6 +271,12 @@ interface GameState {
   roundStartPromote: (heroId: string) => void;
   /** Ferme la modale d'ordre de Round et reprend le combat (active le 1er combattant valide). */
   confirmRoundStart: () => void;
+  /** « Comment ça a pu rater ? » (Destin, coup létal) : annule le coup, reste en combat. */
+  fateNegate: () => void;
+  /** « Meurs un autre jour » (Destin) : survit mais éjecté de la rencontre. */
+  fateSurvive: () => void;
+  /** « Accepter le sort » : le héros meurt. */
+  fateAccept: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
@@ -319,6 +327,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDisengage: null,
   pendingCast: null,
   pendingRoundStart: null,
+  pendingFateSave: null,
   document: null,
   previousScene: null,
 
@@ -841,6 +850,47 @@ export const useGame = create<GameState>((set, get) => ({
     if (checkBattleOver(get, set)) return;
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
+  },
+
+  // ── Destin sacrifié (LDB ch.17 l.31-35) — résolution de la suspension pendingFateSave ──
+  fateNegate: () => {
+    const { battle, pendingFateSave: p } = get();
+    if (!battle || !p || p.source !== 'hit') return; // « Comment ça a pu rater ? » : coup létal seulement
+    const hero = battle.combatants.find((c) => c.id === p.heroId);
+    set({ pendingFateSave: null });
+    if (!hero) return;
+    hero.fate = (hero.fate ?? 0) - 1;
+    if (p.restoreWounds != null) hero.wounds.current = p.restoreWounds; // annule tout le coup (restaure les PB)
+    hero.criticalWounds = Math.max(0, (hero.criticalWounds ?? 0) - 1);
+    set({ battle: { ...battle, log: [...battle.log, `${hero.name} : « Comment ça a pu rater ? » — le coup fatal est évité (Destin −1).`] } });
+    resumeEnemyTurn(get, set);
+  },
+  fateSurvive: () => {
+    const { battle, pendingFateSave: p } = get();
+    if (!battle || !p) return;
+    const hero = battle.combatants.find((c) => c.id === p.heroId);
+    const source = p.source;
+    set({ pendingFateSave: null });
+    if (!hero) return;
+    hero.fate = (hero.fate ?? 0) - 1;
+    hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
+    if (!hero.conditions.some((c) => c.name === 'Inconscient')) addCondition(hero, 'Inconscient');
+    set({ battle: { ...battle, log: [...battle.log, `${hero.name} : « Meurs un autre jour » — survit mais quitte le combat (Destin −1).`] } });
+    if (source === 'slow') resolveRoundBoundary(get, set);
+    else resumeEnemyTurn(get, set);
+  },
+  fateAccept: () => {
+    const { battle, pendingFateSave: p } = get();
+    if (!battle || !p) return;
+    const hero = battle.combatants.find((c) => c.id === p.heroId);
+    const source = p.source;
+    set({ pendingFateSave: null });
+    if (hero) {
+      hero.dead = true;
+      set({ battle: { ...battle, log: [...battle.log, `${hero.name} succombe.`] } });
+    }
+    if (source === 'slow') resolveRoundBoundary(get, set);
+    else resumeEnemyTurn(get, set);
   },
 
   battleDefendTotal: () => {
@@ -1508,34 +1558,42 @@ function bestAdjacentReachable(reach: Map<string, number>, target: Pt): Pt | nul
   return best;
 }
 
+/** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
+ *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal. */
+function finalizeHeroDeath(get: () => GameState, set: any, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number): void {
+  if (hero.kind === 'hero' && (hero.fate ?? 0) > 0) {
+    set({ pendingFateSave: { heroId: hero.id, source, restoreWounds } });
+  } else {
+    hero.dead = true;
+  }
+}
+
 /** Applique une Blessure critique (Coup Critique ou overkill) à `target` : PB (ignore BE+PA,
- *  plancher 0) + États + compteur + létalité (LDB 18-Traumatisme). Mort Subite pour les figurants
- *  en overkill. Pousse le journal dans `log`. */
+ *  plancher 0) + États + compteur. Mort Subite pour les figurants en overkill. RETOURNE `true`
+ *  si le résultat est létal (le caller finalise via finalizeHeroDeath). Pousse le journal dans `log`. */
 function applyCriticalToTarget(
   target: Combatant,
   location: HitLocation,
   isCoupCritique: boolean,
   overkill: number,
   log: string[],
-): void {
+): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
     if (!target.conditions.some((c) => c.name === 'Inconscient')) addCondition(target, 'Inconscient');
     log.push(`${target.name} s'effondre, hors de combat.`);
-    return;
+    return false;
   }
   const loc = isCoupCritique ? critLocationRoll(battleRng) : location; // Coup Critique = localisation fraîche (l.62)
   const crit = rollCritical(target, loc, battleRng, overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
-  if (crit.lethal) {
-    target.dead = true; // résultat « Mort » instantané (le sauvetage par Destin sera branché ici plus tard)
-  } else {
-    target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
-    for (const c of crit.conditions) addCondition(target, c.name, c.value);
-  }
   log.push(crit.log);
+  if (crit.lethal) return true; // « Mort » instantané — finalisé par le caller (sauvetage par Destin possible)
+  target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
+  for (const c of crit.conditions) addCondition(target, c.name, c.value);
   if (crit.note) log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
+  return false;
 }
 
 function applyAttackResult(
@@ -1554,7 +1612,8 @@ function applyAttackResult(
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     if (res.critical || overkill > 0) {
-      applyCriticalToTarget(target, res.location ?? 'corps', !!res.critical, Math.max(0, overkill), critLog);
+      const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.critical, Math.max(0, overkill), critLog);
+      if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     } else if (target.wounds.current <= 0) {
       applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
     }
@@ -1718,7 +1777,8 @@ function applyCast(
       const overkill = res.woundsLost - currentBefore;
       target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
       if (res.isCritical || overkill > 0) {
-        applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines);
+        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines);
+        if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
       } else if (target.wounds.current <= 0) {
         applyZeroWounds(target);
       }
@@ -1831,49 +1891,81 @@ function checkBattleOver(get: () => GameState, set: any): boolean {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
-  if (!b || b.over) return;
+  if (!b || b.over || get().pendingFateSave) return;
   setTimeout(() => advanceTurn(get, set), 500);
 }
 
 function advanceTurn(get: () => GameState, set: any) {
-  let battle = get().battle;
-  if (!battle || battle.over) return;
+  const battle = get().battle;
+  if (!battle || battle.over || get().pendingFateSave) return;
   let turn = battle.turn;
-  let round = battle.round;
-  // Fin de tour du combattant courant
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;
     if (turn >= battle.order.length) {
-      turn = 0;
-      round += 1;
+      // Franchissement de Round : upkeep (dégâts périodiques + 0 PB→Inconscient), puis la résolution
+      // (morts lentes avec sauvetage par Destin) est déléguée à resolveRoundBoundary — résumable,
+      // car elle peut suspendre (pendingFateSave / pendingRoundStart).
+      const round = battle.round + 1;
       battle.log.push(`— Round ${round} —`);
-      for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle!.log.push(l));
-      for (const c of battle.combatants) tickDeath(c, battleRng).forEach((l) => battle!.log.push(l)); // 0 PB→Inconscient→mort (LDB 18 l.28,48-49)
-      // Avantage : -1 si on n'en a gagné aucun ce Round (LDB Dépl. l.40 ; la perte sur
-      // infériorité numérique n'est pas modélisée).
-      for (const c of battle.combatants) {
-        if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
-        c.gainedAdvThisRound = false;
-      }
-      decayEngagement(battle.combatants); // Engagé tombe si aucun coup échangé ce Round (LDB 13-Combat l.175)
-      // Chance, 3e usage (LDB ch.17 l.27) : si le combat continue et qu'un héros dispose de Chance,
-      // on suspend au début du Round pour la modale d'ordre (pré-emption d'initiative). La reprise
-      // est portée par confirmRoundStart (anti double-advance, comme la suspension de défense).
-      const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
-      const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
-      if (enemiesAlive && heroCanPreempt) {
-        set({ battle: { ...battle, turn, round, action: null, moved: false, acted: false, reachable: new Map() }, pendingRoundStart: { round } });
-        return;
-      }
+      for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle.log.push(l));
+      for (const c of battle.combatants) tickDeath(c, battleRng).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
+      set({ battle: { ...battle, turn: 0, round } });
+      resolveRoundBoundary(get, set);
+      return;
     }
-    const next = battle.combatants.find((c) => c.id === battle!.order[turn]);
+    const next = battle.combatants.find((c) => c.id === battle.order[turn]);
     if (next && !isOutOfAction(next)) break;
   }
-  // La posture « Sur la défensive » expire au début du tour de son porteur (LDB Combat l.118).
-  const newActive = battle.combatants.find((c) => c.id === battle!.order[turn]);
+  // Tour suivant dans le MÊME Round. La posture « Sur la défensive » expire (LDB Combat l.118).
+  const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
   if (newActive) newActive.defensiveStance = false;
-  battle = { ...battle, turn, round, action: null, moved: false, acted: false, reachable: new Map() };
-  set({ battle });
+  set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
+  if (checkBattleOver(get, set)) return;
+  bus.emit(EVT.SCENE_DIRTY);
+  maybeRunEnemyTurn(get, set);
+}
+
+/**
+ * Fin de Round, RÉSUMABLE : (1) résout les morts lentes une par une — pour un héros à Destin,
+ * suspend (pendingFateSave 'slow') ; (2) finalise les morts restantes ; (3) décrément d'Avantage
+ * + Engagement (une seule fois, après toutes les morts) ; (4) pré-emption d'initiative (Chance,
+ * 3e usage) sinon sélection de l'acteur + IA. Rappelée par fate* après résolution d'une mort lente.
+ */
+function resolveRoundBoundary(get: () => GameState, set: any): void {
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  // (1) Un héros mourant à Destin non résolu → suspend (LDB ch.17 l.31-35).
+  const dying = battle.combatants.find((c) => c.kind === 'hero' && (c.fate ?? 0) > 0 && inDeathCondition(c));
+  if (dying) {
+    set({ pendingFateSave: { heroId: dying.id, source: 'slow' } });
+    return;
+  }
+  // (2) Finaliser les morts lentes restantes (héros sans Destin).
+  for (const c of battle.combatants) if (inDeathCondition(c)) c.dead = true;
+  // (3) Avantage : -1 si aucun gagné ce Round (LDB Dépl. l.40) ; Engagé périmé (LDB 13-Combat l.175).
+  for (const c of battle.combatants) {
+    if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
+    c.gainedAdvThisRound = false;
+  }
+  decayEngagement(battle.combatants);
+  // (4) Pré-emption d'initiative (Chance, 3e usage, LDB ch.17 l.27) sinon sélection de l'acteur.
+  const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
+  const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
+  if (enemiesAlive && heroCanPreempt) {
+    set({ battle: { ...battle, action: null, moved: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: battle.round } });
+    return;
+  }
+  let turn = 0;
+  for (let i = 0; i < battle.order.length; i++) {
+    const c = battle.combatants.find((x) => x.id === battle.order[i]);
+    if (c && !isOutOfAction(c)) {
+      turn = i;
+      break;
+    }
+  }
+  const active = battle.combatants.find((c) => c.id === battle.order[turn]);
+  if (active) active.defensiveStance = false;
+  set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   maybeRunEnemyTurn(get, set);
@@ -1882,7 +1974,7 @@ function advanceTurn(get: () => GameState, set: any) {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over) return;
+  if (!battle || battle.over || get().pendingFateSave) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), 450);

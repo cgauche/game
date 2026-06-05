@@ -27,6 +27,7 @@ function reset() {
     pendingDisengage: null,
     pendingCast: null,
     pendingRoundStart: null,
+    pendingFateSave: null,
     document: null,
   });
 }
@@ -1264,13 +1265,69 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
     expect(h.wounds.current).toBe(0); // tombé à 0 (ne passe jamais négatif)
   });
 
-  it('héros Inconscient + 0 PB + critiques > BE → meurt en fin de Round (LDB 18 l.48-49)', () => {
-    const { H, E } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
+  it('héros SANS Destin Inconscient + 0 PB + critiques > BE → meurt en fin de Round (LDB 18 l.48-49)', () => {
+    const { H, E } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 0 }); // BE=3, pas de Destin → mort directe
     useGame.setState({ battle: { ...useGame.getState().battle!, order: [E.id, H.id], turn: 1 } }); // H dernier → battleEndTurn franchit le Round
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.dead).toBe(true);
     expect(isOutOfAction(h)).toBe(true);
+  });
+});
+
+describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function combat(heroOver: Partial<Combatant> = {}) {
+    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    H.fortune = 0; H.fate = 1; Object.assign(H, heroOver);
+    const E: Combatant = JSON.parse(JSON.stringify(H));
+    E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; E.fate = 0;
+    const battle: BattleState = {
+      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
+      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
+    return { H, E };
+  }
+
+  it('mort lente d’un héros à Destin → suspend (pendingFateSave source=slow), pas mort', () => {
+    combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 }); // fate=1, BE=3
+    useGame.getState().seedRng(1);
+    useGame.getState().battleEndTurn(); // H dernier → franchit le Round
+    const st = useGame.getState();
+    expect(st.pendingFateSave).not.toBeNull();
+    expect(st.pendingFateSave!.source).toBe('slow');
+    expect(st.battle!.combatants[0].dead ?? false).toBe(false);
+  });
+
+  it('« Meurs un autre jour » : éjecté vivant, Destin −1, le Round reprend', () => {
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 2 });
+    useGame.getState().seedRng(1);
+    useGame.getState().battleEndTurn();
+    useGame.getState().fateSurvive();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.dead ?? false).toBe(false);
+    expect(h.outOfRencontre).toBe(true);
+    expect(h.fate).toBe(1);
+    expect(useGame.getState().pendingFateSave).toBeNull();
+  });
+
+  it('« Accepter le sort » : mort', () => {
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 });
+    useGame.getState().seedRng(1);
+    useGame.getState().battleEndTurn();
+    useGame.getState().fateAccept();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.dead).toBe(true);
+  });
+
+  it('héros SANS Destin : mort lente directe, pas de pause', () => {
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 0 });
+    useGame.getState().seedRng(1);
+    useGame.getState().battleEndTurn();
+    expect(useGame.getState().pendingFateSave).toBeNull();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.dead).toBe(true);
   });
 });
