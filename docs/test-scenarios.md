@@ -51,3 +51,4 @@ export const scenario: TestScenario = {
 | 🍀 Destin / Résilience | coup létal → sauvetage par le Destin ; réussite garantie |
 | ⚔️ Engagé / Charge / Désengagement | charge, Engagement, désengagement |
 | ✨ Magie | incantation (NI/DR/Maladresse), Focalisation, Bénédictions |
+| 🖼️ Galerie de modèles | tous les modèles de l'IsoStage (58 créatures + rigs de carrières + mutants), **exploration sans combat** |
