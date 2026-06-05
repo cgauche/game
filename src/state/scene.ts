@@ -107,6 +107,8 @@ export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   | { type: 'giveItem'; item: string }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
+  /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
+  | { type: 'giveXp'; amount: number }
   | { type: 'startCombat'; encounter: string }
   | { type: 'transition'; scene: string; entry?: string }
   /** Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. */

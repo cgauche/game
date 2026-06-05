@@ -4,7 +4,7 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { makeRNG, RNG } from '../engine/dice';
 import {
   resolveMelee,
@@ -34,12 +34,22 @@ import {
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { rollTest, TestResult, opposedTest, resolveOpposed } from '../engine/tests';
-import { effectiveChar } from '../engine/characteristics';
+import { effectiveChar, maxWounds } from '../engine/characteristics';
+import {
+  buyCharAdvance as engineBuyCharAdvance,
+  buySkillAdvance as engineBuySkillAdvance,
+  buyTalent as engineBuyTalent,
+  changeCareer as engineChangeCareer,
+  isCareerLevelComplete,
+  inCareerChar,
+  inCareerSkill,
+  inCareerTalent,
+} from '../engine/advancement';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction } from '../engine/conditions';
-import { findSpell } from '../data/index';
+import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
@@ -55,6 +65,23 @@ const sceneRegistry: Record<string, Scene> = {};
 for (const c of campaign) sceneRegistry[c.scene.id] = c.scene;
 function registerScene(s: Scene) {
   sceneRegistry[s.id] = s;
+}
+
+/** Données du Niveau de Carrière COURANT d'un héros (depuis careerLevels.json), pour la
+ *  détection in-carrière et la complétion. `undefined` si la carrière est hors base. */
+function currentCareerLevel(hero: Combatant) {
+  return levelsForCareer(hero.career ?? '').find((l) => l.level === (hero.careerLevel ?? 1));
+}
+
+/** Recalcule les Blessures max (BF + 2·BE + BFM, LDB Attributs) après une Augmentation de
+ *  Caractéristique ; un gain de max augmente aussi le courant d'autant (mute le héros). */
+function recomputeWounds(hero: Combatant) {
+  const small = findSpecies(hero.species ?? '')?.small ?? false;
+  const newMax = maxWounds(hero.characteristics, small);
+  const delta = newMax - hero.wounds.max;
+  hero.wounds.max = newMax;
+  if (delta > 0) hero.wounds.current += delta;
+  if (hero.wounds.current > newMax) hero.wounds.current = newMax;
 }
 
 export interface Money {
@@ -152,6 +179,17 @@ interface GameState {
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
+  // ── Avancement par PX (LDB 07-Carrières) — câblage du moteur testé ──
+  /** Octroie des PX à un héros. */
+  grantXp: (heroId: string, amount: number) => void;
+  /** Achète une Augmentation de Caractéristique (coût in/hors-carrière auto, recalc Blessures). */
+  buyCharAdvance: (heroId: string, char: CharKey) => void;
+  /** Achète une Augmentation de Compétence ; acquiert la Compétence de carrière non connue à 0. */
+  buySkillAdvance: (heroId: string, skillName: string) => void;
+  /** Achète/augmente un Talent (refusé hors carrière, LDB l.97). */
+  buyTalent: (heroId: string, talentName: string) => void;
+  /** Change de Carrière/Niveau (coût 100 si Niveau actuel complété, 200 sinon). */
+  changeCareer: (heroId: string, newCareer: string, newLevel: number) => void;
   startScene: (scene: Scene) => void;
   /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. */
   loadProject: (scenes: Scene[], entryId: string) => void;
@@ -238,6 +276,112 @@ export const useGame = create<GameState>((set, get) => ({
         return clone;
       }),
     })),
+  grantXp: (heroId, amount) => {
+    let name = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        name = h.name;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        clone.xp = (clone.xp ?? 0) + amount;
+        return clone;
+      }),
+    }));
+    if (name) get().log(`${name} : ${amount >= 0 ? '+' : ''}${amount} PX.`);
+  },
+
+  buyCharAdvance: (heroId, char) => {
+    let msg = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const inC = inCareerChar(currentCareerLevel(clone)?.characteristics ?? [], char);
+        const r = engineBuyCharAdvance(clone, char, inC);
+        if (!r.ok) {
+          msg = `${clone.name} : ${CHAR_LABELS[char]} — ${r.reason}.`;
+          return h;
+        }
+        recomputeWounds(clone);
+        msg = `${clone.name} : ${CHAR_LABELS[char]} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+        return clone;
+      }),
+    }));
+    if (msg) get().log(msg);
+  },
+
+  buySkillAdvance: (heroId, skillName) => {
+    let msg = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const known = clone.skills.some((sk) => sk.name === skillName);
+        const inC = inCareerSkill(currentCareerLevel(clone)?.skills ?? [], skillName);
+        if (!known) {
+          if (!inC) {
+            msg = `${clone.name} : « ${skillName} » hors carrière, non acquérable.`;
+            return h;
+          }
+          // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
+          const characteristic = CHAR_BY_LABEL[findSkill(skillName)?.characteristic ?? ''] ?? 'Int';
+          clone.skills.push({ name: skillName, characteristic, advances: 0 });
+        }
+        const r = engineBuySkillAdvance(clone, skillName, inC);
+        if (!r.ok) {
+          msg = `${clone.name} : ${skillName} — ${r.reason}.`;
+          return h;
+        }
+        msg = `${clone.name} : ${skillName} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+        return clone;
+      }),
+    }));
+    if (msg) get().log(msg);
+  },
+
+  buyTalent: (heroId, talentName) => {
+    let msg = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const inC = inCareerTalent(currentCareerLevel(clone)?.talents ?? [], talentName);
+        if (!inC) {
+          msg = `${clone.name} : Talent « ${talentName} » hors carrière (LDB l.97).`;
+          return h;
+        }
+        const r = engineBuyTalent(clone, talentName);
+        if (!r.ok) {
+          msg = `${clone.name} : ${talentName} — ${r.reason}.`;
+          return h;
+        }
+        msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
+        return clone;
+      }),
+    }));
+    if (msg) get().log(msg);
+  },
+
+  changeCareer: (heroId, newCareer, newLevel) => {
+    let msg = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const lvl = currentCareerLevel(clone);
+        const completed = lvl ? isCareerLevelComplete(clone, clone.careerLevel ?? 1, lvl.skills, lvl.talents) : false;
+        const r = engineChangeCareer(clone, newCareer, newLevel, completed);
+        if (!r.ok) {
+          msg = `${clone.name} : changement de carrière refusé (${r.reason}).`;
+          return h;
+        }
+        msg = `${clone.name} : carrière → ${newCareer} (niv. ${newLevel}, −${r.cost} PX).`;
+        return clone;
+      }),
+    }));
+    if (msg) get().log(msg);
+  },
+
   setParty: (p) => set({ party: p }),
 
   startScene: (scene) => {
@@ -857,6 +1001,16 @@ function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
         if (parts.length) get().log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
         break;
       }
+      case 'giveXp':
+        set((s: GameState) => ({
+          party: s.party.map((h) => {
+            const clone: Combatant = JSON.parse(JSON.stringify(h));
+            clone.xp = (clone.xp ?? 0) + e.amount;
+            return clone;
+          }),
+        }));
+        get().log(`Groupe : +${e.amount} PX.`);
+        break;
       case 'document':
         set({ document: { title: e.title, text: e.text } });
         break;

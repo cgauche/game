@@ -1,6 +1,6 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-04. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-06-05. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
 les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauche/game`.
 
@@ -161,8 +161,13 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   coûts d'Augmentation Caractéristique/Compétence par bandes de 5 (25→520 / 10→440), **hors-carrière ×2**,
   Talents (100 + 100×déjà-acheté), **changement de carrière** (complétion = 5×niveau d'Augmentations,
   100 PX si complété / 200 sinon). Champs `xp`/`charAdvances`/`careerLevel` ajoutés.
-  ⏳ **Reste (prévu autre session)** : câblage store (`grantXp` + actions de dépense + **détection
-  in-carrière** depuis `careerLevels.json`) + **panneau UI d'avancement** dans la fiche de perso.
+- ✅ **Avancement — CÂBLAGE + UI** (fait) : **détection in-carrière** depuis `careerLevels.json`
+  (`engine/advancement.ts` `inCareerChar/Skill/Talent` + vue `state/advancement.ts`), **actions store**
+  testées (`grantXp`, `buyCharAdvance` avec recalcul des Blessures, `buySkillAdvance` qui **acquiert**
+  une compétence de carrière non connue, `buyTalent` refusé hors-carrière l.97, `changeCareer`),
+  **Effet de scène `giveXp`** (octroi groupe, éditable) et **fiche en onglets Fiche / Avancement**
+  (`CharacterSheet.tsx` : PX, achat in/hors-carrière, complétion de niveau, changement de carrière).
+  Restent : richesse initiale, détails physiques, noms (création) ; octroi auto d'XP par victoire/jalon.
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
 
@@ -187,7 +192,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   **kind `personnage` unifié** (apparence = ref bestiaire + variante de calque + dialogue/quête).
 - ✅ **Sélection d'une zone trigger au clic** (surbrillance + inspecteur : rect, condition, effets, suppr.).
 - ✅ **Placement des ennemis sur la carte**, **undo/redo**, **projet multi-scènes** (basculer / lier les
-  intérieurs sans toucher `campaign[]`). Reste : éditeur de statblocks.
+  intérieurs sans toucher `campaign[]`). ✅ **Éditeur de statblocks** (`StatblockEditor.tsx` : nom, 10
+  caractéristiques, M/B, dégâts d'arme, armure ; câblé à `spawn.ts` via `statblockToCombatant`).
 
 ## 🎯 Jalon 7 — Coop en ligne
 
@@ -196,38 +202,58 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 ## 🎯 Jalon 8 — Polish & production
 
-- **Sprites de carrières** (héros) via workflow (réfs prêtes : `mapping.json` 64/71) ;
-  **sprites composables** (l'équipement se voit) ; **animations** marche/attaque/mort.
+- ✅ **Rig 2D squelettique + apparence composable** (`src/gameIso/rig/`, pur + testé —
+  **17 fichiers de test, 129 tests verts**) : squelette FK par espèce/morpho (**6 espèces jouables** :
+  Humain, Nain, Halfling, Elfe, Ogre, Gnome) + kinematics (matrices d'os) + tweens (easing),
+  **résolution par calques** (`composeAppearance` → 9 slots : visage/cheveux/tête/torse/bras/jambes/
+  arme/bouclier/mutations) avec **fallback** sur le sprite monolithique du bestiaire.
+- ✅ **Équipement visible** (`rig/parts/equipment.ts`) : armes (épée/hache/masse/dague/lance/bâton/
+  arc/arbalète…) **et** armure par localisation, composées sur le rig depuis le `Combatant` —
+  « l'équipement se voit » enfin. **Tenues par carrière** (`rig/parts/career.ts` : 8 classes, override
+  manuel détaillé pour la Garde).
+- ✅ **Animations par clips** (`rig/anim/`) : 9 clips de base (idle/walk/melee/ranged/cast/dodge/
+  parry/hit/fall) **+ clips par groupe d'arme canonique** (attaque/parade/pose portée — escrime,
+  deux-mains, hast, arc, arbalète…) **+ clips de sorts** (bolt offensif vs bénédiction) **+ clips
+  d'ambiance** (mutant qui dévore, hurlement…) pilotables depuis l'éditeur (`SceneEntity.anim`).
+  Réactivité par le bus (`ANIM_MOVE`/`ATTACK`/`IMPACT`). **Facing 8 directions** (front/dos/profil +
+  miroir) pour héros **et** monstres.
+- ✅ **Sprites de carrières** : assurés par le **rig** (apparence = espèce + tenue de carrière + morpho
+  + équipement) — plus de spritesheet figé par carrière à dessiner.
 - ✅ **Reprise des sprites de bestiaire ratés (galerie QC)** — régénérés via workflow
   best-of-2 (lecture art officiel + desc canon + consigne silhouette) : ~52/57 redessinés,
-  fin du vert mutant par défaut, silhouettes reconnaissables. Restent perfectibles : Dragon
-  (plus élancé), Manticore, Mutant.
+  fin du vert mutant par défaut, silhouettes reconnaissables.
+- **Reste (fin)** : vues **dos/profil** des tenues/armes héros partielles (Garde fait main, le reste en
+  fallback front) ; **tintage arcane/divin** des sorts (ajouter `spell: label` à l'emit `ANIM_ATTACK`
+  de `store.castSpell`) ; **Dragon / Manticore** encore en sprite monolithique (hors rig) ; proportions
+  Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique** dans l'éditeur (slot-picker
+  + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
 - Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI** (tests+build ; lint à venir).
 
 ---
 
 ## Dette technique connue
 
-### Reste à faire — synthèse *(màj après le bloc combat)*
+### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
-- **Avancement XP** : moteur fait ; reste **câblage store** (grant + dépense + détection in-carrière depuis `careerLevels.json`) + **panneau UI** dans la fiche. → *prévu dans une autre session*.
+- ✅ **Avancement XP** : moteur **+ câblage store** (grant/dépense/détection in-carrière) **+ panneau UI** (onglets Fiche/Avancement) **+ Effet `giveXp`** — fait et testé (engine + vue + actions store + rendu). Reste : octroi **automatique** d'XP (victoire de combat / jalon de campagne) au-delà de l'Effet manuel/éditeur.
 - **Combat — reste** : action **« ramasser »** ; **tables de Critiques & Maladresses** par localisation (LDB p.172+, aujourd'hui laissées au MJ). Distance : ligne de vue / couvert / rechargement / munitions (au-delà des bandes de portée). Détermination & ajout direct de DR (au-delà de la Chance).
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
 - **Vérif NAVIGATEUR du combat** : modales attaque/défense/hors-combat/**désengagement+Fuite**, hotbar, Engagé/Charge — logique couverte par tests, mais **passage live à l'œil non fait** ce cycle (penser au **hard reload** : le HMR du dev se périme souvent).
-- **Sprites/animations** (Jalon 8) : sprites **composables** (équipement visible) + animations — chantier de l'**autre session**.
+- ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.
 - **Contenu jouable** (Jalon 4) : vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
 
 ### Dette « historique » (détail)
 
-- **Sprites** par équipement non reflétés (sprites figés par carrière, pas composables).
+- ✅ **Sprites par équipement reflétés** : le **rig 2D** compose arme + armure depuis le `Combatant`
+  (`gameIso/rig/parts/equipment.ts`) — fini les sprites figés par carrière.
 - Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
   restent quelques complexes perfectibles (Dragon, Manticore, Mutant). Le SVG dessiné main
   plafonne sur les gros ailés.
-- **Apparences par calques** en place (auto-variées au seed + override éditeur), mais seuls
-  **Humain** (tuniques) et **Mutant** (5 morphologies) sont enrichis — le reste du bestiaire
-  = apparence unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
-  perfectibles (corps « ballon », jambes fines).
+- **Apparences par calques** : le **rig 2D** (`gameIso/rig/`) enrichit désormais **6 espèces jouables**
+  (Humain, Nain, Halfling, Elfe, Ogre, Gnome) + calques de mutation au seed ; le reste du bestiaire
+  reste en sprite unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
+  encore perfectibles (corps « ballon », jambes fines) ; vues **dos/profil** des parts héros partielles.
 - ✅ **IA d'ennemi enrichie** (cible le plus faible atteignable, tir à distance, sorts offensifs,
   choix Esquive/Parade — `state/ai.ts` pur + testé).
 - ✅ **Éditeur : annuler/rétablir** (`useSceneHistory`, Ctrl+Z/Y) **+ placement des ennemis de

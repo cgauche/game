@@ -10,6 +10,9 @@ import {
   isCareerLevelComplete,
   careerChangeCost,
   changeCareer,
+  inCareerChar,
+  inCareerSkill,
+  inCareerTalent,
 } from './advancement';
 
 const hero = (xp: number): Combatant =>
@@ -54,6 +57,24 @@ describe('advanceCost — Tableau de Coût (LDB 07-Carrières l.45-62), verbatim
     expect(advanceCost(0, 'characteristic', false)).toBe(50);
     expect(advanceCost(0, 'skill', false)).toBe(20);
     expect(advanceCost(11, 'characteristic', false)).toBe(80);
+  });
+});
+
+describe('Détection in-carrière (LDB 07-Carrières l.95 : hors-carrière → coût ×2)', () => {
+  it('inCareerChar : vrai si le libellé long de la Caractéristique est listé au Niveau', () => {
+    const chars = ['Capacité de Tir', 'Intelligence', 'Sociabilité']; // Niveau « Pamphlétaire »
+    expect(inCareerChar(chars, 'CT')).toBe(true);
+    expect(inCareerChar(chars, 'Int')).toBe(true);
+    expect(inCareerChar(chars, 'CC')).toBe(false);
+    expect(inCareerChar(chars, 'F')).toBe(false);
+  });
+  it('inCareerSkill : appartenance par nom exact', () => {
+    expect(inCareerSkill(['Charme', 'Ragot', 'Subornation'], 'Charme')).toBe(true);
+    expect(inCareerSkill(['Charme', 'Ragot', 'Subornation'], 'Esquive')).toBe(false);
+  });
+  it('inCareerTalent : appartenance par nom exact', () => {
+    expect(inCareerTalent(['Baratiner', 'Sociable'], 'Sociable')).toBe(true);
+    expect(inCareerTalent(['Baratiner', 'Sociable'], 'Orateur')).toBe(false);
   });
 });
 

@@ -7,6 +7,7 @@ import { tome1Auberge } from '../scenes/tome1-auberge';
 import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
+import type { Combatant } from '../engine/types';
 
 function reset() {
   useGame.setState({
@@ -705,5 +706,131 @@ describe('Boucle de jeu (store)', () => {
     st = useGame.getState();
     expect(st.pendingAttack).not.toBeNull(); // attaque en diagonale autorisée
     expect(st.pendingAttack!.targetId).toBe(E.id);
+  });
+});
+
+describe('Avancement par PX (store) — câblage moteur', () => {
+  beforeEach(() => reset());
+
+  const mkHero = (over: Partial<Combatant> = {}): Combatant =>
+    ({
+      id: 'h',
+      name: 'H',
+      kind: 'hero',
+      species: 'Humains (Reiklander)',
+      career: 'Agitateur', // Niveau 1 « Pamphlétaire » : caracs CT/Int/Soc, comp. Charme/Ragot, talent Sociable
+      careerLevel: 1,
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 12, max: 12 },
+      advantage: 0,
+      conditions: [],
+      weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      skills: [
+        { name: 'Charme', characteristic: 'Soc', advances: 0 }, // in-carrière
+        { name: 'Esquive', characteristic: 'Ag', advances: 0 }, // hors-carrière
+      ],
+      talents: [],
+      movement: 4,
+      xp: 0,
+      charAdvances: {},
+      ...over,
+    }) as unknown as Combatant;
+
+  const set1 = (h: Combatant) => useGame.setState({ party: [h] });
+  const h0 = () => useGame.getState().party[0];
+
+  it('grantXp : ajoute des PX au héros', () => {
+    set1(mkHero({ xp: 0 }));
+    useGame.getState().grantXp('h', 150);
+    expect(h0().xp).toBe(150);
+  });
+
+  it('buyCharAdvance in-carrière (CT) : +1 valeur, +1 augmentation, coût 25', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buyCharAdvance('h', 'CT');
+    expect(h0().characteristics.CT).toBe(31);
+    expect(h0().charAdvances!.CT).toBe(1);
+    expect(h0().xp).toBe(975);
+  });
+
+  it('buyCharAdvance hors-carrière (CC) : coût doublé (50)', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buyCharAdvance('h', 'CC');
+    expect(h0().xp).toBe(950);
+  });
+
+  it('buyCharAdvance recalcule les Blessures quand le Bonus d’Endurance monte', () => {
+    set1(
+      mkHero({
+        xp: 1000,
+        characteristics: { CC: 30, CT: 30, F: 30, E: 39, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+        wounds: { current: 12, max: 12 },
+      }),
+    );
+    useGame.getState().buyCharAdvance('h', 'E'); // 39→40 : BE 3→4, Blessures = BF + 2·BE + BFM = 3 + 8 + 3 = 14
+    expect(h0().characteristics.E).toBe(40);
+    expect(h0().wounds.max).toBe(14);
+    expect(h0().wounds.current).toBe(14);
+  });
+
+  it('buySkillAdvance : Compétence connue in-carrière (Charme) +1, coût 10', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buySkillAdvance('h', 'Charme');
+    expect(h0().skills.find((s) => s.name === 'Charme')!.advances).toBe(1);
+    expect(h0().xp).toBe(990);
+  });
+
+  it('buySkillAdvance : acquiert une Compétence de carrière non connue (Ragot) à advances 1', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buySkillAdvance('h', 'Ragot');
+    const ragot = h0().skills.find((s) => s.name === 'Ragot');
+    expect(ragot).toBeTruthy();
+    expect(ragot!.advances).toBe(1);
+    expect(h0().xp).toBe(990);
+  });
+
+  it('buySkillAdvance : refuse une Compétence hors-carrière non connue', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buySkillAdvance('h', 'Natation'); // ni connue, ni in-carrière
+    expect(h0().skills.find((s) => s.name === 'Natation')).toBeUndefined();
+    expect(h0().xp).toBe(1000);
+  });
+
+  it('buyTalent in-carrière (Sociable) : créé à times 1, coût 100', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buyTalent('h', 'Sociable');
+    expect(h0().talents.find((t) => t.name === 'Sociable')!.times).toBe(1);
+    expect(h0().xp).toBe(900);
+  });
+
+  it('buyTalent hors-carrière : refusé (LDB l.97)', () => {
+    set1(mkHero({ xp: 1000 }));
+    useGame.getState().buyTalent('h', 'Castagneur'); // hors Niveau Agitateur
+    expect(h0().talents.find((t) => t.name === 'Castagneur')).toBeUndefined();
+    expect(h0().xp).toBe(1000);
+  });
+
+  it('changeCareer : change carrière + niveau et déduit 200 (niveau non complété)', () => {
+    set1(mkHero({ xp: 250 }));
+    useGame.getState().changeCareer('h', 'Érudit', 1);
+    expect(h0().career).toBe('Érudit');
+    expect(h0().careerLevel).toBe(1);
+    expect(h0().xp).toBe(50);
+  });
+
+  it('Effet giveXp : octroie les PX à TOUT le groupe (via trigger)', () => {
+    const a = mkHero({ id: 'a', xp: 0 });
+    const b = mkHero({ id: 'b', xp: 50 });
+    const scene = emptyScene(6, 6);
+    scene.id = 'xp-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.triggers.push({ id: 't-xp', rect: { x: 2, y: 0, w: 1, h: 1 }, once: true, effects: [{ type: 'giveXp', amount: 100 }] });
+    useGame.setState({ party: [a, b] });
+    useGame.getState().startScene(scene);
+    useGame.getState().moveParty({ x: 2, y: 0 }); // entre dans la zone du trigger
+    const st = useGame.getState();
+    expect(st.party.find((h) => h.id === 'a')!.xp).toBe(100);
+    expect(st.party.find((h) => h.id === 'b')!.xp).toBe(150);
   });
 });

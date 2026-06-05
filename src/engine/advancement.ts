@@ -5,7 +5,25 @@
  * acheté pour cette Caractéristique / Compétence (l.69, l.80). Toutes les valeurs sont copiées
  * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
  */
-import { Combatant, CharKey, CHAR_KEYS } from './types';
+import { Combatant, CharKey, CHAR_KEYS, CHAR_LABELS } from './types';
+
+/**
+ * Détection « in-carrière » (07-Carrières l.95) : une Augmentation est au coût standard si la
+ * Caractéristique / Compétence / Talent figure dans le Niveau de Carrière COURANT du héros ;
+ * sinon le coût est doublé (Caractéristiques/Compétences) ou interdit (Talents, l.97).
+ * Ces helpers sont PURS : l'appelant fournit les listes du Niveau (depuis `careerLevels.json`),
+ * le moteur ne dépend pas de `src/data`. Les Caractéristiques sont listées en libellé long
+ * (« Capacité de Combat »), d'où la conversion via CHAR_LABELS.
+ */
+export function inCareerChar(careerChars: string[], char: CharKey): boolean {
+  return careerChars.includes(CHAR_LABELS[char]);
+}
+export function inCareerSkill(careerSkills: string[], name: string): boolean {
+  return careerSkills.includes(name);
+}
+export function inCareerTalent(careerTalents: string[], name: string): boolean {
+  return careerTalents.includes(name);
+}
 
 /**
  * Tableau de Coût des Augmentations de Caractéristique et Compétence (07-Carrières l.45-62).

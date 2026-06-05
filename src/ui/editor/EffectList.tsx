@@ -17,6 +17,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'document',
   'giveItem',
   'giveMoney',
+  'giveXp',
   'startCombat',
   'transition',
   'transitionBack',
@@ -30,6 +31,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   document: 'Document (handout)',
   giveItem: 'Donner un objet',
   giveMoney: 'Donner/retirer de l’argent',
+  giveXp: 'Donner des PX (groupe)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -48,6 +50,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'giveItem', item: '' };
     case 'giveMoney':
       return { type: 'giveMoney', gold: 0, silver: 0, brass: 0 };
+    case 'giveXp':
+      return { type: 'giveXp', amount: 50 };
     case 'startCombat':
       return { type: 'startCombat', encounter: '' };
     case 'transition':
@@ -103,6 +107,12 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
             <label>SC<input type="number" value={e.silver ?? 0} onChange={(ev) => upd({ silver: Number(ev.target.value) })} /></label>
             <label>PA<input type="number" value={e.brass ?? 0} onChange={(ev) => upd({ brass: Number(ev.target.value) })} /></label>
           </div>
+        )}
+        {effect.type === 'giveXp' && (
+          <label className="dr">
+            PX (groupe)
+            <input type="number" value={e.amount ?? 0} onChange={(ev) => upd({ amount: Number(ev.target.value) })} />
+          </label>
         )}
         {effect.type === 'startCombat' && (
           <select value={e.encounter ?? ''} onChange={(ev) => upd({ encounter: ev.target.value })}>
