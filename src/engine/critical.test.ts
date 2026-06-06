@@ -30,6 +30,28 @@ describe('rollCritical — résolution d’une Blessure critique (LDB 18-Traumat
     const r = rollCritical(victim(), 'tete', makeRNG(1));
     if (r.roll === 100) expect(r.lethal).toBe(true);
   });
+  it('les traumatismes produits portent la localisation du critique (corps) et incluent des Fractures', () => {
+    let sawFracture = false;
+    for (let s = 1; s <= 60; s++) {
+      const r = rollCritical(victim(), 'corps', makeRNG(s));
+      for (const t of r.traumas) {
+        expect(t.location).toBe('corps');
+        if (t.label.startsWith('Fracture')) sawFracture = true;
+      }
+    }
+    expect(sawFracture).toBe(true); // la table corps comporte des Fractures (Côtes/Hanche/Cage/Clavicule)
+  });
+  it('une Fracture du Torse posée par un critique réduit Force/Agilité de 30', () => {
+    for (let s = 1; s <= 60; s++) {
+      const r = rollCritical(victim(), 'corps', makeRNG(s));
+      const frac = r.traumas.find((t) => t.label.startsWith('Fracture'));
+      if (frac) {
+        expect(frac.charPenalty).toEqual({ F: -30, Ag: -30 });
+        return;
+      }
+    }
+    throw new Error('aucune Fracture trouvée sur 60 seeds');
+  });
 });
 
 describe('critLocationRoll — localisation d’un Coup Critique (1d100 direct, p.159)', () => {

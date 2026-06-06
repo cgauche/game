@@ -1850,6 +1850,10 @@ function applyCriticalToTarget(
   const crit = rollCritical(target, loc, battleRng, overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   log.push(crit.log);
+  if (crit.traumas.length) {
+    target.traumas = [...(target.traumas ?? []), ...crit.traumas];
+    for (const t of crit.traumas) log.push(`  ↳ ${t.label} (${t.location}).`);
+  }
   if (crit.lethal) return true; // « Mort » instantané — finalisé par le caller (sauvetage par Destin possible)
   target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
   for (const c of crit.conditions) addCondition(target, c.name, c.value);

@@ -7,8 +7,9 @@ import { d100, RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocation } from './combat';
-import { Combatant, HitLocation } from './types';
+import { Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
+import { traumaFromKind } from './trauma';
 
 export interface CriticalResolved {
   location: HitLocation;
@@ -18,6 +19,8 @@ export interface CriticalResolved {
   lethal: boolean;
   /** États à appliquer (immédiats + échec du Test de Résistance). */
   conditions: { name: string; value: number }[];
+  /** Traumatismes posés (LDB 18), à la localisation du critique. */
+  traumas: Trauma[];
   note: string;
   /** Jet d100 effectif (après -20 éventuel). */
   roll: number;
@@ -56,12 +59,14 @@ export function rollCritical(
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
     if (!res.success) conditions.push(...entry.resist.onFail);
   }
+  const traumas = (entry.traumas ?? []).map((t) => traumaFromKind(t.kind, t.severity, location));
   return {
     location,
     name: entry.name,
     woundsLoss: entry.wounds,
     lethal: !!entry.lethal,
     conditions,
+    traumas,
     note: entry.note,
     roll,
     log: `Blessure critique (${location}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
