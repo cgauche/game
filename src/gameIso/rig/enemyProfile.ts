@@ -16,6 +16,7 @@ import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
 import { quadSpeciesMatch } from './quadruped/quadSkeleton';
 import { wingSpeciesMatch } from './winged/composeWing';
+import { bipedConfig } from './creatures';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
@@ -117,19 +118,9 @@ function detectSpecies(n: string): string {
   return 'Humain';
 }
 
-/** Tenue par défaut d'une ESPÈCE monstrueuse, quand le nom ne désigne pas un rôle précis.
- *  Les morts-vivants nus / trolls / snotlings portent des hardes (Mendiant) ; le vampire une
- *  robe (Noble). Les peaux-vertes et hommes-bêtes gardent l'armure de soldat. */
-const SPECIES_CAREER: Record<string, string> = {
-  Skaven: 'Skaven', // tenue dédiée : pelage + lamelles de récup (bras velus → poing raccordé)
-  Vampire: 'Vampire', // tenue dédiée : manteau sombre à col haut (réutilisable pour tout humanoïde)
-  Zombie: 'Mendiant', // hardes en lambeaux
-  Orc: 'Mendiant', Gobelin: 'Mendiant', // hardes/cuir brun (la tenue Soldat a un tabard rouge hardcodé non recolorable)
-  // Pelage couvrant tout le corps / mort-vivant nu / monstre sans habit → corps de chair.
-  'Homme-bête': 'Nu', Minotaure: 'Nu',
-  Squelette: 'Squelette', // tenue dédiée : ossature (cage thoracique + os des membres)
-  Goule: 'Nu', Troll: 'Nu', Snotling: 'Nu', Ogre: 'Nu', Démon: 'Nu',
-};
+// La config d'espèce bipède (career / monster / sex / parts / colors) vit désormais dans
+// `creatures/defs/<Nom>.ts` (un fichier par espèce) et est lue via `bipedConfig(species)` —
+// plus de tables SPECIES_* éparpillées ici.
 
 /** Carrière (→ tenue) mappée du nom. */
 function detectCareer(n: string): string {
@@ -199,47 +190,6 @@ function mutationOverlays(seed: number): RigOverlay[] {
   });
 }
 
-/** Parts monstrueuses AUTO par espèce (Phase B) : une espèce monstrueuse implique sa tête/
- *  queue sans config manuelle (un « Guerrier des clans » est rendu homme-rat d'office). */
-const SPECIES_AUTO_MONSTER: Record<string, MonsterParts> = {
-  Skaven: { tete: 'rat', queue: true },
-  // Peaux-vertes (oreilles/défenses dans la tête ; pas de queue sauf snotling).
-  Orc: { tete: 'orc' },
-  Gobelin: { tete: 'gobelin' },
-  Snotling: { tete: 'gobelin', queue: true },
-  // Hommes-bêtes : cornes + jambes de chèvre + queue.
-  'Homme-bête': { tete: 'caprin', cornes: true, jambes: 'chevre', queue: true },
-  Minotaure: { tete: 'taureau', cornes: true, jambes: 'chevre', queue: true },
-  // Morts-vivants.
-  Squelette: { tete: 'crane' }, // côtes fournies par la tenue dédiée (cage thoracique)
-  Zombie: { tete: 'pourri', plaie: true },
-  Goule: { tete: 'goule', griffes: true }, // humanoïde décharné à gueule de crocs (PAS un chien) + griffes
-  // Gros / démons (Vampire = humain pâle → pas de tête monstrueuse : visage humain + col de
-  // cape + crocs, géré par overlays/palette).
-  Troll: { tete: 'troll', verrues: true }, // peau verruqueuse + ventre pâle (anti-blob)
-  Ogre: { tete: 'ogre', ventre: true },
-  Vampire: { cape: true },
-  Démon: { tete: 'demon', cornes: true, membresRouges: true },
-};
-
-/** Coiffure/visage épinglés par espèce (sinon le tirage de seed donne une coiffure aléatoire
- *  peu adaptée). Le vampire = cheveux lissés en arrière (idx 1), visage soigné. */
-const SPECIES_PARTS: Record<string, Appearance['parts']> = {
-  Vampire: { cheveux: 1, visage: 0 },
-};
-/** Sexe forcé par espèce (aristocrate vampire = masculin par défaut). */
-const SPECIES_SEX: Record<string, 'M' | 'F'> = { Vampire: 'M' };
-
-/** Surcharges de couleur par espèce (sur la tenue) — les peaux-vertes et hommes-bêtes portent
- *  du cuir/bois brun, pas l'écarlate impérial de la tenue Soldat (vet2 rouge → cuir brun). */
-const SPECIES_COLORS: Record<string, import('./palette').Palette> = {
-  Orc: { vet1: '#5a4a30', vet2: '#3a2a1c', cuir: '#5a3f24' }, // hardes cuir/toile brunes
-  Gobelin: { vet1: '#3a5a28', vet2: '#5a3f24', cuir: '#4a3320' }, // hardes vert-brun
-  // Vampire : robe d'aristocrate NOIRE à parements cramoisis (pas l'écarlate d'officier qui le
-  // faisait lire « noble humain ») → silhouette de comte vampire avec le col de cape dressé.
-  Vampire: { vet1: '#241018', vet2: '#6a0e18', cuir: '#1a0e12', metal: '#8a8f9e' },
-};
-
 /**
  * Profil rig d'un combattant, ou null si non-humanoïde (→ garder enemySprite).
  * PURE et déterministe (seed dérivé de l'id).
@@ -249,17 +199,18 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const n = norm(c.name);
   const seed = hashSeed(c.id);
   const species = c.species ?? detectSpecies(n);
-  const sex: 'M' | 'F' = SPECIES_SEX[species] ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
+  const cfg = bipedConfig(species); // config d'espèce (career/monster/sex/parts/colors), dérivée du registre
+  const sex: 'M' | 'F' = cfg?.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
-  const autoMon = SPECIES_AUTO_MONSTER[species];
-  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: SPECIES_PARTS[species], colors: SPECIES_COLORS[species] };
+  const autoMon = cfg?.monster;
+  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: cfg?.parts, colors: cfg?.colors };
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
   // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
   const isHumanMutant = isMutant || (hasMonster && species === 'Humain');
-  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (SPECIES_CAREER[species] ?? detectCareer(n)));
+  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (cfg?.career ?? detectCareer(n)));
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -285,11 +236,12 @@ export function entityRigProfile(
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
   const species = detectSpecies(n);
-  const monster = opts?.monster ?? SPECIES_AUTO_MONSTER[species]; // auto skaven/… si non précisé
+  const cfg = bipedConfig(species);
+  const monster = opts?.monster ?? cfg?.monster; // auto skaven/… si non précisé
   const appearance: Appearance = riggedAppearance(name, seed, {
-    monster, colors: opts?.colors ?? SPECIES_COLORS[species],
-    parts: opts?.parts ?? SPECIES_PARTS[species],
-    sex: opts?.sex ?? SPECIES_SEX[species], build: opts?.build,
+    monster, colors: opts?.colors ?? cfg?.colors,
+    parts: opts?.parts ?? cfg?.parts,
+    sex: opts?.sex ?? cfg?.sex, build: opts?.build,
   });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
@@ -297,7 +249,7 @@ export function entityRigProfile(
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: opts?.career ?? SPECIES_CAREER[species] ?? detectCareer(n),
+    career: opts?.career ?? cfg?.career ?? detectCareer(n),
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
     overlays: isMutant && !hasMonster ? mutationOverlays(seed) : undefined,
   };

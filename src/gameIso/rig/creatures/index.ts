@@ -4,12 +4,12 @@
  * en découlent : plus aucun tableau central à re-maintenir.
  */
 import type { QuadProps } from '../quadruped/quadSkeleton';
-import type { CreatureDef } from './types';
+import type { CreatureDef, BipedConfig } from './types';
 import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
 
 export { CREATURES };
-export type { CreatureDef, CreatureBodyPlan } from './types';
+export type { CreatureDef, CreatureBodyPlan, BipedConfig } from './types';
 
 /** Définition dont la CLÉ (nom) ou un ALIAS matche le nom donné (limite de mot). PUR. */
 function matchIn(defs: CreatureDef[], name: string): CreatureDef | undefined {
@@ -24,6 +24,12 @@ function matchIn(defs: CreatureDef[], name: string): CreatureDef | undefined {
 
 const QUAD = CREATURES.filter((c) => c.plan === 'quadruped');
 const WING = CREATURES.filter((c) => c.plan === 'winged');
+const BIPED = CREATURES.filter((c) => c.plan === 'biped');
+
+/** Config d'espèce bipède (career/monster/sex/parts/colors) par NOM d'espèce — dérivée des
+ *  fichiers defs. Remplace les tables SPECIES_* d'enemyProfile. */
+const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map((c) => [c.name, c]));
+export function bipedConfig(species: string): BipedConfig | undefined { return BIPED_BY_NAME[species]?.biped; }
 
 /** Tables de props de rendu par espèce — dérivées des fichiers defs. */
 export const QUAD_SPECIES: Record<string, QuadProps> = Object.fromEntries(QUAD.map((c) => [c.name, c.quad!]));
