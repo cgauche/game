@@ -5,7 +5,7 @@
  */
 import { create } from 'zustand';
 import { Combatant, ItemInstance, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
-import { makeRNG, RNG } from '../engine/dice';
+import { battleRng, seedBattleRng } from './battleRng';
 import {
   resolveMelee,
   resolveRanged,
@@ -352,7 +352,6 @@ interface GameState {
   log: (msg: string) => void;
 }
 
-let battleRng: RNG = makeRNG(Date.now() & 0xffff);
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
@@ -636,7 +635,7 @@ export const useGame = create<GameState>((set, get) => ({
   closeDialogue: () => set({ dialogue: null }),
 
   seedRng: (seed) => {
-    battleRng = makeRNG(seed);
+    seedBattleRng(seed);
   },
 
   startCombat: (encounterId, onVictory) => {
@@ -670,7 +669,7 @@ export const useGame = create<GameState>((set, get) => ({
     const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
     const all = [...heroes, ...enemies];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
-    for (const c of all) c.initiative = c.characteristics.I + battleRng.int(1, 10);
+    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
     const order = initiativeOrder(all).map((c) => c.id);
     const battle: BattleState = {
       combatants: all,
@@ -773,8 +772,8 @@ export const useGame = create<GameState>((set, get) => ({
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell) return;
     const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng, pc.focused)
-      : resolveCasting(caster, spell, battleRng, 'intermediaire', pc.focused);
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
     set({ pendingCast: { ...pc, result: res } });
   },
   castReroll: () => {
@@ -788,8 +787,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng, pc.focused)
-      : resolveCasting(caster, spell, battleRng, 'intermediaire', pc.focused);
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
     set({ pendingCast: { ...pc, result: res, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
@@ -1028,7 +1027,7 @@ export const useGame = create<GameState>((set, get) => ({
   reloadRoll: () => {
     const pr = get().pendingReload;
     if (!pr || pr.roll != null) return; // déjà lancé
-    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng());
     set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success } });
   },
   reloadReroll: () => {
@@ -1038,7 +1037,7 @@ export const useGame = create<GameState>((set, get) => ({
     const a = battle.combatants.find((c) => c.id === pr.actorId);
     if (!a || (a.fortune ?? 0) <= 0) return;
     a.fortune = (a.fortune ?? 0) - 1;
-    const res = rollTest(pr.skillValue, pr.difficulty, battleRng);
+    const res = rollTest(pr.skillValue, pr.difficulty, battleRng());
     set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success, rerolled: true }, battle: { ...battle } });
   },
   reloadBonusSL: () => {
@@ -1224,7 +1223,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
-    const def = rollMeleeDefender(defender, pd.mode, battleRng);
+    const def = rollMeleeDefender(defender, pd.mode, battleRng());
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
     set({ pendingDefense: { ...pd, def, result: res } });
   },
@@ -1237,7 +1236,7 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const def = rollMeleeDefender(defender, pd.mode, battleRng);
+    const def = rollMeleeDefender(defender, pd.mode, battleRng());
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
   },
@@ -1315,7 +1314,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !pd || pd.phase !== 'choice') return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover) return;
-    const def = rollMeleeDefender(mover, 'esquive', battleRng);
+    const def = rollMeleeDefender(mover, 'esquive', battleRng());
     const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
     set({ pendingDisengage: { ...pd, phase: 'esquive', def, result: disengageOutcome(opp.winner) } });
   },
@@ -1327,7 +1326,7 @@ export const useGame = create<GameState>((set, get) => ({
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover || (mover.fortune ?? 0) <= 0) return;
     mover.fortune = (mover.fortune ?? 0) - 1;
-    const def = rollMeleeDefender(mover, 'esquive', battleRng);
+    const def = rollMeleeDefender(mover, 'esquive', battleRng());
     const opp = resolveOpposed(def, pd.atk!);
     set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner), rerolled: true }, battle: { ...battle } });
   },
@@ -1460,14 +1459,14 @@ export const useGame = create<GameState>((set, get) => ({
     const log = [...battle.log];
     foe.advantage += 1; // l'adversaire gagne immédiatement +1 Avantage (l.101)
     foe.gainedAdvThisRound = true;
-    const res = resolveBackstabAttack(foe, mover, battleRng);
+    const res = resolveBackstabAttack(foe, mover, battleRng());
     log.push(`${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`);
     if (res.hit && res.woundsLost) {
       mover.wounds.current = Math.max(0, mover.wounds.current - res.woundsLost);
       foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
       const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
-      const ct = rollTest(calme, 'intermediaire', battleRng);
+      const ct = rollTest(calme, 'intermediaire', battleRng());
       if (!ct.success) {
         const broken = 1 + Math.max(0, -ct.sl);
         addCondition(mover, 'Brisé', broken);
@@ -1758,8 +1757,8 @@ function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLoc
   if (!adj && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const res =
     weapon.type === 'ranged'
-      ? resolveRanged(attacker, target, weapon, battleRng, chebyshev(attacker.pos!, target.pos!), location)
-      : resolveMelee(attacker, target, weapon, battleRng, { defense: bestDefenseMode(target), location });
+      ? resolveRanged(attacker, target, weapon, battleRng(), chebyshev(attacker.pos!, target.pos!), location)
+      : resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location });
   return { res, weapon };
 }
 
@@ -1789,7 +1788,7 @@ function startDisengage(get: () => GameState, set: any, mover: Combatant): void 
   // Ouvre le MENU de choix. L'adversaire de référence (Esquive opposée + cible de la Fuite) =
   // le foe Engagé à la meilleure Compétence de Corps à corps (l.89). Son jet de CC est figé d'avance.
   const foe = foes.reduce((a, b) => (combatValue(b, 'melee') > combatValue(a, 'melee') ? b : a));
-  const atk = rollDisengageAttack(foe, battleRng);
+  const atk = rollDisengageAttack(foe, battleRng());
   set({
     pendingDisengage: {
       moverId: mover.id,
@@ -1846,8 +1845,8 @@ function applyCriticalToTarget(
     log.push(`${target.name} s'effondre, hors de combat.`);
     return false;
   }
-  const loc = isCoupCritique ? critLocationRoll(battleRng) : location; // Coup Critique = localisation fraîche (l.62)
-  const crit = rollCritical(target, loc, battleRng, overkill);
+  const loc = isCoupCritique ? critLocationRoll(battleRng()) : location; // Coup Critique = localisation fraîche (l.62)
+  const crit = rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   log.push(crit.log);
   if (crit.traumas.length) {
@@ -1903,7 +1902,7 @@ function applyAttackResult(
   let assommanteLog: string | null = null;
   if (res.hit && res.location === 'tete' && weapon.qualities.some((q) => q.toLowerCase().startsWith('assommante'))) {
     const resist = effectiveChar(target, 'E') + (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-    if (opposedTest(effectiveChar(attacker, 'F'), resist, battleRng).winner === 'attacker') {
+    if (opposedTest(effectiveChar(attacker, 'F'), resist, battleRng()).winner === 'attacker') {
       addCondition(target, 'Sonné');
       assommanteLog = `${target.name} est Sonné (Assommante).`;
     }
@@ -1943,7 +1942,7 @@ function maybeOpenDefense(set: any, attacker: Combatant, target: Combatant): boo
   if (chebyshev(attacker.pos!, target.pos!) > 1) return false;
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
-  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng); // jet d'attaque figé
+  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng()); // jet d'attaque figé
   set({
     pendingDefense: {
       attackerId: attacker.id,
@@ -1999,7 +1998,7 @@ const COMBAT_PERSIST = 9999;
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
 function applyMiscast(caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
-  const m = rollMiscast(severity, battleRng, sinPoints);
+  const m = rollMiscast(severity, battleRng(), sinPoints);
   const lines = [m.log];
   for (const op of m.ops) {
     if (op.reduceToZero) {
@@ -2133,7 +2132,7 @@ function focusSpell(get: () => GameState, set: any, caster: Combatant, label: st
     get().log('Ce sort ne peut pas être focalisé.');
     return;
   }
-  const res = resolveFocus(caster, spell, battleRng);
+  const res = resolveFocus(caster, spell, battleRng());
   const prev = caster.focus?.spell === label ? caster.focus.dr : 0;
   caster.focus = { spell: label, dr: prev + res.dr };
   const logLines = [res.log];
@@ -2201,8 +2200,8 @@ function advanceTurn(get: () => GameState, set: any) {
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
       battle.log.push(`— Round ${round} —`);
-      for (const c of battle.combatants) endOfRound(c, battleRng).forEach((l) => battle.log.push(l));
-      for (const c of battle.combatants) tickDeath(c, battleRng).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => battle.log.push(l));
+      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
       return;
