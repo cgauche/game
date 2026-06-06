@@ -56,6 +56,7 @@ import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } fr
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
+import { carryOverState, persistentConditions } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
@@ -2140,18 +2141,32 @@ function focusSpell(get: () => GameState, set: any, caster: Combatant, label: st
   checkBattleOver(get, set);
 }
 
+/** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
+ *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés. */
+function finalizeBattle(get: () => GameState, set: any): void {
+  const { battle, party } = get();
+  if (!battle) return;
+  const newParty = party.map((h) => {
+    const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
+    return c ? { ...h, ...carryOverState(c) } : h;
+  });
+  set({ party: newParty });
+}
+
 function checkBattleOver(get: () => GameState, set: any): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return true;
   const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   if (!enemiesAlive) {
-    set({ battle: { ...battle, over: 'victory', log: [...battle.log, 'Victoire !'] } });
+    finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
+    set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, 'Victoire !'] } });
     if (battle.onVictory) applyEffects(get, set, battle.onVictory);
     return true;
   }
   if (!heroesAlive) {
-    set({ battle: { ...battle, over: 'defeat', log: [...battle.log, 'Défaite…'] } });
+    finalizeBattle(get, set);
+    set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, 'Défaite…'] } });
     return true;
   }
   return false;

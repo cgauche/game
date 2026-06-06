@@ -89,6 +89,39 @@ describe('Boucle de jeu (store)', () => {
     expect(enemies[0].wounds.max).toBe(12); // profil Mutant LDB
   });
 
+  it('persiste Blessures + critiques + États persistants vers le groupe en fin de combat (victoire)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers(); // purge le timer d'IA armé par startCombat — on pilote l'ordre nous-mêmes
+
+    const b = useGame.getState().battle!;
+    // Héros blessé + 1 État persistant + 1 transitoire + 1 critique ; tous les ennemis hors de combat.
+    const combatants = b.combatants.map((c) =>
+      c.kind === 'hero'
+        ? { ...c, wounds: { ...c.wounds, current: 4 }, criticalWounds: 1,
+            conditions: [{ name: 'Hémorragique', value: 2 }, { name: 'Surpris', value: 1 }] }
+        : { ...c, dead: true },
+    );
+    const heroId = combatants.find((c) => c.kind === 'hero')!.id;
+    const enemyIds = combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
+    // Ordre = ennemis puis héros ; on se place juste AVANT le héros pour que le prochain tour soit le sien
+    // (évite un franchissement de Round, donc pas de tick Hémorragique pendant le test).
+    const order = [...enemyIds, heroId];
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
+
+    useGame.getState().battleEndTurn(); // → advanceTurn → prochain acteur = héros → checkBattleOver → victoire → writeback
+
+    const st = useGame.getState();
+    expect(st.battle?.over).toBe('victory');
+    const h = st.party[0];
+    expect(h.wounds.current).toBe(4);                                              // Blessures persistées
+    expect(h.criticalWounds).toBe(1);                                             // critiques persistés
+    expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(2);    // persistant conservé
+    expect(h.conditions.some((x) => x.name === 'Surpris')).toBe(false);            // transitoire jeté
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';
