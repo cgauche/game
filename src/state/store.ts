@@ -687,6 +687,9 @@ export const useGame = create<GameState>((set, get) => ({
         roundsAtZero: 0, // l'horloge de mort lente repart à neuf
         wounds: { ...h.wounds },
       } as Combatant;
+      // Re-dérive les armes ACTIVES depuis les items persistés : une arme usée/détruite au combat
+      // précédent (damageTaken/destroyed sur l'ItemInstance) reste usée/détruite (LDB 62 l.177-180).
+      if (c.items?.length) recomputeLoadout(c);
       // Munition par défaut + arme à distance chargée au début du combat (le `loaded` ne sert qu'aux armes à Recharge).
       const rw = c.weapons.find((w) => w.type === 'ranged');
       c.loaded = true;

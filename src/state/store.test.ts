@@ -253,6 +253,36 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.order).toEqual(base);
   });
 
+  it('Maladresse — l’usure d’arme (Oups! 21-40) écrit sur l’ItemInstance et persiste combat→combat', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    let b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    const witem = h.items!.find((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged'))!;
+    const weapon = h.weapons.find((w) => w.name === witem.name) ?? h.weapons[0];
+    // (1) Maladresse 21-40 → 1 Dégât d'arme, écrit sur l'ItemInstance source.
+    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon, result: { roll: 25, kind: 'weaponDamageActLast', label: 'x' } } });
+    useGame.getState().fumbleConfirm();
+    const hMid = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
+    expect(hMid.items!.find((i) => i.name === witem.name && i.equipped)!.damageTaken).toBe(1);
+    // (2) Fin de combat (victoire) → writeback vers le groupe.
+    b = useGame.getState().battle!;
+    const combatants = b.combatants.map((c) => (c.kind === 'hero' ? c : { ...c, dead: true }));
+    const order = [...combatants.filter((c) => c.kind === 'enemy').map((c) => c.id), h.id];
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
+    useGame.getState().battleEndTurn();
+    expect(useGame.getState().battle?.over).toBe('victory');
+    expect(useGame.getState().party[0].items!.find((i) => i.name === witem.name && i.equipped)!.damageTaken).toBe(1);
+    // (3) Combat suivant : l'usure est ré-importée (carry-in + recomputeLoadout).
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const h2 = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
+    expect(h2.items!.find((i) => i.name === witem.name && i.equipped)!.damageTaken).toBe(1);
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';

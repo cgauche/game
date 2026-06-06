@@ -5,7 +5,7 @@
  * transitoires (Surpris/À Terre/Sonné/Aveuglé/Assourdi/Empêtré), retirés en/par le combat.
  * La récupération elle-même (temps, repos, Guérison, Chirurgie) reste hors périmètre (Jalon 5).
  */
-import { Combatant, ConditionInstance, Trauma } from './types';
+import { Combatant, ConditionInstance, Trauma, ItemInstance } from './types';
 
 /** États qui persistent après le combat (LDB 16-États : Brisé l.57, Empoisonné l.70,
  *  En flammes l.77, Exténué l.91, Hémorragique l.107, Inconscient l.116). */
@@ -19,19 +19,22 @@ export function carryOverState(c: Combatant): {
   wounds: { current: number; max: number };
   conditions: ConditionInstance[];
   criticalWounds: number;
-  roundsAtZero: number;
   dead: boolean;
   outOfRencontre: boolean;
   traumas: Trauma[];
+  items?: ItemInstance[];
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
     conditions: c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.name)).map((x) => ({ ...x })),
     criticalWounds: c.criticalWounds ?? 0,
-    roundsAtZero: c.roundsAtZero ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
     traumas: (c.traumas ?? []).map((t) => ({ ...t })),
+    // Inventaire à stats : persiste l'usure d'arme (damageTaken/destroyed) et la munition consommée
+    // (qty) entre combats (LDB 62 l.177-180). roundsAtZero N'est PAS persisté : l'horloge de mort
+    // lente repart à neuf au combat suivant (cohérent avec startCombat).
+    ...(c.items ? { items: c.items.map((i) => ({ ...i })) } : {}),
   };
 }
 

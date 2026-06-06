@@ -506,6 +506,22 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
   });
 }
 
+/** Use/détruit l'arme sur l'ItemInstance SOURCE (héros → persiste, `recomputeLoadout` re-dérive),
+ *  sinon sur le Weapon actif (ennemi/figurant, transient). Respecte Incassable (LDB 62 l.310). */
+function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void {
+  const it = (c.items ?? []).find((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged') && i.name === weapon.name);
+  if (it) {
+    if (it.qualities.some((q) => /incassable/i.test(q))) return;
+    if (destroy) it.destroyed = true;
+    else it.damageTaken = (it.damageTaken ?? 0) + 1;
+    recomputeLoadout(c); // re-dérive c.weapons depuis l'item usé (persiste via carryOverState items)
+  } else if (destroy) {
+    destroyWeapon(weapon);
+  } else {
+    damageWeapon(weapon);
+  }
+}
+
 /**
  * Applique l'effet du Tableau des Oups ! au combattant `c` (mute + journalise). LDB 14 l.14-57.
  * Le chiffre des unités du jet sert de DR pour les touches (l.44).
@@ -521,7 +537,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
       if (c.wounds.current <= 0) applyZeroWounds(c);
       break;
     case 'weaponDamageActLast':
-      damageWeapon(weapon);
+      wearActiveWeapon(c, weapon, false); // 1 Dégât d'arme, persisté sur l'ItemInstance source
       c.actLastNextRound = true;
       break;
     case 'actionPenalty':
@@ -559,7 +575,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
       const lost = woundsFromHit(weapon, c, 'brasD', effectiveWeaponDamage(weapon, sb) + units); // plancher 1
       c.wounds.current = Math.max(0, c.wounds.current - lost);
       if (c.wounds.current <= 0) applyZeroWounds(c);
-      destroyWeapon(weapon);
+      wearActiveWeapon(c, weapon, true); // arme détruite, persistée sur l'ItemInstance source
       log.push(`  ↳ Incident de Tir : ${lost} Blessure(s) au Bras principal, arme détruite.`);
       break;
     }
