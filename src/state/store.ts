@@ -206,7 +206,7 @@ export interface BattleState {
   onVictory?: Effect[];
 }
 
-interface GameState {
+export interface GameState {
   screen: Screen;
   party: Combatant[];
   scene: Scene | null;
