@@ -22,6 +22,8 @@ import {
   rederivePassiveAttack,
   hitLocation,
   reverseRoll,
+  woundsFromHit,
+  rangeBandModifier,
   AttackResult,
 } from '../engine/combat';
 import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
@@ -490,9 +492,18 @@ export function defenderFumbled(res: AttackResult): boolean {
   return !!res.defenderDetail && isFumble(res.defenderDetail.roll, res.defenderDetail.success);
 }
 
-/** Alliés (même camp) encore actifs, hors `c`. */
-function alliesOf(battle: BattleState, c: Combatant): Combatant[] {
-  return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x));
+/** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à
+ *  distance »). Tir → dans la bande de portée ; mêlée/sans portée → adjacent (Allonge ~1 case).
+ *  Sans position connue (tests), on ne filtre pas. */
+function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Combatant[] {
+  const allies = battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x));
+  if (!c.pos) return allies;
+  return allies.filter((a) => {
+    if (!a.pos) return true;
+    const d = chebyshev(c.pos!, a.pos);
+    if (weapon.type === 'ranged' && weapon.range) return rangeBandModifier(d, weapon.range) != null;
+    return d <= 1;
+  });
 }
 
 /**
@@ -530,24 +541,22 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
       break;
     }
     case 'hitAlly': {
-      const allies = alliesOf(battle, c);
+      const allies = alliesAtRange(battle, c, weapon);
       if (allies.length) {
         const ally = allies[battleRng().int(0, allies.length - 1)];
         const loc = hitLocation(reverseRoll(r.roll));
-        const dmg = effectiveWeaponDamage(weapon, sb) + units;
-        const lost = Math.max(0, dmg - (bonus(effectiveChar(ally, 'E')) + (ally.armour[loc] ?? 0)));
+        const lost = woundsFromHit(weapon, ally, loc, effectiveWeaponDamage(weapon, sb) + units); // plancher 1 (l.165)
         ally.wounds.current = Math.max(0, ally.wounds.current - lost);
         if (ally.wounds.current <= 0) applyZeroWounds(ally);
         log.push(`  ↳ Touche ${ally.name} (${loc}) : ${lost} Blessure(s).`);
       } else {
-        addCondition(c, 'Sonné');
+        addCondition(c, 'Sonné'); // « Si personne n'est à distance, vous vous frappez tout seul → Sonné » (l.45-46)
         log.push(`  ↳ Personne à portée : se frappe seul → Sonné.`);
       }
       break;
     }
     case 'misfire': {
-      const dmg = effectiveWeaponDamage(weapon, sb) + units;
-      const lost = Math.max(0, dmg - (bonus(effectiveChar(c, 'E')) + (c.armour.brasD ?? 0)));
+      const lost = woundsFromHit(weapon, c, 'brasD', effectiveWeaponDamage(weapon, sb) + units); // plancher 1
       c.wounds.current = Math.max(0, c.wounds.current - lost);
       if (c.wounds.current <= 0) applyZeroWounds(c);
       destroyWeapon(weapon);
@@ -834,12 +843,12 @@ export function advanceTurn(get: () => GameState, set: any) {
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
       battle.log.push(`— Round ${round} —`);
-      // Maladresse « agir en dernier » (Oups! 21-40) : repousse les marqués en fin d'ordre (turn=0 → sûr).
+      // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
+      // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
+      const base = battle.baseOrder ?? battle.order;
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
-      if (lastIds.length) {
-        battle.order = [...battle.order.filter((id) => !lastIds.includes(id)), ...lastIds];
-        for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
-      }
+      battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
+      for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => battle.log.push(l));
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
       set({ battle: { ...battle, turn: 0, round } });

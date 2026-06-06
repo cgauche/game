@@ -212,6 +212,9 @@ export interface PendingCast {
 export interface BattleState {
   combatants: Combatant[];
   order: string[];
+  /** Ordre d'initiative CANONIQUE (immuable) ; `order` en est dérivé chaque Round (Maladresse
+   *  « agir en dernier » / pré-emption Chance = effets d'UN Round, non permanents). */
+  baseOrder?: string[];
   turn: number;
   round: number;
   action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | null;
@@ -699,6 +702,7 @@ export const useGame = create<GameState>((set, get) => ({
     const battle: BattleState = {
       combatants: all,
       order,
+      baseOrder: order,
       turn: 0,
       round: 1,
       action: null,

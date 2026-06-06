@@ -229,6 +229,30 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingFumble?.resumeAfter).toBe(true);
   });
 
+  it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    h.actLastNextRound = true;
+    const base = [...(b.baseOrder ?? b.order)];
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 } }); // au dernier tour → prochain endTurn franchit le Round
+    useGame.getState().battleEndTurn();
+    let st = useGame.getState();
+    expect(st.battle!.order[st.battle!.order.length - 1]).toBe(h.id); // héros repoussé en dernier ce Round
+    expect(st.battle!.combatants.find((c) => c.id === h.id)!.actLastNextRound).toBeFalsy(); // flag purgé
+    // Franchir un 2e Round : l'ordre canonique est restauré (effet limité à 1 Round).
+    const b2 = st.battle!;
+    useGame.setState({ battle: { ...b2, turn: b2.order.length - 1 } });
+    useGame.getState().battleEndTurn();
+    st = useGame.getState();
+    expect(st.battle!.order).toEqual(base);
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';

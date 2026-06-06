@@ -165,6 +165,18 @@ export interface AttackOptions {
 const hasQ = (w: Weapon | undefined, q: string): boolean =>
   !!w && w.qualities.some((x) => x.toLowerCase().startsWith(q.toLowerCase()));
 
+/**
+ * Blessures perdues par une touche RÉUSSIE : `totalDamage` − (Bonus d'Endurance + PA de la
+ * localisation, ce dernier réduit de 1 par l'Atout Perforante l.316), **plancher 1** (LDB
+ * 13-Combat l.165 : une touche réussie coûte au moins 1 PB). Source unique partagée par
+ * `applyHit` et les touches de Maladresse (touche d'allié / Incident de Tir, LDB 14).
+ */
+export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number): number {
+  const tb = bonus(effectiveChar(target, 'E'));
+  const ap = Math.max(0, (target.armour[location] ?? 0) - (hasQ(weapon, 'Perforante') ? 1 : 0));
+  return Math.max(1, totalDamage - (tb + ap));
+}
+
 /** Atout Pistolet (LDB « Les armes » l.297-298 : « Vous pouvez utiliser cette arme pour attaquer
  *  en Combat rapproché »). Seule une arme à distance possédant cet Atout peut tirer en étant
  *  Engagé / au contact ; les autres armes à distance (arc, arbalète…) ne le peuvent pas. */
@@ -377,11 +389,7 @@ function applyHit(
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
   const damage = weaponDmg + Math.max(0, effDR);
-  const tb = bonus(effectiveChar(defender, 'E'));
-  // Atout Perforante : ignore le premier point d'armure (l.316 ; le distinguo
-  // métal/non-métal n'est pas modélisé — l'armure est un PA unique par localisation).
-  const ap = Math.max(0, (defender.armour[loc] ?? 0) - (hasQ(weapon, 'Perforante') ? 1 : 0));
-  const woundsLost = Math.max(1, damage - (tb + ap));
+  const woundsLost = woundsFromHit(weapon, defender, loc, damage);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
@@ -402,7 +410,7 @@ function applyHit(
     defenderDefeated: defeated,
     log:
       `${attacker.name} touche ${defender.name} (${locLabel(loc)}) : ` +
-      `${damage} dégâts − ${tb + ap} (BE+PA) = ${woundsLost} Blessures` +
+      `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
       (isCritical ? ' — CRITIQUE !' : '') +
       '.',
   };
