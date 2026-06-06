@@ -83,6 +83,20 @@ function barrel(p: QuadProps): string {
       hi = `<path d="M${-18 * bl} -14 Q${2 * bl} -21 ${20 * bl} -16 L${20 * bl} -12 Q${2 * bl} -18 ${-18 * bl} -10 Z" fill="@corpsH" opacity="0.5"/>`;
       lo = `<path d="M${-W + 4} 5 Q${-2 * bl} 12 ${12 * bl} 10 Q${20 * bl} 8 ${22 * bl} 1 L${20 * bl} -1 Q${12 * bl} 7 ${-2 * bl} 7 Q${-W + 5} 5 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
+    case 'feline': // lion (griffon) : poitrail profond avant + TAILLE creusée + haunches musclées arrière
+      path = `M${-Wb} -3 Q${-Wb - 1} -18 ${-8 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -3 Q${W - 1} 7 ${17 * bl} 11 Q${4 * bl} 7 ${-6 * bl} 9 Q${-18 * bl} 11 ${-Wb} 4 Z`;
+      hi = `<path d="M${-18 * bl} -16 Q${3 * bl} -22 ${22 * bl} -17 L${22 * bl} -13 Q${3 * bl} -19 ${-18 * bl} -12 Z" fill="@corpsH" opacity="0.55"/>`;
+      lo = `<path d="M${-Wb + 2} 3 Q${-6 * bl} 9 ${6 * bl} 8 Q${18 * bl} 6 ${22 * bl} 0 L${20 * bl} -2 Q${10 * bl} 5 ${-4 * bl} 5 Q${-Wb + 3} 2 Z" fill="@corpsO" opacity="0.8"/>`;
+      break;
+    case 'draconic': { // dragon : corps LONG, profond, ventre lourd qui descend, dos écailleux
+      const Wd = W + 3;
+      path = `M${-Wd} 2 Q${-Wd} -14 ${-12 * bl} -18 Q${6 * bl} -23 ${24 * bl} -19 Q${Wd} -15 ${Wd} 0 Q${Wd - 1} 17 ${16 * bl} 22 Q${-8 * bl} 24 ${-Wd} 13 Z`;
+      hi = `<path d="M${-22 * bl} -16 Q${2 * bl} -23 ${24 * bl} -18 L${24 * bl} -14 Q${2 * bl} -20 ${-22 * bl} -12 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${-Wd + 2} 10 Q0 23 ${22 * bl} 14 L${24 * bl} 7 Q0 18 ${-Wd + 2} 5 Z" fill="@corpsO" opacity="0.85"/>` +
+        // crête dorsale épineuse (le long du dos)
+        `<path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>`;
+      break;
+    }
     default: // equine : poitrail profond avant, dos LEVEL, croupe arrondie
       path = `M${-Wb} -2 Q${-Wb - 1} -17 ${-10 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -2 Q${W - 1} 11 ${18 * bl} 15 Q${-6 * bl} 18 ${-Wb} 9 Z`;
       hi = `<path d="M${-20 * bl} -17 Q${2 * bl} -23 ${24 * bl} -17 L${24 * bl} -13 Q${2 * bl} -19 ${-20 * bl} -13 Z" fill="@corpsH" opacity="0.6"/>`;
@@ -96,7 +110,7 @@ function barrel(p: QuadProps): string {
 // PETITE et fuyante pour sanglier (avant-lourd) et rat, svelte pour canin. Le bord avant
 // (+x, vers le tronc) reste ancré pour ne pas décrocher du corps ; seul l'arrière (-x) varie.
 function rump(p: QuadProps): string {
-  const RS: Record<string, number> = { equine: 1.0, canine: 0.82, suid: 0.66, rodent: 0.7, ursine: 1.16 };
+  const RS: Record<string, number> = { equine: 1.0, canine: 0.82, suid: 0.66, rodent: 0.7, ursine: 1.16, feline: 1.04, draconic: 1.0 };
   const rs = RS[p.build] ?? 1;
   const x = (n: number) => (n <= 0 ? n * rs : n).toFixed(1); // arrière (-x) mis à l'échelle, avant ancré
   const y = (n: number) => (n * (0.5 + 0.5 * rs)).toFixed(1); // hauteur amortie

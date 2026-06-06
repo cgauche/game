@@ -31,15 +31,19 @@ export function AnimatedWingToken({ id, name, colors, dead }: { id: string; name
       const { dx, dy } = screenDir(a, b, vd);
       if (dx !== 0 || dy !== 0) setFacing(facingView(dx, dy));
     };
+    // Boucle TOUJOURS active : les ailes battent en permanence (idle = créature vivante,
+    // pas un décor figé), plus ample pendant le déplacement (« vol »). C'est l'anim PROPRE au
+    // gabarit ailé (les bipèdes/quadrupèdes n'ont pas ça).
     const loop = () => {
       const m = modeRef.current;
       const t = performance.now();
       if (m.kind === 'walk' && t > m.until) modeRef.current = { kind: 'rest' };
       else if (m.kind === 'bite' && t - m.start > 360) modeRef.current = { kind: 'rest' };
       force((n) => n + 1);
-      rafRef.current = modeRef.current.kind === 'rest' ? 0 : requestAnimationFrame(loop);
+      rafRef.current = requestAnimationFrame(loop);
     };
     const ensureLoop = () => { if (!rafRef.current) rafRef.current = requestAnimationFrame(loop); };
+    ensureLoop();
     const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
       if (d.id !== id) return;
       const p = d.path;
@@ -59,13 +63,19 @@ export function AnimatedWingToken({ id, name, colors, dead }: { id: string; name
 
   const m = modeRef.current;
   const now = performance.now();
-  const pose: Record<string, number> = dead
+  const basePose: Record<string, number> = dead
     ? QUAD_DEATH
     : m.kind === 'walk'
       ? quadWalkPose(((now / STEP_MS) % 2) / 2)
       : m.kind === 'bite'
         ? quadBitePose(Math.min(1, (now - m.start) / 280))
         : {};
+  // Battement d'ailes : sinusoïde sur aileD/aileG (signes opposés → symétrique de face/dos).
+  // Ample et rapide en vol (déplacement), doux et lent au repos. Pas de battement si mort.
+  const flapAmp = dead ? 0 : m.kind === 'walk' ? 26 : 7;
+  const flapPeriod = m.kind === 'walk' ? 360 : 1500; // ms
+  const fl = Math.sin((now / flapPeriod) * Math.PI * 2) * flapAmp;
+  const pose = dead ? basePose : { ...basePose, aileD: -fl, aileG: fl };
   const svg = bonesToSvg(resolveWing(wingSpeciesFromName(name), facing.view, pose, colors));
   return <g transform={facing.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
 }

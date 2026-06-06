@@ -86,6 +86,11 @@ export function quadSpeciesFromName(name: string): string {
   for (const [re, sp] of NAME_TO_SPECIES) if (re.test(n)) return sp;
   return 'Loup';
 }
+/** Échelle globale de l'espèce (rat petit, ours grand) — à multiplier au token scale en jeu
+ *  pour des TAILLES RELATIVES cohérentes (un rat n'a pas la taille d'un cheval). */
+export function quadSpeciesScale(name: string): number {
+  return (QUAD_SPECIES[quadSpeciesFromName(name)] ?? QUAD_SPECIES.Cheval).sl;
+}
 
 /** SVG (string, boîte 120×150) d'un quadrupède prêt à injecter — pose mort/marche INTÉGRÉE
  *  (la mort s'aplatit sur le flanc dans la pose, PAS de bascule 78° du rendu). */
