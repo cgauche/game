@@ -12,7 +12,7 @@ describe('bodyPlanOf', () => {
       'Soldat', 'Bandit', 'Mendiant', 'Noble', 'Guerrier des clans', 'Vermine de choc', 'Rat ogre',
       // Phase B : peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, gros/démons.
       'Orc', 'Gobelin', 'Snotling', 'Gor', 'Minotaure', 'Squelette', 'Zombie', 'Goule de crypte',
-      'Troll', 'Vampire', 'Sanguinaire de Khorne',
+      'Troll', 'Vampire', 'Sanguinaire de Khorne', 'Liche', // Liche = squelette bipède (jalon 3)
     ]) {
       expect(bodyPlanOf(n)).toBe('biped');
     }
@@ -23,7 +23,7 @@ describe('bodyPlanOf', () => {
     }
   });
   it('exotiques/monstres pas encore rapatriés → monolithic', () => {
-    for (const n of ['Araignée géante', 'Serpent', 'Démonette de Slaanesh']) {
+    for (const n of ['Araignée géante', 'Serpent', 'Démonette de Slaanesh', 'Bête des marais']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });

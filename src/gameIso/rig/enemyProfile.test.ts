@@ -34,6 +34,7 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
       'Orc', 'Gobelin', 'Snotling', 'Squelette', 'Zombie', 'Goule de crypte',
       'Gor', 'Ungor', 'Minotaure', 'Chamane-Brey',
       'Troll', 'Vampire', 'Sanguinaire de Khorne',
+      'Liche', // mort-vivant humanoïde squelettique → rig bipède (jalon 3)
     ]) {
       expect(classifyEnemy(n), n).toBe('rig');
     }
@@ -41,7 +42,7 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
   it('bêtes / morts-vivants non humanoïdes / démons exotiques → créature', () => {
     for (const n of [
       'Rat géant', 'Dragon', 'Démonette de Slaanesh', 'Loup', 'Ours',
-      'Araignée géante', 'Spectre', 'Liche',
+      'Araignée géante', 'Spectre', 'Bête des marais',
     ]) {
       expect(classifyEnemy(n), n).toBe('creature');
     }

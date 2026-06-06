@@ -49,14 +49,14 @@ export interface EnemyRigProfile {
 const EXOTIC_RE = new RegExp(
   '\\b(' + [
     'squig',
-    // morts-vivants NON humanoïdes
-    'spectre', 'fantome', 'banshee', 'varghulf', 'liche', 'necarque',
+    // morts-vivants NON humanoïdes (la Liche, elle, est un bipède squelettique → defs/Liche.ts)
+    'spectre', 'fantome', 'banshee', 'varghulf', 'necarque',
     // démons / Chaos « bête »
     'demonette', 'slaanesh', 'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
-    // bêtes exotiques sans gabarit
+    // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques)
     'serpent', 'araignee', 'basilic', 'hydre', 'manticore',
-    'pieuvre', 'fimir', 'geant', 'pigeon',
+    'pieuvre', 'fimir', 'geant', 'pigeon', 'bete des marais',
     'chauve.?souris', 'sangsue', 'crapaud',
   ].join('|') + ')\\b',
 );
