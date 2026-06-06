@@ -1140,7 +1140,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!ent || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
     const [kind, idxStr] = key.split(':');
     const idx = Number(idxStr);
-    let label = '';
+    let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
     if (kind === 'loot') {
       const name = (ent.loot ?? [])[idx];
       if (!name) return;

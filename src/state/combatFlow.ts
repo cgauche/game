@@ -4,32 +4,24 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState } from './store';
-import { Combatant, ItemInstance, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
-import { battleRng, seedBattleRng } from './battleRng';
+import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { battleRng } from './battleRng';
 import {
   resolveMelee,
   resolveRanged,
-  initiativeOrder,
   defenseValue,
   combatValue,
   rollMeleeAttacker,
-  rollMeleeDefender,
   rollDisengageAttack,
-  resolveBackstabAttack,
-  finishMelee,
-  resolveMeleePassive,
   attackWeapon,
-  rederivePassiveAttack,
   hitLocation,
   reverseRoll,
   woundsFromHit,
   rangeBandModifier,
   AttackResult,
 } from '../engine/combat';
-import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
+import { engage, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
 import {
-  resolveMagicMissile,
-  resolveCasting,
   resolveFocus,
   isMagicMissile,
   isArcaneSpell,
@@ -37,42 +29,26 @@ import {
   parseConditionEffect,
   parseCharBuffs,
   buffDurationRounds,
-  rederiveCastSL,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { rollTest, TestResult, opposedTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
-import { canReroll } from '../engine/fortune';
-import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import {
-  buyCharAdvance as engineBuyCharAdvance,
-  buySkillAdvance as engineBuySkillAdvance,
-  buyTalent as engineBuyTalent,
-  changeCareer as engineChangeCareer,
-  isCareerLevelComplete,
-  inCareerChar,
-  inCareerSkill,
-  inCareerTalent,
-} from '../engine/advancement';
+import { opposedTest } from '../engine/tests';
+import { effectiveChar, bonus } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } from '../engine/items';
-import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
-import { carryOverState, persistentConditions } from '../engine/persistence';
+import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised } from '../engine/weaponDamage';
-import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
-import { Scene, Dialogue, Effect, isWalkable } from './scene';
-import { doorAt } from './buildings';
-import { spawnEnemy } from './spawn';
+import { findSpell } from '../data/index';
+import { Scene, Effect, isWalkable } from './scene';
 import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
-import { campaign } from '../scenes/campaign';
 
 
 // ---------------------------------------------------------------------------
