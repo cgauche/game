@@ -51,13 +51,13 @@ const EXOTIC_RE = new RegExp(
     'squig',
     // morts-vivants NON humanoïdes (Liche=bipède squelettique, Varghulf=ailé → defs/)
     'spectre', 'fantome', 'banshee', 'necarque',
-    // démons / Chaos « bête »
-    'demonette', 'slaanesh', 'nurgle', 'tzeentch',
+    // démons / Chaos « bête » (la Démonette, humanoïde, est un bipède → defs/Demonette.ts)
+    'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
     // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques ;
     // Manticore=ailée → defs/)
     'serpent', 'araignee', 'basilic', 'hydre',
-    'pieuvre', 'fimir', 'geant', 'pigeon', 'bete des marais',
+    'pieuvre', 'geant', 'pigeon', 'bete des marais',
     'sangsue', 'crapaud',
   ].join('|') + ')\\b',
 );
