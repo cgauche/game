@@ -196,6 +196,39 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.acted).toBe(true); // l'Action est consommée d'office
   });
 
+  it('Maladresse — fumble du DÉFENSEUR héros (défense ratée + double) ouvre la modale avec reprise IA', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    const e = b.combatants.find((c) => c.kind === 'enemy')!;
+    // Résultat d'un Test opposé où la DÉFENSE du héros est ratée sur un double (33).
+    const result = {
+      hit: false, attackerRoll: 50, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false,
+      attackerDetail: { label: 'CC', base: 40, modifier: 0, target: 40, roll: 50, success: false, sl: -1 },
+      defenderDetail: { label: 'Parade', base: 40, modifier: 0, target: 40, roll: 33, success: false, sl: 0 },
+      log: 'x',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    useGame.setState({
+      battle: { ...b },
+      pendingDefense: {
+        attackerId: e.id, defenderId: h.id, weapon: e.weapons[0], location: null,
+        atk: { roll: 50, target: 40, success: false, sl: -1, isDouble: false },
+        mode: 'parade',
+        def: { roll: 33, target: 40, success: false, sl: 0, isDouble: true },
+        result,
+      },
+    });
+    useGame.getState().defenseConfirm();
+    const st = useGame.getState();
+    expect(st.pendingFumble?.combatantId).toBe(h.id);
+    expect(st.pendingFumble?.resumeAfter).toBe(true);
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';

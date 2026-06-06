@@ -12,7 +12,7 @@ import {
   disengageOutcome, startDisengage, bestAdjacentReachable, finalizeHeroDeath, applyCriticalToTarget,
   applyAttackResult, maybeOpenDefense, doAttack, applyActiveEffect, COMBAT_PERSIST, applyMiscast, castSpell,
   applyCast, castInfoIsPrayer, focusSpell, finalizeBattle, checkBattleOver, resumeEnemyTurn, advanceTurn,
-  resolveRoundBoundary, maybeRunEnemyTurn, runEnemyAI, attackerFumbled, applyOups,
+  resolveRoundBoundary, maybeRunEnemyTurn, runEnemyAI, attackerFumbled, defenderFumbled, applyOups,
 } from './combatFlow';
 export { activeCombatant, entityPickables } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
@@ -160,6 +160,8 @@ export interface PendingFumble {
   combatantId: string;
   weapon: Weapon; // arme utilisée (pour Dégâts d'arme / Incident de Tir)
   result: OupsResolved | null; // null = pas encore lancé sur le Tableau des Oups !
+  /** Vrai si la Maladresse survient pendant une défense réactive : reprendre le tour de l'IA après Appliquer. */
+  resumeAfter?: boolean;
 }
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
@@ -1248,8 +1250,10 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, pendingFumble: pf } = get();
     if (!battle || !pf || !pf.result) return;
     const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    const resume = pf.resumeAfter;
     set({ pendingFumble: null });
     if (c) applyOups(get, set, c, pf.weapon, pf.result);
+    if (resume) resumeEnemyTurn(get, set); // Maladresse en défense réactive → l'IA reprend
   },
 
   // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
@@ -1303,6 +1307,12 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
     if (attacker && defender) applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+    // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
+    // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
+    if (defender && defender.kind === 'hero' && defenderFumbled(pd.result) && !isOutOfAction(defender)) {
+      set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null, resumeAfter: true } });
+      return;
+    }
     resumeEnemyTurn(get, set);
   },
   defenseCancel: () => {

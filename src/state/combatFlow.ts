@@ -473,12 +473,21 @@ export function applyAttackResult(
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
-  resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI → résolue instantanément
+  resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
+  // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.48-51) : sa Parade/Esquive ratée sur un double.
+  if (target.kind === 'enemy' && defenderFumbled(res) && !isOutOfAction(target) && target.weapons[0]) {
+    applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
+  }
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
 export function attackerFumbled(res: AttackResult): boolean {
   return !!res.attackerDetail && isFumble(res.attackerDetail.roll, res.attackerDetail.success);
+}
+
+/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51). */
+export function defenderFumbled(res: AttackResult): boolean {
+  return !!res.defenderDetail && isFumble(res.defenderDetail.roll, res.defenderDetail.success);
 }
 
 /** Alliés (même camp) encore actifs, hors `c`. */
@@ -809,13 +818,13 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingFateSave) return;
+  if (!b || b.over || get().pendingFateSave || get().pendingFumble) return;
   setTimeout(() => advanceTurn(get, set), 500);
 }
 
 export function advanceTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble) return;
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;
@@ -905,7 +914,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), 450);
