@@ -1,9 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
+// @ts-expect-error - generateur ESM JS (pas de types)
+import { genAll, REGISTRIES } from './scripts/gen-registry.mjs';
+
+/** Auto-génération des registres « dépose un fichier → intégré » : régénère l'index explicite
+ *  au démarrage et à chaque ajout/suppression dans un dossier `defs/` (HMR récupère ensuite). */
+function registryGen() {
+  const dirs = (REGISTRIES as { dir: string }[]).map((r) => r.dir.replace(/\\/g, '/'));
+  const touched = (f: string) => dirs.some((d) => f.replace(/\\/g, '/').includes(d));
+  return {
+    name: 'registry-gen',
+    buildStart() { genAll(); },
+    configureServer(server: { watcher: { on(e: string, cb: (f: string) => void): void } }) {
+      const on = (f: string) => { if (touched(f)) genAll(); };
+      server.watcher.on('add', on);
+      server.watcher.on('unlink', on);
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [registryGen(), react()],
   base: './',
   resolve: {
     alias: {

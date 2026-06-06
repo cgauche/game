@@ -9,54 +9,15 @@ import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
-import { matchSpeciesIn, type QuadProps } from '../quadruped/quadSkeleton';
 import { resolveQuadFromProps } from '../quadruped/composeQuad';
 import { QUAD_REST, quadWalkPose, quadBitePose, QUAD_DEATH } from '../quadruped/quadPose';
 import { bonesToSvg } from '../renderBones';
+import { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames } from '../creatures';
 
-/** Catalogue des espèces ailées (QuadProps + ailes + tête/membres adaptés). */
-export const WINGED_SPECIES: Record<string, QuadProps> = {
-  // Griffon : avant-train d'AIGLE (tête + serres + plumes dorées), arrière-train de LION
-  // (pattes + queue à toupet). Encolure mi-dressée, ailes emplumées.
-  Griffon: {
-    sl: 1.15, build: 'feline', girth: 0.92, bodyLen: 1.0, neckLen: 0.72, neckAngle: -42, legLen: 1.02,
-    head: 'aigle', tail: 'leonine', ears: 'pointues', foot: 'patte', frontFoot: 'serre', wings: 'plumes',
-    aliases: ['gryphon', 'demigriffon', 'griffe ailee'],
-    stored: { corps: '#b08c44', corpsO: '#7e6128', corpsH: '#d6b362', cheveux: '#6a4f22', cheveuxO: '#3e2d12', cuir: '#caa23a' },
-  },
-  // Pégase : cheval ailé blanc — tête/queue/crinière équines, sabots, ailes emplumées claires.
-  Pégase: {
-    sl: 1.06, build: 'equine', girth: 0.94, bodyLen: 1.05, neckLen: 1.08, neckAngle: -48, legLen: 1.18,
-    head: 'cheval', tail: 'crin', ears: 'courtes', foot: 'sabot', wings: 'plumes',
-    aliases: ['cheval aile'], // (accents retirés : le nom est normalisé avant match)
-    stored: { corps: '#e6e2d6', corpsO: '#bab5a4', corpsH: '#f6f3ea', cheveux: '#cfc7b2', cheveuxO: '#a39a82', cuir: '#3a3630' },
-  },
-  // Hippogriffe : avant-train d'aigle (tête + serres), arrière-train de CHEVAL (sabots),
-  // brun fauve, ailes emplumées.
-  Hippogriffe: { // arrière de CHEVAL : robe CHÂTAIGNE + crinière (≠ griffon doré-lion)
-    sl: 1.08, build: 'equine', girth: 0.92, bodyLen: 1.02, neckLen: 0.84, neckAngle: -44, legLen: 1.12,
-    head: 'aigle', tail: 'crin', ears: 'pointues', foot: 'sabot', frontFoot: 'serre', wings: 'plumes',
-    aliases: ['hippogryphe', 'hyppogriffe'], // « Hyppogriffe » = orthographe du bestiaire LDB
-    stored: { corps: '#6f4632', corpsO: '#48291c', corpsH: '#8c5e44', cheveux: '#33231a', cheveuxO: '#1d130c', cuir: '#caa23a' },
-  },
-  // Dragon : reptile ailé GÉANT (sl élevé) — tête à museau/cornes, queue écailleuse, serres,
-  // ailes membraneuses. Écailles vertes (recoloriable → rouge/noir via la palette).
-  Dragon: {
-    sl: 1.95, build: 'draconic', girth: 1.08, bodyLen: 1.22, neckLen: 1.0, neckAngle: -34, legLen: 1.0,
-    head: 'dragon', tail: 'reptile', ears: 'pointues', foot: 'serre', wings: 'membrane',
-    aliases: ['wyverne', 'vouivre', 'drake'],
-    stored: { corps: '#5c6e3c', corpsO: '#3a4724', corpsH: '#7c9152', cheveux: '#2c3618', cheveuxO: '#1a2010', cuir: '#caa23a' },
-  },
-};
-
-/** Nom de créature → espèce ailée (clé/alias), ou undefined si aucun ailé ne matche. */
-export function wingSpeciesMatch(name: string): string | undefined {
-  return matchSpeciesIn(WINGED_SPECIES, name);
-}
-
-export function wingedSpeciesNames(): string[] {
-  return Object.keys(WINGED_SPECIES);
-}
+// La DATA des espèces ailées (Griffon/Pégase/Hippogriffe/Dragon + alias) vit dans
+// `creatures/defs/<Nom>.ts` (plan: 'winged'). Ce module ne garde que le RENDU (resolveWing,
+// plan, svg, échelle). On re-exporte la table/matcher dérivés (consommateurs inchangés).
+export { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames };
 
 /** (espèce ailée, vue, pose, couleurs) → os résolus (réutilise le pipeline quadrupède). */
 export function resolveWing(
