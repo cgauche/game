@@ -18,7 +18,8 @@ describe('bodyPlanOf', () => {
     }
   });
   it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
-    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Wyverne', 'Demigriffon']) {
+    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Wyverne', 'Demigriffon',
+      'Manticore', 'Varghulf', 'Chauve-souris vampire']) { // jalon 3 : sortis du monolithique
       expect(bodyPlanOf(n)).toBe('winged');
     }
   });
