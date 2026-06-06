@@ -1,0 +1,59 @@
+import { describe, it, expect } from 'vitest';
+import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon } from './weaponDamage';
+import { recomputeLoadout } from './items';
+import type { Weapon, Combatant } from './types';
+
+const sword = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], ...over });
+const bow = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Arc', type: 'ranged', damage: '+9', qualities: [], range: 30, ...over });
+
+describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
+  it('réduit les Dégâts de damageTaken', () => {
+    expect(effectiveWeaponDamage(sword({ damageTaken: 2 }), 3)).toBe(5); // BF3 + (4-2)
+    expect(effectiveWeaponDamage(bow({ damageTaken: 3 }), 3)).toBe(6);   // 9-3, pas de BF
+  });
+  it('plancher +0 (BF+0) → improvisée, ne descend pas sous BF', () => {
+    expect(effectiveWeaponDamage(sword({ damageTaken: 9 }), 3)).toBe(3); // BF+0
+    expect(isImprovised(sword({ damageTaken: 4 }))).toBe(true);
+    expect(isImprovised(sword({ damageTaken: 3 }))).toBe(false);
+    expect(isImprovised(bow({ damageTaken: 9 }))).toBe(true);
+  });
+  it("préserve une arme non endommagée (mains nues +BF-2 inchangées)", () => {
+    const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: '+BF-2', qualities: [] };
+    expect(effectiveWeaponDamage(fists, 3)).toBe(1); // 3 - 2
+  });
+});
+
+describe('damageWeapon / destroyWeapon', () => {
+  it('incrémente damageTaken', () => { const w = sword(); damageWeapon(w); expect(w.damageTaken).toBe(1); });
+  it('Incassable exempte des dégâts ET de la destruction', () => {
+    const w = sword({ qualities: ['Incassable'] });
+    damageWeapon(w); expect(w.damageTaken ?? 0).toBe(0);
+    destroyWeapon(w); expect(w.destroyed).toBeFalsy();
+  });
+  it('destroyWeapon marque détruite', () => { const w = bow(); destroyWeapon(w); expect(w.destroyed).toBe(true); });
+});
+
+function hero(items: Combatant['items']): Combatant {
+  return {
+    id: 'h', name: 'T', kind: 'hero',
+    characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
+    wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
+    weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4, items,
+  } as Combatant;
+}
+
+describe("recomputeLoadout — propagation des Dégâts d'arme", () => {
+  it("propage damageTaken de l'ItemInstance vers le Weapon actif", () => {
+    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: '+BF+4', qualities: [], enc: 1, equipped: true, damageTaken: 2 }]);
+    recomputeLoadout(c);
+    const s = c.weapons.find((w) => w.name === 'Épée');
+    expect(s?.damageTaken).toBe(2);
+  });
+  it("une arme détruite n'est pas équipée (repli mains nues)", () => {
+    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: '+BF+4', qualities: [], enc: 1, equipped: true, destroyed: true }]);
+    recomputeLoadout(c);
+    expect(c.weapons.some((w) => w.name === 'Épée')).toBe(false);
+    expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true);
+  });
+});

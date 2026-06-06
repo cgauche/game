@@ -12,6 +12,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
+import { effectiveWeaponDamage } from './weaponDamage';
 
 /** Dégâts d'arme : « +BF+4 » → BF + 4, « +9 » → 9. */
 export function parseWeaponDamage(damage: string, strengthBonus: number): number {
@@ -382,7 +383,7 @@ function applyHit(
 ): AttackResult {
   const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
   const sb = bonus(effectiveChar(attacker, 'F'));
-  const weaponDmg = parseWeaponDamage(weapon.damage, sb);
+  const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
   const damage = weaponDmg + Math.max(0, effDR);
   const tb = bonus(effectiveChar(defender, 'E'));

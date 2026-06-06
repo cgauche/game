@@ -72,6 +72,10 @@ export interface Weapon {
   subType?: string;
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
+  /** Dégâts subis par l'arme (LDB 62 l.178) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
+  damageTaken?: number;
+  /** Arme détruite (Incident de Tir, LDB 14) : inutilisable. */
+  destroyed?: boolean;
 }
 
 /** Points d'Armure par localisation. */
@@ -129,6 +133,10 @@ export interface ItemInstance {
   subType?: string;
   /** Quantité (paquet de munitions, ex. « (12) » → 12). */
   qty?: number;
+  /** Dégâts subis par l'arme (LDB 62 l.178), persistés sur le trapping ; propagé au Weapon actif. */
+  damageTaken?: number;
+  /** Arme détruite (Incident de Tir) : non équipable. */
+  destroyed?: boolean;
 }
 
 export interface Combatant {
