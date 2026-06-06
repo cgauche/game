@@ -11,7 +11,8 @@ import type { EquipCtx } from './parts/equipment';
 import { classifyEnemy } from './enemyProfile';
 import { bipedPlan } from './bipedPlan';
 import { quadrupedPlan } from './quadruped/composeQuad';
-import { wingedPlan } from './winged/composeWing';
+import { quadSpeciesMatch } from './quadruped/quadSkeleton';
+import { wingedPlan, wingSpeciesMatch } from './winged/composeWing';
 
 export type BodyPlanId = 'biped' | 'quadruped' | 'winged';
 
@@ -44,16 +45,15 @@ export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];
 }
 
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-// Quadrupèdes couverts par le gabarit (testé AVANT le classifieur humanoïde).
-const QUAD_RE = /\b(cheval|chevaux|destrier|poney|jument|etalon|loup|louve|chien|matin|dogue|mastiff|charognard|sanglier|laie|marcassin|ours|ourse|rat geant|grand rat|felin|panthere|lion|lionne|tigre)\b/;
-// Ailés (testés AVANT quad/bipède : un griffon n'est ni un quadrupède nu ni un humanoïde).
-const WINGED_RE = /\b(griffon|gryphon|demigriffon|hippogriffe|hippogryphe|pegase|pégase|cheval aile|cheval ailé|dragon|wyverne|vouivre|drake)\b/;
-
-/** Plan corporel cosmétique d'un nom de créature. 'monolithic' = pas (encore) de plan dédié. */
+/**
+ * Plan corporel cosmétique d'un nom de créature. 'monolithic' = pas (encore) de plan dédié.
+ * Le routage par NOM est ENTIÈREMENT dérivé des tables d'espèces (WINGED_SPECIES / QUAD_SPECIES
+ * + leurs `aliases`) : ajouter une créature ailée/quadrupède = UNE entrée dans sa table, et elle
+ * est routée ici sans toucher à ce fichier. L'ordre ailé→quad→bipède préserve les priorités
+ * (un griffon n'est ni un quadrupède nu ni un humanoïde).
+ */
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
-  const n = norm(name);
-  if (WINGED_RE.test(n)) return 'winged';
-  if (QUAD_RE.test(n)) return 'quadruped';
+  if (wingSpeciesMatch(name)) return 'winged';
+  if (quadSpeciesMatch(name)) return 'quadruped';
   return classifyEnemy(name) === 'rig' ? 'biped' : 'monolithic';
 }

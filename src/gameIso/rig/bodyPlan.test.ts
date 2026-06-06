@@ -3,7 +3,7 @@ import { bodyPlanOf, planById } from './bodyPlan';
 
 describe('bodyPlanOf', () => {
   it('quadrupèdes → quadruped', () => {
-    for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Charognard', 'Chien']) {
+    for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien']) {
       expect(bodyPlanOf(n)).toBe('quadruped');
     }
   });

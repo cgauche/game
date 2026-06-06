@@ -9,7 +9,8 @@ import { bonesToSvg } from '../renderBones';
 import { worldTransformsG, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap, type Palette } from '../palette';
 import {
-  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView, type QuadBoneId, type QuadProps,
+  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView, quadSpeciesMatch,
+  type QuadBoneId, type QuadProps,
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
 import { QUAD_REST, quadWalkPose, quadBitePose, QUAD_DEATH } from './quadPose';
@@ -69,22 +70,10 @@ export const quadrupedPlan: BodyPlan = {
   hasView: () => true,
 };
 
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-// Nom de bestiaire → espèce quadrupède (le 1er match gagne ; ordre = priorité).
-const NAME_TO_SPECIES: [RegExp, string][] = [
-  [/cheval|chevaux|destrier|poney|jument|etalon|monture|palefroi/, 'Cheval'],
-  [/sanglier|laie|marcassin|truie|cochon|porc/, 'Sanglier'],
-  [/\brat\b|rat geant|rongeur/, 'Rat géant'],
-  [/ours|ourse|ursin/, 'Ours'],
-  [/charognard/, 'Charognard'],
-  [/chien|matin|dogue|mastiff|limier|molosse/, 'Chien'],
-  [/loup|louve|warg|patrouille/, 'Loup'],
-];
-/** Espèce quadrupède déduite d'un nom de créature (défaut Loup). */
+/** Espèce quadrupède déduite d'un nom (clé/alias de QUAD_SPECIES ; défaut Loup). Le routage
+ *  vient de la table d'espèces (aliases) — plus aucune regex de noms à re-maintenir ici. */
 export function quadSpeciesFromName(name: string): string {
-  const n = norm(name);
-  for (const [re, sp] of NAME_TO_SPECIES) if (re.test(n)) return sp;
-  return 'Loup';
+  return quadSpeciesMatch(name) ?? 'Loup';
 }
 /** Échelle globale de l'espèce (rat petit, ours grand) — à multiplier au token scale en jeu
  *  pour des TAILLES RELATIVES cohérentes (un rat n'a pas la taille d'un cheval). */

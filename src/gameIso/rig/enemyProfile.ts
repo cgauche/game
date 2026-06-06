@@ -13,6 +13,8 @@ import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
+import { quadSpeciesMatch } from './quadruped/quadSkeleton';
+import { wingSpeciesMatch } from './winged/composeWing';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
@@ -41,20 +43,20 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 // Bornes de mot (\b…\b) pour éviter les faux positifs de sous-chaîne (ex. « orc »
 // dans « sorcier », « gor » dans « rigori- »). Couvre les 57 entrées du bestiaire
 // non-humanoïdes + synonymes courants.
-const CREATURE_RE = new RegExp(
+// Exotiques restant en sprite MONOLITHIQUE (pas encore de gabarit rigué dédié). Les bêtes/
+// ailés couverts par un gabarit (loup, dragon, griffon, hippogriffe, cheval…) ne sont PLUS
+// listés ici : ils sont reconnus via quadSpeciesMatch/wingSpeciesMatch (source unique = tables).
+const EXOTIC_RE = new RegExp(
   '\\b(' + [
-    // (Phase B : skavens, peaux-vertes, hommes-bêtes, morts-vivants humanoïdes, troll, ogre,
-    //  vampire, sanguinaire de Khorne → rig bipède → retirés d'ici → classifyEnemy='rig')
     'squig',
-    // morts-vivants NON humanoïdes / non rapatriés
+    // morts-vivants NON humanoïdes
     'spectre', 'fantome', 'banshee', 'varghulf', 'liche', 'necarque',
-    // démons / Chaos « bête » non rapatriés
+    // démons / Chaos « bête »
     'demonette', 'slaanesh', 'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
-    // bêtes
-    'loup', 'ours', 'chien', 'charognard', 'sanglier', 'serpent', 'araignee', 'basilic', 'dragon',
-    'griffon', 'hyppogriffe', 'hippogriffe', 'demigriffon', 'hydre', 'manticore', 'pegase',
-    'pieuvre', 'vouivre', 'fimir', 'geant', 'pigeon', 'cheval',
+    // bêtes exotiques sans gabarit
+    'serpent', 'araignee', 'basilic', 'hydre', 'manticore',
+    'pieuvre', 'fimir', 'geant', 'pigeon',
     'chauve.?souris', 'sangsue', 'crapaud',
   ].join('|') + ')\\b',
 );
@@ -79,9 +81,11 @@ const ROLE_CAREERS: [RegExp, string][] = [
   [/mutant/, 'Mendiant'],
 ];
 
-/** Classifieur cosmétique : 'rig' (humanoïde peau-humaine) ou 'creature' (sprite dédié). */
+/** Classifieur cosmétique : 'rig' (humanoïde → rig bipède) ou 'creature' (non-humanoïde →
+ *  gabarit quad/ailé ou sprite monolithique). Dérivé des tables d'espèces + liste exotique. */
 export function classifyEnemy(name: string): 'rig' | 'creature' {
-  return CREATURE_RE.test(norm(name)) ? 'creature' : 'rig';
+  if (quadSpeciesMatch(name) || wingSpeciesMatch(name)) return 'creature';
+  return EXOTIC_RE.test(norm(name)) ? 'creature' : 'rig';
 }
 
 /** Espèce de rig détectée du nom (sinon Humain). L'ORDRE compte : les pièges de sous-chaîne

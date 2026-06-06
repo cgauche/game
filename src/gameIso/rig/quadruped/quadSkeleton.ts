@@ -1,5 +1,5 @@
 /**
- * Squelette du gabarit QUADRUPÈDE (cheval/loup/sanglier/chien/rat/ours/charognard).
+ * Squelette du gabarit QUADRUPÈDE (cheval/loup/sanglier/chien/rat géant/ours).
  * Profil tourné à DROITE, boîte 120×150, pieds au sol (y≈150). Le miroir gauche et le
  * facing sont gérés au rendu. Réutilise la FK générique (kinematics.worldTransformsG).
  */
@@ -40,46 +40,68 @@ export interface QuadProps {
   foot: QuadFoot; // pied ARRIÈRE (et avant par défaut)
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
+  /** Synonymes de nom (en plus de la clé) — SOURCE UNIQUE du routage : `bodyPlanOf` ET
+   *  `…SpeciesFromName` dérivent de cette liste, plus aucune regex à re-maintenir ailleurs.
+   *  Ajouter une espèce = UNE entrée ici (clé + alias) suffit à la router dans tout le jeu. */
+  aliases?: string[];
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
+}
+
+const normName = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+/** Espèce d'une table dont la CLÉ ou un ALIAS matche le nom (limite de mot). PUR, dérivé. */
+export function matchSpeciesIn(table: Record<string, QuadProps>, name: string): string | undefined {
+  const n = normName(name);
+  for (const [key, props] of Object.entries(table)) {
+    for (const pat of [normName(key), ...(props.aliases ?? [])]) {
+      if (new RegExp(`\\b${pat}\\b`).test(n)) return key;
+    }
+  }
+  return undefined;
 }
 
 export const QUAD_SPECIES: Record<string, QuadProps> = {
   Cheval: { // haut sur pattes, encolure longue redressée, dos level
     sl: 1.0, build: 'equine', girth: 0.96, bodyLen: 1.05, neckLen: 1.12, neckAngle: -50, legLen: 1.2,
     head: 'cheval', tail: 'crin', ears: 'courtes', foot: 'sabot',
+    aliases: ['chevaux', 'destrier', 'poney', 'jument', 'etalon', 'monture', 'palefroi'],
     stored: { corps: '#7a5436', corpsO: '#523521', corpsH: '#9a6f46', cheveux: '#2e2014', cheveuxO: '#1c130b', cuir: '#2b2620' },
   },
   Loup: { // svelte, encolure basse vers l'avant, ventre rentré
     sl: 0.82, build: 'canine', girth: 0.8, bodyLen: 0.96, neckLen: 0.62, neckAngle: -18, legLen: 0.92,
     head: 'loup', tail: 'touffe', ears: 'pointues', foot: 'patte',
+    aliases: ['louve', 'warg', 'patrouille'],
     stored: { corps: '#6f6a62', corpsO: '#47433d', corpsH: '#8d877d', cheveux: '#3a352f', cheveuxO: '#26221d', cuir: '#1e1c19' },
   },
   Chien: { // canin compact, plus petit
     sl: 0.72, build: 'canine', girth: 0.86, bodyLen: 0.84, neckLen: 0.5, neckAngle: -14, legLen: 0.72,
     head: 'loup', tail: 'touffe', ears: 'pointues', foot: 'patte',
+    aliases: ['matin', 'dogue', 'mastiff', 'limier', 'molosse'],
     stored: { corps: '#7d6047', corpsO: '#523c29', corpsH: '#9a7a58', cheveux: '#3a2a1a', cheveuxO: '#241a10', cuir: '#1e1813' },
-  },
-  Charognard: { // canin décharné mais bien quadrupède (bas, pas un humanoïde debout)
-    sl: 0.8, build: 'canine', girth: 0.84, bodyLen: 1.06, neckLen: 0.6, neckAngle: -6, legLen: 0.8,
-    head: 'loup', tail: 'fouet', ears: 'pointues', foot: 'patte',
-    stored: { corps: '#5a544a', corpsO: '#36322b', corpsH: '#776f62', cheveux: '#2a261f', cheveuxO: '#1a1712', cuir: '#16130f' },
   },
   Sanglier: { // bas, trapu, BOSSE d'épaule haute + dos qui descend vers l'arrière-train fin
     sl: 0.82, build: 'suid', girth: 1.32, bodyLen: 0.98, neckLen: 0.3, neckAngle: -4, legLen: 0.56,
     head: 'sanglier', tail: 'fouet', ears: 'pointues', foot: 'patte',
+    aliases: ['laie', 'marcassin', 'truie', 'cochon', 'porc'],
     stored: { corps: '#4f463c', corpsO: '#312b24', corpsH: '#6b5f50', cheveux: '#231d16', cheveuxO: '#15110c', cuir: '#1a1712' },
   },
   'Rat géant': { // long, ras du sol, DOS ARQUÉ (voûté), longue queue nue
     sl: 0.62, build: 'rodent', girth: 0.84, bodyLen: 1.22, neckLen: 0.38, neckAngle: -8, legLen: 0.5,
     head: 'rat', tail: 'nue', ears: 'rondes', foot: 'patte',
+    aliases: ['grand rat', 'rongeur'], // PAS « rat » seul (réservé à « rat ogre/homme-rat » = skaven)
     stored: { corps: '#6a5f52', corpsO: '#423a31', corpsH: '#867a69', cheveux: '#4a4038', cheveuxO: '#2c2620', cuir: '#d8b0a0' },
   },
   Ours: { // MASSIF, épaules hautes, corps profond, pattes courtes épaisses
     sl: 1.18, build: 'ursine', girth: 1.42, bodyLen: 0.98, neckLen: 0.42, neckAngle: -16, legLen: 0.8,
     head: 'ours', tail: 'courte', ears: 'rondes', foot: 'patte',
+    aliases: ['ourse', 'ursin'],
     stored: { corps: '#4a3a2c', corpsO: '#2c2118', corpsH: '#66513c', cheveux: '#2c2118', cheveuxO: '#1a130d', cuir: '#15100a' },
   },
 };
+
+/** Nom de créature → espèce quadrupède (clé/alias), ou undefined si aucun quad ne matche. */
+export function quadSpeciesMatch(name: string): string | undefined {
+  return matchSpeciesIn(QUAD_SPECIES, name);
+}
 
 export function quadSpeciesNames(): string[] {
   return Object.keys(QUAD_SPECIES);
