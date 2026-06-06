@@ -645,14 +645,19 @@ export const useGame = create<GameState>((set, get) => ({
     const enc = scene.encounters.find((e) => e.id === encounterId);
     if (!enc) return;
     // Placer les héros près de leur position de groupe, les ennemis selon l'encounter.
-    const heroes = party.map((h, i) => {
+    // Carry-in : on n'instancie pas les morts/éjectés ; on ré-importe les États PERSISTANTS du
+    // groupe (Hémorragique, Empoisonné…) et on réinitialise tout l'état de combat transitoire.
+    const livingParty = party.filter((h) => !h.dead && !h.outOfRencontre);
+    const heroes = livingParty.map((h, i) => {
       const c = {
         ...JSON.parse(JSON.stringify(h)),
         pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
         advantage: 0,
-        conditions: [],
+        conditions: persistentConditions(h), // États persistants seuls (le transitoire est jeté)
+        activeEffects: [],                    // buffs en Rounds : ne survivent pas entre combats
         engagedWith: [], // pas d'Engagement hérité d'un combat précédent
         meleeThisRound: [],
+        roundsAtZero: 0, // l'horloge de mort lente repart à neuf
         wounds: { ...h.wounds },
       } as Combatant;
       // Munition par défaut + arme à distance chargée au début du combat (le `loaded` ne sert qu'aux armes à Recharge).

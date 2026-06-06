@@ -122,6 +122,30 @@ describe('Boucle de jeu (store)', () => {
     expect(h.conditions.some((x) => x.name === 'Surpris')).toBe(false);            // transitoire jeté
   });
 
+  it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
+    useGame.setState({ party: [{ ...hero, conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'À Terre', value: 1 }] }] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const h = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
+    expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(1); // persistant ré-importé
+    expect(h.conditions.some((x) => x.name === 'À Terre')).toBe(false);          // transitoire ignoré
+  });
+
+  it("n'instancie pas un héros mort/éjecté au combat suivant", () => {
+    const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const b = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'B', rng: makeRNG(2) });
+    useGame.setState({ party: [a, { ...b, dead: true }] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const heroes = useGame.getState().battle!.combatants.filter((c) => c.kind === 'hero');
+    expect(heroes.length).toBe(1);
+    expect(heroes[0].name).toBe('A');
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';
