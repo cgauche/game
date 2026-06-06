@@ -34,10 +34,13 @@ import {
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { AnimatedQuadToken } from './AnimatedQuadToken';
+import { AnimatedWingToken } from './AnimatedWingToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { bodyPlanOf } from './rig/bodyPlan';
-import { quadrupedSvg } from './rig/quadruped/composeQuad';
+import { bipedSpeciesScale } from './rig/creatures';
+import { quadrupedSvg, quadSpeciesScale } from './rig/quadruped/composeQuad';
+import { wingedSvg, wingSpeciesScale } from './rig/winged/composeWing';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -397,13 +400,19 @@ export function IsoStage() {
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       const prof = isHero ? null : enemyRigProfile(c);
       if (isHero || prof) {
-        // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims).
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62, ring, isOutOfAction(c), wp.walking);
+        // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims). L'échelle
+        // intègre la taille d'espèce bipède (Géant = colosse via bipedSpeciesScale ; 1 sinon).
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62 * bipedSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
       } else if (bodyPlanOf(c.name) === 'quadruped') {
         // Quadrupède → gabarit rigué ANIMÉ (démarche squelettique + morsure + 8-dir + mort
         // sur le flanc + recolor). Facing/anim gérés dans AnimatedQuadToken via le bus.
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedQuadToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62, ring, isOutOfAction(c), wp.walking);
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedQuadToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * quadSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
+        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
+      } else if (bodyPlanOf(c.name) === 'winged') {
+        // Ailé (griffon/pégase/hippogriffe/dragon) → gabarit ailé rigué. Le scale du token
+        // intègre la taille d'espèce (dragon = ailé géant via wingSpeciesScale).
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedWingToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * wingSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
       } else {
         // Créature exotique → sprite monolithique (legacy).
@@ -425,14 +434,19 @@ export function IsoStage() {
       if (prof) {
         objs.push({
           d: depth(ent.pos.x, ent.pos.y, dims) + 0.1,
-          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} />, 0.58),
+          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} />, 0.58 * bipedSpeciesScale(ent.ref ?? ent.label ?? '')),
         });
       } else {
-        // Entité quadrupède (loup/cheval/… posé dans une scène) → gabarit rigué + recolor.
+        // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → gabarit
+        // rigué + recolor. L'ailé intègre la taille d'espèce (dragon géant) dans son scale.
         const refName = ent.ref ?? ent.label ?? '';
-        const isQuad = bodyPlanOf(refName) === 'quadruped';
-        const inner = isQuad ? quadrupedSvg(refName, 'front', { colors: ent.appearance?.colors }) : entitySprite(ent);
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, 0.55, undefined, false, ent.anim, undefined, undefined, isQuad) });
+        const plan = bodyPlanOf(refName);
+        const isQuad = plan === 'quadruped';
+        const isWing = plan === 'winged';
+        const inner = isWing ? wingedSvg(refName, 'front', { colors: ent.appearance?.colors })
+          : isQuad ? quadrupedSvg(refName, 'front', { colors: ent.appearance?.colors }) : entitySprite(ent);
+        const sc = isWing ? 0.55 * wingSpeciesScale(refName) : isQuad ? 0.55 * quadSpeciesScale(refName) : 0.55;
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, undefined, isQuad || isWing) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
