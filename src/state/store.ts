@@ -4,27 +4,21 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, ItemInstance, ActiveEffect, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng, seedBattleRng } from './battleRng';
 import {
-  activeCombatant, occupied, findFreeTile, removeEntity, entityPickables, checkTriggers, inRect, condMet,
+  activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
-  disengageOutcome, startDisengage, bestAdjacentReachable, finalizeHeroDeath, applyCriticalToTarget,
-  applyAttackResult, maybeOpenDefense, doAttack, applyActiveEffect, COMBAT_PERSIST, applyMiscast, castSpell,
-  applyCast, castInfoIsPrayer, focusSpell, finalizeBattle, checkBattleOver, resumeEnemyTurn, advanceTurn,
-  resolveRoundBoundary, maybeRunEnemyTurn, runEnemyAI, attackerFumbled, defenderFumbled, applyOups,
+  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
+  focusSpell, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
+  attackerFumbled, defenderFumbled, applyOups,
 } from './combatFlow';
 export { activeCombatant, entityPickables } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
-  resolveMelee,
-  resolveRanged,
   initiativeOrder,
-  defenseValue,
   combatValue,
-  rollMeleeAttacker,
   rollMeleeDefender,
-  rollDisengageAttack,
   resolveBackstabAttack,
   finishMelee,
   resolveMeleePassive,
@@ -32,23 +26,9 @@ import {
   rederivePassiveAttack,
   AttackResult,
 } from '../engine/combat';
-import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
-import {
-  resolveMagicMissile,
-  resolveCasting,
-  resolveFocus,
-  isMagicMissile,
-  isArcaneSpell,
-  parseHeal,
-  parseConditionEffect,
-  parseCharBuffs,
-  buffDurationRounds,
-  rederiveCastSL,
-  type CastResult,
-  type MissileResult,
-} from '../engine/magic';
-import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { rollTest, TestResult, opposedTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
+import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, type CastResult, type MissileResult } from '../engine/magic';
+import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds } from '../engine/characteristics';
 import {
@@ -61,19 +41,16 @@ import {
   inCareerSkill,
   inCareerTalent,
 } from '../engine/advancement';
-import { partyBest } from '../engine/skills';
-import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
-import { carryOverState, persistentConditions } from '../engine/persistence';
-import { rollCritical, critLocationRoll } from '../engine/critical';
+import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
+import { persistentConditions } from '../engine/persistence';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, chebyshev, Pt } from './path';
-import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
