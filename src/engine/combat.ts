@@ -127,6 +127,7 @@ export function attackModifiers(
   if (adv) out.push({ label: 'Avantage', value: adv });
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
+  if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
   if (opts.kind === 'ranged') {
     if (opts.distanceTiles != null && weapon.range) {
       const m = rangeBandModifier(opts.distanceTiles, weapon.range);

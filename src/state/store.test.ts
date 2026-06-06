@@ -146,6 +146,56 @@ describe('Boucle de jeu (store)', () => {
     expect(heroes[0].name).toBe('A');
   });
 
+  it('Maladresse — fumbleConfirm applique l’auto-blessure (Oups! 01-20)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    h.wounds.current = 10;
+    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon: h.weapons[0], result: { roll: 11, kind: 'selfWound', label: 'x' } } });
+    useGame.getState().fumbleConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
+    expect(after.wounds.current).toBe(9); // -1, ignore BE+PA
+    expect(useGame.getState().pendingFumble).toBeNull();
+  });
+
+  it('Maladresse — trauma (Oups! 81-90) pose une Déchirure de jambe + 1 Blessure critique', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon: h.weapons[0], result: { roll: 85, kind: 'trauma', label: 'x' } } });
+    useGame.getState().fumbleConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
+    expect(after.criticalWounds).toBe(1);
+    expect(after.traumas?.[0]?.movementHalved).toBe(true); // jambe → Mouvement ÷2
+  });
+
+  it('Maladresse — perte d’Action (Oups! 71-80) consommée au tour suivant', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    h.loseNextAction = true;
+    const enemyIds = b.combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
+    const order = [...enemyIds, h.id]; // héros en dernier
+    useGame.setState({ battle: { ...b, order, turn: order.length - 2 } }); // tour juste avant le héros
+    useGame.getState().battleEndTurn(); // → advanceTurn → héros : Action perdue consommée
+    const st = useGame.getState();
+    const after = st.battle!.combatants.find((c) => c.id === h.id)!;
+    expect(after.loseNextAction).toBeFalsy();
+    expect(st.battle!.acted).toBe(true); // l'Action est consommée d'office
+  });
+
   it('marcher sur une tuile-porte (reveal door) déclenche une transition', () => {
     const interior = emptyScene(5, 5);
     interior.id = 'interieur-test';

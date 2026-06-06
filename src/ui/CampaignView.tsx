@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { IsoStage } from '../gameIso/IsoStage';
+import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
@@ -12,6 +13,7 @@ import { RoundStartModal } from './RoundStartModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
 import { CastModal } from './CastModal';
+import { FumbleModal } from './FumbleModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { Combatant } from '../engine/types';
@@ -26,6 +28,9 @@ export function CampaignView() {
   const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
   const setScreen = useGame((s) => s.setScreen);
+  const zoom = useGame((s) => s.zoom);
+  const setZoom = useGame((s) => s.setZoom);
+  const rotateCam = useGame((s) => s.rotateCam);
   const [sheetId, setSheetId] = useState<string | null>(null);
 
   return (
@@ -69,6 +74,14 @@ export function CampaignView() {
 
       <main className="stage">
         <IsoStage />
+        <ViewControls
+          zoom={zoom}
+          onZoomIn={() => setZoom(zoom + 0.3)}
+          onZoomOut={() => setZoom(zoom - 0.3)}
+          onZoomReset={() => setZoom(1)}
+          onRotateLeft={() => rotateCam(-1)}
+          onRotateRight={() => rotateCam(1)}
+        />
         {mode === 'exploration' && !dialogue && (
           <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
         )}
@@ -83,6 +96,7 @@ export function CampaignView() {
       <DefenseModal />
       <DisengageModal />
       <CastModal />
+      <FumbleModal />
       <RoundStartModal />
       <FateSaveModal />
       <DocumentModal />

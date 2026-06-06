@@ -12,9 +12,10 @@ import {
   disengageOutcome, startDisengage, bestAdjacentReachable, finalizeHeroDeath, applyCriticalToTarget,
   applyAttackResult, maybeOpenDefense, doAttack, applyActiveEffect, COMBAT_PERSIST, applyMiscast, castSpell,
   applyCast, castInfoIsPrayer, focusSpell, finalizeBattle, checkBattleOver, resumeEnemyTurn, advanceTurn,
-  resolveRoundBoundary, maybeRunEnemyTurn, runEnemyAI,
+  resolveRoundBoundary, maybeRunEnemyTurn, runEnemyAI, attackerFumbled, applyOups,
 } from './combatFlow';
 export { activeCombatant, entityPickables } from './combatFlow';
+import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   resolveMelee,
   resolveRanged,
@@ -153,6 +154,13 @@ export interface PendingAttack {
   rerolled?: boolean;
   fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
 }
+/** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
+ *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
+export interface PendingFumble {
+  combatantId: string;
+  weapon: Weapon; // arme utilisée (pour Dégâts d'arme / Incident de Tir)
+  result: OupsResolved | null; // null = pas encore lancé sur le Tableau des Oups !
+}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
@@ -238,6 +246,8 @@ export interface GameState {
   pendingDefense: PendingDefense | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
+  /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
+  pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
   pendingRoundStart: { round: number } | null;
   /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
@@ -335,6 +345,9 @@ export interface GameState {
   attackBonusSL: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
+  /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
+  fumbleRoll: () => void;
+  fumbleConfirm: () => void;
   /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
    *  dépenser une Chance, appliquer ; « Subir » = défense passive. */
   defenseSetMode: (mode: 'parade' | 'esquive') => void;
@@ -385,6 +398,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDisengage: null,
   pendingCast: null,
+  pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
   document: null,
@@ -695,7 +709,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingFumble: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1211,12 +1225,31 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     set({ pendingAttack: null });
-    if (attacker && target) applyAttackResult(get, set, attacker, target, firedWeapon(attacker, target), pa.result);
+    if (attacker && target) {
+      const weapon = firedWeapon(attacker, target);
+      applyAttackResult(get, set, attacker, target, weapon, pa.result);
+      // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53).
+      if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
+        set({ pendingFumble: { combatantId: attacker.id, weapon, result: null } });
+      }
+    }
   },
   attackCancel: () => {
     const pa = get().pendingAttack;
     if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
     set({ pendingAttack: null });
+  },
+  fumbleRoll: () => {
+    const pf = get().pendingFumble;
+    if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
+    set({ pendingFumble: { ...pf, result: rollOups(pf.weapon, battleRng()) } });
+  },
+  fumbleConfirm: () => {
+    const { battle, pendingFumble: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    set({ pendingFumble: null });
+    if (c) applyOups(get, set, c, pf.weapon, pf.result);
   },
 
   // ── Défense réactive (héros attaqué par l'IA en mêlée) ──

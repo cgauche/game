@@ -177,6 +177,15 @@ export interface Combatant {
   criticalWounds?: number;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
+  /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
+  nextActionPenalty?: number;
+  /** Perd sa prochaine Action (Oups! 71-80). */
+  loseNextAction?: boolean;
+  /** Perd son prochain Mouvement (Oups! 61-70). */
+  loseNextMovement?: boolean;
+  /** Agira en dernier au prochain Round (Oups! 21-40). */
+  actLastNextRound?: boolean;
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */

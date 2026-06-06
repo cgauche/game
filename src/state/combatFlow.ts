@@ -20,6 +20,8 @@ import {
   resolveMeleePassive,
   attackWeapon,
   rederivePassiveAttack,
+  hitLocation,
+  reverseRoll,
   AttackResult,
 } from '../engine/combat';
 import { engage, disengageFrom, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
@@ -40,7 +42,7 @@ import {
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { rollTest, TestResult, opposedTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
-import { effectiveChar, maxWounds } from '../engine/characteristics';
+import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -58,6 +60,9 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
 import { carryOverState, persistentConditions } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
+import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
+import { traumaFromKind } from '../engine/trauma';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon } from '../engine/weaponDamage';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
@@ -406,6 +411,8 @@ export function applyAttackResult(
 ): void {
   const battle = get().battle!;
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
+  if (attacker.nextActionPenalty) attacker.nextActionPenalty = undefined; // pénalité de Maladresse consommée par ce Test
+
   if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175)
   const critLog: string[] = [];
   if (res.hit && res.woundsLost) {
@@ -466,6 +473,88 @@ export function applyAttackResult(
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
+  resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI → résolue instantanément
+}
+
+/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
+export function attackerFumbled(res: AttackResult): boolean {
+  return !!res.attackerDetail && isFumble(res.attackerDetail.roll, res.attackerDetail.success);
+}
+
+/** Alliés (même camp) encore actifs, hors `c`. */
+function alliesOf(battle: BattleState, c: Combatant): Combatant[] {
+  return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x));
+}
+
+/**
+ * Applique l'effet du Tableau des Oups ! au combattant `c` (mute + journalise). LDB 14 l.14-57.
+ * Le chiffre des unités du jet sert de DR pour les touches (l.44).
+ */
+export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: Weapon, r: OupsResolved): void {
+  const battle = get().battle!;
+  const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
+  const sb = bonus(effectiveChar(c, 'F'));
+  const units = r.roll % 10;
+  switch (r.kind) {
+    case 'selfWound':
+      c.wounds.current = Math.max(0, c.wounds.current - 1); // ignore BE+PA (l.18)
+      if (c.wounds.current <= 0) applyZeroWounds(c);
+      break;
+    case 'weaponDamageActLast':
+      damageWeapon(weapon);
+      c.actLastNextRound = true;
+      break;
+    case 'actionPenalty':
+      c.nextActionPenalty = 10;
+      break;
+    case 'loseMovement':
+      c.loseNextMovement = true;
+      break;
+    case 'loseAction':
+      c.loseNextAction = true;
+      break;
+    case 'trauma': {
+      c.criticalWounds = (c.criticalWounds ?? 0) + 1; // « compte comme une Blessure critique » (l.41)
+      const leg: HitLocation = battleRng().int(0, 1) === 0 ? 'jambeG' : 'jambeD'; // « se tord la cheville »
+      c.traumas = [...(c.traumas ?? []), traumaFromKind('dechirure', 'mineur', leg)];
+      log.push(`  ↳ Déchirure musculaire (Mineure) à la ${leg === 'jambeG' ? 'jambe gauche' : 'jambe droite'}.`);
+      break;
+    }
+    case 'hitAlly': {
+      const allies = alliesOf(battle, c);
+      if (allies.length) {
+        const ally = allies[battleRng().int(0, allies.length - 1)];
+        const loc = hitLocation(reverseRoll(r.roll));
+        const dmg = effectiveWeaponDamage(weapon, sb) + units;
+        const lost = Math.max(0, dmg - (bonus(effectiveChar(ally, 'E')) + (ally.armour[loc] ?? 0)));
+        ally.wounds.current = Math.max(0, ally.wounds.current - lost);
+        if (ally.wounds.current <= 0) applyZeroWounds(ally);
+        log.push(`  ↳ Touche ${ally.name} (${loc}) : ${lost} Blessure(s).`);
+      } else {
+        addCondition(c, 'Sonné');
+        log.push(`  ↳ Personne à portée : se frappe seul → Sonné.`);
+      }
+      break;
+    }
+    case 'misfire': {
+      const dmg = effectiveWeaponDamage(weapon, sb) + units;
+      const lost = Math.max(0, dmg - (bonus(effectiveChar(c, 'E')) + (c.armour.brasD ?? 0)));
+      c.wounds.current = Math.max(0, c.wounds.current - lost);
+      if (c.wounds.current <= 0) applyZeroWounds(c);
+      destroyWeapon(weapon);
+      log.push(`  ↳ Incident de Tir : ${lost} Blessure(s) au Bras principal, arme détruite.`);
+      break;
+    }
+  }
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+}
+
+/** Maladresse d'un ENNEMI : résolue instantanément (IA abstraite). No-op si pas un ennemi/pas de fumble. */
+export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
+  if (enemy.kind !== 'enemy' || !attackerFumbled(res)) return;
+  applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
 
 /** Ouvre la modale de défense réactive si l'attaque est : ennemi → héros, en mêlée,
@@ -736,6 +825,12 @@ export function advanceTurn(get: () => GameState, set: any) {
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
       battle.log.push(`— Round ${round} —`);
+      // Maladresse « agir en dernier » (Oups! 21-40) : repousse les marqués en fin d'ordre (turn=0 → sûr).
+      const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
+      if (lastIds.length) {
+        battle.order = [...battle.order.filter((id) => !lastIds.includes(id)), ...lastIds];
+        for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
+      }
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => battle.log.push(l));
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
       set({ battle: { ...battle, turn: 0, round } });
@@ -747,8 +842,15 @@ export function advanceTurn(get: () => GameState, set: any) {
   }
   // Tour suivant dans le MÊME Round. La posture « Sur la défensive » expire (LDB Combat l.118).
   const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
-  if (newActive) newActive.defensiveStance = false;
-  set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
+  let moved = false;
+  let acted = false;
+  if (newActive) {
+    newActive.defensiveStance = false;
+    // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
+    if (newActive.loseNextMovement) { moved = true; newActive.loseNextMovement = false; battle.log.push(`${newActive.name} perd son Mouvement (Maladresse).`); }
+    if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(`${newActive.name} perd son Action (Maladresse).`); }
+  }
+  set({ battle: { ...battle, turn, action: null, moved, acted, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   maybeRunEnemyTurn(get, set);
