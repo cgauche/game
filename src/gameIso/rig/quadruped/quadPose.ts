@@ -30,4 +30,7 @@ export const QUAD_DEATH: QuadPose = {
   hautAvD: 84, basAvD: 6, piedAvD: -4, hautAvG: 76, basAvG: 6, piedAvG: -4,
   hautArD: -86, basArD: -6, piedArD: 4, hautArG: -78, basArG: -6, piedArG: 4,
   encolure: 70, tete: 46, queue: 34,
+  // Ailes affaissées (gabarit ailé uniquement ; ignoré par les quadrupèdes sans os d'aile) :
+  // les deux ailes retombent vers l'avant, molles, étalées au sol.
+  aileD: 58, aileG: -58,
 };
