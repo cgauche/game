@@ -21,6 +21,11 @@ export function charBonus(chars: Characteristics, key: CharKey): number {
 export function effectiveChar(c: Combatant, key: CharKey): number {
   const base = c.characteristics[key];
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
+  // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
+  for (const t of c.traumas ?? []) {
+    const p = t.charPenalty?.[key];
+    if (p) mods.push(p);
+  }
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));

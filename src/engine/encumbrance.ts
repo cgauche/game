@@ -19,6 +19,7 @@
 import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { hasCondition } from './conditions';
+import { traumaMovementHalved } from './trauma';
 
 export interface EncumbrancePenalties {
   /** Palier de surcharge : 0 (aucune) à 3 (immobilisé). */
@@ -57,8 +58,9 @@ export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
   if (p.immobile) return 0;
   const base = p.tier === 0 ? c.movement : Math.min(c.movement, Math.max(c.movement - p.movePenalty, p.moveFloor));
-  // Sonné : « vous ne pouvez vous déplacer que de la moitié de votre Mouvement » (LDB États l.123).
-  return hasCondition(c, 'Sonné') ? Math.floor(base / 2) : base;
+  // Sonné (LDB États l.123) OU traumatisme réduisant le Mouvement (LDB 18, ex. Déchirure/Fracture
+  // de jambe, Fracture du Torse) → Mouvement de moitié (un seul halving, pas de cumul inventé).
+  return (hasCondition(c, 'Sonné') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
 }
 
 /** Modificateur signé aux tests d'Agilité dû à l'Encombrement (0 / −10 / −20). */

@@ -97,6 +97,18 @@ export interface ActiveEffect {
   roundsLeft: number;
 }
 
+/** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une
+ *  Maladresse. Seuls les effets EN-COMBAT quantifiés sont modélisés (movementHalved, charPenalty) ;
+ *  le reste (−10 Tests de Localisation, membre inutilisable, amputation, guérison) est journalisé
+ *  dans `note` (→ Jalon 5). Persisté entre combats (cf. engine/persistence.ts). */
+export interface Trauma {
+  label: string;
+  location: HitLocation;
+  movementHalved?: boolean;
+  charPenalty?: Partial<Record<CharKey, number>>;
+  note: string;
+}
+
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
 
 /** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
@@ -155,6 +167,8 @@ export interface Combatant {
   // Traumatisme (LDB 18) — modèle de mort
   /** Nombre de Blessures critiques cumulées (mort si > Bonus d'Endurance + Inconscient + 0 PB). */
   criticalWounds?: number;
+  /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
+  traumas?: Trauma[];
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
