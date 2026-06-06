@@ -44,6 +44,11 @@ export function bipedSpeciesMatch(name: string): string | undefined {
   for (const m of BIPED_MATCHERS) if (m.re.test(n)) return m.name;
   return undefined;
 }
+/** Échelle de token d'un bipède (Géant = grand) — à multiplier au scale du token en jeu. Défaut 1. */
+export function bipedSpeciesScale(name: string): number {
+  const sp = bipedSpeciesMatch(name);
+  return (sp ? BIPED_BY_NAME[sp]?.biped?.scale : undefined) ?? 1;
+}
 
 /** Tables de props de rendu par espèce — dérivées des fichiers defs. */
 export const QUAD_SPECIES: Record<string, QuadProps> = Object.fromEntries(QUAD.map((c) => [c.name, c.quad!]));

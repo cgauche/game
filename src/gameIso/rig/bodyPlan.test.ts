@@ -14,7 +14,7 @@ describe('bodyPlanOf', () => {
       'Orc', 'Gobelin', 'Snotling', 'Gor', 'Minotaure', 'Squelette', 'Zombie', 'Goule de crypte',
       'Troll', 'Vampire', 'Sanguinaire de Khorne',
       // jalon 3 : sortis du monolithique
-      'Liche', 'Démonette de Slaanesh', 'Fimir',
+      'Liche', 'Démonette de Slaanesh', 'Fimir', 'Géant',
     ]) {
       expect(bodyPlanOf(n)).toBe('biped');
     }

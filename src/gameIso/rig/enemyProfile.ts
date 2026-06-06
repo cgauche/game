@@ -57,7 +57,7 @@ const EXOTIC_RE = new RegExp(
     // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques ;
     // Manticore=ailée → defs/)
     'serpent', 'araignee', 'basilic', 'hydre',
-    'pieuvre', 'geant', 'pigeon', 'bete des marais',
+    'pieuvre', 'pigeon', 'bete des marais',
     'sangsue', 'crapaud',
   ].join('|') + ')\\b',
 );

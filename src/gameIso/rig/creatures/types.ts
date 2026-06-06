@@ -20,6 +20,9 @@ export interface BipedConfig {
   sex?: 'M' | 'F'; // sexe forcé (SPECIES_SEX) — ex. Vampire = M
   parts?: { cheveux?: number; visage?: number }; // coiffure/visage épinglés (SPECIES_PARTS)
   colors?: Palette; // surcharges de palette (SPECIES_COLORS)
+  /** Échelle GLOBALE du token en jeu (×) — pour les bipèdes hors-norme (Géant) qui doivent
+   *  apparaître bien plus grands sans déformer/clipper la boîte 120×150. Défaut 1. */
+  scale?: number;
 }
 
 export interface CreatureDef {
