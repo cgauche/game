@@ -1,138 +1,180 @@
-# Design — Maladresses (fumbles) au combat
+# Design — Conséquences de combat persistantes (Persistance · Traumatismes · Dégâts d'arme · Maladresses)
 
-*Spec, 2026-06-06. Reliquat du Jalon 1 (« Profondeur des règles de combat »).*
+*Spec umbrella, 2026-06-06. Reliquat du Jalon 1 (combat) + comblement de trous de fidélité
+révélés par la directive « maximum de fidélité au RAW ».*
 
-## But
+## Origine & directive
 
-Implémenter les **Maladresses** au combat, miroir des Critiques déjà en place. Couche
-**moteur pure + testée** d'abord, puis store et UI, en respectant l'invariante du projet
-« s'il y a un jet, il y a une modale » et le principe « rien d'inventé : tout vient de la Source ».
+Point de départ : implémenter les **Maladresses** (fumbles), miroir des Critiques. La directive
+utilisateur — **maximum de fidélité au RAW** (Rules As Written), ne journaliser que les subsystèmes
+**hors-combat** absents — a révélé que la Maladresse déclenche des effets aujourd'hui **non
+modélisés**, et que ces effets, **comme la mort, doivent persister après le combat**. Le périmètre
+est donc un thème cohérent : **les conséquences de combat persistent et se récupèrent par le
+repos/soins (Jalon 5), pas en repartant « frais » à chaque combat**.
 
-Feature **isolée** de la couche rendu/rig (session parallèle en cours sur `gameIso/`/`rig/`) :
-elle vit dans `src/engine/`, `src/data/`, `src/state/store.ts` et un nouveau composant UI.
+**Hors périmètre (hors-combat) :** Maladies, Corruption, mutations (déjà « laissées au MJ » côté
+magie) ; la **guérison/récupération** elle-même (temps, repos, Compétence Guérison, Chirurgie) →
+**Jalon 5** ; Maladresses hors combat (option `12-Tests` l.151) ; effets de trauma
+narratifs/permanents/non quantifiés en combat (voir Plan B).
 
-## Source (verbatim, LDB version corrigée)
+## Découpage en 4 plans séquencés (A → B → C → D)
 
-- `13 - Combat.md` l.180-184 : Critiques et Maladresses ; le Critique = **double réussi**.
-- `12 - Tests.md` l.151-152 : règle optionnelle, applicable à tous les Tests (ici : périmètre **combat**).
-- `14 - _GoBack.md` (pages PDF 162-165) :
-  - l.53-54 : **« tout Test de combat qui est un échec et dont le résultat du jet est un double est une Maladresse »** → Tableau des Oups !
-  - l.14-46 : **Tableau des Oups !** (1d100, 7 bandes).
-  - l.56-57 : **Incident de Tir !** — arme à Poudre noire / mécanique / explosive + Maladresse **paire** (00, 88…) → raté d'allumage, explosion : tous les Dégâts à la Localisation du **Bras principal** (dé des unités = DR pour toucher), **arme détruite**.
-  - l.48-51 : **Tests Opposés et Maladresses** — on peut faire une Maladresse *et l'emporter* (meilleur DR) ; on subit quand même l'Oups !. Donc le **défenseur** d'un Test opposé peut aussi faire une Maladresse.
+Décidé avec l'utilisateur : livrer par tranches reviewables/jouables (principe du dépôt). Chaque
+plan = un cycle plan → implémentation → commit, vérifiable isolément. **Plan A en premier.**
 
-### Détection
+- **Plan A — Persistance des conséquences de combat** *(détaillé ci-dessous, à planifier maintenant)*.
+  Socle : ce qui se passe en combat (Blessures, États persistants, critiques cumulés, **mort**)
+  **suit le héros**. Bénéficie *immédiatement* aux Blessures/critiques/États **déjà existants**.
+- **Plan B — Socle Traumatismes (en-combat)** *(esquissé)*.
+- **Plan C — Dégâts d'arme** *(esquissé)*.
+- **Plan D — Maladresses** *(esquissé)* — consomme B et C.
 
-Une Maladresse = `isDouble && !success` sur un Test de combat. C'est le miroir exact du
-Critique (`isDouble && success`, déjà calculé `combat.ts:279`). `isDouble` est déjà porté par
-chaque jet (`TestResult.isDouble`, calculé `roll === 100 || roll % 11 === 0`).
+---
 
-## Architecture
+## PLAN A — Persistance des conséquences de combat *(focus actuel)*
 
-Respecte la règle du dépôt : **moteur pur ↔ store ↔ UI/rendu**, dépendances jamais inversées.
+### Le trou (vérifié dans le code)
 
-### 1. Engine pur + testé
+`store.ts:647` (spawn de combat) clone chaque héros du groupe avec `conditions: []` et `wounds`
+recopiées du groupe ; `checkBattleOver` (`store.ts:2143`) termine le combat **sans rien réécrire
+vers le groupe**. Conséquence : Blessures, États, critiques cumulés et **mort** sont **jetés** —
+les héros repartent frais à chaque embuscade. La mort elle-même ne persiste pas.
 
-- **`combat.ts`** : ajouter `fumble: boolean` à `AttackResult`, dérivé `isDouble && !success`
-  côté **attaquant** ET côté **défenseur** (un défenseur d'opposé peut fumble). Aucune
-  modification du calcul des dégâts, de la localisation ou de l'Avantage.
-- **`src/data/oups.ts`** (écrit-main **verbatim**, exactement comme `src/data/criticals.ts`) :
-  `OUPS_TABLE: OupsEntry[]` — 7 entrées. Chaque entrée porte un `kind` discriminé (l'effet
-  mécanique) + une `note` (texte canon). Encodage `00` = `max: 100` (convention `criticals.ts`).
-- **`engine/oups.ts`** : `rollOups(combatant, weapon, alliesAtRange, rng) → OupsResolved`,
-  table-driven, RNG **seedé**, calqué sur `rollCritical`. Gère l'**Incident de Tir** en
-  priorité (si l'arme est à poudre/mécanique/explosive **et** le jet est pair). Renvoie un
-  descripteur d'effet discriminé + un `log` ; n'**applique rien** (le store applique, comme
-  pour les critiques).
+### Comportement visé (RAW)
 
-### 2. Mapping du Tableau des Oups !
+À la fin d'un combat (`over: 'victory' | 'defeat'`), **réécrire vers `party`** l'état persistant de
+chaque héros, et le **ré-importer** correctement au combat suivant. Récupération (repos/jours/
+Guérison) = **Jalon 5** ; ici on persiste, on ne soigne pas.
 
-Principe : on applique l'effet mécanique **immédiat et modélisable** ; on **journalise** (sans
-simuler) ce qui dépend d'un subsystème absent — **précédent établi** par les effets long-terme
-des Blessures critiques (`criticals.ts` champ `note`, « journalisé mais NON simulé → Jalon 5 »).
+**Persistent (toujours réécrit vers `party`) :**
+- `wounds.current` (Blessures subies).
+- `criticalWounds` (compteur de Blessures critiques cumulées).
+- `dead` (mort définitive) **et** `outOfRencontre` (« Meurs un autre jour » — éjecté mais vivant) :
+  **la mort persiste** ; un héros mort reste mort au combat suivant (ne respawn pas).
+- `roundsAtZero` (progression vers l'Inconscience) — cohérence du modèle de mort lente.
+- États **persistants** (voir classement).
+- (Préparé pour B/C : `traumas`, `damageTaken` d'objet — réécrits dès que ces champs existent.)
 
-| d100 | Effet canon (l.16-46) | `kind` | Traitement |
+**Transitoire (NON réécrit — état de combat, se lève en combat) :**
+`advantage`, `engagedWith`/`meleeThisRound` (Engagé), `activeEffects` (durées en Rounds),
+`defensiveStance`, `aiming`, `loaded`/`reloadProgress`/`ammoUid` (réinitialisés au spawn), et les
+**États transitoires** ci-dessous.
+
+### Classement RAW des États (à sourcer au chapitre « États », puis figé en table)
+
+Pur, testable. **À transcrire verbatim depuis la Source pendant la planification** (ne pas inventer).
+Hypothèse de travail (à confirmer sur le chapitre États) :
+- **Transitoires (droppés en fin de combat)** : `Surpris`, `À Terre`, `Sonné`, `Engagé`
+  (relation de combat). *(Aveuglé/Assourdi se dissipent déjà 1/Round en combat ; à classer :
+  s'ils subsistent à la fin, persistent-ils ? → décision sourcée.)*
+- **Persistants (réécrits)** : `Hémorragique`, `Empoisonné`, `En flammes`, `Exténué`, `Fatigué`,
+  `Brisé`, `Inconscient`. Leur récupération (Tests/temps) = Jalon 5.
+
+Implémentation : `engine/persistence.ts` (pur) — `PERSISTENT_CONDITIONS: Set<string>` + une fonction
+`carryOverState(hero: Combatant): Partial<Combatant>` qui extrait l'état persistant d'un combattant.
+
+### Câblage store
+
+- `checkBattleOver` (ou un nouveau `finalizeBattle`) : à `over` (victoire **ou** défaite), pour
+  chaque héros du `battle`, fusionner son état persistant dans l'entrée `party` correspondante
+  (match par `id`). Réécriture **idempotente** ; les morts sont marqués `dead`/`outOfRencontre`.
+- `spawnBattle` (`store.ts:647`) : **carry-in** — ne plus forcer `conditions: []`. Importer les
+  États **persistants** du membre `party` ; (re)mettre à zéro uniquement les transitoires
+  (`advantage`, Engagé…). Un héros `dead`/`outOfRencontre` **n'est pas instancié** dans le combat.
+- Le HUD (`CampaignView`/fiche) reflète l'état persistant hors combat (Blessures actuelles, États
+  persistants, mort).
+
+### Tests (Plan A)
+
+- `engine/persistence.test.ts` : `carryOverState` extrait le persistant, ignore le transitoire ;
+  `PERSISTENT_CONDITIONS` couvre le classement sourcé.
+- `state/store.test.ts` : combat → héros blessé/Hémorragique/critique → fin de combat → `party`
+  reflète Blessures+critiques+Hémorragique ; **héros mort → reste `dead`** et n'est pas instancié
+  au combat suivant ; État transitoire (Surpris/À Terre) **non** persisté ; carry-in ré-applique
+  l'Hémorragique au spawn suivant.
+- **Vérif navigateur** : enchaîner deux rencontres (scène multi-encounters type Chapitre 2) ; un
+  héros blessé au 1er combat démarre le 2e avec ses Blessures ; un héros mort reste absent. `console` 0 erreur.
+
+---
+
+## PLAN B — Socle Traumatismes (en-combat) *(esquissé, à planifier après A)*
+
+Couche `traumas` **partagée** par les tables critiques **et** la Maladresse ; effets en-combat
+**quantifiés** modélisés, guérison différée Jalon 5, persistance assurée par le Plan A.
+
+**Type** (`engine/types.ts`), `Combatant.traumas?: Trauma[]` :
+```ts
+export interface Trauma {
+  label: string; location: HitLocation;
+  movementHalved?: boolean;
+  charPenalty?: Partial<Record<CharKey, number>>; // ex. { F:-30, Ag:-30 }
+  limbDisabled?: boolean; dodgeDisabled?: boolean;
+  note: string; // texte canon (guérison + effets non modélisés) — journalisé
+}
+```
+**Factory unique** `traumaFromKind(kind: 'dechirure'|'fracture'|'amputation', severity, location) → Trauma`
+(seule source des champs d'effet), partagée critiques ↔ Maladresse.
+
+**Effets en-combat modélisés** (RAW quantifié, `18-Traumatisme`) — le trauma **hérite de la
+localisation du critique** qui le pose :
+
+| Trauma (location) | Source | Modélisé |
+|---|---|---|
+| Déchirure musculaire — Jambe | l.315, 324 | `movementHalved` |
+| Fracture — Torse | l.298 | `charPenalty {F:-30,Ag:-30}` + `movementHalved` |
+| Fracture — Bras | l.298 | `limbDisabled` |
+| Fracture — Jambe | l.298 | `movementHalved` |
+| Amputation — Pied / Jambe | l.369, 346-347 | `movementHalved` (+ `dodgeDisabled` si Jambe) |
+| Amputation — Main / Bras | l.352, 335 | `limbDisabled` |
+
+Helpers purs (`engine/trauma.ts`) : `traumaMovementFactor`, `traumaCharPenalty(c,key)`,
+`disabledLimbs`, `dodgeForbidden`. Lecture : `effectiveChar` (pool « pire pénalité », non-cumul
+l.168) ; `effectiveMovement(c)=floor(M×factor)` avant Encombrement ; loadout (bras désactivé → arme
+lâchée/2 mains impossible, bouclier retiré) ; `bestDefenseMode` (Esquive interdite). Alimentation :
+`CritEntry.traumas?: {kind;severity}[]` (transcrit des `note` verbatim) → `rollCritical` ;
+Maladresse 81-90 → `traumaFromKind('dechirure','mineur',<jambe>)`.
+
+**Journalisé (rien d'inventé)** : « −10/−20 aux Tests *concernant* la Localisation » (Déchirure)
+— non énuméré par le RAW → on ne modélise que la conséquence explicite (Mouvement ÷2) ; pénalités
+Sociabilité/Langue/odorat/vue/dents/doigts/orteils ; guérison → Jalon 5.
+
+## PLAN C — Dégâts d'arme *(esquissé, à planifier)*
+
+RAW `62-Les armes` l.177-180 : −1 Dégât/point reçu ; +0 (ou BF+0) → **Arme improvisée** ;
+**Incassable** (l.310) exempte. `Weapon.damageTaken?` (active) + `ItemInstance.damageTaken?`
+(héros, persisté via Plan A) ; `recomputeLoadout` propage. `combat.ts` réduit la chaîne de Dégâts
+(plancher → arme improvisée : Atouts ignorés, Défauts conservés). `destroyed?` (Incident de Tir) →
+arme inutilisable. Réparation = Jalon 5. Ennemis : `damageTaken` transient sur leur `Weapon`.
+
+## PLAN D — Maladresses *(esquissé, à planifier — consomme B et C)*
+
+**Détection** (`combat.ts`) : `fumble = isDouble && !success` (miroir du Critique `combat.ts:279`),
+côté attaquant ET défenseur. **`src/data/oups.ts`** (verbatim, comme `criticals.ts`) +
+**`engine/oups.ts`** `rollOups(...)` table-driven (RNG seedé) ; Incident de Tir prioritaire (arme
+poudre/mécanique/explosive + jet **pair**).
+
+| d100 | Effet canon (`14-_GoBack` l.16-46) | `kind` | Traitement |
 |---|---|---|---|
-| 01-20 | Perd 1 Blessure, ignore BE + PA | `selfWound` | ✅ `wounds.current -= 1` (plancher 0, ignore BE+PA) |
-| 21-40 | Arme abîmée (1 Dégât) **+ agir en dernier** au prochain Round | `weaponDamageActLast` | ✅ `actLastNextRound` ; durabilité d'arme **journalisée** (pas de subsystème de durabilité) |
-| 41-60 | **−10** à l'Action au prochain Round | `actionPenalty` | ✅ `nextActionPenalty = 10` |
-| 61-70 | Perd son prochain **Mouvement** | `loseMovement` | ✅ `loseNextMovement = true` |
-| 71-80 | Perd sa prochaine **Action** | `loseAction` | ✅ `loseNextAction = true` |
-| 81-90 | **Déchirure musculaire (Mineur)**, compte comme Blessure critique | `criticalWound` | ✅ `criticalWounds += 1` (compte pour le modèle de mort : critiques cumulées > BE) + trauma **journalisé** (→ Jalon 5, comme tout traumatisme) |
-| 91-00 | Touche **1 allié au hasard à distance** (unités = DR) ; sinon **soi-même** → Sonné | `hitAlly` | ✅ si un allié est à portée : Blessure à un allié tiré au sort (unités du d100 = DR, localisation = jet inversé, réduction BE+PA standard) ; sinon `addCondition(self, 'Sonné')` |
+| 01-20 | Perd 1 Blessure, ignore BE+PA | `selfWound` | `wounds.current -= 1` |
+| 21-40 | Arme abîmée (1 Dégât) **+ agir en dernier** | `weaponDamageActLast` | 1 Dégât d'arme (C) + `actLastNextRound` |
+| 41-60 | **−10** à l'Action au prochain Round | `actionPenalty` | `nextActionPenalty = 10` |
+| 61-70 | Perd son prochain Mouvement | `loseMovement` | `loseNextMovement = true` |
+| 71-80 | Perd sa prochaine Action | `loseAction` | `loseNextAction = true` |
+| 81-90 | Déchirure musculaire (Mineur), = critique (« cheville ») | `trauma` | `criticalWounds += 1` + trauma jambe (B) |
+| 91-00 | Touche 1 allié à distance (unités = DR) ; sinon soi → Sonné | `hitAlly` | allié tiré au sort touché ; sinon `Sonné` |
 
-**Incident de Tir !** (l.56-57), priorité sur le tableau si conditions réunies : `kind: 'misfire'`
-— Dégâts au **Bras principal** (unités du d100 = DR), **arme détruite** (journalisée — pas de
-durabilité), pas de tirage sur le Tableau des Oups !.
+**Incident de Tir** (`misfire`) : Dégâts Bras principal (unités = DR), arme détruite (C).
+**Store** : `pendingFumble` (héros → modale, invariante « un jet = une modale » ; ennemi →
+instantané). Nouveaux champs `Combatant` : `nextActionPenalty?`, `loseNextAction?`,
+`loseNextMovement?`, `actLastNextRound?` (consommés `advanceTurn`/fin de Round). **UI** :
+`FumbleModal.tsx` (sans Chance — elle agit sur le Test *avant*). Tests : `oups.test.ts` (7 bandes,
+Incident pair/impair, 91-00 avec/sans allié), détection fumble, store (héros/ennemi, flags).
 
-> Note de fidélité : « agir en dernier » et « arme à 1 Dégât » sont une **même** entrée canon ;
-> on modélise la partie initiative (act-last), on journalise la partie durabilité. On n'invente
-> aucune valeur — l'auto-blessure 91-00 réutilise le pipeline de dégâts existant (`applyHit`).
+---
 
-### 3. Store (`src/state/store.ts`)
+## Conventions (tous plans)
 
-Invariante **« un jet = une modale »** :
-
-- Nouveau `pendingFumble: PendingFumble | null` (combattant, contexte arme, alliés à portée, jet,
-  résultat). Flux : `fumbleRoll` (tire l'Oups!) → affichage → `fumbleConfirm` (applique l'effet,
-  reprend le combat). **Pas de bouton Chance** : la Chance s'applique au Test *avant* qu'il ne
-  devienne une Maladresse (relance d'un jet raté) ; une fois la Maladresse actée, l'Oups! est subi.
-- **Héros** qui fait une Maladresse (attaque OU défense réactive) → ouvre `pendingFumble`
-  (suspend la reprise de l'IA, comme `pendingDefense`/`pendingFateSave`).
-- **Ennemi** qui fait une Maladresse → `rollOups` résolu **instantanément** + log (cohérent avec
-  l'IA abstraite et la résolution instantanée des critiques/figurants).
-- Nouveaux champs `Combatant` (engine `types.ts`) : `nextActionPenalty?: number`,
-  `loseNextAction?: boolean`, `loseNextMovement?: boolean`, `actLastNextRound?: boolean`.
-  **Consommation** :
-  - `nextActionPenalty` : lu dans le chemin de résolution d'attaque (modificateur −N au Test),
-    puis remis à 0 après usage.
-  - `loseNextAction` / `loseNextMovement` : au début du tour du combattant (`advanceTurn` /
-    `maybeRunEnemyTurn`), marque `acted`/`moved` comme déjà consommés et efface le flag + log.
-  - `actLastNextRound` : au franchissement de Round (`advanceTurn` round boundary /
-    `resolveRoundBoundary`), déplace l'id en fin de `battle.order` pour le Round suivant, efface le flag.
-
-### 4. UI (`src/ui/`)
-
-- **`FumbleModal.tsx`** calquée sur la modale d'attaque (`AttackModal`/styles `.roll-modal`).
-  Affiche : « Maladresse ! » + jet d'Oups! (d100) + libellé de l'effet + `note` canon + bouton
-  **Appliquer**. Branchée dans `CampaignView` à côté des autres modales (`pendingAttack`,
-  `pendingDefense`, `pendingFateSave`…).
-
-### 5. Tests
-
-- `engine/oups.test.ts` : les **7 bandes** du tableau (RNG forcé sur chaque bande), Incident de
-  Tir **pair** (déclenché) vs **impair** (tableau normal) vs **arme non-poudre** (pas d'Incident),
-  91-00 **avec allié à portée** (touche l'allié) vs **sans** (Sonné sur soi).
-- `engine/combat.test.ts` : détection `fumble` attaquant (double + échec) et **non**-fumble
-  (double + succès = critique ; échec simple ≠ fumble) ; côté défenseur.
-- `state/store.test.ts` : héros fumble → `pendingFumble` ouvert + IA suspendue ; `fumbleConfirm`
-  applique et reprend ; ennemi fumble → résolu instantanément (pas de `pendingFumble`) ;
-  consommation des flags prochain-Round (perte d'Action, −10, act-last).
-- **Vérif navigateur** (Playwright, après le vert) : forcer une Maladresse (RNG seedé / scénario
-  de test), voir la `FumbleModal`, appliquer, vérifier le log + l'effet ; `console` à 0 erreur.
-
-## Hors périmètre (assumé)
-
-- **Durabilité / réparation d'arme** (« arme subit 1 Dégât », arme détruite par Incident de Tir) :
-  journalisé, non simulé — aucun subsystème de durabilité n'existe (cohérent avec les traumatismes).
-- **Traumatisme Déchirure musculaire** (soin/guérison) : journalisé → Jalon 5, comme les autres traumatismes.
-- **Maladresses hors combat** (règle optionnelle `12-Tests` l.151) : périmètre = combat uniquement.
-- **IA** : un ennemi ne subit pas les effets « prochain Round » de façon élaborée — ils sont
-  appliqués sur ses flags comme pour un héros, mais l'IA reste simplifiée (cohérent avec la dette assumée).
-
-## Risques / points d'attention
-
-- **Frontières de tour** : la consommation des flags prochain-Round touche `advanceTurn` et la
-  résolution de fin de Round — code sensible (morts lentes, Destin, pré-emption). Tests store dédiés.
-- **Défenseur héros qui fumble** sur une défense réactive : le `pendingFumble` doit s'enchaîner
-  *après* `pendingDefense` sans casser la reprise de l'IA (`resumeEnemyTurn`).
-- **Ordre `pendingFumble` vs critique/mort** : si l'attaque touche ET que l'attaquant fumble
-  (impossible — un fumble est un échec, donc 0 touche), pas de collision. Le fumble du *défenseur*
-  peut coexister avec une touche subie : appliquer la touche d'abord, puis l'Oups! du défenseur.
-
-## Conventions respectées
-
-- FR partout ; data FR ; aucune source VO.
-- Moteur pur + testé ; store/UI en dépendent.
-- Table verbatim de la Source, écrite-main comme `criticals.ts`.
-- Commits propres : ne committer que mes fichiers (working tree partagé avec la session rig).
+- FR partout ; data FR ; **aucune source VO**. Tables verbatim écrites-main (comme `criticals.ts`).
+- Moteur pur + testé ; store/UI/rendu en dépendent. **Rien d'inventé** : le flou RAW est journalisé.
+- Commits propres : mes seuls fichiers (`git commit -- <chemins>`), working tree partagé avec la session rig.
+- Vérif navigateur (Playwright) après chaque tranche ; hard reload (HMR périmé).
