@@ -41,7 +41,8 @@ Sans connaître le nom, demande-toi « qu'est-ce que je vois ? ». Choisis le ca
 Renvoie { chosenFrom:"cand1"|"cand2"|"cand3", guess:<ce que TU vois, sans présumer>, recognizable:<true si ton guess correspond à « ${w.label} »>, note }.`
 }
 
-const work = (Array.isArray(args) ? args : []).filter((w) => w && w.slug)
+const _argv = typeof args === 'string' ? JSON.parse(args) : args // le harness peut passer args en JSON-string
+const work = (Array.isArray(_argv) ? _argv : []).filter((w) => w && w.slug)
 if (!work.length) { log('aucune arme en entrée (args vide).'); return { done: 0, items: [] } }
 log(`Génération de ${work.length} arme(s), ${N} candidats chacune.`)
 
