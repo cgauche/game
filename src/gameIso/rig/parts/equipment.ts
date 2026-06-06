@@ -3,6 +3,7 @@ import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_WEAPONS, GENERATED_ARMOUR } from './generated/weaponsArmour';
 import { weaponGroupKey } from './weaponGroup';
+import { WEAPON_FORMS, norm as wnorm } from './weaponForms';
 
 /** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
 const EPEE_ART: PartArt = {
@@ -29,34 +30,32 @@ export function equipFromCombatant(c: Combatant): EquipCtx {
 }
 
 /**
- * FORME d'art de l'arme (clé du registre WEAPONS). Le Groupe canonique (WFRP4)
- * n'encode pas la forme (épée/hache/masse sont tous « Base ») : table EXPLICITE par
- * libellé exact (canon + libellés génériques joués), repli sur la forme par défaut
- * du Groupe — JAMAIS de parsing flou par sous-chaîne.
+ * FORME d'art de l'arme (clé du registre WEAPONS) = 1 silhouette par arme.
+ * Dérivée de WEAPON_FORMS (les 48 armes de la donnée → leur slug), plus des SYNONYMES
+ * pour les libellés génériques joués HORS-catalogue. Repli ART_BY_GROUP ensuite.
+ * Le Groupe canonique (WFRP4) n'encode pas la forme — JAMAIS de parsing flou par sous-chaîne.
  */
-const ART_BY_LABEL: Record<string, string> = {
-  dague: 'dague', couteau: 'dague', 'couteau de lancer': 'dague', flechette: 'dague', stylet: 'dague', poignard: 'dague',
-  epee: 'epee', 'epee courte': 'epee', 'epee batarde': 'epee', zweihander: 'epee', rapiere: 'epee', fleuret: 'epee', sabre: 'epee', espadon: 'epee',
-  hache: 'hache', 'hache de main': 'hache', hachette: 'hache', 'grande hache': 'hache', 'hache de lancer': 'hache', 'pioche a deux mains': 'hache', pioche: 'hache', cognee: 'hache',
-  masse: 'masse', massue: 'masse', gourdin: 'masse', marteau: 'masse', 'marteau de guerre': 'masse', 'marteau a bec-de-corbin': 'masse', rocher: 'masse', maillet: 'masse',
-  lance: 'lance', 'lance de cavalerie': 'lance', pique: 'lance', hallebarde: 'lance', javelot: 'lance', epieu: 'lance',
-  baton: 'baton', 'baton de combat': 'baton', canne: 'baton',
-  arc: 'arc', 'arc court': 'arc', 'arc long': 'arc', 'arc elfique': 'arc',
-  arbalete: 'arbalete', 'arbalete de poing': 'arbalete', 'arbalete lourde': 'arbalete',
-  fronde: 'fronde', fouet: 'fouet', lasso: 'fouet',
-  bombe: 'explosif', 'bombe incendiaire': 'explosif',
-  'mains nues': '', 'coup-de-poing': '', // poings : aucune arme dessinée
-  // Attaques NATURELLES (traits) : aucune arme tenue — la part du corps fait foi.
-  poings: '', morsure: '', griffes: '', griffe: '', tentacule: '', tentacules: '',
+const SYNONYMS: Record<string, string> = {
+  // épée générique & variantes hors-catalogue
+  epee: 'epee', 'epee courte': 'epee', sabre: 'epee', espadon: 'zweihander',
+  // contondant hors-catalogue
+  masse: 'masse', massue: 'gourdin', marteau: 'masse', maillet: 'masse', canne: 'baton',
+  // tranchant hors-catalogue
+  hache: 'hache', 'hache de main': 'hache', hachette: 'hache', cognee: 'hache',
+  poignard: 'dague', stylet: 'dague', epieu: 'lance',
+  // attaques NATURELLES (traits) : aucune arme tenue — la part du corps fait foi
+  'mains nues': '', poings: '', morsure: '', griffes: '', griffe: '', tentacule: '', tentacules: '',
   bec: '', dard: '', corne: '', cornes: '', queue: '', pietinement: '', crachat: '',
 };
+const ART_BY_LABEL: Record<string, string> = { ...SYNONYMS };
+for (const f of WEAPON_FORMS) ART_BY_LABEL[wnorm(f.label)] = f.slug;
 
 /** Forme par défaut d'un Groupe canonique (quand le libellé n'est pas dans la table). */
 const ART_BY_GROUP: Record<string, string> = {
-  base: 'epee', escrime: 'epee', deuxmains: 'epee',
-  cavalerie: 'lance', hast: 'lance', fleau: 'masse', parade: 'parade', bagarre: '',
-  arc: 'arc', arbalete: 'arbalete', poudre: 'poudre', ingenierie: 'poudre',
-  fronde: 'fronde', lancer: 'dague', entraves: 'fouet', explosifs: 'explosif',
+  base: 'epee', escrime: 'rapiere', deuxmains: 'epee_batarde',
+  cavalerie: 'lance_cavalerie', hast: 'lance', fleau: 'fleau', parade: 'main_gauche', bagarre: '',
+  arc: 'arc', arbalete: 'arbalete', poudre: 'pistolet', ingenierie: 'pistolet_rep',
+  fronde: 'fronde', lancer: 'javelot', entraves: 'fouet', explosifs: 'bombe',
 };
 
 export function weaponFamily(w: Weapon): string {
@@ -93,8 +92,16 @@ export function weaponPart(w: Weapon): PartArt {
   return WEAPONS[f] ?? WEAPONS.epee;
 }
 
-export function shieldPart(_x: Weapon | ItemInstance): PartArt {
-  return `<ellipse cx="0" cy="6" rx="11" ry="15" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.5"/><ellipse cx="0" cy="6" rx="3" ry="3" fill="#caa64a"/>`;
+/** Silhouette de bouclier par nom (rondache / grand écu / targe). Os `bouclier`, main G. */
+const SHIELDS: Record<'rond' | 'grand' | 'targe', string> = {
+  rond: `<circle cx="0" cy="6" r="13" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.6"/><circle cx="0" cy="6" r="13" fill="none" stroke="#6a4a2a" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#caa64a" stroke="#7a5a18" stroke-width="0.6"/><g fill="#9aa2ac"><circle cx="0" cy="-5" r="0.9"/><circle cx="0" cy="17" r="0.9"/><circle cx="-11" cy="6" r="0.9"/><circle cx="11" cy="6" r="0.9"/></g>`,
+  grand: `<path d="M-11 -10 Q0 -13 11 -10 L11 8 Q11 20 0 28 Q-11 20 -11 8 Z" fill="url(#g_steelD)" stroke="#3a2a18" stroke-width="1.6"/><path d="M0 -12 L0 27" stroke="#6a4a2a" stroke-width="1.1"/><path d="M-11 1 Q0 4 11 1" fill="none" stroke="#6a4a2a" stroke-width="1.1"/><circle cx="0" cy="3" r="2.4" fill="#caa64a" stroke="#7a5a18" stroke-width="0.5"/>`,
+  targe: `<circle cx="0" cy="6" r="9.5" fill="url(#g_steel)" stroke="#3a2a18" stroke-width="1.4"/><circle cx="0" cy="6" r="9.5" fill="none" stroke="#cfd8e6" stroke-width="0.5" opacity="0.7"/><circle cx="0" cy="6" r="3.2" fill="url(#g_steelD)" stroke="#2a3038" stroke-width="0.6"/>`,
+};
+export function shieldPart(x: Weapon | ItemInstance): PartArt {
+  const n = (x.name ?? '').toLowerCase();
+  const key = /grand/.test(n) ? 'grand' : /targe/.test(n) ? 'targe' : 'rond';
+  return SHIELDS[key];
 }
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */

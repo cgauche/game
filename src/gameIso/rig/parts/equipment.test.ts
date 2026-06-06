@@ -1,36 +1,32 @@
 import { describe, it, expect } from 'vitest';
-import { weaponPart, shieldPart, armourPart, armourMaterial, equipFromCombatant, isShield } from './equipment';
+import { weaponPart, weaponFamily, shieldPart, armourPart, armourMaterial, equipFromCombatant, isShield } from './equipment';
 import { pickView } from './types';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged', q: string[] = []): Weapon =>
   ({ name, type, damage: '+4', qualities: q } as Weapon);
 const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
+const fam = (name: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wep(name, type));
 
 describe('weaponPart', () => {
-  it('reconnaît une épée vs un arc (SVG différents)', () => {
-    expect(wpv('Épée')).not.toBe(wpv('Arc court', 'ranged'));
+  it('rend un SVG non vide pour une arme connue', () => {
+    expect(wpv('Dague')).toContain('<');
   });
   it('arme inconnue → part générique mêlée non vide', () => {
     expect(wpv('Truc bizarre')).toContain('<');
   });
 });
 
-describe('weaponFamily (via weaponPart) — corrections audit', () => {
-  const part = (name: string, type: 'melee' | 'ranged' = 'melee') => wpv(name, type);
-  it('Javelot → famille lance (pas le défaut arc/épée)', () => {
-    expect(part('Javelot')).toBe(part('Lance de cavalerie'));
-  });
-  it('Main Gauche → famille parade (≠ dague), comme Brise-épée', () => {
-    expect(part('Main Gauche')).toBe(part('Brise-épée'));
-    expect(part('Main Gauche')).not.toBe(part('Dague'));
-  });
-  it('Fleuret et Zweihänder (accents) → famille épée', () => {
-    expect(part('Fleuret')).toBe(part('Épée'));
-    expect(part('Zweihänder')).toBe(part('Épée'));
-  });
-  it('Pioche → famille hache', () => {
-    expect(part('Pioche à deux mains')).toBe(part('Hache'));
+// Contrat « 1 forme par arme » : des armes jadis confondues ont désormais des formes
+// (slugs) distincts. Testé au niveau FAMILLE (slug), robuste que l'art soit généré ou non.
+describe('weaponFamily — 1 forme par arme (anti-collapse)', () => {
+  it('chaque arme jadis confondue a sa propre forme', () => {
+    expect(fam('Arc court', 'ranged')).not.toBe(fam('Épée'));
+    expect(fam('Javelot', 'ranged')).not.toBe(fam('Lance de cavalerie'));
+    expect(fam('Main Gauche')).not.toBe(fam('Brise-épée'));
+    expect(fam('Main Gauche')).not.toBe(fam('Dague'));
+    expect(fam('Pioche à deux mains')).not.toBe(fam('Grande hache'));
+    expect(fam('Fleuret')).not.toBe(fam('Zweihänder'));
   });
 });
 
