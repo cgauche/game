@@ -12,7 +12,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
-import { effectiveWeaponDamage } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -384,6 +384,7 @@ function applyHit(
   critical: boolean,
   forcedLoc?: HitLocation,
 ): AttackResult {
+  weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
   const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)

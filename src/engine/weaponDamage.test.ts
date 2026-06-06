@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon } from './weaponDamage';
+import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon } from './weaponDamage';
 import { recomputeLoadout } from './items';
 import type { Weapon, Combatant } from './types';
 
@@ -20,6 +20,19 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
   it("préserve une arme non endommagée (mains nues +BF-2 inchangées)", () => {
     const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: '+BF-2', qualities: [] };
     expect(effectiveWeaponDamage(fists, 3)).toBe(1); // 3 - 2
+  });
+});
+
+describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', () => {
+  it('arme usée à +0 → +BF+1, Inoffensive, sans Atout (Empaleuse/Perforante perdus)', () => {
+    const w = effectiveWeapon(sword({ damageTaken: 4, qualities: ['Empaleuse', 'Perforante'] }));
+    expect(w.damage).toBe('+BF+1');
+    expect(w.qualities).toEqual(['Inoffensive']);
+    expect(effectiveWeaponDamage(w, 3)).toBe(4); // BF3 + 1
+  });
+  it('arme non usée renvoyée telle quelle (même référence)', () => {
+    const w = sword({ damageTaken: 2, qualities: ['Empaleuse'] });
+    expect(effectiveWeapon(w)).toBe(w);
   });
 });
 

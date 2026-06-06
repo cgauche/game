@@ -64,7 +64,7 @@ import { carryOverState, persistentConditions } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised } from '../engine/weaponDamage';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { doorAt } from './buildings';
@@ -512,8 +512,13 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
   const it = (c.items ?? []).find((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged') && i.name === weapon.name);
   if (it) {
     if (it.qualities.some((q) => /incassable/i.test(q))) return;
-    if (destroy) it.destroyed = true;
-    else it.damageTaken = (it.damageTaken ?? 0) + 1;
+    if (destroy) {
+      it.destroyed = true;
+    } else {
+      // Une Arme improvisée déjà à +0 qui prend un Dégât de plus devient inutilisable (LDB 62 l.178).
+      if (isImprovised({ ...weapon, damageTaken: it.damageTaken ?? 0 })) it.destroyed = true;
+      it.damageTaken = (it.damageTaken ?? 0) + 1;
+    }
     recomputeLoadout(c); // re-dérive c.weapons depuis l'item usé (persiste via carryOverState items)
   } else if (destroy) {
     destroyWeapon(weapon);

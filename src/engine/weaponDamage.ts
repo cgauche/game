@@ -31,6 +31,17 @@ export function isImprovised(w: Weapon): boolean {
   return flat >= 0 && flat - (w.damageTaken ?? 0) <= 0;
 }
 
+/**
+ * Profil de combat EFFECTIF d'une arme : si elle a été usée jusqu'à +0, elle devient une **Arme
+ * improvisée** (LDB 62 l.178) — Dégâts `+BF+1`, Atout `Inoffensive`, **plus aucun Atout** (Empaleuse/
+ * Perforante/Pointue… perdus). Sinon l'arme est renvoyée telle quelle. À appliquer avant tout calcul
+ * de touche/dégâts/critique pour que la dégradation bascule réellement le profil.
+ */
+export function effectiveWeapon(w: Weapon): Weapon {
+  if (!isImprovised(w)) return w;
+  return { ...w, damage: '+BF+1', qualities: ['Inoffensive'], damageTaken: 0, reach: 'Moyenne' };
+}
+
 /** Inflige 1 point de Dégât à l'arme (sauf Incassable). */
 export function damageWeapon(w: Weapon): void {
   if (isUnbreakable(w)) return;
