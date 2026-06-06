@@ -26,7 +26,7 @@ for (const f of WEAPON_FORMS) {
 }
 for (const s of SHIELD_FORMS) {
   const path = `public/qc/w-shield_${s.slug}.png`;
-  raster(pickView(shieldPart({ name: s.label, qualities: [] } as Weapon), 'front'), path);
+  raster(pickView(shieldPart({ name: s.label, type: 'melee', damage: '+0', qualities: [] } as Weapon), 'front'), path);
   manifest.push({ id: `w-shield_${s.slug}`, slug: `shield_${s.slug}`, label: s.label, kind: 'shield', path });
 }
 writeFileSync('public/qc/weapons-manifest.json', JSON.stringify(manifest, null, 2));
