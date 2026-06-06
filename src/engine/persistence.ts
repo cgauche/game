@@ -5,7 +5,7 @@
  * transitoires (Surpris/À Terre/Sonné/Aveuglé/Assourdi/Empêtré), retirés en/par le combat.
  * La récupération elle-même (temps, repos, Guérison, Chirurgie) reste hors périmètre (Jalon 5).
  */
-import { Combatant, ConditionInstance } from './types';
+import { Combatant, ConditionInstance, Trauma } from './types';
 
 /** États qui persistent après le combat (LDB 16-États : Brisé l.57, Empoisonné l.70,
  *  En flammes l.77, Exténué l.91, Hémorragique l.107, Inconscient l.116). */
@@ -22,6 +22,7 @@ export function carryOverState(c: Combatant): {
   roundsAtZero: number;
   dead: boolean;
   outOfRencontre: boolean;
+  traumas: Trauma[];
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
@@ -30,6 +31,7 @@ export function carryOverState(c: Combatant): {
     roundsAtZero: c.roundsAtZero ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
+    traumas: (c.traumas ?? []).map((t) => ({ ...t })),
   };
 }
 

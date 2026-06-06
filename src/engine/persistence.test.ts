@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PERSISTENT_CONDITIONS, carryOverState } from './persistence';
+import { traumaFromKind } from './trauma';
 import type { Combatant } from './types';
 
 function baseCombatant(over: Partial<Combatant> = {}): Combatant {
@@ -52,5 +53,11 @@ describe('persistence — carryOverState', () => {
     const s = carryOverState(c);
     s.conditions[0].value = 99;
     expect(c.conditions[0].value).toBe(1);
+  });
+  it('persiste les traumatismes', () => {
+    const c = baseCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
+    const s = carryOverState(c);
+    expect(s.traumas.length).toBe(1);
+    expect(s.traumas[0].movementHalved).toBe(true);
   });
 });
