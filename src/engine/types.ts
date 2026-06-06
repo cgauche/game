@@ -110,6 +110,8 @@ export interface Trauma {
   location: HitLocation;
   movementHalved?: boolean;
   charPenalty?: Partial<Record<CharKey, number>>;
+  /** Pénalité (négative) aux Tests de mobilité/Esquive — trauma de jambe (LDB 18 l.298/315/369). */
+  dodgePenalty?: number;
   note: string;
 }
 

@@ -19,12 +19,14 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
   const sev = severity === 'mineur' ? 'Mineure' : 'Majeure';
   if (kind === 'dechirure') {
     const onLeg = LEG.includes(location);
+    // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
+    const dodge = severity === 'mineur' ? -10 : -20;
     return {
       label: `Déchirure musculaire (${sev})`,
       location,
-      ...(onLeg ? { movementHalved: true } : {}),
+      ...(onLeg ? { movementHalved: true, dodgePenalty: dodge } : {}),
       note: onLeg
-        ? 'LDB 18 l.315 : Mouvement ÷2 (jambe) ; −10/−20 aux Tests de la Localisation (journalisé). Guérison 30−BE jours (Jalon 5).'
+        ? `LDB 18 l.315 : Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours (Jalon 5).`
         : 'LDB 18 l.315 : −10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours (Jalon 5).',
     };
   }
@@ -43,7 +45,8 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
       label: `Fracture (${sev})`,
       location,
       movementHalved: true,
-      note: 'LDB 18 l.298 (Jambe) : Localisation inutilisable (règle du Pied → Mouvement ÷2). Guérison 30+1d10 jours (Jalon 5).',
+      dodgePenalty: -20, // règle du Pied (l.369) : −20 aux Tests de mobilité, dont l'Esquive
+      note: 'LDB 18 l.298 (Jambe) : Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours (Jalon 5).',
     };
   }
   return {
@@ -63,4 +66,10 @@ export function traumaMovementHalved(c: Combatant): boolean {
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »). */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   return (c.traumas ?? []).map((t) => t.charPenalty?.[key] ?? 0).filter((p) => p < 0);
+}
+
+/** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). */
+export function traumaDodgePenalty(c: Combatant): number {
+  const pens = (c.traumas ?? []).map((t) => t.dodgePenalty ?? 0).filter((p) => p < 0);
+  return pens.length ? Math.min(...pens) : 0;
 }

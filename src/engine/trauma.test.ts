@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { traumaFromKind, traumaMovementHalved } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
+import { defenseValue } from './combat';
 import type { Combatant } from './types';
 
 function c(traumas: Combatant['traumas']): Combatant {
@@ -71,5 +72,15 @@ describe('traumas — câblage moteur', () => {
   it('Sans trauma de mouvement, Mouvement inchangé', () => {
     const cc = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'brasD')] });
     expect(effectiveMovement(cc)).toBe(4);
+  });
+  it('Fracture de jambe réduit l’Esquive de 20 (règle du Pied, LDB 18 l.369)', () => {
+    const sain = fullCombatant();
+    expect(defenseValue(sain, 'esquive')).toBe(40); // Ag 40, pas de pénalité
+    const blesse = fullCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
+    expect(defenseValue(blesse, 'esquive')).toBe(20); // 40 − 20 (mobilité)
+  });
+  it('Déchirure de jambe Mineure réduit l’Esquive de 10', () => {
+    const c = fullCombatant({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD')] });
+    expect(defenseValue(c, 'esquive')).toBe(30); // 40 − 10
   });
 });

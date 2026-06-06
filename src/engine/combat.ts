@@ -13,6 +13,7 @@ import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
+import { traumaDodgePenalty } from './trauma';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -50,7 +51,10 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged'): number {
 export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
   if (mode === 'parade') return combatValue(c, 'melee');
   const sk = c.skills.find((s) => s.name.toLowerCase().includes('esquive'));
-  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + agilityTestPenalty(c);
+  // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
+  // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
+  const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
+  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + mobilityPenalty;
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */

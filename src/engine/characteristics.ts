@@ -2,6 +2,7 @@
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
 import { CharKey, Characteristics, Combatant } from './types';
+import { traumaCharPenalties } from './trauma';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -22,10 +23,7 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   const base = c.characteristics[key];
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
-  for (const t of c.traumas ?? []) {
-    const p = t.charPenalty?.[key];
-    if (p) mods.push(p);
-  }
+  mods.push(...traumaCharPenalties(c, key));
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));
