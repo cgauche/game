@@ -59,7 +59,7 @@ const ART_BY_GROUP: Record<string, string> = {
 };
 
 export function weaponFamily(w: Weapon): string {
-  const n = w.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  const n = wnorm(w.name);
   if (n in ART_BY_LABEL) return ART_BY_LABEL[n];
   return ART_BY_GROUP[weaponGroupKey(w)] ?? (w.type === 'ranged' ? 'arc' : 'epee');
 }
@@ -106,7 +106,7 @@ export function shieldPart(x: Weapon | ItemInstance): PartArt {
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */
 export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'maille' | 'plaque' {
-  const n = item.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const n = wnorm(item.name);
   if (/cuir|jaque/.test(n)) return 'cuir';
   if (/maille|cotte|haubert/.test(n)) return 'maille';
   if (/plaque|plastron|harnois|heaume|brassard|acier|gantelet|greve/.test(n)) return 'plaque';

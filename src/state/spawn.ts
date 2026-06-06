@@ -6,6 +6,7 @@ import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
+import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
 
@@ -17,8 +18,6 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
   }
   return chars;
 }
-
-const normTrait = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 
 /**
  * Attaques NATURELLES (FR) : pas d'arme tenue par le rig (la « part » du corps fait

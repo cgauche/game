@@ -7,7 +7,8 @@
 export interface WeaponForm { label: string; slug: string; type: 'melee' | 'ranged'; group: string; target: string; }
 export interface ShieldForm { label: string; slug: string; target: string; }
 
-export const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+import { norm } from '../../../lib/normalize';
+export { norm }; // re-export (source unique) — aussi utilisé en interne ci-dessous
 
 export const WEAPON_FORMS: WeaponForm[] = [
   { label: 'Bâton de combat', slug: 'baton', type: 'melee', group: "Armes d'hast", target: 'long bâton/quarterstaff en bois, deux bouts' },

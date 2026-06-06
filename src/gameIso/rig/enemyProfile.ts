@@ -13,6 +13,7 @@ import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
+import { norm } from '../../lib/normalize';
 import { quadSpeciesMatch } from './quadruped/quadSkeleton';
 import { wingSpeciesMatch } from './winged/composeWing';
 
@@ -30,8 +31,6 @@ export interface EnemyRigProfile {
   equip: EquipCtx;
   overlays?: RigOverlay[];
 }
-
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 /**
  * Indices de NON-rig : noms qui ressemblent à des humanoïdes mais qui ont une

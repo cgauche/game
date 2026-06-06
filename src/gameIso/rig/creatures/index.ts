@@ -5,18 +5,17 @@
  */
 import type { QuadProps } from '../quadruped/quadSkeleton';
 import type { CreatureDef } from './types';
+import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
 
 export { CREATURES };
 export type { CreatureDef, CreatureBodyPlan } from './types';
 
-const normName = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-
 /** Définition dont la CLÉ (nom) ou un ALIAS matche le nom donné (limite de mot). PUR. */
 function matchIn(defs: CreatureDef[], name: string): CreatureDef | undefined {
-  const n = normName(name);
+  const n = norm(name);
   for (const d of defs) {
-    for (const pat of [normName(d.name), ...(d.aliases ?? [])]) {
+    for (const pat of [norm(d.name), ...(d.aliases ?? [])]) {
       if (new RegExp(`\\b${pat}\\b`).test(n)) return d;
     }
   }

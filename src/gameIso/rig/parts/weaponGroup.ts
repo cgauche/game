@@ -10,8 +10,7 @@
  */
 import type { Weapon } from '../../../engine/types';
 import { trappings } from '../../../data';
-
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+import { norm } from '../../../lib/normalize';
 
 /** subType canonique → clé de famille propre (sans accents). */
 const GROUP_KEY: Record<string, string> = {
