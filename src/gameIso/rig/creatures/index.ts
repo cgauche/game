@@ -31,6 +31,20 @@ const BIPED = CREATURES.filter((c) => c.plan === 'biped');
 const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map((c) => [c.name, c]));
 export function bipedConfig(species: string): BipedConfig | undefined { return BIPED_BY_NAME[species]?.biped; }
 
+// Matchers bipèdes triés par PRIORITÉ (plus bas = testé d'abord) — chaque def porte sa regex
+// EXACTE `match` (reprise de l'ancien detectSpecies). L'ordre désambiguïse les chevauchements
+// (« rat ogre » → Skaven avant Ogre ; « elfe sylvain » avant l'elfe générique).
+const BIPED_MATCHERS = BIPED
+  .filter((c) => c.match)
+  .map((c) => ({ name: c.name, re: new RegExp(c.match!), pr: c.matchPriority ?? 100 }))
+  .sort((a, b) => a.pr - b.pr);
+/** Nom → espèce bipède (regex+priorité), ou undefined (→ Humain par défaut chez l'appelant). */
+export function bipedSpeciesMatch(name: string): string | undefined {
+  const n = norm(name);
+  for (const m of BIPED_MATCHERS) if (m.re.test(n)) return m.name;
+  return undefined;
+}
+
 /** Tables de props de rendu par espèce — dérivées des fichiers defs. */
 export const QUAD_SPECIES: Record<string, QuadProps> = Object.fromEntries(QUAD.map((c) => [c.name, c.quad!]));
 export const WINGED_SPECIES: Record<string, QuadProps> = Object.fromEntries(WING.map((c) => [c.name, c.quad!]));

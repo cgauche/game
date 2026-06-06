@@ -4,6 +4,6 @@ export const creature: CreatureDef = {
   name: "Démon",
   plan: 'biped',
   matchPriority: 38,
-  aliases: ["sanguinaire","khorne"],
+  match: "sanguinaire|khorne",
   biped: {"career":"Nu","monster":{"tete":"demon","cornes":true,"membresRouges":true}},
 };

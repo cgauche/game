@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   CREATURES, QUAD_SPECIES, WINGED_SPECIES,
   quadSpeciesMatch, wingSpeciesMatch, quadSpeciesNames, wingedSpeciesNames,
+  bipedSpeciesMatch, bipedConfig,
 } from './index';
 
 describe('registre de créatures (auto-collecté depuis defs/)', () => {
@@ -20,6 +21,38 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
     expect(QUAD_SPECIES['Cheval']).toBeTruthy();
     expect(QUAD_SPECIES['Rat géant']).toBeTruthy(); // l'accent du `name` est préservé
     expect(WINGED_SPECIES['Dragon']?.wings).toBe('membrane');
+  });
+
+  it('détection d\'espèce bipède (ex-detectSpecies) — cas + chevauchements par priorité', () => {
+    const cases: [string, string | undefined][] = [
+      ['Guerrier des clans', 'Skaven'],
+      ['Rat ogre', 'Skaven'], // \brat\b testé AVANT \bogre (priorité)
+      ['Homme-rat', 'Skaven'],
+      ['Ogre', 'Ogre'],
+      ['Elfe sylvain', 'Elfe sylvain'],
+      ['Haut-Elfe', 'Haut-Elfe'],
+      ['Elfe', 'Haut-Elfe'], // générique → Haut-Elfe
+      ['Nain mercenaire', 'Nain'],
+      ['Minotaure', 'Minotaure'], // AVANT homme-bête
+      ['Gor sauvage', 'Homme-bête'],
+      ['Petit gobelin', 'Gobelin'],
+      ['Snotling', 'Snotling'],
+      ['Goule de crypte', 'Goule'],
+      ['Zombie', 'Zombie'],
+      ['Vampire', 'Vampire'],
+      ['Sanguinaire de Khorne', 'Démon'],
+      ['Squelette guerrier', 'Squelette'],
+      ['Troll de pierre', 'Troll'],
+      ['Bandit', undefined], // aucun match → Humain par défaut chez l'appelant
+    ];
+    for (const [name, exp] of cases) expect(bipedSpeciesMatch(name), name).toBe(exp);
+  });
+
+  it('config bipède dérivée des defs', () => {
+    expect(bipedConfig('Skaven')?.career).toBe('Skaven');
+    expect(bipedConfig('Vampire')?.sex).toBe('M');
+    expect(bipedConfig('Goule')?.monster?.tete).toBe('goule');
+    expect(bipedConfig('Nain')).toBeUndefined(); // humanoïde simple : pas de config
   });
 
   it('routage par clé/alias à limite de mot', () => {

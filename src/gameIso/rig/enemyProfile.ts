@@ -16,7 +16,7 @@ import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
 import { quadSpeciesMatch } from './quadruped/quadSkeleton';
 import { wingSpeciesMatch } from './winged/composeWing';
-import { bipedConfig } from './creatures';
+import { bipedConfig, bipedSpeciesMatch } from './creatures';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
@@ -88,34 +88,11 @@ export function classifyEnemy(name: string): 'rig' | 'creature' {
   return EXOTIC_RE.test(norm(name)) ? 'creature' : 'rig';
 }
 
-/** Espèce de rig détectée du nom (sinon Humain). L'ORDRE compte : les pièges de sous-chaîne
- *  (« rat ogre » → Skaven avant ogre ; « goule » avant les bêtes) sont gérés en plaçant le
- *  cas spécifique d'abord. */
+/** Espèce de rig détectée du nom (sinon Humain). Dérivé du registre : chaque espèce bipède
+ *  porte sa regex `match` + `matchPriority` dans son fichier defs/ (l'ordre de priorité
+ *  désambiguïse « rat ogre » → Skaven avant Ogre, etc.). Plus d'if-chain centrale. */
 function detectSpecies(n: string): string {
-  if (/\bnain/.test(n)) return 'Nain';
-  if (/\bhalfling/.test(n)) return 'Halfling';
-  if (/haut.?elfe/.test(n)) return 'Haut-Elfe';
-  if (/elfe sylvain|elfe des bois/.test(n)) return 'Elfe sylvain';
-  if (/\belfe/.test(n)) return 'Haut-Elfe';
-  if (/\bgnome/.test(n)) return 'Gnome';
-  if (/skaven|homme.?rat|\brat\b|vermine|guerrier des clans|rat ogre/.test(n)) return 'Skaven'; // AVANT ogre (« rat ogre »)
-  // Morts-vivants humanoïdes
-  if (/squelette/.test(n)) return 'Squelette';
-  if (/goule|ghoul/.test(n)) return 'Goule'; // AVANT zombie/bêtes
-  if (/zombie/.test(n)) return 'Zombie';
-  if (/vampire|comte sanguin|comtesse sanguine/.test(n)) return 'Vampire';
-  // Hommes-bêtes
-  if (/minotaure/.test(n)) return 'Minotaure'; // AVANT homme-bête générique (tête de taureau)
-  if (/\bgor\b|ungor|bestigor|homme.?bete|beastman|brey|chamane.?brey/.test(n)) return 'Homme-bête';
-  // Peaux-vertes
-  if (/snotling/.test(n)) return 'Snotling'; // AVANT gobelin (« petit gobelin »)
-  if (/gobelin|gobbo|gobbe/.test(n)) return 'Gobelin';
-  if (/\borc\b|\borque\b|peau.?verte/.test(n)) return 'Orc';
-  // Gros / démons
-  if (/sanguinaire|khorne/.test(n)) return 'Démon';
-  if (/\btroll/.test(n)) return 'Troll';
-  if (/\bogre/.test(n)) return 'Ogre';
-  return 'Humain';
+  return bipedSpeciesMatch(n) ?? 'Humain';
 }
 
 // La config d'espèce bipède (career / monster / sex / parts / colors) vit désormais dans

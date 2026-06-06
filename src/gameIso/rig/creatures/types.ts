@@ -27,8 +27,12 @@ export interface CreatureDef {
   name: string;
   /** Gabarit corporel. `winged` = quadrupède + ailes (mêmes props `quad`). */
   plan: CreatureBodyPlan;
-  /** Synonymes de nom (accents retirés) — routage par nom dérivé de cette liste. */
+  /** Synonymes de nom (accents retirés) — routage par nom (limite de mot) dérivé de cette liste. */
   aliases?: string[];
+  /** Regex EXACTE de matching (source), alternative aux `aliases` quand il faut un contrôle fin
+   *  (préfixe `\bnain`, mot entier `\brat\b`, alternatives…). Reprend les patterns de l'ancien
+   *  detectSpecies. Si absent, le matching se fait sur nom+aliases (limite de mot). */
+  match?: string;
   /** Priorité de matching (plus BAS = testé en premier). Désambiguïse les chevauchements
    *  de nom : « rat ogre » → Skaven avant Ogre, Minotaure avant Homme-bête, etc. Défaut 100. */
   matchPriority?: number;
