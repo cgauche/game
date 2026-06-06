@@ -38,7 +38,7 @@ import {
   type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { rollTest, TestResult, opposedTest, resolveOpposed } from '../engine/tests';
+import { rollTest, TestResult, opposedTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds } from '../engine/characteristics';
 import {
@@ -1185,12 +1185,12 @@ export const useGame = create<GameState>((set, get) => ({
     attacker.fortune = (attacker.fortune ?? 0) - 1;
     const r = pa.result;
     const ad = r.attackerDetail!;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
     const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;
-      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
       res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
     } else {
       res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
@@ -1250,7 +1250,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1;
     const dd = pd.result.defenderDetail!;
-    const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+    const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },
@@ -1364,12 +1364,12 @@ export const useGame = create<GameState>((set, get) => ({
     const r = pa.result;
     const ad = r.attackerDetail!;
     const defSL = r.defenderDetail?.sl ?? 0;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: ad.roll === 100 || ad.roll % 11 === 0 };
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
     const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;
-      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
       res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
     } else {
       res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
@@ -1384,7 +1384,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !defender || (defender.resilience ?? 0) <= 0) return;
     defender.resilience = (defender.resilience ?? 0) - 1;
     const dd = pd.result.defenderDetail!;
-    const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, pd.atk.sl + 1, 1), isDouble: dd.roll === 100 || dd.roll % 11 === 0 };
+    const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, pd.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },

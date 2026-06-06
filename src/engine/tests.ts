@@ -33,11 +33,16 @@ export function rollTest(
 }
 
 /** Évalue un jet déjà obtenu contre une cible (utile pour rejouer un jet). */
+/** Un d100 est-il un « double » (11, 22, …, 99, 00=100) ? Génère Critique (réussi) ou Maladresse (raté). */
+export function isDoubleRoll(roll: number): boolean {
+  return roll === 100 || roll % 11 === 0;
+}
+
 export function evaluateTest(r: number, target: number): TestResult {
   const success = r <= target;
   // SL = dizaine(cible) − dizaine(jet). Un 100 (« 00 ») compte comme 0 dizaines de jet réussi.
   const sl = tens(target) - tens(r === 100 ? 100 : r);
-  const isDouble = r === 100 || r % 11 === 0;
+  const isDouble = isDoubleRoll(r);
   return { roll: r, target, success, sl, isDouble };
 }
 
