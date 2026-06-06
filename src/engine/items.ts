@@ -155,7 +155,7 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
 }
 
 /** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (concaténés —
- *  `parseWeaponDamage` somme les nombres) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
+ *  `effectiveWeaponDamage` somme les nombres) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
 export function weaponWithAmmo(weapon: Weapon, ammo: ItemInstance): Weapon {
   const extra = ammo.damage ?? '';
   const qualities = [...weapon.qualities];

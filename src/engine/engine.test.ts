@@ -3,10 +3,10 @@ import { makeRNG, RNG } from './dice';
 import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
+import { effectiveWeaponDamage } from './weaponDamage';
 import {
   reverseRoll,
   hitLocation,
-  parseWeaponDamage,
   resolveMelee,
   rangeBandModifier,
   rollMeleeAttacker,
@@ -331,12 +331,12 @@ describe('Localisation', () => {
   });
 });
 
-describe('Dégâts d’arme', () => {
+describe('Dégâts d’arme (parsing via effectiveWeaponDamage)', () => {
   it('+BF+4 avec BF=3 → 7', () => {
-    expect(parseWeaponDamage('+BF+4', 3)).toBe(7);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: '+BF+4', qualities: [] }, 3)).toBe(7);
   });
   it('+9 (distance) ignore BF', () => {
-    expect(parseWeaponDamage('+9', 3)).toBe(9);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: '+9', qualities: [] }, 3)).toBe(9);
   });
 });
 

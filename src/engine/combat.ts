@@ -14,16 +14,6 @@ import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { effectiveWeaponDamage } from './weaponDamage';
 
-/** Dégâts d'arme : « +BF+4 » → BF + 4, « +9 » → 9. */
-export function parseWeaponDamage(damage: string, strengthBonus: number): number {
-  if (damage == null) return 0;
-  const usesBF = /BF/i.test(damage);
-  const rest = damage.replace(/BF/gi, '');
-  const nums = rest.match(/[+-]?\d+/g) ?? [];
-  const sum = nums.reduce((a, n) => a + parseInt(n, 10), 0);
-  return Math.max(0, (usesBF ? strengthBonus : 0) + sum);
-}
-
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
   const n = r % 100; // 100 → 0
