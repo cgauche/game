@@ -61,7 +61,7 @@ import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
-import { reachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
@@ -2110,7 +2110,9 @@ export const useGame = create<GameState>((set, get) => ({
     const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     for (const f of foes) disengageFrom(mover, f);
     const blocked = occupied(battle, mover.id);
-    set({ battle: { ...battle, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover) * 2, blocked), log } });
+    // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
+    // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
+    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   },

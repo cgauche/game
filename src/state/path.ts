@@ -41,6 +41,19 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
   return dist;
 }
 
+/** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
+ *  votre adversaire ») : la portée de Course (`range`) restreinte aux cases qui n'APPROCHENT PAS `foe` —
+ *  leur distance de Tchebychev à l'adversaire doit être ≥ à celle de la case de départ. Pur. */
+export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, blocked: Set<string>): Map<string, number> {
+  const here = chebyshev(from, foe);
+  const out = new Map<string, number>();
+  for (const [k, v] of reachable(scene, from, range, blocked)) {
+    const [x, y] = k.split(',').map(Number);
+    if (chebyshev({ x, y }, foe) >= here) out.set(k, v);
+  }
+  return out;
+}
+
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>): Pt[] | null {
   const came = new Map<string, string | null>();
