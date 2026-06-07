@@ -76,6 +76,19 @@ describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   });
 });
 
+describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.295-297)', () => {
+  const ranged = { name: 'Arc', type: 'ranged' as const, damage: '+8', qualities: [] };
+  it('attaquant Énorme (+2 cat) vs Moyen : ×2 + Dévastatrice + Percutante, AVANT soak', () => {
+    expect(resolveStrayRangedHit(mk(), mk(), ranged, 34, 52).woundsLost).toBe(7); // 8+2 −3
+    // (8 + max(2,4) + 4)×2 − 3 = 32 − 3 = 29
+    expect(resolveStrayRangedHit(mk({ size: 'enorme' }), mk(), ranged, 34, 52).woundsLost).toBe(29);
+  });
+  it('+1 cat (Grande vs Moyen) : Dévastatrice mais pas de ×N', () => {
+    // 8 + max(2,4)=12, ×1 → 12 − 3 = 9
+    expect(resolveStrayRangedHit(mk({ size: 'grande' }), mk(), ranged, 34, 52).woundsLost).toBe(9);
+  });
+});
+
 describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', () => {
   it('touche automatiquement la victime depuis le jet d’origine (sans relancer)', () => {
     const att = mk({ name: 'Tireur' });

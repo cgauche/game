@@ -14,7 +14,7 @@ import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
-import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize } from './size';
+import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -455,11 +455,15 @@ function applyHit(
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
   const inoffensive = hasQ(weapon, 'Inoffensive');
+  // Atouts conférés par la Taille (attaquant plus grand — LDB 85 l.295) : fusionnés au calcul de dégâts.
+  const sizeQual = sizeGrantedQualities(attacker.size, defender.size);
+  const hasQx = (q: string) => hasQ(weapon, q) || sizeQual.includes(q);
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
   // Dévastatrice : DR-pour-dégâts = max(DR, dé des unités) ; Percutante : + dé des unités. Inoffensive annule (l.279/313).
-  const dmgDR = !inoffensive && hasQ(weapon, 'Dévastatrice') ? Math.max(effDR, units) : effDR;
+  const dmgDR = !inoffensive && hasQx('Dévastatrice') ? Math.max(effDR, units) : effDR;
   let damage = weaponDmg + Math.max(0, dmgDR);
-  if (!inoffensive && hasQ(weapon, 'Percutante')) damage += units;
+  if (!inoffensive && hasQx('Percutante')) damage += units;
+  damage *= sizeDamageMultiplier(attacker.size, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
   const woundsLost = woundsFromHit(weapon, defender, loc, damage);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
