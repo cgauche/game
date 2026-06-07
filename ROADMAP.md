@@ -253,6 +253,22 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - ✅ **IA d'ennemi enrichie** (cible le plus faible, tir à distance, sorts, Esquive/Parade, **Charge** —
   `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
   pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
+- ✅ **Attaques naturelles de créature pilotées par les Traits** (`engine/creatureAttacks.ts`, pur ;
+  LDB `85`) : chaque Trait d'attaque = une attaque distincte avec ses règles RAW. **Gratuites** (coût en
+  Avantage, n'entament pas l'Action, Test **opposé** → modale `pendingDefense` côté héros, IA en file
+  résumable à travers les modales) : **Morsure** (1 Av), **Attaque caudale** (1 Av ; cible plus petite
+  perdant des PB → À Terre), **Cornes** (à la Charge, sans coût). **De ZONE** : **Souffle** (2 Av, Test
+  opposé CT/Esquive, Dégâts = Indice + effet par **Type** Feu/Froid/Corrosif/Électricité/Poison/**Fumée**)
+  et **Vomissement** (Troll, 3 Av, BE+4 + Sonné + corrosion). **ACTION** : **Regard pétrifiant** (opposé
+  CT/Init +Avantage, Sonné/Pétrifié selon la marge), **Étreinte glaciale** (opposé CC, ignore BE+PA),
+  **Langue préhensile** (à distance, Empêtré), **Hurlement fantomatique** (Banshee, zone, Brisé +
+  Assourdi). Modificateurs d'Atout : **Venin** (Empoisonné), **Constricteur** (Empêtré), **Vampirique**
+  (soigne l'attaquant). **Poses d'attaque dédiées** (morsure/queue/cornes/souffle/vomi/regard) sur le rig
+  quad/ailé ; **Piétinement** repassé en Test **opposé** (modale, plus de version passive).
+- ✅ **Souffle (Fumée) → Ligne de Vue** : le Type Fumée « remplit la zone, bloquant les Lignes de vue
+  pendant BE Rounds » — branché sur le **système de Ligne de Vue EXISTANT** (`lineOfSightCover` +
+  `smokeZone`, `BattleState.smoke[]` à TTL décrémentée en fin de Round) : bloque tir/sort, psychologie
+  et acquisition de cible IA ; la créature **immunisée à son propre Souffle** ne s'enfume pas.
 
 ## 🎯 Jalon 1.5 — Sous-système Taille *(T2/T3/T4/T5 LIVRÉS — audit RAW propre ; reste T6, lot à part)*
 
