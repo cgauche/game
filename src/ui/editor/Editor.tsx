@@ -1,7 +1,10 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
+import { validateScene, type Warning } from '../../state/validateScene';
+import { ValidationPanel } from './ValidationPanel';
+import { EntityListPanel } from './EntityListPanel';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
@@ -418,6 +421,39 @@ export function Editor() {
   }, [sel, clip, scene]);
   const selB = (scene.buildings ?? []).find((b) => b.id === selectedBuilding) ?? null;
   const selT = scene.triggers.find((t) => t.id === selectedTrigger) ?? null;
+  const warnings = useMemo(() => validateScene([scene, ...otherScenes]).filter((w) => w.sceneId === scene.id), [scene, otherScenes]);
+  /** Clic sur un avertissement → sélectionne le fautif. */
+  function selectWarning(w: Warning) {
+    if (!w.refId) return;
+    if (w.scope === 'entity') { setSelected(w.refId); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }
+    else if (w.scope === 'trigger') selectTrigger(w.refId);
+    else if (w.scope === 'building') { setSelectedBuilding(w.refId); setSelected(null); setSelectedTrigger(null); setSelectedSpawn(null); }
+    else if (w.scope === 'dialogue') setDlgOpen(true);
+    else if (w.scope === 'encounter') setEncOpen(true);
+  }
+  // Clavier : Suppr = supprimer la sélection ; flèches = nudge d'1 case (hors champ de saisie).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (sel) { e.preventDefault(); setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) }); setSelected(null); }
+        else if (selT) { e.preventDefault(); setScene({ ...scene, triggers: scene.triggers.filter((t) => t.id !== selT.id) }); setSelectedTrigger(null); }
+        else if (selB) { e.preventDefault(); setScene({ ...scene, buildings: (scene.buildings ?? []).filter((b) => b.id !== selB.id) }); setSelectedBuilding(null); }
+        return;
+      }
+      const d: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      if (sel && d[e.key]) {
+        e.preventDefault();
+        const { w, h } = scene.dimensions;
+        const nx = Math.max(0, Math.min(w - 1, sel.pos.x + d[e.key][0]));
+        const ny = Math.max(0, Math.min(h - 1, sel.pos.y + d[e.key][1]));
+        setScene({ ...scene, entities: scene.entities.map((x) => (x.id === sel.id ? { ...x, pos: { x: nx, y: ny } } : x)) });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [scene, sel, selT, selB]);
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (t.id === selectedTrigger ? { ...t, ...patch } : t)) });
   const updateSelTRect = (patch: Partial<Trigger['rect']>) => updateSelT({ rect: { ...selT!.rect, ...patch } });
@@ -653,6 +689,8 @@ export function Editor() {
               <button className="btn small" onClick={openAdvanced}>
                 Avancé (JSON)
               </button>
+              <div className="mini-title">Validation{warnings.length ? ` (${warnings.length})` : ''}</div>
+              <ValidationPanel warnings={warnings} onSelect={selectWarning} />
             </div>
           )}
 
@@ -1366,6 +1404,11 @@ export function Editor() {
                   </div>
                 </>
               )}
+              <EntityListPanel
+                entities={scene.entities}
+                selectedId={selected}
+                onSelect={(id) => { setSelected(id); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }}
+              />
             </>
           )}
         </aside>
