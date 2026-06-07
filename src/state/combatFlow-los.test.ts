@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveAttack } from './combatFlow';
+import { resolveAttack, strayShotVictim } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import { Scene } from './scene';
 import { Combatant } from '../engine/types';
@@ -78,5 +78,26 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const b = target({ pos: { x: 6, y: 0 } });
     const r = resolveAttack(mkGet(s, [a, b]), a, b); // mkGet : moved absent
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
+  });
+});
+
+describe('strayShotVictim — tir dévié vers un allié (LDB 14 l.136)', () => {
+  const att = shooter();
+  const ally = { id: 'ALLY', kind: 'hero', wounds: { current: 10, max: 10 }, conditions: [] } as unknown as Combatant;
+  const tgt = target({ pos: { x: 6, y: 0 }, engagedWith: ['ALLY'] });
+  const battle = { combatants: [att, tgt, ally] } as any;
+  const miss = (roll: number, t: number) => ({ hit: false, attackerRoll: roll, attackerDetail: { target: t } }) as any;
+
+  it('le -20 a fait rater (jet ≤ cible+20) + allié Engagé → redirige vers l’allié', () => {
+    expect(strayShotVictim(miss(40, 30), att, tgt, battle)?.id).toBe('ALLY'); // 40 ≤ 30+20
+  });
+  it('jet > cible+20 (aurait raté de toute façon) → pas de redirection', () => {
+    expect(strayShotVictim(miss(60, 30), att, tgt, battle)).toBeNull();
+  });
+  it('le tir a touché → pas de redirection', () => {
+    expect(strayShotVictim({ hit: true } as any, att, tgt, battle)).toBeNull();
+  });
+  it('cible non engagée avec un allié → pas de redirection', () => {
+    expect(strayShotVictim(miss(40, 30), att, target({ pos: { x: 6, y: 0 } }), battle)).toBeNull();
   });
 });

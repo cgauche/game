@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit } from './combat';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
 
@@ -45,6 +45,17 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
   it('Moyenne par défaut (size absent des deux côtés) : aucun mod de Taille', () => {
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
+  });
+});
+
+describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', () => {
+  it('touche automatiquement la victime depuis le jet d’origine (sans relancer)', () => {
+    const att = mk({ name: 'Tireur' });
+    const ally = mk({ name: 'Allié', wounds: { current: 10, max: 10 } });
+    const res = resolveStrayRangedHit(att, ally, bow, 30, 55); // roll 30 ≤ cible 55 → touche
+    expect(res.hit).toBe(true);
+    expect(res.woundsLost).toBeGreaterThan(0); // dégâts recalculés sur l'allié
+    expect(res.location).toBeTruthy();
   });
 });
 

@@ -18,6 +18,7 @@ import {
   reverseRoll,
   woundsFromHit,
   rangeBandModifier,
+  resolveStrayRangedHit,
   AttackResult,
   ModLine,
 } from '../engine/combat';
@@ -273,12 +274,24 @@ export function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
+/** Tir dans la mêlée (LDB 14 l.136) : si la pénalité de −20 a transformé une réussite en échec, le
+ *  tir touche un allié intercalé de la cible. Retourne l'allié (le 1er Engagé côté tireur, « au
+ *  hasard » approximé — le cas courant n'a qu'un allié au contact), ou null si non applicable. */
+export function strayShotVictim(res: AttackResult, attacker: Combatant, target: Combatant, battle: BattleState): Combatant | null {
+  if (res.hit || !res.attackerDetail) return null;
+  if (res.attackerRoll > res.attackerDetail.target + 20) return null; // n'aurait pas touché même sans le −20
+  const allies = (target.engagedWith ?? [])
+    .map((id) => battle.combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c && c.kind === attacker.kind && !isOutOfAction(c));
+  return allies[0] ?? null;
+}
+
 export function resolveAttack(
   get: () => GameState,
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
-): { res: AttackResult; weapon: Weapon } | null {
+): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = chebyshev(attacker.pos!, target.pos!);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
@@ -302,7 +315,14 @@ export function resolveAttack(
       return !!ally && ally.kind === attacker.kind;
     });
     if (inMelee) env.push({ label: 'Tir dans la mêlée', value: -20 });
-    return { res: resolveRanged(attacker, target, weapon, battleRng(), dist, location, env), weapon };
+    const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
+    // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
+    // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
+    if (inMelee && !res.hit) {
+      const ally = strayShotVictim(res, attacker, target, battle);
+      if (ally) return { res: resolveStrayRangedHit(attacker, ally, weapon, res.attackerRoll, res.attackerDetail!.target + 20), weapon, victim: ally };
+    }
+    return { res, weapon };
   }
   // Mêlée : seule la météo (tempête/neige) s'applique à l'attaque.
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
@@ -636,7 +656,7 @@ export function doAttack(get: () => GameState, set: any, attacker: Combatant, ta
     get().log('Cible hors de portée de mêlée.');
     return false;
   }
-  applyAttackResult(get, set, attacker, target, r.weapon, r.res);
+  applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
   return false;
 }
 

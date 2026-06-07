@@ -130,6 +130,8 @@ export interface PendingAttack {
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
   fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
+  /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.136) — sinon = targetId. */
+  victimId?: string;
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
@@ -1169,7 +1171,7 @@ export const useGame = create<GameState>((set, get) => ({
       set({ pendingAttack: null });
       return;
     }
-    set({ pendingAttack: { ...pa, result: r.res } });
+    set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id } });
   },
   attackReroll: () => {
     const { battle, pendingAttack: pa } = get();
@@ -1181,7 +1183,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
     attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
     const r = resolveAttack(get, attacker, target, pa.location ?? undefined);
-    if (r) set({ pendingAttack: { ...pa, result: r.res, rerolled: true }, battle: { ...battle } });
+    if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */
   attackBonusSL: () => {
@@ -1210,10 +1212,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !pa || !pa.result) return;
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
+    // Tir dévié dans la mêlée (LDB 14 l.136) : la touche est appliquée à l'allié intercalé, pas à la cible.
+    const victim = pa.victimId ? battle.combatants.find((c) => c.id === pa.victimId) ?? target : target;
     set({ pendingAttack: null });
-    if (attacker && target) {
+    if (attacker && target && victim) {
       const weapon = firedWeapon(attacker, target);
-      applyAttackResult(get, set, attacker, target, weapon, pa.result);
+      applyAttackResult(get, set, attacker, victim, weapon, pa.result);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53).
       if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null } });

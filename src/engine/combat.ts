@@ -7,7 +7,7 @@
  *          4) Application = Dégâts − (Bonus d'Endurance + PA de la localisation)
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, resolveOpposed, TestResult } from './tests';
+import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon } from './types';
@@ -411,6 +411,26 @@ export function resolveRanged(
     };
   }
   return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+}
+
+/**
+ * Touche « accidentelle » de Projectiles sur un allié intercalé (Tir dans la mêlée, LDB
+ * `14 - _GoBack.md` l.136) : un tir qui aurait touché sans la pénalité de −20 dévie et frappe un
+ * allié de la cible. Reconstruit la touche depuis le jet d'origine `roll` et la valeur cible SANS
+ * le −20 (`effTarget`) — sans relancer (la touche était acquise) ; dégâts recalculés sur la victime.
+ */
+export function resolveStrayRangedHit(
+  attacker: Combatant,
+  victim: Combatant,
+  weapon: Weapon,
+  roll: number,
+  effTarget: number,
+): AttackResult {
+  const atk = evaluateTest(roll, effTarget);
+  const atkBd = bd('Projectiles (dévié)', combatValue(attacker, 'ranged'), atk, []);
+  const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
+  res.log = `Le tir dévie dans la mêlée et touche ${victim.name} !`;
+  return res;
 }
 
 function applyHit(
