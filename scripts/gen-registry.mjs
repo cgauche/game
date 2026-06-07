@@ -64,6 +64,16 @@ export const REGISTRIES = [
     type: 'WeaponDef',
     typeFrom: './types',
   },
+  {
+    // Gabarits corporels AUTO-ENREGISTRÉS : 1 plan = 1 fichier defs/ (ré-exporte son BodyPlan).
+    // bodyPlan.ts dérive la table PLANS de cette liste → plus de registre central à éditer.
+    dir: 'src/gameIso/rig/plans/defs',
+    out: 'src/gameIso/rig/plans/_registry.generated.ts',
+    exportName: 'plan',
+    arrayName: 'PLAN_LIST',
+    type: 'BodyPlan',
+    typeFrom: '../bodyPlan',
+  },
 ];
 
 function genOne(r) {

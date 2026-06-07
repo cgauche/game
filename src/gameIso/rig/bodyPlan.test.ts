@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { bodyPlanOf, planById } from './bodyPlan';
 
+describe('gabarits auto-enregistrés (plans/defs/ → PLANS dérivé)', () => {
+  it('planById résout les 11 gabarits sans registre central', () => {
+    for (const id of ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'spectral', 'squig', 'amorphous', 'jabberslythe']) {
+      const p = planById(id);
+      expect(p, id).toBeTruthy();
+      expect(p.id, `${id} déclare son propre id`).toBe(id);
+    }
+  });
+});
+
 describe('bodyPlanOf', () => {
   it('quadrupèdes → quadruped', () => {
     for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien',

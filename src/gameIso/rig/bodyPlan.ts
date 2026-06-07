@@ -1,9 +1,10 @@
 /**
  * Registre des GABARITS CORPORELS — indirige le rendu d'une créature vers son plan, ou
  * 'monolithic' (legacy : pas de plan). UNE machinerie (FK générique + palette + facing) ; chaque
- * plan apporte son squelette + ses anims (poses). Le ROUTAGE est registry-driven : `bodyPlanOf`
- * dérive le plan du nom via les `defs/` (plus aucune chaîne de matchers par-plan à maintenir) ;
- * AJOUTER un gabarit = un module compose (BodyPlan exporté) + 1 entrée PLANS + des defs.
+ * plan apporte son squelette + ses anims (poses). TOUT est registry-driven : `bodyPlanOf` dérive
+ * le plan du nom via `creatures/defs/`, et la table PLANS est AUTO-ENREGISTRÉE depuis
+ * `plans/defs/` — AJOUTER un gabarit = un module compose (BodyPlan exporté) + un `plans/defs/<id>.ts`
+ * d'une ligne + des defs de créatures. ZÉRO édition de ce fichier.
  */
 import type { ResolvedBone } from './composeRig';
 import type { View } from './facing';
@@ -11,20 +12,12 @@ import type { Palette } from './palette';
 import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
-import { bipedPlan } from './bipedPlan';
-import { quadrupedPlan } from './quadruped/composeQuad';
-import { wingedPlan } from './winged/composeWing';
-import { serpentinePlan } from './serpentine/composeSerpent';
-import { arachnidPlan } from './arachnid/composeSpider';
-import { avianPlan } from './avian/composeBird';
-import { cephalopodPlan } from './cephalopod/composeOctopus';
-import { spectralPlan } from './spectral/composeSpectre';
-import { squigPlan } from './squig/composeSquig';
-import { amorphousPlan } from './amorphous/composeHulk';
-import { jabberslythePlan } from './jabberslythe/composeJabber';
+import { PLAN_LIST } from './plans/_registry.generated';
 import { creaturePlanMatch, creatureMatch } from './creatures';
 
-export type BodyPlanId = 'biped' | 'quadruped' | 'winged' | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe';
+/** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
+ *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
+export type BodyPlanId = string;
 
 /** Options de résolution communes (le bipède lit appearance/equip/career ; tous lisent colors). */
 export interface ResolveOpts {
@@ -49,19 +42,9 @@ export interface BodyPlan {
   hasView(species: string, view: View): boolean;
 }
 
-const PLANS: Record<BodyPlanId, BodyPlan> = {
-  biped: bipedPlan,
-  quadruped: quadrupedPlan,
-  winged: wingedPlan,
-  serpentine: serpentinePlan,
-  arachnid: arachnidPlan,
-  avian: avianPlan,
-  cephalopod: cephalopodPlan,
-  spectral: spectralPlan,
-  squig: squigPlan,
-  amorphous: amorphousPlan,
-  jabberslythe: jabberslythePlan,
-};
+/** Table des gabarits DÉRIVÉE des fichiers `plans/defs/` (auto-enregistrés via le codegen) —
+ *  plus de registre central à éditer. Ajouter un gabarit = déposer `plans/defs/<id>.ts`. */
+const PLANS: Record<string, BodyPlan> = Object.fromEntries(PLAN_LIST.map((p) => [p.id, p]));
 export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];
 }
