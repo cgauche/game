@@ -313,7 +313,7 @@ describe('Bonus & Blessures', () => {
   });
   it('Halfling (Petit) = 2×BE + BFM', () => {
     const chars = { F: 30, E: 40, FM: 30 } as Characteristics;
-    expect(maxWounds(chars, true)).toBe(2 * 4 + 3); // 11
+    expect(maxWounds(chars, 'petite')).toBe(2 * 4 + 3); // 11
   });
 });
 

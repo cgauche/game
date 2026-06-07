@@ -3,6 +3,7 @@
  */
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties } from './trauma';
+import { SizeCategory, woundsForSize, effectiveSize } from './size';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -36,9 +37,20 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
  * Livre de base, Tableau des Attributs : « Points de Blessure = BF+(2×BE)+BFM »
  * (et « (2×BE)+BFM » pour les Halflings, qui ont le talent Petit).
  */
-export function maxWounds(chars: Characteristics, isSmall = false): number {
-  const bf = bonus(chars.F);
-  const be = bonus(chars.E);
-  const bfm = bonus(chars.FM);
-  return isSmall ? be * 2 + bfm : bf + be * 2 + bfm;
+export function maxWounds(chars: Characteristics, size: SizeCategory = 'moyenne'): number {
+  return woundsForSize(bonus(chars.F), bonus(chars.E), bonus(chars.FM), size);
+}
+
+/**
+ * Blessures max DYNAMIQUES (LDB 85 — exigence : les sorts modifiant F/E/FM impactent les Blessures).
+ * = base (Blessures à vide, snapshot ou surcharge au spawn) + le DELTA dû aux buffs F/E/FM, multiplié
+ * par la Taille (via `woundsForSize`). À vide, le delta = 0 → on rend exactement `wounds.base` (préserve
+ * les valeurs livre traitées : Coriace, mort-vivant…). La base elle-même n'est jamais recalculée.
+ */
+export function effectiveMaxWounds(c: Combatant): number {
+  const size = effectiveSize(c.size);
+  const base = c.wounds.base ?? c.wounds.max;
+  const eff = woundsForSize(bonus(effectiveChar(c, 'F')), bonus(effectiveChar(c, 'E')), bonus(effectiveChar(c, 'FM')), size);
+  const raw = woundsForSize(bonus(c.characteristics.F), bonus(c.characteristics.E), bonus(c.characteristics.FM), size);
+  return base + (eff - raw);
 }

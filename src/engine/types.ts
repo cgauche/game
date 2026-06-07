@@ -156,7 +156,9 @@ export interface Combatant {
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
   characteristics: Characteristics;
-  wounds: { current: number; max: number };
+  /** Points de Blessure. `base` = Blessures à vide (snapshot/surcharge au spawn) ; `max` dynamique
+   *  = base + delta des buffs F/E/FM × Taille (cf. effectiveMaxWounds) ; `current` = PB restants. */
+  wounds: { current: number; max: number; base?: number };
   advantage: number;
   conditions: ConditionInstance[];
   /** Armes/armure ACTIVES (dérivées de l'équipement) — utilisées en combat. */

@@ -207,8 +207,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const trappingNames = [...classTrappings, ...(level?.trappings ?? [])];
   const items = buildInventory(trappingNames);
 
-  const small = sp.small;
-  const wmax = maxWounds(chars, small);
+  // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
+  const size: import('./size').SizeCategory = sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne';
+  const wmax = maxWounds(chars, size);
 
   // Destin / Résilience
   const fateBase = sp.fate;
@@ -223,8 +224,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     kind: 'hero',
     species: sp.label,
     career: opts.careerLabel,
+    size,
     characteristics: chars,
-    wounds: { current: wmax, max: wmax },
+    wounds: { current: wmax, max: wmax, base: wmax },
     advantage: 0,
     conditions: [],
     weapons: [],

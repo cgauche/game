@@ -75,7 +75,7 @@ export function CharacterCreator() {
 
   const totalAdv = Object.values(skillAdv).reduce((a, b) => a + b, 0);
   const overCap = Object.values(skillAdv).some((v) => v > 10);
-  const wounds = maxWounds(chars, sp.small);
+  const wounds = maxWounds(chars, sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne');
 
   const create = () => {
     const hero = createHero({

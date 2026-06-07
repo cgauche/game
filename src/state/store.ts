@@ -46,7 +46,7 @@ import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
 import { persistentConditions } from '../engine/persistence';
-import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
+import { findSpell, levelsForCareer, findSkill } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
@@ -73,9 +73,10 @@ function currentCareerLevel(hero: Combatant) {
 /** Recalcule les Blessures max (BF + 2·BE + BFM, LDB Attributs) après une Augmentation de
  *  Caractéristique ; un gain de max augmente aussi le courant d'autant (mute le héros). */
 function recomputeWounds(hero: Combatant) {
-  const small = findSpecies(hero.species ?? '')?.small ?? false;
-  const newMax = maxWounds(hero.characteristics, small);
+  // Augmentation permanente de Caractéristique → recalcul de la BASE (formule × Taille de l'espèce).
+  const newMax = maxWounds(hero.characteristics, hero.size ?? 'moyenne');
   const delta = newMax - hero.wounds.max;
+  hero.wounds.base = newMax;
   hero.wounds.max = newMax;
   if (delta > 0) hero.wounds.current += delta;
   if (hero.wounds.current > newMax) hero.wounds.current = newMax;
