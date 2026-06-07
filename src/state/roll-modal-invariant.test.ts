@@ -20,7 +20,10 @@ const PRIMITIVES = [
   'applyAttackResult(', 'applyTrample(', 'applyMiscast(', 'focusSpell(',
 ];
 const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
-const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal']);
+// `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
+// Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
+// le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
+const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply']);
 // Dette temporaire (résolue au fil des tâches) — à VIDER au fur et à mesure.
 const TODO = new Set<string>([
   'startCombat', // Lot B T8 → initiative en révélation
