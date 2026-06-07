@@ -4,7 +4,7 @@ import { useGame } from '../state/store';
 import { planById, bodyPlanOf, type BodyPlanId } from './rig/bodyPlan';
 import { creatureMatch } from './rig/creatures';
 import { bonesToSvg } from './rig/renderBones';
-import { facingView, screenDir, type View } from './rig/facing';
+import { project, type View } from './rig/facing';
 import type { ColorsSel } from '../state/scene';
 
 const STEP_MS = 160; // démarche (aligné déplacement)
@@ -19,7 +19,8 @@ type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack
  * Facing 8-dir rot-aware, recolor, pose de mort. Hébergé dans la boîte 120×150 par tokenNode.
  */
 export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name: string; colors?: ColorsSel; dead?: boolean }) {
-  const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
+  const camRot = useGame((s) => s.camRot);
+  const worldDir = useGame((s) => s.facing?.[id]);
   const [, force] = useState(0);
   const modeRef = useRef<Mode>({ kind: 'rest' });
   const rafRef = useRef(0);
@@ -30,13 +31,6 @@ export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name
 
   useEffect(() => {
     if (!plan) return;
-    const face = (a?: { x: number; y: number }, b?: { x: number; y: number }) => {
-      if (!a || !b) return;
-      const st = useGame.getState();
-      const vd = st.scene ? { ...st.scene.dimensions, rot: st.camRot } : undefined;
-      const { dx, dy } = screenDir(a, b, vd);
-      if (dx !== 0 || dy !== 0) setFacing(facingView(dx, dy));
-    };
     const loop = () => {
       const m = modeRef.current;
       const t = performance.now();
@@ -52,14 +46,11 @@ export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name
     const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
       if (d.id !== id) return;
       const p = d.path;
-      if (p && p.length > 1) face(p[0], p[p.length - 1]);
       modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, p?.length ?? 1) * STEP_MS };
       ensureLoop();
     });
     const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string }) => {
       if (d.from !== id) return;
-      const cs = useGame.getState().battle?.combatants;
-      face(cs?.find((c) => c.id === d.from)?.pos, cs?.find((c) => c.id === d.to)?.pos);
       modeRef.current = { kind: 'attack', start: performance.now() };
       ensureLoop();
     });
@@ -79,6 +70,7 @@ export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name
         : plan.idlePose
           ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
           : plan.restPose();
-  const svg = bonesToSvg(plan.resolve(species, facing.view, pose, { colors }));
-  return <g transform={facing.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
+  const fv = worldDir ? project(worldDir, camRot) : { view: 'front' as View, mirror: false };
+  const svg = bonesToSvg(plan.resolve(species, fv.view, pose, { colors }));
+  return <g transform={fv.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
 }
