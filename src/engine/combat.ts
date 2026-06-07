@@ -289,7 +289,9 @@ export function finishMelee(
 ): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
-  const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
+  // Pénalité de parade contre plus grand : −2 DR par catégorie de Taille supérieure (LDB 85 l.305-306) — Parade (CC) seulement, pas l'Esquive.
+  const parrySizePenalty = defenseMode === 'parade' ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
+  const drAdjust = (defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0) - parrySizePenalty;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode, dodgeMod));

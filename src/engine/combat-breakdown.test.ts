@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee } from './combat';
+import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
 
@@ -73,6 +74,21 @@ describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   });
   it('Inoffensive annule Dévastatrice et Percutante', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice', 'Percutante', 'Inoffensive']), 34, 52).woundsLost).toBe(7);
+  });
+});
+
+describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.305-306)', () => {
+  const moy = mk({ size: 'moyenne', weapons: [sword] });
+  const atk = evaluateTest(30, 50); // DR 2
+  const def = evaluateTest(30, 60); // DR 3 (le défenseur l'emporterait : 3 > 2)
+  it('un Moyen parant un Énorme subit −4 DR → l’attaquant touche', () => {
+    expect(finishMelee(mk({ size: 'enorme' }), moy, sword, atk, def, 'parade').hit).toBe(true);
+  });
+  it('en esquive, aucune pénalité de Taille → le défenseur évite', () => {
+    expect(finishMelee(mk({ size: 'enorme' }), moy, sword, atk, def, 'esquive').hit).toBe(false);
+  });
+  it('attaquant de même Taille : parade normale (pas de pénalité)', () => {
+    expect(finishMelee(mk({ size: 'moyenne' }), moy, sword, atk, def, 'parade').hit).toBe(false);
   });
 });
 
