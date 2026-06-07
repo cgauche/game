@@ -6,6 +6,8 @@
 import { create } from 'zustand';
 import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng, seedBattleRng } from './battleRng';
+import { facingToward } from '../gameIso/rig/facing';
+import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
@@ -264,6 +266,12 @@ export interface GameState {
   mode: 'exploration' | 'battle';
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   rotateCam: (dir: 1 | -1) => void;
+  /** Orientation MONDE vivante par entité/combattant (Dir8) — projetée au rendu (camRot). */
+  facing: Record<string, Dir8>;
+  setFacing: (id: string, dir: Dir8) => void;
+  faceToward: (id: string, from?: Pt, to?: Pt) => void;
+  faceFromPath: (id: string, path?: Pt[] | null) => void;
+  faceAtCombatStart: () => void;
   zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
   setZoom: (z: number) => void;
   partyPos: Pt;
@@ -455,6 +463,36 @@ export const useGame = create<GameState>((set, get) => ({
   mode: 'exploration',
   camRot: 0,
   rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
+  facing: {},
+  setFacing: (id, dir) => set((s) => ({ facing: { ...s.facing, [id]: dir } })),
+  faceToward: (id, from, to) => {
+    if (!from || !to) return;
+    set((s) => ({ facing: { ...s.facing, [id]: facingToward(from, to) } }));
+  },
+  faceFromPath: (id, path) => {
+    if (!path || path.length < 2) return;
+    get().faceToward(id, path[0], path[path.length - 1]);
+  },
+  // Orientation à l'entrée en combat : valeur authored (entité de scène) sinon vers l'ennemi le plus proche.
+  faceAtCombatStart: () => {
+    const { battle, scene, facing } = get();
+    if (!battle) return;
+    const next: Record<string, Dir8> = { ...facing };
+    for (const c of battle.combatants) {
+      if (!c.pos) continue;
+      const authored = scene?.entities.find((e) => e.id === c.id)?.facing;
+      if (authored) { next[c.id] = authored; continue; }
+      const foes = battle.combatants.filter((o) => o.pos && (o.kind === 'hero') !== (c.kind === 'hero'));
+      let best: Pt | undefined;
+      let bd = Infinity;
+      for (const o of foes) {
+        const d = Math.max(Math.abs(o.pos!.x - c.pos.x), Math.abs(o.pos!.y - c.pos.y));
+        if (d < bd) { bd = d; best = o.pos!; }
+      }
+      if (best) next[c.id] = facingToward(c.pos, best);
+    }
+    set({ facing: next });
+  },
   zoom: 1,
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(1, z)) }),
   partyPos: { x: 0, y: 0 },
@@ -703,6 +741,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (!isWalkable(scene, pt.x, pt.y)) return;
     const from = partyPos; // case quittée (sert de retour hors du bâtiment)
     set({ partyPos: pt });
+    const leadId = get().party[0]?.id;
+    if (leadId) get().faceFromPath(leadId, [from, pt]);
     bus.emit(EVT.SCENE_DIRTY);
     const door = doorAt(scene, pt.x, pt.y);
     if (door && door.reveal === 'door' && door.interiorScene) {
@@ -815,6 +855,7 @@ export const useGame = create<GameState>((set, get) => ({
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
     set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
+    get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
       kind: 'round',
@@ -1029,6 +1070,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, active.id);
       const path = pathTo(scene, active.pos!, pt, blocked);
       active.pos = { ...pt };
+      get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       set({ battle: { ...battle, moved: true, action: null, reachable: new Map() } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1067,6 +1109,7 @@ export const useGame = create<GameState>((set, get) => ({
       const adv = chargeAdvantage(effectiveMovement(active), distFrom);
       const path = pathTo(scene, active.pos!, dest, blocked);
       active.pos = { ...dest };
+      get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
       active.gainedAdvThisRound = true;
