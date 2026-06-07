@@ -898,7 +898,8 @@ export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant)
 /** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale = +Indice (BF inclus). */
 function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
-  return { name: kind === 'caudale' ? 'Attaque caudale' : 'Morsure', type: 'melee', damage: `+${bonus}`, qualities: [] };
+  const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : 'Morsure';
+  return { name, type: 'melee', damage: `+${bonus}`, qualities: [] };
 }
 
 /** Type de pose d'attaque (rendu créature) déduit du NOM de l'arme naturelle, ou undefined (arme
@@ -957,7 +958,7 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
  *  restaure l'Action et applique les effets. Dépense 1 Avantage. */
 function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number): boolean {
   const prevActed = get().battle?.acted ?? false;
-  attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage
+  attacker.advantage = Math.max(0, attacker.advantage - (kind === 'cornes' ? 0 : 1)); // 1 Avantage ; Cornes = gratuite SUR CHARGE (sans coût)
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
@@ -976,15 +977,19 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   const battle = get().battle;
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
   if (enemy.pendingFreeAttacks === undefined) {
-    const traitKinds = creatureAttacks(enemy.traits ?? [])
+    const atks = creatureAttacks(enemy.traits ?? []);
+    const traitKinds = atks
       .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
       .map((a) => a.kind);
-    enemy.pendingFreeAttacks = [...traitKinds, 'pietinement']; // Piétinement (Taille) en dernier
+    // Cornes : Attaque gratuite gagnée EN CHARGEANT (LDB 85), sans coût d'Avantage → en tête.
+    const cornes = enemy.chargedThisTurn && atks.some((a) => a.kind === 'cornes') ? ['cornes'] : [];
+    enemy.chargedThisTurn = false; // consommée
+    enemy.pendingFreeAttacks = [...cornes, ...traitKinds, 'pietinement']; // Piétinement (Taille) en dernier
   }
   while (enemy.pendingFreeAttacks.length) {
-    if (enemy.advantage < 1) break;
-    const b2 = get().battle; if (!b2 || b2.over) break;
     const kind = enemy.pendingFreeAttacks[0];
+    if (kind !== 'cornes' && enemy.advantage < 1) break; // Cornes (Charge) ne coûte pas d'Avantage
+    const b2 = get().battle; if (!b2 || b2.over) break;
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
     const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
@@ -1501,6 +1506,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
           if (adv) {
             enemy.advantage += adv;
             enemy.gainedAdvThisRound = true;
+            enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
           }
         }
         attackThenAdvance(tgt);

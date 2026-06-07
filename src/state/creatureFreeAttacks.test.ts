@@ -82,6 +82,23 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
   });
 
+  it('Cornes : Attaque gratuite gagnée en CHARGEANT, sans coût d’Avantage (LDB 85)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Cornes +14']; E.advantage = 0; E.chargedThisTurn = true; // a chargé avec 0 Avantage
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+  });
+
+  it('Cornes : sans Charge, aucune Attaque de Cornes (0 Avantage → rien)', () => {
+    const { H, E } = setup();
+    E.traits = ['Cornes +14']; E.advantage = 0; E.chargedThisTurn = false;
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
+  });
+
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
