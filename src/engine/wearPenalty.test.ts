@@ -86,3 +86,19 @@ describe('wornSocialMod', () => {
     expect(wornSocialMod(c)).toBe(-10);
   });
 });
+
+describe('testValue + Laid (Sociabilité)', () => {
+  it('un objet Laid équipé impose -10 aux Tests Soc (caractéristique brute)', () => {
+    const c = { characteristics: { Soc: 40 }, skills: [], items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }] } as unknown as Combatant;
+    expect(testValue(c, undefined, 'Soc')).toBe(30);
+  });
+  it('-10 sur une compétence Soc-based (Charme), rien sur une compétence non-Soc (Discrétion)', () => {
+    const c = {
+      characteristics: { Soc: 40, Ag: 40 },
+      skills: [{ name: 'Charme', characteristic: 'Soc', advances: 0 }, { name: 'Discrétion', characteristic: 'Ag', advances: 0 }],
+      items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }],
+    } as unknown as Combatant;
+    expect(testValue(c, 'Charme')).toBe(30); // Soc 40 − 10
+    expect(testValue(c, 'Discrétion')).toBe(40); // non-Soc, pas de pénalité d'armure → inchangé
+  });
+});
