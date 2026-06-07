@@ -8,6 +8,8 @@ import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon } 
 import { bonus } from './characteristics';
 import { findTrapping } from '../data';
 import { indiceOf } from './qualities/normalize';
+import { craftEncDelta } from './qualities/craftEconomy';
+import { hasQuality } from './qualities/dispatch';
 
 let uidCounter = 0;
 export function newUid(): string {
@@ -74,8 +76,11 @@ export function maxEncumbrance(c: Combatant): number {
  *  le matériel simplement transporté gardent leur Encombrement plein. */
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
+    const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60 l.56/91)
     const worn = !!i.equipped && i.kind === 'armor';
-    return s + Math.max(0, (i.enc || 0) - (worn ? 1 : 0));
+    // Objet porté : -1 (LDB Enc l.22) ; une armure Volumineux portée vaut Enc 1 (LDB 60 l.91).
+    const eff = worn ? (hasQuality(i, 'Volumineux') ? 1 : enc - 1) : enc;
+    return s + Math.max(0, eff);
   }, 0);
 }
 

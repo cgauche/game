@@ -54,6 +54,22 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
 });
 
+describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.56/91)', () => {
+  const enc = (items: ItemInstance[]) => totalEncumbrance({ items } as unknown as Combatant);
+  it('Léger réduit l’Enc de 1 (plancher 0)', () => {
+    expect(enc([item({ kind: 'misc', enc: 2, qualities: ['Léger'] })])).toBe(1);
+    expect(enc([item({ kind: 'misc', enc: 1, qualities: ['Léger'] })])).toBe(0);
+  });
+  it('Volumineux augmente l’Enc de 1 (objet NON porté)', () => {
+    expect(enc([item({ kind: 'melee', enc: 2, qualities: ['Volumineux'] })])).toBe(3);
+  });
+  it('armure portée : -1 (existant) ; Volumineux porté = Enc 1 ; Léger porté cumule (l.91)', () => {
+    expect(enc([item({ kind: 'armor', enc: 2, equipped: true })])).toBe(1); // 2-1 (inchangé)
+    expect(enc([item({ kind: 'armor', enc: 2, equipped: true, qualities: ['Volumineux'] })])).toBe(1); // forcé à 1
+    expect(enc([item({ kind: 'armor', enc: 3, equipped: true, qualities: ['Léger'] })])).toBe(1); // (3-1)-1 = 1
+  });
+});
+
 describe('Munitions & rechargement', () => {
   it('itemFromTrapping lit subType + qty (préfixe) pour une munition', () => {
     const fleche = itemFromTrapping('Flèche')!;
