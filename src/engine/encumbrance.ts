@@ -41,7 +41,9 @@ export function encumbrancePenalties(c: Combatant): EncumbrancePenalties {
   const cap = maxEncumbrance(c);
   const enc = totalEncumbrance(c);
 
-  if (enc <= cap) return { tier: 0, movePenalty: 0, moveFloor: 0, agilityPenalty: 0, travelFatigue: 0, immobile: false };
+  // Capacité non finie (combattant sans F/E — données incomplètes) : aucun palier (et surtout pas
+  // « immobile », ce que donneraient les comparaisons `enc <= NaN` toutes fausses).
+  if (!Number.isFinite(cap) || enc <= cap) return { tier: 0, movePenalty: 0, moveFloor: 0, agilityPenalty: 0, travelFatigue: 0, immobile: false };
   if (enc <= cap * 2) return { tier: 1, movePenalty: 1, moveFloor: 3, agilityPenalty: -10, travelFatigue: 1, immobile: false };
   if (enc <= cap * 3) return { tier: 2, movePenalty: 2, moveFloor: 2, agilityPenalty: -20, travelFatigue: 2, immobile: false };
   // > 3× la capacité : « Vous ne pouvez pas vous déplacer. » Le LDB ne précise

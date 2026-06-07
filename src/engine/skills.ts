@@ -6,6 +6,9 @@ import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
 import { findSkill } from '../data';
 import { wornArmourPenalty, wornSocialMod } from './wearPenalty';
 import { groupMatch } from './groups';
+import { effectiveChar } from './characteristics';
+import { testStatePenalty } from './conditions';
+import { agilityTestPenalty } from './encumbrance';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -14,18 +17,21 @@ export function skillCharKey(skillLabel: string): CharKey | undefined {
   return d ? CHAR_BY_LABEL[d.characteristic] : undefined;
 }
 
-/** Valeur de test d'un personnage pour une compétence ou une caractéristique. */
+/** Valeur de test d'un personnage pour une compétence ou une caractéristique. Mêmes modulations qu'en
+ *  combat (le canon ne distingue pas) : Caractéristique EFFECTIVE (buffs magiques + pénalités de
+ *  Traumatisme, LDB 18, via `effectiveChar`), pénalités d'États (LDB 16, `testStatePenalty`), pénalité
+ *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60). */
 export function testValue(c: Combatant, skill?: string, characteristic?: CharKey): number {
-  if (characteristic) return (c.characteristics[characteristic] ?? 0) + (characteristic === 'Soc' ? wornSocialMod(c) : 0);
-  if (skill) {
-    const ck = skillCharKey(skill) ?? 'Dex';
-    const base = c.characteristics[ck] ?? 0;
-    const low = skill.toLowerCase();
-    const sk = c.skills.find((s) => low === s.name.toLowerCase() || low.startsWith(s.name.toLowerCase()));
-    // Pénalité de port d'armure (LDB 63 l.84-95) + objet Laid sur les Tests de Sociabilité (LDB 60 l.85).
-    return base + (sk?.advances ?? 0) + wornArmourPenalty(c, skill) + (ck === 'Soc' ? wornSocialMod(c) : 0);
-  }
-  return 0;
+  if (!skill && !characteristic) return 0;
+  const ck = characteristic ?? skillCharKey(skill!) ?? 'Dex';
+  const low = skill?.toLowerCase();
+  const sk = low ? c.skills.find((s) => low === s.name.toLowerCase() || low.startsWith(s.name.toLowerCase())) : undefined;
+  const base = effectiveChar(c, ck);
+  const states = testStatePenalty(c, skill);
+  const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0;
+  const armour = skill ? wornArmourPenalty(c, skill) : 0;
+  const soc = ck === 'Soc' ? wornSocialMod(c) : 0;
+  return base + (sk?.advances ?? 0) + states + enc + armour + soc;
 }
 
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le

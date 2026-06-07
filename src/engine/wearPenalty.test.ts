@@ -95,7 +95,7 @@ describe('testValue + Laid (Sociabilité)', () => {
   });
   it('-10 sur une compétence Soc-based (Charme), rien sur une compétence non-Soc (Discrétion)', () => {
     const c = {
-      characteristics: { Soc: 40, Ag: 40 },
+      characteristics: { Soc: 40, Ag: 40, F: 30, E: 30 }, // F/E requis : sinon maxEncumbrance = NaN → faux palier d'Encombrement
       skills: [{ name: 'Charme', characteristic: 'Soc', advances: 0 }, { name: 'Discrétion', characteristic: 'Ag', advances: 0 }],
       items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }],
     } as unknown as Combatant;

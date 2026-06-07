@@ -45,6 +45,25 @@ export function combatTestPenalty(c: Combatant): number {
 }
 
 /**
+ * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule).
+ * Couvre les États « à tous les Tests » : Empoisonné (l.66) / Sonné (l.123) −10, Exténué (l.89) −10/pion,
+ * Brisé (l.55) −10 SAUF un Test de course (Athlétisme) ou de dissimulation (Discrétion). Les États à
+ * portée sensorielle/déplacement (Aveuglé=vue, Assourdi=audition, À Terre/Empêtré=déplacement) ne sont
+ * PAS appliqués ici faute de classification du Test (rare hors combat ; raffinement futur).
+ */
+const BRISE_EXEMPT = /athl[ée]tisme|discr[ée]tion/i; // course / dissimulation (LDB 16 l.55)
+export function testStatePenalty(c: Combatant, skill?: string): number {
+  if (!c.conditions?.length) return 0;
+  const cand: number[] = [];
+  if (hasCondition(c, 'Empoisonné')) cand.push(-10);
+  if (hasCondition(c, 'Sonné')) cand.push(-10);
+  const ext = stacks(c, 'Exténué');
+  if (ext > 0) cand.push(-10 * ext);
+  if (hasCondition(c, 'Brisé') && !BRISE_EXEMPT.test(skill ?? '')) cand.push(-10);
+  return cand.length ? Math.min(...cand) : 0;
+}
+
+/**
  * Bonus pour TOUCHER en mêlée une cible affectée (LDB ch.16). Non-cumul : meilleur
  * bonus d'un seul État. À Terre/Surpris +20, Aveuglé +10. (Assourdi +10 par le
  * flanc/derrière : non modélisé — l'orientation des combattants n'est pas suivie.)
