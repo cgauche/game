@@ -253,7 +253,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
   pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
 
-## 🎯 Jalon 1.5 — Sous-système Taille *(Phases 1-2 faites ; reste orchestration + éditeur, puis T5/T6)*
+## 🎯 Jalon 1.5 — Sous-système Taille *(T2/T3/T4 LIVRÉS — audit RAW propre ; reste T5/T6, lots à part)*
 
 La Taille est un **Trait de créature** (7 catégories ordinales), pas une caractéristique chiffrée ;
 presque tout est une **comparaison d'écart** entre combattants. Analyse : `…/specs/2026-06-07-taille-analyse-reference.md` ;
@@ -264,10 +264,13 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
 - ✅ **T4 — Blessures** : table par catégorie (Petite=2BE+BFM … Monstrueuse ×8) ; **formule par défaut, surcharge `char.B` sinon** (vérifié : 52/58 monstres = formule, 6 traités préservés) ; **dynamiques** — un sort sur E/F/FM recale max + courant (`refreshWounds`, application & dissipation). `85` l.332-352.
 - ✅ **Frappe Mortelle** : drapeau `cleave` posé sur la touche d'un plus grand ; `resolveTrample` (Piétinement BF/CC) prêt.
 
-**Reste (Phase 3 — orchestration ; Phase 4 — éditeur ; puis audit) :**
-- **Balayage Frappe Mortelle** : boucle jusqu'à BCC, déplacement sur la case de la cible, frappe d'un autre **à portée** (= adjacent tant que l'Allonge n'est pas modélisée) ; IA auto + `pendingCleave` héros. `14` l.12 / `85` l.299.
-- **Désengagement gratuit** du plus grand (court-circuite `pendingDisengage`, `85` l.308-309) ; **action Piétinement** câblée (store `battleTrample` + hotbar + IA, `85` l.320-321).
-- **Éditeur** : champ Blessures optionnel (vide = formule).
+**Phase 3 — orchestration & Phase 4 — éditeur livrées (2026-06-07, 788 tests verts) :**
+- ✅ **Balayage Frappe Mortelle** : boucle jusqu'à BCC, déplacement sur la case d'une cible tuée, frappe d'un autre **à portée** (= adjacent tant que l'Allonge n'est pas modélisée) ; IA auto (`autoCleave`) + `pendingCleave` héros (`CleaveModal`). `14` l.12 / `85` l.299.
+- ✅ **Désengagement gratuit** du plus grand (court-circuite `pendingDisengage` si plus grand que TOUS ses Engagés, `85` l.308-309) ; **action Piétinement** câblée (store `battleTrample` + hotbar « 🦶 Piétiner » + IA `aiMaybeTrample`, action gratuite à 1 Avantage, `85` l.320-321).
+- ✅ **Éditeur** : champ Blessures optionnel (vide = formule par Taille en placeholder live, rempli = surcharge).
+- ✅ **Audit de fidélité multi-agents** (8 dimensions RAW × find→verify adversariale) : **0 écart confirmé** — implémentation fidèle au `85`.
+
+**Reste (lots à part) :**
 - **T5 — Peur/Terreur** dérivées de l'écart (`85` l.317-318) : **sous-système Psychologie neuf** (Test de Calme étendu, État Brisé, `21-Psychologie.md`) — le plus gros, lot à part.
 - **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux).
 - Aussi : **Localisation par forme de corps** (`76`), **monture & Taille** (`14` l.217-223).
