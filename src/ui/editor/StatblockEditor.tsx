@@ -11,14 +11,15 @@
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
 import { creatures, findCreature } from '../../data';
+import { woundsForSize } from '../../engine/size';
+import { bonus } from '../../engine/characteristics';
+import { sizeFromTraits } from '../../state/spawn';
 
-const EXTRA: { key: 'M' | 'B'; label: string; def: number }[] = [
-  { key: 'M', label: 'Mouvement', def: 4 },
-  { key: 'B', label: 'Blessures', def: 10 },
-];
+const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'Mouvement', def: 4 }];
 
-/** Statbloc minimal par défaut (humain de base). */
-export const emptyStatblock = (name = 'Profil personnalisé'): CustomStatblock => ({ name, char: { B: 10, M: 4 } });
+/** Statbloc minimal par défaut (humain de base). Blessures NON fixées → dérivées par la formule de
+ *  Taille au spawn (LDB 85 ; `B` rempli = surcharge). */
+export const emptyStatblock = (name = 'Profil personnalisé'): CustomStatblock => ({ name, char: { M: 4 } });
 
 /** Clone une créature du bestiaire en statbloc éditable (base à personnaliser). */
 function cloneFromCreature(label: string): CustomStatblock | null {
@@ -31,6 +32,17 @@ function cloneFromCreature(label: string): CustomStatblock | null {
 
 export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onChange: (s: CustomStatblock) => void }) {
   const setChar = (k: string, v: number) => onChange({ ...stat, char: { ...stat.char, [k]: v } });
+  // Blessures de la formule (LDB 85), recalculées en live depuis F/E/FM + la Taille (explicite ou dérivée
+  // d'un Trait « Taille (X) », sinon Moyenne) — sert de placeholder au champ « B » laissé vide.
+  const size = stat.size ?? sizeFromTraits(stat.traits ?? []) ?? 'moyenne';
+  const formulaWounds = woundsForSize(bonus(stat.char.F ?? 30), bonus(stat.char.E ?? 30), bonus(stat.char.FM ?? 30), size);
+  /** Champ Blessures optionnel : vide → `char.B` retiré (formule au spawn) ; rempli → surcharge fixe. */
+  const setB = (raw: string) => {
+    const char = { ...stat.char };
+    if (raw.trim() === '') delete char.B;
+    else char.B = Number(raw);
+    onChange({ ...stat, char });
+  };
   return (
     <div className="statblock-editor">
       <label className="ed-field">
@@ -65,6 +77,15 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
             <input type="number" value={stat.char[key] ?? def} onChange={(e) => setChar(key, Number(e.target.value))} />
           </label>
         ))}
+        <label className="ed-subfield" title={`Blessures — laisser vide = formule par Taille (${formulaWounds}) ; remplir = surcharge fixe`}>
+          B
+          <input
+            type="number"
+            value={stat.char.B ?? ''}
+            placeholder={String(formulaWounds)}
+            onChange={(e) => setB(e.target.value)}
+          />
+        </label>
       </div>
       <label className="ed-field">
         Traits (un par ligne — ex. « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) », « Mutation (Écailles épineuses) »)
