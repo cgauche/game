@@ -1,0 +1,10 @@
+import type { WeaponDef } from '../types';
+
+export const weapon: WeaponDef = {
+  slug: "fleau",
+  label: "Fléau",
+  type: "melee",
+  group: "Fléau",
+  target: "manche + chaîne courte + tête/boule au bout",
+  art: "<g stroke=\"#2a1a0c\" stroke-width=\"0.4\" stroke-linejoin=\"round\"><rect x=\"-2\" y=\"-24\" width=\"4\" height=\"30\" rx=\"1.6\" fill=\"#4a2f17\"/><g stroke=\"#33241a\" stroke-width=\"0.6\"><line x1=\"-2\" y1=\"-18\" x2=\"2\" y2=\"-19\"/><line x1=\"-2\" y1=\"-12\" x2=\"2\" y2=\"-13\"/><line x1=\"-2\" y1=\"-6\" x2=\"2\" y2=\"-7\"/><line x1=\"-2\" y1=\"0\" x2=\"2\" y2=\"-1\"/></g><rect x=\"-3.4\" y=\"4\" width=\"6.8\" height=\"3\" rx=\"1\" fill=\"#caa64a\"/></g><rect x=\"-3.2\" y=\"-29\" width=\"6.4\" height=\"6\" rx=\"1.4\" fill=\"url(#g_steelD)\" stroke=\"#2a3038\" stroke-width=\"0.6\"/><circle cx=\"0\" cy=\"-26\" r=\"1.5\" fill=\"#cfd8e6\" stroke=\"#2a3038\" stroke-width=\"0.35\"/><g fill=\"none\" stroke=\"#9aa2ae\" stroke-width=\"2.4\"><ellipse cx=\"-0.4\" cy=\"-32\" rx=\"1.5\" ry=\"2.7\"/><ellipse cx=\"-2.2\" cy=\"-36\" rx=\"2.7\" ry=\"1.5\" transform=\"rotate(-40 -2.2 -36)\"/><ellipse cx=\"-3.8\" cy=\"-40\" rx=\"1.5\" ry=\"2.7\"/></g><g fill=\"none\" stroke=\"url(#g_steel)\" stroke-width=\"1.1\"><ellipse cx=\"-0.4\" cy=\"-32\" rx=\"1.5\" ry=\"2.7\"/><ellipse cx=\"-2.2\" cy=\"-36\" rx=\"2.7\" ry=\"1.5\" transform=\"rotate(-40 -2.2 -36)\"/><ellipse cx=\"-3.8\" cy=\"-40\" rx=\"1.5\" ry=\"2.7\"/></g><g fill=\"#cfd8e6\" stroke=\"#2a3038\" stroke-width=\"0.45\" stroke-linejoin=\"round\"><path d=\"M-5 -47 l7 0 -3.5 4.4 z\"/><path d=\"M-5 -47 l3.4 -6.4 3.6 2.8 z\"/><path d=\"M-5 -47 l-2.8 -6.6 6.2 0 z\"/><path d=\"M-5 -47 l-6.4 -3.2 3.5 -5.2 z\"/><path d=\"M-5 -47 l-7 0.5 3.4 -4.6 z\"/><path d=\"M-5 -47 l-3.4 6.4 -3.6 -2.8 z\"/><path d=\"M-5 -47 l2.8 6.6 -6.2 0 z\"/><path d=\"M-5 -47 l6.4 3.2 -3.5 5.2 z\"/></g><circle cx=\"-5\" cy=\"-47\" r=\"6.2\" fill=\"url(#g_steelD)\" stroke=\"#2a3038\" stroke-width=\"0.8\"/><ellipse cx=\"-7.4\" cy=\"-49.4\" rx=\"2.4\" ry=\"1.7\" fill=\"#dfe6f0\" opacity=\"0.6\"/>",
+};

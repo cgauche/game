@@ -10,14 +10,16 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms';
+import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 
 mkdirSync('public/qc', { recursive: true });
 const APP = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 } as const;
 type Cell = { slug: string; label: string; svg: string };
 
+// Applique la PRISE/orientation réelle du jeu (weaponRest) pour un rendu fidèle.
 const rig = (equip: { weapons: Weapon[]; armour: never[]; shield?: Weapon }) =>
-  renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip, career: 'Soldat' }));
+  renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip, career: 'Soldat', pose: weaponRest(equip.weapons[0]) }));
 
 const cells: Cell[] = [
   ...WEAPON_FORMS.map((f) => ({ slug: f.slug, label: f.label, svg: rig({ weapons: [{ name: f.label, type: f.type, damage: '+4', qualities: [] } as Weapon], armour: [] }) })),

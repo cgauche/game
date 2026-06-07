@@ -55,6 +55,15 @@ export const REGISTRIES = [
     type: 'TenueDef',
     typeFrom: './types',
   },
+  {
+    // Armes (forme + art unifiés) : 1 arme = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/weapons/defs',
+    out: 'src/gameIso/rig/parts/weapons/_registry.generated.ts',
+    exportName: 'weapon',
+    arrayName: 'WEAPON_DEFS',
+    type: 'WeaponDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {

@@ -1,33 +1,36 @@
 /**
- * Ingère l'art retenu par le workflow weapons-redo : pour chaque slug ayant un
- * art-ref/directional/weapons-redo/<slug>/chosen.json ({front}), fusionne dans
- * GENERATED_WEAPONS en PRÉSERVANT GENERATED_ARMOUR et les arts non régénérés.
+ * Ingère l'art retenu par le workflow weapons-redo dans le REGISTRE d'armes (weapons/defs/).
+ * Pour chaque slug ayant art-ref/directional/weapons-redo/<slug>/chosen.json ({front}),
+ * réécrit SON fichier `weapons/defs/<slug>.ts` (métadonnée préservée depuis WEAPON_DEFS + art
+ * neuf). Les autres defs ne sont pas touchés (1 arme = 1 fichier indépendant).
  * Usage : npx tsx scripts/_ingest-weapons-redo.mts
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { GENERATED_WEAPONS, GENERATED_ARMOUR } from '../src/gameIso/rig/parts/generated/weaponsArmour';
-import { WEAPON_FORMS } from '../src/gameIso/rig/parts/weaponForms';
+import { WEAPON_DEFS } from '../src/gameIso/rig/parts/weapons/_registry.generated';
 
 const decode = (s: string) => String(s)
   .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
   .replace(/&#0?39;/g, "'").replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 
-const weapons: Record<string, string> = { ...GENERATED_WEAPONS };
 let n = 0;
-for (const f of WEAPON_FORMS) {
-  const p = `art-ref/directional/weapons-redo/${f.slug}/chosen.json`;
+for (const d of WEAPON_DEFS) {
+  const p = `art-ref/directional/weapons-redo/${d.slug}/chosen.json`;
   if (!existsSync(p)) continue;
   const j = JSON.parse(readFileSync(p, 'utf8'));
   const frag = j.front ?? j.svg;
-  if (frag && String(frag).trim()) { weapons[f.slug] = decode(String(frag).trim()); n++; }
+  if (!frag || !String(frag).trim()) continue;
+  const art = decode(String(frag).trim());
+  const body =
+    `import type { WeaponDef } from '../types';\n\n` +
+    `export const weapon: WeaponDef = {\n` +
+    `  slug: ${JSON.stringify(d.slug)},\n` +
+    `  label: ${JSON.stringify(d.label)},\n` +
+    `  type: ${JSON.stringify(d.type)},\n` +
+    `  group: ${JSON.stringify(d.group)},\n` +
+    `  target: ${JSON.stringify(d.target)},\n` +
+    `  art: ${JSON.stringify(art)},\n` +
+    `};\n`;
+  writeFileSync(`src/gameIso/rig/parts/weapons/defs/${d.slug}.ts`, body);
+  n++;
 }
-
-const banner = '// Généré par scripts/_ingest-weapons-redo.mts depuis le workflow weapons-redo — NE PAS éditer à la main.\n';
-writeFileSync(
-  'src/gameIso/rig/parts/generated/weaponsArmour.ts',
-  banner +
-    'export const GENERATED_WEAPONS: Record<string, string> = ' + JSON.stringify(weapons, null, 2) + ';\n\n' +
-    "export const GENERATED_ARMOUR: Record<string, Partial<Record<'tete' | 'torse' | 'bras' | 'jambes', string>>> = " +
-    JSON.stringify(GENERATED_ARMOUR, null, 2) + ';\n',
-);
-console.log(`ingéré ${n} armes ; total GENERATED_WEAPONS=${Object.keys(weapons).length} ; armour préservé=${Object.keys(GENERATED_ARMOUR).length}`);
+console.log(`ingéré ${n} armes → weapons/defs/ (puis \`npm run gen\` si nouveaux slugs)`);
