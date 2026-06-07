@@ -27,7 +27,6 @@ import {
   terrainOverlay,
   placeSprite,
   enemySprite,
-  creatureView,
   pnjSprite,
   entitySprite,
 } from './sprites';
@@ -36,9 +35,8 @@ import { AnimatedRigToken } from './AnimatedRigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
-import { bodyPlanOf, planStaticSvg } from './rig/bodyPlan';
+import { planStaticSvg } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
-import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
@@ -166,51 +164,6 @@ export function IsoStage() {
       setTimeout(() => setFloats((f) => f.filter((x) => x.key !== key)), 850);
     });
     return off;
-  }, []);
-
-  // Anim légère des créatures monolithiques (non riggées) : fente/recul de token entier.
-  const [creatureFx, setCreatureFx] = useState<Record<string, string>>({});
-  useEffect(() => {
-    const fire = (id: string, cls: string) => {
-      setCreatureFx((m) => ({ ...m, [id]: cls }));
-      setTimeout(() => setCreatureFx((m) => { const n = { ...m }; delete n[id]; return n; }), 340);
-    };
-    const offA = bus.on(EVT.ANIM_ATTACK, (d: any) => {
-      const b = useGame.getState().battle;
-      const from = b?.combatants.find((c) => c.id === d.from);
-      if (from && from.kind !== 'hero') fire(d.from, 'tok-lunge');
-    });
-    const offI = bus.on(EVT.ANIM_IMPACT, (d: any) => {
-      const b = useGame.getState().battle;
-      if (!d?.result?.hit) return;
-      const to = b?.combatants.find((c) => c.id === d.to);
-      if (to && to.kind !== 'hero') fire(d.to, 'tok-recoil');
-    });
-    return () => { offA(); offI(); };
-  }, []);
-
-  // Facing 8-dir des créatures monolithiques : vue (front/back/profile) + miroir,
-  // mis à jour à l'attaque (vers la cible) et au déplacement (vers la destination).
-  const [creatureFacing, setCreatureFacing] = useState<Record<string, { view: 'front' | 'back' | 'profile'; mirror: boolean }>>({});
-  useEffect(() => {
-    const faceTo = (id: string, from?: { x: number; y: number }, to?: { x: number; y: number }) => {
-      if (!from || !to) return;
-      const st = useGame.getState();
-      const vd = st.scene ? { ...st.scene.dimensions, rot: st.camRot } : undefined;
-      const { dx, dy } = screenDir(from, to, vd);
-      if (dx === 0 && dy === 0) return;
-      setCreatureFacing((m) => ({ ...m, [id]: facingView(dx, dy) }));
-    };
-    const offA = bus.on(EVT.ANIM_ATTACK, (d: any) => {
-      const b = useGame.getState().battle;
-      const from = b?.combatants.find((c) => c.id === d.from);
-      if (from && from.kind !== 'hero') faceTo(d.from, from.pos, b?.combatants.find((c) => c.id === d.to)?.pos);
-    });
-    const offM = bus.on(EVT.ANIM_MOVE, (d: any) => {
-      const p = d?.path;
-      if (p && p.length > 1) faceTo(d.id, p[0], p[p.length - 1]);
-    });
-    return () => { offA(); offM(); };
   }, []);
 
   // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
@@ -344,7 +297,7 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, mirror?: boolean, walking?: boolean, bakedDeath?: boolean) => {
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean) => {
     const { cx, cy } = tileCenter(x, y, dims);
     const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
     return (
@@ -360,8 +313,7 @@ export function IsoStage() {
             (quadrupède effondré sur le flanc) → on ne bascule pas. */}
         <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
           <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
-            {/* miroir gauche/droite autour du centre de la boîte créature (x=80) */}
-            <g transform={mirror ? 'translate(160,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: inner }} />
+            <g dangerouslySetInnerHTML={{ __html: inner }} />
           </g>
         </g>
       </g>
@@ -414,18 +366,13 @@ export function IsoStage() {
         // intègre la taille d'espèce bipède (Géant = colosse via bipedSpeciesScale ; 1 sinon).
         const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62 * bipedSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      } else if (bodyPlanOf(c.name) !== 'monolithic') {
+      } else {
         // TOUT gabarit rigué non-bipède (quadrupède / ailé / serpentin / arachnide / aviaire /
         // céphalopode) → token ANIMÉ GÉNÉRIQUE : poses du plan (démarche/attaque/mort) + anim de
         // repos en continu (battement, ondulation, dodelinement…) + facing 8-dir + recolor. Le
         // scale intègre la taille d'espèce (dragon/géant grands, rat/oiseau petits).
         const el = tokenNode(c.id, wp.x, wp.y, <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * creatureSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      } else {
-        // Créature exotique → sprite monolithique (legacy).
-        const f = creatureFacing[c.id] ?? { view: 'front' as const, mirror: false };
-        const inner = creatureView(c.name, f.view, hashSeed(c.id));
-        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el: token(c.id, wp.x, wp.y, inner, 0.62, ring, isOutOfAction(c), creatureFx[c.id], f.mirror, wp.walking) });
       }
     }
   } else {
@@ -452,7 +399,7 @@ export function IsoStage() {
         const rigged = planStaticSvg(refName, 'front', ent.appearance?.colors);
         const inner = rigged ?? entitySprite(ent);
         const sc = rigged ? 0.55 * creatureSpeciesScale(refName) : 0.55;
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, undefined, !!rigged) });
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, !!rigged) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
