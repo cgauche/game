@@ -1893,7 +1893,7 @@ export const useGame = create<GameState>((set, get) => ({
     const pt = get().pendingTest;
     if (!pt || pt.roll != null) return; // déjà lancé
     const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
-    set({ pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL } });
+    set({ pendingTest: { ...pt, roll: res.roll, sl: res.sl, isDouble: res.isDouble, success: res.success && res.sl >= pt.requireSL } });
   },
 
   /** Dépense un point de Chance du testeur pour relancer le jet (LDB Destin). */
@@ -1908,7 +1908,7 @@ export const useGame = create<GameState>((set, get) => ({
     actor.fortune = (actor.fortune ?? 0) - 1;
     const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
     set({
-      pendingTest: { ...pt, roll: res.roll, sl: res.sl, success: res.success && res.sl >= pt.requireSL, rerolled: true },
+      pendingTest: { ...pt, roll: res.roll, sl: res.sl, isDouble: res.isDouble, success: res.success && res.sl >= pt.requireSL, rerolled: true },
       party: [...party],
     });
   },

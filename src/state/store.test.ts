@@ -230,6 +230,25 @@ describe('Boucle de jeu (store)', () => {
     expect(pt.isDouble).toBe(false); // amorcé à false (pas encore lancé)
   });
 
+  it('testRoll peuple pendingTest.isDouble (booléen, pour la casse Bâclé)', () => {
+    const hero = {
+      id: 'h1', name: 'Lest', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 50, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
+    } as unknown as Combatant;
+    useGame.setState({
+      party: [hero],
+      pendingTest: {
+        actorId: 'h1', actorName: 'Lest', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 0, target: 50, roll: null, success: false, sl: 0, isDouble: undefined,
+        onSuccess: [], onFailure: [],
+      },
+    });
+    useGame.getState().testRoll();
+    expect(typeof useGame.getState().pendingTest!.isDouble).toBe('boolean');
+  });
+
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
