@@ -12,7 +12,12 @@
 import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** @type {{ dir:string, out:string, exportName:string, arrayName:string, type:string, typeFrom:string }[]} */
+/**
+ * `importDir` : chemin (relatif au fichier `out`) d'où importer chaque entrée. Défaut `./defs`
+ * (les entrées vivent dans un sous-dossier `defs/`). Mettre `.` quand les fichiers sont à plat
+ * dans le même dossier que l'index (cas des scénarios).
+ * @type {{ dir:string, out:string, exportName:string, arrayName:string, type:string, typeFrom:string, importDir?:string }[]}
+ */
 export const REGISTRIES = [
   {
     dir: 'src/gameIso/rig/creatures/defs',
@@ -22,17 +27,53 @@ export const REGISTRIES = [
     type: 'CreatureDef',
     typeFrom: './types',
   },
+  {
+    // Scénarios de test : fichiers À PLAT dans le dossier (pas de sous-dossier defs/).
+    dir: 'src/scenes/test-scenarios',
+    out: 'src/scenes/test-scenarios/_registry.generated.ts',
+    exportName: 'scenario',
+    arrayName: 'SCENARIOS',
+    type: 'TestScenario',
+    typeFrom: './_shared',
+    importDir: '.',
+  },
+  {
+    // Parts monstrueuses (têtes/bras/jambes) : 1 part = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/monster/defs',
+    out: 'src/gameIso/rig/parts/monster/_registry.generated.ts',
+    exportName: 'part',
+    arrayName: 'MONSTER_PARTS',
+    type: 'MonsterPartDef',
+    typeFrom: './types',
+  },
+  {
+    // Tenues (archétypes de classe + Nu) : 1 tenue = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/tenues/defs',
+    out: 'src/gameIso/rig/parts/tenues/_registry.generated.ts',
+    exportName: 'tenue',
+    arrayName: 'TENUE_DEFS',
+    type: 'TenueDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {
-  const files = readdirSync(r.dir)
+  const importDir = r.importDir ?? './defs';
+  let entries;
+  try {
+    entries = readdirSync(r.dir);
+  } catch {
+    console.log(`gen-registry: ${r.arrayName} ← dossier absent (${r.dir}) — ignoré`);
+    return 0;
+  }
+  const files = entries
     .filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts') && f !== 'index.ts')
     .sort();
-  const imports = files.map((f, i) => `import { ${r.exportName} as e${i} } from './defs/${f.replace(/\.ts$/, '')}';`);
+  const imports = files.map((f, i) => `import { ${r.exportName} as e${i} } from '${importDir}/${f.replace(/\.ts$/, '')}';`);
   const arr = files.map((_, i) => `e${i}`);
   const body =
     `// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
-    `// Ajouter une entrée = déposer un fichier dans defs/ puis \`npm run gen\`.\n` +
+    `// Ajouter une entrée = déposer un fichier dans ${importDir === '.' ? r.dir.split('/').pop() : importDir.replace('./', '')}/ puis \`npm run gen\`.\n` +
     `import type { ${r.type} } from '${r.typeFrom}';\n` +
     imports.join('\n') + '\n\n' +
     `export const ${r.arrayName}: ${r.type}[] = [${arr.join(', ')}];\n`;

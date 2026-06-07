@@ -1,17 +1,10 @@
 import type { TestScenario } from './_shared';
+import { SCENARIOS } from './_registry.generated';
 
-// Auto-découverte : chaque fichier `<NN>-*.ts` du dossier exporte `scenario`.
-// Ajouter un scénario = déposer un fichier ici — aucun import manuel.
-// On EXCLUT les `*.test.ts` au niveau du glob : en `eager`, le bundle exécuterait sinon leur
-// `describe()`/`it()` (globals Vitest absents en prod → crash au chargement de l'écran).
-const mods = import.meta.glob(['./*.ts', '!./*.test.ts', '!./_*.ts', '!./index.ts'], { eager: true }) as Record<
-  string,
-  { scenario?: TestScenario }
->;
-
-export const testScenarios: TestScenario[] = Object.entries(mods)
-  .map(([, m]) => m.scenario)
-  .filter((s): s is TestScenario => !!s)
-  .sort((a, b) => a.order - b.order);
+// Auto-découverte « dépose un fichier → intégré » via le registre généré (scripts/gen-registry.mjs).
+// Ajouter un scénario = déposer un `<NN>-*.ts` exportant `scenario` ici, puis `npm run gen`
+// (auto en dev via le plugin Vite). On passe par un index EXPLICITE généré plutôt que
+// `import.meta.glob` (Vite-only, cassé sous tsx/Vitest) — même mécanique que les créatures.
+export const testScenarios: TestScenario[] = [...SCENARIOS].sort((a, b) => a.order - b.order);
 
 export type { TestScenario } from './_shared';
