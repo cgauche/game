@@ -227,7 +227,7 @@ Fonctions pures testables, **consommées par le marchand #2** :
 - **PA dérivée nette** — `items.ts:recomputeLoadout` (87-112) : pour chaque localisation, `PA = Σ (pièce.pa − pièce.damageTaken)`, plancher 0 ; pièce avec `pa − damageTaken < 0` ⇒ inutilisable (l.55). **Aucun refactor de `Combatant.armour`** : on garde le record dérivé, simplement calculé net des dégâts.
 - **Déviation Critique** (l.63-66) — hook `combatFlow.ts:applyCriticalToTarget` (398-428) : si la cible a, à la localisation touchée, une pièce d'armure avec PA effective > 0, **proposer un choix** :
   - **Joueur** → modale `pendingDeviation` (pattern « si jet/choix → modale », cf. `game-roll-modal-pattern`) : *Dévier (−1 PA, ignore le critique)* / *Subir le critique*. Si dévier : on **n'appelle pas** `rollCritical`, on applique les Blessures normales **recalculées avec PA−1** (probable +1 Blessure), et on incrémente `damageTaken` de la pièce.
-  - **IA/ennemi** → heuristique simple (ex. dévier si le critique serait létal et qu'il reste de la PA).
+  - **IA/ennemi** → **dévie systématiquement** tant qu'une pièce d'armure utilisable protège la localisation (PA effective ≥ 1) : un Critique (trauma/condition/létalité) vaut bien plus qu'1 PA (décision utilisateur). Seule exception (sans objet) : si les Blessures normales le mettent déjà hors de combat. ⇒ l'armure ennemie **s'use** au fil du combat (synergie avec la réparation d'armure du marchand #2).
 - **Taille** (arme, l.8) — `combat.ts:applyHit` : sur touche réussie avec une arme **Taille**, incrémenter `damageTaken` d'une pièce à la localisation frappée (ou bouclier).
 - **Bâclé armure** (l.82) — si un **Coup Critique** est subi à une localisation protégée par une pièce **Bâclée** → la pièce **casse** (damageTaken = pa).
 
@@ -294,7 +294,7 @@ Implémenter au passage, puisque C1 ouvre le flux critique/PA :
 - **Raffiné** : aucun bonus de test chiffré en RAW (« signe de statut ») → impacte uniquement prix/dispo/affichage. (Pas d'invention de bonus.)
 - **Volumineux / Fatigue ×2** : modélisé a minima (interaction surcharge) — niche ; détaillé au plan.
 - **« −20 % » marchandage** (sous-projet #2) : déclenché sur **DR net** du test opposé ≥ 6 (décision utilisateur).
-- **Heuristique IA Déviation Critique** : choix de design (pas de MJ) — dévier si létal et PA dispo ; ajustable.
+- **Heuristique IA Déviation Critique** (décision utilisateur) : l'ennemi **dévie toujours** tant qu'il reste de la PA utilisable sur la localisation (un Critique > 1 PA). Côté joueur = choix libre via modale.
 - **`wearPenalty` source** : à trancher (all-data.json vs patch) — préférence all-data.json.
 - **Passage de l'ItemInstance à `applyHit`** : nécessite un changement de signature *ou* un cache `Combatant.activeWeaponItem` — à trancher au plan (préférence : paramètre explicite, moteur pur).
 - **Phase C3** (Atouts/Défauts d'armure intrinsèques) : recommandée car C1 ouvre déjà le flux critique/PA ; peut être déplacée hors #1 si on veut borner.
