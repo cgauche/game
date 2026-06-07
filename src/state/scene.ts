@@ -7,6 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
+import type { DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
@@ -173,6 +174,8 @@ export type Effect =
       onSuccess?: Effect[];
       onFailure?: Effect[];
     }
+  | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
+  | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
@@ -225,7 +228,10 @@ export interface Scene {
   nom: string;
   description: string;
   dimensions: { w: number; h: number };
-  ambiance?: 'jour' | 'nuit' | 'interieur' | 'foret';
+  /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
+   *  (jour/nuit = horloge). Valeurs HÉRITÉES 'jour'|'nuit'|'foret' = legacy, normalisées 'exterieur'
+   *  (cf. normalizeAmbiance) — gardées pour la rétro-compat des scènes existantes (#T1c). */
+  ambiance?: 'interieur' | 'exterieur' | 'jour' | 'nuit' | 'foret';
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
@@ -263,7 +269,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     nom: 'Nouvelle scène',
     description: '',
     dimensions: { w, h },
-    ambiance: 'jour',
+    ambiance: 'exterieur',
     tiles: new Array(w * h).fill('herbe'),
     entities: [],
     buildings: [],
@@ -272,4 +278,15 @@ export function emptyScene(w = 20, h = 15): Scene {
     encounters: [],
     flags: {},
   };
+}
+
+/** Le jour/nuit ne vient plus de la scène (il vient de l'horloge) ; `ambiance` ne distingue plus que
+ *  intérieur vs extérieur. Normalise les valeurs héritées (jour/nuit/foret/undefined → exterieur). (#T1c) */
+export function normalizeAmbiance(a: Scene['ambiance']): 'interieur' | 'exterieur' {
+  return a === 'interieur' ? 'interieur' : 'exterieur';
+}
+
+/** Scène en intérieur (éclairée — l'obscurité de l'horloge ne s'y applique pas). */
+export function isIndoor(scene: Pick<Scene, 'ambiance'>): boolean {
+  return normalizeAmbiance(scene.ambiance) === 'interieur';
 }

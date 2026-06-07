@@ -40,6 +40,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   transitionBack: 'Retour scène précédente',
   startDialogue: 'Ouvrir un dialogue',
   test: 'Test de compétence',
+  setTime: 'Régler l’heure (jour/nuit)',
   endDialogue: 'Fermer le dialogue',
 };
 
