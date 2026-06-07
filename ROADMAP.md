@@ -284,13 +284,15 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
 - **Détails RAW restants** : **Monture & Taille** (`14` l.217-223), **Queue/Langue** (`85`), **Nuée** ignore la Taille (+40 aux tirs, `85` l.199-200), trait **Agrandir/Réduire** au build de statbloc (+10 F, +10 E, −5 Ag par cat., `85` l.276-277). *(Immunité Psychologie : ✅ livrée avec T5.)*
 - **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
-## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(en cours — Phase 0 + A + B + C1a LIVRÉES)*
+## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(en cours — #1 Qualité d'objet COMPLET ; Temps & Voyage en tête)*
 
 Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
 Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
 émerger le **Marchand** comme livrable central, lui-même prérequis d'un **système de qualité
-d'objet** (pour qu'Évaluation ait une qualité à révéler). **Décomposé en 3 sous-projets séquencés**
-(chacun sa spec → plan → impl) :
+d'objet** (pour qu'Évaluation ait une qualité à révéler). **Décomposé en sous-projets séquencés**
+(chacun sa spec → plan → impl). **Re-séquencé 2026-06-07** (décision utilisateur) : le **Temps &
+Voyage** s'insère **AVANT le Marchand** — le re-stock de Disponibilité, la Fatigue de voyage et la
+guérison en dépendent. Ordre : **Qualité (✓) → Temps & Voyage → Marchand → Arène** :
 
 - **#1 — Qualité d'objet (Fabrication)** *(spec faite)* : Atouts/Défauts d'objet **par instance**
   (artisanat — Léger/Pratique/Raffiné/Solide ; Bâclé/Laid/Peu Fiable/Volumineux) ; effets **prix
@@ -307,8 +309,12 @@ d'objet** (pour qu'Évaluation ait une qualité à révéler). **Décomposé en 
     - **Phase A — Économie** : 8 qualités d'artisanat enregistrées (subType `Objet`) ; **`craftEconomy.ts` pur** (prix ×2/÷2, Dispo ∓1 + option Guilde, classe Haute/Qualité/Défectueuse) **prêt à être consommé par le Marchand** ; encombrement Léger −1 / Volumineux +1 (porté = 1).
     - **Phase B — Combat armes** : Solide(N) (absorbe N dégâts d'arme + sauvegarde 1d10 ≥ 10−N) ; Bâclé (casse sur Maladresse, sauvegarde Solide) ; **Pratique/Peu Fiable** (±1 DR sur un jet **RATÉ** → en mêlée opposée, change l'issue **ET** les dégâts via le DR net).
     - **Phase C1a — Armure (synchrone)** : PA dérivée **nette des dégâts** (`damageArmour` unifié héros-pièces / ennemis-plat) ; **Déviation Critique AUTO des ennemis** (sacrifie 1 PA, ignore le Critique) ; **Taille** (arme endommage l'armure frappée) ; **Bâclé-armure** (un Critique à sa localisation la brise).
-  - **🎯 Reste #1** : **C1b** — modale de Déviation côté **JOUEUR** (plan prêt, chirurgie store/UI re-entrante + recette navigateur) · **C2** — Pratique/Peu Fiable hors combat (`itemUid` sur `Effect.test`), pénalités de port d'armure (LDB 63), Laid −10 Soc · **C3** — Atouts/Défauts d'armure intrinsèques (Flexible/Impénétrable/Partielle/Points Faibles) · **UI** badges de qualité (fiche). Plans : `docs/superpowers/plans/2026-06-07-qualite-objet-phase*.md`.
-- **#2 — Marchand** (étend **Jalon 5** « achats/marchandage, fabrication ») : pérenne et
+  - **✅ C1b + C2 LIVRÉS (2026-06-07, 1118 tests verts)** → **#1 Qualité d'objet COMPLET** : **C1b** modale de Déviation côté **JOUEUR** (suspend re-entrant `applyAttackResult`→`pendingDeviation`, `DeviationModal` ; sous-attaques en `deviated=false` anti-imbrication) ; **C2a** Pratique/Peu Fiable & Bâclé **hors combat** (`Effect.test.tool`→`itemUid`, ±1 DR sur jet raté repêche un échec gated `requireSL`, casse Bâclé sur Maladresse) ; **C2b** **pénalités de port d'armure** (Discrétion/Perception — **déjà dans la donnée**, parsées par `wearPenalty.ts` → `skills.ts:testValue`, modulées Pratique/Peu Fiable) ; **C2c** **Laid −10 Soc** (`QualityDef.socMod` → `qualitySocMod` → `wornSocialMod` → testValue). *(Reste optionnel, plus tard : **C3** Atouts/Défauts d'armure intrinsèques (Flexible/Impénétrable/Partielle/Points Faibles) · **UI** badges de qualité (fiche).)* Plans : `docs/superpowers/plans/2026-06-07-qualite-objet-phase{C1b,C2a,C2b,C2c}-*.md`.
+- **#T — Temps & Voyage** *(NOUVEAU sous-projet, **avant le Marchand** — spec `docs/superpowers/specs/2026-06-07-temps-voyage-design.md`)* : système d'**horloge + voyage**, prérequis du re-stock marchand / Fatigue de voyage / guérison. **Greenfield** (aucune horloge ; les transitions de scène existent mais sans coût-temps). Décomposé :
+  - **#T1 — Horloge & Calendrier impérial** *(plan prêt : `docs/superpowers/plans/2026-06-07-temps-voyage-phaseT1-horloge.md`)* : module pur `clock.ts` (**calendrier impérial extrait+vérifié de la source FR** — EiS Annexe 3 + croisements ; 12 mois, 6 intercalaires, semaine de 8 jours ; écart canon 400/401 documenté), granularité **date impériale + heures**, **« tout est horodaté »** (chaque action appelle `advanceTime`), état `gameTime` + table `TIME_COST` + affichage HUD. Départ campagne = **fin Jahrdrung 2512 CI**.
+  - **#T2 — Voyage** : graphe de lieux + distances + coût-temps (vitesse = Mouvement, RAW Déplacement) + rencontres + repos.
+  - **#T3 — Cascade RAW** : ce que le temps déclenche — guérison (LDB 18), Fatigue/Exténué, maladies (LDB 20), Corruption, **re-stock marchand**.
+- **#2 — Marchand** *(CADRÉ mais **PARQUÉ** derrière Temps & Voyage — décisions en **annexe** de la spec temps-voyage : v1 transactionnel #2a (monnaie `bronze`↔`brass`) + #2b (UI achat/vente) + #2f (éditeur) ; **rachat 10 % paramétrable** — aucune règle RAW, LDB 59 « achat/vente optionnels » ; **scopé par catégorie** (herboriste ≠ arquebuses) ; archétype = 6ᵉ famille `defs/` ; **time-ready** — re-stock branché une fois #T en place)* (étend **Jalon 5** « achats/marchandage, fabrication ») : pérenne et
   **paramétrable dans l'éditeur** (famille de registre + override par entité) ; **Disponibilité**
   RAW (% par taille de colonie, LDB 59) ; **Marchandage** = Test opposé (gagner −10 % / **−20 % si DR
   net ≥ 6 ou talent Négociateur**, LDB 60), **un jet par transaction VERROUILLÉ** (anti-abus de
