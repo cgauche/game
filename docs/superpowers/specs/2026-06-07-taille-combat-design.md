@@ -41,11 +41,11 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
 | Dévastatrice = max(DR, unités) ; Percutante = +unités ; Inoffensive annule ; cumul à +2 cat | **RAW** | `62` l.278-313 / `85` l.295 |
 | ×N = nombre de catégories d'écart (×2 à +2, ×3 à +3 ; +1 cat = ×1 no-op) | **RAW** | `85` l.297 |
 | **Ordre du ×N** : appliqué aux **Dégâts (arme+DR+atouts) AVANT la réduction BE+PA** | **interprétation figée** | « après les modificateurs » = après les modificateurs de Dégâts ; le soak (BE+PA) est l'étape « Appliquer », pas un modificateur. `[retenu : ×N avant soak]` |
-| ×N + atouts de Taille s'appliquent au tir **et** à la mêlée (attaquant plus grand que la cible) | `[DESIGN]` | RAW dit « les Dégâts infligés » sans restreindre ; cohérent. Frappe Mortelle/Piétinement/parade restent mêlée/CC. |
+| ×N + atouts de Taille s'appliquent au tir **et** à la mêlée (attaquant plus grand que la cible) | **RAW** | `85` l.293-299 (« Si la Créature Est Plus Grande ») ne restreint **pas** au CC : « ses armes », « les Dégâts infligés ». Seuls Frappe Mortelle/Piétinement/parade sont intrinsèquement CC. |
 | −2 DR/cat : **parade (CC) du plus petit uniquement**, pas l'esquive | **RAW** | `85` l.305-306 |
 | Frappe Mortelle (grande créature) : balayage **sans tuer**, jusqu'à **BCC** enchaînements sur adversaires **adjacents** | **RAW** | `14` l.12 + `85` l.299 ; cible des enchaînements = adjacents `[DESIGN]` (RAW : « se déplacer sur la case » → on enchaîne sur les adjacents accessibles) |
 | Force opposée : helper pur, **sans consommateur** (pas de Test de Force opposé/empoignade modélisé) | **RAW** (posé) | `85` l.311-312 ; inerte jusqu'au système de lutte |
-| Blessures monstres : **data = autorité** (`char.B` précalculé) ; `maxWounds`-par-Taille = héros / recalcul explicite | `[DESIGN]` anti-double-mult | cf. analyse |
+| Blessures monstres : `char.B` de la data = **le RAW déjà calculé** (formule × Taille) ; on l'utilise tel quel | **RAW vérifié** | Géant 72 = (6+2·5+2)×4 = 18×4 ; Ogre 30 = (4+2·4+3)×2 = 15×2. La table `maxWounds`-par-Taille ne sert qu'aux **héros** (formule × Taille de l'espèce : Ogre PJ ×2, Halfling Petite) — **ne jamais re-multiplier** `char.B`. |
 
 ## 5. Composants
 
@@ -88,7 +88,7 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
 **`engine/characteristics.ts`** :
 - `maxWounds(c)` : remplacer le binaire `isSmall` par une **table de Taille** (`engine/size.ts` `SIZE_WOUNDS`) :
   Minuscule=1 ; Très Petite=BE ; Petite=2·BE+BFM ; **Moyenne=BF+2·BE+BFM** (formule actuelle) ; Grande=×2 ; Énorme=×4 ; Monstrueuse=×8. **Endurant/Coriace appliqué AVANT le ×N** (`85` l.105-106).
-- **Monstres** : `char.B` est précalculé en data → `creatureToCombatant` garde `wounds = char.B` (autorité data). `maxWounds`-par-Taille ne s'applique qu'aux **héros** (création) et au **recalcul explicite** (`buyCharAdvance`). `[anti double-mult]`
+- **Monstres** : `char.B` de la data **EST déjà le RAW** (formule × multiplicateur de Taille — vérifié : Géant 72 = 18×4, Ogre 30 = 15×2). `creatureToCombatant` le garde tel quel → aucun recalcul, aucune re-multiplication. La table `maxWounds`-par-Taille ne s'applique donc qu'aux **héros** (création — Ogre PJ Grande ×2, Halfling Petite) et au **recalcul explicite** (`buyCharAdvance`).
 
 ## 6. Plan de tests (TDD)
 - `size.test.ts` : `sizeDamageMultiplier` (×1 à +1, ×2 à +2, ×3 à +3, ×1 si plus petit/égal), `sizeGrantedQualities` (∅/Dévastatrice/Dévastatrice+Percutante), `forceOpposedOutcome` (autoWin/needCrit/normal), `SIZE_WOUNDS`.
