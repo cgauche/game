@@ -38,6 +38,8 @@ export interface CustomStatblock {
   weaponDamage?: string; // ex. "+BF+4"
   armour?: number; // PA uniforme sur toutes localisations
   traits?: string[];
+  /** Catégorie de Taille (LDB 85) — sinon dérivée du trait « Taille (X) », défaut Moyenne. */
+  size?: import('../engine/size').SizeCategory;
 }
 
 /** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).

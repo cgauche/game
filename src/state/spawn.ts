@@ -6,6 +6,7 @@ import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
+import { parseSizeLabel, SizeCategory } from '../engine/size';
 import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
@@ -76,6 +77,19 @@ function armourFromTraits(traits: string[]): ArmourPoints {
   return emptyArmour(0);
 }
 
+/** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85), ou null si absent.
+ *  Une plage (« Taille (de Petite à Énorme) ») est résolue à sa borne haute par `parseSizeLabel`. */
+export function sizeFromTraits(traits: string[]): SizeCategory | null {
+  for (const t of traits) {
+    const m = t.match(/^Taille\s*\(([^)]+)\)/i);
+    if (m) {
+      const cat = parseSizeLabel(m[1]);
+      if (cat) return cat;
+    }
+  }
+  return null;
+}
+
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }): Combatant {
   const chars = charsFrom(creature.char);
   const wounds = typeof creature.char.B === 'number' ? creature.char.B : 10;
@@ -90,6 +104,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     conditions: [],
     weapons: weaponsFromTraits(creature.traits),
     armour: armourFromTraits(creature.traits),
+    size: sizeFromTraits(creature.traits) ?? 'moyenne',
     skills: [],
     talents: [],
     movement,
@@ -113,6 +128,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     // sinon une arme générique au dégât indiqué.
     weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
+    size: sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne',
     skills: [],
     talents: [],
     movement,
