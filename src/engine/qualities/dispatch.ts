@@ -70,3 +70,31 @@ export function isUnbreakable(w: QualityCarrier | undefined): boolean {
 export function isFirearmQuality(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.def.firearm);
 }
+
+export interface DamageStepCtx {
+  /** DR-pour-dégâts de base (déjà augmenté de Pointue). */
+  effDR: number;
+  /** Dé des unités du jet de toucher (LDB 62 l.279/313). */
+  units: number;
+}
+export interface DamageStep {
+  /** DR-dégâts effectif (Dévastatrice : max(DR, unités)). */
+  dmgDR: number;
+  /** Bonus plat de Dégâts (Percutante : + dé des unités). */
+  bonus: number;
+}
+
+/** Ajustement de Dégâts dû aux qualités : Dévastatrice (DR = max(DR, dé des unités)), Percutante
+ *  (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` = qualités
+ *  conférées hors arme (ex. par la Taille, LDB 85 l.295). Pur. */
+export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStepCtx, extra: string[] = []): DamageStep {
+  const defs = resolveQualities(w);
+  for (const raw of extra) {
+    const p = parseQuality(raw);
+    if (p) defs.push({ def: QUALITIES[p.key], indice: p.indice });
+  }
+  if (defs.some((r) => r.def.negatesDamageAtouts)) return { dmgDR: ctx.effDR, bonus: 0 };
+  const dmgDR = defs.some((r) => r.def.dmgDRMode === 'maxUnits') ? Math.max(ctx.effDR, ctx.units) : ctx.effDR;
+  const bonus = defs.some((r) => r.def.damageBonusUnits) ? ctx.units : 0;
+  return { dmgDR, bonus };
+}

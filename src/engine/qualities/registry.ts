@@ -3,7 +3,7 @@
  * Ajouter une qualité = AJOUTER UNE ENTRÉE ici (plus de `hasQ` éparpillé). Les helpers
  * de `dispatch.ts` lisent ce registre ; combat.ts/items.ts l'appellent aux moments de jeu.
  */
-import type { Combatant, HitLocation, Weapon } from '../types';
+import type { CharKey, Combatant, HitLocation, Weapon } from '../types';
 
 /** Contexte (lecture seule) passé aux hooks fonctionnels ; un hook RENVOIE des données, ne mute pas. */
 export interface QualityCtx {
@@ -41,6 +41,19 @@ export interface QualityDef {
   unbreakable?: boolean;
   /** Arme à feu (Poudre noire / Explosion) — Incident de Tir sur Maladresse (LDB 14 l.56-57). */
   firearm?: boolean;
+  /** Dégâts : 'maxUnits' = DR-dégâts pris à max(DR, dé des unités) (Dévastatrice, LDB 62 l.279). */
+  dmgDRMode?: 'maxUnits';
+  /** Dégâts : ajoute le dé des unités aux Dégâts (Percutante, LDB 62 l.313). */
+  damageBonusUnits?: boolean;
+  /** Annule les Atouts de Dégâts (Dévastatrice/Percutante) sur cette arme (Inoffensive, LDB 62 l.279/313). */
+  negatesDamageAtouts?: boolean;
+  /** Effet « à la touche » : Test opposé à une localisation → condition infligée si l'attaquant l'emporte
+   *  (Assommante : Tête → F vs Endurance+Résistance → Sonné, LDB Armes l.268). Interprété par combatFlow. */
+  onHit?: {
+    location?: HitLocation;
+    opposed: { attacker: CharKey; defender: CharKey; defenderSkill?: string };
+    condition: string;
+  };
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -52,21 +65,20 @@ export const QUALITIES: Record<string, QualityDef> = {
   'Défensive': { key: 'Défensive', type: 'Atout', subType: 'Arme', defenderParryDR: 1 },
   'À Enroulement': { key: 'À Enroulement', type: 'Atout', subType: 'Arme', attackerParryDR: -1 },
   'Pistolet': { key: 'Pistolet', type: 'Atout', subType: 'Arme', canFireWhileEngaged: true },
-  // Dévastatrice / Percutante : effet de Dégâts (DR = max(DR, dé des unités) ; +dé des unités) appliqué
-  // INLINE dans applyHit car entremêlé au calcul de Taille (Atouts conférés / ×N) ; enregistrées ici
-  // pour la présence et la parité — hook de dégâts complet à venir. LDB 62 l.279/313.
-  'Dévastatrice': { key: 'Dévastatrice', type: 'Atout', subType: 'Arme' },
-  'Percutante': { key: 'Percutante', type: 'Atout', subType: 'Arme' },
+  // Dévastatrice / Percutante : effet de Dégâts via le hook `qualityDamageStep` (DR = max(DR, dé des
+  // unités) / + dé des unités) ; peuvent être conférées par la Taille (passées en `extra`). LDB 62 l.279/313.
+  'Dévastatrice': { key: 'Dévastatrice', type: 'Atout', subType: 'Arme', dmgDRMode: 'maxUnits' },
+  'Percutante': { key: 'Percutante', type: 'Atout', subType: 'Arme', damageBonusUnits: true },
   'Incassable': { key: 'Incassable', type: 'Atout', subType: 'Arme', unbreakable: true },
-  // Inoffensive : posé sur une arme usée à +0 (effectiveWeapon) ; effet « PA doublés » non encore
-  // modélisé (dette, cf. ROADMAP). Enregistrée pour la parité (clé connue).
-  'Inoffensive': { key: 'Inoffensive', type: 'Défaut', subType: 'Arme' },
+  // Inoffensive : posé sur une arme usée à +0 (effectiveWeapon). `negatesDamageAtouts` = annule
+  // Dévastatrice/Percutante (modélisation existante). Effet canon « PA doublés » non encore modélisé (dette ROADMAP).
+  'Inoffensive': { key: 'Inoffensive', type: 'Défaut', subType: 'Arme', negatesDamageAtouts: true },
   // Solide (Indice) — Atout d'OBJET (artisanat, LDB 60 l.64-67) : encaisse N dégâts + sauvegarde 9+.
   // Enregistrée comme exemple canonique d'Indice ; ses HOOKS d'effet seront câblés en Phase A (artisanat).
   'Solide': { key: 'Solide', type: 'Atout', subType: 'Objet' },
-  // Assommante : effet (touche à la Tête → Test opposé Force/Résistance → Sonné, LDB Armes l.268)
-  // appliqué INLINE dans combatFlow ; enregistrée pour la présence et la parité.
-  'Assommante': { key: 'Assommante', type: 'Atout', subType: 'Arme' },
+  // Assommante : touche à la Tête → Test opposé F vs Endurance+Résistance → Sonné (LDB Armes l.268),
+  // déclaré via le hook `onHit` ; le Test (RNG) + addCondition sont interprétés dans combatFlow.
+  'Assommante': { key: 'Assommante', type: 'Atout', subType: 'Arme', onHit: { location: 'tete', opposed: { attacker: 'F', defender: 'E', defenderSkill: 'Résistance' }, condition: 'Sonné' } },
   // Recharge (Indice) : Indice = DR à cumuler pour recharger (Test étendu de Projectiles, LDB 63 l.28-29) ;
   // lu via qualityIndice dans recomputeLoadout.
   'Recharge': { key: 'Recharge', type: 'Défaut', subType: 'Arme' },
