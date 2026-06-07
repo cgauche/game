@@ -120,3 +120,45 @@ export const CAMPAIGN_START = fromDate({
   year: 2512, month: 1, monthName: 'Jahrdrung', day: IMPERIAL_MONTHS[1].days,
   intercalary: null, weekday: WEEKDAYS[0], hour: 8, minute: 0,
 });
+
+// ─── Phases du jour (#T1c) ─── affichage riche, découplé de l'obscurité mécanique ───
+export type DayPhaseKey = 'aube' | 'matin' | 'midi' | 'apresmidi' | 'crepuscule' | 'soir' | 'nuit';
+export interface DayPhase { key: DayPhaseKey; label: string; icon: string; isNight: boolean; }
+
+/** Table ordonnée des phases d'AFFICHAGE : heure de début (minutes-de-jour) + libellé FR + icône.
+ *  Paramétrable (canon muet sur l'heure exacte du lever/coucher). 'nuit' enjambe minuit (00:00–05:00). */
+export const DAY_PHASES: { key: DayPhaseKey; start: number; label: string; icon: string }[] = [
+  { key: 'aube',       start:  5 * 60, label: 'Aube',       icon: '🌅' },
+  { key: 'matin',      start:  8 * 60, label: 'Matin',      icon: '🌄' },
+  { key: 'midi',       start: 11 * 60, label: 'Midi',       icon: '☀️' },
+  { key: 'apresmidi',  start: 14 * 60, label: 'Après-midi', icon: '🌤️' },
+  { key: 'crepuscule', start: 18 * 60, label: 'Crépuscule', icon: '🌇' },
+  { key: 'soir',       start: 20 * 60, label: 'Soir',       icon: '🌆' },
+  { key: 'nuit',       start: 22 * 60, label: 'Nuit',       icon: '🌙' },
+];
+
+/** Fenêtre d'OBSCURITÉ mécanique (combat −20 tir / rendu sombre), paramétrable et DÉCOUPLÉE des
+ *  phases d'affichage. [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). */
+export const NIGHT_WINDOW = { start: 22 * 60, end: 5 * 60 } as const;
+
+const minuteOfDay = (minutes: number) => ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+
+/** Obscurité ? (seul seuil mécanique). Vrai si l'heure du jour ∈ NIGHT_WINDOW (qui enjambe minuit). */
+export function isNight(minutes: number): boolean {
+  const m = minuteOfDay(minutes);
+  return m >= NIGHT_WINDOW.start || m < NIGHT_WINDOW.end;
+}
+
+/** Phase d'affichage (7) pour une heure donnée. */
+export function dayPhase(minutes: number): DayPhase {
+  const m = minuteOfDay(minutes);
+  let chosen = DAY_PHASES[DAY_PHASES.length - 1]; // 'nuit' par défaut (00:00–05:00, avant 'aube')
+  for (const p of DAY_PHASES) if (m >= p.start) chosen = p;
+  return { key: chosen.key, label: chosen.label, icon: chosen.icon, isNight: isNight(minutes) };
+}
+
+/** Minutes à avancer pour atteindre la PROCHAINE occurrence (toujours en avant) de l'heure-du-jour
+ *  cible. 0 si on y est déjà. Le temps ne recule jamais (« tout est horodaté »). */
+export function minutesUntilNext(currentMinutes: number, targetMinuteOfDay: number): number {
+  return (minuteOfDay(targetMinuteOfDay) - minuteOfDay(currentMinutes) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+}

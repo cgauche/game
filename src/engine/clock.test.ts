@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START } from './clock';
+import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext } from './clock';
 
 describe('clock — calendrier impérial', () => {
   it('a 12 mois, 6 intercalaires, 8 jours de semaine ; année auto-cohérente', () => {
@@ -66,5 +66,37 @@ describe('clock — calendrier impérial', () => {
   it('CAMPAIGN_START = fin Jahrdrung 2512 08:00', () => {
     const d = toDate(CAMPAIGN_START);
     expect(d).toMatchObject({ year: 2512, monthName: 'Jahrdrung', day: 33, hour: 8, minute: 0 });
+  });
+});
+
+describe('clock — phases du jour & obscurité (#T1c)', () => {
+  const at = (h: number, m = 0) => h * 60 + m;
+  it('dayPhase : 7 phases aux frontières (la nuit enjambe minuit)', () => {
+    expect(dayPhase(at(4, 59)).key).toBe('nuit');
+    expect(dayPhase(at(5)).key).toBe('aube');
+    expect(dayPhase(at(8)).key).toBe('matin');
+    expect(dayPhase(at(11)).key).toBe('midi');
+    expect(dayPhase(at(14)).key).toBe('apresmidi');
+    expect(dayPhase(at(18)).key).toBe('crepuscule');
+    expect(dayPhase(at(20)).key).toBe('soir');
+    expect(dayPhase(at(22)).key).toBe('nuit');
+    expect(dayPhase(at(0)).key).toBe('nuit');
+  });
+  it('isNight = obscurité 22:00–05:00 (enjambe minuit), découplé des phases', () => {
+    expect(isNight(at(22))).toBe(true);
+    expect(isNight(at(2))).toBe(true);
+    expect(isNight(at(4, 59))).toBe(true);
+    expect(isNight(at(5))).toBe(false);
+    expect(isNight(at(12))).toBe(false);
+    expect(isNight(at(21, 59))).toBe(false);
+  });
+  it('dayPhase expose label/icon et isNight', () => {
+    expect(dayPhase(at(12))).toMatchObject({ key: 'midi', icon: '☀️', isNight: false });
+    expect(dayPhase(at(23))).toMatchObject({ key: 'nuit', isNight: true });
+  });
+  it('minutesUntilNext : plus tard / déjà passé → demain / pile = 0', () => {
+    expect(minutesUntilNext(at(14), at(22))).toBe(8 * 60); // 14:00 → 22:00
+    expect(minutesUntilNext(at(23), at(22))).toBe(23 * 60); // 23:00 → prochaine 22:00
+    expect(minutesUntilNext(at(22), at(22))).toBe(0);
   });
 });
