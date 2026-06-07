@@ -34,4 +34,6 @@ export const EVT = {
   ANIM_IMPACT: 'anim_impact',
   /** store → rendu : déplacement animé d'un token {id,path}. */
   ANIM_MOVE: 'anim_move',
+  /** store → * : le temps de jeu a avancé {minutes}. #T3 (cascade) branchera guérison/Fatigue/re-stock sur les franchissements. */
+  TIME_ADVANCED: 'time:advanced',
 } as const;

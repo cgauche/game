@@ -12,6 +12,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { applyAttackResult, applyEffects } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
+import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 
 function reset() {
   useGame.setState({
@@ -1939,5 +1940,22 @@ describe('camRot (rotation caméra — état de vue)', () => {
     expect(useGame.getState().camRot).toBe(0); // 4 crans = tour complet
     useGame.getState().rotateCam(-1);
     expect(useGame.getState().camRot).toBe(3); // boucle négative
+  });
+});
+
+describe('Horloge in-game — gameTime + advanceTime (Phase T1)', () => {
+  it('advanceTime fait avancer gameTime (depuis le départ de campagne)', () => {
+    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.getState().advanceTime(90); // +1h30
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + 90);
+    useGame.getState().advanceTime(MINUTES_PER_DAY); // +1 jour
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + 90 + MINUTES_PER_DAY);
+  });
+
+  it('advanceTime est un no-op si minutes ≤ 0', () => {
+    useGame.setState({ gameTime: CAMPAIGN_START });
+    useGame.getState().advanceTime(0);
+    useGame.getState().advanceTime(-30);
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START);
   });
 });

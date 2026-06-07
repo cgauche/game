@@ -54,6 +54,7 @@ import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
 import { persistentConditions } from '../engine/persistence';
+import { CAMPAIGN_START } from '../engine/clock';
 import { findSpell, levelsForCareer, findSkill } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { sceneCombatModifiers } from './sceneRules';
@@ -504,11 +505,16 @@ export interface GameState {
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageCancel: () => void;
   log: (msg: string) => void;
+  /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */
+  gameTime: number;
+  /** Avance l'horloge in-game de `minutes` (no-op si ≤ 0) et émet TIME_ADVANCED (#T3 cascade). */
+  advanceTime: (minutes: number) => void;
 }
 
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
+  gameTime: CAMPAIGN_START,
   party: [],
   scene: null,
   mode: 'exploration',
@@ -2163,4 +2169,10 @@ export const useGame = create<GameState>((set, get) => ({
   closeDocument: () => set({ document: null }),
 
   log: (msg) => set((s) => ({ journal: [...s.journal.slice(-40), msg] })),
+
+  advanceTime: (minutes) => {
+    if (minutes <= 0) return;
+    set({ gameTime: get().gameTime + minutes });
+    bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
+  },
 }));
