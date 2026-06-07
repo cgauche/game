@@ -815,6 +815,15 @@ export const useGame = create<GameState>((set, get) => ({
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
     set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
+    // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
+    pushReveal(set, {
+      kind: 'round',
+      title: 'Initiative',
+      lines: order.map((id, i) => {
+        const c = all.find((x) => x.id === id)!;
+        return `${i + 1}. ${c.name} (${c.initiative})`;
+      }),
+    });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1432,7 +1441,11 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, pendingReveals, pendingFateSave, pendingFumble } = get();
     if (battle && !battle.over && !pendingReveals.length && !pendingFateSave && !pendingFumble) {
       const active = activeCombatant(battle);
-      if (active && active.kind === 'enemy' && !isOutOfAction(active)) resumeEnemyTurn(get, set);
+      if (active && active.kind === 'enemy' && !isOutOfAction(active)) {
+        // Ennemi ayant déjà agi (révélation d'attaque) → fin de tour ; sinon début de tour (entretien) → lancer l'IA.
+        if (battle.acted) resumeEnemyTurn(get, set);
+        else maybeRunEnemyTurn(get, set);
+      }
     }
   },
   battleTrample: (targetId) => {

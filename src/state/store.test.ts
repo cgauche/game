@@ -135,7 +135,7 @@ describe('Boucle de jeu (store)', () => {
     // Ordre = ennemis puis héros ; on se place juste AVANT le héros pour que le prochain tour soit le sien
     // (évite un franchissement de Round, donc pas de tick Hémorragique pendant le test).
     const order = [...enemyIds, heroId];
-    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
 
     useGame.getState().battleEndTurn(); // → advanceTurn → prochain acteur = héros → checkBattleOver → victoire → writeback
 
@@ -278,7 +278,7 @@ describe('Boucle de jeu (store)', () => {
     h.loseNextAction = true;
     const enemyIds = b.combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
     const order = [...enemyIds, h.id]; // héros en dernier
-    useGame.setState({ battle: { ...b, order, turn: order.length - 2 } }); // tour juste avant le héros
+    useGame.setState({ battle: { ...b, order, turn: order.length - 2 }, pendingReveals: [] }); // tour juste avant le héros
     useGame.getState().battleEndTurn(); // → advanceTurn → héros : Action perdue consommée
     const st = useGame.getState();
     const after = st.battle!.combatants.find((c) => c.id === h.id)!;
@@ -330,7 +330,7 @@ describe('Boucle de jeu (store)', () => {
     const h = b.combatants.find((c) => c.kind === 'hero')!;
     h.actLastNextRound = true;
     const base = [...(b.baseOrder ?? b.order)];
-    useGame.setState({ battle: { ...b, turn: b.order.length - 1 } }); // au dernier tour → prochain endTurn franchit le Round
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, pendingReveals: [] }); // au dernier tour → prochain endTurn franchit le Round
     useGame.getState().battleEndTurn();
     let st = useGame.getState();
     expect(st.battle!.order[st.battle!.order.length - 1]).toBe(h.id); // héros repoussé en dernier ce Round
@@ -362,7 +362,7 @@ describe('Boucle de jeu (store)', () => {
     b = useGame.getState().battle!;
     const combatants = b.combatants.map((c) => (c.kind === 'hero' ? c : { ...c, dead: true }));
     const order = [...combatants.filter((c) => c.kind === 'enemy').map((c) => c.id), h.id];
-    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
     useGame.getState().battleEndTurn();
     expect(useGame.getState().battle?.over).toBe('victory');
     expect(useGame.getState().party[0].items!.find((i) => i.name === witem.name && i.equipped)!.damageTaken).toBe(1);
@@ -608,6 +608,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({
       battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
       pendingDefense: null,
+      pendingReveals: [],
     });
     useGame.getState().battleEndTurn(); // H finit son tour → advanceTurn → E actif → IA
     vi.advanceTimersByTime(2000); // laisse tourner les setTimeout de l'IA (450 + 350)
@@ -651,6 +652,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({
       battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
       pendingDefense: null,
+      pendingReveals: [],
     });
     useGame.getState().battleEndTurn(); // H finit → E actif → IA : Sonné → renonce
     vi.advanceTimersByTime(2000);

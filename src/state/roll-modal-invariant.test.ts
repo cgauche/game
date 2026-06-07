@@ -23,11 +23,10 @@ const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 // `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
 // Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
 // le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
-const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply']);
-// Dette temporaire (résolue au fil des tâches) — à VIDER au fur et à mesure.
-const TODO = new Set<string>([
-  'startCombat', // Lot B T8 → initiative en révélation
-]);
+// `startCombat` tire l'Initiative (I+1d10) en début de combat puis la RÉVÈLE (entretien, sans Chance).
+const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat']);
+// Dette temporaire (résolue au fil des tâches) — VIDÉE : tous les jets héros/conséquences sont en modale.
+const TODO = new Set<string>([]);
 
 function storeActions(src: string): { name: string; body: string }[] {
   const out: { name: string; body: string }[] = [];

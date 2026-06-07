@@ -1066,9 +1066,11 @@ export function advanceTurn(get: () => GameState, set: any) {
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
-      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => battle.log.push(l));
+      const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
+      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); });
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
-      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
+      if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
       return;
