@@ -218,18 +218,24 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
   pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
 
-## 🎯 Jalon 1.5 — Sous-système Taille *(T0/T1 faits ; reste T2-T6)*
+## 🎯 Jalon 1.5 — Sous-système Taille *(Phases 1-2 faites ; reste orchestration + éditeur, puis T5/T6)*
 
 La Taille est un **Trait de créature** (7 catégories ordinales), pas une caractéristique chiffrée ;
-presque tout est une **comparaison d'écart** entre combattants. Analyse RAW complète + décomposition :
-`docs/superpowers/specs/2026-06-07-taille-analyse-reference.md`. Faits : **T0** (champ `Combatant.size`,
-enum, `parseSizeLabel`, dérivation au spawn) + **T1** (size-to-hit au tir + +10 au plus petit). Reste :
-- **T2 — Dégâts** : ×N catégories d'écart (après mitigation) + Atouts **Dévastatrice** (+1 cat.) / **Percutante** (+2 cat.) + **Frappe Mortelle** (toute touche du plus grand). `85` l.293-299.
-- **T3 — Lutte** : **−2 DR en parade** par catégorie pour le plus petit (`85` l.305-306), **Désengagement gratuit** du plus grand (l.308-309), **Force opposée** auto (l.311-312), **Piétinement** (l.320-321).
-- **T4 — Blessures par catégorie** : Petite=2BE+BFM … Grande ×2, Énorme ×4, Monstrueuse ×8 (`85` l.332-352). ⚠️ piège : `char.B` des monstres déjà précalculé en data → une seule autorité.
-- **T5 — Peur/Terreur** dérivées de l'écart (`85` l.317-318) : **sous-système Psychologie neuf** (Test de Calme étendu, État Brisé, `21-Psychologie.md`) — le plus gros.
-- **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux sur les cases).
-- Aussi : **Localisation par forme de corps** (quadrupède/oiseau/serpent ; `76 - Point d'Impact des Créatures.md`), **monture & Taille** (`14` l.217-223).
+presque tout est une **comparaison d'écart** entre combattants. Analyse : `…/specs/2026-06-07-taille-analyse-reference.md` ;
+spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-06-07-taille-combat.md`.
+**T0/T1** déjà livrés (Jalon 1). **Phases 1-2 livrées (2026-06-07, moteur pur, 749 tests verts) :**
+- ✅ **T2 — Dégâts** : **×N** par catégorie d'écart, **AVANT** la réduction BE+PA (confirmé) ; Atouts **Dévastatrice** (max DR/unités, +1 cat.) **+ Percutante** (+unités, +2 cat. — **cumul**), Inoffensive annule ; au tir **et** en mêlée. `62` l.279/313 + `85` l.295-297.
+- ✅ **T3 partiel** : **−2 DR/cat en parade** du plus petit (`85` l.305-306) ; **Force opposée** posée en helper pur (sans consommateur). *(Reste : orchestration ci-dessous.)*
+- ✅ **T4 — Blessures** : table par catégorie (Petite=2BE+BFM … Monstrueuse ×8) ; **formule par défaut, surcharge `char.B` sinon** (vérifié : 52/58 monstres = formule, 6 traités préservés) ; **dynamiques** — un sort sur E/F/FM recale max + courant (`refreshWounds`, application & dissipation). `85` l.332-352.
+- ✅ **Frappe Mortelle** : drapeau `cleave` posé sur la touche d'un plus grand ; `resolveTrample` (Piétinement BF/CC) prêt.
+
+**Reste (Phase 3 — orchestration ; Phase 4 — éditeur ; puis audit) :**
+- **Balayage Frappe Mortelle** : boucle jusqu'à BCC, déplacement sur la case de la cible, frappe d'un autre **à portée** (= adjacent tant que l'Allonge n'est pas modélisée) ; IA auto + `pendingCleave` héros. `14` l.12 / `85` l.299.
+- **Désengagement gratuit** du plus grand (court-circuite `pendingDisengage`, `85` l.308-309) ; **action Piétinement** câblée (store `battleTrample` + hotbar + IA, `85` l.320-321).
+- **Éditeur** : champ Blessures optionnel (vide = formule).
+- **T5 — Peur/Terreur** dérivées de l'écart (`85` l.317-318) : **sous-système Psychologie neuf** (Test de Calme étendu, État Brisé, `21-Psychologie.md`) — le plus gros, lot à part.
+- **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux).
+- Aussi : **Localisation par forme de corps** (`76`), **monture & Taille** (`14` l.217-223).
 
 ## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(spec faite — en cours)*
 
