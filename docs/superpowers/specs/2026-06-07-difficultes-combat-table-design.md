@@ -22,6 +22,9 @@ Combat du Livre de base FR ; les rares choix de design (géométrie, classificat
   - Couverture **totale** (mur de pierre) → Très Difficile **−30** (l.120) — *pénalité, pas impossibilité*.
   - Cible **dissimulée** par brouillard/brume/obscurité → Difficile **−20** (l.107).
   - **Tir en bougeant** (Mouvement + tir au même Round) → Complexe **−10** (l.101).
+  - **Météo** : pluie battante / boue → Intermédiaire **+0** (l.94-98) ; mousson / ouragan / blizzard /
+    condition extrême → Difficile **−20** (l.108-109) ; haute neige / dans l'eau → Difficile **−20**
+    sur **l'attaque ET l'esquive** (l.115-116) ; brouillard / brume (= obscurité) → **−20** au tir (l.107).
   - **Taille de la cible** au tir : Monstrueuse +60 … Minuscule −30 (l.79-118 + table l.151-170).
 - **Combiner les Difficultés** : `14` l.126-131 — somme des malus **plafonnée à −30**, somme des bonus
   **plafonnée à +60** ; un mélange malus+bonus se somme.
@@ -42,12 +45,14 @@ Combat du Livre de base FR ; les rares choix de design (géométrie, classificat
 - **E. Tir dans la mêlée** : −20 + redirection vers un allié intercalé sur échec-qui-aurait-touché.
 - **F. Taille T0** : champ `size`, enum, `SIZE_ORDER`, `SIZE_RANGED_MOD`, parser `sizeFromTraits`, dérivation espèce/statblock.
 - **G. Taille T1** : à-toucher au tir selon la Taille de la cible ; +10 au plus petit *(scope/stacking à vérifier verbatim, cf. §6)*.
+- **H. Météo** : champ `scene.weather` + mods de combat canon (brouillard/tempête/neige −20, neige −20 *aussi en esquive*) + **sélecteur éditeur**. L'obscurité (`ambiance:'nuit'`) et le brouillard convergent sur le même « cible dissimulée −20 ».
+- **I. Gabarits d'objets (statiques)** : empreinte multi-cases optionnelle sur les décors (patron `foot {w,h}` des bâtiments) — **exposée éditeur**, lue par walkability + Couvert/LdV (un objet couvre/bloque **toutes** ses cases). Rendu multi-cases du sprite = cosmétique, laissé au rig.
 
 ### Hors de ce lot (futur jalon Taille — cf. analyse de référence)
 T2 Dégâts ×N + Dévastatrice/Percutante + Frappe Mortelle · T3 défense −2 DR parade + désengagement
 gratuit + Force opposée + Piétinement · T4 Blessures par catégorie · T5 Peur/Terreur (sous-système
-Psychologie) · T6 footprint multi-cases. Aussi hors-lot : surnombre mêlée +20/+40, flanc/dos +20,
-localisation par forme de corps, monture (pas demandés ici).
+Psychologie) · **T6 footprint des créatures qui se DÉPLACENT** (pathing multi-cases — le point dur).
+Aussi hors-lot : surnombre mêlée +20/+40, flanc/dos +20, localisation par forme de corps, monture.
 
 ## 4. Architecture
 
@@ -61,11 +66,13 @@ fichier `gameIso/rig/*` édité** (session parallèle) — lecture seule de la s
 | `src/state/terrain.ts` | EDIT | `TerrainMeta.sight?: 'clear'\|'cover'\|'block'` (+ classe de couvert). `mur`→block, `bois`→cover-imparfaite, `porte`→block, eau/sols→clear. *(Mon couloir — la présentation reste `gameIso/catalog/terrain.ts`.)* |
 | `src/engine/combat.ts` | EDIT | `combineMods` (plafonds) ; `attackModifiers` reçoit `cover`/`obscured`/`movedThisRound` + lit `target.size` ; gate LdV dans `resolveRangedAttack`. |
 | `src/engine/types.ts` | EDIT | `Combatant.size?: SizeCategory` ; `ModLine.uncapped?` (Avantage hors plafond). |
-| `src/state/scene.ts` | EDIT | `CustomStatblock.size?: SizeCategory`. |
+| `src/state/scene.ts` | EDIT ⚠️ | `CustomStatblock.size?` ; `Scene.weather?` ; `SceneEntity.foot?: {w,h}`. **Fichier partagé rig** → commit hunks sélectifs. |
+| `src/state/sceneRules.ts` *(ou helper existant)* | **NEW/EDIT** | `sceneCombatModifiers(scene)` ; `entityBlockedAt(scene,x,y)` (empreinte décor). Pur côté state. |
 | `src/state/spawn.ts` | EDIT | dérive `size` (statblock.size → `sizeFromTraits(traits)` → espèce → 'moyenne'). |
-| `src/state/combatFlow.ts` | EDIT | calcule distance/LdV/couvert/obscured/movedThisRound, passe à `attackModifiers` ; gate LdV à la sélection de cible ; redirection « tir dans la mêlée ». |
+| `src/state/combatFlow.ts` | EDIT | calcule distance/LdV/couvert/obscured/météo/movedThisRound, passe à `attackModifiers`/`defenseModifiers` ; gate LdV à la sélection de cible ; redirection « tir dans la mêlée ». |
 | `src/state/ai.ts` | EDIT | l'IA respecte la LdV pour choisir une cible de tir. |
-| `src/ui/RollModal.tsx` (+ ciblage) | EDIT | lignes Couvert/Taille/obscurité dans le détail du jet opposé ; cibles hors-LdV grisées/refusées. |
+| `src/ui/RollModal.tsx` (+ ciblage) | EDIT | lignes Couvert/Taille/obscurité/météo dans le détail du jet opposé ; cibles hors-LdV grisées/refusées. |
+| `src/ui/editor/*` (réglages scène + inspecteur décor) | EDIT ⚠️ | `<select>` météo ; champs empreinte `w/h`. **Possiblement partagé rig** (`Editor.tsx`) → hunks sélectifs / sous-composant dédié. |
 
 ## 5. Détail des composants
 
@@ -129,6 +136,28 @@ pour la comparaison (Halfling reste Petite **pour les Blessures**, hors-lot T4).
 - **Plus petit** : `{label:'Taille (plus petit)', value:+10}` si `sizeGap(attacker, target) < 0` — *scope (mêlée seule vs mêlée+tir) et stacking avec le mod de tir à **vérifier verbatim** `85` l.300-306 en TDD avant de figer (cf. §6)*.
 - Un mod de Taille qui transforme un échec en réussite → **0 DR** (`14` l.139) `[à implémenter dans la résolution]`.
 
+### H. Météo (`scene.ts`, helper `state`, éditeur)
+`Scene.weather?: 'clair'|'pluie'|'brouillard'|'neige'|'tempete'` (défaut `'clair'`), **orthogonal** à
+`ambiance` (moment/lieu). Helper **pur côté state** `sceneCombatModifiers(scene)` → `{ concealed, attackMod, dodgeMod, labels }` :
+`brouillard`→concealed (−20 tir, comme `ambiance:'nuit'`) ; `tempete`→attaque −20 ; `neige`→attaque −20
+**et esquive −20** (le seul à toucher la défense) ; `pluie`/`clair`→0. `combatFlow` lit ces primitives et
+les passe à `attackModifiers` (tir/mêlée) et `defenseModifiers` (esquive sous neige) — le moteur reste
+sans dépendance à `Scene`. **Éditeur** : `<select>` météo dans le panneau de réglages de scène (à côté
+d'`ambiance`).
+
+### I. Gabarits d'objets statiques (`scene.ts`, `lineOfSight.ts`, walkability, éditeur)
+`SceneEntity.foot?: { w: number; h: number }` (optionnel ; défaut 1×1 = comportement actuel), calqué sur
+`BuildingFeature`. Un défaut **par type de décor** peut être proposé (charrette 2×1, épave 2×2…) `[DESIGN]`.
+Conséquences :
+- **Walkability** : un `prop`/`objet` avec `foot` **bloque toutes ses cases** (étendre `isWalkable`/un
+  `entityBlockedAt(scene,x,y)` analogue à `buildingBlockedAt`). Le BFS de `path.ts` contourne sans modif
+  (per-tile). *(Les créatures qui se déplacent sur empreinte = T6, hors-lot.)*
+- **Couvert/LdV** : `lineOfSightCover` teste l'intersection de la ligne avec **l'ensemble des cases** de
+  l'empreinte de chaque obstacle, pas seulement sa case d'ancrage.
+- **Éditeur** : champs `w`/`h` d'empreinte sur l'inspecteur de décor (via `ParamFields`/inspecteur existant).
+- **Rendu** : le sprite reste ancré (cosmétique) — le rig affinera l'étalement visuel ; le **gameplay**
+  (couvert + blocage) est correct dès la donnée.
+
 ## 6. Décisions RAW vs DESIGN (explicites)
 
 | Sujet | Statut | Décision |
@@ -153,4 +182,12 @@ pour la comparaison (Halfling reste Petite **pour les Blessures**, hors-lot T4).
 ## 8. Isolation session rig
 Lecture seule de `scene.tiles`/`buildings`/`entities` et des catalogues. Sémantique de couvert dans
 **mon** `state/terrain.ts` + `engine/lineOfSight.ts`, **pas** dans `gameIso/catalog/*`. Aucune dépendance
-à éditer `IsoStage.tsx`/`rig/*`. Commits via `git commit -- <mes chemins>`.
+à éditer `IsoStage.tsx`/`rig/*` (le rendu multi-cases d'un décor reste au rig).
+
+**Fichiers partagés** (`scene.ts`, `ui/editor/Editor.tsx` — actuellement modifiés non-committés par la
+session rig) : mes ajouts (champs `weather`/`foot`/`size` ; UI météo/empreinte) sont posés dans des
+**régions distinctes**, et committés par **hunks sélectifs** (`git add -p <fichier>` → `git commit`
+sans pathspec = seuls mes hunks staged), **jamais** `git commit -- <fichier>` (qui emporterait leur WIP).
+Mes fichiers exclusifs (`engine/size.ts`, `engine/lineOfSight.ts`, `state/sceneRules.ts`, tests) restent
+committés normalement. Préférer un **sous-composant dédié** pour l'UI météo/empreinte afin de réduire la
+surface de contention dans `Editor.tsx`.
