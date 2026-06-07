@@ -54,13 +54,25 @@ export function groupsFor(src: { folder?: string | null; species?: string; caree
   return out;
 }
 
-/** La Cible d'un trait psy (« Elfes », « Mort-vivant »…) correspond-elle à l'un des `groups` ? Comparaison
- *  normalisée + tolérance pluriel (« Elfes » ⟺ « Elfe ») : radical (pluriel ôté) comparé dans les deux sens. */
+/** Radical en jetons normalisés : minuscules/sans accent, découpé sur espaces/tirets/apostrophes,
+ *  chaque jeton dé-pluralisé (« s » final ôté). « Hommes-bêtes » → ['homme','bete']. */
+function radicalTokens(s: string): string[] {
+  return norm(s)
+    .split(/[\s'-]+/)
+    .filter(Boolean)
+    .map((t) => t.replace(/[sx]$/, '')); // pluriel français : « s » ou « x » (peau→peaux, verte→vertes)
+}
+
+/** La Cible d'un trait psy (« Elfes », « Hommes-bêtes »…) correspond-elle à l'un des `groups` ?
+ *  Match par **jetons** tolérant au pluriel : vrai si TOUS les jetons de la Cible sont présents dans
+ *  ceux du groupe (donc « Elfes »→Elfe et « Hommes-bêtes »→Homme-bête matchent, et un radical court
+ *  « Rat »/« Or » ne matche PLUS un mot non lié « Pirate »/« Sorcier »). Le raffinement de sous-type
+ *  reste permis (« Elfe » ⊆ « Haut Elfe »). Comparaison purement normalisée. */
 export function groupMatch(cible: string, groups: string[]): boolean {
-  const c = norm(cible).replace(/s$/, '');
-  if (!c) return false;
+  const c = radicalTokens(cible);
+  if (!c.length) return false;
   return groups.some((g) => {
-    const n = norm(g).replace(/s$/, '');
-    return n === c || n.includes(c) || c.includes(n);
+    const gt = radicalTokens(g);
+    return c.every((ct) => gt.includes(ct));
   });
 }

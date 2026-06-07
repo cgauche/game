@@ -30,4 +30,21 @@ describe('Groupes — dérivation & matching (LDB 21, P3)', () => {
     expect(groupMatch('Peau-Verte', ['peau-verte'])).toBe(true);
     expect(groupMatch('Nains', ['Humain'])).toBe(false);
   });
+
+  it('groupMatch : pluriel COMPOSÉ (jeton par jeton, pas un seul « s » final)', () => {
+    expect(groupMatch('Hommes-bêtes', ['Homme-bête'])).toBe(true); // bug #3 (sous-match silencieux)
+    expect(groupMatch('Morts-vivants', ['Mort-vivant'])).toBe(true);
+    expect(groupMatch('Peaux-Vertes', ['Peau-Verte'])).toBe(true);
+  });
+
+  it('groupMatch : un radical court ne sur-matche PAS un mot non lié (bug #1)', () => {
+    expect(groupMatch('Rat', ['Pirate'])).toBe(false); // 'pirate'.includes('rat') ne doit plus matcher
+    expect(groupMatch('Rats', ['Aristocrate'])).toBe(false);
+    expect(groupMatch('Or', ['Sorcier'])).toBe(false);
+  });
+
+  it('groupMatch : raffinement de sous-type conservé (Cible générique ⊆ groupe spécifique)', () => {
+    expect(groupMatch('Elfe', ['Haut Elfe'])).toBe(true); // un anti-Elfe hait aussi les Hauts Elfes
+    expect(groupMatch('Haut Elfe', ['Elfe'])).toBe(false); // mais une Cible spécifique ne matche pas le groupe générique
+  });
 });
