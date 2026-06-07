@@ -36,7 +36,8 @@ social), plus le **système de dégâts d'armure** et la **Déviation Critique**
 But concret : qu'acheter/posséder une « épée Solide 2 » ou une « cotte de mailles Bâclée »
 *change réellement* le jeu, et que **Évaluation** (sous-projet #2) ait une vraie qualité cachée à révéler.
 
-Périmètre validé : **Tout (A + B + C)** — voir §3.
+Périmètre validé : **Tout (A + B + C)**, précédé d'une **Phase 0 de fondation** (registre de
+qualités unifié, refacto iso-comportement) pour ne pas empiler la dette — voir §3 et §3.1.
 
 ---
 
@@ -79,8 +80,15 @@ Fichiers sous `Source/Warhammer v4 - Livre de base version corrigée/` :
 
 ## 3. Périmètre (Tout = A + B + C) et phasage
 
+> **Fondation d'abord** (§3.1) : avant d'empiler la qualité d'objet, on **consolide** le traitement
+> des qualités dans un **registre unifié** (refacto *iso-comportement*, garanti par golden-master).
+> Ensuite chaque qualité (artisanat, armure) devient **une entrée de registre**, pas des `hasQ()`
+> éparpillés. Directive utilisateur : « ne pas empiler des éléments sur des éléments ; refacto pour
+> un code sain et extensible » (cf. `game-existant-poc-refactor-libre`).
+
 | Phase | Contenu | RAW | Risque |
 |---|---|---|---|
+| **0 — Fondation (refacto)** | Registre de qualités d'objet unifié + dispatcher **pur** ; migration des ~9 checks `hasQ()`/regex épars (Précise, Perforante, Pointue, Empaleuse, Défensive, À Enroulement, Pistolet, Incassable, Recharge…) derrière le registre, sous **golden-master**. **Iso-comportement** (aucune règle changée). | n/a (refacto) | Moyen (couvert par golden-master) |
 | **A — Données & économie** | Champ `craft` sur `ItemInstance` ; catalogue des 8 qualités ; fonctions pures prix (×2/÷2), disponibilité (∓1 cran, exception Exotique, option Guilde), classification (Qualité/Défectueuse/Haute Qualité) ; effets d'**encombrement** (Léger −1 / Volumineux +1, réconcilié avec « porté −1 ») ; **flag d'identification** ; **affichage** (badges). | LDB 60 l.43-92, 61 | Faible |
 | **B — Combat ARMES** | Solide(N) (absorption de dégâts d'arme + sauvegarde 9+/1d10) ; Bâclé (casse sur maladresse) ; Pratique/Peu Fiable (±1 DR à l'attaque ratée). | LDB 60 | Moyen |
 | **C1 — Dégâts d'armure + Déviation Critique** | `damageTaken` réutilisé sur les pièces d'armure ; PA de localisation **dérivée nette des dégâts** ; **Déviation Critique** (choix joueur, modale) ; qualité d'arme **Taille** endommage l'armure ; Bâclé armure (casse sur critique à la localisation) ; Solide(N) sur armure. | LDB 63 l.8,52-66 | Moyen (rayon limité, voir §6) |
@@ -91,25 +99,77 @@ Fichiers sous `Source/Warhammer v4 - Livre de base version corrigée/` :
 
 ---
 
+## 3.1 Phase 0 — Fondation : registre de qualités d'objet unifié
+
+**Problème (mesuré, cf. inventaire)** : les qualités d'arme sont testées par ~9-14 `hasQ()`/regex
+**éparpillés** sur `combat.ts`, `weaponDamage.ts`, `combatFlow.ts`, `oups.ts`, `items.ts`, avec
+**3 patterns incohérents** (`hasQ` startsWith / `/regex/i.test` / `.startsWith`), `Incassable`
+**dupliqué** (weaponDamage.ts:9 + combatFlow.ts:538), `Recharge` parsé à la main (items.ts:95).
+**22 qualités d'arme + 4 d'armure (Flexible/Impénétrable/Partielle/Points Faibles) + 90+ traits**
+existent en **données** (`qualities.json`/`traits.json`) **sans code**. Ajouter l'artisanat dans
+ce style = aggraver la dette et éditer N fichiers par qualité.
+
+**Solution — couche de comportement unifiée pour les qualités d'OBJET** (arme + armure + artisanat),
+nouveau dossier `src/engine/qualities/` :
+- `registry.ts` : `QualityDef` keyé par **label FR**, avec **hooks optionnels par moment** —
+  `attackMods`, `defenseDR`, `damageDR`, `armourReduction`, `critTrigger`/`critFilter`, `onHit`
+  (HitIntent : condition / dégât d'armure / déviation), `breakCheck`, `reload`, `fumble`,
+  `economy` (facteur prix/dispo), `social`. Champs `type` (Atout/Défaut), `subType`
+  (Arme/Armure/Objet), `beats[]` (**préséance** RAW, ex. *Imprécise > Précise*, LDB Armes l.20).
+- `dispatch.ts` : dispatcher **pur** — `foldQualities(items, moment, ctx)` replie les hooks
+  présents ; **les hooks renvoient des données, ne mutent jamais**. S'aligne sur les bons patterns
+  existants (`ModLine`/`combineMods`, registre `conditions.ts`, préséance `effectiveChar`) — on
+  **ne les refactore pas**, on s'y branche.
+- `qualities.json` reste le **catalogue** (texte canon) ; la couche TS porte le **comportement** ;
+  un **test de parité** vérifie que chaque qualité de données a un comportement (ou un opt-out
+  explicite « cosmétique/narratif »).
+- Combat/items appellent le dispatcher **au lieu** des `hasQ()` codés en dur.
+
+**Migration sûre (golden-master, iso-comportement)** :
+0. **Golden master** d'abord : capturer des combats seedés (séquences de jets/dégâts) comme filet anti-régression.
+1. Types + registre + `dispatch` + parité **non-stricte**.
+2. Migrer les hooks **numériques un par un** (Précise → Perforante → Pointue → Défensive/À Enroulement → Empaleuse), **golden après chaque**.
+3. Pistolet (capacité), puis `Incassable` (**dédup** weaponDamage + combatFlow:538), `Recharge` (typé, fin du parse fragile), Poudre noire (fumble).
+4. `Assommante` (HitIntent : Test opposé + condition Sonné ; RNG au call-site pour préserver l'ordre).
+5. Parité **stricte**.
+6. **AJOUTER** les nouvelles qualités comme **entrées de registre** → c'est là que se branchent les phases B/C1/C2/C3 (artisanat, armure intrinsèque, Taille-endommage-armure, Déviation Critique).
+7. Supprimer le `hasQ` mort + les patterns dupliqués.
+
+**Garde-fou (NE PAS toucher — discipline de périmètre)** : traits de créature & `spawn.ts` ;
+`conditions.ts` / `ModLine` / `effectiveChar` / `trauma.ts` / `encumbrance.ts` (déjà propres) ;
+Taille T2-T6 ; flux de combat / `battleRng` / modales / `bus` ; le **texte** de `qualities.json` ;
+les **règles** elles-mêmes pendant la migration (refacto = iso-comportement). Périmètre =
+`src/engine/qualities/` + les points d'appel listés en §7.
+
+**Bénéfice** : après Phase 0, ajouter une qualité (artisanat, armure, ou plus tard une des 22+
+qualités/90+ traits en attente) = **une entrée de registre testée**, pas des édits dispersés.
+
+---
+
 ## 4. Modèle de données
 
-### 4.1 Catalogue des qualités d'artisanat — nouveau `src/engine/craftQualities.ts`
-Set canonique **fixe** (8 entrées, LDB 60). Hand-authored (pas via `build-data`, car absent de
-`all-data.json`). Chaque entrée porte des *flags d'effet* lisibles par le moteur :
+### 4.1 Catalogue des qualités d'artisanat — entrées du **registre unifié** (§3.1)
+Les 8 qualités d'artisanat (set canonique **fixe**, LDB 60) sont **des entrées du registre**
+`src/engine/qualities/` créé en Phase 0 (leur *comportement* via hooks), avec leur métadonnée
+canonique. Elles ne forment **pas** un module isolé parallèle — c'est tout l'intérêt de la Phase 0.
 
 ```ts
 export type CraftAtoutKey = 'Léger' | 'Pratique' | 'Raffiné' | 'Solide';
 export type CraftDefautKey = 'Bâclé' | 'Laid' | 'Peu Fiable' | 'Volumineux';
 
-export interface CraftQualityDef {
+// Métadonnée (catalogue) — le COMPORTEMENT vit dans les hooks de la QualityDef du registre.
+export interface CraftQualityMeta {
   key: CraftAtoutKey | CraftDefautKey;
   type: 'Atout' | 'Défaut';
+  subType: 'Objet';
   stackable: boolean;        // Raffiné, Solide
   hasIndice: boolean;        // Solide (N)
   desc: string;              // texte canon (FR)
   source: { book: 'LDB'; page: number };
 }
 ```
+Hand-authored (pas via `build-data`, car absent de `all-data.json`) ; idéalement injecté dans
+`qualities.json` (subType `Objet`) si on veut une source de vérité unique catalogue — à trancher au plan.
 
 ### 4.2 Champ d'instance — `ItemInstance.craft`
 ```ts
@@ -188,6 +248,7 @@ Implémenter au passage, puisque C1 ouvre le flux critique/PA :
 
 ## 7. Points d'intégration (file:line)
 
+- **Fondation (Phase 0)** : nouveau `src/engine/qualities/` (registry + dispatch + parité). Les points ci-dessous sont **routés par le dispatcher** au lieu des `hasQ()` codés en dur ; les phases B/C/C3 = nouvelles **entrées de registre**, pas de nouveaux `if` épars.
 - **Données** : `ItemInstance` (`types.ts:124-145`) +`craft`, `damageTaken` réutilisé armures ; `TrappingData` (`data/index.ts:76-91`) +`wearPenalty`.
 - **Construction** : `itemFromTrapping` (`items.ts:34-62`) lit/initialise `craft` ; `withCraft()` helper.
 - **Économie** : nouveau `craftEconomy.ts` (pur) — consommé par #2.
@@ -215,6 +276,7 @@ Implémenter au passage, puisque C1 ouvre le flux critique/PA :
 
 ## 9. Tests (Vitest, moteur pur d'abord)
 
+- **Phase 0** : `qualities/parity.test.ts` (chaque qualité de `qualities.json` a un comportement ou un opt-out déclaré) ; **golden-master** de combats seedés (avant migration → après chaque étape, diff nul) ; tests unitaires du dispatcher (`foldQualities`, préséance `beats`).
 - `craftEconomy.test.ts` : prix ×2/÷2 (multiplicités), shift de dispo (+ exception Exotique + option Guilde), `qualityClass` (Haute Qualité/Qualité/Défectueuse/Standard), exemples canon (pelle 2 Atouts ×4 Commune→Rare ; cotte Volumineux+Peu Fiable ¼ Rare→Commune).
 - `encumbrance` : Léger/Volumineux + porté −1 + Volumineux-porté=1.
 - `weaponDamage` : Solide(N) absorption seuil + sauvegarde 9+/8+ (RNG seedé) ; Bâclé casse sur maladresse ; Incassable prioritaire.
@@ -241,6 +303,7 @@ Implémenter au passage, puisque C1 ouvre le flux critique/PA :
 
 ## 11. Definition of Done (#1)
 
+- [ ] **Phase 0** : registre `src/engine/qualities/` + dispatcher pur ; ~9 checks épars migrés ; `Incassable`/`Recharge` dédupliqués/typés ; parité + golden-master verts ; **iso-comportement** prouvé.
 - [ ] `craft` modélisé sur l'instance + catalogue des 8 qualités (RAW cité).
 - [ ] Économie pure (prix/dispo/classe) testée — **prête pour #2**.
 - [ ] Encombrement Léger/Volumineux (+ porté/−1 + Volumineux=1).
