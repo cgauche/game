@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
+import { formatImperial } from '../engine/clock';
 import { IsoStage } from '../gameIso/IsoStage';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
@@ -34,6 +35,7 @@ export function CampaignView() {
   const battle = useGame((s) => s.battle);
   const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
+  const gameTime = useGame((s) => s.gameTime);
   const setScreen = useGame((s) => s.setScreen);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
@@ -57,6 +59,9 @@ export function CampaignView() {
           <span className="coins">
             <b className="co">{money.gold}</b> CO · <b className="sc">{money.silver}</b> SC · <b className="pa">{money.brass}</b> PA
           </span>
+        </div>
+        <div className="game-clock" title="Date et heure (Calendrier Impérial)">
+          🕓 {formatImperial(gameTime)}
         </div>
         <div className="inventory">
           <div className="mini-title">Inventaire ({inventory.length})</div>
