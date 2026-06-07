@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
+import { nextEntityId } from '../../state/entityId';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
@@ -64,6 +65,14 @@ function useSceneHistory(initial: Scene | (() => Scene)) {
     future.current = [];
     setSceneState(next);
   }, []);
+  /** Push manuel de l'état COURANT (avant un geste coalescé : peinture / glisser). */
+  const pushSnapshot = useCallback(() => {
+    past.current.push(sceneRef.current);
+    if (past.current.length > 200) past.current.shift();
+    future.current = [];
+  }, []);
+  /** Mutation SANS snapshot (pendant un geste) → 1 seul cran d'undo pour tout le geste. */
+  const setSceneNoHistory = useCallback((next: Scene) => setSceneState(next), []);
   const undo = useCallback(() => {
     if (!past.current.length) return;
     future.current.push(sceneRef.current);
@@ -80,7 +89,7 @@ function useSceneHistory(initial: Scene | (() => Scene)) {
     setSceneState(s);
   }, []);
 
-  return { scene, setScene, undo, redo, resetScene, canUndo: past.current.length > 0, canRedo: future.current.length > 0 };
+  return { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo: past.current.length > 0, canRedo: future.current.length > 0 };
 }
 
 export function Editor() {
@@ -88,7 +97,7 @@ export function Editor() {
   const loadProject = useGame((s) => s.loadProject);
   const party = useGame((s) => s.party);
 
-  const { scene, setScene, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
+  const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
   const [tool, setTool] = useState<Tool>({ mode: 'tile', terrain: 'mur' });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
@@ -256,7 +265,7 @@ export function Editor() {
       const idx = p.y * w + p.x;
       const tiles = [...scene.tiles];
       tiles[idx] = tool.terrain;
-      setScene({ ...scene, tiles });
+      setSceneNoHistory({ ...scene, tiles }); // geste coalescé (snapshot poussé au pointer-down)
     } else if (tool.mode === 'erase') {
       const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
       if (ent) setScene({ ...scene, entities: scene.entities.filter((e) => e !== ent) });
@@ -268,7 +277,7 @@ export function Editor() {
         setSelectedSpawn(null);
         return;
       }
-      const id = `${tool.kind}-${Date.now().toString(36)}`;
+      const id = nextEntityId(tool.kind, scene.entities.map((e) => e.id));
       const ent: SceneEntity = { id, kind: tool.kind, pos: { ...p }, label: KIND_LABEL[tool.kind] };
       // 'personnage' sans ref → villageois par défaut (apparence éditable dans l'inspecteur).
       setScene({ ...scene, entities: [...scene.entities, ent] });
@@ -281,7 +290,7 @@ export function Editor() {
       const encs = scene.encounters.map((e) => ({ ...e, enemies: [...e.enemies] }));
       let target = encs.find((e) => e.id === encTarget);
       if (!target) {
-        target = { id: encTarget || `enc-${Date.now().toString(36)}`, enemies: [] };
+        target = { id: encTarget || nextEntityId('enc', scene.encounters.map((e) => e.id)), enemies: [] };
         encs.push(target);
         setEncTarget(target.id);
       }
@@ -294,7 +303,7 @@ export function Editor() {
     return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x) + 1, h: Math.abs(a.y - b.y) + 1 };
   }
   function addTrigger(rect: Rect) {
-    setScene({ ...scene, triggers: [...scene.triggers, { id: `trig-${Date.now().toString(36)}`, rect, once: true, effects: [] }] });
+    setScene({ ...scene, triggers: [...scene.triggers, { id: nextEntityId('trig', scene.triggers.map((t) => t.id)), rect, once: true, effects: [] }] });
     setTrigOpen(true); // ouvrir l'éditeur pour attacher les effets
   }
   /** Sélectionne une zone trigger existante (clic direct sur la carte) ; exclusif. */
@@ -315,7 +324,7 @@ export function Editor() {
     const meta = BUILDINGS_META[type];
     if (!meta) return;
     const b: BuildingFeature = {
-      id: `b-${Date.now().toString(36)}`,
+      id: nextEntityId('b', (scene.buildings ?? []).map((b) => b.id)),
       type: meta.id,
       foot: rect,
       facing: 'S',
@@ -664,6 +673,7 @@ export function Editor() {
                 dragStartRef.current = p;
                 setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
               } else {
+                if (tool.mode === 'tile') pushSnapshot(); // 1 cran d'undo pour tout le trait
                 setPainting(true);
                 applyAt(p);
               }
