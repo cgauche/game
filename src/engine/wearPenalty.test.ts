@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseWearPenalty, wornArmourPenalty } from './wearPenalty';
+import { testValue, partyBest } from './skills';
 import type { Combatant } from './types';
 
 describe('parseWearPenalty', () => {
@@ -44,5 +45,26 @@ describe('wornArmourPenalty', () => {
   });
   it('match insensible à la spécialisation et à la casse', () => {
     expect(wornArmourPenalty(mkWearer(['-10% en Discrétion']), 'discrétion (Urbaine)')).toBe(-10);
+  });
+});
+
+describe('testValue + port d’armure', () => {
+  function hero(id: string, ag: number, items: unknown[]): Combatant {
+    return {
+      id, name: id, kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: ag, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4,
+      skills: [{ name: 'Discrétion', characteristic: 'Ag', advances: 0 }], talents: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items,
+    } as unknown as Combatant;
+  }
+  it('testValue soustrait la pénalité de Discrétion d’une cotte équipée', () => {
+    const c = hero('h1', 40, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]);
+    expect(testValue(c, 'Discrétion')).toBe(30); // Ag 40 − 10
+  });
+  it('partyBest préfère le héros NON armuré pour un Test de Discrétion', () => {
+    const armure = hero('arm', 45, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]); // 35
+    const leste = hero('leste', 40, []); // 40
+    expect(partyBest([armure, leste], 'Discrétion')!.actor.id).toBe('leste');
   });
 });

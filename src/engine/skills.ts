@@ -4,6 +4,7 @@
  */
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
 import { findSkill } from '../data';
+import { wornArmourPenalty } from './wearPenalty';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -20,7 +21,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
     const base = c.characteristics[ck] ?? 0;
     const low = skill.toLowerCase();
     const sk = c.skills.find((s) => low === s.name.toLowerCase() || low.startsWith(s.name.toLowerCase()));
-    return base + (sk?.advances ?? 0);
+    return base + (sk?.advances ?? 0) + wornArmourPenalty(c, skill); // pénalité de port d'armure (LDB 63 l.84-95)
   }
   return 0;
 }
