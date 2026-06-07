@@ -20,4 +20,12 @@ describe('sizeFromTraits + dérivation de Taille au spawn (LDB 85)', () => {
     const c = statblockToCombatant({ name: 'X', char: {} }, 'x', { x: 0, y: 0 });
     expect(c.size).toBe('moyenne');
   });
+  it('wounds.base : sans char.B → formule (woundsForSize) ; avec char.B → surcharge', () => {
+    const f = statblockToCombatant({ name: 'X', char: { F: 30, E: 30, FM: 30 } }, 'x', { x: 0, y: 0 });
+    expect(f.wounds.max).toBe(12); // 3 + 2·3 + 3 (Moyenne)
+    expect(f.wounds.base).toBe(12);
+    const o = statblockToCombatant({ name: 'Y', char: { F: 30, E: 30, FM: 30, B: 50 } }, 'y', { x: 0, y: 0 });
+    expect(o.wounds.max).toBe(50); // surcharge
+    expect(o.wounds.base).toBe(50);
+  });
 });

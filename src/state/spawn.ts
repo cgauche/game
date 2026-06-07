@@ -6,6 +6,7 @@ import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
+import { maxWounds } from '../engine/characteristics';
 import { parseSizeLabel, SizeCategory } from '../engine/size';
 import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
@@ -92,19 +93,21 @@ export function sizeFromTraits(traits: string[]): SizeCategory | null {
 
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }): Combatant {
   const chars = charsFrom(creature.char);
-  const wounds = typeof creature.char.B === 'number' ? creature.char.B : 10;
+  const size = sizeFromTraits(creature.traits) ?? 'moyenne';
+  // char.B (bestiaire) = la valeur livre (déjà formule × Taille) → fait office de base/surcharge ; sinon formule.
+  const wounds = typeof creature.char.B === 'number' ? creature.char.B : maxWounds(chars, size);
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4;
   return {
     id,
     name: creature.label,
     kind: 'enemy',
     characteristics: chars,
-    wounds: { current: wounds, max: wounds },
+    wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,
     conditions: [],
     weapons: weaponsFromTraits(creature.traits),
     armour: armourFromTraits(creature.traits),
-    size: sizeFromTraits(creature.traits) ?? 'moyenne',
+    size,
     skills: [],
     talents: [],
     movement,
@@ -114,21 +117,23 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
 
 export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
   const chars = charsFrom(sb.char as any);
-  const wounds = typeof sb.char.B === 'number' ? (sb.char.B as number) : 10;
+  const size = sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne';
+  // Blessures : surcharge explicite `char.B` si fournie, sinon formule par Taille (vide ⇒ formule, LDB 85).
+  const wounds = typeof sb.char.B === 'number' ? (sb.char.B as number) : maxWounds(chars, size);
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4;
   return {
     id,
     name: sb.name,
     kind: 'enemy',
     characteristics: chars,
-    wounds: { current: wounds, max: wounds },
+    wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,
     conditions: [],
     // Armes : depuis les Traits si fournis (« Arme (Épée) +7 », « À distance (Arbalète) +9 (60) »),
     // sinon une arme générique au dégât indiqué.
     weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
-    size: sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne',
+    size,
     skills: [],
     talents: [],
     movement,
