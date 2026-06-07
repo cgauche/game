@@ -1,76 +1,77 @@
 /**
- * Galerie QC des ANIMATIONS par arme : pour chaque arme canonique, rend 3 stills
- * (portée / armé / frappe) en composant carryPose + keyframes du clip d'attaque.
- * Lancer : npx tsx scripts/gen-anim-gallery.mts → public/anim-gallery.html
+ * Galerie ANIMÉE des animations par arme (SVG + CSS, pas de GIF) : pour chaque arme canonique
+ * (une par CLASSE DE MANIEMENT), le rig joue en boucle « porté » (statique) · « attaque » ·
+ * « parade ». 1 rig + @keyframes CSS par os mobile (cf. _lib-anim-rig). Famille résolue depuis
+ * trappings.subType. Lancer : npx tsx scripts/gen-anim-gallery.mts → public/anim-gallery.html
  */
 import { writeFileSync } from 'node:fs';
-import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
-import { RigSprite } from '../src/gameIso/rig/composeRig';
+import { resolveRig } from '../src/gameIso/rig/composeRig';
+import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { DEFS } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
-import { carryPose, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
+import { weaponRest, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
+import { sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
+import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
+import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 
 const app: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4 };
-const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: '+4', qualities: [] } as Weapon);
+const N = 16;
+const styles: string[] = [];
+let uidN = 0;
 
-function still(w: Weapon, pose: Record<string, number>, label: string, bg = '#1d2230') {
-  const svg = renderToStaticMarkup(
-    React.createElement('svg', { viewBox: '0 0 120 150', width: 96, height: 120 },
-      React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
-      React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: bg }),
-      React.createElement(RigSprite, { appearance: app, equip: { weapons: [w], armour: [] }, career: 'Soldat', pose }),
-    ),
-  );
-  return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#bcd;font:10px sans-serif">${label}</figcaption></figure>`;
+const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+4', qualities: [] } as Weapon);
+
+function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
+  if (css) styles.push(css);
+  return `<figure style="margin:0;text-align:center">
+    <svg viewBox="0 0 120 150" width="92" height="115"><defs>${DEFS}</defs><rect width="120" height="150" fill="${bg}"/>${inner}</svg>
+    <figcaption style="color:#bcd;font:10px sans-serif">${label}</figcaption></figure>`;
+}
+/** Tuile STATIQUE (pose figée). */
+function still(w: Weapon, equip: EquipCtx, pose: Record<string, number>, label: string, bg?: string) {
+  return svgTile(bonesToSvg(resolveRig(app, equip, pose, 'Soldat')), label, '', bg);
+}
+/** Tuile ANIMÉE (clip joué en boucle). */
+function anim(w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Clip, label: string, bg?: string) {
+  const dur = Math.max(clipDuration(clip), 1);
+  const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), 'Soldat'));
+  const uid = `w${uidN++}`;
+  const { css, svg } = animatedRig(samples, dur, uid);
+  return svgTile(svg, label, css, bg);
 }
 
-// Une arme canonique par GROUPE (résolution data-driven via subType).
+// Une arme par CLASSE DE MANIEMENT (silhouette/clip distincts).
 const WEAPONS: [string, 'melee' | 'ranged'][] = [
-  ['Dague', 'melee'],          // base
-  ['Rapière', 'melee'],        // escrime
-  ['Lance de cavalerie', 'melee'], // cavalerie
-  ['Grande hache', 'melee'],   // deuxmains
-  ['Hallebarde', 'melee'],     // hast
-  ["Fléau d'armes", 'melee'],  // fleau
-  ['Main Gauche', 'melee'],    // parade
-  ['Mains nues', 'melee'],     // bagarre
-  ['Arc long', 'ranged'],      // arc
-  ['Arbalète', 'ranged'],      // arbalete
-  ['Pistolet', 'ranged'],      // poudre
-  ['Fronde', 'ranged'],        // fronde
-  ['Javelot', 'ranged'],       // lancer
-  ['Fouet', 'ranged'],         // entraves
-  ['Bombe', 'ranged'],         // explosifs
+  ['Dague', 'melee'], ['Rapière', 'melee'], ['Lance de cavalerie', 'melee'], ['Grande hache', 'melee'],
+  ['Hallebarde', 'melee'], ["Fléau d'armes", 'melee'], ['Main Gauche', 'melee'], ['Mains nues', 'melee'],
+  ['Arc long', 'ranged'], ['Arbalète', 'ranged'], ['Pistolet', 'ranged'], ['Fronde', 'ranged'],
+  ['Javelot', 'ranged'], ['Fouet', 'ranged'], ['Bombe', 'ranged'],
 ];
 
 const rows: string[] = [];
 for (const [name, type] of WEAPONS) {
   const w = wep(name, type);
-  const carry = carryPose(w);
-  const atk = weaponAttackClip(w);
-  const par = weaponParryClip(w, false);
-  const windup = atk.steps[0].pose as Record<string, number>;
-  const strike = (atk.steps[1] ?? atk.steps[0]).pose as Record<string, number>;
+  const equip: EquipCtx = { weapons: [w], armour: [] };
+  const hold = weaponRest(w);
   const cells = [
-    still(w, carry, 'porté'),
-    still(w, addPose(carry, windup), 'armé'),
-    still(w, addPose(carry, strike), 'frappe', '#2a1d22'),
-    still(w, addPose(carry, par.steps[0].pose as Record<string, number>), 'parade', '#1d2a22'),
+    still(w, equip, hold, 'porté'),
+    anim(w, equip, hold, weaponAttackClip(w), 'attaque', '#2a1d22'),
+    anim(w, equip, hold, weaponParryClip(w, false), 'parade', '#1d2a22'),
   ].join('');
   rows.push(`<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
-    <div style="width:120px;color:#eee;font:12px sans-serif">${name}</div>
+    <div style="width:130px;color:#eee;font:12px sans-serif">${name}</div>
     <div style="display:flex;gap:8px">${cells}</div></div>`);
 }
 
-const html = `<!doctype html><html><head><meta charset="utf-8"><title>Anim QC</title></head>
-<body style="background:#11141c;padding:16px">
-<h1 style="color:#eee;font:18px sans-serif">Galerie QC des animations par arme (groupe canonique)</h1>
-<p style="color:#9ab;font:12px sans-serif">Colonnes : pose portée · armé (keyframe 0) · frappe (keyframe 1) · parade. Famille résolue depuis trappings.subType.</p>
+const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Animations par arme</title>
+<style>${styles.join('')}</style></head>
+<body style="background:#11141c;padding:16px;margin:0">
+<a href="galeries.html" style="color:#8fb6ff;text-decoration:none;font:13px sans-serif">← Galeries</a>
+<h1 style="color:#eee;font:18px sans-serif;margin:10px 0 2px">Animations par arme (classe de maniement) — SVG/CSS en boucle</h1>
+<p style="color:#9ab;font:12px sans-serif;margin:0 0 8px">Colonnes : porté (statique) · attaque · parade (en boucle). Une arme par classe de maniement (forme). Aucun GIF.</p>
 ${rows.join('')}
 </body></html>`;
 writeFileSync('public/anim-gallery.html', html);
-console.log(`OK: public/anim-gallery.html (${WEAPONS.length} armes × 4 stills)`);
+console.log(`OK: public/anim-gallery.html (${WEAPONS.length} armes, ${uidN} tuiles animées)`);
