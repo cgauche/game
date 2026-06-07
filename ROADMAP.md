@@ -176,7 +176,42 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   conservée). **`public/qc/` gitignoré** (sorties QC régénérables — git ralentissait sur 1000+ fichiers non suivis).
 - **613 tests verts** (dont registres scénarios/tenues + golden master parts), **typecheck 0** côté registre,
   poussé en prod (`feat/wfrp4-rpg-foundation`). Reste à brancher sur le pattern si besoin : palettes/cheveux
-  (déjà un pipeline d'ingestion d'art à part) et formes d'armes (non retenu ce cycle).
+  (déjà un pipeline d'ingestion d'art à part) — **formes d'armes : FAIT (Jalon 0.11)**.
+
+---
+
+## ✅ Jalon 0.11 — Système d'arme : maniement, registre, couleur/skins, reconnaissabilité *(fait — 2026-06-07)*
+
+- **Maniement clé sur la FORME, pas le Groupe de règles** (`rig/anim/handling.ts`) : l'animation d'arme
+  (port/idle, attaque, parade) passe par `handlingClass(w)` dérivé de la **silhouette** (`formSlug`), PAS du
+  subType WFRP — qui conflate des armes maniées différemment (1-main/2-mains, lame/hampe/arc). **15 classes**.
+  `weaponClips.ts` refondu : `weaponRest(w)` = pose de base **TOUJOURS** appliquée (orientation de l'os `arme`
+  + **prise 1/2 mains**) sous les clips d'attaque/parade re-tunés. **Prise 2-mains reconstruite** (lourde2m/
+  hampe/arc/arbalète/arme à feu) via **port diagonal** (le rig 2D ne peut centrer l'arme ancrée à la main
+  droite). Câblé dans `RigToken` (remplace l'ancien `carryPose` gaté profil) — **corrige l'arme tenue
+  tête-en-bas** à l'idle. Piège : l'os `arme` est **relatif à la main** → la rotation du bras s'ajoute pendant
+  l'attaque (gros delta `arme` à l'apex) ; les attaques de FACE restent limitées par le 2D (mouvement vers
+  l'avant = pas de profondeur) → se jugent en profil/animées.
+- **Registre d'armes (5e famille du Jalon 0.10)** : les **48 armes** sont **1 fichier `weapons/defs/<slug>.ts`**
+  = `WeaponDef` unifié `{slug,label,type,group,target,art}` (FORME + ART, une seule source de vérité par arme,
+  comme parts/tenues). `weaponForms.ts` et `equipment.ts` **dérivent** du registre ; monolithe
+  `generated/weaponsArmour.ts` **supprimé** (armure extraite dans `generated/armour.ts`). Migration **sans perte**.
+- **Couleur tokenisée + skins d'objets légendaires** : l'art des 48 armes en **`@tokens`** (`@metal/@cuir/@accent`
+  + ombres auto `@O/@H`, `palette.ts`) + une `palette` par def (`StoredPalette` = couleurs exactes → **défaut
+  sans perte**). `equipment.weaponPart` résout l'art contre la palette du DEF, et re-résout contre **`Weapon.skin`**
+  (override par-objet) ; chaîne `ItemInstance.skin → recomputeLoadout → Weapon.skin → rendu` → un objet
+  **légendaire** recolore lame/bois/or indépendamment (prouvé). ⚠️ arme = palette de l'OBJET ; tenue = palette
+  du PORTEUR. Tokeniseur déterministe `_tokenize-weapons.mts` (classif HSL, dégradés → mid réel).
+- **Tenues normalisées** : les tenues de **carrière** étaient déjà tokenisées ; les **9 archétypes** de classe
+  (fallback, 7/71 carrières) sont passés au même mécanisme (`@vet1/@vet2/@metal` + `TenueDef.palette` → `CLASS_PALETTES`),
+  résolution **unifiée** `tenuePaletteFor(career)` (palette carrière → palette classe en repli) dans `composeRig`
+  → les carrières fallback héritent/recolorent comme les autres. Zéro régression.
+- **Reconnaissabilité « à l'aveugle » (but d'origine) bouclée** : chaque arme = sa propre silhouette (on était à
+  12 modèles par groupe). Audit aveugle des 48 (agents qui devinent l'arme sans son nom) → échecs (arbalète lue
+  « croix », improvisée « fagot », lasso « cadenas »…) **regénérés en best-of-N + juge** sur 2-3 passes (la 2e
+  ciblée N=5 anti-ambiguïté) jusqu'à **reconnaissables**. Reste seulement `rocher` (un caillou *est* un caillou).
+  Pipeline durci : ingest filtré par slugs explicites (anti `chosen.json` périmés), tokeniseur idempotent.
+- **~731 tests verts**, typecheck propre, poussé sur `feat/wfrp4-rpg-foundation`.
 
 ---
 
@@ -381,7 +416,7 @@ prix, override de remise, toggle marchandage) **avec défaut = comportement cano
 - **Combat — reste** : ✅ **« ramasser » en plein combat** (un objet au sol *à la fois*, réutilise `objet`/`search`, persiste party — `battlePickup`) ; ✅ **Chance étendue** : relance **1×/Test sur jet propre raté** (fix de 2 bugs), **+1 DR** cumulable, **Détermination** = retirer un État (+1 PB si À Terre, n'importe quel État : Surpris/À Terre/Hémorragique…). ✅ **Blessures critiques & mort** (LDB 18-Traumatisme : 0 PB ≠ mort → À Terre→Inconscient→mort si critiques > BE, overkill/double, tables par localisation, Mort Subite figurants ; `isOutOfAction` corrigé). ✅ **Destin/Résilience sacrifiés** (« Comment ça a pu rater ? », « Meurs un autre jour », « Je ne faillirai pas ! » ; `pendingFateSave`/`outOfRencontre`). ✅ **Munitions + rechargement (héros)** : munition = équipement avec **choix joueur**, tir = **arme + munition** combinées (1 consommée/tir), **Recharge N = Test étendu de Projectiles par modale** (`pendingReload`, cumul de DR jusqu'à l'Indice ; Arc tire chaque Round). ✅ **Maladresses** (Tableau des Oups !, modale héros / instant ennemi / défenseur couvert, Incident de Tir). ✅ **Table Difficultés de Combat** (Ligne de Vue, Couvert 3 niveaux, Combiner −30/+60, obscurité/météo, tir-en-bougeant, tir-dans-la-mêlée + redirection ; **Taille T0+T1** size-to-hit + plus-petit). Reste : munitions ennemies / achat / récupération (Jalon 5) ; grisage visuel des cibles hors-LdV (recette). *(✅ 3ᵉ usage de la Chance — pré-emption d'initiative — fait.)*
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
 - **Vérif NAVIGATEUR — dette du cycle** : toute l'UI livrée cette session est **couverte par tests/typecheck mais jamais vue en live** (profil Playwright monopolisé par la session rig parallèle). À repasser à l'œil : modales attaque/**détail des jets opposés**/défense/**incantation**, **panneau Avancement** (achat de PX), action **« Utiliser »** (potions), **fouille** de corps, éditeur **« À la victoire »**, scène **Chapitre 2**, hotbar, Engagé/Charge. *(Penser au **hard reload** : le HMR du dev se périme souvent.)*
-- ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.
+- ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). ✅ **Système d'arme complet (Jalon 0.11)** : maniement clé sur la forme + prises 2-mains, **48 armes au registre** (1 fichier/arme), **couleur tokenisée + skins légendaires** (backend `Weapon.skin`), tenues normalisées, **silhouettes reconnaissables à l'aveugle** (audit + regen best-of-N). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), **UI éditeur pour poser un skin légendaire** (le hook existe), galeries QC à finaliser.
 - **Contenu jouable** (Jalon 4) : ✅ **Chapitre 2** « Du Sang Sur la Route » livré et testé ; reste le vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
 - **Dette « qualités/traits en données sans code »** *(relevé 2026-06-07, via workflow d'inventaire)* :
