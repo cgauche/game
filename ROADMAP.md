@@ -254,7 +254,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   `state/ai.ts` pur+testé). Simplifications IA assumées (revue de fidélité) : l'IA **ne se désengage
   pas** et **charge en portée de Marche** (pas de Course) — mineures, documentées dans le code.
 
-## 🎯 Jalon 1.5 — Sous-système Taille *(T2/T3/T4 LIVRÉS — audit RAW propre ; reste T5/T6, lots à part)*
+## 🎯 Jalon 1.5 — Sous-système Taille *(T2/T3/T4/T5 LIVRÉS — audit RAW propre ; reste T6, lot à part)*
 
 La Taille est un **Trait de créature** (7 catégories ordinales), pas une caractéristique chiffrée ;
 presque tout est une **comparaison d'écart** entre combattants. Analyse : `…/specs/2026-06-07-taille-analyse-reference.md` ;
@@ -271,12 +271,17 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
 - ✅ **Éditeur** : champ Blessures optionnel (vide = formule par Taille en placeholder live, rempli = surcharge).
 - ✅ **Audit de fidélité multi-agents** (8 dimensions RAW × find→verify adversariale) : **0 écart confirmé** — implémentation fidèle au `85`.
 
-- ✅ **T5 — Peur/Terreur (Psychologie P1) LIVRÉ** (2026-06-07, 1104 tests verts) : sous-système Psychologie `engine/psychology.ts` (pur) — Peur/Terreur dérivées de la Taille (`85` l.317-318) ET du statbloc (« Peur N »/« Terreur N » parsés de `creatures.json`) ; **Test de Calme** héros en **modale** (`pendingPsych` : Peur = Test ÉTENDU cumulant le DR ; Terreur = 1ʳᵉ rencontre → **Brisé** ×(Indice+|DR−|) puis Peur) / **IA instantané** journalisé ; **−1 DR** vs la source (`attackModifiers`) ; **approche** vers la source bloquée ; **Immunité (Psychologie)** (`85` l.143-144). Spec : `…/specs/2026-06-07-psychologie-design.md`. **Reste P2-P4** : Frénésie ; traits ciblés (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie + groupes dérivés de `folder`/`species`/`career`) ; éditeur.
+- ✅ **T5 — Sous-système Psychologie COMPLET (P1-P4) LIVRÉ** (2026-06-07, 1181 tests verts) : `engine/psychology.ts` (pur) + `engine/groups.ts`. Spec : `…/specs/2026-06-07-psychologie-design.md` ; plans P1/P2/P3 sous `…/plans/2026-06-07-psychologie-*.md`.
+  - **P1 — Peur/Terreur** : dérivées de la Taille (`85` l.317-318) ET du statbloc (« Peur N »/« Terreur N » de `creatures.json`) ; **Test de Calme** héros en **modale** (`pendingPsych` : Peur = Test ÉTENDU cumulant le DR ; Terreur = 1ʳᵉ rencontre → **Brisé** ×(Indice+|DR−|) puis Peur) / **IA instantané** ; **−1 DR** vs la source (`attackModifiers`) ; **approche** bloquée ; **Immunité (Psychologie)** (`85` l.143-144).
+  - **P2 — Frénésie** (`21` l.31-36) : entrée par **Test de FM** (héros = modale `pendingFrenzy` + bouton « 🐗 Frénésie » ; IA = auto) ; **+1 BF**, **immunité psy**, **attaque CC gratuite/Round** (`aiFrenzyAttack`), **cible imposée la plus proche** (IA), **fin → Exténué**.
+  - **P3 — Traits ciblés & Groupes** : **Groupes** mots-clés dérivés (folder→catégorie / espèce→racial / carrière + extras manuels, `engine/groups.ts`) ; **Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie** parsés (`parsePsychTraits`, « un au choix » → inerte) ; Tests de Psy ciblés (LdV/groupe, héros modale / IA) ; **+1 DR** (Animosité/Haine/Amour/Camaraderie) & **immunités Peur** (Haine/Amour) dans `attackModifiers` ; **Soc −20/−10** (`socialPsychMod`) ; **contrainte de cible IA** (vise le groupe haï).
+  - **P4 — Éditeur** : `StatblockEditor` expose le champ **Groupes** (extras) + l'aide de syntaxe des Traits psy (Peur/Terreur/Immunité/Animosité/Frénésie, assignation de Cible).
+  - *Limites documentées* : Phobie traitée comme un ciblé binaire (≈ Peur 1) ; afflictions ciblées re-testées tant qu'un membre du groupe est visible (pas d'auto-fin quand le groupe disparaît — effet résiduel nul) ; contrainte d'action **héros** = journal (pas de grisage des cibles dans l'UI) ; Soc `socialPsychMod` = helper prêt **sans consommateur** (aucune interaction sociale ciblée en combat pour l'instant).
 
 **Reste (lots à part, prochains jalons Taille — par valeur/effort) :**
 - **Localisation par forme de corps** (`76 - Point d'Impact des Créatures` + `13` l.144) : tables humanoïde/quadrupède/oiseau/serpent/araignée ; cible 2 cat. plus grande → l'attaquant **choisit** la zone (`76` l.39). Aujourd'hui tout est résolu en humanoïde. Lot moyen, indépendant.
 - **T6 — Footprint multi-cases des créatures MOBILES** (`15` l.55, **permissif, aucune table canon = DESIGN**) : pathing non-ponctuel + picking/rendu. Partiellement bloqué côté rig. Le plus lourd.
-- **Détails RAW restants** : **Monture & Taille** (`14` l.217-223), **Queue/Langue** (`85`), **Nuée** ignore la Taille (+40 aux tirs, `85` l.199-200), **Immunité Psychologie** annule Peur/Terreur (`85` l.143-144), trait **Agrandir/Réduire** au build de statbloc (+10 F, +10 E, −5 Ag par cat., `85` l.276-277).
+- **Détails RAW restants** : **Monture & Taille** (`14` l.217-223), **Queue/Langue** (`85`), **Nuée** ignore la Taille (+40 aux tirs, `85` l.199-200), trait **Agrandir/Réduire** au build de statbloc (+10 F, +10 E, −5 Ag par cat., `85` l.276-277). *(Immunité Psychologie : ✅ livrée avec T5.)*
 - **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
 ## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(en cours — Phase 0 + A + B + C1a LIVRÉES)*
