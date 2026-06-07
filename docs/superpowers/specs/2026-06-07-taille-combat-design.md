@@ -46,6 +46,7 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
 | Frappe Mortelle : **se déplacer sur la case de la cible** (si tuée) + frapper un autre **à portée de ses attaques**, jusqu'à **BCC** fois ; grande créature l'active **sans tuer** | **RAW** | `14` l.12 + `85` l.299. `[limite]` « à portée » = **adjacent** tant que l'Allonge (reach) n'est pas modélisée (mêlée = adjacence aujourd'hui). |
 | Force opposée : helper pur, **sans consommateur** (pas de Test de Force opposé/empoignade modélisé) | **RAW** (posé) | `85` l.311-312 ; inerte jusqu'au système de lutte |
 | Blessures **dynamiques** : `char.B` = base autoritaire (le vrai calcul, **traits inclus**) ; les buffs F/E/FM **modifient** les Blessures via le **delta de formule × Taille** | **RAW + DESIGN (delta)** | Sweep 58 créatures : **52 = formule × Taille** (Géant 72=18×4, Ogre 30=15×2) ; **6 traitées** (Coriace +4, mort-vivant +3, Araignée 2≠6…) → un recalcul pur casserait leur base. ⇒ Blessures = `char.B` + (formule(F/E/FM effectives)×Taille − formule(base)×Taille). Sorts d'E/F/FM impactent les Blessures **sans** altérer la base livre. Héros : base = formule×Taille de l'espèce. |
+| Blessures de base : **formule par défaut, surcharge optionnelle, éditable** (champ Blessures vide ⇒ formule dynamique ; rempli ⇒ valeur fixe) | **DESIGN (exigence utilisateur)** | `CustomStatblock.char.B` optionnel + `StatblockEditor`/inspecteur ; gère les 6 spéciaux (surcharge = valeur livre) sans figer les autres. |
 
 ## 5. Composants
 
@@ -101,7 +102,14 @@ base, on applique seulement le **delta** des buffs.*
 `c.wounds.base + woundsForSize(effective F/E/FM, c.size) − woundsForSize(base F/E/FM, c.size)`.
 Au repos (pas de buff) le delta = 0 → `wounds.base`. Un sort +Endurance ⇒ delta > 0 ⇒ Blessures montent (×Taille incluse). *(Ancienne signature `maxWounds(chars, isSmall)` migrée ; appelants mis à jour.)*
 
-**Spawn / création** : monstre `wounds.base = wounds.max = char.B` (vrai calcul, inchangé) ; héros `wounds.base = wounds.max = woundsForSize(base, sizeEspèce)` (Halfling Petite, Ogre Grande…). Endurant/Coriace : déjà dans `char.B` côté monstre ; côté héros, appliqué avant le ×Taille.
+**Base = formule, SURCHARGEABLE & ÉDITABLE** (exigence utilisateur) :
+`wounds.base = surcharge explicite ?? char.B (bestiaire) ?? woundsForSize(base F/E/FM, size)`.
+- **Custom statblock** : `CustomStatblock.char.B` rendu **optionnel** → **vide ⇒ formule** (les Blessures suivent F/E/FM + Taille, dynamiques) ; **rempli ⇒ surcharge** (valeur fixe). `statblockToCombatant` : `sb.char.B ?? woundsForSize(charsFrom(sb.char), sizeFromStatblock)` (au lieu du fallback `10` actuel).
+- **Bestiaire** (`creatures.json`) : `char.B` toujours présent = la **valeur livre** (fait office de base/surcharge — préserve les 6 spéciaux).
+- **Héros** : pas de surcharge → `woundsForSize(base, sizeEspèce)` (Halfling Petite, Ogre Grande…).
+- Le **delta de buff** (E/F/FM) s'applique **par-dessus** la base, qu'elle soit formule ou surcharge.
+
+**Éditeur** (`ui/editor/StatblockEditor.tsx` + inspecteur d'entité) : champ **« Blessures »** rendu **optionnel** — placeholder = résultat de la formule (recalculé en live depuis F/E/FM + Taille) ; le laisser vide = formule, le remplir = surcharge. `[hors-set rig : StatblockEditor.tsx n'est pas dans le working set rig]`
 
 **`state` (recompute dynamique)** : à l'application / au retrait / à l'expiration d'un `ActiveEffect` touchant **F/E/FM** (dans `applyActiveEffect` + le décrément de fin de Round), rafraîchir `wounds.max = maxWounds(c)` et **ajuster `wounds.current` du même delta** (gagne des PB sur un buff ; en perd à l'expiration — clamp ≥ 0 ; si ça tombe à 0, le modèle de mort existant s'applique).
 
@@ -109,8 +117,9 @@ Au repos (pas de buff) le delta = 0 → `wounds.base`. Un sort +Endurance ⇒ de
 - `size.test.ts` : `sizeDamageMultiplier` (×1 à +1, ×2 à +2, ×3 à +3, ×1 si plus petit/égal), `sizeGrantedQualities` (∅/Dévastatrice/Dévastatrice+Percutante), `forceOpposedOutcome` (autoWin/needCrit/normal), `woundsForSize` (les 7 catégories).
 - `combat` : Dévastatrice (max(DR,unités)), Percutante (+unités), Inoffensive annule les deux, cumul à +2 cat, **×N AVANT soak** (woundsLost attendu = (Dégâts×N) − (BE+PA)), `cleave` posé sur touche mêlée d'un plus grand ; −2 DR/cat en parade (pas en esquive) via `finishMelee` ; `resolveTrample` (BF+0, CC).
 - `characteristics` : `maxWounds` par catégorie (les 7) ; **delta de buff** : un `ActiveEffect` +Endurance fait monter `maxWounds` de `ΔBE×2×Taille` ; un monstre traité (ex. Squelette `char.B`=12) garde 12 à vide et monte du seul delta ; héros Halfling=Petite, Ogre=Grande.
+- `spawn` : statblock **sans** `char.B` → Blessures = formule (`woundsForSize`) ; **avec** `char.B` → surcharge (valeur fixe) ; bestiaire `char.B` préservé.
 - `combatFlow`/store : balayage (déplacement sur la case d'une cible tuée puis frappe un adjacent ; sans-tuer = frappe un adjacent sans bouger ; IA auto, héros `pendingCleave` ; borne BCC) ; désengagement gratuit du plus grand ; `battleTrample` (coûte 1 Avantage) ; **recompute Blessures sur buff/expiration** d'un effet F/E/FM (max + current ajustés). RNG seedé.
 - Régression : suite verte (le ×N/atouts changent des dégâts — mettre à jour les attentes impactées, c'est la nouvelle fidélité).
 
 ## 7. Isolation session rig
-Tout en `engine/*` + `state/*` (mes fichiers). Hotbar/UI Piétinement : `ui/ActionBar.tsx`/`CampaignView` (à vérifier rig-set ; sinon hunks sélectifs). `IsoStage.tsx` non requis. Modale `pendingCleave`/`pendingTrample` = mêmes patterns que `pendingAttack`. Audit de fidélité multi-agents en fin de lot (ultracode).
+Tout en `engine/*` + `state/*` (mes fichiers). **Éditeur** : `StatblockEditor.tsx` (champ Blessures optionnel) — **hors working-set rig** ; hotbar Piétinement : `ui/ActionBar.tsx`/`CampaignView` (à vérifier rig-set ; sinon hunks sélectifs). `IsoStage.tsx` non requis. Modale `pendingCleave`/`pendingTrample` = mêmes patterns que `pendingAttack`. Audit de fidélité multi-agents en fin de lot (ultracode).
