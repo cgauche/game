@@ -986,7 +986,7 @@ export const useGame = create<GameState>((set, get) => ({
     const ni = spell.cn ?? 0;
     const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
     // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
-    if (res.isFumble) logLines.push(...applyMiscast(caster, 'majeure'));
+    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
     set({ battle: { ...get().battle!, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
     checkBattleOver(get, set);
   },

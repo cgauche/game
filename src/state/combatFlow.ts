@@ -848,7 +848,7 @@ export const COMBAT_PERSIST = 9999;
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
+export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
   const m = rollMiscast(severity, battleRng(), sinPoints);
   const lines = [m.log];
   for (const op of m.ops) {
@@ -864,6 +864,9 @@ export function applyMiscast(caster: Combatant, severity: MiscastSeverity, sinPo
       lines.push(`${caster.name} reçoit ${op.condition.value} État ${op.condition.name}.`);
     }
   }
+  // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
+  if (caster.kind === 'hero')
+    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines });
   return lines;
 }
 
@@ -915,8 +918,8 @@ export function applyCast(
     }
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
-    if (res.isFumble) logLines.push(...applyMiscast(caster, 'mineure'));
-    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(caster, 'mineure'));
+    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
     if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
@@ -956,10 +959,10 @@ export function applyCast(
       // Sinon : l'effet du sort est purement narratif (déjà journalisé).
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
-      logLines.push(...applyMiscast(caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
+      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
     } else if (focusedNI0) {
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
-      logLines.push(...applyMiscast(caster, 'mineure'));
+      logLines.push(...applyMiscast(get, set, caster, 'mineure'));
     }
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
     // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
