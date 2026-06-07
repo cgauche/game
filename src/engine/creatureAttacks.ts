@@ -20,7 +20,7 @@
  */
 
 /** Type d'attaque naturelle (geste + règle distincts). */
-export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'tentacules' | 'etreinte';
+export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard';
 
 /** Déclenchement RAW : action normale, gratuite (coût en Avantage), ou gratuite à la Charge. */
 export type AttackTrigger = 'action' | 'free' | 'charge';
@@ -56,8 +56,10 @@ export const ATTACK_LABEL: Record<AttackKind, string> = {
   cornes: 'Cornes',
   arme: 'Arme / griffes',
   souffle: 'Souffle',
+  vomi: 'Vomissement',
   tentacules: 'Tentacules',
   etreinte: 'Étreinte glaciale',
+  regard: 'Regard pétrifiant',
 };
 
 // Règle RAW par type (hors Dégâts/type, lus du libellé). Le 1er match du libellé gagne.
@@ -66,6 +68,8 @@ const RULES: Array<{ re: RegExp; kind: AttackKind; base: Omit<CreatureAttack, 'k
   [/^attaque caudale\b/i, 'caudale', { trigger: 'free', avantage: 1, prone: true }],
   [/^cornes?\b/i, 'cornes', { trigger: 'charge', avantage: 0 }],
   [/^souffle\b/i, 'souffle', { trigger: 'free', avantage: 2, aoe: true, magic: true }],
+  [/^vomi(ssement)?\b/i, 'vomi', { trigger: 'free', avantage: 3, aoe: true }], // Vomissement (Troll) : 3 Av, zone, corrosif + Sonné
+  [/^regard\b/i, 'regard', { trigger: 'action', avantage: 1 }], // Regard pétrifiant : Action, ≥1 Av (CT/Init, pétrifie)
   [/^tentacules?\b/i, 'tentacules', { trigger: 'free', avantage: 0, entangle: true, perTentacle: true }],
   [/^étreinte glaciale\b/i, 'etreinte', { trigger: 'action', avantage: 2, magic: true }],
   [/^arme\b/i, 'arme', { trigger: 'action', avantage: 0 }],

@@ -99,6 +99,33 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
   });
 
+  it('Souffle (Feu) : zone, Test opposé CT/Esquive → dégâts ignorant les PA + En flammes', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Souffle +14 (Feu)']; E.advantage = 2; E.characteristics.CT = 85;
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().includes('esquive'));
+    H.armour = { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 }; // PA ignorés par le Feu
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.some((c) => c.name === 'En flammes')).toBe(true);
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2 (le Souffle ne gagne pas d'Avantage)
+  });
+
+  it('Vomissement : zone (3 Av), dégâts BE+4 + Sonné + corrosion de l’armure', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Vomissement +0']; E.advantage = 3; E.characteristics.CT = 85;
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().includes('esquive'));
+    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 };
+    const beforePA = H.armour.corps;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.conditions.some((c) => c.name === 'Sonné')).toBe(true);
+    expect(h.armour.corps).toBe(beforePA - 1); // corrosion : Armure −1
+  });
+
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();

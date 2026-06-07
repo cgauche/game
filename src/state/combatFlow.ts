@@ -44,7 +44,7 @@ import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
-import { creatureAttacks, venomDifficulty } from '../engine/creatureAttacks';
+import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
@@ -969,6 +969,52 @@ function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, ta
   return false;
 }
 
+/** Attaque de ZONE gratuite : Souffle (LDB 85, 2 Av) ou Vomissement (Troll, 3 Av). Cible visible la
+ *  plus proche dans la portée (Souffle BE+20 m ; Vomi BE m), puis tous les ennemis dans la zone
+ *  (Souffle : BF de la cible ; Vomi : 2 m). Test opposé CT/Esquive PAR cible ; sur un échec de la
+ *  cible : Dégâts (mitigés BE+PA, sauf ignore-PA des Types Feu/Électricité/Poison) + effet de Type
+ *  (Enflammé/Sonné/Empoisonné) ou Sonné (Vomi) + corrosion (Armure/Arme −1). Instantané (pas de modale
+ *  IA), résolution opposée auto. Ne consomme pas l'Action. RAW : LDB 85 Souffle / Vomissement. */
+export function applyAreaAttack(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack): void {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos) return;
+  attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
+  const isVomi = a.kind === 'vomi';
+  const be = bonus(effectiveChar(attacker, 'E'));
+  const rangeTiles = Math.max(1, Math.ceil((isVomi ? be : be + 20) / 2)); // 1 case = 2 m
+  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= rangeTiles);
+  if (!foes.length) return;
+  const center = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+  const blast = isVomi ? 1 : Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)); // Souffle : BF de la cible ; Vomi : 2 m
+  const affected = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(center.pos!, c.pos) <= blast);
+  const type = (a.type ?? '').toLowerCase();
+  const ignorePA = !isVomi && /feu|électric|electric|poison/.test(type);
+  const corrosif = isVomi || /corros/.test(type);
+  const damage = isVomi ? be + 4 : a.bonus; // Vomi = BE+4 ; Souffle = Indice
+  const lines: string[] = [`${attacker.name} déclenche ${ATTACK_LABEL[a.kind]}${a.type ? ` (${a.type})` : ''} !`];
+  for (const tgt of affected) {
+    // Test opposé CT/Esquive (Vomi : Facile +40 pour l'attaquant à courte distance).
+    const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng(), isVomi ? 'facile' : 'intermediaire', 'intermediaire');
+    if (!r.attackerWins) { lines.push(`${tgt.name} esquive.`); continue; }
+    const tb = bonus(effectiveChar(tgt, 'E'));
+    const pa = ignorePA ? 0 : Math.max(0, tgt.armour.corps ?? 0);
+    const wl = Math.max(0, damage - tb - pa);
+    if (wl > 0) { tgt.wounds.current = Math.max(0, tgt.wounds.current - wl); lines.push(`${tgt.name} subit ${wl} Blessure(s)${ignorePA ? ' (ignore PA)' : ''}.`); }
+    if (isVomi || /électric|electric/.test(type)) addCondition(tgt, 'Sonné');
+    else if (/froid/.test(type) && wl > 0) for (let i = 0; i < Math.max(1, Math.floor(wl / 5)); i++) addCondition(tgt, 'Sonné'); // 1 Sonné / 5 Blessures
+    if (/feu/.test(type)) addCondition(tgt, 'En flammes');
+    if (/poison/.test(type)) addCondition(tgt, 'Empoisonné');
+    if (corrosif) { // Armure & Arme portées subissent 1 Dégât
+      tgt.armour.corps = Math.max(0, (tgt.armour.corps ?? 0) - 1);
+      if (tgt.weapons[0]) tgt.weapons[0].damageTaken = (tgt.weapons[0].damageTaken ?? 0) + 1;
+    }
+    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  }
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+}
+
 /** L'IA enchaîne ses attaques gratuites de créature après l'attaque principale (chacune 1 Avantage,
  *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
  *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
@@ -979,6 +1025,11 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
   if (enemy.pendingFreeAttacks === undefined) {
     const atks = creatureAttacks(enemy.traits ?? []);
+    // Attaques de ZONE (gratuites, instantanées) : Souffle (2 Av) puis Vomissement (3 Av) si abordables.
+    const souffle = atks.find((a) => a.kind === 'souffle');
+    if (souffle && enemy.advantage >= souffle.avantage) applyAreaAttack(get, set, enemy, souffle);
+    const vomi = atks.find((a) => a.kind === 'vomi');
+    if (vomi && enemy.advantage >= vomi.avantage) applyAreaAttack(get, set, enemy, vomi);
     const traitKinds = atks
       .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
       .map((a) => a.kind);
