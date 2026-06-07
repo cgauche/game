@@ -155,7 +155,7 @@ export function attackModifiers(
   if (pen) out.push({ label: 'État', value: pen });
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
   // Peur : −1 DR (−10) aux Tests liés à la source de la Peur (LDB 21-Psychologie l.29).
-  if (target && (attacker.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === target.id)) out.push({ label: 'Peur', value: -10 });
+  if (target && (attacker.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
   if (opts.kind === 'ranged') {
     if (opts.distanceTiles != null && weapon.range) {
       const m = rangeBandModifier(opts.distanceTiles, weapon.range);

@@ -29,14 +29,30 @@ export interface PsychTrait {
   indice?: number;
 }
 
-/** Affliction psychologique ACTIVE en combat, posée après un Test de Psychologie raté. */
+/** Affliction psychologique ACTIVE en combat, posée après un Test de Psychologie raté. Conservée
+ *  pour la rencontre (évite le re-déclenchement) ; « sous Peur » ⟺ `calmeDR < indice`. */
 export interface PsychAffliction {
   type: PsychType;
   /** Créature source (Peur/Terreur) ou groupe ciblé. */
   sourceId?: string;
   cible?: string;
+  /** Indice de Peur à surmonter (Test étendu de Calme). `0` = source déjà surmontée/passée (inerte). */
+  indice?: number;
   /** DR cumulé du Test ÉTENDU de Calme (Peur), vers l'Indice. */
   calmeDR?: number;
+}
+
+/** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
+ *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur. */
+export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' | 'terreur'; indice: number } | null {
+  const cands: { kind: 'peur' | 'terreur'; indice: number }[] = [];
+  const size = peurTerreurFromSize(foe.size, self.size);
+  if (size) cands.push(size);
+  if (foe.causesTerreur) cands.push({ kind: 'terreur', indice: foe.causesTerreur });
+  if (foe.causesPeur) cands.push({ kind: 'peur', indice: foe.causesPeur });
+  if (!cands.length) return null;
+  const terr = cands.filter((c) => c.kind === 'terreur');
+  return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
 }
 
 /** Parse les traits de données (`creatures.json`) en propriétés psy. P1 : Peur/Terreur/Immunité

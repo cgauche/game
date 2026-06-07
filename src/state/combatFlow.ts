@@ -52,6 +52,7 @@ import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solid
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier } from './lineOfSight';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue } from '../engine/psychology';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
@@ -1166,11 +1167,50 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   setTimeout(() => runEnemyAI(get, set, active.id), 450);
 }
 
+/** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources
+ *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
+ *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
+export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || enemy.psychImmune || isOutOfAction(enemy)) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !enemy.pos) return;
+  enemy.psychState ??= [];
+  const log: string[] = [];
+  // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
+  for (const foe of battle.combatants) {
+    if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (lineOfSightCover(scene, enemy.pos, foe.pos, []).blocked) continue;
+    const src = fearSourceFor(enemy, foe);
+    if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
+    if (src.kind === 'terreur') {
+      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng());
+      if (!r.success) {
+        addCondition(enemy, 'Brisé', r.brise);
+        log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
+      }
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0 }); // Terreur → Peur
+    } else {
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0 });
+      log.push(`${enemy.name} a peur de ${foe.name}.`);
+    }
+  }
+  // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — un Round.
+  for (const p of enemy.psychState) {
+    if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 0)) continue;
+    const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng());
+    p.calmeDR = r.calmeDR;
+    if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
+  }
+  if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+}
+
 export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
+  resolvePsychAI(get, set, enemy); // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
 
   const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
   if (heroes.length === 0) {
