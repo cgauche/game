@@ -15,3 +15,22 @@ export function parseWearPenalty(q: string): { skill: string; value: number } | 
   if (!m) return null;
   return { value: parseInt(m[1], 10), skill: m[2].trim() };
 }
+
+/** Somme des pénalités de port (≤ 0) des armures ÉQUIPÉES de `c` pour la compétence `skill`
+ *  (spécialisation/casse ignorées). Pratique réduit d'un niveau (+10, plancher 0), Peu Fiable double. */
+export function wornArmourPenalty(c: Combatant, skill: string): number {
+  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+  let total = 0;
+  for (const piece of c.items ?? []) {
+    if (!piece.equipped || piece.kind !== 'armor') continue;
+    for (const q of piece.qualities ?? []) {
+      const p = parseWearPenalty(q);
+      if (!p || p.skill.toLowerCase() !== base) continue;
+      let v = p.value; // négatif
+      if (hasQuality(piece, 'Pratique')) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.59)
+      if (hasQuality(piece, 'Peu Fiable')) v = v * 2; // Défaut : doublée (LDB 60 l.88)
+      total += v;
+    }
+  }
+  return total;
+}
