@@ -135,7 +135,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - *(Parties pures **commitées** — `iso.ts`/`buildings.ts`/`facing.ts`/`store.ts`/`ViewControls.tsx` ;
   le **câblage React** vit dans `IsoStage`/`Editor`/`CampaignView`, à committer avec le WIP rendu en cours.)*
 
-## ✅ Jalon 0.10 — Registre de créatures « dépose un fichier → intégré » *(fait — 2026-06-06)*
+## ✅ Jalon 0.10 — Registre générique « dépose un fichier → intégré » *(fait — 2026-06-06/07)*
 
 - **But** (énoncé utilisateur) : « il suffit de mettre une créature dans un dossier et POUF, il est
   intégré au jeu » — calqué sur l'auto-chargement des scénarios de test. **Réalisé** : ajouter une
@@ -150,7 +150,20 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   (les scripts QC cassent) ; le codegen marche partout (Vite + Vitest + tsx), inspectable, zéro runtime.
   **Plugin Vite `registry-gen`** régénère au démarrage + à chaque ajout/suppression dans `defs/` (POUF en
   dev) ; intégré au `npm run build`.
-- **Générateur GÉNÉRIQUE** (config `REGISTRIES`) → réutilisable tel quel pour **tenues / modèles** (prochaine étape demandée).
+- **Générateur GÉNÉRIQUE étendu à 4 familles** (config `REGISTRIES`, champ `importDir` pour les dossiers
+  à plat) — même mécanique partout :
+  - **Créatures** (`creatures/defs/`) — cf. ci-dessus.
+  - **Scénarios de test** (`scenes/test-scenarios/`) : migrés de `import.meta.glob` (Vite-only, cassé sous
+    tsx/Vitest) vers l'index généré → un mécanisme unique, marche partout.
+  - **Tenues** (`parts/tenues/defs/`) : 8 archétypes de classe + Nu sortis de la table codée en dur de
+    `career.ts` ; `TENUES`/`TENUE_NUE` dérivés. `career.ts` ne garde que la logique.
+  - **Parts monstrueuses** (`parts/monster/defs/`) : 16 têtes (front/dos/profil) + 2 bras + 1 jambe sortis
+    de la triple-saisie de `monstrous.ts` (union `MonsterHead/Arm/Leg` + `Record` + tableaux `_OPTIONS`) ;
+    `HEADS/ARMS/LEGS` + les 3 catalogues d'OPTIONS dérivés. Fini les 3 endroits à éditer pour ajouter une
+    tête (le smell du cyclope). `monstrous.ts` 557→132 l. (ne garde que `MonsterParts` + overlays +
+    `monsterInjection`) ; helpers d'yeux extraits (`monster/eyes.ts`, DRY) ; **code mort supprimé**
+    (`undeadEye`, `OV_COL_CAPE`). Refacto **garanti sans régression par un golden master** (snapshot du SVG
+    résolu de `monsterInjection`, identique à l'octet).
 - **Logique mise à plat** : `detectSpecies` (if-chain) + **5 tables `SPECIES_*`** supprimées d'`enemyProfile.ts` ;
   `quadSkeleton`/`composeWing` **re-exportent** depuis `creatures` → consommateurs inchangés. Helper **`norm`
   unifié** (1 copie, 7 inline supprimées).
@@ -161,7 +174,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   pieuvre, hydre, squig, basilic…).
 - **« Charognard » supprimé** (espèce inventée, non canon, indistincte du loup ; variante Mutant `mutantCharognard`
   conservée). **`public/qc/` gitignoré** (sorties QC régénérables — git ralentissait sur 1000+ fichiers non suivis).
-- **588 tests verts, typecheck 0**, poussé en prod (`feat/wfrp4-rpg-foundation`).
+- **613 tests verts** (dont registres scénarios/tenues + golden master parts), **typecheck 0** côté registre,
+  poussé en prod (`feat/wfrp4-rpg-foundation`). Reste à brancher sur le pattern si besoin : palettes/cheveux
+  (déjà un pipeline d'ingestion d'art à part) et formes d'armes (non retenu ce cycle).
 
 ---
 
