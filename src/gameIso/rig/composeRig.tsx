@@ -8,7 +8,7 @@ import { resolveParts } from './parts/resolve';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
-import { CAREER_PALETTES } from './parts/generated/careerPalettes';
+import { tenuePaletteFor } from './parts/career';
 import { SPECIES_PALETTES } from './parts/generated/speciesPalettes';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
@@ -137,7 +137,9 @@ export function resolveRig(
   const headSkin = !speciesHasSkin && appearance.monster?.tete ? SKIN_FROM_HEAD[appearance.monster.tete] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
   // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
-  const stored = { ...(SPECIES_PALETTES[speciesKey] ?? {}), ...(CAREER_PALETTES[career ?? ''] ?? {}) };
+  // Palette de tenue : carrière dédiée OU archétype de classe en repli (tenuePaletteFor) →
+  // les carrières SANS tenue dédiée héritent/recolorent comme les autres (cohérence).
+  const stored = { ...(SPECIES_PALETTES[speciesKey] ?? {}), ...tenuePaletteFor(career) };
   const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 

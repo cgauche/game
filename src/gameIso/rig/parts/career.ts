@@ -1,7 +1,9 @@
 import careers from '../../../data/careers.json';
 import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
+import { CAREER_PALETTES } from './generated/careerPalettes';
 import TENUE_VIEWS_JSON from './generated/tenueViews.json';
-import { TENUES, TENUE_NUE, type TenueSet } from './tenues';
+import { TENUES, TENUE_NUE, CLASS_PALETTES, type TenueSet } from './tenues';
+import type { StoredPalette } from '../palette';
 
 // Vues dos/profil des tenues (E·7, générées) — composées au front existant (torse/tête).
 type TenueViewSet = { back?: string; profile?: string };
@@ -39,6 +41,16 @@ export function careerTenue(cls: string): TenueSet {
  *  d'entité : un PNJ peut porter n'importe laquelle (découplage tenue ↔ nom). */
 export function tenueCareerNames(): string[] {
   return [...Object.keys(GENERATED_CAREER_TENUES).sort((a, b) => a.localeCompare(b, 'fr')), 'Nu'];
+}
+
+/**
+ * Palette STOCKÉE de la tenue d'une carrière, en miroir EXACT de `careerTenueFor` :
+ * palette par CARRIÈRE si dispo (`CAREER_PALETTES`), sinon palette de l'archétype de CLASSE
+ * (`CLASS_PALETTES`). Empilée sous l'espèce + les surcharges dans composeRig → rendu par
+ * défaut sans perte ET recoloriage cohérent, que la carrière ait sa tenue dédiée ou non.
+ */
+export function tenuePaletteFor(career: string | undefined): StoredPalette {
+  return CAREER_PALETTES[career ?? ''] ?? CLASS_PALETTES[careerClass(career ?? '')] ?? {};
 }
 
 /** Tenue résolue pour une carrière : art PAR CARRIÈRE si dispo, sinon archétype de CLASSE. */
