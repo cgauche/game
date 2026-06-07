@@ -43,7 +43,14 @@ export interface PsychAffliction {
   calmeDR?: number;
   /** N° de Round du dernier Test de Calme (le Test étendu est UNE fois par Round). */
   lastTestRound?: number;
+  /** Trait CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : `true` = affliction non résistée
+   *  (effets actifs, re-testable pour y mettre fin) ; `false` = testé et résisté (marqueur inerte
+   *  empêchant le re-déclenchement ce rencontre). */
+  active?: boolean;
 }
+
+/** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible — LDB 21). */
+export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
  *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur. */

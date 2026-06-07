@@ -53,7 +53,8 @@ import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solid
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
+import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
@@ -1346,12 +1347,27 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
     p.lastTestRound = battle.round;
     if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
   }
+  // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
+  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, []).blocked);
+  for (const p of enemy.psychState) {
+    // Re-test (fin de Round) des afflictions ciblées actives, tant qu'un membre du groupe est visible.
+    if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
+    if (!visible.some((v) => groupMatch(p.cible!, v.groups ?? []))) continue;
+    p.lastTestRound = battle.round;
+    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(`${enemy.name} se ressaisit (${p.type}).`); }
+  }
+  const tt = targetedTrigger(enemy, visible); // nouveau Trait ciblé déclenché par un membre du groupe visible
+  if (tt) {
+    const r = resolveCalmeSimple(calmeValue(enemy), battleRng());
+    enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
+    if (!r.success) log.push(`${enemy.name} est en proie à son ${tt.type} (${tt.cible}).`);
+  }
   if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
 }
 
 /** Premier Test de Psychologie DÛ pour un combattant (héros) ce Round : nouvelle source de Peur/Terreur
  *  en Ligne de Vue, ou Peur active non encore testée ce Round. Pur de lecture (ne mute pas). */
-export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: 'peur' | 'terreur'; sourceId: string; indice: number; prevDR: number } | null {
+export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: PsychType; sourceId: string; indice: number; prevDR: number; cible?: string } | null {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !c.pos || c.psychImmune || c.frenzied) return null; // Frénésie = immunité psy
@@ -1367,6 +1383,14 @@ export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: 'p
     if (p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 0) && p.lastTestRound !== battle.round)
       return { kind: 'peur', sourceId: p.sourceId!, indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 }; // Peur active à re-tester
   }
+  // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21) : re-test des actifs, puis nouveaux déclenchements ──
+  const visible = battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, c.pos!, v.pos, []).blocked);
+  for (const p of state) {
+    if (p.active && CIBLE_TYPES.has(p.type) && p.cible && p.lastTestRound !== battle.round && visible.some((v) => groupMatch(p.cible!, v.groups ?? [])))
+      return { kind: p.type, sourceId: p.sourceId ?? '', indice: 0, prevDR: 0, cible: p.cible }; // affliction active à re-tester (fin de Round)
+  }
+  const tt = targetedTrigger(c, visible);
+  if (tt) return { kind: tt.type, sourceId: tt.sourceId, indice: 0, prevDR: 0, cible: tt.cible };
   return null;
 }
 
@@ -1379,7 +1403,7 @@ export function maybeOpenHeroPsych(get: () => GameState, set: any): void {
   if (!active || active.kind !== 'hero' || isOutOfAction(active)) return;
   endFrenzyIfDone(get, set, active); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test
   const t = collectHeroPsych(get, active);
-  if (t) set({ pendingPsych: { combatantId: active.id, kind: t.kind, sourceId: t.sourceId, indice: t.indice, prevDR: t.prevDR, result: null } });
+  if (t) set({ pendingPsych: { combatantId: active.id, kind: t.kind, sourceId: t.sourceId, indice: t.indice, prevDR: t.prevDR, cible: t.cible, result: null } });
 }
 
 /** Fin de Frénésie (LDB 21 l.36) : si plus aucun adversaire vivant en Ligne de Vue, ou si Sonné /

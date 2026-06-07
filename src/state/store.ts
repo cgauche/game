@@ -37,7 +37,7 @@ import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isAr
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry } from '../engine/psychology';
+import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, resolveCalmeSimple, CIBLE_TYPES, type PsychType } from '../engine/psychology';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -176,10 +176,12 @@ export interface PendingFocus {
  *  rencontre). Lancer → Chance → Appliquer. */
 export interface PendingPsych {
   combatantId: string;
-  kind: 'peur' | 'terreur';
+  kind: PsychType;
   sourceId: string;
   indice: number;
   prevDR: number;
+  /** Trait CIBLÉ : groupe-Cible visé (Animosité (Elfes)…). Absent pour Peur/Terreur. */
+  cible?: string;
   result: { roll: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
   rerolled?: boolean;
 }
@@ -1116,29 +1118,30 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !pp || pp.result) return;
     const c = battle.combatants.find((x) => x.id === pp.combatantId);
     if (!c) return;
-    const result =
-      pp.kind === 'terreur'
-        ? resolveTerreurTest(calmeValue(c), pp.indice, battleRng())
-        : resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
+    let result;
+    if (CIBLE_TYPES.has(pp.kind)) { const t = resolveCalmeSimple(calmeValue(c), battleRng()); result = { roll: t.roll, success: t.success }; }
+    else if (pp.kind === 'terreur') result = resolveTerreurTest(calmeValue(c), pp.indice, battleRng());
+    else result = resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
     set({ pendingPsych: { ...pp, result } });
   },
   psychReroll: () => {
     const { battle, pendingPsych: pp } = get();
     if (!battle || !pp || !pp.result) return;
-    const failed = pp.kind === 'terreur' ? !pp.result.success : (pp.result.dr ?? 0) === 0;
+    const isCible = CIBLE_TYPES.has(pp.kind);
+    const failed = isCible || pp.kind === 'terreur' ? !pp.result.success : (pp.result.dr ?? 0) === 0;
     if (!canReroll(failed, !!pp.rerolled)) return;
     const c = battle.combatants.find((x) => x.id === pp.combatantId);
     if (!c || (c.fortune ?? 0) <= 0) return;
     c.fortune = (c.fortune ?? 0) - 1;
-    const result =
-      pp.kind === 'terreur'
-        ? resolveTerreurTest(calmeValue(c), pp.indice, battleRng())
-        : resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
+    let result;
+    if (isCible) { const t = resolveCalmeSimple(calmeValue(c), battleRng()); result = { roll: t.roll, success: t.success }; }
+    else if (pp.kind === 'terreur') result = resolveTerreurTest(calmeValue(c), pp.indice, battleRng());
+    else result = resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
     set({ pendingPsych: { ...pp, result, rerolled: true }, battle: { ...battle } });
   },
   psychBonusSL: () => {
     const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || !pp.result) return;
+    if (!battle || !pp || !pp.result || CIBLE_TYPES.has(pp.kind)) return; // ciblé = Test binaire (pas de « +1 DR »)
     const c = battle.combatants.find((x) => x.id === pp.combatantId);
     if (!c || (c.fortune ?? 0) <= 0) return;
     c.fortune = (c.fortune ?? 0) - 1;
@@ -1157,9 +1160,11 @@ export const useGame = create<GameState>((set, get) => ({
     c.resilience = (c.resilience ?? 0) - 1;
     const r = pp.result;
     const result =
-      pp.kind === 'terreur'
-        ? { ...r, success: true, brise: 0 }
-        : { ...r, calmeDR: pp.indice, vaincue: true };
+      CIBLE_TYPES.has(pp.kind)
+        ? { ...r, success: true }
+        : pp.kind === 'terreur'
+          ? { ...r, success: true, brise: 0 }
+          : { ...r, calmeDR: pp.indice, vaincue: true };
     set({ pendingPsych: { ...pp, result }, battle: { ...battle } });
   },
   psychConfirm: () => {
@@ -1171,7 +1176,15 @@ export const useGame = create<GameState>((set, get) => ({
       c.psychState ??= [];
       const r = pp.result;
       const log: string[] = [];
-      if (pp.kind === 'terreur') {
+      if (CIBLE_TYPES.has(pp.kind)) {
+        // Trait ciblé (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : échec → affliction active
+        // (effets de combat/Soc/contrainte) ; succès → marqueur inerte (résisté, pas de re-déclenchement).
+        let e = c.psychState.find((p) => p.type === pp.kind && p.cible === pp.cible);
+        if (!e) { e = { type: pp.kind, cible: pp.cible, sourceId: pp.sourceId }; c.psychState.push(e); }
+        e.lastTestRound = battle.round;
+        e.active = !r.success;
+        log.push(r.success ? `${c.name} maîtrise son ${pp.kind}.` : `${c.name} est en proie à son ${pp.kind}${pp.cible ? ` (${pp.cible})` : ''}.`);
+      } else if (pp.kind === 'terreur') {
         if (!r.success && (r.brise ?? 0) > 0) {
           addCondition(c, 'Brisé', r.brise!);
           log.push(`${c.name} est terrifié : ${r.brise} État(s) Brisé.`);
