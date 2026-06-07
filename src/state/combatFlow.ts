@@ -6,6 +6,7 @@
 import type { GameState, BattleState } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
+import { d10 } from '../engine/dice';
 import {
   resolveMelee,
   resolveRanged,
@@ -25,7 +26,7 @@ import {
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
-import { isUnbreakable, hasQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   resolveFocus,
   isMagicMissile,
@@ -48,7 +49,7 @@ import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier } from './lineOfSight';
@@ -476,14 +477,21 @@ export function applyAttackResult(
   }
   // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
   if (res.hit && res.woundsLost && target.kind === 'hero' && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
-  // Atout Assommante : une touche à la Tête → Test opposé Force/Résistance ; si
-  // l'attaquant l'emporte, la cible gagne un État Sonné (LDB Les armes l.268).
+  // Qualités à effet « à la touche » (hook `onHit` du registre) : ex. Assommante — touche à la Tête →
+  // Test opposé F vs Endurance+Résistance ; si l'attaquant l'emporte, la cible gagne l'État Sonné (LDB Armes l.268).
   let assommanteLog: string | null = null;
-  if (res.hit && res.location === 'tete' && hasQuality(weapon, 'Assommante')) {
-    const resist = effectiveChar(target, 'E') + (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-    if (opposedTest(effectiveChar(attacker, 'F'), resist, battleRng()).winner === 'attacker') {
-      addCondition(target, 'Sonné');
-      assommanteLog = `${target.name} est Sonné (Assommante).`;
+  if (res.hit) {
+    for (const { def } of resolveQualities(weapon)) {
+      const oh = def.onHit;
+      if (!oh || (oh.location && res.location !== oh.location)) continue;
+      const skillAdv = oh.opposed.defenderSkill
+        ? target.skills.find((s) => s.name.toLowerCase().startsWith(oh.opposed.defenderSkill!.toLowerCase()))?.advances ?? 0
+        : 0;
+      const defVal = effectiveChar(target, oh.opposed.defender) + skillAdv;
+      if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
+        addCondition(target, oh.condition);
+        assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
+      }
     }
   }
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
@@ -544,8 +552,13 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
  *  sinon sur le Weapon actif (ennemi/figurant, transient). Respecte Incassable (LDB 62 l.310). */
 function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void {
   const it = (c.items ?? []).find((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged') && i.name === weapon.name);
+  if (isUnbreakable(it ?? weapon)) return; // Incassable : ni dégât ni destruction (LDB 62 l.310)
+  // Sauvegarde Solide(N) contre une cassure instantanée : 1d10 ≥ seuil → l'arme résiste (LDB 60 l.64-67).
+  if (destroy) {
+    const thr = solideSaveThreshold(weapon);
+    if (thr != null && d10(battleRng()) >= thr) return;
+  }
   if (it) {
-    if (isUnbreakable(it)) return;
     if (destroy) {
       it.destroyed = true;
     } else {
@@ -568,6 +581,8 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
 export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: Weapon, r: OupsResolved): void {
   const battle = get().battle!;
   const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
+  // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.82) — sauvegarde Solide possible.
+  if (hasQuality(weapon, 'Bâclé')) wearActiveWeapon(c, weapon, true);
   const sb = bonus(effectiveChar(c, 'F'));
   const units = r.roll % 10;
   switch (r.kind) {
