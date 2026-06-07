@@ -28,6 +28,7 @@ export function ActionBar() {
   const useItem = useGame((s) => s.battleUseItem);
   const spendResolve = useGame((s) => s.battleSpendResolve);
   const frenzy = useGame((s) => s.battleFrenzy);
+  const run = useGame((s) => s.battleRun);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
@@ -43,6 +44,8 @@ export function ActionBar() {
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
   const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
+  // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu (Marche + Course + DR).
+  const canRun = isHero && !engaged && !battle.moved && !battle.acted && !stunned;
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
   // Frénésie (LDB 21 l.31-32) : un héros capable (trait/talent) peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
@@ -218,6 +221,16 @@ export function ActionBar() {
               >
                 <span className="ab-ico">🏃</span>
                 <span className="ab-lbl">Charger</span>
+              </button>
+            )}
+            {canRun && (
+              <button
+                className="ab-slot"
+                onClick={run}
+                title="Courir : utilise l'Action + un Test d'Athlétisme (+20) pour vous déplacer plus loin (Marche + Course + DR, LDB 15)"
+              >
+                <span className="ab-ico">💨</span>
+                <span className="ab-lbl">Courir</span>
               </button>
             )}
             {canTrample && (

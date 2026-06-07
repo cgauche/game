@@ -53,6 +53,8 @@ import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualitie
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
+import { testValue } from '../engine/skills';
+import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
@@ -170,6 +172,13 @@ export interface PendingTrample {
   attackerId: string;
   targetId: string;
   result: AttackResult | null; // null = pas encore lancé
+  rerolled?: boolean;
+}
+/** Course en attente (LDB 15-Déplacement l.79-82) : Test d'Athlétisme (+20) ; succès → déplacement
+ *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
+export interface PendingRun {
+  combatantId: string;
+  result: { success: boolean; roll: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
 }
 /** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
@@ -337,6 +346,8 @@ export interface GameState {
   pendingReveals: RevealEntry[];
   /** Piétinement en cours (modale interactive). */
   pendingTrample: PendingTrample | null;
+  /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
+  pendingRun: PendingRun | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
   /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
@@ -462,6 +473,13 @@ export interface GameState {
   trampleForceSuccess: () => void;
   trampleConfirm: () => void;
   trampleCancel: () => void;
+  /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
+  battleRun: () => void;
+  runRoll: () => void;
+  runReroll: () => void;
+  runForceSuccess: () => void;
+  runConfirm: () => void;
+  runCancel: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
   focusRoll: () => void;
   focusReroll: () => void;
@@ -576,6 +594,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCleave: null,
   pendingReveals: [],
   pendingTrample: null,
+  pendingRun: null,
   pendingFocus: null,
   pendingPsych: null,
   pendingFrenzy: null,
@@ -787,6 +806,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingCleave: null,
       pendingReveals: [],
       pendingTrample: null,
+      pendingRun: null,
       pendingFocus: null,
       pendingPsych: null,
       pendingFrenzy: null,
@@ -924,7 +944,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -1771,6 +1791,55 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...get().battle!, acted: prevActed } });
   },
   trampleCancel: () => set({ pendingTrample: null }),
+
+  // ── Course (LDB 15-Déplacement l.79-82) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
+  //    étendu (Marche + Course + DR). « Un jet = une modale » : le Test passe par pendingRun. ──
+  battleRun: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.acted || battle.moved) return; // Course = Marche + Action
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || isEngaged(active) || !canTakeAction(active)) return; // Engagé → se désengager d'abord
+    set({ pendingRun: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
+  },
+  runRoll: () => {
+    const { battle, pendingRun: pr } = get();
+    if (!battle || !pr || pr.result) return;
+    const c = battle.combatants.find((x) => x.id === pr.combatantId);
+    if (!c) return;
+    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, 'Athlétisme'), effectiveMovement(c), battleRng()) } });
+  },
+  runReroll: () => {
+    const { battle, pendingRun: pr } = get();
+    if (!battle || !pr || !pr.result) return;
+    if (!canReroll(!pr.result.success, !!pr.rerolled)) return; // Test raté, 1× max
+    const c = battle.combatants.find((x) => x.id === pr.combatantId);
+    if (!c || (c.fortune ?? 0) <= 0) return;
+    c.fortune = (c.fortune ?? 0) - 1;
+    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, 'Athlétisme'), effectiveMovement(c), battleRng()), rerolled: true }, battle: { ...battle } });
+  },
+  runForceSuccess: () => {
+    const { battle, pendingRun: pr } = get();
+    if (!battle || !pr || !pr.result || pr.result.success) return;
+    const c = battle.combatants.find((x) => x.id === pr.combatantId);
+    if (!c || (c.resilience ?? 0) <= 0) return;
+    c.resilience = (c.resilience ?? 0) - 1;
+    const m = effectiveMovement(c);
+    set({ pendingRun: { ...pr, result: { ...pr.result, success: true, dr: Math.max(0, pr.result.dr), bonusCases: Math.max(pr.result.bonusCases, 2 * m) } }, battle: { ...battle } });
+  },
+  runConfirm: () => {
+    const { battle, scene, pendingRun: pr } = get();
+    if (!battle || !scene || !pr || !pr.result) return;
+    const c = battle.combatants.find((x) => x.id === pr.combatantId);
+    set({ pendingRun: null });
+    if (!c) return;
+    const range = effectiveMovement(c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
+    const blocked = occupied(battle, c.id);
+    const log = [...battle.log, `${c.name} prend sa Course (Athlétisme ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
+    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked), log } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  runCancel: () => set({ pendingRun: null }),
+
   fumbleRoll: () => {
     const pf = get().pendingFumble;
     if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
