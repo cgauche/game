@@ -62,6 +62,8 @@ export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
 export interface ModLine {
   label: string;
   value: number;
+  /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
+  uncapped?: boolean;
 }
 
 export interface RollBreakdown {
@@ -112,7 +114,22 @@ const bd = (label: string, base: number, t: TestResult, mods?: ModLine[]): RollB
 });
 const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
 
-const sumMods = (mods: ModLine[]): number => mods.reduce((s, m) => s + m.value, 0);
+/**
+ * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS est plafonnée
+ * à −30 (Très Difficile) et la somme des BONUS à +60 (Très Facile) ; un mélange se somme. Les
+ * lignes `uncapped` (Avantage — hors table de Difficulté) s'ajoutent sans plafond.
+ */
+export function combineMods(mods: ModLine[]): number {
+  let pos = 0;
+  let neg = 0;
+  let free = 0;
+  for (const m of mods) {
+    if (m.uncapped) free += m.value;
+    else if (m.value >= 0) pos += m.value;
+    else neg += m.value;
+  }
+  return free + Math.min(60, pos) + Math.max(-30, neg);
+}
 
 /**
  * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
@@ -128,7 +145,7 @@ export function attackModifiers(
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
-  if (adv) out.push({ label: 'Avantage', value: adv });
+  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
@@ -208,7 +225,7 @@ export function rollMeleeAttacker(
   location?: HitLocation,
 ): TestResult {
   const atkVal = combatValue(attacker, 'melee');
-  return rollTest(atkVal, 'intermediaire', rng, sumMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location })));
+  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location })));
 }
 
 /** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
@@ -362,7 +379,7 @@ export function resolveRanged(
   if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles });
-  const atk = rollTest(atkVal, 'intermediaire', rng, sumMods(mods));
+  const atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   const atkBd = bd('Projectiles', atkVal, atk, mods);
   if (!atk.success) {
     return {
