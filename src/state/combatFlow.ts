@@ -38,13 +38,13 @@ import {
   type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest } from '../engine/tests';
+import { opposedTest, rollTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
-import { creatureAttacks } from '../engine/creatureAttacks';
+import { creatureAttacks, venomDifficulty } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
@@ -881,12 +881,36 @@ function freeAttackWeapon(kind: string, bonus: number): Weapon {
   return { name: kind === 'caudale' ? 'Attaque caudale' : 'Morsure', type: 'melee', damage: `+${bonus}`, qualities: [] };
 }
 
-/** Effet RAW post-touche : Attaque caudale → cible de Taille INFÉRIEURE qui perd des PB subit
- *  l'État À Terre (LDB 85 l.338). (Venin → Empoisonné : modélisation différée.) */
+/** Difficulté de Test (clé) depuis le libellé FR de la Difficulté du Venin (défaut Intermédiaire). */
+function venomDiffKey(label: string): import('../engine/types').Difficulty {
+  const l = label.toLowerCase();
+  if (l.includes('très facile')) return 'tresFacile';
+  if (l.includes('facile')) return 'facile';
+  if (l.includes('accessible')) return 'accessible';
+  if (l.includes('très difficile')) return 'tresDifficile';
+  if (l.includes('difficile')) return 'difficile';
+  if (l.includes('complexe')) return 'complexe';
+  return 'intermediaire';
+}
+
+/** Effets RAW post-touche d'une attaque gratuite (sur PB infligés) :
+ *  - Attaque caudale → cible de Taille INFÉRIEURE → À Terre (LDB 85 l.338) ;
+ *  - Atout Venin de la créature → Test de Résistance (Endurance) à la Difficulté du Venin ;
+ *    sur un échec, la cible subit l'État Empoisonné (LDB 85 l.326, voir p.168). */
 export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
-  if (kind === 'caudale' && res.hit && res.woundsLost && sizeGap(attacker.size, target.size) >= 1 && !hasCondition(target, 'À Terre')) {
+  if (!res.hit || !res.woundsLost) return; // les effets ne se déclenchent que sur Points de Blessure perdus
+  if (kind === 'caudale' && sizeGap(attacker.size, target.size) >= 1 && !hasCondition(target, 'À Terre')) {
     addCondition(target, 'À Terre');
     get().log(`${target.name} est mis À Terre (Attaque caudale).`);
+  }
+  const vd = venomDifficulty(attacker.traits ?? []);
+  if (vd && !hasCondition(target, 'Empoisonné')) {
+    const resAdv = target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
+    const t = rollTest(effectiveChar(target, 'E') + resAdv, venomDiffKey(vd), battleRng());
+    if (!t.success) {
+      addCondition(target, 'Empoisonné');
+      get().log(`${target.name} échoue à résister au Venin et est Empoisonné.`);
+    } else get().log(`${target.name} résiste au Venin.`);
   }
 }
 

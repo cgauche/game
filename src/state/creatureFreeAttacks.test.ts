@@ -81,4 +81,15 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
   });
+
+  it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Morsure +14', 'Venin (Intermédiaire)']; E.advantage = 1;
+    H.characteristics.E = 1; // Endurance minime → Résistance ratée quasi à coup sûr
+    H.skills = H.skills.filter((s) => !s.name.toLowerCase().startsWith('résistance'));
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.conditions.some((c) => c.name === 'Empoisonné')).toBe(true);
+  });
 });
