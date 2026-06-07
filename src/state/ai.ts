@@ -14,6 +14,7 @@ import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, manhattan, chebyshev, Pt } from './path';
 import { lineOfSightCover } from './lineOfSight';
+import { groupMatch } from '../engine/groups';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
@@ -101,19 +102,30 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // --- Choix de la cible ---------------------------------------------------
   // À distance (sort/arme) : on vise le plus faible PARMI les cibles visibles (LdV). En mêlée :
   // on préfère une cible frappable ce tour ; sinon on approche le plus faible.
+  // Animosité/Haine ACTIVE (LDB 21 l.22/41) : on doit s'en prendre EN PRIORITÉ au groupe haï. Restreint
+  // la sélection aux membres du groupe présents dans le vivier considéré (sinon ciblage habituel).
+  const hatedCibles = (enemy.psychState ?? [])
+    .filter((p) => (p.type === 'animosite' || p.type === 'haine') && p.active && p.cible)
+    .map((p) => p.cible!);
+  const hatedOf = (pool: Combatant[]) =>
+    hatedCibles.length ? pool.filter((h) => hatedCibles.some((cb) => groupMatch(cb, h.groups ?? []))) : [];
+
   let target: Combatant;
   if (frenzied) {
     // Frénésie : on se rue sur l'ennemi le plus PROCHE en Ligne de Vue (LDB 21 l.34).
     const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
     target = nearest(pos, visibleFoes);
   } else if (canCast || canShoot) {
-    target = weakestNearest(pos, shootableHeroes);
+    const pool = hatedOf(shootableHeroes);
+    target = weakestNearest(pos, pool.length ? pool : shootableHeroes);
   } else {
     // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe
     // l'adversaire à son contact. Sinon, comportement de mêlée habituel (sécuriser le plus faible).
     const heldInMelee = hasRanged && adjacentFoes.length > 0;
     const here = heldInMelee ? adjacentFoes : heroes.filter(meleeReachableNow);
-    target = weakestNearest(pos, here.length ? here : heroes);
+    const base = here.length ? here : heroes;
+    const pool = hatedOf(base);
+    target = weakestNearest(pos, pool.length ? pool : base);
   }
 
   // --- Sort offensif : on lance sur la cible visible (résolu comme un projectile) ---

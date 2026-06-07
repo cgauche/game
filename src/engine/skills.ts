@@ -5,6 +5,7 @@
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
 import { findSkill } from '../data';
 import { wornArmourPenalty, wornSocialMod } from './wearPenalty';
+import { groupMatch } from './groups';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -25,6 +26,17 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
     return base + (sk?.advances ?? 0) + wornArmourPenalty(c, skill) + (ck === 'Soc' ? wornSocialMod(c) : 0);
   }
   return 0;
+}
+
+/** Pénalité de Sociabilité d'un Trait psy ciblé de `tester` visant un membre du groupe `target`
+ *  (LDB 21) : Animosité ACTIVE −20 (l.22) ; Préjugé (trait passif possédé) −10 (l.43-52). Cumulables.
+ *  À consommer là où un Test de Sociabilité vise une cible précise (interaction ciblée). */
+export function socialPsychMod(tester: Combatant, target: Combatant): number {
+  const groups = target.groups ?? [];
+  let mod = 0;
+  if ((tester.psychState ?? []).some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) mod -= 20;
+  if ((tester.psychTraits ?? []).some((t) => t.type === 'prejuge' && t.cible && groupMatch(t.cible, groups))) mod -= 10;
+  return mod;
 }
 
 /** Meilleur membre du groupe pour un test donné. */
