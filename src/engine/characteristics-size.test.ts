@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { maxWounds, effectiveMaxWounds } from './characteristics';
+import { maxWounds, effectiveMaxWounds, refreshWounds } from './characteristics';
 import { Characteristics, Combatant } from './types';
 
 describe('maxWounds par catégorie de Taille (LDB 85 l.332-352)', () => {
@@ -34,5 +34,23 @@ describe('effectiveMaxWounds — base + delta des buffs F/E/FM × Taille', () =>
   it('buff +10 E sur un Énorme → +2×4 = +8 (delta ×Taille)', () => {
     const c = base({ size: 'enorme', wounds: { current: 48, max: 48, base: 48 }, activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, roundsLeft: 3 }] });
     expect(effectiveMaxWounds(c)).toBe(56); // 48 + (woundsForSize(...,enorme) delta = +8)
+  });
+});
+
+describe('refreshWounds — recale max + ajuste current (buff/expiration)', () => {
+  it('un buff +E monte max ET current ; l’expiration les redescend (clamp ≥0)', () => {
+    const c = {
+      characteristics: { F: 30, E: 30, FM: 30 } as Characteristics,
+      size: 'moyenne',
+      wounds: { current: 10, max: 12, base: 12 },
+      activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, roundsLeft: 3 }],
+    } as unknown as Combatant;
+    refreshWounds(c);
+    expect(c.wounds.max).toBe(14); // +2 (BE 4 vs 3)
+    expect(c.wounds.current).toBe(12); // 10 + 2 (gagne des PB)
+    c.activeEffects = []; // effet dissipé
+    refreshWounds(c);
+    expect(c.wounds.max).toBe(12);
+    expect(c.wounds.current).toBe(10); // 12 − 2 (en perd)
   });
 });

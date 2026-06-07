@@ -54,3 +54,17 @@ export function effectiveMaxWounds(c: Combatant): number {
   const raw = woundsForSize(bonus(c.characteristics.F), bonus(c.characteristics.E), bonus(c.characteristics.FM), size);
   return base + (eff - raw);
 }
+
+/**
+ * Recale `wounds.max` sur `effectiveMaxWounds` et ajuste `wounds.current` du même delta : on GAGNE des
+ * Points de Blessure quand un buff F/E/FM monte le max, on en PERD à l'expiration (clamp ≥ 0). Appelé
+ * à chaque changement d'`activeEffects` (application d'un buff, dissipation en fin de Round). Idempotent.
+ */
+export function refreshWounds(c: Combatant): void {
+  const newMax = effectiveMaxWounds(c);
+  const delta = newMax - c.wounds.max;
+  if (delta === 0) return;
+  c.wounds.max = newMax;
+  if (delta > 0) c.wounds.current += delta;
+  else c.wounds.current = Math.max(0, c.wounds.current + delta);
+}

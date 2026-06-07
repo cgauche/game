@@ -36,7 +36,7 @@ import {
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest } from '../engine/tests';
-import { effectiveChar, bonus } from '../engine/characteristics';
+import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -675,6 +675,8 @@ export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
   } else {
     target.activeEffects.push(effect);
   }
+  // Les Blessures dérivent de F/E/FM (LDB 85) → un buff de ces caractéristiques recale les PB max + courants.
+  if (effect.char === 'F' || effect.char === 'E' || effect.char === 'FM') refreshWounds(target);
 }
 
 /** Rounds attribués à un buff dont la durée (minutes/heures/jours) dépasse le combat. */
@@ -895,6 +897,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => battle.log.push(l));
+      for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => battle.log.push(l)); // 0 PB→Inconscient (LDB 18 l.28)
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
