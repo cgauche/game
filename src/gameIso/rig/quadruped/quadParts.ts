@@ -97,6 +97,15 @@ function barrel(p: QuadProps): string {
         `<path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>`;
       break;
     }
+    case 'batracien': { // crapaud : sac TRÈS large, bas et rond (pas de dos défini), dos verruqueux
+      const Wt = W - 2;
+      path = `M${-Wt} 0 Q${-Wt - 2} -16 ${-10 * bl} -20 Q${4 * bl} -24 ${18 * bl} -20 Q${Wt + 2} -16 ${Wt} 2 Q${Wt - 1} 17 ${12 * bl} 20 Q${-8 * bl} 22 ${-Wt} 12 Z`;
+      hi = `<path d="M${-16 * bl} -16 Q${0 * bl} -22 ${18 * bl} -17 L${18 * bl} -12 Q${0 * bl} -18 ${-16 * bl} -11 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${-Wt} 9 Q0 20 ${18 * bl} 12 L${20 * bl} 5 Q0 16 ${-Wt} 4 Z" fill="@corpsO" opacity="0.85"/>` +
+        // pustules dorsales (verrues) — casse l'aplat + tell du crapaud
+        `<circle cx="${-12 * bl}" cy="-13" r="1.7" fill="@corpsO"/><circle cx="${-3 * bl}" cy="-17" r="2" fill="@corpsO"/><circle cx="${7 * bl}" cy="-16" r="1.6" fill="@corpsO"/><circle cx="${15 * bl}" cy="-12" r="1.5" fill="@corpsO"/><circle cx="${-8 * bl}" cy="-8" r="1.3" fill="@corpsO"/><circle cx="${2 * bl}" cy="-6" r="1.4" fill="@corpsO"/>`;
+      break;
+    }
     default: // equine : poitrail profond avant, dos LEVEL, croupe arrondie
       path = `M${-Wb} -2 Q${-Wb - 1} -17 ${-10 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -2 Q${W - 1} 11 ${18 * bl} 15 Q${-6 * bl} 18 ${-Wb} 9 Z`;
       hi = `<path d="M${-20 * bl} -17 Q${2 * bl} -23 ${24 * bl} -17 L${24 * bl} -13 Q${2 * bl} -19 ${-20 * bl} -13 Z" fill="@corpsH" opacity="0.6"/>`;
@@ -110,7 +119,7 @@ function barrel(p: QuadProps): string {
 // PETITE et fuyante pour sanglier (avant-lourd) et rat, svelte pour canin. Le bord avant
 // (+x, vers le tronc) reste ancré pour ne pas décrocher du corps ; seul l'arrière (-x) varie.
 function rump(p: QuadProps): string {
-  const RS: Record<string, number> = { equine: 1.0, canine: 0.82, suid: 0.66, rodent: 0.7, ursine: 1.16, feline: 1.04, draconic: 1.0 };
+  const RS: Record<string, number> = { equine: 1.0, canine: 0.82, suid: 0.66, rodent: 0.7, ursine: 1.16, feline: 1.04, draconic: 1.0, batracien: 0.9 };
   const rs = RS[p.build] ?? 1;
   const x = (n: number) => (n <= 0 ? n * rs : n).toFixed(1); // arrière (-x) mis à l'échelle, avant ancré
   const y = (n: number) => (n * (0.5 + 0.5 * rs)).toFixed(1); // hauteur amortie
@@ -153,6 +162,12 @@ function headProfile(p: QuadProps): string {
       `<path d="M13 12 l0.8 2.2 M17 12 l0.8 2.2 M21 11 l0.6 1.8" stroke="#e8e0c8" stroke-width="0.7"/>` +
       `<ellipse cx="4" cy="1.6" rx="1.8" ry="2.1" fill="#d8b820"/><ellipse cx="4" cy="1.6" rx="0.5" ry="1.9" fill="#0a0603"/>` +
       `<path d="M-8 -6 l-2 -4 M-3.5 -6.6 l-1 -4 M1 -5.6 l-0.4 -4" stroke="@corpsO" stroke-width="1.5" stroke-linecap="round"/></g>`;
+  if (p.head === 'crapaud') // tête large et plate, GROS œil bombé doré sur le dessus, large bouche
+    return `<g transform="rotate(2)"><path d="M-7 -2 Q-9 6 -1 9 Q8 12 16 9 Q20 7 19 1 Q12 -1 5 -2 Q-2 -3 -7 -2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<ellipse cx="-1" cy="-3.5" rx="4.2" ry="4" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+      `<circle cx="-0.5" cy="-4" r="2.3" fill="#caa024"/><ellipse cx="-0.5" cy="-4" rx="0.7" ry="2.1" fill="#0a0603"/><circle cx="0.2" cy="-5" r="0.5" fill="#fff" opacity="0.7"/>` +
+      `<path d="M3 7.5 Q10 10 17 7.5" stroke="@corpsO" stroke-width="1" fill="none"/>` +
+      `<circle cx="7" cy="2" r="0.9" fill="@corpsO"/><circle cx="12" cy="4" r="0.8" fill="@corpsO"/><circle cx="4" cy="5" r="0.7" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g transform="rotate(8)"><path d="M-7 -6 Q-9 6 -3 12 Q4 20 12 22 Q18 22 19 17 Q18 12 12 10 Q4 6 2 -4 Q0 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M12 10 Q18 12 19 17 Q18 20 14 20 Q10 18 11 12 Z" fill="@corpsO"/><ellipse cx="16" cy="17" rx="2" ry="1.5" fill="#1a0f08"/>${earProfile(p, -5, -1)}${earProfile(p, 0, 1)}<path d="M-6 -4 Q-2 -7 1 -3" fill="none" stroke="@cheveux" stroke-width="2" opacity="0.8"/>${eye}</g>`;
   if (p.head === 'loup')
@@ -165,6 +180,7 @@ function headProfile(p: QuadProps): string {
   return `<g transform="rotate(10)"><path d="M-7 -4 Q-9 6 0 10 Q9 13 15 11 Q19 9 17 5 Q12 4 8 3 Q1 2 0 -4 Q-1 -8 -7 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="15" cy="8" rx="3" ry="3.4" fill="@corpsO"/><ellipse cx="15" cy="8" rx="1" ry="1.4" fill="#140a06"/><path d="M12 11 q-2 5 -5 3" fill="none" stroke="#e8e0c8" stroke-width="1.6" stroke-linecap="round"/>${earProfile(p, -5, -1)}${earProfile(p, 0.5, 1)}${eye}</g>`;
 }
 function tail(p: QuadProps): string {
+  if (p.tail === 'sans') return ''; // batracien : pas de queue
   if (p.tail === 'reptile') // longue queue écailleuse effilée + épines dorsales
     return `<path d="M0 -2 Q16 4 28 2 Q40 0 48 8 Q40 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>`;
   if (p.tail === 'leonine') // queue de lion : fouet fin + GROS toupet terminal (tell de l'arrière félin)
@@ -209,6 +225,12 @@ function headFront(p: QuadProps): string {
       `<ellipse cx="-5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="-5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
       `<ellipse cx="5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
       `<path d="M0 -13 l0 -3.4 M-3 -12 l-0.6 -3.4 M3 -12 l0.6 -3.4" stroke="@corpsO" stroke-width="1.3" stroke-linecap="round"/></g>`;
+  if (p.head === 'crapaud') // face TRÈS large, 2 gros yeux bombés écartés en haut, bouche très large
+    return `<g><path d="M-12 -6 Q-13 6 -6 13 Q0 16 6 13 Q13 6 12 -6 Q0 -10 -12 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<ellipse cx="-7" cy="-7" rx="4.4" ry="4.2" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><ellipse cx="7" cy="-7" rx="4.4" ry="4.2" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+      `<circle cx="-7" cy="-7.5" r="2.4" fill="#caa024"/><circle cx="-7" cy="-7.5" r="1" fill="#0a0603"/><circle cx="7" cy="-7.5" r="2.4" fill="#caa024"/><circle cx="7" cy="-7.5" r="1" fill="#0a0603"/>` +
+      `<path d="M-9 8 Q0 13 9 8" stroke="@corpsO" stroke-width="1.1" fill="none"/>` +
+      `<circle cx="-3" cy="2" r="1" fill="@corpsO"/><circle cx="3" cy="3" r="0.9" fill="@corpsO"/><circle cx="0" cy="-1" r="0.8" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g>${ears}<path d="M-7 -14 Q-9 6 -4 16 Q0 19 4 16 Q9 6 7 -14 Q0 -17 -7 -14 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M-2 -15 Q0 -17 2 -15 L1.5 12 Q0 14 -1.5 12 Z" fill="@cheveux" opacity="0.6"/><ellipse cx="0" cy="13" rx="4.2" ry="3.2" fill="@corpsO"/><ellipse cx="-1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/><ellipse cx="1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/>${eyeF(-5, -2)}${eyeF(5, -2)}</g>`;
   if (p.head === 'loup' )
@@ -221,6 +243,12 @@ function headFront(p: QuadProps): string {
   return `<g>${ears}<path d="M-10 -10 Q-12 5 -5 12 Q0 16 5 12 Q12 5 10 -10 Q0 -13 -10 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="0" cy="12" rx="5.2" ry="3.6" fill="@corpsO"/><ellipse cx="-2" cy="12" rx="1" ry="1.4" fill="#140a06"/><ellipse cx="2" cy="12" rx="1" ry="1.4" fill="#140a06"/><path d="M-4 14 Q-6 19 -3 19" fill="none" stroke="#e8e0c8" stroke-width="1.5" stroke-linecap="round"/><path d="M4 14 Q6 19 3 19" fill="none" stroke="#e8e0c8" stroke-width="1.5" stroke-linecap="round"/>${eyeF(-6, -3, 1.4)}${eyeF(6, -3, 1.4)}</g>`;
 }
 function bodyFront(p: QuadProps): string {
+  if (p.build === 'batracien') { // crapaud : corps LARGE et BAS (la carrure↑ ne l'étire pas en colonne)
+    const W = 26;
+    return `<g><path d="M${-W} -8 Q${-W} -14 ${-W * 0.5} -15 Q0 -16 ${W * 0.5} -15 Q${W} -14 ${W} -8 L${W - 3} 8 Q${W - 8} 14 0 15 Q${-(W - 8)} 14 ${-(W - 3)} 8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-5 -14 Q0 -16 5 -14 L4 12 Q0 14 -4 12 Z" fill="@corpsH" opacity="0.4"/>` +
+      `<circle cx="-11" cy="-3" r="1.6" fill="@corpsO"/><circle cx="10" cy="-1" r="1.8" fill="@corpsO"/><circle cx="-3" cy="5" r="1.4" fill="@corpsO"/><circle cx="7" cy="7" r="1.3" fill="@corpsO"/><circle cx="0" cy="-9" r="1.2" fill="@corpsO"/></g>`;
+  }
   const w = p.head === 'ours' ? 20 : p.head === 'rat' ? 15 : 17;
   const crest = p.head === 'sanglier' ? `<path d="M-3 -27 Q0 -34 3 -27 M-6 -25 Q-3 -31 0 -26 M0 -26 Q3 -31 6 -25" stroke="@cheveux" stroke-width="1.3" fill="none" opacity="0.8"/>` : '';
   return `<g>
@@ -255,6 +283,7 @@ function bodyBack(p: QuadProps): string {
 }
 function tailBack(p: QuadProps): string {
   // queue vue de dos : pend au centre, sous la croupe.
+  if (p.tail === 'sans') return ''; // batracien : pas de queue
   if (p.tail === 'reptile') return `<path d="M-2.4 0 Q-3 18 -1 32 Q0 40 0 46 Q0 40 1 32 Q3 18 2.4 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
   if (p.tail === 'leonine') return `<path d="M-2 0 Q-2 14 0 22 Q2 14 2 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><circle cx="0" cy="25" r="2.6" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   if (p.tail === 'crin') return `<path d="M-2 0 Q-3 16 -2 30 Q0 33 2 30 Q3 16 2 0 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;

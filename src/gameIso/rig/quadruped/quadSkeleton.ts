@@ -22,10 +22,10 @@ export type QuadSkeleton = Record<QuadBoneId, QBone>;
 export type QuadPose = Partial<Record<QuadBoneId, number>>;
 
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
-export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic';
-export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon';
+export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic' | 'batracien';
+export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'crapaud';
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
-export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine';
+export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'sans';
 export interface QuadProps {
   sl: number; // échelle globale (taille)
   build: QuadBuild; // SILHOUETTE du corps (équin level / canin svelte / suidé bossu / rongeur arqué / ursin massif / félin / draconique)

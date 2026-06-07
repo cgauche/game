@@ -3,7 +3,9 @@ import { bodyPlanOf, planById } from './bodyPlan';
 
 describe('bodyPlanOf', () => {
   it('quadrupèdes → quadruped', () => {
-    for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien']) {
+    for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien',
+      // exotiques rapatriés en quad (reptilien/batracien)
+      'Basilic', 'Crapaud géant']) {
       expect(bodyPlanOf(n)).toBe('quadruped');
     }
   });

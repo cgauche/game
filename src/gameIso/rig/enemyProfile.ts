@@ -54,11 +54,11 @@ const EXOTIC_RE = new RegExp(
     // démons / Chaos « bête » (la Démonette, humanoïde, est un bipède → defs/Demonette.ts)
     'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
-    // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques ;
-    // Manticore=ailée → defs/)
-    'serpent', 'araignee', 'basilic', 'hydre',
+    // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques).
+    // Basilic/Crapaud sont sortis : gabarit quad reptilien/batracien → defs/.
+    'serpent', 'araignee', 'hydre',
     'pieuvre', 'pigeon', 'bete des marais',
-    'sangsue', 'crapaud',
+    'sangsue',
   ].join('|') + ')\\b',
 );
 
