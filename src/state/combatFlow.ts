@@ -52,7 +52,6 @@ import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
-import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
@@ -260,14 +259,6 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         });
         return; // la suite est portée par la branche (résolue à l'acquittement)
       }
-      case 'setTime': {
-        // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
-        const target = 'phase' in e
-          ? (DAY_PHASES.find((p) => p.key === e.phase)?.start ?? 0)
-          : e.hour * 60 + (e.minute ?? 0);
-        get().advanceTime(minutesUntilNext(get().gameTime, target));
-        break;
-      }
       case 'endDialogue':
         if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
         set({ dialogue: null });
@@ -339,7 +330,7 @@ export function resolveAttack(
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const scene = get().scene!;
   const battle = get().battle!;
-  const sc = sceneCombatModifiers(scene, get().gameTime);
+  const sc = sceneCombatModifiers(scene);
   const env: ModLine[] = [];
   if (weapon.type === 'ranged') {
     const occupants = battle.combatants

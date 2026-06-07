@@ -52,7 +52,7 @@ import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/it
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction } from '../engine/conditions';
 import { testValue } from '../engine/skills';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
@@ -480,6 +480,8 @@ export interface GameState {
   runForceSuccess: () => void;
   runConfirm: () => void;
   runCancel: () => void;
+  /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
+  battleStandUp: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
   focusRoll: () => void;
   focusReroll: () => void;
@@ -980,8 +982,8 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, active.id);
       reach = reachable(scene, active.pos!, effectiveMovement(active), blocked);
     }
-    // Charge : seulement si pas déjà Engagé et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
-    if (a === 'charge' && !battle.moved && !isEngaged(active) && active.weapons[0]?.type === 'melee') {
+    // Charge : seulement si pas déjà Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
+    if (a === 'charge' && !battle.moved && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
       const blocked = occupied(battle, active.id);
       reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked);
     }
@@ -1798,7 +1800,7 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = get().battle;
     if (!battle || battle.over || battle.acted || battle.moved) return; // Course = Marche + Action
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || isEngaged(active) || !canTakeAction(active)) return; // Engagé → se désengager d'abord
+    if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
   },
   runRoll: () => {
@@ -1840,6 +1842,18 @@ export const useGame = create<GameState>((set, get) => ({
   },
   runCancel: () => set({ pendingRun: null }),
 
+  // ── Se relever d'À Terre (LDB 16-États l.37) : utilise le Mouvement pour se mettre debout. Impossible
+  //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
+  battleStandUp: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.moved) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !hasCondition(active, 'À Terre') || active.wounds.current <= 0) return;
+    removeCondition(active, 'À Terre');
+    set({ battle: { ...battle, moved: true, action: null, log: [...battle.log, `${active.name} se relève.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
   fumbleRoll: () => {
     const pf = get().pendingFumble;
     if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
@@ -1868,7 +1882,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res } });
@@ -1882,7 +1896,7 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0;
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0;
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });

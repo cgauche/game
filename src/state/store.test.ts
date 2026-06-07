@@ -2071,24 +2071,3 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     expect(st.flags).toEqual({}); // flags de l’ancienne partie effacés
   });
 });
-
-describe('Effet setTime — forcer l’heure du jour (jour/nuit via trigger, #T1c)', () => {
-  beforeEach(() => reset());
-  const dayAt = (h: number) => CAMPAIGN_START - (CAMPAIGN_START % MINUTES_PER_DAY) + h * 60; // un jour donné, à h:00
-
-  it('setTime phase nuit depuis 14:00 → avance à la prochaine 22:00 (8 h)', () => {
-    useGame.setState({ gameTime: dayAt(14) });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', phase: 'nuit' }]);
-    expect(useGame.getState().gameTime).toBe(dayAt(14) + 8 * 60);
-  });
-  it('setTime heure précise 02:00 depuis 23:00 → saute en avant (3 h, lendemain)', () => {
-    useGame.setState({ gameTime: dayAt(23) });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', hour: 2 }]);
-    expect(useGame.getState().gameTime).toBe(dayAt(23) + 3 * 60);
-  });
-  it('setTime sur la phase déjà courante → no-op (temps ne recule jamais)', () => {
-    useGame.setState({ gameTime: dayAt(22) }); // déjà au début de 'nuit'
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', phase: 'nuit' }]);
-    expect(useGame.getState().gameTime).toBe(dayAt(22));
-  });
-});

@@ -1,7 +1,7 @@
 import { useGame, activeCombatant, entityPickables, trampleTarget } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
-import { canTakeAction } from '../engine/conditions';
+import { canTakeAction, hasCondition } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable } from '../engine/psychology';
 import { itemUse } from '../engine/consumables';
@@ -29,6 +29,7 @@ export function ActionBar() {
   const spendResolve = useGame((s) => s.battleSpendResolve);
   const frenzy = useGame((s) => s.battleFrenzy);
   const run = useGame((s) => s.battleRun);
+  const standUp = useGame((s) => s.battleStandUp);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
@@ -43,9 +44,12 @@ export function ActionBar() {
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
-  const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
+  const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course ; ramper/se relever seulement
+  const canCharge = isHero && !engaged && !prone && active.weapons[0]?.type === 'melee';
   // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu (Marche + Course + DR).
-  const canRun = isHero && !engaged && !battle.moved && !battle.acted && !stunned;
+  const canRun = isHero && !engaged && !prone && !battle.moved && !battle.acted && !stunned;
+  // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non dépensé.
+  const canStandUp = prone && active.wounds.current > 0 && !battle.moved;
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
   // Frénésie (LDB 21 l.31-32) : un héros capable (trait/talent) peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
@@ -231,6 +235,16 @@ export function ActionBar() {
               >
                 <span className="ab-ico">💨</span>
                 <span className="ab-lbl">Courir</span>
+              </button>
+            )}
+            {canStandUp && (
+              <button
+                className="ab-slot"
+                onClick={standUp}
+                title="Se relever de l'État À Terre — utilise votre Mouvement (pas votre Action) (LDB 16)"
+              >
+                <span className="ab-ico">🧍</span>
+                <span className="ab-lbl">Se relever</span>
               </button>
             )}
             {canTrample && (

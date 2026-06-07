@@ -58,11 +58,12 @@ export function encumbrancePenalties(c: Combatant): EncumbrancePenalties {
  */
 export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
-  if (p.immobile) return 0;
+  // Empêtré (LDB 16-États l.85) : « vous ne pouvez pas utiliser votre Mouvement » → 0 (comme l'immobilisation).
+  if (p.immobile || hasCondition(c, 'Empêtré')) return 0;
   const base = p.tier === 0 ? c.movement : Math.min(c.movement, Math.max(c.movement - p.movePenalty, p.moveFloor));
-  // Sonné (LDB États l.123) OU traumatisme réduisant le Mouvement (LDB 18, ex. Déchirure/Fracture
-  // de jambe, Fracture du Torse) → Mouvement de moitié (un seul halving, pas de cumul inventé).
-  return (hasCondition(c, 'Sonné') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
+  // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
+  // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).
+  return (hasCondition(c, 'Sonné') || hasCondition(c, 'À Terre') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
 }
 
 /** Modificateur signé aux tests d'Agilité dû à l'Encombrement (0 / −10 / −20). */
