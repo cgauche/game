@@ -50,6 +50,7 @@ import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { TIME_COST } from '../engine/timeCost';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier } from './lineOfSight';
@@ -255,6 +256,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         return; // la suite est portée par la branche (résolue à l'acquittement)
       }
       case 'endDialogue':
+        if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
         set({ dialogue: null });
         break;
     }
@@ -1417,6 +1419,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       // (morts lentes avec sauvetage par Destin) est déléguée à resolveRoundBoundary — résumable,
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
+      get().advanceTime(TIME_COST.combatRound); // « tout est horodaté » : 1 Round franchi = +combatRound min
       battle.log.push(`— Round ${round} —`);
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).

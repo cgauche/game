@@ -13,6 +13,7 @@ import { applyAttackResult, applyEffects } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
+import { TIME_COST } from '../engine/timeCost';
 
 function reset() {
   useGame.setState({
@@ -1957,5 +1958,55 @@ describe('Horloge in-game — gameTime + advanceTime (Phase T1)', () => {
     useGame.getState().advanceTime(0);
     useGame.getState().advanceTime(-30);
     expect(useGame.getState().gameTime).toBe(CAMPAIGN_START);
+  });
+});
+
+describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('fouiller (exploration) avance le temps de TIME_COST.search, une seule fois', () => {
+    const scene = emptyScene(6, 6);
+    scene.id = 'fouille-temps';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({ id: 'cadavre', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Cadavre', search: [{ type: 'giveMoney', gold: 1 }] });
+    useGame.setState({ party: [{ id: 'a', name: 'A', xp: 0 } as unknown as Combatant] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 }, gameTime: CAMPAIGN_START });
+
+    useGame.getState().interactEntity('cadavre');
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.search);
+    // Re-fouille : retour anticipé (déjà fouillé) → aucun nouvel avancement.
+    useGame.getState().interactEntity('cadavre');
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.search);
+  });
+
+  it('clôturer un dialogue avance le temps de TIME_COST.dialogue (idempotent)', () => {
+    useGame.setState({
+      gameTime: CAMPAIGN_START,
+      dialogue: { dialogue: { id: 'd', start: 'n', nodes: [{ id: 'n', text: '…', choices: [] }] }, nodeId: 'n' } as any,
+    });
+    useGame.getState().closeDialogue();
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.dialogue);
+    // Re-clôture (dialogue déjà null) → no-op (garde `if (get().dialogue)`).
+    useGame.getState().closeDialogue();
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.dialogue);
+  });
+
+  it('franchir un Round de combat avance le temps de TIME_COST.combatRound', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, gameTime: CAMPAIGN_START, pendingReveals: [] });
+    useGame.getState().battleEndTurn(); // dernier tour → advanceTurn franchit le Round
+    expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.combatRound);
+  });
+
+  it('sceneTransition reste à 0 (intérieur) — le point d’appel existe (seam #T2), sans avancer le temps', () => {
+    expect(TIME_COST.sceneTransition).toBe(0); // advanceTime(0) = no-op ; paramétrable pour l'extérieur/voyage
   });
 });

@@ -55,6 +55,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START } from '../engine/clock';
+import { TIME_COST } from '../engine/timeCost';
 import { findSpell, levelsForCareer, findSkill } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { sceneCombatModifiers } from './sceneRules';
@@ -795,6 +796,7 @@ export const useGame = create<GameState>((set, get) => ({
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
     }));
+    get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -837,6 +839,7 @@ export const useGame = create<GameState>((set, get) => ({
         }
         get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
         applyEffects(get, set, ent.search);
+        get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
         set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } }));
         return;
       }
@@ -856,10 +859,16 @@ export const useGame = create<GameState>((set, get) => ({
     if (!choice) return;
     if (choice.effects) applyEffects(get, set, choice.effects);
     if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next } });
-    else set({ dialogue: null });
+    else {
+      if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture (no-op si un Effect a déjà fermé)
+      set({ dialogue: null });
+    }
   },
 
-  closeDialogue: () => set({ dialogue: null }),
+  closeDialogue: () => {
+    if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
+    set({ dialogue: null });
+  },
 
   seedRng: (seed) => {
     seedBattleRng(seed);
