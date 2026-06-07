@@ -1,0 +1,69 @@
+/**
+ * Empreinte de grille des créatures par Taille — LDB `15 - Déplacement.md` l.55 :
+ * « 1 case = 2 mètres … Les créatures plus grandes peuvent occuper **2, 4 ou même plus de cases**
+ * sur la carte, en fonction de leur trait Taille (voir p.342). » Le LDB ne fige PAS de table par
+ * catégorie (formulation permissive) ; choix de design ANCRÉ sur le texte canon :
+ *   Grande = 2×2 (= les « 4 cases » citées), Énorme = 3×3, Monstrueuse = 4×4 (« ou même plus ») ;
+ *   Minuscule → Moyenne = 1×1 (standard implicite des espèces jouables).
+ *
+ * PUR (géométrie de grille, pas une règle testée). Convention d'ANCRAGE : `pos` = coin Nord-Ouest
+ * (min x, min y) de l'empreinte, qui s'étend vers +x/+y. Une créature 1×1 garde sa sémantique
+ * actuelle (pos = sa tuile), donc tout le code positionnel existant reste correct par défaut.
+ */
+import { effectiveSize, type SizeCategory } from '../engine/size';
+import type { Pt } from './path';
+
+/** Côté N de l'empreinte carrée N×N par catégorie de Taille (LDB 15 l.55, ancré « 2/4/+ cases »). */
+const FOOTPRINT_SIDE: Record<SizeCategory, number> = {
+  minuscule: 1,
+  tresPetite: 1,
+  petite: 1,
+  moyenne: 1,
+  grande: 2,
+  enorme: 3,
+  monstrueuse: 4,
+};
+
+/** Côté N de l'empreinte carrée pour une Taille (défaut Moyenne = 1). */
+export function sizeFootprint(size?: SizeCategory): number {
+  return FOOTPRINT_SIDE[effectiveSize(size)];
+}
+
+/** Tuiles occupées par une créature de Taille `size` ancrée en `pos` (coin NO). Renvoie N×N tuiles. */
+export function footprintTiles(pos: Pt, size?: SizeCategory): Pt[] {
+  const n = sizeFootprint(size);
+  if (n === 1) return [{ x: pos.x, y: pos.y }];
+  const out: Pt[] = [];
+  for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) out.push({ x: pos.x + dx, y: pos.y + dy });
+  return out;
+}
+
+/** La créature (pos, size) couvre-t-elle la tuile (x, y) ? */
+export function occupiesTile(pos: Pt, size: SizeCategory | undefined, x: number, y: number): boolean {
+  const n = sizeFootprint(size);
+  return x >= pos.x && x < pos.x + n && y >= pos.y && y < pos.y + n;
+}
+
+/** Écart 1D minimal entre les intervalles [a, a+an) et [b, b+bn) (0 s'ils se recouvrent ou se touchent). */
+function gapAxis(a: number, an: number, b: number, bn: number): number {
+  const a2 = a + an - 1;
+  const b2 = b + bn - 1;
+  if (a <= b2 && b <= a2) return 0; // recouvrement sur cet axe
+  return Math.max(b - a2, a - b2); // écart positif (l'un est strictement avant l'autre)
+}
+
+/**
+ * Distance de Chebyshev MINIMALE entre deux empreintes (la plus petite distance tuile-à-tuile,
+ * diagonale incluse) : 0 = chevauchement, 1 = au contact/adjacentes. Coïncide avec `chebyshev`
+ * pour deux créatures 1×1. Base de l'adjacence / portée / Engagement « par empreinte ».
+ */
+export function footprintChebyshev(aPos: Pt, aSize: SizeCategory | undefined, bPos: Pt, bSize: SizeCategory | undefined): number {
+  const an = sizeFootprint(aSize);
+  const bn = sizeFootprint(bSize);
+  return Math.max(gapAxis(aPos.x, an, bPos.x, bn), gapAxis(aPos.y, an, bPos.y, bn));
+}
+
+/** Deux empreintes se chevauchent-elles (collision de placement) ? */
+export function footprintsOverlap(aPos: Pt, aSize: SizeCategory | undefined, bPos: Pt, bSize: SizeCategory | undefined): boolean {
+  return footprintChebyshev(aPos, aSize, bPos, bSize) === 0;
+}
