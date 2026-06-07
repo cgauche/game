@@ -275,7 +275,7 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
 - **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux).
 - Aussi : **Localisation par forme de corps** (`76`), **monture & Taille** (`14` l.217-223).
 
-## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(spec faite — en cours)*
+## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(en cours — Phase 0 + A + B + C1a LIVRÉES)*
 
 Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
 Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
@@ -293,6 +293,12 @@ d'objet** (pour qu'Évaluation ait une qualité à révéler). **Décomposé en 
   unifié** (`src/engine/qualities/` + dispatcher pur) qui **absorbe les ~9 checks `hasQ()`/regex épars**
   sous **golden-master** (iso-comportement) → fin de l'empilement, ajouter une qualité = **une entrée**.
   Source : LDB 60 (Fabrication) / 63 (Armures) / 61 / 16.
+  - **✅ LIVRÉ (2026-06-07 — ~800 tests verts, golden-master, RAW cité, cf. mémoire `game-qualities-registry`)** :
+    - **Phase 0 — Fondation** : registre `src/engine/qualities/` (`registry`+`dispatch`+**`normalize`** : `parseQuality` = clé canonique + Indice typé, match exact, fin du `startsWith`). **TOUS** les `hasQ`/regex migrés (combat/weaponDamage/combatFlow/items/oups). Parité (échoue si une qualité de données n'est ni enregistrée ni allowlistée) + **`golden-combat.test.ts`**. Effets hookés (Dévastatrice/Percutante = `qualityDamageStep` ; Assommante = hook `onHit`).
+    - **Phase A — Économie** : 8 qualités d'artisanat enregistrées (subType `Objet`) ; **`craftEconomy.ts` pur** (prix ×2/÷2, Dispo ∓1 + option Guilde, classe Haute/Qualité/Défectueuse) **prêt à être consommé par le Marchand** ; encombrement Léger −1 / Volumineux +1 (porté = 1).
+    - **Phase B — Combat armes** : Solide(N) (absorbe N dégâts d'arme + sauvegarde 1d10 ≥ 10−N) ; Bâclé (casse sur Maladresse, sauvegarde Solide) ; **Pratique/Peu Fiable** (±1 DR sur un jet **RATÉ** → en mêlée opposée, change l'issue **ET** les dégâts via le DR net).
+    - **Phase C1a — Armure (synchrone)** : PA dérivée **nette des dégâts** (`damageArmour` unifié héros-pièces / ennemis-plat) ; **Déviation Critique AUTO des ennemis** (sacrifie 1 PA, ignore le Critique) ; **Taille** (arme endommage l'armure frappée) ; **Bâclé-armure** (un Critique à sa localisation la brise).
+  - **🎯 Reste #1** : **C1b** — modale de Déviation côté **JOUEUR** (plan prêt, chirurgie store/UI re-entrante + recette navigateur) · **C2** — Pratique/Peu Fiable hors combat (`itemUid` sur `Effect.test`), pénalités de port d'armure (LDB 63), Laid −10 Soc · **C3** — Atouts/Défauts d'armure intrinsèques (Flexible/Impénétrable/Partielle/Points Faibles) · **UI** badges de qualité (fiche). Plans : `docs/superpowers/plans/2026-06-07-qualite-objet-phase*.md`.
 - **#2 — Marchand** (étend **Jalon 5** « achats/marchandage, fabrication ») : pérenne et
   **paramétrable dans l'éditeur** (famille de registre + override par entité) ; **Disponibilité**
   RAW (% par taille de colonie, LDB 59) ; **Marchandage** = Test opposé (gagner −10 % / **−20 % si DR
