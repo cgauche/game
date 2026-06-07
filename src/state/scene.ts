@@ -100,6 +100,9 @@ export interface SceneEntity {
   anim?: string;
   /** Arme ÉQUIPÉE (libellé) — affichée par le rig (tenue prête si à distance). Ex. 'Arbalète'. */
   weapon?: string;
+  /** Empreinte multi-cases (décor statique : charrette 2×1, épave 2×2…). Défaut 1×1.
+   *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */
+  foot?: { w: number; h: number };
 }
 
 export interface BuildingParams {
