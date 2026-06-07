@@ -13,7 +13,7 @@ import {
   focusSpell, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
-  aiMaybeTrample, applyTrample, trampleTarget,
+  aiMaybeTrample, trampleTarget, TRAMPLE_WEAPON, pushReveal,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
@@ -26,10 +26,11 @@ import {
   resolveMeleePassive,
   attackWeapon,
   rederivePassiveAttack,
+  resolveTrample,
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, type CastResult, type MissileResult } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
@@ -147,6 +148,21 @@ export interface PendingCleave {
   hitIds: string[];
   count: number;
 }
+/** Piétinement en attente (LDB 85 l.320-321) : modale interactive — Lancer (resolveTrample) →
+ *  Chance → Appliquer (dépense 1 Avantage, action gratuite). */
+export interface PendingTrample {
+  attackerId: string;
+  targetId: string;
+  result: AttackResult | null; // null = pas encore lancé
+  rerolled?: boolean;
+}
+/** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
+export interface PendingFocus {
+  casterId: string;
+  spellLabel: string;
+  result: FocusResult | null;
+  rerolled?: boolean;
+}
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
  *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
 export interface RevealEntry {
@@ -256,6 +272,10 @@ export interface GameState {
   pendingCleave: PendingCleave | null;
   /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
   pendingReveals: RevealEntry[];
+  /** Piétinement en cours (modale interactive). */
+  pendingTrample: PendingTrample | null;
+  /** Focalisation en cours (modale interactive). */
+  pendingFocus: PendingFocus | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -368,6 +388,13 @@ export interface GameState {
   battleTrample: (targetId: string) => void;
   /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
   dismissReveal: () => void;
+  /** Piétinement par modale (LDB 85 l.320-321) : Lancer le jet, dépenser une Chance, appliquer (gratuit). */
+  trampleRoll: () => void;
+  trampleReroll: () => void;
+  trampleBonusSL: () => void;
+  trampleForceSuccess: () => void;
+  trampleConfirm: () => void;
+  trampleCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -423,6 +450,8 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCast: null,
   pendingCleave: null,
   pendingReveals: [],
+  pendingTrample: null,
+  pendingFocus: null,
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
@@ -587,6 +616,8 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDisengage: null,
       pendingCleave: null,
       pendingReveals: [],
+      pendingTrample: null,
+      pendingFocus: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -633,6 +664,8 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDisengage: null,
       pendingCleave: null,
       pendingReveals: [],
+      pendingTrample: null,
+      pendingFocus: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -757,7 +790,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1319,9 +1352,62 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
     const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
     if (!target) return;
-    applyTrample(get, set, active, target); // action GRATUITE : ne consomme pas `acted`
-    set({ battle: { ...get().battle!, action: null } });
+    // OUVRE la modale (le jet se fait au clic « Lancer ») — « un jet = une modale ».
+    set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
   },
+  trampleRoll: () => {
+    const { battle, pendingTrample: pt } = get();
+    if (!battle || !pt || pt.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
+    const target = battle.combatants.find((c) => c.id === pt.targetId);
+    if (!attacker || !target) return;
+    set({ pendingTrample: { ...pt, result: resolveTrample(attacker, target, battleRng()) } });
+  },
+  trampleReroll: () => {
+    const { battle, pendingTrample: pt } = get();
+    if (!battle || !pt || !pt.result) return;
+    if (!canReroll(!pt.result.attackerDetail?.success, !!pt.rerolled)) return; // jet propre raté, 1× max
+    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
+    const target = battle.combatants.find((c) => c.id === pt.targetId);
+    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
+    attacker.fortune = (attacker.fortune ?? 0) - 1;
+    set({ pendingTrample: { ...pt, result: resolveTrample(attacker, target, battleRng()), rerolled: true }, battle: { ...battle } });
+  },
+  trampleBonusSL: () => {
+    const { battle, pendingTrample: pt } = get();
+    if (!battle || !pt || !pt.result || !pt.result.attackerDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
+    const target = battle.combatants.find((c) => c.id === pt.targetId);
+    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
+    attacker.fortune = (attacker.fortune ?? 0) - 1;
+    const ad = pt.result.attackerDetail;
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
+    set({ pendingTrample: { ...pt, result: rederivePassiveAttack(attacker, target, TRAMPLE_WEAPON, atk2, 'melee') }, battle: { ...battle } });
+  },
+  trampleForceSuccess: () => {
+    const { battle, pendingTrample: pt } = get();
+    if (!battle || !pt || !pt.result || !pt.result.attackerDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
+    const target = battle.combatants.find((c) => c.id === pt.targetId);
+    if (!attacker || !target || (attacker.resilience ?? 0) <= 0) return;
+    attacker.resilience = (attacker.resilience ?? 0) - 1;
+    const ad = pt.result.attackerDetail;
+    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, 1), isDouble: isDoubleRoll(ad.roll) };
+    set({ pendingTrample: { ...pt, result: rederivePassiveAttack(attacker, target, TRAMPLE_WEAPON, atk2, 'melee') }, battle: { ...battle } });
+  },
+  trampleConfirm: () => {
+    const { battle, pendingTrample: pt } = get();
+    if (!battle || !pt || !pt.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
+    const target = battle.combatants.find((c) => c.id === pt.targetId);
+    set({ pendingTrample: null });
+    if (!attacker || !target) return;
+    const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
+    attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
+    applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result);
+    set({ battle: { ...get().battle!, acted: prevActed } });
+  },
+  trampleCancel: () => set({ pendingTrample: null }),
   fumbleRoll: () => {
     const pf = get().pendingFumble;
     if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !

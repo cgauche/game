@@ -73,8 +73,16 @@ describe('Piétinement en combat (store)', () => {
     H.characteristics.F = 45;
     H.advantage = 2;
     const before = E.wounds.current;
+    // Modale : battleTrample ouvre SANS tirer ; trampleRoll tire ; trampleConfirm applique (gratuit).
     useGame.getState().battleTrample(E.id);
+    expect(useGame.getState().pendingTrample).toBeTruthy();
+    expect(useGame.getState().pendingTrample!.result).toBeNull();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before); // pas encore appliqué
+    useGame.getState().trampleRoll();
+    expect(useGame.getState().pendingTrample!.result).toBeTruthy();
+    useGame.getState().trampleConfirm();
     const st = useGame.getState();
+    expect(st.pendingTrample).toBeNull();
     expect(st.battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBeLessThan(before); // touché
     expect(st.battle!.acted).toBe(false); // action GRATUITE : n'a pas consommé l'Action
   });
@@ -87,28 +95,28 @@ describe('Piétinement en combat (store)', () => {
     H.advantage = 2;
     const before = E.wounds.current;
     useGame.getState().battleTrample(E.id);
+    useGame.getState().trampleRoll();
+    useGame.getState().trampleConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.advantage).toBe(1); // 2 − 1 (coût), pas de +1 (raté)
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before);
   });
 
-  it('refusé sans Avantage', () => {
+  it('refusé sans Avantage : la modale ne s’ouvre pas', () => {
     const { H, E } = setup();
     H.size = 'grande';
     H.advantage = 0;
-    const before = E.wounds.current;
     useGame.getState().battleTrample(E.id);
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before);
+    expect(useGame.getState().pendingTrample).toBeNull();
   });
 
-  it('refusé contre une cible de même Taille', () => {
+  it('refusé contre une cible de même Taille : la modale ne s’ouvre pas', () => {
     const { H, E } = setup();
     H.size = 'moyenne';
     E.size = 'moyenne';
     H.advantage = 2;
-    const before = E.wounds.current;
     useGame.getState().battleTrample(E.id);
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before);
+    expect(useGame.getState().pendingTrample).toBeNull();
   });
 
   it('IA : un ennemi plus grand avec de l’Avantage piétine un héros adjacent plus petit', () => {

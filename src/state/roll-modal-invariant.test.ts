@@ -23,7 +23,6 @@ const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal']);
 // Dette temporaire (résolue au fil des tâches) — à VIDER au fur et à mesure.
 const TODO = new Set<string>([
-  'battleTrample', // Lot A T3 → pendingTrample
   'battleFocusSpell', // Lot A T4 → pendingFocus
   'startCombat', // Lot B T8 → initiative en révélation
 ]);
