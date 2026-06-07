@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { maxEncumbrance } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
+import { hasHealSkill, availableHealModes, isHealable } from '../engine/healing';
 import { careers } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
@@ -108,6 +109,12 @@ function FicheBody({ hero }: { hero: Combatant }) {
   const maxEnc = maxEncumbrance(hero);
   const over = enc > maxEnc;
   const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
+  const party = useGame((s) => s.party);
+  const healAlly = useGame((s) => s.healAlly);
+  const inBattle = useGame((s) => !!s.battle);
+  // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps,
+  // pour stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
+  const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
 
   const itemStats = (it: ItemInstance): string => {
     if (it.kind === 'melee' || it.kind === 'ranged')
@@ -144,6 +151,17 @@ function FicheBody({ hero }: { hero: Combatant }) {
         <div className="sc-meta">
           <span>
             Blessures <b>{hero.wounds.current}/{hero.wounds.max}</b>
+            {canSoigner && availableHealModes(hero).map((m) => (
+              <button
+                key={m}
+                className="btn small"
+                style={{ marginLeft: 6 }}
+                onClick={() => healAlly(hero.id, m)}
+                title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)"
+              >
+                {m === 'wounds' ? '🩹 Soigner' : '🩸 Stopper hémorragie'}
+              </button>
+            ))}
           </span>
           <span>
             Mvt <b>{hero.movement}</b>
