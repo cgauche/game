@@ -1326,6 +1326,41 @@ describe('Fouille / butin par objet cherchable (store)', () => {
   });
 });
 
+describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
+  beforeEach(() => reset());
+  const looter = (): Combatant => ({ id: 'a', name: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] }) as unknown as Combatant;
+
+  function armedScene() {
+    const scene = emptyScene(8, 8);
+    scene.id = 'mti-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { effects: [{ type: 'giveMoney', gold: 3 }] } });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+  }
+
+  it('moveParty arrivant adjacent au décor visé déclenche la fouille et purge pendingInteract', () => {
+    armedScene();
+    useGame.getState().setPendingInteract('cadavre');
+    useGame.getState().moveParty({ x: 1, y: 0 }); // encore loin → pas de fouille
+    expect(useGame.getState().pendingInteract).toBe('cadavre');
+    expect(useGame.getState().money.gold).toBe(0);
+
+    useGame.getState().moveParty({ x: 4, y: 0 }); // adjacent à (5,0) → fouille auto
+    expect(useGame.getState().pendingInteract).toBeNull();
+    expect(useGame.getState().money.gold).toBe(3);
+  });
+
+  it('annulation : setPendingInteract(null) empêche la fouille à l’arrivée (clic ailleurs)', () => {
+    armedScene();
+    useGame.getState().setPendingInteract('cadavre');
+    useGame.getState().setPendingInteract(null);
+    useGame.getState().moveParty({ x: 4, y: 0 });
+    expect(useGame.getState().money.gold).toBe(0);
+  });
+});
+
 describe('Utiliser un consommable en combat (store)', () => {
   beforeEach(() => reset());
 

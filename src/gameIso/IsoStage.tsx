@@ -58,6 +58,29 @@ const AMBIANCE_DEFS = `
   <radialGradient id="g_warm" cx="55%" cy="24%" r="78%"><stop offset="0%" stop-color="#ffce78" stop-opacity="0.10"/><stop offset="100%" stop-color="#ffce78" stop-opacity="0"/></radialGradient>
   <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>`;
 
+/** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'un décor, pour le move-to-interact (P5). */
+function adjacentWalkable(
+  sc: GameScene,
+  target: { x: number; y: number },
+  from: { x: number; y: number },
+): { x: number; y: number } | null {
+  let best: { x: number; y: number } | null = null;
+  let bestLen = Infinity;
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      if (!dx && !dy) continue;
+      const c = { x: target.x + dx, y: target.y + dy };
+      if (!isWalkable(sc, c.x, c.y)) continue;
+      const p = pathTo(sc, from, c, new Set());
+      if (p && p.length < bestLen) {
+        best = c;
+        bestLen = p.length;
+      }
+    }
+  }
+  return best;
+}
+
 export function IsoStage() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
@@ -322,6 +345,19 @@ export function IsoStage() {
   // visibles pendant le combat. L'anim d'ambiance CSS (ent.anim) passe par le calque fx.
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
+    if (ent.interact) {
+      // Affordance : halo doux pulsé au sol sous un décor fouillable/ramassable (cf. anim.css).
+      const c = tileCenter(ent.pos.x, ent.pos.y, dims);
+      objs.push({
+        d: depth(ent.pos.x, ent.pos.y, dims) - 0.02, // juste sous le sprite
+        el: (
+          <g key={`halo-${ent.id}`} className="interact-halo" pointerEvents="none">
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={16} ry={8} fill="#ffe27a" opacity={0.18} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={16} ry={8} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.7} />
+          </g>
+        ),
+      });
+    }
     objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
   }
 
@@ -400,11 +436,17 @@ export function IsoStage() {
   // Survol : suit la tuile sous le curseur quand on vise (infobulle de portée). Ne met à jour
   // l'état que sur changement de tuile (pas à chaque pixel) → re-rendus bornés.
   const onPointerMove = (ev: React.PointerEvent) => {
+    const t = tileFromEvent(ev);
+    // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
+    const sc = useGame.getState().scene;
+    const overInteractive =
+      !!sc && !!t && useGame.getState().mode === 'exploration' &&
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact));
+    (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     if (!aimWeapon) {
       if (hover) setHover(null);
       return;
     }
-    const t = tileFromEvent(ev);
     if (!t) {
       if (hover) setHover(null);
       return;
@@ -433,9 +475,21 @@ export function IsoStage() {
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y);
     if (ent && (ent.dialogueId || !!ent.interact)) {
-      st.interactEntity(ent.id);
+      const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
+      if (dist <= 1) {
+        st.setPendingInteract(null);
+        st.interactEntity(ent.id); // adjacent → fouille / dialogue immédiat
+      } else {
+        // Déplacement-puis-fouille (P5) : marche vers une case adjacente libre, puis fouille à l'arrivée.
+        const adj = adjacentWalkable(sc, ent.pos, st.partyPos);
+        if (adj) {
+          st.setPendingInteract(ent.id);
+          moveAlong(sc, st.partyPos, adj);
+        }
+      }
       return;
     }
+    st.setPendingInteract(null); // clic ailleurs : annule un déplacement-puis-fouille en attente
     moveAlong(sc, st.partyPos, { x, y });
   };
 

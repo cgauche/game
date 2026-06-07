@@ -370,6 +370,8 @@ export interface GameState {
   /** Déviation Critique d'un héros en attente (choix Dévier/Subir, LDB 63 l.63-66). */
   pendingDeviation: PendingDeviation | null;
   pendingDisengage: PendingDisengage | null;
+  /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
+  pendingInteract: string | null;
   pendingCast: PendingCast | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
@@ -423,6 +425,7 @@ export interface GameState {
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
   interactEntity: (entityId: string) => void;
+  setPendingInteract: (id: string | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
   testRoll: () => void;
@@ -648,6 +651,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDeviation: null,
   pendingDisengage: null,
+  pendingInteract: null,
   pendingCast: null,
   pendingHeal: null,
   pendingCleave: null,
@@ -864,6 +868,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReload: null,
       pendingDefense: null,
       pendingDisengage: null,
+      pendingInteract: null,
       pendingCleave: null,
       pendingReveals: [],
       pendingTrample: null,
@@ -897,6 +902,16 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     checkTriggers(get, set);
+    // P5 (déplacement-puis-fouille) : à l'arrivée adjacente au décor visé, déclenche l'interaction.
+    const pi = get().pendingInteract;
+    if (pi) {
+      const target = scene.entities.find((e) => e.id === pi);
+      if (!target) set({ pendingInteract: null });
+      else if (chebyshev(pt, target.pos) <= 1) {
+        set({ pendingInteract: null });
+        get().interactEntity(pi);
+      }
+    }
   },
 
   interactEntity: (entityId) => {
@@ -905,7 +920,7 @@ export const useGame = create<GameState>((set, get) => ({
     const ent = scene.entities.find((e) => e.id === entityId);
     if (!ent) return;
     if (chebyshev(partyPos, ent.pos) > 1) {
-      get().log('Trop loin pour interagir.');
+      // Trop loin : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
       return;
     }
     if (ent.dialogueId) {
@@ -926,6 +941,10 @@ export const useGame = create<GameState>((set, get) => ({
       else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
     }
   },
+
+  /** Arme (ou annule via null) un déplacement-puis-fouille : l'UI le pose au clic d'un décor interactif
+   *  éloigné, consommé par `moveParty` à l'arrivée adjacente ; annulé sur tout autre clic (P5). */
+  setPendingInteract: (id) => set({ pendingInteract: id }),
 
   chooseDialogue: (choiceIndex) => {
     const st = get();

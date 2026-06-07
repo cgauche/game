@@ -136,3 +136,10 @@
   to { transform: translate(var(--bx), var(--by)); }
 }
 .proj { animation: proj-fly 0.3s linear forwards; }
+
+/* Affordance « décor interactif » : halo doux pulsé au sol sous un prop fouillable/ramassable (cf. IsoStage). */
+@keyframes haloPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.8; }
+}
+.interact-halo { animation: haloPulse 1.6s ease-in-out infinite; }
