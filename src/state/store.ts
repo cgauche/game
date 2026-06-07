@@ -15,7 +15,7 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
-  aiMaybeTrample, aiCreatureFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  aiMaybeTrample, aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -1823,6 +1823,8 @@ export const useGame = create<GameState>((set, get) => ({
       set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null, resumeAfter: true } });
       return;
     }
+    // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
+    if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);
@@ -1843,6 +1845,8 @@ export const useGame = create<GameState>((set, get) => ({
         applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
       } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
     }
+    // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.
+    if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);

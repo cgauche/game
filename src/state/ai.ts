@@ -49,6 +49,16 @@ function weakestNearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
   })[0];
 }
 
+/** Frénésie (LDB 21 l.34) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
+ *  Vue (pas le plus faible) ; à distance égale, le plus blessé (tri stable, déterministe). */
+function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
+  return [...heroes].sort((a, b) => {
+    const da = manhattan(enemyPos, a.pos!), db = manhattan(enemyPos, b.pos!);
+    if (da !== db) return da - db;
+    return a.wounds.current - b.wounds.current;
+  })[0];
+}
+
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, heroes, scene, blocked, movement, offensiveSpell } = input;
@@ -69,8 +79,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
   const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, []).blocked;
   const shootableHeroes = heroes.filter(visible);
-  const canShoot = hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootableHeroes.length > 0;
-  const canCast = offensiveSpell != null && shootableHeroes.length > 0;
+  // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
+  const frenzied = !!enemy.frenzied;
+  const canShoot = !frenzied && hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootableHeroes.length > 0;
+  const canCast = !frenzied && offensiveSpell != null && shootableHeroes.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0).
   const reach = reachable(scene, pos, movement, blocked);
@@ -90,7 +102,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // À distance (sort/arme) : on vise le plus faible PARMI les cibles visibles (LdV). En mêlée :
   // on préfère une cible frappable ce tour ; sinon on approche le plus faible.
   let target: Combatant;
-  if (canCast || canShoot) {
+  if (frenzied) {
+    // Frénésie : on se rue sur l'ennemi le plus PROCHE en Ligne de Vue (LDB 21 l.34).
+    const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
+    target = nearest(pos, visibleFoes);
+  } else if (canCast || canShoot) {
     target = weakestNearest(pos, shootableHeroes);
   } else {
     // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe

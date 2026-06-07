@@ -53,7 +53,7 @@ import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solid
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { lineOfSightCover, coverModifier } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry } from '../engine/psychology';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
@@ -868,6 +868,26 @@ export function aiMaybeTrample(get: () => GameState, set: any, enemy: Combatant)
   applyTrample(get, set, enemy, target);
 }
 
+/** Attaque LIBRE de Frénésie (LDB 21 l.34 : « un Test de Capacité de Combat gratuit chaque Round ») :
+ *  un ennemi frenzied porte une attaque de mêlée supplémentaire avec son arme contre un adversaire
+ *  adjacent. Elle NE consomme ni Avantage ni Action. Résolution instantanée — comme autoCleave /
+ *  aiMaybeTrample, l'IA ne déclenche pas de modale de défense (simplification documentée). */
+export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || !enemy.frenzied || isOutOfAction(enemy)) return;
+  const battle = get().battle;
+  if (!battle || battle.over || !enemy.pos) return;
+  if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps
+  const target = battle.combatants.find(
+    (t) => t.kind !== enemy.kind && !isOutOfAction(t) && !!t.pos && chebyshev(enemy.pos!, t.pos) <= 1,
+  );
+  if (!target) return;
+  const prevActed = get().battle?.acted ?? false; // gratuite : on restaure l'état d'Action après coup
+  const r = resolveAttack(get, enemy, target);
+  if (!r) return;
+  applyAttackResult(get, set, enemy, r.victim ?? target, r.weapon, r.res, false); // instantané (pas de modale)
+  set({ battle: { ...get().battle!, acted: prevActed } });
+}
+
 // ---------------------------------------------------------------------------
 // Attaques GRATUITES de créature (Taille & traits) — chacune au prix de 1 Avantage, OPPOSÉE
 // (la cible se défend Parade/Esquive, comme une attaque normale) et NE consomme PAS l'Action.
@@ -1363,12 +1383,31 @@ export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): v
   }
 }
 
+/** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.32) : combattant capable, pas déjà
+ *  frenzied ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
+ *  Mentale ; sur un succès, il entre en Frénésie (gérée ensuite par les drapeaux). Instantané, journalisé. */
+export function aiMaybeFrenzy(get: () => GameState, set: any, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || enemy.frenzied || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !enemy.pos) return;
+  const foeInLoS = battle.combatants.some(
+    (f) => f.kind !== enemy.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, enemy.pos!, f.pos, []).blocked,
+  );
+  if (!foeInLoS) return;
+  if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
+    enemy.frenzied = true;
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, `${enemy.name} entre en Frénésie !`] } });
+  }
+}
+
 export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
   endFrenzyIfDone(get, set, enemy); // Frénésie finie → Exténué, avant de tester la psychologie
+  aiMaybeFrenzy(get, set, enemy); // l'IA tente d'entrer en Frénésie (LDB 21 l.32) AVANT le test psy (la Frénésie en rend immunisé) et le choix de cible
   resolvePsychAI(get, set, enemy); // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
 
   const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
@@ -1404,6 +1443,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
+        aiFrenzyAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
         if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), 500);
