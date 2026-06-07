@@ -41,6 +41,8 @@ export interface CustomStatblock {
   traits?: string[];
   /** Catégorie de Taille (LDB 85) — sinon dérivée du trait « Taille (X) », défaut Moyenne. */
   size?: import('../engine/size').SizeCategory;
+  /** Groupes d'appartenance manuels supplémentaires (Sigmarite, Cultiste…) pour les Traits psy ciblés (LDB 21). */
+  groups?: string[];
 }
 
 /** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).

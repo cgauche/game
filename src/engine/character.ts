@@ -16,6 +16,7 @@
 import { RNG, defaultRNG, roll } from './dice';
 import { maxWounds } from './characteristics';
 import { buildInventory, recomputeLoadout, emptyArmour } from './items';
+import { groupsFor } from './groups';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation } from './types';
 import {
   SpeciesData,
@@ -224,6 +225,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     kind: 'hero',
     species: sp.label,
     career: opts.careerLabel,
+    groups: groupsFor({ species: sp.label, career: opts.careerLabel }), // racial + carrière (Traits psy ciblés, LDB 21, P3)
     size,
     characteristics: chars,
     wounds: { current: wmax, max: wmax, base: wmax },
