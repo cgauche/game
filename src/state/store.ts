@@ -1175,6 +1175,15 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action === 'move' && !battle.moved) {
       const k = `${pt.x},${pt.y}`;
       if (!battle.reachable.has(k)) return;
+      // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise.
+      for (const p of active.psychState ?? []) {
+        if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
+        const src = battle.combatants.find((c) => c.id === p.sourceId);
+        if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
+          get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
+          return;
+        }
+      }
       const blocked = occupied(battle, active.id);
       const path = pathTo(scene, active.pos!, pt, blocked);
       active.pos = { ...pt };
