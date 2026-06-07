@@ -167,6 +167,9 @@ export type Effect =
       label?: string;
       /** Nom de l'objet/outil utilisé : sa qualité d'artisanat (Pratique/Peu Fiable/Bâclé) module le Test (Phase C2a). */
       tool?: string;
+      /** Groupes de l'interlocuteur (ex. « Elfe », « Mort-vivant ») : sur un Test de **Sociabilité**, un PJ
+       *  qui possède Animosité/Préjugé envers ce groupe subit −20/−10 (LDB 21). Sans effet hors Sociabilité. */
+      vsGroups?: string[];
       onSuccess?: Effect[];
       onFailure?: Effect[];
     }

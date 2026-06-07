@@ -28,6 +28,7 @@ export function TestModal() {
         <h3>{pt.label}</h3>
         <p className="test-actor">
           <strong>{pt.actorName}</strong> — cible {pt.target}
+          {pt.psychMod ? <span className="test-psych-mod" title="Animosité/Préjugé envers l'interlocuteur (LDB 21)"> · psychologie {pt.psychMod}</span> : null}
         </p>
 
         {!rolled ? (

@@ -40,7 +40,7 @@ import {
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { partyBest } from '../engine/skills';
+import { partyBest, isSocialTest, socialPsychMod } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
@@ -218,8 +218,16 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
       case 'test': {
         // Test de compétence : le meilleur du groupe tente. Le jet attend « Lancer »
         // dans la modale (testRoll), puis une Chance est possible avant l'acquittement.
-        const best = partyBest(get().party, e.skill, e.characteristic);
+        // Malus psy de Sociabilité (LDB 21) : un PJ avec Animosité/Préjugé envers le groupe `vsGroups`
+        // de l'interlocuteur subit −20/−10 sur un Test de Sociabilité. Intégré PAR acteur → le meilleur
+        // PJ EFFECTIF (malus compris) est choisi, et le malus de l'acteur retenu est affiché dans la modale.
+        const socialMod =
+          e.vsGroups?.length && isSocialTest(e.skill, e.characteristic)
+            ? (c: Combatant) => socialPsychMod(c, e.vsGroups!)
+            : undefined;
+        const best = partyBest(get().party, e.skill, e.characteristic, socialMod);
         if (!best) break;
+        const psychMod = socialMod ? socialMod(best.actor) : 0;
         // Outil utilisé (Phase C2a) : résolu par NOM vers l'uid de l'objet du héros qui agit.
         const tool = e.tool ? best.actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
         const difficulty = e.difficulty ?? 'intermediaire';
@@ -234,6 +242,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             difficulty,
             requireSL: e.requireSL ?? 0,
             target,
+            psychMod: psychMod || undefined, // malus Animosité/Préjugé de l'acteur (affiché en modale)
             itemUid: tool?.uid,
             isDouble: false,
             roll: null, // pas encore lancé

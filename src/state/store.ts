@@ -104,6 +104,9 @@ export interface PendingTest {
   difficulty: Difficulty;
   requireSL: number;
   target: number;
+  /** Malus psy de Sociabilité de l'acteur (Animosité −20 / Préjugé −10 envers l'interlocuteur, LDB 21) —
+   *  déjà intégré à `skillValue`/`target` ; conservé pour l'affichage en modale. */
+  psychMod?: number;
   /** Outil utilisé (uid résolu sur l'acteur) : sa qualité d'artisanat module l'issue / casse l'objet (Phase C2a). */
   itemUid?: string;
   /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */

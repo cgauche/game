@@ -28,26 +28,37 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return 0;
 }
 
-/** Pénalité de Sociabilité d'un Trait psy ciblé de `tester` visant un membre du groupe `target`
- *  (LDB 21) : Animosité ACTIVE −20 (l.22) ; Préjugé (trait passif possédé) −10 (l.43-52). Cumulables.
- *  À consommer là où un Test de Sociabilité vise une cible précise (interaction ciblée). */
-export function socialPsychMod(tester: Combatant, target: Combatant): number {
-  const groups = target.groups ?? [];
-  let mod = 0;
-  if ((tester.psychState ?? []).some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) mod -= 20;
-  if ((tester.psychTraits ?? []).some((t) => t.type === 'prejuge' && t.cible && groupMatch(t.cible, groups))) mod -= 10;
-  return mod;
+/** Pénalité de Sociabilité d'un Trait psy ciblé de `tester` visant un membre des groupes `targetGroups`
+ *  (LDB 21) : Animosité −20 (l.22), Préjugé −10 (l.43-52). Cumulables. Le malus s'applique si le tester
+ *  POSSÈDE le trait visant ce groupe (`psychTraits` — cas hors-combat, dialogue : pas d'affliction) OU
+ *  s'il subit une affliction ACTIVE du même type (`psychState` — cas en combat). À consommer là où un
+ *  Test de Sociabilité vise une cible précise (interaction/dialogue avec le groupe). */
+export function socialPsychMod(tester: Combatant, targetGroups: string[]): number {
+  const vs = (type: 'animosite' | 'prejuge'): boolean =>
+    (tester.psychTraits ?? []).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups)) ||
+    (tester.psychState ?? []).some((p) => p.type === type && p.active && p.cible && groupMatch(p.cible, targetGroups));
+  return (vs('animosite') ? -20 : 0) + (vs('prejuge') ? -10 : 0);
 }
 
-/** Meilleur membre du groupe pour un test donné. */
+/** Un Test (compétence ou caractéristique) relève-t-il de la **Sociabilité** (LDB 21 : malus psy −20/−10) ?
+ *  Vrai si la caractéristique sous-jacente est `Soc` (Charme, Marchandage, Intimidation, Commérage…). */
+export function isSocialTest(skill?: string, characteristic?: CharKey): boolean {
+  if (characteristic) return characteristic === 'Soc';
+  if (skill) return skillCharKey(skill) === 'Soc';
+  return false;
+}
+
+/** Meilleur membre du groupe pour un test donné. `extraMod` ajoute un modificateur PAR acteur (ex. malus
+ *  psy de Sociabilité, qui dépend du personnage) — la valeur effective sert au choix ET au résultat. */
 export function partyBest(
   party: Combatant[],
   skill?: string,
   characteristic?: CharKey,
+  extraMod?: (c: Combatant) => number,
 ): { actor: Combatant; value: number } | null {
   let best: { actor: Combatant; value: number } | null = null;
   for (const c of party) {
-    const v = testValue(c, skill, characteristic);
+    const v = testValue(c, skill, characteristic) + (extraMod?.(c) ?? 0);
     if (!best || v > best.value) best = { actor: c, value: v };
   }
   return best;
