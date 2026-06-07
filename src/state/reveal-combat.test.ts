@@ -54,4 +54,34 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     useGame.getState().dismissReveal();
     expect(useGame.getState().pendingReveals).toEqual([]); // file vidée
   });
+
+  // Intégration avec la Déviation Critique (feature session //) : un Critique sur un héros ARMÉ
+  // suspend pour le choix Dévier/Subir AVANT de révéler ; « Subir » applique → révèle ; « Dévier » non.
+  it('Déviation Critique → « Subir » révèle le Coup Critique ; « Dévier » ne le révèle pas', () => {
+    useGame.getState().seedRng(2);
+    const { hero, enemy } = battle();
+    hero.armour.corps = 3; // PA au corps → la déviation est possible
+    const res = {
+      hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
+      defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
+    } as AttackResult;
+
+    // (1) Le Critique sur le héros armé SUSPEND (pas de révélation encore).
+    useGame.setState({ pendingReveals: [], pendingDeviation: null });
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
+    expect(suspended).toBe(true);
+    expect(useGame.getState().pendingDeviation).toBeTruthy();
+    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
+
+    // (2) « Subir » (deviate=false) applique le Critique → la révélation est poussée.
+    useGame.getState().deviationApply(false);
+    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeTruthy();
+
+    // (3) « Dévier » (deviate=true) ignore le Critique → aucune révélation.
+    hero.wounds = { current: 20, max: 20, base: 20 } as never;
+    useGame.setState({ pendingReveals: [], pendingDeviation: null });
+    applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
+    useGame.getState().deviationApply(true);
+    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
+  });
 });
