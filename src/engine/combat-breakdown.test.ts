@@ -60,6 +60,22 @@ describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
   });
 });
 
+describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
+  // roll 34 vs cible 52 → DR (sl) = 5−3 = 2 ; dé des unités = 4. Arme '+8' (ranged) ; cible mk() E30 → BE3, PA0.
+  // Sans Atout : dégâts = 8 + 2 = 10 → woundsLost 7. Dévastatrice : 8 + max(2,4)=12 → 9. Percutante : 8+2+4=14 → 11.
+  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: '+8', qualities });
+  it('Dévastatrice : dégâts utilisent max(DR, dé des unités)', () => {
+    expect(resolveStrayRangedHit(mk(), mk(), ranged([]), 34, 52).woundsLost).toBe(7);
+    expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice']), 34, 52).woundsLost).toBe(9);
+  });
+  it('Percutante : +dé des unités sur les dégâts', () => {
+    expect(resolveStrayRangedHit(mk(), mk(), ranged(['Percutante']), 34, 52).woundsLost).toBe(11);
+  });
+  it('Inoffensive annule Dévastatrice et Percutante', () => {
+    expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice', 'Percutante', 'Inoffensive']), 34, 52).woundsLost).toBe(7);
+  });
+});
+
 describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', () => {
   it('touche automatiquement la victime depuis le jet d’origine (sans relancer)', () => {
     const att = mk({ name: 'Tireur' });

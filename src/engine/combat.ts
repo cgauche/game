@@ -453,8 +453,13 @@ function applyHit(
   const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
+  const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
+  const inoffensive = hasQ(weapon, 'Inoffensive');
   const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
-  const damage = weaponDmg + Math.max(0, effDR);
+  // Dévastatrice : DR-pour-dégâts = max(DR, dé des unités) ; Percutante : + dé des unités. Inoffensive annule (l.279/313).
+  const dmgDR = !inoffensive && hasQ(weapon, 'Dévastatrice') ? Math.max(effDR, units) : effDR;
+  let damage = weaponDmg + Math.max(0, dmgDR);
+  if (!inoffensive && hasQ(weapon, 'Percutante')) damage += units;
   const woundsLost = woundsFromHit(weapon, defender, loc, damage);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
