@@ -9,6 +9,7 @@ import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
 import { DefenseModal } from './DefenseModal';
+import { DeviationModal } from './DeviationModal';
 import { RoundStartModal } from './RoundStartModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
@@ -98,6 +99,7 @@ export function CampaignView() {
       <RollModal />
       <ReloadModal />
       <DefenseModal />
+      <DeviationModal />
       <DisengageModal />
       <CleaveModal />
       <TrampleModal />

@@ -418,6 +418,7 @@ export function applyCriticalToTarget(
   isCoupCritique: boolean,
   overkill: number,
   log: string[],
+  set: any,
 ): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
@@ -430,15 +431,26 @@ export function applyCriticalToTarget(
   const crit = rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   log.push(crit.log);
+  const revealLines = [crit.log];
   if (crit.traumas.length) {
     target.traumas = [...(target.traumas ?? []), ...crit.traumas];
-    for (const t of crit.traumas) log.push(`  ↳ ${t.label} (${t.location}).`);
+    for (const t of crit.traumas) {
+      const line = `  ↳ ${t.label} (${t.location}).`;
+      log.push(line);
+      revealLines.push(line);
+    }
   }
-  if (crit.lethal) return true; // « Mort » instantané — finalisé par le caller (sauvetage par Destin possible)
-  target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
-  for (const c of crit.conditions) addCondition(target, c.name, c.value);
-  if (crit.note) log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
-  return false;
+  if (!crit.lethal) {
+    target.wounds.current = Math.max(0, target.wounds.current - crit.woundsLoss); // ignore BE+PA, plancher 0
+    for (const c of crit.conditions) addCondition(target, c.name, c.value);
+    if (crit.note) {
+      log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
+      revealLines.push(`  ↳ ${crit.note}`);
+    }
+  }
+  // « Un jet = une modale » : le joueur voit le dé du Coup Critique (infligé ou subi).
+  pushReveal(set, { kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines });
+  return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
 }
 
 /** Déviation Critique (LDB 63 l.63-66) : sacrifie 1 PA à `loc` pour IGNORER le Critique ; la cible
@@ -468,7 +480,19 @@ export function applyAttackResult(
   target: Combatant,
   weapon: Weapon,
   res: AttackResult,
-): void {
+  deviated?: boolean,
+): boolean {
+  // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
+  // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
+  // résolution (deviationApply) rappelle cette fonction avec `deviated` défini (early-return sauté →
+  // application UNE seule fois). Les sous-attaques (balayage/Piétinement) passent `deviated` explicite
+  // pour résoudre instantanément (pas de modale imbriquée). Les sorts (applyCast) gèrent leurs Critiques
+  // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
+  const dloc = res.location ?? 'corps';
+  if (deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && (target.armour[dloc] ?? 0) > 0) {
+    set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, resumeAfter: true } });
+    return true; // suspendu — le caller NE doit PAS exécuter ses post-étapes (rejouées à la résolution)
+  }
   const battle = get().battle!;
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
   if (attacker.nextActionPenalty) attacker.nextActionPenalty = undefined; // pénalité de Maladresse consommée par ce Test
@@ -481,10 +505,11 @@ export function applyAttackResult(
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     const loc = res.location ?? 'corps';
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
-    if (res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0) {
-      deviateArmour(target, weapon, res, critLog); // Déviation auto de l'ennemi (dévie toujours s'il a de la PA, LDB 63 l.63-66)
+    const autoDeviate = res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0; // ennemi : dévie toujours (auto)
+    if (res.critical && (autoDeviate || deviated === true)) {
+      deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
     } else if (res.critical || overkill > 0) {
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set);
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     } else if (target.wounds.current <= 0) {
       applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
@@ -520,6 +545,7 @@ export function applyAttackResult(
       if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
         addCondition(target, oh.condition);
         assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
+        pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog] }); // « un jet = une modale » (Test opposé)
       }
     }
   }
@@ -551,6 +577,7 @@ export function applyAttackResult(
   if (target.kind === 'enemy' && defenderFumbled(res) && !isOutOfAction(target) && target.weapons[0]) {
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
+  return false; // non suspendu : application complète terminée
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
@@ -710,7 +737,8 @@ export function doAttack(get: () => GameState, set: any, attacker: Combatant, ta
     get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
     return false;
   }
-  applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
+  const suspended = applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
+  if (suspended) return true; // Déviation Critique du héros : la modale reprendra (autoCleave/Piétinement/advance rejoués au resolve)
   autoCleave(get, set, attacker, r.victim ?? target, r.res); // Frappe Mortelle : balayage auto si l'ennemi est plus grand
   return false;
 }
@@ -749,7 +777,7 @@ export function autoCleave(get: () => GameState, set: any, attacker: Combatant, 
     hitIds.push(next.id);
     const r = resolveAttack(get, attacker, next);
     if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
-    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res);
+    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : résolution instantanée (pas de modale de déviation imbriquée)
     if (isOutOfAction(next) && next.pos) attacker.pos = { ...next.pos }; // se déplace sur la case libérée
   }
   set({ battle: { ...get().battle! } });
@@ -806,7 +834,7 @@ export function applyTrample(get: () => GameState, set: any, attacker: Combatant
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
   attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
   const res = resolveTrample(attacker, target, battleRng());
-  applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res); // pose acted=true (attaque standard)…
+  applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
   set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
 }
 
@@ -910,7 +938,7 @@ export function applyCast(
       const overkill = res.woundsLost - currentBefore;
       target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
       if (res.isCritical || overkill > 0) {
-        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines);
+        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines, set);
         if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
       } else if (target.wounds.current <= 0) {
         applyZeroWounds(target);
@@ -1016,13 +1044,13 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingFateSave || get().pendingFumble) return;
+  if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), 500);
 }
 
 export function advanceTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;
@@ -1113,7 +1141,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), 450);

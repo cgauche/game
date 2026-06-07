@@ -7,8 +7,11 @@ import { tome1Auberge } from '../scenes/tome1-auberge';
 import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
-import type { Combatant, ItemInstance } from '../engine/types';
+import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
+import { applyAttackResult } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import type { AttackResult } from '../engine/combat';
 
 function reset() {
   useGame.setState({
@@ -24,11 +27,13 @@ function reset() {
     pendingTest: null,
     pendingAttack: null,
     pendingDefense: null,
+    pendingDeviation: null,
     pendingDisengage: null,
     pendingCast: null,
     pendingRoundStart: null,
     pendingFateSave: null,
     pendingReload: null,
+    pendingReveals: [],
     document: null,
   });
 }
@@ -141,6 +146,70 @@ describe('Boucle de jeu (store)', () => {
     expect(h.criticalWounds).toBe(1);                                             // critiques persistés
     expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(2);    // persistant conservé
     expect(h.conditions.some((x) => x.name === 'Surpris')).toBe(false);            // transitoire jeté
+  });
+
+  // ── Déviation Critique côté JOUEUR (LDB 63 l.63-66) : suspend re-entrant + choix Dévier/Subir ──
+  // Un héros encaisse un Coup Critique à une localisation armurée → applyAttackResult SUSPEND
+  // (pendingDeviation, AUCUN effet de bord) ; la décision rejoue l'application UNE seule fois.
+  function mkDeviationSetup() {
+    seedBattleRng(424242); // table des Critiques déterministe (branche « Subir »)
+    const chars = { CC: 40, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+    const enemy = {
+      id: 'e1', name: 'Brute', kind: 'enemy', characteristics: chars, wounds: { current: 20, max: 20 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 1, y: 0 },
+      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
+    } as unknown as Combatant;
+    const hero = {
+      id: 'h1', name: 'Hardi', kind: 'hero', characteristics: chars, wounds: { current: 15, max: 15 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 0, y: 0 },
+      size: 'moyenne', weapons: [], items: [], criticalWounds: 0, fate: 0,
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 },
+    } as unknown as Combatant;
+    const battle: BattleState = {
+      combatants: [enemy, hero], order: [enemy.id, hero.id], baseOrder: [enemy.id, hero.id],
+      turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+      moved: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ battle, mode: 'battle' });
+    const weapon: Weapon = { name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] };
+    const res: AttackResult = {
+      hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+      critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
+    };
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, enemy, hero, weapon, res);
+    return { enemy, hero, weapon, res, suspended };
+  }
+
+  it('Déviation Critique (héros) : applyAttackResult SUSPEND sans aucun effet de bord', () => {
+    const { suspended } = mkDeviationSetup();
+    expect(suspended).toBe(true);
+    const pdv = useGame.getState().pendingDeviation;
+    expect(pdv).not.toBeNull();
+    expect(pdv!.targetId).toBe('h1');
+    // Avant le choix : ni Blessure, ni Critique, ni PA consommée (early-return propre).
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
+    expect(h.wounds.current).toBe(15);
+    expect(h.criticalWounds ?? 0).toBe(0);
+    expect(h.armour.corps).toBe(3);
+  });
+
+  it('Déviation Critique (héros) : « Dévier » sacrifie 1 PA et IGNORE le Critique', () => {
+    mkDeviationSetup();
+    useGame.getState().deviationApply(true);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
+    expect(h.armour.corps).toBe(2);          // 1 PA sacrifiée (LDB 63 l.63-66)
+    expect(h.criticalWounds ?? 0).toBe(0);   // Coup Critique ignoré
+    expect(useGame.getState().pendingDeviation).toBeNull();
+  });
+
+  it('Déviation Critique (héros) : « Subir » encaisse le Critique (criticalWounds +1, PA intacte)', () => {
+    mkDeviationSetup();
+    useGame.getState().deviationApply(false);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
+    expect(h.criticalWounds ?? 0).toBe(1);   // Coup Critique appliqué (table 18-Traumatisme)
+    expect(h.armour.corps).toBe(3);          // PA intacte (rien dévié)
+    expect(useGame.getState().pendingDeviation).toBeNull();
   });
 
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {

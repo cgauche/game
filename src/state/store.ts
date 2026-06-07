@@ -180,6 +180,18 @@ export interface PendingFumble {
   /** Vrai si la Maladresse survient pendant une défense réactive : reprendre le tour de l'IA après Appliquer. */
   resumeAfter?: boolean;
 }
+/** Déviation Critique en attente (LDB 63 l.63-66) : un HÉROS a subi un Coup Critique à une
+ *  localisation où il porte de la PA ; il choisit Dévier (sacrifie 1 PA, ignore le Critique mais
+ *  subit les Blessures recalculées PA−1) ou Subir (prend le Critique). `res`/`weapon` sont figés
+ *  pour rejouer `applyAttackResult` avec la décision (une seule application, cf. combatFlow). */
+export interface PendingDeviation {
+  attackerId: string;
+  targetId: string; // héros qui subit le Critique (= la cible réelle, victime d'un tir dévié comprise)
+  weapon: Weapon;
+  res: AttackResult;
+  /** Reprendre le tour de l'IA après application (toujours vrai ici : la déviation survient pendant le tour ennemi). */
+  resumeAfter: boolean;
+}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
@@ -266,6 +278,8 @@ export interface GameState {
   pendingAttack: PendingAttack | null;
   pendingReload: PendingReload | null;
   pendingDefense: PendingDefense | null;
+  /** Déviation Critique d'un héros en attente (choix Dévier/Subir, LDB 63 l.63-66). */
+  pendingDeviation: PendingDeviation | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
@@ -413,6 +427,8 @@ export interface GameState {
   defenseBonusSL: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
+  /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
+  deviationApply: (deviate: boolean) => void;
   /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
   battleDisengage: () => void;
   disengageConfirmA: () => void; // Sacrifier l'Avantage
@@ -453,6 +469,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingAttack: null,
   pendingReload: null,
   pendingDefense: null,
+  pendingDeviation: null,
   pendingDisengage: null,
   pendingCast: null,
   pendingCleave: null,
@@ -797,7 +814,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1409,7 +1426,15 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
   },
   cleaveEnd: () => set({ pendingCleave: null }),
-  dismissReveal: () => set((s) => ({ pendingReveals: s.pendingReveals.slice(1) })),
+  dismissReveal: () => {
+    set((s) => ({ pendingReveals: s.pendingReveals.slice(1) }));
+    // File vidée alors qu'un tour d'IA était suspendu par les révélations → reprendre l'avancement.
+    const { battle, pendingReveals, pendingFateSave, pendingFumble } = get();
+    if (battle && !battle.over && !pendingReveals.length && !pendingFateSave && !pendingFumble) {
+      const active = activeCombatant(battle);
+      if (active && active.kind === 'enemy' && !isOutOfAction(active)) resumeEnemyTurn(get, set);
+    }
+  },
   battleTrample: (targetId) => {
     const battle = get().battle;
     if (!battle || battle.over) return;
@@ -1541,7 +1566,8 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
     if (attacker && defender) {
-      applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+      const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+      if (suspended) return; // Déviation Critique du héros : deviationApply rejouera autoCleave/Piétinement/fumble/reprise
       autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
       aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
     }
@@ -1562,11 +1588,35 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingDefense: null });
     if (attacker && defender) {
       const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
-      applyAttackResult(get, set, attacker, defender, pd.weapon, res);
+      const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
+      if (suspended) return; // Déviation Critique du héros (même après « Subir » : la déviation d'armure est un choix distinct) — deviationApply reprend
       autoCleave(get, set, attacker, defender, res); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
       aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
     }
     resumeEnemyTurn(get, set);
+  },
+  // « Dévier » (deviate=true) ou « Subir » (false) le Coup Critique d'un héros (LDB 63 l.63-66).
+  // Rappelle applyAttackResult avec la décision (early-return de suspension sauté → application UNE
+  // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
+  // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
+  deviationApply: (deviate: boolean) => {
+    const { battle, pendingDeviation: pdv } = get();
+    if (!battle || !pdv) return;
+    const attacker = battle.combatants.find((c) => c.id === pdv.attackerId);
+    const target = battle.combatants.find((c) => c.id === pdv.targetId);
+    set({ pendingDeviation: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
+    if (attacker && target) {
+      applyAttackResult(get, set, attacker, target, pdv.weapon, pdv.res, deviate);
+      autoCleave(get, set, attacker, target, pdv.res); // balayage de l'ennemi plus grand sur les AUTRES héros
+      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
+      // Maladresse du défenseur héros (défense active ratée sur un double, LDB 14 l.48-51) : `defenderFumbled`
+      // est FAUX sans jet de défense (doAttack / « Subir » passif) → ne se déclenche que pour la parade/esquive active.
+      if (target.kind === 'hero' && defenderFumbled(pdv.res) && !isOutOfAction(target)) {
+        set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null, resumeAfter: true } });
+        return; // la reprise de l'IA suivra la modale de Maladresse (resumeAfter)
+      }
+    }
+    if (pdv.resumeAfter) resumeEnemyTurn(get, set);
   },
 
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
