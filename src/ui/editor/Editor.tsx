@@ -553,6 +553,16 @@ export function Editor() {
                 </select>
               </label>
               <label className="ed-field">
+                Météo
+                <select value={scene.weather ?? 'clair'} onChange={(e) => setScene({ ...scene, weather: e.target.value as Scene['weather'] })}>
+                  <option value="clair">Clair</option>
+                  <option value="pluie">Pluie</option>
+                  <option value="brouillard">Brouillard (−20 tir)</option>
+                  <option value="neige">Neige épaisse (−20 attaque/esquive)</option>
+                  <option value="tempete">Tempête (−20 attaque)</option>
+                </select>
+              </label>
+              <label className="ed-field">
                 Message d'introduction
                 <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
               </label>
@@ -1050,16 +1060,43 @@ export function Editor() {
                   </>
                 )}
                 {sel.kind === 'prop' && (
-                  <label className="ed-field">
-                    Décor
-                    <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel({ ref: e.target.value })}>
-                      {Object.values(PROPS).map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <>
+                    <label className="ed-field">
+                      Décor
+                      <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel({ ref: e.target.value })}>
+                        {Object.values(PROPS).map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="ed-field">
+                      Empreinte (cases L×H) — couvre/bloque toutes ses cases (1×1 = aucune)
+                      <span style={{ display: 'flex', gap: 4 }}>
+                        <input
+                          type="number"
+                          min={1}
+                          value={sel.foot?.w ?? 1}
+                          onChange={(e) => {
+                            const w = Math.max(1, Number(e.target.value));
+                            const h = sel.foot?.h ?? 1;
+                            updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
+                          }}
+                        />
+                        <input
+                          type="number"
+                          min={1}
+                          value={sel.foot?.h ?? 1}
+                          onChange={(e) => {
+                            const h = Math.max(1, Number(e.target.value));
+                            const w = sel.foot?.w ?? 1;
+                            updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
+                          }}
+                        />
+                      </span>
+                    </label>
+                  </>
                 )}
                 <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
                   Supprimer

@@ -76,6 +76,9 @@ export interface Weapon {
   damageTaken?: number;
   /** Arme détruite (Incident de Tir, LDB 14) : inutilisable. */
   destroyed?: boolean;
+  /** SKIN cosmétique (objets uniques/légendaires) : override de palette token→hex appliqué au
+   *  rendu de l'arme (ex. { metal:'#caa64a' } → lame dorée). Données opaques côté moteur. */
+  skin?: Record<string, string>;
 }
 
 /** Points d'Armure par localisation. */

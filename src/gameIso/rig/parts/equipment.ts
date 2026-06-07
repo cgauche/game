@@ -5,6 +5,7 @@ import { GENERATED_ARMOUR } from './generated/armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
 import { weaponGroupKey } from './weaponGroup';
 import { WEAPON_FORMS, norm as wnorm } from './weaponForms';
+import { buildTokenMap, applyTokenMap } from '../palette';
 
 /** Épée — front / dos (lame grise mate) / profil (fine). Art directionnel. */
 const EPEE_ART: PartArt = {
@@ -72,7 +73,12 @@ export function weaponFamily(w: Weapon): string {
  * FALLBACKS HORS-FORME (synonymes/groupes joués sans silhouette dédiée : épée générique,
  * hache, masse) — eux restent dessinés ici.
  */
-const FORM_ART: Record<string, PartArt> = Object.fromEntries(WEAPON_DEFS.map((d) => [d.slug, d.art]));
+// Art des formes RÉSOLU @défaut (palette `stored` du def). `applyTokenMap` est un no-op tant
+// que l'art ne contient pas de `@tokens` (armes non encore tokenisées) → sûr avant/après.
+const FORM_ART: Record<string, PartArt> = Object.fromEntries(
+  WEAPON_DEFS.map((d) => [d.slug, applyTokenMap(d.art, buildTokenMap(d.palette ?? {}))]),
+);
+const FORM_DEF = new Map(WEAPON_DEFS.map((d) => [d.slug, d]));
 const WEAPONS: Record<string, PartArt> = {
   epee: EPEE_ART, // épée générique : front/back/profile
   hache: `<rect x="-1.7" y="-30" width="3.4" height="36" rx="1.4" fill="#4a2f17"/><path d="M-1 -33 Q17 -35 14 -19 Q17 -4 -1 -9 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.6"/><path d="M-1 -31 Q-8 -32 -8 -24 Q-8 -16 -1 -17 Z" fill="url(#g_axe)" stroke="#2a3038" stroke-width="0.5" opacity="0.9"/>`,
@@ -83,6 +89,10 @@ const WEAPONS: Record<string, PartArt> = {
 export function weaponPart(w: Weapon): PartArt {
   const f = weaponFamily(w);
   if (f === '') return ''; // mains nues : pas d'arme
+  // SKIN d'objet légendaire : re-résout l'art du def contre SA palette + l'override d'instance
+  // (≠ tenues qui suivent la palette du PORTEUR). Sans skin → art @défaut précalculé.
+  const def = w.skin ? FORM_DEF.get(f) : undefined;
+  if (def) return applyTokenMap(def.art, buildTokenMap(def.palette ?? {}, w.skin));
   return WEAPONS[f] ?? WEAPONS.epee;
 }
 
