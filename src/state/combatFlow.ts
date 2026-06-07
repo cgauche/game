@@ -53,7 +53,7 @@ import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solid
 import { TIME_COST } from '../engine/timeCost';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
-import { lineOfSightCover, coverModifier } from './lineOfSight';
+import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -315,6 +315,9 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
   return allies[0] ?? null;
 }
 
+/** Cases enfumées actives de la bataille (Souffle (Fumée)) → bloquent la Ligne de Vue. */
+export const smokeOf = (battle: BattleState): Pt[] => (battle.smoke ?? []).map((s) => ({ x: s.x, y: s.y }));
+
 export function resolveAttack(
   get: () => GameState,
   attacker: Combatant,
@@ -332,8 +335,8 @@ export function resolveAttack(
     const occupants = battle.combatants
       .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
       .map((c) => c.pos!);
-    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants);
-    if (los.blocked) return null; // pas de Ligne de Vue → pas de tir (LDB 13-Combat l.123)
+    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
+    if (los.blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
     if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
     if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
@@ -1043,7 +1046,15 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
     }
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   }
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  // Type Fumée : la zone se remplit de fumée et bloque les Lignes de vue pendant BE Rounds (RAW Souffle).
+  let smoke = get().battle!.smoke;
+  if (/fum/.test(type)) {
+    const dur = Math.max(1, be); // Rounds = Bonus d'Endurance de la créature
+    const zone = smokeZone(attacker.pos!, center.pos!, blast);
+    smoke = [...(smoke ?? []), ...zone.map((t) => ({ x: t.x, y: t.y, rounds: dur }))];
+    lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
+  }
+  set({ battle: { ...get().battle!, smoke, log: [...get().battle!.log, ...lines] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -1482,6 +1493,8 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
     c.gainedAdvThisRound = false;
   }
   decayEngagement(battle.combatants);
+  // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
+  if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
   // (4) Pré-emption d'initiative (Chance, 3e usage, LDB ch.17 l.27) sinon sélection de l'acteur.
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
@@ -1528,7 +1541,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
   for (const foe of battle.combatants) {
     if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
-    if (lineOfSightCover(scene, enemy.pos, foe.pos, []).blocked) continue;
+    if (lineOfSightCover(scene, enemy.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
     const src = fearSourceFor(enemy, foe);
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
     if (src.kind === 'terreur') {
@@ -1552,7 +1565,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
     if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
   }
   // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
-  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, []).blocked);
+  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, [], smokeOf(battle)).blocked);
   for (const p of enemy.psychState) {
     // Re-test (fin de Round) des afflictions ciblées actives, tant qu'un membre du groupe est visible.
     if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
@@ -1578,7 +1591,7 @@ export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: Ps
   const state = c.psychState ?? [];
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
-    if (lineOfSightCover(scene, c.pos, foe.pos, []).blocked) continue;
+    if (lineOfSightCover(scene, c.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
     const src = fearSourceFor(c, foe);
     if (!src || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: src.kind, sourceId: foe.id, indice: src.indice, prevDR: 0 }; // nouvelle source
@@ -1588,7 +1601,7 @@ export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: Ps
       return { kind: 'peur', sourceId: p.sourceId!, indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 }; // Peur active à re-tester
   }
   // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21) : re-test des actifs, puis nouveaux déclenchements ──
-  const visible = battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, c.pos!, v.pos, []).blocked);
+  const visible = battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, c.pos!, v.pos, [], smokeOf(battle)).blocked);
   for (const p of state) {
     if (p.active && CIBLE_TYPES.has(p.type) && p.cible && p.lastTestRound !== battle.round && visible.some((v) => groupMatch(p.cible!, v.groups ?? [])))
       return { kind: p.type, sourceId: p.sourceId ?? '', indice: 0, prevDR: 0, cible: p.cible }; // affliction active à re-tester (fin de Round)
@@ -1619,7 +1632,7 @@ export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): v
   if (!battle || !scene || !c.pos) return;
   const stunned = c.conditions.some((x) => x.name === 'Sonné' || x.name === 'Inconscient');
   const foeInLoS = battle.combatants.some(
-    (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, []).blocked,
+    (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, [], smokeOf(battle)).blocked,
   );
   if (stunned || !foeInLoS) {
     c.frenzied = false;
@@ -1637,7 +1650,7 @@ export function aiMaybeFrenzy(get: () => GameState, set: any, enemy: Combatant):
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
   const foeInLoS = battle.combatants.some(
-    (f) => f.kind !== enemy.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, enemy.pos!, f.pos, []).blocked,
+    (f) => f.kind !== enemy.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, enemy.pos!, f.pos, [], smokeOf(battle)).blocked,
   );
   if (!foeInLoS) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
@@ -1675,6 +1688,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     blocked,
     movement: effectiveMovement(enemy),
     offensiveSpell,
+    smoke: smokeOf(battle),
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)

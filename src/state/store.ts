@@ -295,6 +295,9 @@ export interface BattleState {
   log: string[];
   over: null | 'victory' | 'defeat';
   onVictory?: Effect[];
+  /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
+   *  Vue ; `rounds` = Rounds restants (décrémenté à chaque frontière de Round, retiré à 0). */
+  smoke?: { x: number; y: number; rounds: number }[];
 }
 
 export interface GameState {

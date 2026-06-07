@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp, applyWail } from './combatFlow';
+import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp, applyWail, resolveRoundBoundary } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -124,6 +124,27 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.name === 'Sonné')).toBe(true);
     expect(h.armour.corps).toBe(beforePA - 1); // corrosion : Armure −1
+  });
+
+  it('Souffle (Fumée) : la zone s’enfume — Lignes de vue bloquées pendant BE Rounds (RAW)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Souffle +0 (Fumée)']; E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; // BE 4
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const sm = useGame.getState().battle!.smoke ?? [];
+    expect(sm.length).toBeGreaterThan(0);
+    expect(sm.every((s) => s.rounds === 4)).toBe(true); // durée = Bonus d'Endurance (40 → 4)
+    expect(sm.some((s) => s.x === H.pos!.x && s.y === H.pos!.y)).toBe(true); // la cible est dans la fumée
+  });
+
+  it('Fumée : −1 Round par frontière de Round, dissipation à 0', () => {
+    setup();
+    const b0 = useGame.getState().battle!;
+    useGame.setState({ battle: { ...b0, smoke: [{ x: 5, y: 5, rounds: 2 }] } });
+    resolveRoundBoundary(useGame.getState, useGame.setState);
+    expect(useGame.getState().battle!.smoke).toEqual([{ x: 5, y: 5, rounds: 1 }]);
+    resolveRoundBoundary(useGame.getState, useGame.setState);
+    expect(useGame.getState().battle!.smoke ?? []).toEqual([]); // épuisée → dissipée
   });
 
   it('Regard pétrifiant : dépense tout l’Avantage, marge ≥ 6 DR → cible Pétrifiée', () => {

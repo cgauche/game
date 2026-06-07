@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { tilesBetween, coverModifier, lineOfSightCover } from './lineOfSight';
+import { tilesBetween, coverModifier, lineOfSightCover, smokeZone } from './lineOfSight';
 import { Scene, SceneEntity } from './scene';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, entities: SceneEntity[] = []): Scene {
@@ -80,5 +80,44 @@ describe('lineOfSightCover', () => {
     const s = scene(6, 1, { '1,0': 'bois' }, [prop('cloture', 3, 0)]);
     // bois (imparfaite) + clôture (moyenne) → pire = moyenne
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 5, y: 0 }, [])).toEqual({ blocked: false, cover: 'moyenne' });
+  });
+});
+
+describe('lineOfSightCover — Fumée (Souffle (Fumée)) bloque la vue', () => {
+  it('fumée INTERCALÉE sur la ligne → bloquée (totale)', () => {
+    const smoke = [{ x: 2, y: 0 }];
+    expect(lineOfSightCover(scene(5, 1), { x: 0, y: 0 }, { x: 4, y: 0 }, [], smoke)).toEqual({ blocked: true, cover: 'totale' });
+  });
+  it('cible DANS la fumée (extrémité) → bloquée', () => {
+    const smoke = [{ x: 4, y: 0 }];
+    expect(lineOfSightCover(scene(5, 1), { x: 0, y: 0 }, { x: 4, y: 0 }, [], smoke).blocked).toBe(true);
+  });
+  it('tireur DANS la fumée (extrémité source) → bloqué (aveuglé)', () => {
+    const smoke = [{ x: 0, y: 0 }];
+    expect(lineOfSightCover(scene(5, 1), { x: 0, y: 0 }, { x: 4, y: 0 }, [], smoke).blocked).toBe(true);
+  });
+  it('fumée HORS de la ligne → aucun effet', () => {
+    const smoke = [{ x: 2, y: 3 }];
+    expect(lineOfSightCover(scene(5, 5), { x: 0, y: 0 }, { x: 4, y: 0 }, [], smoke)).toEqual({ blocked: false, cover: 'none' });
+  });
+  it('sans argument fumée → comportement inchangé (rétro-compatible)', () => {
+    expect(lineOfSightCover(scene(5, 1), { x: 0, y: 0 }, { x: 4, y: 0 }, [])).toEqual({ blocked: false, cover: 'none' });
+  });
+});
+
+describe('smokeZone — emprise d\'un nuage de Souffle (Fumée)', () => {
+  it('disque de Chebyshev `radius` autour du centre', () => {
+    const z = smokeZone({ x: 0, y: 5 }, { x: 5, y: 5 }, 1);
+    // 3×3 autour de (5,5) = 9 cases ; le trajet 0,5→5,5 (cases 1..4) en ajoute 4 hors disque
+    expect(z).toContainEqual({ x: 5, y: 5 });
+    expect(z).toContainEqual({ x: 4, y: 4 });
+    expect(z).toContainEqual({ x: 6, y: 6 });
+    expect(z.filter((t) => t.y === 5 && t.x >= 4 && t.x <= 6).length).toBe(3); // ligne centrale du disque
+  });
+  it('inclut le trajet tireur→centre mais PAS la case source', () => {
+    const z = smokeZone({ x: 0, y: 0 }, { x: 5, y: 0 }, 0);
+    expect(z).toContainEqual({ x: 3, y: 0 }); // trajet
+    expect(z).toContainEqual({ x: 5, y: 0 }); // centre (radius 0)
+    expect(z).not.toContainEqual({ x: 0, y: 0 }); // la créature souffle DEPUIS sa case (non enfumée)
   });
 });

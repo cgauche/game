@@ -35,6 +35,8 @@ export interface EnemyTurnInput {
   movement: number;
   /** Libellé d'un sort offensif prêt, déjà résolu par l'appelant (qui a les données). */
   offensiveSpell?: string;
+  /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
+  smoke?: Pt[];
 }
 
 const adjacent = (a: Pt, b: Pt) => chebyshev(a, b) <= 1; // portée de mêlée = Chebyshev (diagonale incluse)
@@ -62,7 +64,7 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, heroes, scene, blocked, movement, offensiveSpell } = input;
+  const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke } = input;
   if (heroes.length === 0) return { kind: 'end' };
   const pos = enemy.pos!;
 
@@ -78,7 +80,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const adjacentFoes = heroes.filter((h) => adjacent(pos, h.pos!));
   // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
-  const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, []).blocked;
+  const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, [], smoke ?? []).blocked;
   const shootableHeroes = heroes.filter(visible);
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = !!enemy.frenzied;

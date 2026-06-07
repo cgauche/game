@@ -51,6 +51,22 @@ export function tilesBetween(a: Pt, b: Pt): Pt[] {
 
 const adjacent = (p: Pt, q: Pt): boolean => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y)) <= 1;
 
+/**
+ * Cases d'un nuage de fumée (Souffle (Fumée)) : disque de Chebyshev `radius` autour de `center`
+ * (la zone soufflée) ∪ le trajet `from`→`center` (le souffle traverse). PUR. La case source (`from`)
+ * n'est PAS enfumée (la créature souffle DEPUIS sa case vers la cible).
+ */
+export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
+  const seen = new Map<string, Pt>();
+  for (let dy = -radius; dy <= radius; dy++)
+    for (let dx = -radius; dx <= radius; dx++) {
+      const t = { x: center.x + dx, y: center.y + dy };
+      seen.set(`${t.x},${t.y}`, t);
+    }
+  for (const t of tilesBetween(from, center)) seen.set(`${t.x},${t.y}`, t);
+  return [...seen.values()];
+}
+
 /** Empreinte d'un décor : ses cases (1×1 par défaut, ou `foot {w,h}` ancré en `pos`). */
 function entityTiles(e: SceneEntity): Pt[] {
   const w = e.foot?.w ?? 1;
@@ -67,16 +83,24 @@ const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
 
 /**
  * Couvert + Ligne de Vue du tireur `from` vers la cible `to`. `occupants` = cases occupées par
- * d'autres combattants (couvert imparfait, extrapolation `14` l.75). `blocked:true` = pas de tir
- * (cible entièrement masquée, `13` l.123) ; un bloqueur de vue ADJACENT à la cible = couverture
- * totale −30 (« derrière un mur de pierre », `14` l.120) sans empêcher le tir.
+ * d'autres combattants (couvert imparfait, extrapolation `14` l.75). `smoke` = cases enfumées
+ * (Souffle (Fumée)) qui BLOQUENT entièrement la vue (RAW « bloquant les Lignes de vue ») —
+ * y compris si le tireur ou la cible est DANS la fumée. `blocked:true` = pas de tir (cible
+ * entièrement masquée, `13` l.123) ; un bloqueur de vue ADJACENT à la cible = couverture totale
+ * −30 (« derrière un mur de pierre », `14` l.120) sans empêcher le tir.
  */
 export function lineOfSightCover(
   scene: Scene,
   from: Pt,
   to: Pt,
   occupants: Pt[],
+  smoke: Pt[] = [],
 ): { blocked: boolean; cover: CoverClass } {
+  // Fumée : bloque la vue sur tout le segment, extrémités INCLUSES (être DANS la fumée aveugle aussi).
+  if (smoke.length) {
+    const smoky = (p: Pt) => smoke.some((s) => s.x === p.x && s.y === p.y);
+    if (smoky(from) || smoky(to) || tilesBetween(from, to).some(smoky)) return { blocked: true, cover: 'totale' };
+  }
   let cover: CoverClass = 'none';
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);
