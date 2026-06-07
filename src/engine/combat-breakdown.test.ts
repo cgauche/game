@@ -47,6 +47,16 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
   });
+  it('Peur : −1 DR (−10) quand l’attaquant vise sa source de Peur (LDB 21 l.29)', () => {
+    const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
+    const mods = attackModifiers(a, mk({ id: 'B' }), sword, { kind: 'melee', env: [] });
+    expect(mods.find((m) => m.label === 'Peur')?.value).toBe(-10);
+  });
+  it('Peur : aucun mod si la cible n’est PAS la source de Peur', () => {
+    const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
+    const mods = attackModifiers(a, mk({ id: 'C' }), sword, { kind: 'melee', env: [] });
+    expect(mods.find((m) => m.label === 'Peur')).toBeUndefined();
+  });
 });
 
 describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
