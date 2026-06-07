@@ -14,8 +14,9 @@ type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'bite';
 /**
  * Token ANIMÉ d'une créature AILÉE (griffon/pégase/hippogriffe/dragon) en combat. Réutilise
  * INTÉGRALEMENT la machinerie quadrupède (démarche/morsure/mort/facing 8-dir) — un ailé est
- * un quadrupède avec ailes. Ailes statiques pour l'instant (le battement viendra). La taille
- * géante (dragon) est gérée par le `scale` du token (cf. wingSpeciesScale dans IsoStage).
+ * un quadrupède avec ailes. Les ailes BATTENT (sinusoïde sur aileD/aileG : ample en vol,
+ * douce au repos, nulle si mort) — anim propre au gabarit ailé. La taille géante (dragon) est
+ * gérée par le `scale` du token (cf. wingSpeciesScale dans IsoStage).
  */
 export function AnimatedWingToken({ id, name, colors, dead }: { id: string; name: string; colors?: ColorsSel; dead?: boolean }) {
   const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
