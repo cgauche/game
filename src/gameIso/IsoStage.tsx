@@ -36,7 +36,7 @@ import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { BodyToken } from './BodyToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
-import { planStaticSvg } from './rig/bodyPlan';
+import { bodyPlanOf } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
 import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -368,15 +368,19 @@ export function IsoStage() {
           el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} facing={ent.facing} />, 0.58 * bipedSpeciesScale(ent.ref ?? ent.label ?? '')),
         });
       } else {
-        // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → gabarit
-        // rigué + recolor. L'ailé intègre la taille d'espèce (dragon géant) dans son scale.
+        // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → token ANIMÉ
+        // générique (idle vivant + orientation MONDE authored projetée), cohérent avec le combat ;
+        // sinon (objet / monolithique / autre) → sprite d'entité statique.
         const refName = ent.ref ?? ent.label ?? '';
-        // Tout gabarit rigué non-bipède → SVG statique (pose de repos) via planStaticSvg ; sinon
-        // (monolithique / autre) → sprite d'entité. Un seul chemin, plus de isQuad/isWing.
-        const rigged = planStaticSvg(refName, 'front', ent.appearance?.colors);
-        const inner = rigged ?? entitySprite(ent);
-        const sc = rigged ? 0.55 * creatureSpeciesScale(refName) : 0.55;
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, !!rigged) });
+        const planId = bodyPlanOf(refName);
+        if (planId !== 'biped' && planId !== 'monolithic') {
+          objs.push({
+            d: depth(ent.pos.x, ent.pos.y, dims),
+            el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AnimatedPlanToken id={`e-${ent.id}`} name={refName} colors={ent.appearance?.colors} facing={ent.facing} />, 0.55 * creatureSpeciesScale(refName)),
+          });
+        } else {
+          objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+        }
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)

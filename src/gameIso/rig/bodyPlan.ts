@@ -58,13 +58,3 @@ export function planById(id: BodyPlanId): BodyPlan {
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
   return creaturePlanMatch(name) ?? 'biped';
 }
-
-/** SVG statique (pose de repos) d'une créature NON-bipède rigée, pour l'exploration/l'éditeur.
- *  null si bipède (rendu via le rig héros) ou monolithique (sprite legacy). */
-export function planStaticSvg(name: string, view: View, colors?: Palette): string | null {
-  const id = bodyPlanOf(name);
-  if (id === 'monolithic' || id === 'biped') return null;
-  const plan = PLANS[id];
-  const species = creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '';
-  return bonesToSvg(plan.resolve(species, view, plan.restPose(), { colors }));
-}

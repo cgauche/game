@@ -6,6 +6,7 @@ import { creatureMatch } from './rig/creatures';
 import { bonesToSvg } from './rig/renderBones';
 import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
+import type { Dir8 } from '../state/dir8';
 import type { ColorsSel } from '../state/scene';
 
 const STEP_MS = 160; // démarche (aligné déplacement)
@@ -19,9 +20,9 @@ type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack
  * idlePose joué en continu) — un seul token pour tous les plans, plus de token par-gabarit.
  * Facing 8-dir rot-aware, recolor, pose de mort. Hébergé dans la boîte 120×150 par tokenNode.
  */
-export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name: string; colors?: ColorsSel; dead?: boolean }) {
+export function AnimatedPlanToken({ id, name, colors, dead, facing }: { id: string; name: string; colors?: ColorsSel; dead?: boolean; facing?: Dir8 }) {
   const camRot = useGame((s) => s.camRot);
-  const worldDir = useGame((s) => s.facing?.[id]);
+  const worldDir = useGame((s) => s.facing?.[id]) ?? facing;
   const [, force] = useState(0);
   const modeRef = useRef<Mode>({ kind: 'rest' });
   const rafRef = useRef(0);
