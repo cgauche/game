@@ -388,7 +388,7 @@ export function IsoStage() {
       if (prof) {
         objs.push({
           d: depth(ent.pos.x, ent.pos.y, dims) + 0.1,
-          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} />, 0.58 * bipedSpeciesScale(ent.ref ?? ent.label ?? '')),
+          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} facing={ent.facing} />, 0.58 * bipedSpeciesScale(ent.ref ?? ent.label ?? '')),
         });
       } else {
         // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → gabarit
