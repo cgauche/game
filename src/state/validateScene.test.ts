@@ -1,0 +1,59 @@
+import { describe, it, expect } from 'vitest';
+import { validateScene, type Warning } from './validateScene';
+import { emptyScene } from './scene';
+
+function base() {
+  const s = emptyScene(5, 5);
+  s.id = 'A';
+  return s;
+}
+const msgs = (w: Warning[]) => w.map((x) => x.message);
+
+describe('validateScene', () => {
+  it('scène propre = 0 avertissement', () => {
+    expect(validateScene([base()])).toEqual([]);
+  });
+
+  it("dialogueId d'entité inexistant → erreur", () => {
+    const s = base();
+    s.entities.push({ id: 'e-0', kind: 'personnage', pos: { x: 1, y: 1 }, dialogueId: 'manque' });
+    const w = validateScene([s]);
+    expect(w.some((x) => x.scope === 'entity' && x.refId === 'e-0' && /dialogue inexistant/.test(x.message))).toBe(true);
+  });
+
+  it('effet transition vers scène inconnue → erreur', () => {
+    const s = base();
+    s.triggers.push({ id: 't-0', rect: { x: 0, y: 0, w: 1, h: 1 }, effects: [{ type: 'transition', scene: 'nope' }] });
+    expect(msgs(validateScene([s])).some((m) => /scène inexistante/.test(m))).toBe(true);
+  });
+
+  it('trigger hors carte → avertissement', () => {
+    const s = base();
+    s.triggers.push({ id: 't-1', rect: { x: 4, y: 4, w: 3, h: 3 }, effects: [] });
+    expect(msgs(validateScene([s])).some((m) => /déborde/.test(m))).toBe(true);
+  });
+
+  it('ids dupliqués → erreur', () => {
+    const s = base();
+    s.entities.push({ id: 'dup', kind: 'objet', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'objet', pos: { x: 1, y: 1 } });
+    expect(msgs(validateScene([s])).some((m) => /dupliqué/.test(m))).toBe(true);
+  });
+
+  it('building interiorScene vers une scène présente dans le projet = OK', () => {
+    const a = base();
+    a.buildings = [{ id: 'b', type: 'maison', foot: { x: 0, y: 0, w: 2, h: 2 }, reveal: 'door', interiorScene: 'B' }];
+    const b = emptyScene(3, 3);
+    b.id = 'B';
+    expect(validateScene([a, b]).filter((w) => w.scope === 'building')).toEqual([]);
+  });
+
+  it('effet imbriqué dans un Test (onSuccess) est validé', () => {
+    const s = base();
+    s.triggers.push({
+      id: 't-2',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      effects: [{ type: 'test', onSuccess: [{ type: 'startDialogue', dialogue: 'absent' }] }],
+    });
+    expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
+  });
+});
