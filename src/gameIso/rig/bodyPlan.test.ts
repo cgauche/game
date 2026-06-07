@@ -41,8 +41,11 @@ describe('bodyPlanOf', () => {
     expect(bodyPlanOf('Squig des cavernes')).toBe('squig');
     expect(bodyPlanOf('Squig vorace')).toBe('squig');
   });
-  it('bêtes du Chaos bespoke + bête des marais → monolithic (apparence unique assumée)', () => {
-    for (const n of ['Bête de Nurgle', 'Jabberslythe', "Fr'hough Mournbreath", 'Bête des marais']) {
+  it('bête des marais → amorphous (gabarit hulk réutilisable)', () => {
+    expect(bodyPlanOf('Bête des marais')).toBe('amorphous');
+  });
+  it('bêtes du Chaos bespoke → monolithic (apparence unique assumée)', () => {
+    for (const n of ['Bête de Nurgle', 'Jabberslythe', "Fr'hough Mournbreath"]) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });
