@@ -5,7 +5,7 @@ import { RigSprite } from './rig/composeRig';
 import { useRigClip } from './rig/anim/useRigClip';
 import { ambientClip } from './rig/anim/ambientClips';
 import { addPose } from './rig/poses';
-import { carryPose, weaponAttackClip, weaponParryClip, hasShieldEquipped } from './rig/anim/weaponClips';
+import { weaponRest, weaponAttackClip, weaponParryClip, hasShieldEquipped } from './rig/anim/weaponClips';
 import { spellCastStyle, spellCastClip } from './rig/anim/spellClips';
 import { isShield, type EquipCtx } from './rig/parts/equipment';
 import { facingView, screenDir, type View } from './rig/facing';
@@ -47,10 +47,12 @@ export function RigToken({
   const rest = ambientAnim ? ambientClip(ambientAnim) ?? undefined : undefined;
   const { pose, play, playClip, holdClip } = useRigClip(rest);
   const [facing, setFacing] = useState<{ view: View; mirror: boolean }>({ view: 'front', mirror: false });
-
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
   const shield = hasShieldEquipped(equip.weapons, equip.shield);
-  const carry = carryPose(mainWeapon);
+  // PRISE/ORIENTATION de l'arme, TOUJOURS appliquée (toutes vues/modes) : c'est elle qui tient
+  // l'arme à l'endroit et engage la 2e main pour les armes à 2 mains. Clé sur la classe de
+  // maniement (forme), calibrée pour rester lisible de face comme de profil. cf. weaponRest.
+  const hold = weaponRest(mainWeapon);
   const gest = useRef({ attack: weaponAttackClip(mainWeapon), parry: weaponParryClip(mainWeapon, shield) });
   gest.current = { attack: weaponAttackClip(mainWeapon), parry: weaponParryClip(mainWeapon, shield) };
   const walkTimer = useRef(0);
@@ -61,7 +63,9 @@ export function RigToken({
   useEffect(() => {
     const face = (a?: { x: number; y: number }, b?: { x: number; y: number }) => {
       if (!a || !b) return;
-      const { dx, dy } = screenDir(a, b);
+      const st = useGame.getState();
+      const vd = st.scene ? { ...st.scene.dimensions, rot: st.camRot } : undefined;
+      const { dx, dy } = screenDir(a, b, vd);
       if (dx === 0 && dy === 0) return;
       setFacing(facingView(dx, dy));
     };
@@ -107,7 +111,7 @@ export function RigToken({
 
   const body = (
     <g transform={facing.mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(carry, pose)} view={facing.view} />
+      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(hold, pose)} view={facing.view} />
     </g>
   );
   // Hors de combat = CADAVRE AU SOL : bascule de tout le rig ~82° autour des pieds
