@@ -23,6 +23,31 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
 const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
 const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] };
 
+describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151-170 / 85 l.301-303)', () => {
+  // bow portée 60, distanceTiles 28 → 56 m ≤ 60 = Moyenne (+0, pas de ligne de portée) : isole la Taille.
+  it('tir : mod de Taille de la cible (Grande → +20)', () => {
+    const mods = attackModifiers(mk(), mk({ size: 'grande' }), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
+    expect(mods.find((m) => m.label.startsWith('Taille (cible)'))?.value).toBe(20);
+  });
+  it('tir : env injecté (Couvert -20) figure dans les mods', () => {
+    const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [{ label: 'Couvert (moyenne)', value: -20 }] });
+    expect(mods.find((m) => m.label.startsWith('Couvert'))?.value).toBe(-20);
+  });
+  it('+10 au plus petit en mêlée (attaquant Petite vs cible Moyenne, LDB 85 l.301-303)', () => {
+    const mods = attackModifiers(mk({ size: 'petite' }), mk({ size: 'moyenne' }), sword, { kind: 'melee', env: [] });
+    expect(mods.find((m) => m.label.startsWith('Taille (plus petit)'))?.value).toBe(10);
+  });
+  it('tir : +10 plus petit ET mod de cible se cumulent (halfling Petite tire un ogre Grande)', () => {
+    const mods = attackModifiers(mk({ size: 'petite' }), mk({ size: 'grande' }), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
+    expect(mods.find((m) => m.label.startsWith('Taille (cible)'))?.value).toBe(20);
+    expect(mods.find((m) => m.label.startsWith('Taille (plus petit)'))?.value).toBe(10);
+  });
+  it('Moyenne par défaut (size absent des deux côtés) : aucun mod de Taille', () => {
+    const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
+    expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
+  });
+});
+
 describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
   it('mêlée opposée : détaille l’attaquant ET le défenseur (cible + DR)', () => {
     const res = resolveMelee(mk({ name: 'Att' }), mk({ name: 'Def' }), sword, makeRNG(7));

@@ -14,6 +14,7 @@ import { Combatant, HitLocation, Weapon } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
+import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize } from './size';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -141,7 +142,7 @@ export function attackModifiers(
   attacker: Combatant,
   target: Combatant | null,
   weapon: Weapon,
-  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number },
+  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number; env?: ModLine[] },
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
@@ -156,12 +157,22 @@ export function attackModifiers(
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
+    // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60.
+    if (target) {
+      const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
+      if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm });
+    }
   } else if (target) {
     const vuln = meleeAttackerBonus(target);
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
   }
+  // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303 : « la créature plus petite gagne +10 pour toucher »).
+  if (target && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   if (hasQ(weapon, 'Précise')) out.push({ label: 'Précise', value: 10 });
   if (opts.location) out.push({ label: 'Localisation visée', value: -10 });
+  // Modificateurs dérivés de la SCÈNE (couvert / obscurité / météo / mouvement / tir-mêlée), calculés
+  // côté state (combatFlow) et injectés ici — la table de Difficultés de Combat n'est pas exhaustive.
+  if (opts.env) out.push(...opts.env);
   return out;
 }
 
@@ -180,6 +191,8 @@ export interface AttackOptions {
   defense?: 'parade' | 'esquive' | 'none';
   /** Localisation visée (Complexe -10 au Test ; sinon localisation = jet inversé). */
   location?: HitLocation;
+  /** Modificateurs dérivés de la scène (couvert/obscurité/météo/mouvement/tir-mêlée), injectés par combatFlow. */
+  env?: ModLine[];
 }
 
 /** Une arme possède-t-elle l'Atout/Défaut `q` (insensible à la casse ; ignore l'Indice). */
@@ -223,9 +236,10 @@ export function rollMeleeAttacker(
   weapon: Weapon,
   rng: RNG = defaultRNG,
   location?: HitLocation,
+  env: ModLine[] = [],
 ): TestResult {
   const atkVal = combatValue(attacker, 'melee');
-  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location })));
+  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
 }
 
 /** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
@@ -264,12 +278,13 @@ export function finishMelee(
   def: TestResult,
   defenseMode: 'parade' | 'esquive',
   location?: HitLocation,
+  env: ModLine[] = [],
 ): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location }));
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode));
 
   if (opp.winner === 'defender') {
@@ -316,8 +331,9 @@ export function resolveMeleePassive(
   weapon: Weapon,
   atk: TestResult,
   location?: HitLocation,
+  env: ModLine[] = [],
 ): AttackResult {
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location }));
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
 }
@@ -332,10 +348,10 @@ export function resolveMelee(
   opts: AttackOptions = {},
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
-  const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location);
-  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location);
+  const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
+  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env);
   const def = rollMeleeDefender(defender, defenseMode, rng);
-  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location);
+  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env);
 }
 
 /**
@@ -374,11 +390,12 @@ export function resolveRanged(
   rng: RNG = defaultRNG,
   distanceTiles?: number,
   location?: HitLocation,
+  env: ModLine[] = [],
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged');
   if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
-  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles });
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
   const atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   const atkBd = bd('Projectiles', atkVal, atk, mods);
   if (!atk.success) {
