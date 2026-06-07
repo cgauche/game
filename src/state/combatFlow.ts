@@ -19,6 +19,7 @@ import {
   woundsFromHit,
   rangeBandModifier,
   resolveStrayRangedHit,
+  resolveTrample,
   AttackResult,
   ModLine,
 } from '../engine/combat';
@@ -733,6 +734,49 @@ export function maybeHeroCleave(get: () => GameState, set: any, attacker: Combat
   }
 }
 
+// ---------------------------------------------------------------------------
+// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de créature.md l.320-321)
+// ---------------------------------------------------------------------------
+
+/** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
+export const TRAMPLE_WEAPON: Weapon = { name: 'Piétinement', type: 'melee', damage: '+BF', qualities: [] };
+
+/** Cible de Piétinement valide pour `c` (LDB 85 l.320-321) : adversaire ADJACENT, encore actif et
+ *  PLUS PETIT (`sizeGap >= 1`). `targetId` borne la recherche à une cible précise (clic du joueur). */
+export function trampleTarget(battle: BattleState, c: Combatant, targetId?: string): Combatant | undefined {
+  return battle.combatants.find(
+    (t) =>
+      (targetId ? t.id === targetId : true) &&
+      t.kind !== c.kind &&
+      !isOutOfAction(t) &&
+      !!t.pos &&
+      !!c.pos &&
+      chebyshev(c.pos, t.pos) <= 1 &&
+      sizeGap(c.size, t.size) >= 1,
+  );
+}
+
+/** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
+ *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
+export function applyTrample(get: () => GameState, set: any, attacker: Combatant, target: Combatant): void {
+  const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
+  attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
+  const res = resolveTrample(attacker, target, battleRng());
+  applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res); // pose acted=true (attaque standard)…
+  set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
+}
+
+/** L'IA piétine (faible priorité, après l'attaque principale) : action gratuite si l'ennemi a ≥1
+ *  Avantage et qu'un adversaire adjacent plus petit est à portée. Instantané (pas de modale IA). */
+export function aiMaybeTrample(get: () => GameState, set: any, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || isOutOfAction(enemy) || enemy.advantage < 1) return;
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  const target = trampleTarget(battle, enemy);
+  if (!target) return;
+  applyTrample(get, set, enemy, target);
+}
+
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
 export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
@@ -1088,7 +1132,10 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       const suspended = doAttack(get, set, enemy, target);
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
-      if (!suspended) setTimeout(() => advanceTurn(get, set), 500);
+      if (!suspended) {
+        aiMaybeTrample(get, set, enemy); // Piétinement (action gratuite) après l'attaque instantanée (LDB 85 l.320-321)
+        setTimeout(() => advanceTurn(get, set), 500);
+      }
     }, 350);
   };
 

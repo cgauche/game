@@ -1,4 +1,4 @@
-import { useGame, activeCombatant, entityPickables } from '../state/store';
+import { useGame, activeCombatant, entityPickables, trampleTarget } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
@@ -41,6 +41,8 @@ export function ActionBar() {
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
   const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
+  // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
+  const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
 
@@ -83,7 +85,9 @@ export function ActionBar() {
           ? 'Cliquez un ennemi à charger (jusqu’à 2× le Mouvement).'
           : battle.action === 'cast' && battle.selectedSpell
             ? `Cliquez une cible pour lancer ${battle.selectedSpell}.`
-            : null;
+            : battle.action === 'trample'
+              ? 'Cliquez un adversaire adjacent plus petit à piétiner (coûte 1 Avantage).'
+              : null;
 
   return (
     <div className="action-bar">
@@ -210,6 +214,16 @@ export function ActionBar() {
               >
                 <span className="ab-ico">🏃</span>
                 <span className="ab-lbl">Charger</span>
+              </button>
+            )}
+            {canTrample && (
+              <button
+                className={`ab-slot ${battle.action === 'trample' ? 'on' : ''}`}
+                onClick={() => selectAction(battle.action === 'trample' ? null : 'trample')}
+                title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage, Dégâts = Bonus de Force (LDB Taille)"
+              >
+                <span className="ab-ico">🦶</span>
+                <span className="ab-lbl">Piétiner</span>
               </button>
             )}
             {hasSpells && (

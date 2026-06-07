@@ -13,8 +13,9 @@ import {
   focusSpell, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
+  aiMaybeTrample, applyTrample, trampleTarget,
 } from './combatFlow';
-export { activeCombatant, entityPickables } from './combatFlow';
+export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   initiativeOrder,
@@ -209,7 +210,7 @@ export interface BattleState {
   baseOrder?: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -290,7 +291,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | null) => void;
   /** Recharger l'arme à distance (LDB 63-Armures l.28-29) : OUVRE la modale de Test étendu de Projectiles. */
   battleReload: () => void;
   /** Modale rechargement : « Lancer » effectue le Test de Projectiles (DR). */
@@ -352,6 +353,9 @@ export interface GameState {
   cleaveAttack: (targetId: string) => void;
   /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */
   cleaveEnd: () => void;
+  /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
+   *  plus petit. Ne consomme pas l'Action. */
+  battleTrample: (targetId: string) => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -894,9 +898,15 @@ export const useGame = create<GameState>((set, get) => ({
 
   battleClickEntity: (id) => {
     const { battle, scene } = get();
-    if (!battle || battle.over || battle.acted) return;
+    if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Piétinement : action GRATUITE (autorisée même Action consommée). Précède le verrou `battle.acted`.
+    if (battle.action === 'trample') {
+      get().battleTrample(id);
+      return;
+    }
+    if (battle.acted) return;
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
     if (battle.action === 'cast' && battle.selectedSpell) {
@@ -1286,6 +1296,16 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
   },
   cleaveEnd: () => set({ pendingCleave: null }),
+  battleTrample: (targetId) => {
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
+    const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
+    if (!target) return;
+    applyTrample(get, set, active, target); // action GRATUITE : ne consomme pas `acted`
+    set({ battle: { ...get().battle!, action: null } });
+  },
   fumbleRoll: () => {
     const pf = get().pendingFumble;
     if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
@@ -1356,6 +1376,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && defender) {
       applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
       autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
+      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
     }
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
     // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
@@ -1376,6 +1397,7 @@ export const useGame = create<GameState>((set, get) => ({
       const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
       applyAttackResult(get, set, attacker, defender, pd.weapon, res);
       autoCleave(get, set, attacker, defender, res); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
+      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
     }
     resumeEnemyTurn(get, set);
   },
