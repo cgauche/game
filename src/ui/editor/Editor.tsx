@@ -39,6 +39,7 @@ const KIND_LABEL: Record<EntityKind, string> = {
 };
 
 type Tool =
+  | { mode: 'select' }
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind }
   | { mode: 'building'; type: string }
@@ -98,7 +99,7 @@ export function Editor() {
   const party = useGame((s) => s.party);
 
   const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
-  const [tool, setTool] = useState<Tool>({ mode: 'tile', terrain: 'mur' });
+  const [tool, setTool] = useState<Tool>({ mode: 'select' });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
@@ -340,6 +341,46 @@ export function Editor() {
     setSelectedBuilding(b.id);
   }
 
+  // --- Glisser-déplacer (outil Sélection) ---
+  const moveRef = useRef<{ kind: 'entity' | 'building' | 'trigger' | 'spawn'; id: string; enc?: number; idx?: number; from: { x: number; y: number }; moved: boolean } | null>(null);
+  /** Élément occupant la case p (priorité spawn > entité > trigger > bâtiment). */
+  function hitAt(p: { x: number; y: number }) {
+    for (let ei = 0; ei < scene.encounters.length; ei++) {
+      const ii = scene.encounters[ei].enemies.findIndex((en) => en.pos.x === p.x && en.pos.y === p.y);
+      if (ii >= 0) return { kind: 'spawn' as const, id: `${ei}:${ii}`, enc: ei, idx: ii };
+    }
+    const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
+    if (ent) return { kind: 'entity' as const, id: ent.id };
+    const t = scene.triggers.find((t) => p.x >= t.rect.x && p.x < t.rect.x + t.rect.w && p.y >= t.rect.y && p.y < t.rect.y + t.rect.h);
+    if (t) return { kind: 'trigger' as const, id: t.id };
+    const b = (scene.buildings ?? []).find((b) => p.x >= b.foot.x && p.x < b.foot.x + b.foot.w && p.y >= b.foot.y && p.y < b.foot.y + b.foot.h);
+    if (b) return { kind: 'building' as const, id: b.id };
+    return null;
+  }
+  /** Sélection exclusive de l'élément touché. */
+  function selectHit(hit: NonNullable<ReturnType<typeof hitAt>>) {
+    if (hit.kind === 'entity') { setSelected(hit.id); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }
+    else if (hit.kind === 'trigger') selectTrigger(hit.id);
+    else if (hit.kind === 'spawn') selectSpawn(hit.enc, hit.idx);
+    else { setSelectedBuilding(hit.id); setSelected(null); setSelectedTrigger(null); setSelectedSpawn(null); }
+  }
+  /** Déplace la cible (clampée dans la carte), mutation coalescée (snapshot poussé au 1er move). */
+  function moveTarget(m: NonNullable<typeof moveRef.current>, to: { x: number; y: number }) {
+    const { w, h } = scene.dimensions;
+    const cl = (v: number, max: number) => Math.max(0, Math.min(max - 1, v));
+    if (m.kind === 'entity') {
+      setSceneNoHistory({ ...scene, entities: scene.entities.map((e) => (e.id === m.id ? { ...e, pos: { x: cl(to.x, w), y: cl(to.y, h) } } : e)) });
+    } else if (m.kind === 'spawn') {
+      const encs = scene.encounters.map((e) => ({ ...e, enemies: [...e.enemies] }));
+      encs[m.enc!].enemies[m.idx!] = { ...encs[m.enc!].enemies[m.idx!], pos: { x: cl(to.x, w), y: cl(to.y, h) } };
+      setSceneNoHistory({ ...scene, encounters: encs });
+    } else if (m.kind === 'trigger') {
+      setSceneNoHistory({ ...scene, triggers: scene.triggers.map((t) => (t.id === m.id ? { ...t, rect: { ...t.rect, x: cl(to.x, w - t.rect.w + 1), y: cl(to.y, h - t.rect.h + 1) } } : t)) });
+    } else {
+      setSceneNoHistory({ ...scene, buildings: (scene.buildings ?? []).map((b) => (b.id === m.id ? { ...b, foot: { ...b.foot, x: cl(to.x, w - b.foot.w + 1), y: cl(to.y, h - b.foot.h + 1) } } : b)) });
+    }
+  }
+
   const sel = scene.entities.find((e) => e.id === selected) ?? null;
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (e.id === selected ? { ...e, ...patch } : e)) });
@@ -495,6 +536,9 @@ export function Editor() {
                 ))}
               </div>
 
+              <button className={`btn small ${tool.mode === 'select' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'select' })}>
+                ↖ Sélection / Déplacer
+              </button>
               <div className="mini-title">Entités</div>
               <div className="entity-tools">
                 {KINDS.map((k) => (
@@ -669,6 +713,22 @@ export function Editor() {
                 return;
               }
               const p = isoTile(e);
+              if (tool.mode === 'select') {
+                const hit = hitAt(p);
+                if (hit) {
+                  selectHit(hit);
+                  moveRef.current =
+                    hit.kind === 'spawn'
+                      ? { kind: 'spawn', id: hit.id, enc: hit.enc, idx: hit.idx, from: p, moved: false }
+                      : { kind: hit.kind, id: hit.id, from: p, moved: false };
+                } else {
+                  setSelected(null);
+                  setSelectedBuilding(null);
+                  setSelectedTrigger(null);
+                  setSelectedSpawn(null);
+                }
+                return;
+              }
               if (tool.mode === 'trigger' || tool.mode === 'building') {
                 dragStartRef.current = p;
                 setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
@@ -688,6 +748,14 @@ export function Editor() {
                 setView((v) => ({ ...v, x: panRef.current!.vx - dx, y: panRef.current!.vy - dy }));
                 return;
               }
+              if (moveRef.current) {
+                const to = isoTile(e);
+                const m = moveRef.current;
+                if (!m.moved && to.x === m.from.x && to.y === m.from.y) return; // clic simple = sélection, pas de déplacement
+                if (!m.moved) { pushSnapshot(); m.moved = true; } // 1 cran d'undo au 1er déplacement réel
+                moveTarget(m, to);
+                return;
+              }
               if ((tool.mode === 'trigger' || tool.mode === 'building') && dragStartRef.current)
                 setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
               else if (painting && tool.mode === 'tile') applyAt(isoTile(e));
@@ -702,12 +770,14 @@ export function Editor() {
               dragStartRef.current = null;
               setDragRect(null);
               setPainting(false);
+              moveRef.current = null;
             }}
             onPointerLeave={() => {
               panRef.current = null;
               dragStartRef.current = null;
               setDragRect(null);
               setPainting(false);
+              moveRef.current = null;
             }}
           >
             <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
