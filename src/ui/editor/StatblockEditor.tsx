@@ -88,11 +88,25 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         </label>
       </div>
       <label className="ed-field">
-        Traits (un par ligne — ex. « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) », « Mutation (Écailles épineuses) »)
+        Traits (un par ligne — armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ;
+        Psychologie (LDB 21) : « Peur 3 », « Terreur 2 », « Immunité (Psychologie) », « Animosité (Elfes) », « Haine (Skavens) »,
+        « Phobie (Araignées) », « Frénésie » — une Cible « (un au choix) » reste inerte jusqu'à ce qu'on la précise ici)
         <textarea
           rows={4}
           value={(stat.traits ?? []).join('\n')}
           onChange={(e) => onChange({ ...stat, traits: e.target.value.split('\n').map((s) => s.trim()).filter(Boolean) })}
+        />
+      </label>
+      <label className="ed-field">
+        Groupes (séparés par des virgules — ex. « Sigmarite, Cultiste ») : appartenances supplémentaires pour les Traits psy
+        ciblés (Animosité/Haine/…). La catégorie du bestiaire (folder) est ajoutée automatiquement au spawn.
+        <input
+          value={(stat.groups ?? []).join(', ')}
+          placeholder="auto (catégorie du bestiaire) + extras manuels"
+          onChange={(e) => {
+            const groups = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+            onChange({ ...stat, groups: groups.length ? groups : undefined });
+          }}
         />
       </label>
       <label className="ed-field">
