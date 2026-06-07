@@ -725,27 +725,20 @@ export const useGame = create<GameState>((set, get) => ({
     registerScene(scene);
     const start = scene.entities.find((e) => e.kind === 'heroStart');
     const pos = start ? { ...start.pos } : findFreeTile(scene);
-    // Démarrage d'une partie : on repart d'un état de campagne neuf.
+    // Démarrage d'une partie / d'un scénario : on repart d'un état NEUF. SOURCE UNIQUE et
+    // ZÉRO-MAINTENANCE : on réinitialise à l'état de CRÉATION du store (capturé par Zustand) —
+    // donc tout nouveau champ d'état ajouté à l'init (système futur) se réinitialise ici sans
+    // qu'on ait à le câbler. `JSON` retire les fonctions (seules les données sont remises à
+    // plat) ; `set()` (fusion superficielle) préserve les actions. On ne conserve QUE la
+    // navigation/vue (screen, caméra, zoom) et le groupe (posé par `setParty`).
+    const { screen, party, camRot, zoom } = get();
     set({
+      ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
+      screen, party, camRot, zoom,
       scene: JSON.parse(JSON.stringify(scene)),
       mode: 'exploration',
       partyPos: pos,
       flags: { ...scene.flags },
-      dialogue: null,
-      battle: null,
-      pendingTest: null,
-      pendingAttack: null,
-      pendingReload: null,
-      pendingDefense: null,
-      pendingDisengage: null,
-      pendingCleave: null,
-      pendingReveals: [],
-      pendingTrample: null,
-      pendingFocus: null,
-      pendingPsych: null,
-      pendingFrenzy: null,
-      document: null,
-      inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],

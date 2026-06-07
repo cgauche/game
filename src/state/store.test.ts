@@ -2010,3 +2010,64 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     expect(TIME_COST.sceneTransition).toBe(0); // advanceTime(0) = no-op ; paramétrable pour l'extérieur/voyage
   });
 });
+
+describe('Nouvelle partie / scénario — reset complet de l’état (anti-dérive, zéro-maintenance)', () => {
+  beforeEach(() => reset());
+
+  // Champs DÉLIBÉRÉMENT conservés (navigation/vue/groupe) ou dérivés de la scène de départ.
+  // Tout le RESTE doit revenir à son défaut de création, automatiquement, sans liste à maintenir.
+  const PRESERVED_OR_DERIVED = new Set([
+    'screen', 'party', 'camRot', 'zoom',                          // navigation / vue / groupe
+    'scene', 'partyPos', 'flags', 'campaignSceneId', 'journal', 'mode', 'money', 'inventory', // dérivés
+  ]);
+
+  it('startScene réinitialise TOUT champ d’état à son défaut de création (garde-fou anti-dérive)', () => {
+    // 1) Salir un maximum de champs — simule une partie précédente abandonnée en plein combat.
+    useGame.setState({
+      gameTime: CAMPAIGN_START + 99_999,
+      facing: { fantome: 4 } as any,
+      previousScene: { id: 'vieux', pos: { x: 9, y: 9 } },
+      document: { title: 'x', text: 'y' },
+      dialogue: { dialogue: { id: 'd', start: 'n', nodes: [{ id: 'n', text: '', choices: [] }] }, nodeId: 'n' } as any,
+      pendingFateSave: { heroId: 'mort', source: 'slow' } as any,
+      pendingFumble: { combatantId: 'mort', weapon: {}, result: {} } as any,
+      pendingDeviation: { x: 1 } as any,
+      pendingCast: { x: 1 } as any,
+      pendingRoundStart: { round: 7 },
+      flags: { vieuxFlag: true },
+      inventory: ['vieil objet'],
+      money: { gold: 99, silver: 99, brass: 99 },
+      journal: ['vieille ligne'],
+    });
+
+    // 2) Démarrage d’une nouvelle partie/scénario.
+    const scene = emptyScene(6, 6);
+    scene.id = 'neuve';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    useGame.getState().setParty([{ id: 'h', name: 'H', xp: 0 } as unknown as Combatant]);
+    useGame.getState().startScene(scene);
+
+    // 3) Garde-fou générique : tout champ DATA non préservé/dérivé == son défaut de création.
+    //    Itère sur l’état de création (Zustand) → couvre AUTOMATIQUEMENT tout futur champ ajouté.
+    const init = (useGame as unknown as { getInitialState: () => Record<string, unknown> }).getInitialState();
+    const st = useGame.getState() as unknown as Record<string, unknown>;
+    for (const [k, v] of Object.entries(init)) {
+      if (typeof v === 'function' || PRESERVED_OR_DERIVED.has(k)) continue;
+      expect({ [k]: st[k] }).toEqual({ [k]: v }); // échec lisible : nomme le champ qui a fui
+    }
+
+    // 4) Points névralgiques explicites (les 5 suspensions de combat + horloge + orientation + retour).
+    expect(st.gameTime).toBe(CAMPAIGN_START);
+    expect(st.facing).toEqual({});
+    expect(st.previousScene).toBeNull();
+    expect(st.pendingFateSave).toBeNull();
+    expect(st.pendingFumble).toBeNull();
+    expect(st.pendingDeviation).toBeNull();
+    expect(st.pendingCast).toBeNull();
+    expect(st.pendingRoundStart).toBeNull();
+    // Préservés / dérivés bien appliqués :
+    expect((st.party as unknown[])).toHaveLength(1);
+    expect((st.scene as { id: string }).id).toBe('neuve');
+    expect(st.flags).toEqual({}); // flags de l’ancienne partie effacés
+  });
+});
