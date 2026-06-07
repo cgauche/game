@@ -34,6 +34,7 @@ import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { AmbientRigToken } from './AmbientRigToken';
+import { BodyToken } from './BodyToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { planStaticSvg } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
@@ -297,44 +298,20 @@ export function IsoStage() {
   const night = scene.ambiance === 'nuit';
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean) => {
-    const { cx, cy } = tileCenter(x, y, dims);
-    const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
-    return (
-      <g
-        key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.82 : 1 }}
-      >
-        <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
-        {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
-        {/* calque fx (anim légère token entier pour les créatures) — sans transform de base.
-            MORT : bascule ~78° autour des pieds → la créature s'allonge au sol (sprites
-            monolithiques + héros). `bakedDeath` = la pose de mort est DÉJÀ dans le modèle
-            (quadrupède effondré sur le flanc) → on ne bascule pas. */}
-        <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
-          <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
-            <g dangerouslySetInnerHTML={{ __html: inner }} />
-          </g>
-        </g>
-      </g>
-    );
-  };
+  // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
+  // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
+  // bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean) => (
+    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
+      <g dangerouslySetInnerHTML={{ __html: inner }} />
+    </BodyToken>
+  );
 
-  // Variante de token() hébergeant des enfants React (rig héros) — même ombre/anneau/échelle.
-  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean) => {
-    const { cx, cy } = tileCenter(x, y, dims);
-    const feetY = cy; // pieds au CENTRE de la tuile (pas le sommet avant) → lisibilité
-    return (
-      <g
-        key={id}
-        style={{ transform: `translate(${cx}px,${feetY}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.82 : 1 }}
-      >
-        <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
-        {ringColor && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ringColor} strokeWidth={2.5} />}
-        <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>{child}</g>
-      </g>
-    );
-  };
+  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean) => (
+    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} bakedDeath>
+      {child}
+    </BodyToken>
+  );
 
   // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en
   // cours (anti-téléportation), sinon la position logique.
