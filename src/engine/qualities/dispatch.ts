@@ -9,7 +9,7 @@ import { QUALITIES, QualityDef, QualityCtx } from './registry';
 import { parseQuality } from './normalize';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
-type QualityCarrier = { qualities: string[] };
+export type QualityCarrier = { qualities: string[] };
 
 /** Une qualité résolue présente sur un objet : sa définition de registre + son Indice éventuel. */
 export interface ResolvedQuality {
