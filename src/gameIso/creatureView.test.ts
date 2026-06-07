@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { creatureView, hasCreatureViews, enemySprite } from './sprites';
+import { creatureView, enemySprite } from './sprites';
 
 describe('creatureView (F2 — facing des créatures non-humanoïdes)', () => {
-  it('un monstre généré a des vues directionnelles', () => {
-    expect(hasCreatureViews('Rat géant')).toBe(true);
-  });
-
   it('back et profile diffèrent du front et entre eux', () => {
     const front = creatureView('Rat géant', 'front');
     const back = creatureView('Rat géant', 'back');
@@ -22,7 +18,6 @@ describe('creatureView (F2 — facing des créatures non-humanoïdes)', () => {
   });
 
   it('repli sur le front pour un label sans vues (humanoïde riggé)', () => {
-    expect(hasCreatureViews('Cultiste')).toBe(false);
     expect(creatureView('Cultiste', 'back')).toBe(enemySprite('Cultiste'));
   });
 

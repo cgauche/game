@@ -124,11 +124,6 @@ export function creatureView(label: string, view: 'front' | 'back' | 'profile', 
   return enemySprite(label, seed, pins);
 }
 
-/** True si le bestiaire a des vues directionnelles générées pour ce label. */
-export function hasCreatureViews(label: string): boolean {
-  return !!(CREATURE_VIEWS[label] ?? CREATURE_VIEWS_BY_NORM[label.toLowerCase()]);
-}
-
 export function pnjSprite(): string {
   return villager();
 }
