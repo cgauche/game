@@ -52,7 +52,7 @@ import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/it
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds } from '../engine/conditions';
 import { testValue } from '../engine/skills';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
@@ -979,12 +979,12 @@ export const useGame = create<GameState>((set, get) => ({
         startDisengage(get, set, active);
         return;
       }
-      const blocked = occupied(battle, active.id);
+      const blocked = occupied(battle, active);
       reach = reachable(scene, active.pos!, effectiveMovement(active), blocked);
     }
     // Charge : seulement si pas déjà Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
     if (a === 'charge' && !battle.moved && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
-      const blocked = occupied(battle, active.id);
+      const blocked = occupied(battle, active);
       reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked);
     }
     // Quitter le mode incantation oublie le sort sélectionné.
@@ -1306,7 +1306,7 @@ export const useGame = create<GameState>((set, get) => ({
           return;
         }
       }
-      const blocked = occupied(battle, active.id);
+      const blocked = occupied(battle, active);
       const path = pathTo(scene, active.pos!, pt, blocked);
       active.pos = { ...pt };
       get().faceFromPath(active.id, path);
@@ -1337,7 +1337,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action === 'charge') {
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
       if (!scene || target.kind === 'hero' || isEngaged(active)) return; // pas de Charge si déjà Engagé (l.74)
-      const blocked = occupied(battle, active.id);
+      const blocked = occupied(battle, active);
       const reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
@@ -1842,7 +1842,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingRun: null });
     if (!c) return;
     const range = effectiveMovement(c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
-    const blocked = occupied(battle, c.id);
+    const blocked = occupied(battle, c);
     const log = [...battle.log, `${c.name} prend sa Course (Athlétisme ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
     set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked), log } });
     bus.emit(EVT.SCENE_DIRTY);
@@ -2016,7 +2016,7 @@ export const useGame = create<GameState>((set, get) => ({
       .filter((c): c is Combatant => !!c);
     mover.advantage = 0; // « ramener votre Avantage à 0 » (l.87)
     for (const f of foes) disengageFrom(mover, f); // se place hors de portée de TOUS (l.87)
-    const blocked = occupied(battle, mover.id);
+    const blocked = occupied(battle, mover);
     set({
       pendingDisengage: null,
       battle: {
@@ -2148,7 +2148,7 @@ export const useGame = create<GameState>((set, get) => ({
         .map((id) => battle.combatants.find((c) => c.id === id))
         .filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
-      const blocked = occupied(battle, mover.id);
+      const blocked = occupied(battle, mover);
       log.push(`${mover.name} se désengage (Esquive réussie, +1 Avantage).`);
       set({
         battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked), log },
@@ -2184,7 +2184,7 @@ export const useGame = create<GameState>((set, get) => ({
     // « Un jet = une modale » : le héros voit le dé du coup dans le dos (jet subi).
     if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log] });
     if (res.hit && res.woundsLost) {
-      mover.wounds.current = Math.max(0, mover.wounds.current - res.woundsLost);
+      loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
       foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
       const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
@@ -2199,7 +2199,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     for (const f of foes) disengageFrom(mover, f);
-    const blocked = occupied(battle, mover.id);
+    const blocked = occupied(battle, mover);
     // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
     // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
     set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked), log } });

@@ -96,13 +96,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
   const bleed = stacks(c, 'Hémorragique');
   if (bleed) {
-    c.wounds.current = Math.max(0, c.wounds.current - bleed);
+    loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
     log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);
   }
   // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
   const poison = stacks(c, 'Empoisonné');
   if (poison) {
-    c.wounds.current = Math.max(0, c.wounds.current - poison);
+    loseWounds(c, poison);
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
   }
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
@@ -112,7 +112,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     // « 1d10+2 si 3 États » (l.77) : le +1/État en plus s'ajoute aux Dégâts AVANT la
     // réduction BE+PA et le plancher de 1 — pas après.
     const dmg = Math.max(1, d10(rng) + (fire - 1) - bonus(effectiveChar(c, 'E')) - minPA);
-    c.wounds.current = Math.max(0, c.wounds.current - dmg);
+    loseWounds(c, dmg);
     log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
   }
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
@@ -191,6 +191,22 @@ export function inDeathCondition(c: Combatant): boolean {
 /** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0. */
 export function applyZeroWounds(c: Combatant): void {
   if (c.wounds.current <= 0 && !hasCondition(c, 'À Terre')) addCondition(c, 'À Terre');
+}
+
+/**
+ * Perte de Blessures CENTRALISÉE avec ses conséquences RAW — à utiliser partout où l'on retire des PB
+ * (hors flux d'attaque principal, qui gère déjà l'Avantage et la nuance Critique pour l'À Terre) :
+ *  - perdre ≥1 PB → on perd TOUT l'Avantage (LDB 15-Déplacement l.40) ;
+ *  - tomber à 0 PB → État À Terre (LDB 18 l.28), sauf déjà Inconscient/mort.
+ * Retourne le nombre de PB réellement perdus.
+ */
+export function loseWounds(c: Combatant, amount: number): number {
+  if (amount <= 0 || c.wounds.current <= 0) return 0;
+  const lost = Math.min(amount, c.wounds.current);
+  c.wounds.current -= lost;
+  c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 15 l.40)
+  if (c.wounds.current <= 0 && !c.dead && !hasCondition(c, 'Inconscient')) applyZeroWounds(c);
+  return lost;
 }
 
 /**
