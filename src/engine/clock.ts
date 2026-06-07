@@ -2,10 +2,15 @@
  * Calendrier impérial WFRP4 (CI) — pur, sans état. Données vérifiées depuis la source FR
  * (EiS « L'ennemi dans l'Ombre » Annexe 3, croisées ADE2/Middenheim/VO ; cf. plan #T1).
  *
- * ⚠️ Le canon affirme « année = 400 jours, 12 mois + 6 intercalaires » (Annexe 3 l.20/34) mais
- * n'imprime AUCUNE table mois→jours propre ; les grilles OCR donnent 32/33 j (somme 395). On
- * adopte une table AUTO-COHÉRENTE (395 + 6 = 401 j/an) ; ajuster `IMPERIAL_MONTHS` si la valeur
- * exacte du PDF est confirmée. Aucune valeur inventée hors de cette table sourcée.
+ * Année = 400 jours (orbite de Mallus autour de Söll) : EiS Annexe 3 l.20 « le monde met 400 jours
+ * pour évoluer autour de Söll » + l.68 « notre monde, 400 » + l.34 ; confirmé Fandom/Lexicanum
+ * (« 400 days, twelve months of 32 or 33 days, six intercalary holidays »). Les 6 intercalaires sont
+ * INCLUS dans les 400 → les 12 mois somment à 394 = 2 mois à 32 j + 10 à 33 j. Le canon ne publie
+ * pas de table mois→jours propre (grilles OCR illisibles) ; on retient le découpage de consensus
+ * communautaire (Nachhexen & Nachgeheim = 32, les deux mois qui suivent les fêtes des 2 lunes
+ * pleines), seul à satisfaire les 400 j. Les jours intercalaires sont HORS du cycle hebdomadaire
+ * (Annexe 3 « intercalés entre les mois » ; Fandom « outside the normal sequence of weekdays… the
+ * eight-day weeks bridge the months uninterrupted, even if a week is broken by a festival »).
  */
 export interface ImperialMonth { name: string; days: number; }
 
@@ -13,7 +18,7 @@ export interface ImperialMonth { name: string; days: number; }
 export const IMPERIAL_MONTHS: ImperialMonth[] = [
   { name: 'Nachhexen', days: 32 }, { name: 'Jahrdrung', days: 33 }, { name: 'Pflugzeit', days: 33 },
   { name: 'Sigmarzeit', days: 33 }, { name: 'Sommerzeit', days: 33 }, { name: 'Vorgeheim', days: 33 },
-  { name: 'Nachgeheim', days: 33 }, { name: 'Erntezeit', days: 33 }, { name: 'Brauzeit', days: 33 },
+  { name: 'Nachgeheim', days: 32 }, { name: 'Erntezeit', days: 33 }, { name: 'Brauzeit', days: 33 },
   { name: 'Kaldezeit', days: 33 }, { name: 'Ulriczeit', days: 33 }, { name: 'Vorhexen', days: 33 },
 ];
 
@@ -45,7 +50,19 @@ const YEAR_SLOTS: ({ intercalary: string } | { monthIndex: number; day: number }
   return slots;
 })();
 
-export const DAYS_PER_YEAR = YEAR_SLOTS.length; // 395 + 6 = 401
+export const DAYS_PER_YEAR = YEAR_SLOTS.length; // 394 (mois) + 6 (intercalaires) = 400
+
+/** Jours de MOIS par an (les intercalaires sont HORS de la semaine de 8 jours, cf. canon). */
+export const MONTH_DAYS_PER_YEAR = IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0); // 394
+
+/** Pour chaque slot de l'année : nombre de jours de MOIS qui le précèdent (un intercalaire n'avance
+ *  pas la semaine — elle « enjambe » les fêtes). Sert à dériver le jour de la semaine. */
+const MONTH_DAYS_BEFORE_SLOT: number[] = (() => {
+  const arr: number[] = [];
+  let c = 0;
+  for (const slot of YEAR_SLOTS) { arr.push(c); if (!('intercalary' in slot)) c++; }
+  return arr;
+})();
 
 export interface ImperialDate {
   year: number;
@@ -56,8 +73,8 @@ export interface ImperialDate {
   day: number | null;
   /** Nom du jour intercalaire, ou null si jour de mois. */
   intercalary: string | null;
-  /** Jour de la semaine (nom). */
-  weekday: string;
+  /** Jour de la semaine (nom), ou null pour un jour intercalaire (hors du cycle hebdomadaire, canon). */
+  weekday: string | null;
   hour: number;
   minute: number;
 }
@@ -69,7 +86,11 @@ export function toDate(minutes: number): ImperialDate {
   const year = EPOCH_YEAR + Math.floor(totalDays / DAYS_PER_YEAR);
   const dayOfYear = ((totalDays % DAYS_PER_YEAR) + DAYS_PER_YEAR) % DAYS_PER_YEAR;
   const slot = YEAR_SLOTS[dayOfYear];
-  const weekday = WEEKDAYS[((totalDays % WEEKDAYS.length) + WEEKDAYS.length) % WEEKDAYS.length];
+  // Semaine de 8 jours CONTINUE qui enjambe les intercalaires : seuls les jours de MOIS comptent ;
+  // un intercalaire est hors du cycle (weekday = null). Ancre : 1 Nachhexen 2512 = Wellentag (index 0,
+  // aucune ancre canon connue — convention documentée).
+  const monthDaysElapsed = (year - EPOCH_YEAR) * MONTH_DAYS_PER_YEAR + MONTH_DAYS_BEFORE_SLOT[dayOfYear];
+  const weekday = 'intercalary' in slot ? null : WEEKDAYS[((monthDaysElapsed % 8) + 8) % 8];
   const base = { year, weekday, hour: Math.floor(minOfDay / 60), minute: minOfDay % 60 };
   return 'intercalary' in slot
     ? { ...base, month: null, monthName: null, day: null, intercalary: slot.intercalary }
