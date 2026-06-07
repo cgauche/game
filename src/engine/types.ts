@@ -182,6 +182,8 @@ export interface Combatant {
   psychState?: import('./psychology').PsychAffliction[];
   /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
   frenzied?: boolean;
+  /** Frénésie : l'attaque de CC GRATUITE de ce Round (l.34) a-t-elle déjà été utilisée ? (réinitialisé chaque Round.) */
+  frenzyFreeUsed?: boolean;
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];

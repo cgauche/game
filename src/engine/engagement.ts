@@ -37,6 +37,17 @@ export function disengageFrom(a: Combatant, b: Combatant): void {
   if (b.engagedWith) b.engagedWith = b.engagedWith.filter((id) => id !== a.id);
 }
 
+/** Retire `id` (combattant qui vient d'être neutralisé) de TOUS les liens d'Engagement, des deux côtés.
+ *  À appeler DÈS qu'une cible tombe hors d'action : on ne reste pas Engagé avec une cible morte (LDB 13).
+ *  Sans cela, l'Engagement avec le cadavre persisterait jusqu'au franchissement de Round (decayEngagement). */
+export function clearEngagementOf(all: Combatant[], id: string): void {
+  for (const c of all) {
+    if (c.engagedWith?.length) c.engagedWith = c.engagedWith.filter((x) => x !== id);
+  }
+  const self = all.find((c) => c.id === id);
+  if (self) self.engagedWith = [];
+}
+
 /** Fin de Round : lève l'Engagement d'une paire si AUCUNE mêlée n'a été échangée ce Round
  *  (LDB 13-Combat l.175), puis vide meleeThisRound. Engagé étant symétrique, un coup dans
  *  UN sens rafraîchit la paire dans les DEUX. Lit un instantané AVANT de muter (sinon la

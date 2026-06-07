@@ -1690,6 +1690,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: null });
     if (attacker && target && victim) {
       const weapon = firedWeapon(attacker, target);
+      const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
       applyAttackResult(get, set, attacker, victim, weapon, pa.result);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
@@ -1697,6 +1698,12 @@ export const useGame = create<GameState>((set, get) => ({
       } else {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand.
         maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
+      }
+      // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du
+      // héros frénétique ne consomme PAS l'Action (il pourra réattaquer normalement ensuite).
+      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain) {
+        attacker.frenzyFreeUsed = true;
+        set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, `${attacker.name} : attaque libre de Frénésie (Action préservée).`] } });
       }
     }
   },
