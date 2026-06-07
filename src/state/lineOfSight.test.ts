@@ -120,4 +120,10 @@ describe('smokeZone — emprise d\'un nuage de Souffle (Fumée)', () => {
     expect(z).toContainEqual({ x: 5, y: 0 }); // centre (radius 0)
     expect(z).not.toContainEqual({ x: 0, y: 0 }); // la créature souffle DEPUIS sa case (non enfumée)
   });
+  it('souffle à bout portant : la case source reste hors fumée même DANS le disque (immunité)', () => {
+    // attaquant en (4,5) adjacent à la cible (5,5), rayon 2 → la source est dans le disque
+    const z = smokeZone({ x: 4, y: 5 }, { x: 5, y: 5 }, 2);
+    expect(z).toContainEqual({ x: 5, y: 5 }); // cible enfumée
+    expect(z).not.toContainEqual({ x: 4, y: 5 }); // la créature ne s'aveugle pas (immunisée à son propre Souffle)
+  });
 });

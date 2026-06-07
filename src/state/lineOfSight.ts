@@ -64,6 +64,7 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
       seen.set(`${t.x},${t.y}`, t);
     }
   for (const t of tilesBetween(from, center)) seen.set(`${t.x},${t.y}`, t);
+  seen.delete(`${from.x},${from.y}`); // immunisée à son propre Souffle : la créature ne s'aveugle pas (même si elle est dans le disque)
   return [...seen.values()];
 }
 
