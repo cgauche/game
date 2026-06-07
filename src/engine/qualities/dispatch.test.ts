@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
 import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable } from './dispatch';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: '+BF', qualities, ...over });
 
@@ -54,8 +56,28 @@ describe('dispatch — Incassable', () => {
 
 describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
-    for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive']) {
+    for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante']) {
       expect(QUALITIES[k]).toBeTruthy();
     }
+  });
+});
+
+describe('parité — toute qualité d’ARME des données est connue (registre ou allowlist explicite)', () => {
+  // Qualités d'arme présentes en data mais PAS dans le registre : soit implémentées AILLEURS
+  // (Assommante dans combatFlow, Recharge dans items.ts — migrations différées), soit non implémentées
+  // (dette ROADMAP). Toute NOUVELLE qualité de données doit être soit une entrée QUALITIES, soit
+  // ajoutée ici EN CONSCIENCE — c'est le garde-fou anti-empilement.
+  const NON_DANS_REGISTRE = new Set([
+    'À Poudre noire', 'À Répétition', 'Assommante', 'À Explosion', 'Immobilisante', 'Perturbante',
+    'Piège-lame', 'Protectrice', 'Rapide', 'Taille', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente', 'Recharge',
+  ]);
+  it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
+    const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
+    const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+    const all = (Array.isArray(raw) ? raw : Object.values(raw as Record<string, unknown>)) as { label: string; subType?: string }[];
+    const armes = all.filter((q) => (q.subType ?? '').toLowerCase().startsWith('arme'));
+    const known = new Set(Object.keys(QUALITIES));
+    const missing = armes.map((q) => q.label).filter((l) => !known.has(l) && !NON_DANS_REGISTRE.has(l));
+    expect(missing).toEqual([]);
   });
 });
