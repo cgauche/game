@@ -3,6 +3,7 @@ import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
+import { isFrenzyCapable } from '../engine/psychology';
 import { itemUse } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
 
@@ -26,6 +27,7 @@ export function ActionBar() {
   const disengage = useGame((s) => s.battleDisengage);
   const useItem = useGame((s) => s.battleUseItem);
   const spendResolve = useGame((s) => s.battleSpendResolve);
+  const frenzy = useGame((s) => s.battleFrenzy);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
@@ -43,6 +45,8 @@ export function ActionBar() {
   const canCharge = isHero && !engaged && active.weapons[0]?.type === 'melee';
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
+  // Frénésie (LDB 21 l.31-32) : un héros capable (trait/talent) peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
+  const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
 
@@ -224,6 +228,16 @@ export function ActionBar() {
               >
                 <span className="ab-ico">🦶</span>
                 <span className="ab-lbl">Piétiner</span>
+              </button>
+            )}
+            {canFrenzy && (
+              <button
+                className="ab-slot"
+                onClick={frenzy}
+                title="Entrer en Frénésie : Test de Force Mentale — succès = +1 Bonus de Force, immunité psychologique, attaque obligatoire (coûte l'Action, LDB 21)"
+              >
+                <span className="ab-ico">🐗</span>
+                <span className="ab-lbl">Frénésie</span>
               </button>
             )}
             {hasSpells && (

@@ -37,7 +37,7 @@ import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isAr
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import { resolvePeurTest, resolveTerreurTest, calmeValue } from '../engine/psychology';
+import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry } from '../engine/psychology';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -183,6 +183,12 @@ export interface PendingPsych {
   result: { roll: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
   rerolled?: boolean;
 }
+/** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
+export interface PendingFrenzy {
+  combatantId: string;
+  result: { success: boolean; roll: number } | null;
+  rerolled?: boolean;
+}
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
  *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
 export interface RevealEntry {
@@ -323,6 +329,8 @@ export interface GameState {
   pendingFocus: PendingFocus | null;
   /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
   pendingPsych: PendingPsych | null;
+  /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
+  pendingFrenzy: PendingFrenzy | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -455,6 +463,13 @@ export interface GameState {
   psychBonusSL: () => void;
   psychForceSuccess: () => void;
   psychConfirm: () => void;
+  /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
+  battleFrenzy: () => void;
+  frenzyRoll: () => void;
+  frenzyReroll: () => void;
+  frenzyForceSuccess: () => void;
+  frenzyConfirm: () => void;
+  frenzyCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -546,6 +561,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingTrample: null,
   pendingFocus: null,
   pendingPsych: null,
+  pendingFrenzy: null,
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
@@ -713,6 +729,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingTrample: null,
       pendingFocus: null,
       pendingPsych: null,
+      pendingFrenzy: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -762,6 +779,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingTrample: null,
       pendingFocus: null,
       pendingPsych: null,
+      pendingFrenzy: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -888,7 +906,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingPsych: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -1171,6 +1189,54 @@ export const useGame = create<GameState>((set, get) => ({
     }
     maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
   },
+
+  // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
+  battleFrenzy: () => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || active.frenzied || !isFrenzyCapable(active)) return;
+    // OUVRE la modale — le Test de FM se fait au clic « Lancer » (« un jet = une modale »).
+    set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
+  },
+  frenzyRoll: () => {
+    const { battle, pendingFrenzy: pf } = get();
+    if (!battle || !pf || pf.result) return;
+    const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    if (!c) return;
+    set({ pendingFrenzy: { ...pf, result: resolveFrenzyEntry(effectiveChar(c, 'FM'), battleRng()) } });
+  },
+  frenzyReroll: () => {
+    const { battle, pendingFrenzy: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    if (!canReroll(!pf.result.success, !!pf.rerolled)) return; // Test raté, 1× max
+    const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    if (!c || (c.fortune ?? 0) <= 0) return;
+    c.fortune = (c.fortune ?? 0) - 1;
+    set({ pendingFrenzy: { ...pf, result: resolveFrenzyEntry(effectiveChar(c, 'FM'), battleRng()), rerolled: true }, battle: { ...battle } });
+  },
+  frenzyForceSuccess: () => {
+    const { battle, pendingFrenzy: pf } = get();
+    if (!battle || !pf || !pf.result || pf.result.success) return;
+    const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    if (!c || (c.resilience ?? 0) <= 0) return;
+    c.resilience = (c.resilience ?? 0) - 1;
+    set({ pendingFrenzy: { ...pf, result: { ...pf.result, success: true } }, battle: { ...battle } });
+  },
+  frenzyConfirm: () => {
+    const { battle, pendingFrenzy: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    const c = battle.combatants.find((x) => x.id === pf.combatantId);
+    set({ pendingFrenzy: null });
+    if (!c) return;
+    const log = pf.result.success
+      ? [`${c.name} entre en Frénésie : +1 Bonus de Force, immunité psychologique, doit attaquer (LDB 21).`]
+      : [`${c.name} ne parvient pas à entrer en Frénésie (Test de Force Mentale échoué).`];
+    if (pf.result.success) c.frenzied = true;
+    set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...log] } });
+    checkBattleOver(get, set);
+  },
+  frenzyCancel: () => set({ pendingFrenzy: null }),
 
   battleClickTile: (pt) => {
     const { battle, scene } = get();
