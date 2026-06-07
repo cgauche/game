@@ -40,12 +40,12 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
 |---|---|---|
 | Dévastatrice = max(DR, unités) ; Percutante = +unités ; Inoffensive annule ; cumul à +2 cat | **RAW** | `62` l.278-313 / `85` l.295 |
 | ×N = nombre de catégories d'écart (×2 à +2, ×3 à +3 ; +1 cat = ×1 no-op) | **RAW** | `85` l.297 |
-| **Ordre du ×N** : appliqué aux **Dégâts (arme+DR+atouts) AVANT la réduction BE+PA** | **interprétation figée** | « après les modificateurs » = après les modificateurs de Dégâts ; le soak (BE+PA) est l'étape « Appliquer », pas un modificateur. `[retenu : ×N avant soak]` |
+| **Ordre du ×N** : appliqué aux **Dégâts (arme+DR+atouts) AVANT la réduction BE+PA** | **RAW (confirmé utilisateur)** | « après les modificateurs » (`85` l.297) = après les modificateurs de Dégâts, **avant** que la cible encaisse. Confirmé : « on calcule les dégâts avant, le ×2 c'est avant que l'adversaire encaisse ». |
 | ×N + atouts de Taille s'appliquent au tir **et** à la mêlée (attaquant plus grand que la cible) | **RAW** | `85` l.293-299 (« Si la Créature Est Plus Grande ») ne restreint **pas** au CC : « ses armes », « les Dégâts infligés ». Seuls Frappe Mortelle/Piétinement/parade sont intrinsèquement CC. |
 | −2 DR/cat : **parade (CC) du plus petit uniquement**, pas l'esquive | **RAW** | `85` l.305-306 |
-| Frappe Mortelle (grande créature) : balayage **sans tuer**, jusqu'à **BCC** enchaînements sur adversaires **adjacents** | **RAW** | `14` l.12 + `85` l.299 ; cible des enchaînements = adjacents `[DESIGN]` (RAW : « se déplacer sur la case » → on enchaîne sur les adjacents accessibles) |
+| Frappe Mortelle : **se déplacer sur la case de la cible** (si tuée) + frapper un autre **à portée de ses attaques**, jusqu'à **BCC** fois ; grande créature l'active **sans tuer** | **RAW** | `14` l.12 + `85` l.299. `[limite]` « à portée » = **adjacent** tant que l'Allonge (reach) n'est pas modélisée (mêlée = adjacence aujourd'hui). |
 | Force opposée : helper pur, **sans consommateur** (pas de Test de Force opposé/empoignade modélisé) | **RAW** (posé) | `85` l.311-312 ; inerte jusqu'au système de lutte |
-| Blessures monstres : `char.B` de la data = **le RAW déjà calculé** (formule × Taille) ; on l'utilise tel quel | **RAW vérifié** | Géant 72 = (6+2·5+2)×4 = 18×4 ; Ogre 30 = (4+2·4+3)×2 = 15×2. La table `maxWounds`-par-Taille ne sert qu'aux **héros** (formule × Taille de l'espèce : Ogre PJ ×2, Halfling Petite) — **ne jamais re-multiplier** `char.B`. |
+| Blessures **dynamiques** : `char.B` = base autoritaire (le vrai calcul, **traits inclus**) ; les buffs F/E/FM **modifient** les Blessures via le **delta de formule × Taille** | **RAW + DESIGN (delta)** | Sweep 58 créatures : **52 = formule × Taille** (Géant 72=18×4, Ogre 30=15×2) ; **6 traitées** (Coriace +4, mort-vivant +3, Araignée 2≠6…) → un recalcul pur casserait leur base. ⇒ Blessures = `char.B` + (formule(F/E/FM effectives)×Taille − formule(base)×Taille). Sorts d'E/F/FM impactent les Blessures **sans** altérer la base livre. Héros : base = formule×Taille de l'espèce. |
 
 ## 5. Composants
 
@@ -68,10 +68,14 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
   `hasQ` étendu pour lire une liste de qualités (ou un helper local sur `effQual`). Les armes qui possèdent **déjà** Dévastatrice/Percutante (Zweihänder, Arc long, Arbalète lourde…) en bénéficient enfin.
 - **Frappe Mortelle** : `AttackResult` porte `cleave?: boolean`. Posé par les **résolveurs de mêlée** (`finishMelee`/`resolveMeleePassive`) — pas `applyHit` (qui ignore mêlée/tir) — = true si touche **de mêlée réussie** d'un attaquant plus grand (`sizeGap(att,def) >= 1`). L'orchestration du balayage est dans `combatFlow` (cf. ci-dessous).
 
-**`state/combatFlow.ts`** — **balayage** (Frappe Mortelle) :
-- Après une touche de mêlée résolue avec `cleave`, l'attaquant peut **enchaîner** : choisir un autre adversaire **adjacent** vivant non encore frappé ce balayage, jusqu'à **`bonus(effectiveChar(att,'CC'))`** enchaînements. Chaque enchaînement = une attaque de mêlée normale (qui peut elle-même balayer? non — borne BCC globale au tour).
-- **IA** (`doAttack`) : enchaîne automatiquement sur les adjacents (déterministe, RNG seedé).
-- **Héros** : après l'attaque, si `cleave` et adversaire(s) adjacent(s) restant(s), **modale/prompt d'enchaînement** (`pendingCleave { attackerId, hitIds[] }`) → le joueur choisit la cible suivante ou termine ; réutilise le flux d'attaque (`pendingAttack`). Invariante « un jet = une modale » respectée (chaque enchaînement est une attaque modale standard).
+**`state/combatFlow.ts`** — **balayage** (Frappe Mortelle, `14` l.12 + `85` l.299) :
+- Mécanique RAW : on **se déplace sur la case de la cible** puis on **frappe un autre adversaire** à **portée de ses attaques**. Réalisation :
+  - Cible **tuée** → case libérée → l'attaquant peut s'y **déplacer**, puis frapper un autre adversaire **à portée de mêlée depuis cette nouvelle case**.
+  - Cible **survit** (grande créature, sans tuer) → pas de déplacement (case occupée) → frappe un autre adversaire **à portée depuis sa position**.
+  - **« À portée »** = **adjacent** dans le modèle actuel (la mêlée est à l'adjacence) ; **suivra l'Allonge de l'arme** quand le reach sera modélisé `[limite connue, documentée]`.
+- Borné à **`bonus(effectiveChar(att,'CC'))`** (BCC) enchaînements / tour ; cibles non déjà frappées dans ce balayage. Chaque enchaînement = une attaque de mêlée standard (ne re-déclenche pas un balayage : la borne BCC est globale au tour).
+- **IA** (`doAttack`) : enchaîne automatiquement (déterministe, RNG seedé).
+- **Héros** : si `cleave` et cible(s) restante(s) à portée, **modale d'enchaînement** (`pendingCleave { attackerId, hitIds[], movedTo? }`) → le joueur choisit la cible suivante ou termine ; réutilise le flux `pendingAttack`. Invariante « un jet = une modale » respectée.
 
 ### T3 — Lutte
 **`engine/combat.ts`** :
@@ -84,17 +88,28 @@ T4 Blessures par catégorie. **Hors-lot** (jalons séparés) : T5 Peur/Terreur (
 - `resolveTrample(attacker, target, rng)` : attaque CC (Bagarre), Dégâts = **BF +0** (DR du Test opposé inclus comme une attaque normale), cible plus petite / adjacente. Coûte **1 Avantage** (pas l'Action — « Action gratuite »).
 - Store : action `battleTrample(targetId)` (dépense 1 Avantage, résout via le flux d'attaque). **Hotbar** : bouton « 🦶 Piétiner » visible si l'acteur est plus grand qu'un adversaire adjacent et a ≥1 Avantage. **IA** : piétine un adjacent plus petit quand elle a de l'Avantage (option à faible priorité après l'attaque principale).
 
-### T4 — Blessures par catégorie
-**`engine/characteristics.ts`** :
-- `maxWounds(c)` : remplacer le binaire `isSmall` par une **table de Taille** (`engine/size.ts` `SIZE_WOUNDS`) :
-  Minuscule=1 ; Très Petite=BE ; Petite=2·BE+BFM ; **Moyenne=BF+2·BE+BFM** (formule actuelle) ; Grande=×2 ; Énorme=×4 ; Monstrueuse=×8. **Endurant/Coriace appliqué AVANT le ×N** (`85` l.105-106).
-- **Monstres** : `char.B` de la data **EST déjà le RAW** (formule × multiplicateur de Taille — vérifié : Géant 72 = 18×4, Ogre 30 = 15×2). `creatureToCombatant` le garde tel quel → aucun recalcul, aucune re-multiplication. La table `maxWounds`-par-Taille ne s'applique donc qu'aux **héros** (création — Ogre PJ Grande ×2, Halfling Petite) et au **recalcul explicite** (`buyCharAdvance`).
+### T4 — Blessures par catégorie **& dynamiques** (suivent E/F/FM effectives)
+*Raison (utilisateur) : des sorts modifient E/FM/F → les Blessures doivent suivre la formule. Mais 6/58
+monstres ont un `char.B` traité (Coriace/mort-vivant/spécial) ≠ formule pure → on ne recalcule pas la
+base, on applique seulement le **delta** des buffs.*
+
+**`engine/size.ts`** : `woundsForSize(bf, be, bfm, size): number` — Minuscule=1 ; Très Petite=BE ; Petite=2BE+BFM ; **Moyenne=BF+2BE+BFM** ; Grande=Moyenne×2 ; Énorme=×4 ; Monstrueuse=×8.
+
+**`engine/types.ts`** : `Combatant.wounds` gagne `base: number` (Blessures à vide, posées au spawn) — non redérivable pour les 6 monstres traités, donc stockée.
+
+**`engine/characteristics.ts`** : `maxWounds(c: Combatant): number` =
+`c.wounds.base + woundsForSize(effective F/E/FM, c.size) − woundsForSize(base F/E/FM, c.size)`.
+Au repos (pas de buff) le delta = 0 → `wounds.base`. Un sort +Endurance ⇒ delta > 0 ⇒ Blessures montent (×Taille incluse). *(Ancienne signature `maxWounds(chars, isSmall)` migrée ; appelants mis à jour.)*
+
+**Spawn / création** : monstre `wounds.base = wounds.max = char.B` (vrai calcul, inchangé) ; héros `wounds.base = wounds.max = woundsForSize(base, sizeEspèce)` (Halfling Petite, Ogre Grande…). Endurant/Coriace : déjà dans `char.B` côté monstre ; côté héros, appliqué avant le ×Taille.
+
+**`state` (recompute dynamique)** : à l'application / au retrait / à l'expiration d'un `ActiveEffect` touchant **F/E/FM** (dans `applyActiveEffect` + le décrément de fin de Round), rafraîchir `wounds.max = maxWounds(c)` et **ajuster `wounds.current` du même delta** (gagne des PB sur un buff ; en perd à l'expiration — clamp ≥ 0 ; si ça tombe à 0, le modèle de mort existant s'applique).
 
 ## 6. Plan de tests (TDD)
-- `size.test.ts` : `sizeDamageMultiplier` (×1 à +1, ×2 à +2, ×3 à +3, ×1 si plus petit/égal), `sizeGrantedQualities` (∅/Dévastatrice/Dévastatrice+Percutante), `forceOpposedOutcome` (autoWin/needCrit/normal), `SIZE_WOUNDS`.
-- `combat` : Dévastatrice (max(DR,unités)), Percutante (+unités), Inoffensive annule les deux, cumul, ×N avant soak (woundsLost attendu), `cleave` posé sur touche mêlée d'un plus grand ; −2 DR/cat en parade (pas en esquive) via `finishMelee` ; `resolveTrample` (BF+0, CC).
-- `characteristics` : `maxWounds` par catégorie (les 7), Endurant avant ×N, héros Halfling=Petite.
-- `combatFlow`/store : balayage (IA enchaîne sur N adjacents jusqu'à BCC ; héros `pendingCleave`) ; désengagement gratuit du plus grand ; `battleTrample` (coûte 1 Avantage). RNG seedé.
+- `size.test.ts` : `sizeDamageMultiplier` (×1 à +1, ×2 à +2, ×3 à +3, ×1 si plus petit/égal), `sizeGrantedQualities` (∅/Dévastatrice/Dévastatrice+Percutante), `forceOpposedOutcome` (autoWin/needCrit/normal), `woundsForSize` (les 7 catégories).
+- `combat` : Dévastatrice (max(DR,unités)), Percutante (+unités), Inoffensive annule les deux, cumul à +2 cat, **×N AVANT soak** (woundsLost attendu = (Dégâts×N) − (BE+PA)), `cleave` posé sur touche mêlée d'un plus grand ; −2 DR/cat en parade (pas en esquive) via `finishMelee` ; `resolveTrample` (BF+0, CC).
+- `characteristics` : `maxWounds` par catégorie (les 7) ; **delta de buff** : un `ActiveEffect` +Endurance fait monter `maxWounds` de `ΔBE×2×Taille` ; un monstre traité (ex. Squelette `char.B`=12) garde 12 à vide et monte du seul delta ; héros Halfling=Petite, Ogre=Grande.
+- `combatFlow`/store : balayage (déplacement sur la case d'une cible tuée puis frappe un adjacent ; sans-tuer = frappe un adjacent sans bouger ; IA auto, héros `pendingCleave` ; borne BCC) ; désengagement gratuit du plus grand ; `battleTrample` (coûte 1 Avantage) ; **recompute Blessures sur buff/expiration** d'un effet F/E/FM (max + current ajustés). RNG seedé.
 - Régression : suite verte (le ×N/atouts changent des dégâts — mettre à jour les attentes impactées, c'est la nouvelle fidélité).
 
 ## 7. Isolation session rig
