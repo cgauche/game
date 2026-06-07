@@ -147,6 +147,14 @@ export interface PendingCleave {
   hitIds: string[];
   count: number;
 }
+/** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
+ *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
+export interface RevealEntry {
+  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round';
+  title: string;
+  dice?: number; // d100/d10 à afficher (le jet), si pertinent
+  lines: string[]; // détail (résultat, effets)
+}
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
 export interface PendingFumble {
@@ -246,6 +254,8 @@ export interface GameState {
   pendingCast: PendingCast | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
+  /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
+  pendingReveals: RevealEntry[];
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -356,6 +366,8 @@ export interface GameState {
   /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
    *  plus petit. Ne consomme pas l'Action. */
   battleTrample: (targetId: string) => void;
+  /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
+  dismissReveal: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -410,6 +422,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDisengage: null,
   pendingCast: null,
   pendingCleave: null,
+  pendingReveals: [],
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
@@ -573,6 +586,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDefense: null,
       pendingDisengage: null,
       pendingCleave: null,
+      pendingReveals: [],
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -618,6 +632,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDefense: null,
       pendingDisengage: null,
       pendingCleave: null,
+      pendingReveals: [],
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -742,7 +757,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingFumble: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1296,6 +1311,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
   },
   cleaveEnd: () => set({ pendingCleave: null }),
+  dismissReveal: () => set((s) => ({ pendingReveals: s.pendingReveals.slice(1) })),
   battleTrample: (targetId) => {
     const battle = get().battle;
     if (!battle || battle.over) return;

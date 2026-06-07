@@ -15,6 +15,7 @@ import { DisengageModal } from './DisengageModal';
 import { CleaveModal } from './CleaveModal';
 import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
+import { RevealModal } from './RevealModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { Combatant } from '../engine/types';
@@ -99,6 +100,7 @@ export function CampaignView() {
       <CleaveModal />
       <CastModal />
       <FumbleModal />
+      <RevealModal />
       <RoundStartModal />
       <FateSaveModal />
       <DocumentModal />

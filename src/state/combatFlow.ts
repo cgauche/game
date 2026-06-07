@@ -3,7 +3,7 @@
  * Fonctions (get,set) : combat, magie, IA, desengagement, effets. RNG via ./battleRng.
  * Refacto pure -- comportement preserve.
  */
-import type { GameState, BattleState } from './store';
+import type { GameState, BattleState, RevealEntry } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
@@ -65,6 +65,11 @@ import { bus, EVT } from './bus';
 
 export function activeCombatant(battle: BattleState): Combatant | undefined {
   return battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+}
+
+/** Empile une révélation témoin (montre le dé d'un jet subi/sur table) en queue de file FIFO. */
+export function pushReveal(set: any, entry: RevealEntry): void {
+  set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
 }
 
 export function occupied(battle: BattleState, exceptId: string): Set<string> {
