@@ -115,6 +115,8 @@ export function Editor() {
   const hoverRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // dernière case survolée (cible de Ctrl+V)
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [creatureFilter, setCreatureFilter] = useState(''); // recherche dans la palette créatures
+  const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle (drag → remplir)
+  const [layers, setLayers] = useState({ triggers: true, spawns: true, buildings: true }); // calques masquables
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
@@ -312,6 +314,17 @@ export function Editor() {
     }
   }
 
+  /** Remplit un rectangle de terrain (sous-mode Rectangle) — 1 cran d'undo. */
+  function fillTerrainRect(rect: Rect) {
+    if (tool.mode !== 'tile') return;
+    const { w, h } = scene.dimensions;
+    const tiles = [...scene.tiles];
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++) {
+        if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = tool.terrain;
+      }
+    setScene({ ...scene, tiles });
+  }
   function rectFrom(a: { x: number; y: number }, b: { x: number; y: number }): Rect {
     return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x) + 1, h: Math.abs(a.y - b.y) + 1 };
   }
@@ -596,6 +609,14 @@ export function Editor() {
 
           {palTab === 'carte' && (
             <div className="pal-tab">
+              <div className="mini-title">Calques</div>
+              <div className="layer-toggles">
+                {(['triggers', 'spawns', 'buildings'] as const).map((L) => (
+                  <label key={L} className="ed-toggle">
+                    <input type="checkbox" checked={layers[L]} onChange={(e) => setLayers((l) => ({ ...l, [L]: e.target.checked }))} /> {L === 'triggers' ? 'Zones' : L === 'spawns' ? 'Ennemis' : 'Bâtiments'}
+                  </label>
+                ))}
+              </div>
               <div className="mini-title">Terrains</div>
               <div className="brush-sizes">
                 Pinceau :{' '}
@@ -604,6 +625,7 @@ export function Editor() {
                     {n}×{n}
                   </button>
                 ))}
+                <label className="ed-toggle"> <input type="checkbox" checked={terrainRect} onChange={(e) => setTerrainRect(e.target.checked)} /> Rectangle</label>
               </div>
               <div className="terrain-palette">
                 {TERRAIN_IDS.map((t) => (
@@ -817,7 +839,7 @@ export function Editor() {
                 }
                 return;
               }
-              if (tool.mode === 'trigger' || tool.mode === 'building') {
+              if (tool.mode === 'trigger' || tool.mode === 'building' || (tool.mode === 'tile' && terrainRect)) {
                 dragStartRef.current = p;
                 setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
               } else {
@@ -845,7 +867,7 @@ export function Editor() {
                 moveTarget(m, to);
                 return;
               }
-              if ((tool.mode === 'trigger' || tool.mode === 'building') && dragStartRef.current)
+              if ((tool.mode === 'trigger' || tool.mode === 'building' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
                 setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
               else if (painting && tool.mode === 'tile') applyAt(isoTile(e));
             }}
@@ -856,6 +878,7 @@ export function Editor() {
               }
               if (tool.mode === 'trigger' && dragStartRef.current) addTrigger(rectFrom(dragStartRef.current, isoTile(e)));
               else if (tool.mode === 'building' && dragStartRef.current) addBuilding(tool.type, rectFrom(dragStartRef.current, isoTile(e)));
+              else if (tool.mode === 'tile' && terrainRect && dragStartRef.current) fillTerrainRect(rectFrom(dragStartRef.current, isoTile(e)));
               dragStartRef.current = null;
               setDragRect(null);
               setPainting(false);
@@ -887,7 +910,7 @@ export function Editor() {
                     const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
                     if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                   }
-                for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, scene.ambiance === 'nuit'));
+                if (layers.buildings) for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, scene.ambiance === 'nuit'));
                 for (const e of scene.entities) {
                   if (e.kind === 'heroStart') {
                     const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
@@ -907,7 +930,7 @@ export function Editor() {
                   }
                 }
                 // Ennemis des rencontres (points d'apparition) : visibles + cliquables.
-                for (const [encIdx, enc] of scene.encounters.entries()) {
+                if (layers.spawns) for (const [encIdx, enc] of scene.encounters.entries()) {
                   enc.enemies.forEach((en, idx) => {
                     const isSel = selectedSpawn?.enc === encIdx && selectedSpawn?.idx === idx;
                     const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos, appearance: en.appearance, weapon: en.weapon } as SceneEntity;
@@ -938,6 +961,7 @@ export function Editor() {
                 return objs.map((o) => o.el);
               })()}
             </g>
+            {layers.triggers && (
             <g>
               {scene.triggers.map((t) => {
                 const isSel = t.id === selectedTrigger;
@@ -968,6 +992,7 @@ export function Editor() {
                 );
               })}
             </g>
+            )}
             {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
             {selB && (
               <g>
