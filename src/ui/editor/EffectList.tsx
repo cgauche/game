@@ -159,6 +159,7 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
                 ))}
               </select>
               <label className="dr">DR≥<input type="number" value={e.requireSL ?? 0} onChange={(ev) => upd({ requireSL: Number(ev.target.value) })} /></label>
+              <input placeholder="Outil (ex. Rossignols — qualité Pratique/Bâclé…)" value={e.tool ?? ''} onChange={(ev) => upd({ tool: ev.target.value || undefined })} />
             </div>
             <div className="branch">
               <span className="branch-label ok">Si RÉUSSITE :</span>
