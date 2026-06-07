@@ -9,7 +9,7 @@ import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
-import { applyAttackResult } from './combatFlow';
+import { applyAttackResult, applyEffects } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 
@@ -210,6 +210,24 @@ describe('Boucle de jeu (store)', () => {
     expect(h.criticalWounds ?? 0).toBe(1);   // Coup Critique appliqué (table 18-Traumatisme)
     expect(h.armour.corps).toBe(3);          // PA intacte (rien dévié)
     expect(useGame.getState().pendingDeviation).toBeNull();
+  });
+
+  // ── Phase C2a — qualité d'outil sur les Tests HORS COMBAT (Pratique/Peu Fiable/Bâclé) ──
+  it('Effect.test : le nom d’outil est résolu vers pendingTest.itemUid (héros qui agit)', () => {
+    const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
+    const hero = {
+      id: 'h1', name: 'Lest', kind: 'hero', characteristics: chars, wounds: { current: 10, max: 10 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      items: [{ uid: 't1', name: 'Rossignols', kind: 'melee', qualities: ['Pratique'], enc: 0, equipped: false }],
+    } as unknown as Combatant;
+    useGame.setState({ party: [hero] });
+    applyEffects(useGame.getState, useGame.setState, [
+      { type: 'test', characteristic: 'Dex', tool: 'Rossignols', requireSL: 0, onSuccess: [], onFailure: [] },
+    ]);
+    const pt = useGame.getState().pendingTest!;
+    expect(pt.itemUid).toBe('t1');
+    expect(pt.isDouble).toBe(false); // amorcé à false (pas encore lancé)
   });
 
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {

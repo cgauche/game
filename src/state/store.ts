@@ -101,6 +101,10 @@ export interface PendingTest {
   difficulty: Difficulty;
   requireSL: number;
   target: number;
+  /** Outil utilisé (uid résolu sur l'acteur) : sa qualité d'artisanat module l'issue / casse l'objet (Phase C2a). */
+  itemUid?: string;
+  /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */
+  isDouble?: boolean;
   /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
   roll: number | null;
   success: boolean;

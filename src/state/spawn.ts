@@ -108,6 +108,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     weapons: weaponsFromTraits(creature.traits),
     armour: armourFromTraits(creature.traits),
     size,
+    traits: creature.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
     talents: [],
     movement,
@@ -134,6 +135,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
     size,
+    traits: sb.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
     talents: [],
     movement,

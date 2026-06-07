@@ -4,8 +4,9 @@
  * l'inspecteur de spawn de rencontre → mêmes contrôles, séparation apparence↔stats.
  */
 import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '../../gameIso/rig/parts/monstrous';
-import { ColorPalettePickers } from '../ColorPalettePickers';
+import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
+import { tenueCareerNames } from '../../gameIso/rig/parts/career';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
@@ -18,12 +19,14 @@ export function MonsterPartsFields({
   sex,
   build,
   parts,
+  career,
   onMonster,
   onWeapon,
   onColors,
   onSex,
   onBuild,
   onParts,
+  onCareer,
 }: {
   monster?: MonsterPartsSel;
   weapon?: string;
@@ -31,12 +34,14 @@ export function MonsterPartsFields({
   sex?: 'M' | 'F';
   build?: number;
   parts?: { cheveux?: number; visage?: number };
+  career?: string;
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
   onWeapon: (w: string | undefined) => void;
   onColors: (patch: Partial<ColorsSel>) => void;
   onSex?: (s: 'M' | 'F') => void;
   onBuild?: (b: number) => void;
   onParts?: (patch: { cheveux?: number; visage?: number }) => void;
+  onCareer?: (c: string | undefined) => void;
 }) {
   return (
     <>
@@ -98,7 +103,16 @@ export function MonsterPartsFields({
           ))}
         </select>
       </label>
-      <ColorPalettePickers colors={colors} onColors={onColors} />
+      <label className="ed-field">
+        Tenue (carrière)
+        <select value={career ?? ''} onChange={(e) => onCareer?.(e.target.value || undefined)}>
+          <option value="">— par défaut (selon le nom) —</option>
+          {tenueCareerNames().map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </label>
+      <ColorPalettePickers colors={colors} onColors={onColors} slots={MONSTER_COLOR_SLOTS} />
     </>
   );
 }

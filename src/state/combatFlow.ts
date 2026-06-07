@@ -217,6 +217,8 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         // dans la modale (testRoll), puis une Chance est possible avant l'acquittement.
         const best = partyBest(get().party, e.skill, e.characteristic);
         if (!best) break;
+        // Outil utilisé (Phase C2a) : résolu par NOM vers l'uid de l'objet du héros qui agit.
+        const tool = e.tool ? best.actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
         const difficulty = e.difficulty ?? 'intermediaire';
         const label = e.label || e.skill || (e.characteristic ? `Test de ${e.characteristic}` : 'Test');
         const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
@@ -229,6 +231,8 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             difficulty,
             requireSL: e.requireSL ?? 0,
             target,
+            itemUid: tool?.uid,
+            isDouble: false,
             roll: null, // pas encore lancé
             success: false,
             sl: 0,

@@ -5,6 +5,8 @@ import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
+import { bodyPlanOf } from '../../gameIso/rig/bodyPlan';
+import { quadrupedSvg } from '../../gameIso/rig/quadruped/composeQuad';
 import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { MonsterPartsFields } from './MonsterPartsFields';
@@ -21,6 +23,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature, Trigger, CustomStatblock, EncounterDef } from '../../state/scene';
 import { ParamFields } from './ParamFields';
 import { EffectList } from './EffectList';
+import { ViewControls } from '../ViewControls';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
@@ -101,6 +104,22 @@ export function Editor() {
   const [dlgOpen, setDlgOpen] = useState(false);
   const [encOpen, setEncOpen] = useState(false);
   const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
+  const [rot, setRot] = useState<0 | 1 | 2 | 3>(0); // rotation caméra éditeur (snap, local)
+  // Zoom/pan ÉDITEUR via viewBox : `getScreenCTM` en tient compte → picking inchangé.
+  const [view, setView] = useState({ zoom: 1, x: 0, y: 0 }); // x,y = origine viewBox (coords contenu)
+  const spaceRef = useRef(false); // barre Espace maintenue → pan au glisser
+  const panRef = useRef<{ sx: number; sy: number; vx: number; vy: number } | null>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
+      const k = e.key.toLowerCase(); // la LETTRE → Q/E étiquetées (AZERTY comme QWERTY)
+      if (k === 'e') setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3));
+      else if (k === 'q') setRot((r) => (((r + 3) % 4) as 0 | 1 | 2 | 3));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
@@ -158,8 +177,57 @@ export function Editor() {
     }
   }
 
-  const dims: Dims = scene.dimensions;
+  const dims: Dims = { ...scene.dimensions, rot };
   const stage = stageSize(dims);
+  const stageRef = useRef(stage);
+  stageRef.current = stage;
+  const ZE_MIN = 1,
+    ZE_MAX = 6;
+  // Zoom centré sur un point contenu (curseur pour la molette, centre pour les boutons).
+  const zoomAt = (factor: number, ax?: number, ay?: number) =>
+    setView((v) => {
+      const nz = Math.min(ZE_MAX, Math.max(ZE_MIN, v.zoom * factor));
+      const s = stageRef.current;
+      const ovw = s.w / v.zoom,
+        ovh = s.h / v.zoom;
+      const nvw = s.w / nz,
+        nvh = s.h / nz;
+      const cx = ax ?? v.x + ovw / 2,
+        cy = ay ?? v.y + ovh / 2;
+      const fx = (cx - v.x) / ovw,
+        fy = (cy - v.y) / ovh;
+      return { zoom: nz, x: cx - fx * nvw, y: cy - fy * nvh };
+    });
+  // Molette = zoom ancré sur le curseur (listener non-passif pour preventDefault).
+  useEffect(() => {
+    const svg = canvasRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+      zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, loc.x, loc.y);
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, []);
+  // Barre Espace maintenue → mode pan (au glisser).
+  useEffect(() => {
+    const d = (e: KeyboardEvent) => {
+      if (e.code === 'Space') spaceRef.current = true;
+    };
+    const u = (e: KeyboardEvent) => {
+      if (e.code === 'Space') spaceRef.current = false;
+    };
+    window.addEventListener('keydown', d);
+    window.addEventListener('keyup', u);
+    return () => {
+      window.removeEventListener('keydown', d);
+      window.removeEventListener('keyup', u);
+    };
+  }, []);
 
   /** Point écran → tuile (projection iso, comme le jeu). */
   function isoTile(ev: React.PointerEvent): { x: number; y: number } {
@@ -171,8 +239,13 @@ export function Editor() {
     return screenToTile(loc.x, loc.y, dims);
   }
 
-  /** Sprite de jeu correspondant à une entité (WYSIWYG, source unique partagée). */
+  /** Sprite de jeu correspondant à une entité (WYSIWYG, source unique partagée).
+   *  Quadrupède (loup/cheval/…) → gabarit rigué recolorié (même dispatch qu'IsoStage). */
   function entitySvg(e: SceneEntity): string {
+    const refName = e.ref ?? e.label ?? '';
+    if (e.kind !== 'prop' && e.kind !== 'objet' && bodyPlanOf(refName) === 'quadruped') {
+      return quadrupedSvg(refName, 'front', { colors: e.appearance?.colors });
+    }
     return entitySprite(e);
   }
 
@@ -571,13 +644,21 @@ export function Editor() {
         </aside>
 
         <main className="editor-canvas-wrap">
+          <div style={{ position: 'relative', maxWidth: '100%', lineHeight: 0 }}>
           <svg
             ref={canvasRef}
             className="editor-iso"
-            viewBox={`0 0 ${stage.w} ${stage.h}`}
+            viewBox={`${view.x} ${view.y} ${stage.w / view.zoom} ${stage.h / view.zoom}`}
             width={stage.w}
             height={stage.h}
             onPointerDown={(e) => {
+              // Pan : clic du milieu OU Espace maintenu → on déplace le viewBox (pas d'édition).
+              if (e.button === 1 || spaceRef.current) {
+                e.preventDefault();
+                panRef.current = { sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y };
+                canvasRef.current?.setPointerCapture?.(e.pointerId);
+                return;
+              }
               const p = isoTile(e);
               if (tool.mode === 'trigger' || tool.mode === 'building') {
                 dragStartRef.current = p;
@@ -588,11 +669,24 @@ export function Editor() {
               }
             }}
             onPointerMove={(e) => {
+              if (panRef.current) {
+                const r = canvasRef.current!.getBoundingClientRect();
+                const vw = stage.w / view.zoom,
+                  vh = stage.h / view.zoom;
+                const dx = (e.clientX - panRef.current.sx) * (vw / r.width);
+                const dy = (e.clientY - panRef.current.sy) * (vh / r.height);
+                setView((v) => ({ ...v, x: panRef.current!.vx - dx, y: panRef.current!.vy - dy }));
+                return;
+              }
               if ((tool.mode === 'trigger' || tool.mode === 'building') && dragStartRef.current)
                 setDragRect(rectFrom(dragStartRef.current, isoTile(e)));
               else if (painting && tool.mode === 'tile') applyAt(isoTile(e));
             }}
             onPointerUp={(e) => {
+              if (panRef.current) {
+                panRef.current = null;
+                return;
+              }
               if (tool.mode === 'trigger' && dragStartRef.current) addTrigger(rectFrom(dragStartRef.current, isoTile(e)));
               else if (tool.mode === 'building' && dragStartRef.current) addBuilding(tool.type, rectFrom(dragStartRef.current, isoTile(e)));
               dragStartRef.current = null;
@@ -600,6 +694,7 @@ export function Editor() {
               setPainting(false);
             }}
             onPointerLeave={() => {
+              panRef.current = null;
               dragStartRef.current = null;
               setDragRect(null);
               setPainting(false);
@@ -628,7 +723,7 @@ export function Editor() {
                   if (e.kind === 'heroStart') {
                     const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
                     objs.push({
-                      d: depth(e.pos.x, e.pos.y) + 0.4,
+                      d: depth(e.pos.x, e.pos.y, dims) + 0.4,
                       el: (
                         <g key={e.id}>
                           <path d={diamondPath(e.pos.x, e.pos.y, dims)} fill="#2ecc71" opacity={0.55} />
@@ -639,7 +734,7 @@ export function Editor() {
                       ),
                     });
                   } else {
-                    objs.push({ d: depth(e.pos.x, e.pos.y) + 0.5, el: <EntityToken key={e.id} ent={e} dims={dims} /> });
+                    objs.push({ d: depth(e.pos.x, e.pos.y, dims) + 0.5, el: <EntityToken key={e.id} ent={e} dims={dims} /> });
                   }
                 }
                 // Ennemis des rencontres (points d'apparition) : visibles + cliquables.
@@ -648,7 +743,7 @@ export function Editor() {
                     const isSel = selectedSpawn?.enc === encIdx && selectedSpawn?.idx === idx;
                     const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos, appearance: en.appearance, weapon: en.weapon } as SceneEntity;
                     objs.push({
-                      d: depth(en.pos.x, en.pos.y) + 0.45,
+                      d: depth(en.pos.x, en.pos.y, dims) + 0.45,
                       el: (
                         <g
                           key={`spawn-${encIdx}-${idx}`}
@@ -722,8 +817,17 @@ export function Editor() {
               </g>
             )}
           </svg>
+            <ViewControls
+              zoom={view.zoom}
+              onZoomIn={() => zoomAt(1.2)}
+              onZoomOut={() => zoomAt(1 / 1.2)}
+              onZoomReset={() => setView({ zoom: 1, x: 0, y: 0 })}
+              onRotateLeft={() => setRot((r) => (((r + 3) % 4) as 0 | 1 | 2 | 3))}
+              onRotateRight={() => setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3))}
+            />
+          </div>
           <p className="hint">
-            Peignez les tuiles (cliquer-glisser). Placez les entités. Les zones rouges en pointillés sont les triggers.
+            Peignez les tuiles (cliquer-glisser). Placez les entités. Les zones rouges en pointillés sont les triggers. Molette = zoom · clic-milieu/Espace = déplacer.
           </p>
         </main>
 
@@ -818,12 +922,14 @@ export function Editor() {
                   sex={spawn.appearance?.sex}
                   build={spawn.appearance?.build}
                   parts={spawn.appearance?.parts}
+                  career={spawn.appearance?.career}
                   onMonster={(patch) => updateSpawn({ appearance: { ...spawn.appearance, monster: { ...(spawn.appearance?.monster ?? {}), ...patch } } })}
                   onWeapon={(w) => updateSpawn({ weapon: w })}
                   onColors={(patch) => updateSpawn({ appearance: { ...spawn.appearance, colors: { ...(spawn.appearance?.colors ?? {}), ...patch } } })}
                   onSex={(s) => updateSpawn({ appearance: { ...spawn.appearance, sex: s } })}
                   onBuild={(b) => updateSpawn({ appearance: { ...spawn.appearance, build: b } })}
                   onParts={(patch) => updateSpawn({ appearance: { ...spawn.appearance, parts: { ...(spawn.appearance?.parts ?? {}), ...patch } } })}
+                  onCareer={(c) => updateSpawn({ appearance: { ...spawn.appearance, career: c } })}
                 />
                 <label className="ed-field">
                   X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
@@ -939,7 +1045,7 @@ export function Editor() {
                       </text>
                     ) : (() => {
                       const prof = sel.kind === 'personnage'
-                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { monster: sel.appearance?.monster, weapon: sel.weapon, colors: sel.appearance?.colors, parts: sel.appearance?.parts, sex: sel.appearance?.sex, build: sel.appearance?.build })
+                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { career: sel.appearance?.career, monster: sel.appearance?.monster, weapon: sel.weapon, colors: sel.appearance?.colors, parts: sel.appearance?.parts, sex: sel.appearance?.sex, build: sel.appearance?.build })
                         : null;
                       return prof
                         ? <AmbientRigToken profile={prof} anim={sel.anim ?? ''} id={`prev-${sel.id}`} />
@@ -1020,12 +1126,14 @@ export function Editor() {
                       sex={sel.appearance?.sex}
                       build={sel.appearance?.build}
                       parts={sel.appearance?.parts}
+                      career={sel.appearance?.career}
                       onMonster={(patch) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), ...patch } } })}
                       onWeapon={(w) => updateSel({ weapon: w })}
                       onColors={(patch) => updateSel({ appearance: { ...sel.appearance, colors: { ...(sel.appearance?.colors ?? {}), ...patch } } })}
                       onSex={(s) => updateSel({ appearance: { ...sel.appearance, sex: s } })}
                       onBuild={(b) => updateSel({ appearance: { ...sel.appearance, build: b } })}
                       onParts={(patch) => updateSel({ appearance: { ...sel.appearance, parts: { ...(sel.appearance?.parts ?? {}), ...patch } } })}
+                      onCareer={(c) => updateSel({ appearance: { ...sel.appearance, career: c } })}
                     />
                     <label className="ed-field">
                       Dialogue / quête

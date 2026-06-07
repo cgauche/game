@@ -62,6 +62,8 @@ export interface ColorsSel {
   vet2?: string; // vêtement secondaire
   cuir?: string;
   metal?: string;
+  corps?: string; // pelage/robe des créatures (gabarits non-humains)
+  accent?: string; // détail vif (crête, marque)
 }
 
 /** Override d'apparence (sinon seed dérivé de l'id). pins : slot → index. */
@@ -77,6 +79,9 @@ export interface EntityAppearance {
   /** Surcharges cosmétiques (sinon dérivées du seed). */
   sex?: 'M' | 'F';
   build?: number;
+  /** Tenue (carrière) CHOISIE — découple l'habit du nom : un PNJ peut porter n'importe
+   *  quelle tenue (Mendiant, Soldat, Skaven, Nu…). Vide = dérivée du nom/espèce. */
+  career?: string;
 }
 
 export interface SceneEntity {
@@ -156,6 +161,8 @@ export type Effect =
       /** DR minimum requis (par défaut 0 = simple réussite). */
       requireSL?: number;
       label?: string;
+      /** Nom de l'objet/outil utilisé : sa qualité d'artisanat (Pratique/Peu Fiable/Bâclé) module le Test (Phase C2a). */
+      tool?: string;
       onSuccess?: Effect[];
       onFailure?: Effect[];
     }

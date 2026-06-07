@@ -155,6 +155,9 @@ export interface Combatant {
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
+  /** Traits de créature (libellés canon) → attaques naturelles gratuites & règles dérivées
+   *  (Morsure, Attaque caudale, Souffle… cf. engine/creatureAttacks). Conservés au spawn. */
+  traits?: string[];
   characteristics: Characteristics;
   /** Points de Blessure. `base` = Blessures à vide (snapshot/surcharge au spawn) ; `max` dynamique
    *  = base + delta des buffs F/E/FM × Taille (cf. effectiveMaxWounds) ; `current` = PB restants. */
