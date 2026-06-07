@@ -21,6 +21,12 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(c.armour.corps).toBe(2); // armure équipée appliquée à sa localisation
     expect(c.armour.tete).toBe(0); // l'armure NON équipée ne compte pas
   });
+  it('recomputeLoadout propage le SKIN d’un objet légendaire au Weapon actif (rendu recoloré)', () => {
+    const c = { items: [item({ name: 'Lame du Crépuscule', kind: 'melee', damage: '+BF+5', equipped: true, skin: { metal: '#caa64a' } })] } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.find((w) => w.name === 'Lame du Crépuscule')?.skin).toEqual({ metal: '#caa64a' });
+    expect(c.weapons.find((w) => w.name === 'Mains nues')?.skin).toBeUndefined();
+  });
   it("totalEncumbrance somme l'encombrement de tous les objets portés", () => {
     const c = { items: [item({ enc: 2 }), item({ enc: 3 }), item({ enc: 0 })] } as unknown as Combatant;
     expect(totalEncumbrance(c)).toBe(5);

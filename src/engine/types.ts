@@ -142,6 +142,9 @@ export interface ItemInstance {
   damageTaken?: number;
   /** Arme détruite (Incident de Tir) : non équipable. */
   destroyed?: boolean;
+  /** SKIN cosmétique (objet unique/légendaire) : override de palette token→hex, propagé au
+   *  `Weapon.skin` actif par `recomputeLoadout` → l'arme se rend recolorée. */
+  skin?: Record<string, string>;
 }
 
 export interface Combatant {

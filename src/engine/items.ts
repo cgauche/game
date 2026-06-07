@@ -94,7 +94,7 @@ export function recomputeLoadout(c: Combatant): void {
       // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
       const reloadQ = it.qualities.find((q) => /^recharge/i.test(q)); // « Recharge 2 »
       const reload = reloadQ ? parseInt(reloadQ.match(/\d+/)?.[0] ?? '0', 10) : 0;
-      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken });
+      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken, skin: it.skin });
     }
   }
   // Mains nues toujours disponibles en dernier recours.
