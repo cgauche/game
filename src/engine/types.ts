@@ -155,6 +155,15 @@ export interface Combatant {
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
+  /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */
+  causesPeur?: number;
+  causesTerreur?: number;
+  psychImmune?: boolean;
+  /** Afflictions psychologiques ACTIVES en combat (Peur en cours, etc.). */
+  psychState?: import('./psychology').PsychAffliction[];
+  /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
+  groups?: string[];
+  psychTraits?: import('./psychology').PsychTrait[];
   /** Traits de créature (libellés canon) → attaques naturelles gratuites & règles dérivées
    *  (Morsure, Attaque caudale, Souffle… cf. engine/creatureAttacks). Conservés au spawn. */
   traits?: string[];

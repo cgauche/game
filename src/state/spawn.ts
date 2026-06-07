@@ -8,6 +8,7 @@ import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
 import { maxWounds } from '../engine/characteristics';
 import { parseSizeLabel, SizeCategory } from '../engine/size';
+import { parsePsychTraits } from '../engine/psychology';
 import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
@@ -108,6 +109,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     weapons: weaponsFromTraits(creature.traits),
     armour: armourFromTraits(creature.traits),
     size,
+    ...parsePsychTraits(creature.traits), // Peur/Terreur/Immunité depuis les traits (LDB 21+85)
     traits: creature.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
     talents: [],
@@ -135,6 +137,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
     size,
+    ...parsePsychTraits(sb.traits ?? []), // Peur/Terreur/Immunité depuis les traits (LDB 21+85)
     traits: sb.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
     talents: [],
