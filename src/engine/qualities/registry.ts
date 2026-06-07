@@ -39,6 +39,8 @@ export interface QualityDef {
   canFireWhileEngaged?: boolean;
   /** Objet insensible aux dégâts/destruction (Incassable, l.310). */
   unbreakable?: boolean;
+  /** Arme à feu (Poudre noire / Explosion) — Incident de Tir sur Maladresse (LDB 14 l.56-57). */
+  firearm?: boolean;
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -62,4 +64,13 @@ export const QUALITIES: Record<string, QualityDef> = {
   // Solide (Indice) — Atout d'OBJET (artisanat, LDB 60 l.64-67) : encaisse N dégâts + sauvegarde 9+.
   // Enregistrée comme exemple canonique d'Indice ; ses HOOKS d'effet seront câblés en Phase A (artisanat).
   'Solide': { key: 'Solide', type: 'Atout', subType: 'Objet' },
+  // Assommante : effet (touche à la Tête → Test opposé Force/Résistance → Sonné, LDB Armes l.268)
+  // appliqué INLINE dans combatFlow ; enregistrée pour la présence et la parité.
+  'Assommante': { key: 'Assommante', type: 'Atout', subType: 'Arme' },
+  // Recharge (Indice) : Indice = DR à cumuler pour recharger (Test étendu de Projectiles, LDB 63 l.28-29) ;
+  // lu via qualityIndice dans recomputeLoadout.
+  'Recharge': { key: 'Recharge', type: 'Défaut', subType: 'Arme' },
+  // Armes à feu : détectées comme Incident de Tir potentiel (oups.ts).
+  'À Poudre noire': { key: 'À Poudre noire', type: 'Défaut', subType: 'Arme', firearm: true },
+  'À Explosion': { key: 'À Explosion', type: 'Atout', subType: 'Arme', firearm: true },
 };

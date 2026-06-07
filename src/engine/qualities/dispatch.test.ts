@@ -68,8 +68,8 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
   // (dette ROADMAP). Toute NOUVELLE qualité de données doit être soit une entrée QUALITIES, soit
   // ajoutée ici EN CONSCIENCE — c'est le garde-fou anti-empilement.
   const NON_DANS_REGISTRE = new Set([
-    'À Poudre noire', 'À Répétition', 'Assommante', 'À Explosion', 'Immobilisante', 'Perturbante',
-    'Piège-lame', 'Protectrice', 'Rapide', 'Taille', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente', 'Recharge',
+    'À Répétition', 'Immobilisante', 'Perturbante', 'Piège-lame', 'Protectrice',
+    'Rapide', 'Taille', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente',
   ]);
   it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));

@@ -7,6 +7,7 @@
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon } from './types';
 import { bonus } from './characteristics';
 import { findTrapping } from '../data';
+import { indiceOf } from './qualities/normalize';
 
 let uidCounter = 0;
 export function newUid(): string {
@@ -92,8 +93,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (it.kind === 'melee' || it.kind === 'ranged') {
       if (it.destroyed) continue; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
       // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
-      const reloadQ = it.qualities.find((q) => /^recharge/i.test(q)); // « Recharge 2 »
-      const reload = reloadQ ? parseInt(reloadQ.match(/\d+/)?.[0] ?? '0', 10) : 0;
+      const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
       weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken, skin: it.skin });
     }
   }

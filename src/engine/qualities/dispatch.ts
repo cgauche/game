@@ -1,11 +1,15 @@
 /**
  * Dispatcher PUR des qualités d'objet : NORMALISE chaque chaîne via `parseQuality` (clé canonique
- * du registre + Indice typé), puis expose des helpers que combat.ts/items.ts appellent au lieu de
- * tester des chaînes en dur. Aucune mutation.
+ * du registre + Indice typé), puis expose des helpers que combat.ts/items.ts/combatFlow appellent
+ * au lieu de tester des chaînes en dur. Aucune mutation. Accepte tout porteur de `qualities`
+ * (Weapon ou ItemInstance).
  */
 import type { Weapon } from '../types';
 import { QUALITIES, QualityDef, QualityCtx } from './registry';
 import { parseQuality } from './normalize';
+
+/** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
+type QualityCarrier = { qualities: string[] };
 
 /** Une qualité résolue présente sur un objet : sa définition de registre + son Indice éventuel. */
 export interface ResolvedQuality {
@@ -13,8 +17,8 @@ export interface ResolvedQuality {
   indice?: number;
 }
 
-/** Qualités du registre présentes sur l'arme (normalisées, avec Indice). Chaînes inconnues ignorées. */
-export function resolveQualities(w: Weapon | undefined): ResolvedQuality[] {
+/** Qualités du registre présentes sur l'objet (normalisées, avec Indice). Chaînes inconnues ignorées. */
+export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
   for (const raw of w.qualities) {
@@ -25,28 +29,28 @@ export function resolveQualities(w: Weapon | undefined): ResolvedQuality[] {
 }
 
 /** L'objet possède-t-il la qualité canonique `key` ? (remplace l'ancien `hasQ` startsWith). */
-export function hasQuality(w: Weapon | undefined, key: string): boolean {
+export function hasQuality(w: QualityCarrier | undefined, key: string): boolean {
   return resolveQualities(w).some((r) => r.def.key === key);
 }
 
-/** Indice de la qualité `key` sur l'objet (ex. Solide → N), ou undefined si absente/sans Indice. */
-export function qualityIndice(w: Weapon | undefined, key: string): number | undefined {
+/** Indice de la qualité `key` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
+export function qualityIndice(w: QualityCarrier | undefined, key: string): number | undefined {
   return resolveQualities(w).find((r) => r.def.key === key)?.indice;
 }
 
 /** Somme d'un champ numérique du registre sur les qualités présentes (0 si aucune). */
-export function qualitySum(w: Weapon | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
+export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
   return resolveQualities(w).reduce((s, r) => s + (r.def[field] ?? 0), 0);
 }
 
 /** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse multiple de 10). */
-export function qualityCritTriggered(w: Weapon | undefined, roll: number): boolean {
-  const ctx: QualityCtx = { weapon: w, roll };
+export function qualityCritTriggered(w: QualityCarrier | undefined, roll: number): boolean {
+  const ctx: QualityCtx = { roll };
   return resolveQualities(w).some((r) => r.def.critTrigger?.(ctx) ?? false);
 }
 
 /** Ajustement de DR de la PARADE (Test opposé) : Défensive (arme du défenseur) +1, À Enroulement (arme de l'attaquant) -1. */
-export function parryDRAdjust(defenderWeapon: Weapon | undefined, attackerWeapon: Weapon | undefined): number {
+export function parryDRAdjust(defenderWeapon: QualityCarrier | undefined, attackerWeapon: QualityCarrier | undefined): number {
   const def = resolveQualities(defenderWeapon).reduce((s, r) => s + (r.def.defenderParryDR ?? 0), 0);
   const atk = resolveQualities(attackerWeapon).reduce((s, r) => s + (r.def.attackerParryDR ?? 0), 0);
   return def + atk;
@@ -58,6 +62,11 @@ export function canFireWhileEngaged(w: Weapon | undefined): boolean {
 }
 
 /** L'objet est-il insensible aux dégâts/destruction (Incassable) ? (remplace les regex /incassable/i). */
-export function isUnbreakable(w: Weapon | undefined): boolean {
+export function isUnbreakable(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.def.unbreakable);
+}
+
+/** L'arme est-elle une arme à feu (Poudre noire / Explosion) ? (remplace les regex /poudre|explos/i sur les qualités). */
+export function isFirearmQuality(w: QualityCarrier | undefined): boolean {
+  return resolveQualities(w).some((r) => r.def.firearm);
 }

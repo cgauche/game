@@ -29,3 +29,12 @@ export function parseQuality(raw: string): ParsedQuality | null {
   const key = KEY_BY_LOWER.get(label.toLowerCase());
   return key ? { key, indice } : null;
 }
+
+/** Indice de la qualité `key` dans une liste de chaînes (ex. ['Recharge 2'] → 2), sinon undefined. */
+export function indiceOf(qualities: string[], key: string): number | undefined {
+  for (const raw of qualities) {
+    const p = parseQuality(raw);
+    if (p && p.key === key) return p.indice;
+  }
+  return undefined;
+}

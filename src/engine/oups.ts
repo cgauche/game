@@ -7,6 +7,7 @@ import { d100, RNG, defaultRNG } from './dice';
 import { isDoubleRoll } from './tests';
 import { Weapon } from './types';
 import { OUPS_TABLE, OupsKind } from '../data/oups';
+import { isFirearmQuality } from './qualities/dispatch';
 
 export interface OupsResolved {
   roll: number;
@@ -22,7 +23,7 @@ export function isFumble(roll: number, success: boolean): boolean {
 /** Arme à Poudre noire / explosive (Incident de Tir, l.56-57). On détecte la famille « Poudre noire ». */
 function isFirearm(w: Weapon | undefined): boolean {
   if (!w) return false;
-  return /poudre|explos/i.test(w.subType ?? '') || w.qualities.some((q) => /poudre|explos/i.test(q));
+  return /poudre|explos/i.test(w.subType ?? '') || isFirearmQuality(w);
 }
 
 /** Tire sur le Tableau des Oups ! ; Incident de Tir prioritaire (arme à poudre + jet PAIR). */

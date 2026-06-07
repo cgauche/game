@@ -23,6 +23,7 @@ import {
   ModLine,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
+import { isUnbreakable, hasQuality } from '../engine/qualities/dispatch';
 import {
   resolveFocus,
   isMagicMissile,
@@ -469,7 +470,7 @@ export function applyAttackResult(
   // Atout Assommante : une touche à la Tête → Test opposé Force/Résistance ; si
   // l'attaquant l'emporte, la cible gagne un État Sonné (LDB Les armes l.268).
   let assommanteLog: string | null = null;
-  if (res.hit && res.location === 'tete' && weapon.qualities.some((q) => q.toLowerCase().startsWith('assommante'))) {
+  if (res.hit && res.location === 'tete' && hasQuality(weapon, 'Assommante')) {
     const resist = effectiveChar(target, 'E') + (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
     if (opposedTest(effectiveChar(attacker, 'F'), resist, battleRng()).winner === 'attacker') {
       addCondition(target, 'Sonné');
@@ -535,7 +536,7 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
 function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void {
   const it = (c.items ?? []).find((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged') && i.name === weapon.name);
   if (it) {
-    if (it.qualities.some((q) => /incassable/i.test(q))) return;
+    if (isUnbreakable(it)) return;
     if (destroy) {
       it.destroyed = true;
     } else {
