@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { formatImperial } from '../engine/clock';
+import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { IsoStage } from '../gameIso/IsoStage';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
@@ -42,6 +42,8 @@ export function CampaignView() {
   const setZoom = useGame((s) => s.setZoom);
   const rotateCam = useGame((s) => s.rotateCam);
   const [sheetId, setSheetId] = useState<string | null>(null);
+  const clockDate = toDate(gameTime);
+  const phase = dayPhase(gameTime);
 
   return (
     <div className="screen campaign-view">
@@ -61,8 +63,8 @@ export function CampaignView() {
             <b className="co">{money.gold}</b> CO · <b className="sc">{money.silver}</b> SC · <b className="pa">{money.brass}</b> PA
           </span>
         </div>
-        <div className="game-clock" title="Date et heure (Calendrier Impérial)">
-          🕓 {formatImperial(gameTime)}
+        <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
+          {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
         </div>
         <div className="inventory">
           <div className="mini-title">Inventaire ({inventory.length})</div>
