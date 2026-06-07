@@ -240,6 +240,9 @@ export interface Combatant {
   actLastNextRound?: boolean;
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
+  /** A déjà bénéficié d'un soin de Blessures (Guérison) cette rencontre (LDB 09-Compétences l.233).
+   *  Réinitialisé au début de chaque combat (startCombat). N'affecte PAS l'arrêt d'Hémorragie. */
+  soinRencontreUtilise?: boolean;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
   dead?: boolean;
   /** PNJ important : utilise le système complet de critiques au lieu de la Mort Subite. */

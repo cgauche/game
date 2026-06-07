@@ -54,6 +54,10 @@ describe('persistence — carryOverState', () => {
     s.conditions[0].value = 99;
     expect(c.conditions[0].value).toBe(1);
   });
+  it('reporte soinRencontreUtilise (limite 1 soin/rencontre survit au combat)', () => {
+    expect(carryOverState(baseCombatant({ soinRencontreUtilise: true })).soinRencontreUtilise).toBe(true);
+    expect(carryOverState(baseCombatant({})).soinRencontreUtilise).toBe(false);
+  });
   it('persiste les traumatismes', () => {
     const c = baseCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
     const s = carryOverState(c);

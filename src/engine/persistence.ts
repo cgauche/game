@@ -21,6 +21,7 @@ export function carryOverState(c: Combatant): {
   criticalWounds: number;
   dead: boolean;
   outOfRencontre: boolean;
+  soinRencontreUtilise: boolean;
   traumas: Trauma[];
   items?: ItemInstance[];
 } {
@@ -30,6 +31,9 @@ export function carryOverState(c: Combatant): {
     criticalWounds: c.criticalWounds ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
+    // Limite « 1 soin de Blessures par patient et par rencontre » (LDB 09-Compétences l.233) : le soin
+    // reçu en combat bloque un re-soin juste après ; remis à zéro au prochain startCombat.
+    soinRencontreUtilise: c.soinRencontreUtilise === true,
     traumas: (c.traumas ?? []).map((t) => ({ ...t })),
     // Inventaire à stats : persiste l'usure d'arme (damageTaken/destroyed) et la munition consommée
     // (qty) entre combats (LDB 62 l.177-180). roundsAtZero N'est PAS persisté : l'horloge de mort
