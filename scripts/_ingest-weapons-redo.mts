@@ -12,8 +12,12 @@ const decode = (s: string) => String(s)
   .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
   .replace(/&#0?39;/g, "'").replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 
+// Slugs explicites en argument = ne réingère QUE ceux-là (sinon TOUS ceux ayant un chosen.json,
+// y compris des chosen.json PÉRIMÉS de runs précédents → écrase l'override lisibilité committé).
+const only = new Set(process.argv.slice(2));
 let n = 0;
 for (const d of WEAPON_DEFS) {
+  if (only.size && !only.has(d.slug)) continue;
   const p = `art-ref/directional/weapons-redo/${d.slug}/chosen.json`;
   if (!existsSync(p)) continue;
   const j = JSON.parse(readFileSync(p, 'utf8'));

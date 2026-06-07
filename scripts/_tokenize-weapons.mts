@@ -52,6 +52,7 @@ let totReplaced = 0, totKept = 0, totDefs = 0;
 const report: string[] = [];
 
 for (const d of WEAPON_DEFS) {
+  if (d.palette) { totDefs++; continue; } // déjà tokenisé → idempotent (ne re-tokenise que les defs neufs/regénérés)
   // couleurs présentes (hex + dégradés) avec fréquence
   const colors = new Map<string, number>();
   for (const m of d.art.matchAll(/#[0-9a-fA-F]{6}\b/g)) colors.set(m[0].toLowerCase(), (colors.get(m[0].toLowerCase()) ?? 0) + 1);
