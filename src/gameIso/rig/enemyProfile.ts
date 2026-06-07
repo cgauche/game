@@ -14,9 +14,7 @@ import { weaponGroupKey } from './parts/weaponGroup';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
-import { quadSpeciesMatch } from './quadruped/quadSkeleton';
-import { wingSpeciesMatch } from './winged/composeWing';
-import { bipedConfig, bipedSpeciesMatch } from './creatures';
+import { bipedConfig, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
@@ -43,25 +41,6 @@ export interface EnemyRigProfile {
 // Bornes de mot (\b…\b) pour éviter les faux positifs de sous-chaîne (ex. « orc »
 // dans « sorcier », « gor » dans « rigori- »). Couvre les 57 entrées du bestiaire
 // non-humanoïdes + synonymes courants.
-// Exotiques restant en sprite MONOLITHIQUE (pas encore de gabarit rigué dédié). Les bêtes/
-// ailés couverts par un gabarit (loup, dragon, griffon, hippogriffe, cheval…) ne sont PLUS
-// listés ici : ils sont reconnus via quadSpeciesMatch/wingSpeciesMatch (source unique = tables).
-const EXOTIC_RE = new RegExp(
-  '\\b(' + [
-    'squig',
-    // morts-vivants NON humanoïdes (Liche=bipède squelettique, Varghulf=ailé → defs/)
-    'spectre', 'fantome', 'banshee', 'necarque',
-    // démons / Chaos « bête » (la Démonette, humanoïde, est un bipède → defs/Demonette.ts)
-    'nurgle', 'tzeentch',
-    'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
-    // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques).
-    // Basilic/Crapaud/Hydre sont sortis : gabarit quad (reptilien/batracien/multi-têtes) → defs/.
-    'serpent', 'araignee',
-    'pieuvre', 'pigeon', 'bete des marais',
-    'sangsue',
-  ].join('|') + ')\\b',
-);
-
 /**
  * Patterns de rôles humanoïdes à peau humaine, mappés vers une carrière (pour la
  * tenue). Ordre = priorité. Le 1er match gagne pour la carrière.
@@ -83,10 +62,10 @@ const ROLE_CAREERS: [RegExp, string][] = [
 ];
 
 /** Classifieur cosmétique : 'rig' (humanoïde → rig bipède) ou 'creature' (non-humanoïde →
- *  gabarit quad/ailé ou sprite monolithique). Dérivé des tables d'espèces + liste exotique. */
+ *  gabarit quad/ailé/serpentin/… ou sprite monolithique). 100 % registry-driven : un def
+ *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
 export function classifyEnemy(name: string): 'rig' | 'creature' {
-  if (quadSpeciesMatch(name) || wingSpeciesMatch(name)) return 'creature';
-  return EXOTIC_RE.test(norm(name)) ? 'creature' : 'rig';
+  return creaturePlanMatch(name) ? 'creature' : 'rig';
 }
 
 /** Espèce de rig détectée du nom (sinon Humain). Dérivé du registre : chaque espèce bipède

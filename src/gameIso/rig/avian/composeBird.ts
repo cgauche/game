@@ -5,11 +5,13 @@
  * l'attaque, sur le flanc à la mort. Réutilise la machinerie (FK, palette tokenisée, rendu).
  */
 import type { ResolvedBone } from '../composeRig';
+import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
+import { BIRD_SPECIES, birdSpeciesMatch } from '../creatures';
 
 export type BirdBoneId = 'corps' | 'tete';
 type BBone = FKBone & { z: number };
@@ -115,6 +117,25 @@ export function resolveBirdFromProps(
 export const BIRD_DEFAULT: BirdProps = {
   sl: 0.62, girth: 1.0,
   stored: { corps: '#7c8a99', corpsO: '#4e5a66', corpsH: '#c2ccd4', cheveux: '#3a444e', cheveuxO: '#222a30', cuir: '#d06a26' },
+};
+
+export function resolveBird(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+  return resolveBirdFromProps(BIRD_SPECIES[species] ?? BIRD_DEFAULT, view, pose, colors);
+}
+export function birdSpeciesFromName(name: string): string {
+  return birdSpeciesMatch(name) ?? Object.keys(BIRD_SPECIES)[0] ?? 'Pigeon';
+}
+
+export const avianPlan: BodyPlan = {
+  id: 'avian',
+  resolve: (sp, view, pose, opts) => resolveBird(sp, view, pose, opts?.colors),
+  speciesNames: () => Object.keys(BIRD_SPECIES),
+  restPose: () => BIRD_REST,
+  idlePose: birdBob, // dodelinement de tête en continu
+  walkPose: birdBob, // sautillement = dodelinement plus rapide
+  attackPose: birdPeck,
+  deathPose: () => BIRD_DEATH,
+  hasView: () => true,
 };
 
 export function birdSvg(

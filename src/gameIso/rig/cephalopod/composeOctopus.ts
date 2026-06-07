@@ -5,11 +5,13 @@
  * l'attaque, affaissement à la mort. Réutilise la machinerie (FK, palette tokenisée, rendu).
  */
 import type { ResolvedBone } from '../composeRig';
+import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
+import { OCTOPUS_SPECIES, octopusSpeciesMatch } from '../creatures';
 
 export type OctoBoneId = 'tentacules' | 'corps';
 type OBone = FKBone & { z: number };
@@ -89,6 +91,25 @@ export function resolveOctopusFromProps(
 export const OCTOPUS_DEFAULT: OctopusProps = {
   sl: 1.05, girth: 1.0,
   stored: { corps: '#7a4a5e', corpsO: '#4e2c3c', corpsH: '#a86e80', cheveux: '#3a2230', cheveuxO: '#241218', cuir: '#d8c64a' },
+};
+
+export function resolveOctopus(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+  return resolveOctopusFromProps(OCTOPUS_SPECIES[species] ?? OCTOPUS_DEFAULT, view, pose, colors);
+}
+export function octopusSpeciesFromName(name: string): string {
+  return octopusSpeciesMatch(name) ?? Object.keys(OCTOPUS_SPECIES)[0] ?? 'Pieuvre';
+}
+
+export const cephalopodPlan: BodyPlan = {
+  id: 'cephalopod',
+  resolve: (sp, view, pose, opts) => resolveOctopus(sp, view, pose, opts?.colors),
+  speciesNames: () => Object.keys(OCTOPUS_SPECIES),
+  restPose: () => OCTO_REST,
+  idlePose: (phase) => octoWrithe(phase * 0.5), // ondulation douce des bras au repos
+  walkPose: octoWrithe,
+  attackPose: octoLunge,
+  deathPose: () => OCTO_DEATH,
+  hasView: () => true,
 };
 
 export function octopusSvg(

@@ -27,8 +27,15 @@ describe('bodyPlanOf', () => {
       expect(bodyPlanOf(n)).toBe('winged');
     }
   });
-  it('exotiques/monstres pas encore rapatriés → monolithic', () => {
-    for (const n of ['Araignée géante', 'Serpent', 'Bête des marais', 'Pieuvre des tourbières']) {
+  it('nouveaux squelettes exotiques → leur plan dédié', () => {
+    expect(bodyPlanOf('Grand serpent venimeux')).toBe('serpentine');
+    expect(bodyPlanOf('Sangsue des marais')).toBe('serpentine');
+    expect(bodyPlanOf('Araignée géante')).toBe('arachnid');
+    expect(bodyPlanOf('Pigeon voyageur')).toBe('avian');
+    expect(bodyPlanOf('Pieuvre des tourbières')).toBe('cephalopod');
+  });
+  it('exotiques sans gabarit (forme bespoke/indéterminée) → monolithic', () => {
+    for (const n of ['Squig vorace', 'Spectre hurlant', 'Bête de Nurgle', 'Bête des marais']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });

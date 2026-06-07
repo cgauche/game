@@ -5,11 +5,13 @@
  * recroquevillées à la mort. Réutilise la machinerie (FK générique, palette tokenisée, rendu).
  */
 import type { ResolvedBone } from '../composeRig';
+import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
+import { SPIDER_SPECIES, spiderSpeciesMatch } from '../creatures';
 
 export type SpiderBoneId = 'corps' | 'abdomen';
 type SBone = FKBone & { z: number };
@@ -104,6 +106,25 @@ export function resolveSpiderFromProps(
 export const SPIDER_DEFAULT: SpiderProps = {
   sl: 1.0, girth: 1.0,
   stored: { corps: '#2e2622', corpsO: '#181210', corpsH: '#574438', cheveux: '#181210', cheveuxO: '#0e0a08', cuir: '#7a1010' },
+};
+
+export function resolveSpider(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+  return resolveSpiderFromProps(SPIDER_SPECIES[species] ?? SPIDER_DEFAULT, view, pose, colors);
+}
+export function spiderSpeciesFromName(name: string): string {
+  return spiderSpeciesMatch(name) ?? Object.keys(SPIDER_SPECIES)[0] ?? 'Araignée';
+}
+
+export const arachnidPlan: BodyPlan = {
+  id: 'arachnid',
+  resolve: (sp, view, pose, opts) => resolveSpider(sp, view, pose, opts?.colors),
+  speciesNames: () => Object.keys(SPIDER_SPECIES),
+  restPose: () => SPIDER_REST,
+  idlePose: (phase) => spiderIdle(phase * 0.5), // frémissement de l'abdomen au repos
+  walkPose: spiderIdle, // scuttle = pulsation ample
+  attackPose: spiderRush,
+  deathPose: () => SPIDER_DEATH,
+  hasView: () => true,
 };
 
 export function spiderSvg(

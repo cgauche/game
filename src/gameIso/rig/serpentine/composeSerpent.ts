@@ -5,11 +5,13 @@
  * mort. Réutilise INTÉGRALEMENT la machinerie (FK worldTransformsG, palette tokenisée, rendu).
  */
 import type { ResolvedBone } from '../composeRig';
+import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
+import { SERPENT_SPECIES, serpentSpeciesMatch } from '../creatures';
 
 export type SerpentBoneId = 'corps' | 'cou' | 'tete';
 type SBone = FKBone & { z: number };
@@ -118,13 +120,32 @@ export function resolveSerpentFromProps(
     .sort((a, b) => a.z - b.z);
 }
 
-// NB : l'enregistrement comme BodyPlan (serpentinePlan) + le routage bodyPlanOf + le dispatch
-// IsoStage se feront en UN seul passage de câblage pour tous les nouveaux squelettes (cf. plan).
-
-/** Props par défaut (serpent générique). Les espèces concrètes viendront des defs/. */
+/** Props par défaut (serpent générique) — repli si une espèce n'est pas dans le registre. */
 export const SERPENT_DEFAULT: SerpentProps = {
   sl: 1.0, girth: 1.0, hood: true,
   stored: { corps: '#5a7a44', corpsO: '#37502a', corpsH: '#82a05e', cheveux: '#2c3a20', cheveuxO: '#1a2410', cuir: '#caa23a' },
+};
+
+/** (espèce, vue, pose, couleurs) → os résolus, depuis la table d'espèces du registre. */
+export function resolveSerpent(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+  return resolveSerpentFromProps(SERPENT_SPECIES[species] ?? SERPENT_DEFAULT, view, pose, colors);
+}
+export function serpentSpeciesFromName(name: string): string {
+  return serpentSpeciesMatch(name) ?? Object.keys(SERPENT_SPECIES)[0] ?? 'Serpent';
+}
+
+/** Gabarit serpentin enregistrable. L'ondulation de cobra est l'IDLE du plan (animée en continu
+ *  par AnimatedPlanToken) ; la marche reprend l'ondulation amplifiée. */
+export const serpentinePlan: BodyPlan = {
+  id: 'serpentine',
+  resolve: (sp, view, pose, opts) => resolveSerpent(sp, view, pose, opts?.colors),
+  speciesNames: () => Object.keys(SERPENT_SPECIES),
+  restPose: () => SERPENT_REST,
+  idlePose: (phase) => serpentSway(phase * 0.5), // ondulation douce au repos
+  walkPose: serpentSway, // ondulation ample en déplacement
+  attackPose: serpentStrike,
+  deathPose: () => SERPENT_DEATH,
+  hasView: () => true,
 };
 
 /** SVG (string, boîte 120×150) d'un serpent prêt à injecter — pose mort/sway intégrée. */

@@ -9,8 +9,15 @@
 import type { QuadProps } from '../quadruped/quadSkeleton';
 import type { MonsterParts } from '../parts/monstrous';
 import type { Palette } from '../palette';
+import type { SerpentProps } from '../serpentine/composeSerpent';
+import type { SpiderProps } from '../arachnid/composeSpider';
+import type { BirdProps } from '../avian/composeBird';
+import type { OctopusProps } from '../cephalopod/composeOctopus';
 
-export type CreatureBodyPlan = 'biped' | 'quadruped' | 'winged' | 'monolithic';
+export type CreatureBodyPlan =
+  | 'biped' | 'quadruped' | 'winged'
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' // nouveaux squelettes (limbless/8-pattes/oiseau/tentacules)
+  | 'monolithic';
 
 /** Config d'une ESPÈCE bipède monstrueuse/humanoïde (ce qui était éparpillé dans les tables
  *  SPECIES_* d'enemyProfile). Tout optionnel : un bipède « humain nu » n'a besoin de rien. */
@@ -43,4 +50,9 @@ export interface CreatureDef {
   quad?: QuadProps;
   /** Config d'espèce bipède (si plan = biped). */
   biped?: BipedConfig;
+  /** Props de rendu des nouveaux squelettes (un champ par gabarit ; requis si plan correspond). */
+  serpent?: SerpentProps; // plan = serpentine
+  spider?: SpiderProps; // plan = arachnid
+  bird?: BirdProps; // plan = avian
+  octopus?: OctopusProps; // plan = cephalopod
 }

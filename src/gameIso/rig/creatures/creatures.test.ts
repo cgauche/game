@@ -8,10 +8,15 @@ import {
 describe('registre de créatures (auto-collecté depuis defs/)', () => {
   it('CREATURES non vide + chaque entrée bien formée', () => {
     expect(CREATURES.length).toBeGreaterThanOrEqual(10);
+    const PLANS = ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'monolithic'];
+    const PROPS: Record<string, keyof typeof CREATURES[number]> = {
+      quadruped: 'quad', winged: 'quad', serpentine: 'serpent', arachnid: 'spider', avian: 'bird', cephalopod: 'octopus',
+    };
     for (const c of CREATURES) {
       expect(c.name, 'name').toBeTruthy();
-      expect(['biped', 'quadruped', 'winged', 'monolithic']).toContain(c.plan);
-      if (c.plan === 'quadruped' || c.plan === 'winged') expect(c.quad, `${c.name}.quad`).toBeTruthy();
+      expect(PLANS).toContain(c.plan);
+      const propField = PROPS[c.plan]; // chaque plan rigué porte son champ de props
+      if (propField) expect(c[propField], `${c.name}.${propField}`).toBeTruthy();
     }
   });
 

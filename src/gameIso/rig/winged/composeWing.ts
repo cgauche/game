@@ -29,12 +29,20 @@ export function resolveWing(
   return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors);
 }
 
+// Battement d'ailes (sinusoïde sur aileD/aileG, signes opposés). Vit DANS le plan : l'idle bat
+// doucement (créature vivante), la marche/vol bat ample. AnimatedPlanToken l'anime — plus de
+// token ailé dédié.
+const wingFlap = (phase: number, amp: number): Record<string, number> => {
+  const f = Math.sin(phase * Math.PI * 2) * amp;
+  return { aileD: -f, aileG: f };
+};
 export const wingedPlan: BodyPlan = {
   id: 'winged',
   resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors),
   speciesNames: () => Object.keys(WINGED_SPECIES),
   restPose: () => QUAD_REST,
-  walkPose: quadWalkPose,
+  idlePose: (phase) => wingFlap(phase, 7), // battement doux au repos
+  walkPose: (phase) => ({ ...quadWalkPose(phase), ...wingFlap(phase, 26) }), // pattes + battement ample
   attackPose: quadBitePose,
   deathPose: () => QUAD_DEATH,
   hasView: () => true,

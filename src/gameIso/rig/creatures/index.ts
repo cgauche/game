@@ -4,7 +4,11 @@
  * en découlent : plus aucun tableau central à re-maintenir.
  */
 import type { QuadProps } from '../quadruped/quadSkeleton';
-import type { CreatureDef, BipedConfig } from './types';
+import type { SerpentProps } from '../serpentine/composeSerpent';
+import type { SpiderProps } from '../arachnid/composeSpider';
+import type { BirdProps } from '../avian/composeBird';
+import type { OctopusProps } from '../cephalopod/composeOctopus';
+import type { CreatureDef, BipedConfig, CreatureBodyPlan } from './types';
 import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
 
@@ -61,3 +65,34 @@ export const wingedSpeciesNames = (): string[] => WING.map((c) => c.name);
 export function quadSpeciesMatch(name: string): string | undefined { return matchIn(QUAD, name)?.name; }
 /** Nom de créature → espèce ailée (clé/alias), ou undefined si aucun ailé ne matche. */
 export function wingSpeciesMatch(name: string): string | undefined { return matchIn(WING, name)?.name; }
+
+// --- Nouveaux squelettes (serpentin/arachnide/aviaire/céphalopode) : tables de props par
+//     espèce, dérivées des defs comme quad/winged. Chaque plan lit son propre champ de props.
+const SERP = CREATURES.filter((c) => c.plan === 'serpentine');
+const ARAC = CREATURES.filter((c) => c.plan === 'arachnid');
+const AVI = CREATURES.filter((c) => c.plan === 'avian');
+const CEPH = CREATURES.filter((c) => c.plan === 'cephalopod');
+export const SERPENT_SPECIES: Record<string, SerpentProps> = Object.fromEntries(SERP.map((c) => [c.name, c.serpent!]));
+export const SPIDER_SPECIES: Record<string, SpiderProps> = Object.fromEntries(ARAC.map((c) => [c.name, c.spider!]));
+export const BIRD_SPECIES: Record<string, BirdProps> = Object.fromEntries(AVI.map((c) => [c.name, c.bird!]));
+export const OCTOPUS_SPECIES: Record<string, OctopusProps> = Object.fromEntries(CEPH.map((c) => [c.name, c.octopus!]));
+export function serpentSpeciesMatch(name: string): string | undefined { return matchIn(SERP, name)?.name; }
+export function spiderSpeciesMatch(name: string): string | undefined { return matchIn(ARAC, name)?.name; }
+export function birdSpeciesMatch(name: string): string | undefined { return matchIn(AVI, name)?.name; }
+export function octopusSpeciesMatch(name: string): string | undefined { return matchIn(CEPH, name)?.name; }
+
+// --- Routage GÉNÉRIQUE (registry-driven) : un nom → la def NON-bipède qui matche, quel que soit
+//     son plan (quad/winged/serpentine/arachnid/avian/cephalopod OU monolithic). Plus de chaîne
+//     par-plan ni de LISTE DE NOMS codée en dur (l'ex-EXOTIC_RE) : déposer un def avec son `plan`
+//     suffit — même « ça reste monolithique » est un fichier def. Les bipèdes (humanoïdes nommés
+//     ou génériques) sont le DÉFAUT quand rien ne matche.
+const NON_BIPED = CREATURES.filter((c) => c.plan !== 'biped');
+/** Def NON-bipède qui matche le nom (gabarit rigué dédié OU monolithique legacy). */
+export function creatureMatch(name: string): CreatureDef | undefined { return matchIn(NON_BIPED, name); }
+/** Plan corporel d'un nom non-bipède (ou undefined → bipède par défaut chez l'appelant). */
+export function creaturePlanMatch(name: string): CreatureBodyPlan | undefined { return creatureMatch(name)?.plan; }
+/** Échelle de token (sl) du gabarit rigué qui matche — lit le champ de props présent. Défaut 1. */
+export function creatureSpeciesScale(name: string): number {
+  const c = creatureMatch(name);
+  return (c && (c.quad ?? c.serpent ?? c.spider ?? c.bird ?? c.octopus)?.sl) || 1;
+}

@@ -33,14 +33,11 @@ import {
 } from './sprites';
 import { hashSeed } from './appearance';
 import { AnimatedRigToken } from './AnimatedRigToken';
-import { AnimatedQuadToken } from './AnimatedQuadToken';
-import { AnimatedWingToken } from './AnimatedWingToken';
+import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
-import { bodyPlanOf } from './rig/bodyPlan';
-import { bipedSpeciesScale } from './rig/creatures';
-import { quadrupedSvg, quadSpeciesScale } from './rig/quadruped/composeQuad';
-import { wingedSvg, wingSpeciesScale } from './rig/winged/composeWing';
+import { bodyPlanOf, planStaticSvg } from './rig/bodyPlan';
+import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
 import { facingView, screenDir } from './rig/facing';
 import { isSupportiveCast } from './rig/anim/spellClips';
 import { groundTile } from './ground';
@@ -404,15 +401,12 @@ export function IsoStage() {
         // intègre la taille d'espèce bipède (Géant = colosse via bipedSpeciesScale ; 1 sinon).
         const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62 * bipedSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      } else if (bodyPlanOf(c.name) === 'quadruped') {
-        // Quadrupède → gabarit rigué ANIMÉ (démarche squelettique + morsure + 8-dir + mort
-        // sur le flanc + recolor). Facing/anim gérés dans AnimatedQuadToken via le bus.
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedQuadToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * quadSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
-        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      } else if (bodyPlanOf(c.name) === 'winged') {
-        // Ailé (griffon/pégase/hippogriffe/dragon) → gabarit ailé rigué. Le scale du token
-        // intègre la taille d'espèce (dragon = ailé géant via wingSpeciesScale).
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedWingToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * wingSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
+      } else if (bodyPlanOf(c.name) !== 'monolithic') {
+        // TOUT gabarit rigué non-bipède (quadrupède / ailé / serpentin / arachnide / aviaire /
+        // céphalopode) → token ANIMÉ GÉNÉRIQUE : poses du plan (démarche/attaque/mort) + anim de
+        // repos en continu (battement, ondulation, dodelinement…) + facing 8-dir + recolor. Le
+        // scale intègre la taille d'espèce (dragon/géant grands, rat/oiseau petits).
+        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * creatureSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
         objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
       } else {
         // Créature exotique → sprite monolithique (legacy).
@@ -440,13 +434,12 @@ export function IsoStage() {
         // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → gabarit
         // rigué + recolor. L'ailé intègre la taille d'espèce (dragon géant) dans son scale.
         const refName = ent.ref ?? ent.label ?? '';
-        const plan = bodyPlanOf(refName);
-        const isQuad = plan === 'quadruped';
-        const isWing = plan === 'winged';
-        const inner = isWing ? wingedSvg(refName, 'front', { colors: ent.appearance?.colors })
-          : isQuad ? quadrupedSvg(refName, 'front', { colors: ent.appearance?.colors }) : entitySprite(ent);
-        const sc = isWing ? 0.55 * wingSpeciesScale(refName) : isQuad ? 0.55 * quadSpeciesScale(refName) : 0.55;
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, undefined, isQuad || isWing) });
+        // Tout gabarit rigué non-bipède → SVG statique (pose de repos) via planStaticSvg ; sinon
+        // (monolithique / autre) → sprite d'entité. Un seul chemin, plus de isQuad/isWing.
+        const rigged = planStaticSvg(refName, 'front', ent.appearance?.colors);
+        const inner = rigged ?? entitySprite(ent);
+        const sc = rigged ? 0.55 * creatureSpeciesScale(refName) : 0.55;
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, inner, sc, undefined, false, ent.anim, undefined, undefined, !!rigged) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
