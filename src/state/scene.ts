@@ -209,6 +209,9 @@ export interface Scene {
   description: string;
   dimensions: { w: number; h: number };
   ambiance?: 'jour' | 'nuit' | 'interieur' | 'foret';
+  /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
+   *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
+  weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
   /** Grille aplatie de longueur w×h (ligne par ligne). */
   tiles: Terrain[];
   entities: SceneEntity[];
