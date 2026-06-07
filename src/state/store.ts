@@ -16,6 +16,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
   aiMaybeTrample, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  maybeOpenHeroPsych,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
@@ -36,6 +37,7 @@ import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isAr
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
+import { resolvePeurTest, resolveTerreurTest, calmeValue } from '../engine/psychology';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -168,6 +170,17 @@ export interface PendingFocus {
   casterId: string;
   spellLabel: string;
   result: FocusResult | null;
+  rerolled?: boolean;
+}
+/** Test de Psychologie (Calme) en attente d'un HÉROS (LDB 21) : Peur (Test étendu) ou Terreur (1ʳᵉ
+ *  rencontre). Lancer → Chance → Appliquer. */
+export interface PendingPsych {
+  combatantId: string;
+  kind: 'peur' | 'terreur';
+  sourceId: string;
+  indice: number;
+  prevDR: number;
+  result: { roll: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
   rerolled?: boolean;
 }
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
@@ -303,6 +316,8 @@ export interface GameState {
   pendingTrample: PendingTrample | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
+  /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
+  pendingPsych: PendingPsych | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -429,6 +444,12 @@ export interface GameState {
   focusForceSuccess: () => void;
   focusConfirm: () => void;
   focusCancel: () => void;
+  /** Test de Psychologie héros (Peur/Terreur, LDB 21) : Lancer, Chance, Appliquer. */
+  psychRoll: () => void;
+  psychReroll: () => void;
+  psychBonusSL: () => void;
+  psychForceSuccess: () => void;
+  psychConfirm: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -519,6 +540,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReveals: [],
   pendingTrample: null,
   pendingFocus: null,
+  pendingPsych: null,
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
@@ -685,6 +707,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReveals: [],
       pendingTrample: null,
       pendingFocus: null,
+      pendingPsych: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -733,6 +756,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReveals: [],
       pendingTrample: null,
       pendingFocus: null,
+      pendingPsych: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -859,7 +883,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingFocus: null, pendingPsych: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -1063,6 +1087,85 @@ export const useGame = create<GameState>((set, get) => ({
     checkBattleOver(get, set);
   },
   focusCancel: () => set({ pendingFocus: null }),
+  // ── Test de Psychologie héros (Peur/Terreur, LDB 21) ── (pas d'« Annuler » : le Test est obligatoire)
+  psychRoll: () => {
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp || pp.result) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    if (!c) return;
+    const result =
+      pp.kind === 'terreur'
+        ? resolveTerreurTest(calmeValue(c), pp.indice, battleRng())
+        : resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
+    set({ pendingPsych: { ...pp, result } });
+  },
+  psychReroll: () => {
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp || !pp.result) return;
+    const failed = pp.kind === 'terreur' ? !pp.result.success : (pp.result.dr ?? 0) === 0;
+    if (!canReroll(failed, !!pp.rerolled)) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    if (!c || (c.fortune ?? 0) <= 0) return;
+    c.fortune = (c.fortune ?? 0) - 1;
+    const result =
+      pp.kind === 'terreur'
+        ? resolveTerreurTest(calmeValue(c), pp.indice, battleRng())
+        : resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
+    set({ pendingPsych: { ...pp, result, rerolled: true }, battle: { ...battle } });
+  },
+  psychBonusSL: () => {
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp || !pp.result) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    if (!c || (c.fortune ?? 0) <= 0) return;
+    c.fortune = (c.fortune ?? 0) - 1;
+    const r = pp.result;
+    const result =
+      pp.kind === 'terreur'
+        ? { ...r, brise: Math.max(pp.indice, (r.brise ?? 0) - 1) } // +1 DR réduit le Brisé (plancher = Indice)
+        : { ...r, calmeDR: (r.calmeDR ?? 0) + 1, vaincue: (r.calmeDR ?? 0) + 1 >= pp.indice };
+    set({ pendingPsych: { ...pp, result }, battle: { ...battle } });
+  },
+  psychForceSuccess: () => {
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp || !pp.result) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    if (!c || (c.resilience ?? 0) <= 0) return;
+    c.resilience = (c.resilience ?? 0) - 1;
+    const r = pp.result;
+    const result =
+      pp.kind === 'terreur'
+        ? { ...r, success: true, brise: 0 }
+        : { ...r, calmeDR: pp.indice, vaincue: true };
+    set({ pendingPsych: { ...pp, result }, battle: { ...battle } });
+  },
+  psychConfirm: () => {
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp || !pp.result) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    set({ pendingPsych: null });
+    if (c) {
+      c.psychState ??= [];
+      const r = pp.result;
+      const log: string[] = [];
+      if (pp.kind === 'terreur') {
+        if (!r.success && (r.brise ?? 0) > 0) {
+          addCondition(c, 'Brisé', r.brise!);
+          log.push(`${c.name} est terrifié : ${r.brise} État(s) Brisé.`);
+        }
+        // La Terreur devient une Peur d'Indice équivalent (0 si réussie → inerte).
+        c.psychState.push({ type: 'peur', sourceId: pp.sourceId, indice: r.success ? 0 : (r.devientPeur ?? pp.indice), calmeDR: 0, lastTestRound: battle.round });
+      } else {
+        let e = c.psychState.find((p) => p.sourceId === pp.sourceId);
+        if (!e) { e = { type: 'peur', sourceId: pp.sourceId, indice: pp.indice, calmeDR: 0 }; c.psychState.push(e); }
+        e.calmeDR = r.calmeDR ?? 0;
+        e.lastTestRound = battle.round;
+        log.push(r.vaincue ? `${c.name} surmonte sa peur.` : `${c.name} reste sous l'emprise de la Peur (${e.calmeDR}/${pp.indice} DR).`);
+      }
+      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+    }
+    maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
+  },
 
   battleClickTile: (pt) => {
     const { battle, scene } = get();

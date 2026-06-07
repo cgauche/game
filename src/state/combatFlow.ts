@@ -714,8 +714,13 @@ export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combat
 /** Ouvre la modale de défense réactive si l'attaque est : ennemi → héros, en mêlée,
  *  à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
  *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
-export function maybeOpenDefense(set: any, attacker: Combatant, target: Combatant): boolean {
-  const weapon = attacker.weapons[0];
+export function maybeOpenDefense(
+  set: any,
+  attacker: Combatant,
+  target: Combatant,
+  weapon: Weapon = attacker.weapons[0],
+  free?: { kind: string; prevActed: boolean },
+): boolean {
   if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
   if (weapon?.type !== 'melee') return false;
   if (chebyshev(attacker.pos!, target.pos!) > 1) return false;
@@ -732,6 +737,9 @@ export function maybeOpenDefense(set: any, attacker: Combatant, target: Combatan
       mode: bestDefenseMode(target),
       def: null,
       result: null,
+      // Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : portée au resolve pour
+      // restaurer l'Action (gratuite), appliquer ses effets RAW et enchaîner la file.
+      ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
     },
   });
   return true;
@@ -1109,6 +1117,7 @@ export function advanceTurn(get: () => GameState, set: any) {
   set({ battle: { ...battle, turn, action: null, moved, acted, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
+  maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
   maybeRunEnemyTurn(get, set);
 }
 
@@ -1155,6 +1164,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
+  maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
   maybeRunEnemyTurn(get, set);
 }
 
@@ -1189,20 +1199,53 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
         addCondition(enemy, 'Brisé', r.brise);
         log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
       }
-      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0 }); // Terreur → Peur
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur
     } else {
-      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0 });
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0, lastTestRound: battle.round });
       log.push(`${enemy.name} a peur de ${foe.name}.`);
     }
   }
-  // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — un Round.
+  // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — UNE fois par Round.
   for (const p of enemy.psychState) {
-    if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 0)) continue;
+    if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 0) || p.lastTestRound === battle.round) continue;
     const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng());
     p.calmeDR = r.calmeDR;
+    p.lastTestRound = battle.round;
     if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
   }
   if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+}
+
+/** Premier Test de Psychologie DÛ pour un combattant (héros) ce Round : nouvelle source de Peur/Terreur
+ *  en Ligne de Vue, ou Peur active non encore testée ce Round. Pur de lecture (ne mute pas). */
+export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: 'peur' | 'terreur'; sourceId: string; indice: number; prevDR: number } | null {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !c.pos || c.psychImmune) return null;
+  const state = c.psychState ?? [];
+  for (const foe of battle.combatants) {
+    if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (lineOfSightCover(scene, c.pos, foe.pos, []).blocked) continue;
+    const src = fearSourceFor(c, foe);
+    if (!src || state.some((p) => p.sourceId === foe.id)) continue;
+    return { kind: src.kind, sourceId: foe.id, indice: src.indice, prevDR: 0 }; // nouvelle source
+  }
+  for (const p of state) {
+    if (p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 0) && p.lastTestRound !== battle.round)
+      return { kind: 'peur', sourceId: p.sourceId!, indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 }; // Peur active à re-tester
+  }
+  return null;
+}
+
+/** Ouvre la modale de Test de Calme/Psychologie si le combattant ACTIF est un héros qui doit tester
+ *  (LDB 21). No-op si une autre modale/révélation est en cours. */
+export function maybeOpenHeroPsych(get: () => GameState, set: any): void {
+  const battle = get().battle;
+  if (!battle || battle.over || get().pendingPsych || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || isOutOfAction(active)) return;
+  const t = collectHeroPsych(get, active);
+  if (t) set({ pendingPsych: { combatantId: active.id, kind: t.kind, sourceId: t.sourceId, indice: t.indice, prevDR: t.prevDR, result: null } });
 }
 
 export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {

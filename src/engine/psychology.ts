@@ -40,6 +40,8 @@ export interface PsychAffliction {
   indice?: number;
   /** DR cumulé du Test ÉTENDU de Calme (Peur), vers l'Indice. */
   calmeDR?: number;
+  /** N° de Round du dernier Test de Calme (le Test étendu est UNE fois par Round). */
+  lastTestRound?: number;
 }
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
