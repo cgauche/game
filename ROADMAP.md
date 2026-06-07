@@ -1,6 +1,6 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-06. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-06-07. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
 les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauche/game`.
 
@@ -231,6 +231,39 @@ enum, `parseSizeLabel`, dérivation au spawn) + **T1** (size-to-hit au tir + +10
 - **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux sur les cases).
 - Aussi : **Localisation par forme de corps** (quadrupède/oiseau/serpent ; `76 - Point d'Impact des Créatures.md`), **monture & Taille** (`14` l.217-223).
 
+## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(spec faite — en cours)*
+
+Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
+Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
+émerger le **Marchand** comme livrable central, lui-même prérequis d'un **système de qualité
+d'objet** (pour qu'Évaluation ait une qualité à révéler). **Décomposé en 3 sous-projets séquencés**
+(chacun sa spec → plan → impl) :
+
+- **#1 — Qualité d'objet (Fabrication)** *(spec faite)* : Atouts/Défauts d'objet **par instance**
+  (artisanat — Léger/Pratique/Raffiné/Solide ; Bâclé/Laid/Peu Fiable/Volumineux) ; effets **prix
+  ×2/÷2 + Disponibilité ∓1 cran** (purs, consommés par le marchand), **Haute Qualité**, encombrement ;
+  **combat armes** (Solide(N)+sauvegarde, Bâclé, Pratique/Peu Fiable) ; **dégâts d'armure + Déviation
+  Critique** (LDB 63 — l'IA ennemie **dévie toujours** tant qu'il reste de la PA → l'armure **s'use**
+  au combat) ; pénalités de port, Laid en social ; **Atouts/Défauts d'armure intrinsèques**
+  (Flexible/Impénétrable/Partielle/Points Faibles). **Précédé d'une Phase 0** : **registre de qualités
+  unifié** (`src/engine/qualities/` + dispatcher pur) qui **absorbe les ~9 checks `hasQ()`/regex épars**
+  sous **golden-master** (iso-comportement) → fin de l'empilement, ajouter une qualité = **une entrée**.
+  Source : LDB 60 (Fabrication) / 63 (Armures) / 61 / 16.
+- **#2 — Marchand** (étend **Jalon 5** « achats/marchandage, fabrication ») : pérenne et
+  **paramétrable dans l'éditeur** (famille de registre + override par entité) ; **Disponibilité**
+  RAW (% par taille de colonie, LDB 59) ; **Marchandage** = Test opposé (gagner −10 % / **−20 % si DR
+  net ≥ 6 ou talent Négociateur**, LDB 60), **un jet par transaction VERROUILLÉ** (anti-abus de
+  re-tirage) ; **Évaluation** (révèle la qualité cachée ; estime ±10 % Rare/Exotique) ; **achat/vente**
+  (revente ½ prix, LDB 60) ; **réparation d'armure** (10 %/PA, LDB 63) ; `spendMoney`. Inventaire
+  par **liste** ou **catégorie auto-gérée**, `restockOnVisit`.
+- **#3 — Arène** (banc d'essai du marchand) : vagues croissantes + interlude marchand (restock par
+  vague) + loot.
+
+**Choix assumés / non-RAW** (défaut = RAW ; tracés §10 de la spec) : **Raffiné** = aucun effet
+mécanique (RAW muet, juste prix/dispo/affichage) ; **Volumineux / Fatigue ×2** modélisé a minima ;
+**Déviation IA** = dévie toujours (décision utilisateur) ; knobs marchand non-RAW (multiplicateur de
+prix, override de remise, toggle marchandage) **avec défaut = comportement canon**.
+
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
 - ✅ Sorts/Bénédictions/Miracles en combat, Incantation, Focalisation, Projectiles, effets actifs,
@@ -345,6 +378,14 @@ enum, `parseSizeLabel`, dérivation au spawn) + **T1** (size-to-hit au tir + +10
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). Reste **fin** : vues dos/profil héros, tintage arcane/divin (`spell` sur `ANIM_ATTACK`), Dragon/Manticore (hors rig), UI d'override cosmétique éditeur, galeries QC à finaliser.
 - **Contenu jouable** (Jalon 4) : ✅ **Chapitre 2** « Du Sang Sur la Route » livré et testé ; reste le vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
+- **Dette « qualités/traits en données sans code »** *(relevé 2026-06-07, via workflow d'inventaire)* :
+  **22 qualités d'arme** (Lente, Imprécise, Dévastatrice, Percutante, Perturbante, Immobilisante,
+  Protectrice, À Répétition, Dangereuse, Épuisante…), **4 qualités d'armure** (Flexible, Impénétrable,
+  Partielle, Points Faibles) et **90+ traits de créature** (Peur/Terreur, Régénération, Souffle, Venin,
+  Vol, Éthéré, Frénésie…) existent dans `data/qualities.json` / `data/traits.json` **sans implémentation
+  en code**. Le **registre de qualités** (Jalon 1.6 Phase 0) en absorbe une première partie (qualités
+  d'arme/armure/artisanat) ; le reste = **backlog** à brancher comme **entrées de registre** au fil des
+  besoins (la Psychologie — Peur/Terreur — est aussi un prérequis de la Taille T5, Jalon 1.5).
 
 ### Dette « historique » (détail)
 
