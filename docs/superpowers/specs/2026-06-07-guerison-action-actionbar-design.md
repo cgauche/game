@@ -136,14 +136,15 @@ action, surgissent et faciles à rater) **restent visibles**.
 ```
 Directs (chaque slot si applicable) :
   🦶 Déplacer   ⚔️ Attaquer   ✨ Incanter   🩹 Soigner   🛡️ Défensive
+  + contextuels rares (apparaissent seulement si dispo) : 🐗 Frénésie · 🐾 Piétiner
 
 Catégories repliées (sous-panneau au clic, masquées si vides) :
   🏃 Mouvement ▾   →  Charger · Courir · Se relever · Se désengager
   🏹 Tir ▾         →  Viser · Recharger · Munition
   🧪 Objets ▾      →  Utiliser · Ramasser
 
-Alertes orphelines — TOUJOURS VISIBLES (surlignées) :
-  ✊ Détermination (N)   🐾 Piétiner   🐗 Frénésie
+Alerte orpheline — VISIBLE & surlignée (hors catégorie) :
+  ✊ Détermination (N)
 
   ⏭️ Fin du tour
 ```
@@ -152,9 +153,13 @@ Alertes orphelines — TOUJOURS VISIBLES (surlignées) :
   déjà en Désengagement quand Engagé (logique existante conservée) ; *Se désengager* est aussi
   listé explicitement dans **Mouvement** (« je veux bouger » → j'ouvre Mouvement → je vois que
   je dois me dégager — l'exemple utilisateur).
-- **Détermination hors catégorie et visible** : elle sert à retirer des États qui *viennent
-  d'apparaître*, à ne pas rater (retour utilisateur explicite). Idem *Piétiner* (action
-  gratuite) et *Frénésie* (rare).
+- **Détermination = seule alerte surlignée**, hors catégorie : elle retire des États qui
+  *viennent d'apparaître*, à ne pas rater (retour utilisateur explicite) et peut sauver la vie.
+- **Piétiner / Frénésie = simples slots contextuels** (pas d'alerte) : *Piétiner* est une
+  action gratuite du sous-système Taille (`LDB 85 l.320-321`), qui n'apparaît pour un héros
+  qu'avec ≥1 Avantage face à un adversaire adjacent plus petit — très rare, et gratuite donc
+  sans enjeu si manquée ; *Frénésie* est un choix délibéré rare. Ils s'affichent quand
+  disponibles, sans surbrillance.
 - **Soigner** est un slot direct visible quand le héros a la compétence ET qu'une cible est
   soignable — important, donc pas enterré.
 - Réduction : Mouvement (≤4→1), Tir (≤3→1), Objets (≤2→1).
