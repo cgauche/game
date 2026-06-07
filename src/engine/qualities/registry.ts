@@ -54,6 +54,8 @@ export interface QualityDef {
     opposed: { attacker: CharKey; defender: CharKey; defenderSkill?: string };
     condition: string;
   };
+  /** Encombrement : délta dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
+  encDelta?: number;
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -76,6 +78,15 @@ export const QUALITIES: Record<string, QualityDef> = {
   // Solide (Indice) — Atout d'OBJET (artisanat, LDB 60 l.64-67) : encaisse N dégâts + sauvegarde 9+.
   // Enregistrée comme exemple canonique d'Indice ; ses HOOKS d'effet seront câblés en Phase A (artisanat).
   'Solide': { key: 'Solide', type: 'Atout', subType: 'Objet' },
+  // --- Qualités d'OBJET (artisanat, LDB 60 l.43-92). Économie : chaque Atout ×2 prix / -1 dispo,
+  //     chaque Défaut ÷2 prix / +1 dispo (couche pure craftEconomy.ts). Effets COMBAT = plans B/C. ---
+  'Léger': { key: 'Léger', type: 'Atout', subType: 'Objet', encDelta: -1 }, // -1 Enc (l.56)
+  'Pratique': { key: 'Pratique', type: 'Atout', subType: 'Objet' }, // +1 DR à un test raté (effet = Phase B/C)
+  'Raffiné': { key: 'Raffiné', type: 'Atout', subType: 'Objet' }, // signe de statut, cumulable (l.61)
+  'Bâclé': { key: 'Bâclé', type: 'Défaut', subType: 'Objet' }, // casse sur test raté-double (effet = Phase B/C)
+  'Laid': { key: 'Laid', type: 'Défaut', subType: 'Objet' }, // -10 Tests de Sociabilité (effet = Phase C)
+  'Peu Fiable': { key: 'Peu Fiable', type: 'Défaut', subType: 'Objet' }, // -1 DR à un test raté (effet = Phase B/C)
+  'Volumineux': { key: 'Volumineux', type: 'Défaut', subType: 'Objet', encDelta: 1 }, // +1 Enc ; porté = Enc 1 (l.91)
   // Assommante : touche à la Tête → Test opposé F vs Endurance+Résistance → Sonné (LDB Armes l.268),
   // déclaré via le hook `onHit` ; le Test (RNG) + addCondition sont interprétés dans combatFlow.
   'Assommante': { key: 'Assommante', type: 'Atout', subType: 'Arme', onHit: { location: 'tete', opposed: { attacker: 'F', defender: 'E', defenderSkill: 'Résistance' }, condition: 'Sonné' } },

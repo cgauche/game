@@ -56,7 +56,8 @@ describe('dispatch — Incassable', () => {
 
 describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
-    for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante']) {
+    for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
+      'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux']) {
       expect(QUALITIES[k]).toBeTruthy();
     }
   });
