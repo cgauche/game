@@ -60,4 +60,23 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const r = resolveAttack(mkGet(s, [a, b]), a, b);
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label.startsWith('Couvert'))).toBe(true);
   });
+
+  it('tir en bougeant (Mouvement dépensé ce tour) → -10 (LDB 14 l.101)', () => {
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter();
+    const b = target({ pos: { x: 6, y: 0 } });
+    const get = (() => ({ scene: s, battle: { combatants: [a, b], moved: true }, log: () => {} })) as unknown as () => GameState;
+    const r = resolveAttack(get, a, b);
+    expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant' && m.value === -10)).toBe(true);
+  });
+
+  it('tir sans Mouvement → pas de pénalité « Tir en bougeant »', () => {
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter();
+    const b = target({ pos: { x: 6, y: 0 } });
+    const r = resolveAttack(mkGet(s, [a, b]), a, b); // mkGet : moved absent
+    expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
+  });
 });

@@ -295,6 +295,7 @@ export function resolveAttack(
     if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
     if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
+    if (battle.moved) env.push({ label: 'Tir en bougeant', value: -10 }); // Mouvement + tir au même Round (LDB 14 l.101)
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
     const inMelee = (target.engagedWith ?? []).some((id) => {
       const ally = battle.combatants.find((c) => c.id === id);
