@@ -107,6 +107,9 @@ export interface SceneEntity {
   /** Fouille à Effets (corps, coffre, meuble…) : Effets appliqués quand on cherche l'objet.
    *  Contrairement à `loot`, l'objet RESTE en place et est marqué « fouillé » (une seule fois). */
   search?: Effect[];
+  /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `effects` appliqués une fois ;
+   *  `consume:true` → le décor disparaît quand pris, sinon il reste (marqué `__fouille_<id>`). */
+  interact?: { effects: Effect[]; consume?: boolean };
   /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
