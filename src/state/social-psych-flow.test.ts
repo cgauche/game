@@ -28,6 +28,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
     expect(pt.skillValue).toBe(30); // 50 − 20 (Animosité)
     expect(pt.target).toBe(30); // Intermédiaire +0
     expect(pt.psychMod).toBe(-20);
+    expect(pt.psychDetail).toBe('Animosité −20 envers Elfe'); // libellé lisible (finding #5)
   });
 
   it('choisit le meilleur PJ EFFECTIF (malus intégré au choix)', () => {
@@ -48,5 +49,16 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
     applyEffects(useGame.getState, useGame.setState, [effect]);
     const pt = useGame.getState().pendingTest!;
     expect(pt.psychMod ?? 0).toBe(0); // F n'est pas un Test de Sociabilité
+  });
+
+  it('Animosité ACTIVE (Test de Psy échoué) → pas de malus social « contenu » (compulsion, LDB 21 l.24)', () => {
+    const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
+    a.psychState = [{ type: 'animosite', cible: 'Elfes', active: true }] as never; // état actif (échec)
+    useGame.setState({ party: [a] });
+    const effect: Effect = { type: 'test', skill: 'Charme', vsGroups: ['Elfe'], onSuccess: [], onFailure: [] } as Effect;
+    applyEffects(useGame.getState, useGame.setState, [effect]);
+    const pt = useGame.getState().pendingTest!;
+    expect(pt.psychMod ?? 0).toBe(0); // actif → compulsion, pas le −20 contenu
+    expect(pt.skillValue).toBe(50);
   });
 });

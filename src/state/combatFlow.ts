@@ -40,7 +40,7 @@ import {
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod } from '../engine/skills';
+import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
@@ -229,6 +229,8 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         const best = partyBest(get().party, e.skill, e.characteristic, socialMod);
         if (!best) break;
         const psychMod = socialMod ? socialMod(best.actor) : 0;
+        const psychLabel = socialMod ? socialPsychLabel(best.actor, e.vsGroups!) : undefined;
+        const psychDetail = psychLabel ? `${psychLabel} envers ${e.vsGroups!.join('/')}` : undefined;
         // Outil utilisé (Phase C2a) : résolu par NOM vers l'uid de l'objet du héros qui agit.
         const tool = e.tool ? best.actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
         const difficulty = e.difficulty ?? 'intermediaire';
@@ -244,6 +246,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             requireSL: e.requireSL ?? 0,
             target,
             psychMod: psychMod || undefined, // malus Animosité/Préjugé de l'acteur (affiché en modale)
+            psychDetail, // libellé lisible (« Animosité −20 envers Elfe »)
             itemUid: tool?.uid,
             isDouble: false,
             roll: null, // pas encore lancé

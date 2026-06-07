@@ -28,16 +28,30 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return 0;
 }
 
-/** Pénalité de Sociabilité d'un Trait psy ciblé de `tester` visant un membre des groupes `targetGroups`
- *  (LDB 21) : Animosité −20 (l.22), Préjugé −10 (l.43-52). Cumulables. Le malus s'applique si le tester
- *  POSSÈDE le trait visant ce groupe (`psychTraits` — cas hors-combat, dialogue : pas d'affliction) OU
- *  s'il subit une affliction ACTIVE du même type (`psychState` — cas en combat). À consommer là où un
- *  Test de Sociabilité vise une cible précise (interaction/dialogue avec le groupe). */
+/** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le
+ *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le −20/−10 est en effet
+ *  l'issue du Test de Psychologie RÉUSSI (Animosité l.22 / Préjugé l.50) — ou, hors combat (pas de Test
+ *  modélisé), la manifestation par défaut du trait possédé. En état ACTIF (Test ÉCHOUÉ) ce malus
+ *  DISPARAÎT : le personnage est sous compulsion (attaquer l.24 / insulter l.52), pas socialement « contenu ». */
+function containedSocialPenalty(tester: Combatant, type: 'animosite' | 'prejuge', targetGroups: string[]): boolean {
+  const possede = (tester.psychTraits ?? []).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups));
+  if (!possede) return false;
+  const actif = (tester.psychState ?? []).some((p) => p.type === type && p.active && p.cible && groupMatch(p.cible, targetGroups));
+  return !actif;
+}
+
+/** Pénalité de Sociabilité des Traits psy ciblés de `tester` envers les groupes `targetGroups` (LDB 21) :
+ *  Animosité −20, Préjugé −10, cumulables. À consommer sur un Test de Sociabilité ciblé (dialogue/interaction). */
 export function socialPsychMod(tester: Combatant, targetGroups: string[]): number {
-  const vs = (type: 'animosite' | 'prejuge'): boolean =>
-    (tester.psychTraits ?? []).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups)) ||
-    (tester.psychState ?? []).some((p) => p.type === type && p.active && p.cible && groupMatch(p.cible, targetGroups));
-  return (vs('animosite') ? -20 : 0) + (vs('prejuge') ? -10 : 0);
+  return (containedSocialPenalty(tester, 'animosite', targetGroups) ? -20 : 0) + (containedSocialPenalty(tester, 'prejuge', targetGroups) ? -10 : 0);
+}
+
+/** Libellé lisible du malus psy social (pour la modale de Test), ou undefined si aucun. Ex. « Animosité −20 ». */
+export function socialPsychLabel(tester: Combatant, targetGroups: string[]): string | undefined {
+  const parts: string[] = [];
+  if (containedSocialPenalty(tester, 'animosite', targetGroups)) parts.push('Animosité −20');
+  if (containedSocialPenalty(tester, 'prejuge', targetGroups)) parts.push('Préjugé −10');
+  return parts.length ? parts.join(' · ') : undefined;
 }
 
 /** Un Test (compétence ou caractéristique) relève-t-il de la **Sociabilité** (LDB 21 : malus psy −20/−10) ?

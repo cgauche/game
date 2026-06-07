@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { socialPsychMod, isSocialTest, partyBest } from './skills';
+import { socialPsychMod, socialPsychLabel, isSocialTest, partyBest } from './skills';
 import type { Combatant } from './types';
 
 function mk(opts: Partial<Combatant>): Combatant {
@@ -7,18 +7,18 @@ function mk(opts: Partial<Combatant>): Combatant {
 }
 
 describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () => {
-  it('Animosité POSSÉDÉE (trait) vs le groupe → −20 (hors combat : pas d’affliction, le trait suffit, l.22)', () => {
+  it('Animosité POSSÉDÉE (trait), non testée → −20 « contenu » (hors combat : pas d’affliction, l.22)', () => {
     const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
     expect(socialPsychMod(tester, ['Elfe', 'Soldat'])).toBe(-20);
     expect(socialPsychMod(tester, ['Humain'])).toBe(0); // hors groupe
   });
-  it('Animosité ACTIVE en combat (affliction) → −20 aussi', () => {
-    const tester = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
-    expect(socialPsychMod(tester, ['Elfe'])).toBe(-20);
-  });
-  it('Animosité affliction INACTIVE (résistée) sans trait possédé → 0', () => {
-    const tester = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: false }] });
+  it('Animosité ACTIVE (Test de Psy ÉCHOUÉ) → 0 : compulsion d’attaque, PAS le malus social contenu (LDB 21 l.24)', () => {
+    const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }], psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
     expect(socialPsychMod(tester, ['Elfe'])).toBe(0);
+  });
+  it('Animosité RÉSISTÉE (Test de Psy RÉUSSI, active:false) → −20 : c’est précisément l’effet du succès (LDB 21 l.22)', () => {
+    const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }], psychState: [{ type: 'animosite', cible: 'Elfes', active: false }] });
+    expect(socialPsychMod(tester, ['Elfe'])).toBe(-20);
   });
   it('Préjugé (trait possédé) vs le groupe → −10 (l.43-52)', () => {
     const tester = mk({ psychTraits: [{ type: 'prejuge', cible: 'Nains' }] });
@@ -28,6 +28,11 @@ describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () =
   it('Animosité + Préjugé cumulent (−30)', () => {
     const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Gobelins' }, { type: 'prejuge', cible: 'Gobelins' }] });
     expect(socialPsychMod(tester, ['Gobelin'])).toBe(-30);
+  });
+  it('socialPsychLabel : libellé lisible du malus (ou undefined)', () => {
+    expect(socialPsychLabel(mk({ psychTraits: [{ type: 'animosite', cible: 'Elfes' }] }), ['Elfe'])).toBe('Animosité −20');
+    expect(socialPsychLabel(mk({ psychTraits: [{ type: 'animosite', cible: 'Gobelins' }, { type: 'prejuge', cible: 'Gobelins' }] }), ['Gobelin'])).toBe('Animosité −20 · Préjugé −10');
+    expect(socialPsychLabel(mk({}), ['Elfe'])).toBeUndefined();
   });
 });
 

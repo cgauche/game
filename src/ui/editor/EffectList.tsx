@@ -5,6 +5,7 @@
  */
 import { Effect, EncounterDef, Dialogue } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
+import { isSocialTest } from '../../engine/skills';
 
 export interface Ctx {
   encounters: EncounterDef[];
@@ -161,16 +162,18 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
               <label className="dr">DR≥<input type="number" value={e.requireSL ?? 0} onChange={(ev) => upd({ requireSL: Number(ev.target.value) })} /></label>
               <input placeholder="Outil (ex. Rossignols — qualité Pratique/Bâclé…)" value={e.tool ?? ''} onChange={(ev) => upd({ tool: ev.target.value || undefined })} />
             </div>
-            <div className="tf-row">
-              <input
-                placeholder="Interlocuteur — groupes (Sociabilité : Animosité/Préjugé −20/−10, ex. « Elfe, Mort-vivant »)"
-                value={(e.vsGroups ?? []).join(', ')}
-                onChange={(ev) => {
-                  const g = ev.target.value.split(',').map((s) => s.trim()).filter(Boolean);
-                  upd({ vsGroups: g.length ? g : undefined });
-                }}
-              />
-            </div>
+            {isSocialTest(e.skill, e.characteristic) && (
+              <div className="tf-row">
+                <input
+                  placeholder="Interlocuteur — groupes (Sociabilité : Animosité/Préjugé −20/−10, ex. « Elfe, Mort-vivant »)"
+                  value={(e.vsGroups ?? []).join(', ')}
+                  onChange={(ev) => {
+                    const g = ev.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+                    upd({ vsGroups: g.length ? g : undefined });
+                  }}
+                />
+              </div>
+            )}
             <div className="branch">
               <span className="branch-label ok">Si RÉUSSITE :</span>
               <EffectList effects={e.onSuccess ?? []} onChange={(x) => upd({ onSuccess: x })} ctx={ctx} />
