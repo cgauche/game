@@ -50,6 +50,11 @@ export const QUALITIES: Record<string, QualityDef> = {
   'Défensive': { key: 'Défensive', type: 'Atout', subType: 'Arme', defenderParryDR: 1 },
   'À Enroulement': { key: 'À Enroulement', type: 'Atout', subType: 'Arme', attackerParryDR: -1 },
   'Pistolet': { key: 'Pistolet', type: 'Atout', subType: 'Arme', canFireWhileEngaged: true },
+  // Dévastatrice / Percutante : effet de Dégâts (DR = max(DR, dé des unités) ; +dé des unités) appliqué
+  // INLINE dans applyHit car entremêlé au calcul de Taille (Atouts conférés / ×N) ; enregistrées ici
+  // pour la présence et la parité — hook de dégâts complet à venir. LDB 62 l.279/313.
+  'Dévastatrice': { key: 'Dévastatrice', type: 'Atout', subType: 'Arme' },
+  'Percutante': { key: 'Percutante', type: 'Atout', subType: 'Arme' },
   'Incassable': { key: 'Incassable', type: 'Atout', subType: 'Arme', unbreakable: true },
   // Inoffensive : posé sur une arme usée à +0 (effectiveWeapon) ; effet « PA doublés » non encore
   // modélisé (dette, cf. ROADMAP). Enregistrée pour la parité (clé connue).

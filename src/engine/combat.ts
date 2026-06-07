@@ -15,6 +15,7 @@ import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './condition
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
+import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -171,7 +172,8 @@ export function attackModifiers(
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303 : « la créature plus petite gagne +10 pour toucher »).
   if (target && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
-  if (hasQ(weapon, 'Précise')) out.push({ label: 'Précise', value: 10 });
+  const precise = qualitySum(weapon, 'attackMod');
+  if (precise) out.push({ label: 'Précise', value: precise });
   if (opts.location) out.push({ label: 'Localisation visée', value: -10 });
   // Modificateurs dérivés de la SCÈNE (couvert / obscurité / météo / mouvement / tir-mêlée), calculés
   // côté state (combatFlow) et injectés ici — la table de Difficultés de Combat n'est pas exhaustive.
@@ -202,10 +204,6 @@ export interface AttackOptions {
   dodgeMod?: number;
 }
 
-/** Une arme possède-t-elle l'Atout/Défaut `q` (insensible à la casse ; ignore l'Indice). */
-const hasQ = (w: Weapon | undefined, q: string): boolean =>
-  !!w && w.qualities.some((x) => x.toLowerCase().startsWith(q.toLowerCase()));
-
 /**
  * Blessures perdues par une touche RÉUSSIE : `totalDamage` − (Bonus d'Endurance + PA de la
  * localisation, ce dernier réduit de 1 par l'Atout Perforante l.316), **plancher 1** (LDB
@@ -214,7 +212,7 @@ const hasQ = (w: Weapon | undefined, q: string): boolean =>
  */
 export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number): number {
   const tb = bonus(effectiveChar(target, 'E'));
-  const ap = Math.max(0, (target.armour[location] ?? 0) - (hasQ(weapon, 'Perforante') ? 1 : 0));
+  const ap = Math.max(0, (target.armour[location] ?? 0) - qualitySum(weapon, 'armourReduction'));
   return Math.max(1, totalDamage - (tb + ap));
 }
 
@@ -222,7 +220,7 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
  *  en Combat rapproché »). Seule une arme à distance possédant cet Atout peut tirer en étant
  *  Engagé / au contact ; les autres armes à distance (arc, arbalète…) ne le peuvent pas. */
 export function canFireWhileEngaged(weapon: Weapon): boolean {
-  return weapon.type === 'ranged' && hasQ(weapon, 'Pistolet');
+  return qCanFireWhileEngaged(weapon);
 }
 
 /** Choisit l'arme adaptée à la distance de la cible : au CONTACT (Combat rapproché) on privilégie
@@ -294,7 +292,7 @@ export function finishMelee(
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   // Pénalité de parade contre plus grand : −2 DR par catégorie de Taille supérieure (LDB 85 l.305-306) — Parade (CC) seulement, pas l'Esquive.
   const parrySizePenalty = defenseMode === 'parade' ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
-  const drAdjust = (defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0) - parrySizePenalty;
+  const drAdjust = (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) : 0) - parrySizePenalty;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode, dodgeMod));
@@ -473,11 +471,11 @@ function applyHit(
   const sb = bonus(effectiveChar(attacker, 'F'));
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
-  const inoffensive = hasQ(weapon, 'Inoffensive');
+  const inoffensive = hasQuality(weapon, 'Inoffensive');
   // Atouts conférés par la Taille (attaquant plus grand — LDB 85 l.295) : fusionnés au calcul de dégâts.
   const sizeQual = sizeGrantedQualities(attacker.size, defender.size);
-  const hasQx = (q: string) => hasQ(weapon, q) || sizeQual.includes(q);
-  const effDR = dr + (hasQ(weapon, 'Pointue') ? 1 : 0); // Atout Pointue : +1 DR sur une touche (l.301)
+  const hasQx = (q: string) => hasQuality(weapon, q) || sizeQual.includes(q);
+  const effDR = dr + qualitySum(weapon, 'damageDR'); // Atout Pointue : +1 DR sur une touche (l.301)
   // Dévastatrice : DR-pour-dégâts = max(DR, dé des unités) ; Percutante : + dé des unités. Inoffensive annule (l.279/313).
   const dmgDR = !inoffensive && hasQx('Dévastatrice') ? Math.max(effDR, units) : effDR;
   let damage = weaponDmg + Math.max(0, dmgDR);
@@ -489,7 +487,7 @@ function applyHit(
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
   // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
-  const empale = hasQ(weapon, 'Empaleuse') && atkBd.roll % 10 === 0;
+  const empale = qualityCritTriggered(weapon, atkBd.roll);
   const isCritical = critical || empale;
   return {
     hit: true,
