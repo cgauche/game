@@ -6,8 +6,8 @@
 import { d100, RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
-import { hitLocation } from './combat';
-import { Combatant, HitLocation, Trauma } from './types';
+import { hitLocationByShape } from './combat';
+import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
 import { traumaFromKind } from './trauma';
 
@@ -27,9 +27,10 @@ export interface CriticalResolved {
   log: string;
 }
 
-/** Localisation d'un Coup Critique : 1d100 lu directement sur le Tableau de Localisation (p.159). */
-export function critLocationRoll(rng: RNG = defaultRNG): HitLocation {
-  return hitLocation(d100(rng));
+/** Localisation d'un Coup Critique : 1d100 lu directement sur le Tableau de Localisation de la forme
+ *  du corps (humanoïde p.159 / Localisations Alternatives p.312). */
+export function critLocationRoll(rng: RNG = defaultRNG, shape: BodyShape = 'humanoide'): HitLocation {
+  return hitLocationByShape(d100(rng), shape);
 }
 
 function findEntry(table: CritEntry[], roll: number): CritEntry {

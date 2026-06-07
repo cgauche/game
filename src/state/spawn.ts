@@ -2,7 +2,7 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape } from '../engine/types';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
@@ -13,6 +13,24 @@ import { groupsFor } from '../engine/groups';
 import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
+import { bodyPlanOf } from '../gameIso/rig/bodyPlan';
+
+/**
+ * Forme du corps (→ Tableau de Localisation, LDB p.312) dérivée du gabarit rigué de la créature.
+ * Serpent & araignée ont des Localisations Alternatives ; quadrupède/ailé/oiseau réétiquettent le
+ * tableau humanoïde (même mécanique). Les gabarits sans table canon (céphalopode/amorphe/squig/
+ * spectral/jabberslythe) retombent sur `humanoide` (table par défaut, p.312 — pas d'invention).
+ */
+export function bodyShapeOf(name: string): BodyShape {
+  switch (bodyPlanOf(name)) {
+    case 'quadruped': return 'quadrupede';
+    case 'avian':
+    case 'winged': return 'oiseau'; // ailes = bras (p.312) ; mécaniquement identique au quadrupède
+    case 'serpentine': return 'serpent';
+    case 'arachnid': return 'araignee';
+    default: return 'humanoide';
+  }
+}
 
 function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): Characteristics {
   const chars = {} as Characteristics;
@@ -110,6 +128,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     weapons: weaponsFromTraits(creature.traits),
     armour: armourFromTraits(creature.traits),
     size,
+    bodyShape: bodyShapeOf(creature.label), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(creature.traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
     traits: creature.traits, // conservés → attaques gratuites de créature en combat
@@ -139,6 +158,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
     size,
+    bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(sb.traits ?? []), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
     traits: sb.traits, // conservés → attaques gratuites de créature en combat

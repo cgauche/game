@@ -19,7 +19,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
-import { reverseRoll, hitLocation } from './combat';
+import { reverseRoll, hitLocationByShape } from './combat';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -278,7 +278,7 @@ export function evaluateMissile(
   if (!cr.cast) {
     return { ...cr, hit: false, defenderDefeated: false };
   }
-  const loc = hitLocation(reverseRoll(cr.roll));
+  const loc = hitLocationByShape(reverseRoll(cr.roll), target.bodyShape);
   const spellDmg = parseSpellDamage(spell.desc);
   const bfm = bonus(effectiveChar(caster, 'FM'));
   const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm;

@@ -7,6 +7,8 @@ import { effectiveWeaponDamage } from './weaponDamage';
 import {
   reverseRoll,
   hitLocation,
+  hitLocationByShape,
+  locationLabel,
   resolveMelee,
   rangeBandModifier,
   rollMeleeAttacker,
@@ -328,6 +330,38 @@ describe('Localisation', () => {
     expect(hitLocation(32)).toBe('brasD'); // 25-44
     expect(hitLocation(60)).toBe('corps'); // 45-79
     expect(hitLocation(95)).toBe('jambeD'); // 90-00
+  });
+});
+
+describe('Localisation par forme du corps (LDB « Point d’Impact des Créatures » p.312)', () => {
+  it('humanoïde / quadrupède / oiseau partagent le tableau humanoïde (mêmes cases)', () => {
+    for (const r of [5, 18, 32, 60, 85, 95]) {
+      expect(hitLocationByShape(r, 'quadrupede')).toBe(hitLocation(r));
+      expect(hitLocationByShape(r, 'oiseau')).toBe(hitLocation(r));
+      expect(hitLocationByShape(r)).toBe(hitLocation(r)); // défaut humanoïde
+    }
+  });
+  it('serpent : Localisations Alternatives 01-19 Tête, 20-00 Corps', () => {
+    expect(hitLocationByShape(1, 'serpent')).toBe('tete');
+    expect(hitLocationByShape(19, 'serpent')).toBe('tete');
+    expect(hitLocationByShape(20, 'serpent')).toBe('corps');
+    expect(hitLocationByShape(100, 'serpent')).toBe('corps');
+  });
+  it('araignée : 01-09 Tête, 10-79 Pattes (Tableau des Jambes), 80-00 Abdomen (Tableau du Corps)', () => {
+    expect(hitLocationByShape(9, 'araignee')).toBe('tete');
+    expect(hitLocationByShape(10, 'araignee')).toBe('jambeD'); // Pattes → Tableau des Jambes
+    expect(hitLocationByShape(79, 'araignee')).toBe('jambeD');
+    expect(hitLocationByShape(80, 'araignee')).toBe('corps'); // Abdomen → Tableau du Corps
+    expect(hitLocationByShape(100, 'araignee')).toBe('corps');
+  });
+  it('étiquettes propres à la forme (description)', () => {
+    expect(locationLabel('brasD', 'quadrupede')).toBe('Membre antérieur droit');
+    expect(locationLabel('jambeG', 'quadrupede')).toBe('Membre postérieur gauche');
+    expect(locationLabel('brasG', 'oiseau')).toBe('Aile gauche');
+    expect(locationLabel('jambeD', 'araignee')).toBe('Patte');
+    expect(locationLabel('corps', 'araignee')).toBe('Abdomen');
+    expect(locationLabel('tete', 'serpent')).toBe('Tête'); // inchangé
+    expect(locationLabel('corps')).toBe('Corps'); // défaut humanoïde
   });
 });
 

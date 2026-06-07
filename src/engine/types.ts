@@ -47,6 +47,23 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
   jambeD: 'Jambe droite',
 };
 
+/**
+ * Forme du corps d'une créature, pour la LOCALISATION d'impact (LDB « Point d'Impact des Créatures »
+ * p.312). Humanoïde/quadrupède/oiseau partagent le Tableau humanoïde (p.159) — seules les ÉTIQUETTES
+ * changent (quadrupède : membres antérieurs/postérieurs ; oiseau : ailes) et les Tableaux de Critiques
+ * sont les mêmes. Serpent & araignée utilisent les « Localisations Alternatives » (p.312).
+ */
+export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee';
+
+/** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312). */
+export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
+  humanoide: {},
+  quadrupede: { brasG: 'Membre antérieur gauche', brasD: 'Membre antérieur droit', jambeG: 'Membre postérieur gauche', jambeD: 'Membre postérieur droit' },
+  oiseau: { brasG: 'Aile gauche', brasD: 'Aile droite', jambeG: 'Patte gauche', jambeD: 'Patte droite' },
+  serpent: {}, // n'expose que Tête / Corps
+  araignee: { jambeD: 'Patte', corps: 'Abdomen' }, // n'expose que Tête / Pattes / Abdomen
+};
+
 export interface SkillInstance {
   name: string;
   spec?: string;
@@ -155,6 +172,8 @@ export interface Combatant {
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
+  /** Forme du corps (LDB p.312) : choisit le Tableau de Localisation. Défaut `humanoide` au point de lecture. */
+  bodyShape?: BodyShape;
   /** Psychologie (LDB 21) : Indice de Peur/Terreur INSPIRÉ (statbloc) ; Immunité Psychologie (85 l.143-144). */
   causesPeur?: number;
   causesTerreur?: number;

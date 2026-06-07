@@ -59,4 +59,11 @@ describe('critLocationRoll — localisation d’un Coup Critique (1d100 direct, 
     const loc = critLocationRoll(makeRNG(3));
     expect(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']).toContain(loc);
   });
+  it('respecte la forme du corps (Localisations Alternatives p.312)', () => {
+    // serpent : seulement Tête / Corps ; araignée : seulement Tête / Pattes(jambeD) / Abdomen(corps)
+    for (let s = 1; s <= 40; s++) {
+      expect(['tete', 'corps']).toContain(critLocationRoll(makeRNG(s), 'serpent'));
+      expect(['tete', 'jambeD', 'corps']).toContain(critLocationRoll(makeRNG(s), 'araignee'));
+    }
+  });
 });

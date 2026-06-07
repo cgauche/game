@@ -10,7 +10,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
-import { Combatant, HitLocation, Weapon } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
@@ -28,7 +28,7 @@ export function reverseRoll(r: number): number {
   return rev;
 }
 
-/** Tableau de Localisation (Livre de base p. 159). */
+/** Tableau de Localisation humanoïde (Livre de base p. 159). */
 export function hitLocation(reversed: number): HitLocation {
   if (reversed <= 9) return 'tete';
   if (reversed <= 24) return 'brasG';
@@ -36,6 +36,26 @@ export function hitLocation(reversed: number): HitLocation {
   if (reversed <= 79) return 'corps';
   if (reversed <= 89) return 'jambeG';
   return 'jambeD';
+}
+
+/**
+ * Localisation selon la FORME du corps (LDB « Point d'Impact des Créatures » p.312).
+ * - humanoïde / quadrupède / oiseau : Tableau humanoïde p.159 (mêmes cases, mêmes Tableaux de
+ *   Critiques ; le quadrupède relit bras=membres antérieurs / jambes=membres postérieurs, l'oiseau
+ *   bras=ailes — l'aile sans table propre se résout sur les Bras, p.312 ; seule l'étiquette change).
+ * - serpent (Localisations Alternatives p.312) : 01-19 Tête, 20-00 Corps.
+ * - araignée (Localisations Alternatives p.312) : 01-09 Tête, 10-79 Pattes (Tableau des Jambes),
+ *   80-00 Abdomen (Tableau du Corps).
+ */
+export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoide'): HitLocation {
+  if (shape === 'serpent') return reversed <= 19 ? 'tete' : 'corps';
+  if (shape === 'araignee') return reversed <= 9 ? 'tete' : reversed <= 79 ? 'jambeD' : 'corps';
+  return hitLocation(reversed); // humanoïde / quadrupède / oiseau : même tableau
+}
+
+/** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). */
+export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): string {
+  return BODY_SHAPE_LOC_LABELS[shape][loc] ?? HIT_LOCATION_LABELS[loc];
 }
 
 /** Valeur de Compétence de combat (Caractéristique + avances pertinentes). */
@@ -484,7 +504,7 @@ function applyHit(
   forcedLoc?: HitLocation,
 ): AttackResult {
   weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
-  const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
+  const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
   const sb = bonus(effectiveChar(attacker, 'F')) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
@@ -514,7 +534,7 @@ function applyHit(
     advantageTo: 'attacker',
     defenderDefeated: defeated,
     log:
-      `${attacker.name} touche ${defender.name} (${locLabel(loc)}) : ` +
+      `${attacker.name} touche ${defender.name} (${locationLabel(loc, defender.bodyShape)}) : ` +
       `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
       (isCritical ? ' — CRITIQUE !' : '') +
       '.',
@@ -539,16 +559,6 @@ function miss(
   };
 }
 
-function locLabel(l: HitLocation): string {
-  return {
-    tete: 'Tête',
-    brasG: 'Bras gauche',
-    brasD: 'Bras droit',
-    corps: 'Corps',
-    jambeG: 'Jambe gauche',
-    jambeD: 'Jambe droite',
-  }[l];
-}
 
 /** Ordre d'initiative : Initiative décroissante, départage par Agilité. */
 export function initiativeOrder(combatants: Combatant[]): Combatant[] {

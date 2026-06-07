@@ -16,7 +16,8 @@ import {
   rollMeleeAttacker,
   rollDisengageAttack,
   attackWeapon,
-  hitLocation,
+  hitLocationByShape,
+  locationLabel,
   reverseRoll,
   woundsFromHit,
   rangeBandModifier,
@@ -452,7 +453,7 @@ export function applyCriticalToTarget(
     log.push(`${target.name} s'effondre, hors de combat.`);
     return false;
   }
-  const loc = isCoupCritique ? critLocationRoll(battleRng()) : location; // Coup Critique = localisation fraîche (l.62)
+  const loc = isCoupCritique ? critLocationRoll(battleRng(), target.bodyShape) : location; // Coup Critique = localisation fraîche (l.62)
   const crit = rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   log.push(crit.log);
@@ -699,11 +700,11 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
       const allies = alliesAtRange(battle, c, weapon);
       if (allies.length) {
         const ally = allies[battleRng().int(0, allies.length - 1)];
-        const loc = hitLocation(reverseRoll(r.roll));
+        const loc = hitLocationByShape(reverseRoll(r.roll), ally.bodyShape);
         const lost = woundsFromHit(weapon, ally, loc, effectiveWeaponDamage(weapon, sb) + units); // plancher 1 (l.165)
         ally.wounds.current = Math.max(0, ally.wounds.current - lost);
         if (ally.wounds.current <= 0) applyZeroWounds(ally);
-        log.push(`  ↳ Touche ${ally.name} (${loc}) : ${lost} Blessure(s).`);
+        log.push(`  ↳ Touche ${ally.name} (${locationLabel(loc, ally.bodyShape)}) : ${lost} Blessure(s).`);
       } else {
         addCondition(c, 'Sonné'); // « Si personne n'est à distance, vous vous frappez tout seul → Sonné » (l.45-46)
         log.push(`  ↳ Personne à portée : se frappe seul → Sonné.`);
