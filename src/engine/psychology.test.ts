@@ -10,6 +10,20 @@ describe('Psychologie (pur)', () => {
     expect(parsePsychTraits(['Immunité (Psychologie)'])).toEqual({ psychImmune: true });
     expect(parsePsychTraits(['Arme +7'])).toEqual({});
   });
+  it('parsePsychTraits : traits ciblés → psychTraits (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie)', () => {
+    const r = parsePsychTraits(['Animosité (Elfes)', 'Haine (Skavens)', 'Préjugé (Nains)', 'Amour (Famille)', 'Camaraderie (Soldats)', 'Phobie (Araignées)']);
+    expect(r.psychTraits).toEqual(expect.arrayContaining([
+      { type: 'animosite', cible: 'Elfes' },
+      { type: 'haine', cible: 'Skavens' },
+      { type: 'prejuge', cible: 'Nains' },
+      { type: 'amour', cible: 'Famille' },
+      { type: 'camaraderie', cible: 'Soldats' },
+      { type: 'phobie', cible: 'Araignées', indice: 1 }, // Phobie = Peur 1 sur la source (LDB 21 l.84-87)
+    ]));
+  });
+  it('parsePsychTraits : « un au choix » → Cible indéfinie (inerte)', () => {
+    expect(parsePsychTraits(['Animosité (un au choix)']).psychTraits).toEqual([{ type: 'animosite', cible: undefined }]);
+  });
   it('peurTerreurFromSize : écart ≥1 → Peur ; ≥2 → Terreur (Indice = écart)', () => {
     expect(peurTerreurFromSize('grande', 'moyenne')).toEqual({ kind: 'peur', indice: 1 });
     expect(peurTerreurFromSize('enorme', 'moyenne')).toEqual({ kind: 'terreur', indice: 2 });
