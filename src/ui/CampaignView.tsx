@@ -19,7 +19,9 @@ import { TrampleModal } from './TrampleModal';
 import { RunModal } from './RunModal';
 import { FocusModal } from './FocusModal';
 import { PsychModal } from './PsychModal';
+import { EncounterPsychModal } from './EncounterPsychModal';
 import { FrenzyModal } from './FrenzyModal';
+import { HealModal } from './HealModal';
 import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
@@ -116,7 +118,9 @@ export function CampaignView() {
       <RunModal />
       <FocusModal />
       <PsychModal />
+      <EncounterPsychModal />
       <FrenzyModal />
+      <HealModal />
       <CastModal />
       <FumbleModal />
       <RevealModal />
