@@ -271,10 +271,12 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
 - ✅ **Éditeur** : champ Blessures optionnel (vide = formule par Taille en placeholder live, rempli = surcharge).
 - ✅ **Audit de fidélité multi-agents** (8 dimensions RAW × find→verify adversariale) : **0 écart confirmé** — implémentation fidèle au `85`.
 
-**Reste (lots à part) :**
-- **T5 — Peur/Terreur** dérivées de l'écart (`85` l.317-318) : **sous-système Psychologie neuf** (Test de Calme étendu, État Brisé, `21-Psychologie.md`) — le plus gros, lot à part.
-- **T6 — Footprint multi-cases des créatures MOBILES** : pathing non-ponctuel + picking/rendu (partiellement bloqué côté rig). DESIGN (RAW silencieux).
-- Aussi : **Localisation par forme de corps** (`76`), **monture & Taille** (`14` l.217-223).
+**Reste (lots à part, prochains jalons Taille — par valeur/effort) :**
+- **T5 — Peur/Terreur** dérivées de l'écart (`85` l.317-318 : Peur N=écart à tout plus petit, Terreur si écart ≥ 2) : **préalable = sous-système Psychologie neuf** (Test de Calme étendu, État Brisé, `21 - Psychologie.md`). Les primitives existent en germe (État **Brisé** + Test de Calme câblés pour la Fuite) mais pas le déclencheur auto. **Le plus gros morceau, jalon à part.**
+- **Localisation par forme de corps** (`76 - Point d'Impact des Créatures` + `13` l.144) : tables humanoïde/quadrupède/oiseau/serpent/araignée ; cible 2 cat. plus grande → l'attaquant **choisit** la zone (`76` l.39). Aujourd'hui tout est résolu en humanoïde. Lot moyen, indépendant.
+- **T6 — Footprint multi-cases des créatures MOBILES** (`15` l.55, **permissif, aucune table canon = DESIGN**) : pathing non-ponctuel + picking/rendu. Partiellement bloqué côté rig. Le plus lourd.
+- **Détails RAW restants** : **Monture & Taille** (`14` l.217-223), **Queue/Langue** (`85`), **Nuée** ignore la Taille (+40 aux tirs, `85` l.199-200), **Immunité Psychologie** annule Peur/Terreur (`85` l.143-144), trait **Agrandir/Réduire** au build de statbloc (+10 F, +10 E, −5 Ag par cat., `85` l.276-277).
+- **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
 ## 🎯 Jalon 1.6 — Qualité d'objet (Fabrication), Marchand & Arène *(en cours — Phase 0 + A + B + C1a LIVRÉES)*
 
