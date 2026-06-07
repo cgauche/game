@@ -16,10 +16,11 @@ import type { OctopusProps } from '../cephalopod/composeOctopus';
 import type { SpectreProps } from '../spectral/composeSpectre';
 import type { SquigProps } from '../squig/composeSquig';
 import type { HulkProps } from '../amorphous/composeHulk';
+import type { JabberProps } from '../jabberslythe/composeJabber';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' // nouveaux squelettes
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' // nouveaux squelettes
   | 'monolithic';
 
 /** Config d'une ESPÈCE bipède monstrueuse/humanoïde (ce qui était éparpillé dans les tables
@@ -61,4 +62,5 @@ export interface CreatureDef {
   spectre?: SpectreProps; // plan = spectral
   squig?: SquigProps; // plan = squig
   hulk?: HulkProps; // plan = amorphous
+  jabber?: JabberProps; // plan = jabberslythe
 }

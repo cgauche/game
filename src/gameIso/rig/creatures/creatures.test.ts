@@ -8,9 +8,9 @@ import {
 describe('registre de créatures (auto-collecté depuis defs/)', () => {
   it('CREATURES non vide + chaque entrée bien formée', () => {
     expect(CREATURES.length).toBeGreaterThanOrEqual(10);
-    const PLANS = ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'spectral', 'squig', 'amorphous', 'monolithic'];
+    const PLANS = ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'spectral', 'squig', 'amorphous', 'jabberslythe', 'monolithic'];
     const PROPS: Record<string, keyof typeof CREATURES[number]> = {
-      quadruped: 'quad', winged: 'quad', serpentine: 'serpent', arachnid: 'spider', avian: 'bird', cephalopod: 'octopus', spectral: 'spectre', squig: 'squig', amorphous: 'hulk',
+      quadruped: 'quad', winged: 'quad', serpentine: 'serpent', arachnid: 'spider', avian: 'bird', cephalopod: 'octopus', spectral: 'spectre', squig: 'squig', amorphous: 'hulk', jabberslythe: 'jabber',
     };
     for (const c of CREATURES) {
       expect(c.name, 'name').toBeTruthy();

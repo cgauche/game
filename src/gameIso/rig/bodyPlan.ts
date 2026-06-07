@@ -21,9 +21,10 @@ import { cephalopodPlan } from './cephalopod/composeOctopus';
 import { spectralPlan } from './spectral/composeSpectre';
 import { squigPlan } from './squig/composeSquig';
 import { amorphousPlan } from './amorphous/composeHulk';
+import { jabberslythePlan } from './jabberslythe/composeJabber';
 import { creaturePlanMatch, creatureMatch } from './creatures';
 
-export type BodyPlanId = 'biped' | 'quadruped' | 'winged' | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous';
+export type BodyPlanId = 'biped' | 'quadruped' | 'winged' | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe';
 
 /** Options de résolution communes (le bipède lit appearance/equip/career ; tous lisent colors). */
 export interface ResolveOpts {
@@ -59,6 +60,7 @@ const PLANS: Record<BodyPlanId, BodyPlan> = {
   spectral: spectralPlan,
   squig: squigPlan,
   amorphous: amorphousPlan,
+  jabberslythe: jabberslythePlan,
 };
 export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];

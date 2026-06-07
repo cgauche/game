@@ -44,10 +44,13 @@ describe('bodyPlanOf', () => {
   it('bête des marais → amorphous (gabarit hulk réutilisable)', () => {
     expect(bodyPlanOf('Bête des marais')).toBe('amorphous');
   });
-  it('bêtes du Chaos bespoke → monolithic (apparence unique assumée)', () => {
-    for (const n of ['Bête de Nurgle', 'Jabberslythe', "Fr'hough Mournbreath"]) {
-      expect(bodyPlanOf(n)).toBe('monolithic');
+  it('bêtes du Chaos (jabberslythes nommés) → jabberslythe — bespoke ANIMÉ, plus de monolithique', () => {
+    for (const n of ['Jabberslythe', 'Slenderthigh Whiptongue', "Fr'hough Mournbreath", 'Bête de Nurgle']) {
+      expect(bodyPlanOf(n)).toBe('jabberslythe');
     }
+  });
+  it('nom inconnu → bipède par défaut (le monolithique n’est plus qu’un fallback opt-in via def)', () => {
+    expect(bodyPlanOf('Créature totalement inconnue xyz')).toBe('biped');
   });
 });
 
