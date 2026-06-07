@@ -24,7 +24,7 @@ const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 // Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
 // le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
 // `startCombat` tire l'Initiative (I+1d10) en début de combat puis la RÉVÈLE (entretien, sans Chance).
-const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat']);
+const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat', 'advanceTime']);
 // Dette temporaire (résolue au fil des tâches) — VIDÉE : tous les jets héros/conséquences sont en modale.
 const TODO = new Set<string>([]);
 
