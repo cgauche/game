@@ -8,5 +8,6 @@ import { scenario as e3 } from './04-destin-resilience';
 import { scenario as e4 } from './05-engagement';
 import { scenario as e5 } from './06-magie';
 import { scenario as e6 } from './07-galerie-modeles';
+import { scenario as e7 } from './08-guerison';
 
-export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6];
+export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7];
