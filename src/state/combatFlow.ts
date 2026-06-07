@@ -330,7 +330,7 @@ export function resolveAttack(
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const scene = get().scene!;
   const battle = get().battle!;
-  const sc = sceneCombatModifiers(scene);
+  const sc = sceneCombatModifiers(scene, get().gameTime);
   const env: ModLine[] = [];
   if (weapon.type === 'ranged') {
     const occupants = battle.combatants

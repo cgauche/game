@@ -2,26 +2,34 @@ import { describe, it, expect } from 'vitest';
 import { sceneCombatModifiers, entityBlockedAt } from './sceneRules';
 import { Scene, SceneEntity, isWalkable } from './scene';
 
-const sc = (over: Partial<Scene>): Scene => ({ ambiance: 'jour', ...over } as Scene);
+const sc = (over: Partial<Scene>): Scene => ({ ambiance: 'exterieur', ...over } as Scene);
+const DAY = 12 * 60;   // midi (clair)
+const NIGHT = 23 * 60; // nuit (obscurité)
 
-describe('sceneCombatModifiers — obscurité / météo (LDB 14 l.94-116/107)', () => {
-  it('clair → aucun mod', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'clair' }))).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
+describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.94-116/107, #T1c)', () => {
+  it('clair de jour → aucun mod', () => {
+    expect(sceneCombatModifiers(sc({ weather: 'clair' }), DAY)).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
   });
   it('pluie → aucun mod (flavor, +0 LDB l.94-98)', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'pluie' }))).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
+    expect(sceneCombatModifiers(sc({ weather: 'pluie' }), DAY)).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
   });
   it('brouillard → cible dissimulée (concealed), -20 au tir', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'brouillard' }))).toMatchObject({ concealed: true, attackMod: 0, dodgeMod: 0 });
+    expect(sceneCombatModifiers(sc({ weather: 'brouillard' }), DAY)).toMatchObject({ concealed: true, attackMod: 0, dodgeMod: 0 });
   });
-  it('nuit → concealed (obscurité, l.107)', () => {
-    expect(sceneCombatModifiers(sc({ ambiance: 'nuit' })).concealed).toBe(true);
+  it('extérieur de nuit (horloge) → concealed (obscurité, l.107)', () => {
+    expect(sceneCombatModifiers(sc({ ambiance: 'exterieur' }), NIGHT).concealed).toBe(true);
+  });
+  it('extérieur de jour (horloge) → pas d’obscurité', () => {
+    expect(sceneCombatModifiers(sc({ ambiance: 'exterieur' }), DAY).concealed).toBe(false);
+  });
+  it('intérieur, même de nuit → jamais obscur (éclairé)', () => {
+    expect(sceneCombatModifiers(sc({ ambiance: 'interieur' }), NIGHT).concealed).toBe(false);
   });
   it('tempête → -20 attaque, esquive 0 (l.108-109)', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'tempete' }))).toMatchObject({ attackMod: -20, dodgeMod: 0 });
+    expect(sceneCombatModifiers(sc({ weather: 'tempete' }), DAY)).toMatchObject({ attackMod: -20, dodgeMod: 0 });
   });
   it('neige → -20 attaque ET -20 esquive (l.115-116)', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'neige' }))).toMatchObject({ attackMod: -20, dodgeMod: -20 });
+    expect(sceneCombatModifiers(sc({ weather: 'neige' }), DAY)).toMatchObject({ attackMod: -20, dodgeMod: -20 });
   });
 });
 
