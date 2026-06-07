@@ -80,6 +80,17 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
   return null;
 }
 
+/** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
+export function isFrenzyCapable(c: Combatant): boolean {
+  return (c.traits ?? []).some((t) => /^Frénésie/i.test(t)) || (c.talents ?? []).some((t) => /^Frénésie/i.test(t.name));
+}
+
+/** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */
+export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success: boolean; roll: number } {
+  const t = rollTest(fm, 'intermediaire', rng);
+  return { success: t.success, roll: t.roll };
+}
+
 /** Valeur de Calme : Force Mentale effective + avances de la compétence Calme (« Sang-froid »). */
 export function calmeValue(c: Combatant): number {
   const adv = c.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0;

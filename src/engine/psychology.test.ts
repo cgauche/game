@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest } from './psychology';
+import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry } from './psychology';
 import { makeRNG } from './dice';
+import type { Combatant } from './types';
 
 describe('Psychologie (pur)', () => {
   it('parsePsychTraits : « Peur N » / « Terreur N » / Immunité', () => {
@@ -25,5 +26,15 @@ describe('Psychologie (pur)', () => {
     const r = resolveTerreurTest(1, 3, makeRNG(2)); // FM 1 → échec quasi sûr
     if (!r.success) expect(r.brise).toBeGreaterThanOrEqual(3);
     expect(r.devientPeur).toBe(3);
+  });
+  it('isFrenzyCapable : trait OU talent « Frénésie »', () => {
+    expect(isFrenzyCapable({ traits: ['Frénésie'], talents: [] } as unknown as Combatant)).toBe(true);
+    expect(isFrenzyCapable({ traits: [], talents: [{ name: 'Frénésie', times: 1 }] } as unknown as Combatant)).toBe(true);
+    expect(isFrenzyCapable({ traits: ['Arme +7'], talents: [] } as unknown as Combatant)).toBe(false);
+  });
+  it('resolveFrenzyEntry : Test de FM, succès = entre', () => {
+    const r = resolveFrenzyEntry(80, makeRNG(2));
+    expect(typeof r.success).toBe('boolean');
+    expect(typeof r.roll).toBe('number');
   });
 });
