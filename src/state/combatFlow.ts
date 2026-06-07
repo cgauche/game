@@ -6,6 +6,7 @@
 import type { GameState, BattleState, RevealEntry } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
+import { facingToward } from '../gameIso/rig/facing';
 import { d10 } from '../engine/dice';
 import {
   resolveMelee,
@@ -564,6 +565,10 @@ export function applyAttackResult(
   if (res.hit && res.woundsLost) target.advantage = 0; // perdre une Blessure → perte de tout Avantage
   const kind = weapon.type === 'ranged' ? 'ranged' : 'melee';
   const defense = weapon.type === 'ranged' ? 'none' : bestDefenseMode(target);
+  // Orientation : l'attaquant se tourne vers la cible, le défenseur vers l'attaquant (frappe offensive).
+  if (attacker.pos && target.pos) {
+    set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
+  }
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
   const log = [...battle.log, res.log];
   log.push(...critLog);
@@ -948,6 +953,10 @@ export function applyCast(
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
     else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    // Sort offensif : lanceur vers la cible, cible vers le lanceur.
+    if (caster.pos && target.pos && caster.id !== target.id) {
+      set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
+    }
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
     if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
@@ -994,6 +1003,10 @@ export function applyCast(
     }
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
     // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
+    // Soutien : le lanceur se tourne vers la cible ; pas de réaction de la cible (ce n'est pas une frappe).
+    if (caster.pos && target.pos && caster.id !== target.id) {
+      set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!) } }));
+    }
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
   }
 
@@ -1220,6 +1233,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       const distBefore = chebyshev(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance de combat AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked);
       enemy.pos = action.to;
+      get().faceFromPath(enemy.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
