@@ -81,12 +81,12 @@ function barrel(p: QuadProps): string {
     case 'canine': // svelte, ventre RENTRÉ (remonte à l'arrière), poitrail à l'avant
       path = `M${-W} -1 Q${-W} -13 ${-12 * bl} -16 Q${6 * bl} -22 ${22 * bl} -18 Q${W} -14 ${W} -2 Q${W - 2} 7 ${16 * bl} 10 Q${0} 13 ${-12 * bl} 11 Q${-W + 3} 8 ${-W} -1 Z`;
       hi = `<path d="M${-18 * bl} -14 Q${2 * bl} -21 ${20 * bl} -16 L${20 * bl} -12 Q${2 * bl} -18 ${-18 * bl} -10 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${-W + 4} 5 Q${-2 * bl} 12 ${12 * bl} 10 Q${20 * bl} 8 ${22 * bl} 1 L${20 * bl} -1 Q${12 * bl} 7 ${-2 * bl} 7 Q${-W + 5} 5 Z" fill="@corpsO" opacity="0.8"/>`;
+      lo = `<path d="M${-W + 4} 5 Q${-2 * bl} 12 ${12 * bl} 10 Q${20 * bl} 8 ${22 * bl} 1 L${20 * bl} -1 Q${12 * bl} 7 ${-2 * bl} 7 Q${-W + 5} 5 ${-W + 4} 5 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
     case 'feline': // lion (griffon) : poitrail profond avant + TAILLE creusée + haunches musclées arrière
       path = `M${-Wb} -3 Q${-Wb - 1} -18 ${-8 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -3 Q${W - 1} 7 ${17 * bl} 11 Q${4 * bl} 7 ${-6 * bl} 9 Q${-18 * bl} 11 ${-Wb} 4 Z`;
       hi = `<path d="M${-18 * bl} -16 Q${3 * bl} -22 ${22 * bl} -17 L${22 * bl} -13 Q${3 * bl} -19 ${-18 * bl} -12 Z" fill="@corpsH" opacity="0.55"/>`;
-      lo = `<path d="M${-Wb + 2} 3 Q${-6 * bl} 9 ${6 * bl} 8 Q${18 * bl} 6 ${22 * bl} 0 L${20 * bl} -2 Q${10 * bl} 5 ${-4 * bl} 5 Q${-Wb + 3} 2 Z" fill="@corpsO" opacity="0.8"/>`;
+      lo = `<path d="M${-Wb + 2} 3 Q${-6 * bl} 9 ${6 * bl} 8 Q${18 * bl} 6 ${22 * bl} 0 L${20 * bl} -2 Q${10 * bl} 5 ${-4 * bl} 5 Q${-Wb + 3} 2 ${-Wb + 2} 3 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
     case 'draconic': { // dragon : corps LONG, profond, ventre lourd qui descend, dos écailleux
       const Wd = W + 3;
