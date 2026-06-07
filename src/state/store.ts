@@ -1163,7 +1163,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target) return;
     applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-    const r = resolveAttack(attacker, target, pa.location ?? undefined);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined);
     if (!r) {
       get().log('Cible hors de portée de mêlée.');
       set({ pendingAttack: null });
@@ -1180,7 +1180,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
     attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
-    const r = resolveAttack(attacker, target, pa.location ?? undefined);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined);
     if (r) set({ pendingAttack: { ...pa, result: r.res, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */

@@ -19,6 +19,7 @@ import {
   woundsFromHit,
   rangeBandModifier,
   AttackResult,
+  ModLine,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
 import {
@@ -46,6 +47,8 @@ import { traumaFromKind } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised } from '../engine/weaponDamage';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
+import { lineOfSightCover, coverModifier } from './lineOfSight';
+import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
@@ -270,15 +273,39 @@ export function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
-export function resolveAttack(attacker: Combatant, target: Combatant, location?: HitLocation): { res: AttackResult; weapon: Weapon } | null {
-  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+export function resolveAttack(
+  get: () => GameState,
+  attacker: Combatant,
+  target: Combatant,
+  location?: HitLocation,
+): { res: AttackResult; weapon: Weapon } | null {
+  const dist = chebyshev(attacker.pos!, target.pos!);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
-  if (!adj && weapon.type === 'melee') return null; // arme de mêlée hors de portée
-  const res =
-    weapon.type === 'ranged'
-      ? resolveRanged(attacker, target, weapon, battleRng(), chebyshev(attacker.pos!, target.pos!), location)
-      : resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location });
-  return { res, weapon };
+  if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
+  const scene = get().scene!;
+  const battle = get().battle!;
+  const sc = sceneCombatModifiers(scene);
+  const env: ModLine[] = [];
+  if (weapon.type === 'ranged') {
+    const occupants = battle.combatants
+      .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
+      .map((c) => c.pos!);
+    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants);
+    if (los.blocked) return null; // pas de Ligne de Vue → pas de tir (LDB 13-Combat l.123)
+    if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
+    if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
+    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
+    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
+    const inMelee = (target.engagedWith ?? []).some((id) => {
+      const ally = battle.combatants.find((c) => c.id === id);
+      return !!ally && ally.kind === attacker.kind;
+    });
+    if (inMelee) env.push({ label: 'Tir dans la mêlée', value: -20 });
+    return { res: resolveRanged(attacker, target, weapon, battleRng(), dist, location, env), weapon };
+  }
+  // Mêlée : seule la météo (tempête/neige) s'applique à l'attaque.
+  if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env }), weapon };
 }
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
@@ -603,7 +630,7 @@ export function maybeOpenDefense(set: any, attacker: Combatant, target: Combatan
 export function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
   if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-  const r = resolveAttack(attacker, target);
+  const r = resolveAttack(get, attacker, target);
   if (!r) {
     get().log('Cible hors de portée de mêlée.');
     return false;
