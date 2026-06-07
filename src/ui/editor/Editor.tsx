@@ -108,6 +108,8 @@ export function Editor() {
   const [encRef, setEncRef] = useState<string>(''); // créature à placer
   const [otherScenes, setOtherScenes] = useState<Scene[]>([]); // projet : scènes ≠ active
   const [painting, setPainting] = useState(false);
+  const [clip, setClip] = useState<SceneEntity | null>(null); // presse-papier (copier/coller)
+  const hoverRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // dernière case survolée (cible de Ctrl+V)
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
@@ -384,6 +386,36 @@ export function Editor() {
   const sel = scene.entities.find((e) => e.id === selected) ?? null;
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (e.id === selected ? { ...e, ...patch } : e)) });
+  /** Colle une copie de `data` (id frais) à la case p. */
+  function pasteEntity(data: SceneEntity, p: { x: number; y: number }) {
+    const id = nextEntityId(data.kind, scene.entities.map((e) => e.id));
+    const ent: SceneEntity = { ...JSON.parse(JSON.stringify(data)), id, pos: { ...p } };
+    setScene({ ...scene, entities: [...scene.entities, ent] });
+    setSelected(id);
+    setSelectedTrigger(null);
+    setSelectedSpawn(null);
+    setSelectedBuilding(null);
+  }
+  /** Duplique la sélection à +1,+1 (clampé). */
+  function duplicateSel() {
+    if (!sel) return;
+    const { w, h } = scene.dimensions;
+    pasteEntity(sel, { x: Math.min(w - 1, sel.pos.x + 1), y: Math.min(h - 1, sel.pos.y + 1) });
+  }
+  // Copier / coller / dupliquer (entités) — Ctrl+C/V/D, hors champ de saisie.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const k = e.key.toLowerCase();
+      if (k === 'c' && sel) { e.preventDefault(); setClip(JSON.parse(JSON.stringify(sel))); }
+      else if (k === 'v' && clip) { e.preventDefault(); pasteEntity(clip, hoverRef.current); }
+      else if (k === 'd' && sel) { e.preventDefault(); duplicateSel(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sel, clip, scene]);
   const selB = (scene.buildings ?? []).find((b) => b.id === selectedBuilding) ?? null;
   const selT = scene.triggers.find((t) => t.id === selectedTrigger) ?? null;
   const updateSelT = (patch: Partial<Trigger>) =>
@@ -748,6 +780,7 @@ export function Editor() {
                 setView((v) => ({ ...v, x: panRef.current!.vx - dx, y: panRef.current!.vy - dy }));
                 return;
               }
+              hoverRef.current = isoTile(e);
               if (moveRef.current) {
                 const to = isoTile(e);
                 const m = moveRef.current;
@@ -1302,6 +1335,7 @@ export function Editor() {
                     </label>
                   </>
                 )}
+                <button className="btn small" onClick={duplicateSel}>Dupliquer</button>
                 <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
                   Supprimer
                 </button>
