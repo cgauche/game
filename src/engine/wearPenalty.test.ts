@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseWearPenalty, wornArmourPenalty } from './wearPenalty';
+import { parseWearPenalty, wornArmourPenalty, wornSocialMod } from './wearPenalty';
 import { testValue, partyBest } from './skills';
 import { qualitySocMod } from './qualities/dispatch';
 import type { Combatant } from './types';
@@ -74,5 +74,15 @@ describe('qualitySocMod (Laid)', () => {
   it('somme socMod (Laid = -10 ; qualité sans socMod = 0)', () => {
     expect(qualitySocMod({ qualities: ['Laid'] })).toBe(-10);
     expect(qualitySocMod({ qualities: ['Précise'] })).toBe(0);
+  });
+});
+
+describe('wornSocialMod', () => {
+  it('somme les Laid ÉQUIPÉS (-10), ignore les non équipés', () => {
+    const c = { items: [
+      { uid: 'a', name: 'Heaume hideux', kind: 'armor', qualities: ['Laid'], enc: 2, equipped: true },
+      { uid: 'b', name: 'Babiole', kind: 'misc', qualities: ['Laid'], enc: 0, equipped: false },
+    ] } as unknown as Combatant;
+    expect(wornSocialMod(c)).toBe(-10);
   });
 });

@@ -5,7 +5,7 @@
  * modulées par l'artisanat de la pièce (Pratique réduit d'un niveau, Peu Fiable double — LDB 60 l.59/88).
  */
 import { Combatant } from './types';
-import { hasQuality } from './qualities/dispatch';
+import { hasQuality, qualitySocMod } from './qualities/dispatch';
 
 const WEAR_RE = /^\s*([+-]?\d+)\s*%?\s*en\s+(.+?)\s*$/i;
 
@@ -32,5 +32,12 @@ export function wornArmourPenalty(c: Combatant, skill: string): number {
       total += v;
     }
   }
+  return total;
+}
+
+/** Somme des modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid -10, LDB 60 l.85). */
+export function wornSocialMod(c: Combatant): number {
+  let total = 0;
+  for (const piece of c.items ?? []) if (piece.equipped) total += qualitySocMod(piece);
   return total;
 }
