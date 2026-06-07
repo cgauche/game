@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { SIZE_ORDER, SIZE_RANGED_MOD, effectiveSize, sizeGap, parseSizeLabel } from './size';
+import {
+  SIZE_ORDER,
+  SIZE_RANGED_MOD,
+  effectiveSize,
+  sizeGap,
+  parseSizeLabel,
+  sizeDamageMultiplier,
+  sizeGrantedQualities,
+  forceOpposedOutcome,
+  woundsForSize,
+} from './size';
 
 describe('size — modèle de Taille (LDB 85 l.279-280 ; 14 l.151-170)', () => {
   it('ordonne les 7 catégories 0..6', () => {
@@ -33,5 +43,35 @@ describe('size — modèle de Taille (LDB 85 l.279-280 ; 14 l.151-170)', () => {
     expect(parseSizeLabel('Minuscule-Énorme')).toBe('enorme');
     expect(parseSizeLabel('de Petite à Moyenne')).toBe('moyenne');
     expect(parseSizeLabel('Énorme-Monstrueuse')).toBe('monstrueuse');
+  });
+});
+
+describe('Taille en combat (T2/T3/T4) — LDB 85 l.293-352', () => {
+  it('sizeDamageMultiplier : ×1 si ≤ +1 cat, ×N si ≥ +2', () => {
+    expect(sizeDamageMultiplier('moyenne', 'moyenne')).toBe(1);
+    expect(sizeDamageMultiplier('grande', 'moyenne')).toBe(1); // +1 cat → ×1 (no-op)
+    expect(sizeDamageMultiplier('enorme', 'moyenne')).toBe(2); // +2 → ×2
+    expect(sizeDamageMultiplier('monstrueuse', 'moyenne')).toBe(3); // +3 → ×3
+    expect(sizeDamageMultiplier('petite', 'moyenne')).toBe(1); // plus petit → ×1
+  });
+  it('sizeGrantedQualities : ∅ / Dévastatrice / Dévastatrice+Percutante (cumul)', () => {
+    expect(sizeGrantedQualities('moyenne', 'moyenne')).toEqual([]);
+    expect(sizeGrantedQualities('grande', 'moyenne')).toEqual(['Dévastatrice']);
+    expect(sizeGrantedQualities('enorme', 'moyenne')).toEqual(['Dévastatrice', 'Percutante']);
+  });
+  it('forceOpposedOutcome : autoWin / needCrit / normal', () => {
+    expect(forceOpposedOutcome('enorme', 'moyenne')).toBe('autoWin'); // a ≥ +2 cat
+    expect(forceOpposedOutcome('grande', 'moyenne')).toBe('normal'); // a +1 cat → normal (b plus petit, pas a)
+    expect(forceOpposedOutcome('moyenne', 'moyenne')).toBe('normal');
+    expect(forceOpposedOutcome('petite', 'grande')).toBe('needCrit'); // a plus petit → doit un Critique
+  });
+  it('woundsForSize : table par catégorie (BF=3, BE=4, BFM=3 → Moyenne 14)', () => {
+    expect(woundsForSize(3, 4, 3, 'moyenne')).toBe(14);
+    expect(woundsForSize(3, 4, 3, 'petite')).toBe(11); // 2·BE+BFM
+    expect(woundsForSize(3, 4, 3, 'tresPetite')).toBe(4); // BE
+    expect(woundsForSize(3, 4, 3, 'minuscule')).toBe(1);
+    expect(woundsForSize(3, 4, 3, 'grande')).toBe(28); // ×2
+    expect(woundsForSize(3, 4, 3, 'enorme')).toBe(56); // ×4
+    expect(woundsForSize(3, 4, 3, 'monstrueuse')).toBe(112); // ×8
   });
 });

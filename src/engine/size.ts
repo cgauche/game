@@ -81,3 +81,48 @@ export function parseSizeLabel(raw: string): SizeCategory | null {
   }
   return best;
 }
+
+/** Multiplicateur de Dégâts si l'attaquant est plus grand (LDB 85 l.297) : ×2 à +2 cat, ×3 à +3…
+ *  (+1 cat = ×1, no-op — le bonus à +1 est l'Atout Dévastatrice). Jamais < 1. */
+export function sizeDamageMultiplier(attacker?: SizeCategory, target?: SizeCategory): number {
+  const gap = sizeGap(attacker, target);
+  return gap >= 2 ? gap : 1;
+}
+
+/** Atouts conférés par l'écart de Taille (LDB 85 l.295) : Dévastatrice à +1 cat, Percutante à +2 — CUMUL. */
+export function sizeGrantedQualities(attacker?: SizeCategory, target?: SizeCategory): string[] {
+  const gap = sizeGap(attacker, target);
+  if (gap >= 2) return ['Dévastatrice', 'Percutante'];
+  if (gap >= 1) return ['Dévastatrice'];
+  return [];
+}
+
+/** Issue d'un Test de Force opposé selon la Taille (LDB 85 l.311-312), du point de vue de `a` :
+ *  a ≥ +2 cat → `autoWin` ; a plus petit (gap ≤ −1) → `needCrit` (doit un Critique pour s'opposer) ; sinon `normal`. */
+export function forceOpposedOutcome(a?: SizeCategory, b?: SizeCategory): 'autoWin' | 'needCrit' | 'normal' {
+  const gap = sizeGap(a, b);
+  if (gap >= 2) return 'autoWin';
+  if (gap <= -1) return 'needCrit';
+  return 'normal';
+}
+
+/** Points de Blessure de base par catégorie de Taille (LDB 85 l.332-352). bf/be/bfm = Bonus de F/E/FM. */
+export function woundsForSize(bf: number, be: number, bfm: number, size: SizeCategory = 'moyenne'): number {
+  const moyenne = bf + 2 * be + bfm;
+  switch (size) {
+    case 'minuscule':
+      return 1;
+    case 'tresPetite':
+      return be;
+    case 'petite':
+      return 2 * be + bfm;
+    case 'moyenne':
+      return moyenne;
+    case 'grande':
+      return moyenne * 2;
+    case 'enorme':
+      return moyenne * 4;
+    case 'monstrueuse':
+      return moyenne * 8;
+  }
+}
