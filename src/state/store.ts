@@ -9,7 +9,7 @@ import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import {
-  activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers,
+  activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
@@ -53,13 +53,24 @@ import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualitie
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds } from '../engine/conditions';
-import { testValue } from '../engine/skills';
+import { testValue, partyBest } from '../engine/skills';
+import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
+import { outOfCombatUpkeep } from './outOfCombatUpkeep';
+import {
+  PendingEncounterPsych,
+  openEncounterPsych,
+  encounterPsychRoll as encounterPsychRollFlow,
+  encounterPsychReroll as encounterPsychRerollFlow,
+  encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
+  encounterPsychConfirm as encounterPsychConfirmFlow,
+} from './encounterPsychFlow';
 import { findSpell, levelsForCareer, findSkill } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
+import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
@@ -287,6 +298,26 @@ export interface PendingCast {
   rerolled?: boolean;
 }
 
+/** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
+ *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). `inCombat` choisit la collection
+ *  (battle.combatants vs party) où trouver soigneur/cible. `intBonus` figé à l'ouverture. */
+export interface PendingHeal {
+  healerId: string;
+  healerName: string;
+  targetId: string;
+  targetName: string;
+  mode: HealMode; // 'wounds' | 'bleed'
+  inCombat: boolean;
+  intBonus: number; // Bonus d'Intelligence du soigneur
+  skillValue: number; // testValue(soigneur, 'Guérison')
+  difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)
+  target: number; // cible effective (affichage)
+  roll: number | null; // null tant que pas lancé (Chance possible ensuite)
+  success: boolean;
+  sl: number; // DR
+  rerolled?: boolean;
+}
+
 export interface BattleState {
   combatants: Combatant[];
   order: string[];
@@ -295,7 +326,7 @@ export interface BattleState {
   baseOrder?: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -340,6 +371,8 @@ export interface GameState {
   pendingDeviation: PendingDeviation | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
+  /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
+  pendingHeal: PendingHeal | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
   /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
@@ -352,6 +385,9 @@ export interface GameState {
   pendingFocus: PendingFocus | null;
   /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
   pendingPsych: PendingPsych | null;
+  /** Test de Psychologie À LA RENCONTRE (hors combat) d'un héros : Peur/Terreur/trait ciblé
+   *  déclenché à l'entrée d'une scène par les PNJ présents (couture C, LDB 21). */
+  pendingEncounterPsych: PendingEncounterPsych | null;
   /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
   pendingFrenzy: PendingFrenzy | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
@@ -399,7 +435,17 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | null) => void;
+  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
+  /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
+  battleHeal: (targetId: string, mode: HealMode) => void;
+  /** Guérison HORS COMBAT : le meilleur soigneur du groupe soigne `targetId`. */
+  healAlly: (targetId: string, mode: HealMode) => void;
+  healRoll: () => void;
+  healReroll: () => void;
+  healBonusSL: () => void;
+  healForceSuccess: () => void;
+  healConfirm: () => void;
+  healCancel: () => void;
   /** Recharger l'arme à distance (LDB 63-Armures l.28-29) : OUVRE la modale de Test étendu de Projectiles. */
   battleReload: () => void;
   /** Modale rechargement : « Lancer » effectue le Test de Projectiles (DR). */
@@ -418,8 +464,8 @@ export interface GameState {
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
   /** Ramasser UN objet au sol pendant un Round (LDB ch.13 l.115-116) : applique au combattant
-   *  actif un item ramassable d'une entité `objet` adjacente. Consomme l'Action, pas d'auto-équipe.
-   *  `key` = `trap:<index dans search>` ou `loot:<index dans loot>`. */
+   *  actif un item ramassable d'un `prop` interactif adjacent. Consomme l'Action, pas d'auto-équipe.
+   *  `key` = `eff:<index dans interact.effects>` (cf. entityPickables). */
   battlePickup: (entityId: string, key: string) => void;
   battleSelectSpell: (label: string) => void;
   /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
@@ -495,6 +541,11 @@ export interface GameState {
   psychBonusSL: () => void;
   psychForceSuccess: () => void;
   psychConfirm: () => void;
+  /** Test de Psychologie à la rencontre, hors combat (couture C, LDB 21) : Lancer, Chance, Résilience, Appliquer. */
+  encounterPsychRoll: () => void;
+  encounterPsychReroll: () => void;
+  encounterPsychForceSuccess: () => void;
+  encounterPsychConfirm: () => void;
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   frenzyRoll: () => void;
@@ -537,6 +588,11 @@ export interface GameState {
   advanceTime: (minutes: number) => void;
 }
 
+/** Trouve soigneur/cible d'un PendingHeal dans la bonne collection (combat vs groupe). Module-level
+ *  (non scanné par le garde-fou « un jet = une modale », qui n'inspecte que les actions du store). */
+function healSubject(state: GameState, ph: PendingHeal, id: string): Combatant | undefined {
+  return ph.inCombat ? state.battle?.combatants.find((c) => c.id === id) : state.party.find((c) => c.id === id);
+}
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
@@ -593,12 +649,14 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDeviation: null,
   pendingDisengage: null,
   pendingCast: null,
+  pendingHeal: null,
   pendingCleave: null,
   pendingReveals: [],
   pendingTrample: null,
   pendingRun: null,
   pendingFocus: null,
   pendingPsych: null,
+  pendingEncounterPsych: null,
   pendingFrenzy: null,
   pendingFumble: null,
   pendingRoundStart: null,
@@ -759,7 +817,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({
       ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
       screen, party, camRot, zoom,
-      scene: JSON.parse(JSON.stringify(scene)),
+      scene: migrateScene(JSON.parse(JSON.stringify(scene))), // dissout objet→prop + loot/search→interact au chargement
       mode: 'exploration',
       partyPos: pos,
       flags: { ...scene.flags },
@@ -768,6 +826,7 @@ export const useGame = create<GameState>((set, get) => ({
       journal: scene.startMessage ? [scene.startMessage] : [],
     });
     bus.emit(EVT.SCENE_DIRTY);
+    openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
   },
 
   loadProject: (scenes, entryId) => {
@@ -792,7 +851,7 @@ export const useGame = create<GameState>((set, get) => ({
       target.entities.find((e) => e.kind === 'heroStart')?.pos ||
       findFreeTile(target);
     set((s) => ({
-      scene: JSON.parse(JSON.stringify(target)),
+      scene: migrateScene(JSON.parse(JSON.stringify(target))), // migration au chargement (cf. startScene)
       mode: 'exploration',
       partyPos: { ...start },
       // flags persistants : on conserve l'état narratif et on ajoute les
@@ -811,6 +870,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingRun: null,
       pendingFocus: null,
       pendingPsych: null,
+      pendingEncounterPsych: null,
       pendingFrenzy: null,
       document: null,
       campaignSceneId: target.id,
@@ -818,6 +878,7 @@ export const useGame = create<GameState>((set, get) => ({
     }));
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);
+    openEncounterPsych(get, set); // couture C : Psychologie à la rencontre dans la nouvelle scène
   },
 
   moveParty: (pt) => {
@@ -850,24 +911,19 @@ export const useGame = create<GameState>((set, get) => ({
     if (ent.dialogueId) {
       const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
       if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
-    } else if (ent.kind === 'objet') {
-      // Fouille à Effets (corps, coffre…) : le corps RESTE, marqué « fouillé » une seule fois.
-      if (ent.search && ent.search.length) {
-        if (get().flags[`__fouille_${entityId}`]) {
-          get().log(`${ent.label ?? 'Déjà fouillé'} : rien de plus à trouver.`);
-          return;
-        }
-        get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
-        applyEffects(get, set, ent.search);
-        get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
-        set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } }));
+      return;
+    }
+    if (ent.interact) {
+      // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
+      if (get().flags[`__fouille_${entityId}`]) {
+        get().log(`${ent.label ?? 'Déjà fouillé'} : rien de plus à trouver.`);
         return;
       }
-      // Ramassage simple (legacy) : ajout à l'inventaire de groupe, l'objet disparaît.
-      const loot = ent.loot ?? [];
-      if (loot.length) set((s) => ({ inventory: [...s.inventory, ...loot] }));
-      get().log(`Vous récupérez : ${loot.join(', ') || ent.label || 'un objet'}.`);
-      removeEntity(get, set, entityId);
+      get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
+      applyEffects(get, set, ent.interact.effects);
+      get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
+      if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
+      else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
     }
   },
 
@@ -913,6 +969,7 @@ export const useGame = create<GameState>((set, get) => ({
         engagedWith: [], // pas d'Engagement hérité d'un combat précédent
         meleeThisRound: [],
         roundsAtZero: 0, // l'horloge de mort lente repart à neuf
+        soinRencontreUtilise: false, // nouvelle rencontre → droit à un soin de Blessures (LDB 09 l.233)
         wounds: { ...h.wounds },
       } as Combatant;
       // Re-dérive les armes ACTIVES depuis les items persistés : une arme usée/détruite au combat
@@ -946,7 +1003,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -966,9 +1023,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
-    // Sonné : pas d'Action (attaque/incantation) ; déplacement ET Détermination restent possibles
-    // (la Détermination ne coûte pas l'Action et peut retirer le Sonné lui-même, LDB ch.17 l.62-66).
-    if (a !== 'move' && a !== 'resolve' && a !== null && !canTakeAction(active)) return;
+    // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement, Détermination et l'ouverture des
+    // conteneurs (Mouvement/Tir/Objets, simples panneaux dont les feuilles portent leur propre `disabled`)
+    // restent possibles (la Détermination ne coûte pas l'Action et peut retirer le Sonné, LDB ch.17 l.62-66).
+    const containerMode = a === 'mvt' || a === 'tir' || a === 'objets';
+    if (a !== 'move' && a !== 'resolve' && !containerMode && a !== null && !canTakeAction(active)) return;
     let reach = new Map<string, number>();
     if (a === 'move' && !battle.moved) {
       // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
@@ -992,6 +1051,114 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, action: a, reachable: reach, selectedSpell } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+
+  // ── Guérison (LDB 09-Compétences l.226-243) — soin de Blessures / arrêt d'Hémorragie ──
+
+  battleHeal: (targetId, mode) => {
+    const { battle } = get();
+    if (!battle) return;
+    const healer = activeCombatant(battle);
+    if (!healer || healer.kind !== 'hero' || !hasHealSkill(healer) || battle.acted || !canTakeAction(healer)) return;
+    const target = battle.combatants.find((c) => c.id === targetId);
+    if (!target || !availableHealModes(target).includes(mode)) return;
+    const skillValue = testValue(healer, 'Guérison');
+    set({
+      pendingHeal: {
+        healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
+        mode, inCombat: true, intBonus: bonus(effectiveChar(healer, 'Int')),
+        skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
+      },
+      battle: { ...battle, action: null },
+    });
+  },
+
+  healAlly: (targetId, mode) => {
+    const party = get().party;
+    const target = party.find((c) => c.id === targetId);
+    if (!target || !availableHealModes(target).includes(mode)) return;
+    const best = partyBest(party.filter(hasHealSkill), 'Guérison');
+    if (!best) return;
+    const healer = best.actor;
+    set({
+      pendingHeal: {
+        healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
+        mode, inCombat: false, intBonus: bonus(effectiveChar(healer, 'Int')),
+        skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
+      },
+    });
+  },
+
+  /** « Lancer » : effectue le jet de Guérison (Intermédiaire +0). */
+  healRoll: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll != null) return;
+    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
+    set({ pendingHeal: { ...ph, roll: res.roll, sl: res.sl, success: res.success } });
+  },
+
+  /** Chance : relance le jet (1×, d100 propre raté seulement). */
+  healReroll: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll == null || !canReroll(ph.roll > ph.target, !!ph.rerolled)) return;
+    const healer = healSubject(get(), ph, ph.healerId);
+    if (!healer || (healer.fortune ?? 0) <= 0) return;
+    healer.fortune = (healer.fortune ?? 0) - 1;
+    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
+    set({
+      pendingHeal: { ...ph, roll: res.roll, sl: res.sl, success: res.success, rerolled: true },
+      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+    });
+  },
+
+  /** Chance « +1 DR » (LDB ch.17 l.26) : le soin scale avec le DR. */
+  healBonusSL: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll == null) return;
+    const healer = healSubject(get(), ph, ph.healerId);
+    if (!healer || (healer.fortune ?? 0) <= 0) return;
+    healer.fortune = (healer.fortune ?? 0) - 1;
+    set({
+      pendingHeal: { ...ph, sl: ph.sl + 1, success: ph.roll <= ph.target },
+      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+    });
+  },
+
+  /** Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (DR ≥ 1). */
+  healForceSuccess: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll == null) return;
+    const healer = healSubject(get(), ph, ph.healerId);
+    if (!healer || (healer.resilience ?? 0) <= 0) return;
+    healer.resilience = (healer.resilience ?? 0) - 1;
+    set({
+      pendingHeal: { ...ph, success: true, sl: Math.max(ph.sl, 1) },
+      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+    });
+  },
+
+  /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. */
+  healConfirm: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll == null) return;
+    set({ pendingHeal: null });
+    const st = get();
+    const target = healSubject(st, ph, ph.targetId);
+    if (!target) return;
+    const log = ph.mode === 'wounds'
+      ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
+      : ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`];
+    if (ph.inCombat && st.battle) {
+      set({ battle: { ...st.battle, acted: true, action: null, log: [...st.battle.log, ...log] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      checkBattleOver(get, set);
+    } else {
+      set({ party: [...st.party] });
+      for (const l of log) get().log(l);
+    }
+  },
+
+  /** Annule avant tout jet (aucun coût). */
+  healCancel: () => set({ pendingHeal: null }),
 
   /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. */
   battleSelectSpell: (label) => {
@@ -1240,6 +1407,13 @@ export const useGame = create<GameState>((set, get) => ({
     }
     maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
   },
+
+  // ── Psychologie À LA RENCONTRE, hors combat (couture C, LDB 21) : délégué à `encounterPsychFlow`
+  //    (self-contained pour limiter la collision avec la session « rig »). « Un jet = une modale ». ──
+  encounterPsychRoll: () => encounterPsychRollFlow(get, set),
+  encounterPsychReroll: () => encounterPsychRerollFlow(get, set),
+  encounterPsychForceSuccess: () => encounterPsychForceSuccessFlow(get, set),
+  encounterPsychConfirm: () => encounterPsychConfirmFlow(get, set),
 
   // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
   battleFrenzy: () => {
@@ -1587,20 +1761,15 @@ export const useGame = create<GameState>((set, get) => ({
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !canTakeAction(active)) return; // ramasser = une Action
     if (get().flags[`__fouille_${entityId}`]) return; // déjà entièrement fouillé en exploration
-    const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'objet');
-    if (!ent || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
-    const [kind, idxStr] = key.split(':');
+    const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop' && !!e.interact);
+    if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
+    const [tag, idxStr] = key.split(':');
+    if (tag !== 'eff') return; // clé = `eff:<index dans interact.effects>` (cf. entityPickables)
     const idx = Number(idxStr);
+    const eff = ent.interact.effects[idx];
+    if (!eff) return;
     let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
-    if (kind === 'loot') {
-      const name = (ent.loot ?? [])[idx];
-      if (!name) return;
-      label = name;
-      ent.loot = (ent.loot ?? []).filter((_, i) => i !== idx); // consommé du pool
-      set((s) => ({ inventory: [...s.inventory, name] }));
-    } else if (kind === 'trap') {
-      const eff = (ent.search ?? [])[idx];
-      if (!eff || eff.type !== 'giveTrapping') return;
+    if (eff.type === 'giveTrapping') {
       const it = itemFromTrapping(eff.trapping);
       if (!it) {
         get().log(`Objet inconnu : « ${eff.trapping} ».`);
@@ -1610,7 +1779,6 @@ export const useGame = create<GameState>((set, get) => ({
       // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
       active.items = [...(active.items ?? []), it];
       recomputeLoadout(active);
-      ent.search = (ent.search ?? []).filter((_, i) => i !== idx); // retire du pool partagé
       set((s) => ({
         party: s.party.map((h) => {
           if (h.id !== active.id) return h;
@@ -1620,8 +1788,22 @@ export const useGame = create<GameState>((set, get) => ({
           return clone;
         }),
       }));
-    } else return;
-    set({ scene: { ...scene }, battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
+    } else if (eff.type === 'giveItem') {
+      label = eff.item;
+      set((s) => ({ inventory: [...s.inventory, eff.item] })); // nom dans l'inventaire de groupe
+    } else if (eff.type === 'giveMoney') {
+      label = 'Argent';
+      applyEffects(get, set, [eff]); // bourse party (or/argent/cuivre)
+    } else return; // effet non ramassable (journal/document…) : pas grappillable en combat
+    ent.interact.effects = ent.interact.effects.filter((_, j) => j !== idx); // retire du pool partagé
+    // Pool de ramassables vidé : `consume` → le décor disparaît ; sinon il reste (ses Effets non-objet
+    // — journal/document — restent fouillables en exploration ; pas de sens à les grappiller en combat).
+    if (entityPickables(ent).length === 0 && ent.interact.consume) {
+      removeEntity(get, set, entityId);
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
+    } else {
+      set({ scene: { ...scene }, battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
+    }
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2273,5 +2455,15 @@ export const useGame = create<GameState>((set, get) => ({
     if (minutes <= 0) return;
     set({ gameTime: get().gameTime + minutes });
     bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
+    // HORS COMBAT : faire progresser les États qui tickent (Hémorragique/Poison/Flammes) et l'agonie au
+    // prorata du temps écoulé (1 Round ≈ TIME_COST.combatRound min). En combat, la frontière de Round le fait.
+    if (!get().battle) {
+      const rounds = Math.floor(minutes / TIME_COST.combatRound);
+      if (rounds > 0) {
+        const party = get().party;
+        const log = outOfCombatUpkeep(party, rounds, battleRng());
+        if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
+      }
+    }
   },
 }));
