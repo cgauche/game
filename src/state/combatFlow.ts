@@ -28,7 +28,7 @@ import {
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
-import { footprintTiles } from './footprint';
+import { footprintTiles, combatDistance } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
@@ -312,7 +312,7 @@ export function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance 
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
 export function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
-  const adj = chebyshev(attacker.pos!, target.pos!) <= 1;
+  const adj = combatDistance(attacker, target) <= 1;
   const w = attackWeapon(attacker.weapons, adj);
   if (w.type === 'ranged' && attacker.kind === 'hero') {
     const ammo = selectedAmmo(attacker, w);
@@ -344,7 +344,7 @@ export function resolveAttack(
   target: Combatant,
   location?: HitLocation,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
-  const dist = chebyshev(attacker.pos!, target.pos!);
+  const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const scene = get().scene!;
@@ -651,7 +651,7 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
   if (!c.pos) return allies;
   return allies.filter((a) => {
     if (!a.pos) return true;
-    const d = chebyshev(c.pos!, a.pos);
+    const d = combatDistance(c, a);
     if (weapon.type === 'ranged' && weapon.range) return rangeBandModifier(d, weapon.range) != null;
     return d <= 1;
   });
@@ -766,7 +766,7 @@ export function maybeOpenDefense(
 ): boolean {
   if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
   if (weapon?.type !== 'melee') return false;
-  if (chebyshev(attacker.pos!, target.pos!) > 1) return false;
+  if (combatDistance(attacker, target) > 1) return false;
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   const atk = rollMeleeAttacker(attacker, target, weapon, battleRng()); // jet d'attaque figé
@@ -815,7 +815,7 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
   return battle.combatants.filter((c) => {
     if (c.kind === attacker.kind || isOutOfAction(c) || hitIds.includes(c.id)) return false;
     if (!attacker.pos || !c.pos) return true;
-    return chebyshev(attacker.pos, c.pos) <= 1;
+    return combatDistance(attacker, c) <= 1;
   });
 }
 
@@ -884,7 +884,7 @@ export function trampleTarget(battle: BattleState, c: Combatant, targetId?: stri
       !isOutOfAction(t) &&
       !!t.pos &&
       !!c.pos &&
-      chebyshev(c.pos, t.pos) <= 1 &&
+      combatDistance(c, t) <= 1 &&
       sizeGap(c.size, t.size) >= 1,
   );
 }
@@ -920,7 +920,7 @@ export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant)
   if (!battle || battle.over || !enemy.pos) return;
   if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps
   const target = battle.combatants.find(
-    (t) => t.kind !== enemy.kind && !isOutOfAction(t) && !!t.pos && chebyshev(enemy.pos!, t.pos) <= 1,
+    (t) => t.kind !== enemy.kind && !isOutOfAction(t) && !!t.pos && combatDistance(enemy, t) <= 1,
   );
   if (!target) return;
   const prevActed = get().battle?.acted ?? false; // gratuite : on restaure l'état d'Action après coup
@@ -1004,7 +1004,7 @@ export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant
 /** Cible d'une attaque gratuite : adversaire adjacent actif (Piétinement exige une Taille inférieure). */
 function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Combatant | undefined {
   if (kind === 'pietinement') return trampleTarget(battle, c);
-  return battle.combatants.find((t) => t.kind !== c.kind && !isOutOfAction(t) && !!t.pos && !!c.pos && chebyshev(c.pos, t.pos) <= 1);
+  return battle.combatants.find((t) => t.kind !== c.kind && !isOutOfAction(t) && !!t.pos && !!c.pos && combatDistance(c, t) <= 1);
 }
 
 /** Résout UNE attaque gratuite de `kind` contre `target`, OPPOSÉE et GRATUITE : ouvre la modale de
@@ -1171,7 +1171,7 @@ export function applyGaze(get: () => GameState, set: any, attacker: Combatant): 
 export function applyChillGrasp(get: () => GameState, set: any, attacker: Combatant): boolean {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
-  const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= 1);
+  const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1);
   if (!tgt) return false;
   attacker.advantage = Math.max(0, attacker.advantage - 2);
   const r = opposedTest(combatValue(attacker, 'melee'), defenseValue(tgt, bestDefenseMode(tgt)), battleRng());
@@ -1760,7 +1760,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       //  • l'IA charge dans la portée de MARCHE (chooseEnemyAction borne le déplacement à M),
       //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
       const wasEngaged = isEngaged(enemy);
-      const distBefore = chebyshev(enemy.pos!, targetOf(action.thenTargetId).pos!); // distance de combat AVANT le déplacement
+      const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked);
       enemy.pos = action.to;
       get().faceFromPath(enemy.id, path);
@@ -1768,7 +1768,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
-      if (canAct && chebyshev(enemy.pos!, tgt.pos!) <= 1) {
+      if (canAct && combatDistance(enemy, tgt) <= 1) {
         // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
         if (!wasEngaged) {
           const adv = chargeAdvantage(effectiveMovement(enemy), distBefore);

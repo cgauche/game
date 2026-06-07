@@ -13,6 +13,7 @@
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, manhattan, chebyshev, Pt } from './path';
+import { footprintChebyshev } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
 import { groupMatch } from '../engine/groups';
 
@@ -67,6 +68,8 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke } = input;
   if (heroes.length === 0) return { kind: 'end' };
   const pos = enemy.pos!;
+  // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
+  const inMelee = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size) <= 1;
 
   const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
@@ -77,7 +80,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
   // C'est ce qui corrige l'arbalétrier qui canardait au loin alors qu'il était Engagé.
-  const adjacentFoes = heroes.filter((h) => adjacent(pos, h.pos!));
+  const adjacentFoes = heroes.filter(inMelee);
   // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
   const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, [], smoke ?? []).blocked;
@@ -137,7 +140,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (canShoot) return { kind: 'shoot', targetId: target.id };
 
   // --- Mêlée / repositionnement -------------------------------------------
-  if (hasMeleeWeapon && adjacent(pos, target.pos!)) return { kind: 'melee', targetId: target.id };
+  if (hasMeleeWeapon && inMelee(target)) return { kind: 'melee', targetId: target.id };
 
   // Se rapprocher : viser une case atteignable adjacente à la cible si possible, sinon la plus
   // proche. Vaut pour la mêlée ET pour un tireur sans cible visible (se déplacer pour dégager la LdV).

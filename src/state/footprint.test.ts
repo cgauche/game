@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { sizeFootprint, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap } from './footprint';
+import { sizeFootprint, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance } from './footprint';
 import { chebyshev } from './path';
+import type { Combatant } from '../engine/types';
+import type { SizeCategory } from '../engine/size';
+
+const C = (x: number, y: number, size?: SizeCategory): Combatant => ({ pos: { x, y }, size }) as unknown as Combatant;
 
 // Empreinte de grille par Taille (LDB 15 - Déplacement l.55 : « 2, 4 ou même plus de cases »).
 describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
@@ -48,5 +52,12 @@ describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
   it('footprintsOverlap : détecte la collision de placement', () => {
     expect(footprintsOverlap({ x: 5, y: 5 }, 'grande', { x: 6, y: 6 }, 'moyenne')).toBe(true);
     expect(footprintsOverlap({ x: 5, y: 5 }, 'grande', { x: 7, y: 7 }, 'moyenne')).toBe(false);
+  });
+
+  it('combatDistance : coïncide avec chebyshev pour le 1×1, mais un grand est au contact par son bord', () => {
+    expect(combatDistance(C(0, 0), C(3, 0))).toBe(3); // deux 1×1 → identique à chebyshev
+    expect(combatDistance(C(5, 5, 'grande'), C(7, 6))).toBe(1); // 2×2 adjacent au bord est
+    expect(combatDistance(C(5, 5, 'grande'), C(8, 6))).toBe(2); // une tuile de marge
+    expect(combatDistance(C(0, 0), {} as Combatant)).toBe(Infinity); // cible non posée
   });
 });

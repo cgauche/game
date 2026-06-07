@@ -11,6 +11,7 @@
  * actuelle (pos = sa tuile), donc tout le code positionnel existant reste correct par défaut.
  */
 import { effectiveSize, type SizeCategory } from '../engine/size';
+import type { Combatant } from '../engine/types';
 import type { Pt } from './path';
 
 /** Côté N de l'empreinte carrée N×N par catégorie de Taille (LDB 15 l.55, ancré « 2/4/+ cases »). */
@@ -66,4 +67,15 @@ export function footprintChebyshev(aPos: Pt, aSize: SizeCategory | undefined, bP
 /** Deux empreintes se chevauchent-elles (collision de placement) ? */
 export function footprintsOverlap(aPos: Pt, aSize: SizeCategory | undefined, bPos: Pt, bSize: SizeCategory | undefined): boolean {
   return footprintChebyshev(aPos, aSize, bPos, bSize) === 0;
+}
+
+/**
+ * Distance de COMBAT (Chebyshev d'empreinte) entre deux combattants positionnés — `Infinity` si l'un
+ * n'est pas posé. Un grand est « au contact » (distance 1) si UNE de ses tuiles touche la cible, et
+ * la portée d'un tir se mesure du bord de l'empreinte. Remplace `chebyshev(a.pos, b.pos)` partout où
+ * la Taille des deux combattants compte (mêlée, bandes de portée, sélection de cible).
+ */
+export function combatDistance(a: Combatant, b: Combatant): number {
+  if (!a.pos || !b.pos) return Infinity;
+  return footprintChebyshev(a.pos, a.size, b.pos, b.size);
 }
