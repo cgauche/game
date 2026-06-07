@@ -9,6 +9,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { effectiveChar } from './characteristics';
 import { SizeCategory, sizeGap } from './size';
+import { groupMatch } from './groups';
 
 export type PsychType =
   | 'peur'
@@ -130,6 +131,33 @@ export function resolvePeurTest(
   const dr = t.success ? Math.max(0, t.sl) : 0;
   const calmeDR = prevDR + dr;
   return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll };
+}
+
+/** Traits ciblés visant un ALLIÉ (on les défend) plutôt qu'un ennemi (LDB 21 : Amour l.74, Camaraderie l.79). */
+const TARGETS_ALLY = new Set<PsychType>(['amour', 'camaraderie']);
+
+/** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE
+ *  (ennemi pour animosite/haine/prejuge/phobie ; allié pour amour/camaraderie) et le trait n'est pas
+ *  déjà en affliction active. `visible` = combattants en Ligne de Vue (filtrée par l'appelant, couche
+ *  state). Une Cible indéfinie (« un au choix ») est inerte. Pur. Phobie porte son Indice (Peur 1). */
+export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: PsychType; cible: string; sourceId: string; indice?: number } | null {
+  for (const tr of self.psychTraits ?? []) {
+    if (!tr.cible) continue; // « un au choix » → inerte
+    if ((self.psychState ?? []).some((p) => p.type === tr.type && p.cible === tr.cible)) continue; // déjà testé/actif
+    const wantAlly = TARGETS_ALLY.has(tr.type);
+    const m = visible.find(
+      (v) => v.id !== self.id && (wantAlly ? v.kind === self.kind : v.kind !== self.kind) && groupMatch(tr.cible!, v.groups ?? []),
+    );
+    if (m) return { type: tr.type, cible: tr.cible, sourceId: m.id, indice: tr.indice };
+  }
+  return null;
+}
+
+/** Test de Psychologie SIMPLE (Calme, Intermédiaire +0) d'un trait ciblé (LDB 21) : succès = résisté.
+ *  Binaire (pas de Test étendu) — contrairement à la Peur. */
+export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { success: boolean; roll: number; sl: number } {
+  const t = rollTest(calme, 'intermediaire', rng);
+  return { success: t.success, roll: t.roll, sl: t.sl };
 }
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;

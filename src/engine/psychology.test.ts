@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry } from './psychology';
+import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple } from './psychology';
 import { makeRNG } from './dice';
 import type { Combatant } from './types';
 
@@ -48,6 +48,30 @@ describe('Psychologie (pur)', () => {
   });
   it('resolveFrenzyEntry : Test de FM, succès = entre', () => {
     const r = resolveFrenzyEntry(80, makeRNG(2));
+    expect(typeof r.success).toBe('boolean');
+    expect(typeof r.roll).toBe('number');
+  });
+  it('targetedTrigger : Animosité (Elfes) se déclenche sur un ENNEMI du groupe Elfe visible', () => {
+    const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: 'Elfes' }], psychState: [] } as unknown as Combatant;
+    const foe = { id: 'f', kind: 'hero', groups: ['Elfe', 'Soldat'] } as unknown as Combatant;
+    const other = { id: 'o', kind: 'hero', groups: ['Humain'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [other, foe])).toEqual({ type: 'animosite', cible: 'Elfes', sourceId: 'f' });
+    expect(targetedTrigger(self, [other])).toBeNull(); // aucun membre du groupe visible
+  });
+  it('targetedTrigger : Amour cible un ALLIÉ du groupe ; déjà en psychState → pas re-déclenché', () => {
+    const self = { id: 's', kind: 'hero', psychTraits: [{ type: 'amour', cible: 'Famille' }], psychState: [] } as unknown as Combatant;
+    const ally = { id: 'a', kind: 'hero', groups: ['Famille'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [ally])?.type).toBe('amour');
+    (self.psychState as { type: string; cible: string }[]).push({ type: 'amour', cible: 'Famille' });
+    expect(targetedTrigger(self, [ally])).toBeNull();
+  });
+  it('targetedTrigger : « un au choix » (Cible indéfinie) → inerte', () => {
+    const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: undefined }], psychState: [] } as unknown as Combatant;
+    const foe = { id: 'f', kind: 'hero', groups: ['Elfe'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [foe])).toBeNull();
+  });
+  it('resolveCalmeSimple : Test de Calme binaire (succès = résisté)', () => {
+    const r = resolveCalmeSimple(80, makeRNG(2));
     expect(typeof r.success).toBe('boolean');
     expect(typeof r.roll).toBe('number');
   });
