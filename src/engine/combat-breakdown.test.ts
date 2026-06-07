@@ -57,6 +57,12 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
     const mods = attackModifiers(a, mk({ id: 'C' }), sword, { kind: 'melee', env: [] });
     expect(mods.find((m) => m.label === 'Peur')).toBeUndefined();
   });
+  it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.34)', () => {
+    const tgt = mk({ id: 'T' });
+    const fr = resolveMelee(mk({ frenzied: true }), tgt, sword, makeRNG(2), { defense: 'none' });
+    const no = resolveMelee(mk(), tgt, sword, makeRNG(2), { defense: 'none' });
+    if (fr.hit && no.hit) expect(fr.woundsLost!).toBe(no.woundsLost! + 1);
+  });
 });
 
 describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {

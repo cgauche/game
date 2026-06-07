@@ -161,12 +161,17 @@ export interface Combatant {
   psychImmune?: boolean;
   /** Afflictions psychologiques ACTIVES en combat (Peur en cours, etc.). */
   psychState?: import('./psychology').PsychAffliction[];
+  /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
+  frenzied?: boolean;
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];
   /** Traits de créature (libellés canon) → attaques naturelles gratuites & règles dérivées
    *  (Morsure, Attaque caudale, Souffle… cf. engine/creatureAttacks). Conservés au spawn. */
   traits?: string[];
+  /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
+   *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
+  pendingFreeAttacks?: string[];
   characteristics: Characteristics;
   /** Points de Blessure. `base` = Blessures à vide (snapshot/surcharge au spawn) ; `max` dynamique
    *  = base + delta des buffs F/E/FM × Taille (cf. effectiveMaxWounds) ; `current` = PB restants. */

@@ -15,7 +15,7 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
-  aiMaybeTrample, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  aiMaybeTrample, aiCreatureFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -227,6 +227,11 @@ export interface PendingDefense {
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : ne consomme pas l'Action, applique
+   *  ses effets RAW et enchaîne la file au resolve (cf. aiCreatureFreeAttacks). */
+  free?: boolean;
+  freeKind?: string;
+  prevActed?: boolean;
 }
 /** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
@@ -1741,8 +1746,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && defender) {
       const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
       if (suspended) return; // Déviation Critique du héros : deviationApply rejouera autoCleave/Piétinement/fumble/reprise
-      autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
-      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
+      if (pd.free) {
+        set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
+        applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', pd.result); // À Terre (Attaque caudale)…
+      } else autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle (attaque principale)
     }
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
     // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
@@ -1750,6 +1757,8 @@ export const useGame = create<GameState>((set, get) => ({
       set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null, resumeAfter: true } });
       return;
     }
+    // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
+    if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);
   },
   defenseCancel: () => {
@@ -1763,9 +1772,13 @@ export const useGame = create<GameState>((set, get) => ({
       const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
       const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
       if (suspended) return; // Déviation Critique du héros (même après « Subir » : la déviation d'armure est un choix distinct) — deviationApply reprend
-      autoCleave(get, set, attacker, defender, res); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
-      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
+      if (pd.free) {
+        set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
+        applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
+      } else autoCleave(get, set, attacker, defender, res); // Frappe Mortelle (attaque principale)
     }
+    // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
+    if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);
   },
   // « Dévier » (deviate=true) ou « Subir » (false) le Coup Critique d'un héros (LDB 63 l.63-66).
@@ -1781,7 +1794,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && target) {
       applyAttackResult(get, set, attacker, target, pdv.weapon, pdv.res, deviate);
       autoCleave(get, set, attacker, target, pdv.res); // balayage de l'ennemi plus grand sur les AUTRES héros
-      aiMaybeTrample(get, set, attacker); // Piétinement (action gratuite) d'un ennemi plus grand
+      // (attaques gratuites de créature : enchaînées à la reprise ci-dessous)
       // Maladresse du défenseur héros (défense active ratée sur un double, LDB 14 l.48-51) : `defenderFumbled`
       // est FAUX sans jet de défense (doAttack / « Subir » passif) → ne se déclenche que pour la parade/esquive active.
       if (target.kind === 'hero' && defenderFumbled(pdv.res) && !isOutOfAction(target)) {
@@ -1789,7 +1802,10 @@ export const useGame = create<GameState>((set, get) => ({
         return; // la reprise de l'IA suivra la modale de Maladresse (resumeAfter)
       }
     }
-    if (pdv.resumeAfter) resumeEnemyTurn(get, set);
+    if (pdv.resumeAfter) {
+      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return; // attaques gratuites de créature (file)
+      resumeEnemyTurn(get, set);
+    }
   },
 
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──

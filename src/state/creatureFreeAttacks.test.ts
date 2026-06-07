@@ -1,0 +1,84 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { useGame } from './store';
+import { aiCreatureFreeAttacks } from './combatFlow';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
+import { tome1Intro } from '../scenes/tome1-intro';
+import type { Combatant } from '../engine/types';
+
+// Attaques GRATUITES de créature (Taille & traits) : Morsure / Attaque caudale / Piétinement,
+// chacune 1 Avantage, OPPOSÉE (cible Surprise ici → résolution instantanée), gratuite (LDB 85).
+describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function setup() {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    const E = enemies[0];
+    H.pos = { x: 10, y: 10 }; H.size = 'moyenne';
+    H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
+    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    H.conditions = [{ name: 'Surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée
+    E.pos = { x: 11, y: 10 }; E.size = 'enorme';
+    E.characteristics.CC = 85; E.characteristics.F = 45;
+    useGame.setState({ battle: { ...b, acted: false } });
+    return { H, E };
+  }
+
+  it('Morsure : touche, dégâts infligés, Action NON consommée (gratuite)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Morsure +14']; E.advantage = 1;
+    const before = H.wounds.current;
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false); // cible Surprise → instantané, pas de modale
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    expect(st.battle!.acted).toBe(false); // attaque GRATUITE : l'Action n'est pas consommée
+    // (sur une touche, le coût −1 Avantage est compensé par le +1 du vainqueur du Test opposé — RAW)
+  });
+
+  it('coût : une attaque gratuite RATÉE dépense bien 1 Avantage (CC=1 → échec)', () => {
+    useGame.getState().seedRng(2);
+    const { E } = setup();
+    E.traits = ['Morsure +14']; E.advantage = 2; E.characteristics.CC = 1; // rate → pas de +1 du vainqueur
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBeLessThan(2);
+  });
+
+  it('Attaque caudale : cible de Taille INFÉRIEURE qui perd des PB → À Terre (LDB 85 l.338)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Attaque caudale +14']; E.advantage = 1;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.conditions.some((c) => c.name === 'À Terre')).toBe(true);
+  });
+
+  it('file priorisée : Morsure (trait) PUIS Piétinement (Taille) résolus, file vidée', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Morsure +14']; E.advantage = 5;
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
+    expect(e.pendingFreeAttacks).toBeUndefined(); // file épuisée
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before); // ≥ 1 attaque a touché
+  });
+
+  it('sans Avantage : aucune attaque gratuite, file vidée', () => {
+    const { H, E } = setup();
+    E.traits = ['Morsure +14']; E.advantage = 0;
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
+  });
+});

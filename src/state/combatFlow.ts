@@ -43,7 +43,8 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
+import { creatureAttacks } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
@@ -867,6 +868,77 @@ export function aiMaybeTrample(get: () => GameState, set: any, enemy: Combatant)
   applyTrample(get, set, enemy, target);
 }
 
+// ---------------------------------------------------------------------------
+// Attaques GRATUITES de créature (Taille & traits) — chacune au prix de 1 Avantage, OPPOSÉE
+// (la cible se défend Parade/Esquive, comme une attaque normale) et NE consomme PAS l'Action.
+// RAW : Piétinement (LDB 85 l.320-321, BF+0), Morsure/Attaque caudale (l.338/340, Indice) ; priorité
+// Morsure/Caudale (Indice) avant Piétinement (BF+0) — cf. exemple Aventures à Ubersreik.
+// ---------------------------------------------------------------------------
+
+/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale = +Indice (BF inclus). */
+function freeAttackWeapon(kind: string, bonus: number): Weapon {
+  if (kind === 'pietinement') return TRAMPLE_WEAPON;
+  return { name: kind === 'caudale' ? 'Attaque caudale' : 'Morsure', type: 'melee', damage: `+${bonus}`, qualities: [] };
+}
+
+/** Effet RAW post-touche : Attaque caudale → cible de Taille INFÉRIEURE qui perd des PB subit
+ *  l'État À Terre (LDB 85 l.338). (Venin → Empoisonné : modélisation différée.) */
+export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
+  if (kind === 'caudale' && res.hit && res.woundsLost && sizeGap(attacker.size, target.size) >= 1 && !hasCondition(target, 'À Terre')) {
+    addCondition(target, 'À Terre');
+    get().log(`${target.name} est mis À Terre (Attaque caudale).`);
+  }
+}
+
+/** Cible d'une attaque gratuite : adversaire adjacent actif (Piétinement exige une Taille inférieure). */
+function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Combatant | undefined {
+  if (kind === 'pietinement') return trampleTarget(battle, c);
+  return battle.combatants.find((t) => t.kind !== c.kind && !isOutOfAction(t) && !!t.pos && !!c.pos && chebyshev(c.pos, t.pos) <= 1);
+}
+
+/** Résout UNE attaque gratuite de `kind` contre `target`, OPPOSÉE et GRATUITE : ouvre la modale de
+ *  défense (héros) → suspendu (true) ; sinon résout instantanément (opposé auto, ou passif si Surpris),
+ *  restaure l'Action et applique les effets. Dépense 1 Avantage. */
+function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number): boolean {
+  const prevActed = get().battle?.acted ?? false;
+  attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage
+  const weapon = freeAttackWeapon(kind, bonus);
+  if (maybeOpenDefense(set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
+  const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
+  applyAttackResult(get, set, attacker, target, weapon, res, false);
+  set({ battle: { ...get().battle!, acted: prevActed } }); // gratuite : ne consomme pas l'Action
+  applyFreeAttackEffects(get, attacker, target, kind, res);
+  return false;
+}
+
+/** L'IA enchaîne ses attaques gratuites de créature après l'attaque principale (chacune 1 Avantage,
+ *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
+ *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
+ *  true si une modale s'est ouverte (tour SUSPENDU). */
+export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Combatant): boolean {
+  if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) { enemy.pendingFreeAttacks = undefined; return false; }
+  const battle = get().battle;
+  if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
+  if (enemy.pendingFreeAttacks === undefined) {
+    const traitKinds = creatureAttacks(enemy.traits ?? [])
+      .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
+      .map((a) => a.kind);
+    enemy.pendingFreeAttacks = [...traitKinds, 'pietinement']; // Piétinement (Taille) en dernier
+  }
+  while (enemy.pendingFreeAttacks.length) {
+    if (enemy.advantage < 1) break;
+    const b2 = get().battle; if (!b2 || b2.over) break;
+    const kind = enemy.pendingFreeAttacks[0];
+    const target = freeAttackTarget(b2, enemy, kind);
+    if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
+    const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
+    enemy.pendingFreeAttacks.shift();
+    if (applyFreeAttack(get, set, enemy, target, kind, bonus)) return true; // modale ouverte → reprise via defenseConfirm
+  }
+  enemy.pendingFreeAttacks = undefined; // file épuisée
+  return false;
+}
+
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
 export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
@@ -1181,7 +1253,7 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
  *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
  *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
 export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || enemy.psychImmune || isOutOfAction(enemy)) return;
+  if (enemy.kind !== 'enemy' || enemy.psychImmune || enemy.frenzied || isOutOfAction(enemy)) return; // Frénésie = immunité psy (LDB 21 l.34)
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
@@ -1221,7 +1293,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
 export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: 'peur' | 'terreur'; sourceId: string; indice: number; prevDR: number } | null {
   const battle = get().battle;
   const scene = get().scene;
-  if (!battle || !scene || !c.pos || c.psychImmune) return null;
+  if (!battle || !scene || !c.pos || c.psychImmune || c.frenzied) return null; // Frénésie = immunité psy
   const state = c.psychState ?? [];
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
@@ -1244,8 +1316,27 @@ export function maybeOpenHeroPsych(get: () => GameState, set: any): void {
   if (!battle || battle.over || get().pendingPsych || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'hero' || isOutOfAction(active)) return;
+  endFrenzyIfDone(get, set, active); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test
   const t = collectHeroPsych(get, active);
   if (t) set({ pendingPsych: { combatantId: active.id, kind: t.kind, sourceId: t.sourceId, indice: t.indice, prevDR: t.prevDR, result: null } });
+}
+
+/** Fin de Frénésie (LDB 21 l.36) : si plus aucun adversaire vivant en Ligne de Vue, ou si Sonné /
+ *  Inconscient → quitte la Frénésie et gagne **Exténué**. À appeler au début du tour du combattant. */
+export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): void {
+  if (!c.frenzied) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !c.pos) return;
+  const stunned = c.conditions.some((x) => x.name === 'Sonné' || x.name === 'Inconscient');
+  const foeInLoS = battle.combatants.some(
+    (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, []).blocked,
+  );
+  if (stunned || !foeInLoS) {
+    c.frenzied = false;
+    addCondition(c, 'Exténué');
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, `${c.name} sort de Frénésie (Exténué).`] } });
+  }
 }
 
 export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
@@ -1253,6 +1344,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   if (!battle || !scene || battle.over) return;
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
+  endFrenzyIfDone(get, set, enemy); // Frénésie finie → Exténué, avant de tester la psychologie
   resolvePsychAI(get, set, enemy); // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
 
   const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
@@ -1288,8 +1380,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
-        aiMaybeTrample(get, set, enemy); // Piétinement (action gratuite) après l'attaque instantanée (LDB 85 l.320-321)
-        setTimeout(() => advanceTurn(get, set), 500);
+        // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
+        // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
+        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), 500);
       }
     }, 350);
   };

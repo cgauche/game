@@ -475,7 +475,7 @@ function applyHit(
 ): AttackResult {
   weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
   const loc = forcedLoc ?? hitLocation(reverseRoll(atkBd.roll));
-  const sb = bonus(effectiveChar(attacker, 'F'));
+  const sb = bonus(effectiveChar(attacker, 'F')) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
   const effDR = dr + qualitySum(weapon, 'damageDR'); // Atout Pointue : +1 DR sur une touche (l.301)
