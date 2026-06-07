@@ -403,6 +403,19 @@ prix, override de remise, toggle marchandage) **avec défaut = comportement cano
 - ✅ **Placement des ennemis sur la carte**, **undo/redo**, **projet multi-scènes** (basculer / lier les
   intérieurs sans toucher `campaign[]`). ✅ **Éditeur de statblocks** (`StatblockEditor.tsx` : nom, 10
   caractéristiques, M/B, dégâts d'arme, armure ; câblé à `spawn.ts` via `statblockToCombatant`).
+- ✅ **Passe confort & outils (2026-06-07, livrée + poussée)** : ids stables + **coalescence d'undo**
+  (un trait = un cran) · outil **Sélection + glisser-déplacer** (entités/spawns/triggers/bâtiments) ·
+  **copier/coller/dupliquer** (Ctrl+C/V/D) · **panneau de validation** (réfs cassées / hors-carte / ids
+  dupliqués, clic→fautif ; `validateScene` pur testé) · **liste d'entités** (sélection hors-canvas) +
+  **clavier Suppr/flèches** · **recherche** palette créatures · **pinceau 1/3/5** + **remplissage
+  rectangle** · **calques masquables** (Zones/Ennemis/Bâtiments — débloque le clic dessous). Modules
+  purs : `nextEntityId`, `validateScene` (10 tests). Reportés (mineurs, justifiés) : resize-confirm
+  (déjà couvert par la validation), fit-to-view (≡ bouton reset).
+- 🎯 **Décor interactif (spec+plan écrits, à dérouler)** : dissoudre le kind `objet` dans `prop` —
+  **tout décor fouillable/ramassable** via un canal `interact: { effects, consume }` (le système
+  d'Effets fournit déjà vrais objets/lettres/argent/XP), affordance (halo + clic-à-distance →
+  déplacement → fouille), migration `objet→prop`. Cf. `docs/superpowers/{specs,plans}/2026-06-07-decor-interactif*`.
+  Sous-projet 2 : sprites manquants (lettre / coffre / étagère / clé / bourse).
 
 ## 🎯 Jalon 7 — Coop en ligne
 
