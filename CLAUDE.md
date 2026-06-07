@@ -27,8 +27,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 
 ## Pile technique
 
-- **Vite + TypeScript + React** (UI). **Rendu isométrique en SVG React** (PAS Phaser — le
-  code Phaser sous `src/game/` est obsolète, conservé mais non utilisé).
+- **Vite + TypeScript + React** (UI). **Rendu isométrique en SVG React** (PAS Phaser).
 - **Zustand** (store global). **Vitest** (tests du moteur). Le RNG est **seedable**
   (`makeRNG`) pour des tests déterministes et une future coop réseau.
 
