@@ -1,9 +1,46 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { maxEncumbrance } from '../engine/items';
-import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant } from '../engine/types';
+import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
 import { careers } from '../data';
+import { ColorPalettePickers } from './ColorPalettePickers';
+import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
+import { pickView } from '../gameIso/rig/parts/types';
+import { DEFS } from '../gameIso/sprites';
+import type { Palette } from '../gameIso/rig/palette';
+
+/** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
+const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
+  ['Métal (lame / canon)', 'metal'],
+  ['Bois & cuir', 'cuir'],
+  ['Or & détails', 'accent'],
+];
+const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
+  ['Métal (plaque / maille)', 'metal'],
+  ['Cuir / rembourrage', 'cuir'],
+];
+const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
+
+/** Aperçu LIVE d'un objet (arme ou armure) recoloré par son skin — art résolu, recoloré. */
+function ItemSkinPreview({ item }: { item: ItemInstance }) {
+  const armor = item.kind === 'armor';
+  let art: string;
+  if (armor) {
+    const p = armourPart(item, 'torse'); // aperçu sur le torse
+    art = p ? pickView(p, 'front') : '';
+  } else {
+    const w = { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: '+0', qualities: [], skin: item.skin } as Weapon;
+    art = pickView(weaponPart(w), 'front');
+  }
+  const vb = armor ? '-20 -36 40 78' : '-20 -56 40 72';
+  return (
+    <svg viewBox={vb} width={46} height={83} style={{ background: '#222831', borderRadius: 4, flex: '0 0 auto' }}>
+      <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
+      <g dangerouslySetInnerHTML={{ __html: art }} />
+    </svg>
+  );
+}
 
 const LOC_SHORT: Record<HitLocation, string> = {
   tete: 'Tête',
@@ -64,6 +101,8 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
 
 function FicheBody({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
+  const setItemSkin = useGame((s) => s.setItemSkin);
+  const [skinFor, setSkinFor] = useState<string | null>(null);
   const items = hero.items ?? [];
   const enc = hero.encumbrance ?? 0;
   const maxEnc = maxEncumbrance(hero);
@@ -167,19 +206,50 @@ function FicheBody({ hero }: { hero: Combatant }) {
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
           {items.map((it) => {
             const equipable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
+            const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
+            const skinned = !!it.skin && Object.keys(it.skin).length > 0;
+            const open = isSkinnable && skinFor === it.uid;
             return (
-              <div className={`inv-row kind-${it.kind} ${it.equipped ? 'equipped' : ''}`} key={it.uid}>
-                <div className="ir-main">
-                  <span className="ir-name">{it.name}</span>
-                  <span className="ir-stats">{itemStats(it)}</span>
+              <div key={it.uid}>
+                <div className={`inv-row kind-${it.kind} ${it.equipped ? 'equipped' : ''}`}>
+                  <div className="ir-main">
+                    <span className="ir-name">{it.name}{skinned && ' ✨'}</span>
+                    <span className="ir-stats">{itemStats(it)}</span>
+                  </div>
+                  <span className="ir-enc">Enc {it.enc}</span>
+                  {isSkinnable && (
+                    <button
+                      className={`btn small ${open ? 'btn-primary' : ''}`}
+                      title="Skin légendaire (recoloriser cet objet)"
+                      onClick={() => setSkinFor(open ? null : it.uid)}
+                    >
+                      ✨
+                    </button>
+                  )}
+                  {equipable ? (
+                    <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} onClick={() => toggleEquip(hero.id, it.uid)}>
+                      {it.equipped ? 'Équipé' : 'Équiper'}
+                    </button>
+                  ) : (
+                    <span className="ir-kind">{it.kind}</span>
+                  )}
                 </div>
-                <span className="ir-enc">Enc {it.enc}</span>
-                {equipable ? (
-                  <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} onClick={() => toggleEquip(hero.id, it.uid)}>
-                    {it.equipped ? 'Équipé' : 'Équiper'}
-                  </button>
-                ) : (
-                  <span className="ir-kind">{it.kind}</span>
+                {open && (
+                  <div className="inv-skin" style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 8px', background: 'rgba(0,0,0,0.18)', borderRadius: 4 }}>
+                    <ItemSkinPreview item={it} />
+                    <div style={{ flex: 1 }}>
+                      <ColorPalettePickers
+                        colors={it.skin as Palette | undefined}
+                        slots={skinSlotsFor(it.kind)}
+                        onColors={(patch) => setItemSkin(hero.id, it.uid, patch)}
+                      />
+                      {skinned && (
+                        <button className="btn small" style={{ marginTop: '4px' }} onClick={() => setItemSkin(hero.id, it.uid, Object.fromEntries(skinSlotsFor(it.kind).map(([, s]) => [s, undefined])))}>
+                          Retirer le skin
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             );

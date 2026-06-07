@@ -12,6 +12,7 @@ import {
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
   focusSpell, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
+  autoCleave, maybeHeroCleave, cleaveTargets,
 } from './combatFlow';
 export { activeCombatant, entityPickables } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
@@ -30,7 +31,7 @@ import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement'
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, type CastResult, type MissileResult } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
-import { effectiveChar, maxWounds } from '../engine/characteristics';
+import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -134,6 +135,16 @@ export interface PendingAttack {
   fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
   /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.136) — sinon = targetId. */
   victimId?: string;
+  /** Attaque d'enchaînement d'un balayage (Frappe Mortelle) : son acquittement fait avancer le `pendingCleave`. */
+  cleave?: boolean;
+}
+/** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
+ *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
+ *  `pendingAttack` standard. `count` = enchaînements déjà résolus ; `hitIds` = cibles déjà frappées ce balayage. */
+export interface PendingCleave {
+  attackerId: string;
+  hitIds: string[];
+  count: number;
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
@@ -232,6 +243,8 @@ export interface GameState {
   pendingDefense: PendingDefense | null;
   pendingDisengage: PendingDisengage | null;
   pendingCast: PendingCast | null;
+  /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
+  pendingCleave: PendingCleave | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -245,6 +258,9 @@ export interface GameState {
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
+  /** Skin cosmétique d'un objet (override de palette token→hex ; clé à `undefined` = reset).
+   *  Propagé à l'arme active via recomputeLoadout → le rendu se recolore (objet légendaire). */
+  setItemSkin: (heroId: string, uid: string, patch: Record<string, string | undefined>) => void;
   // ── Avancement par PX (LDB 07-Carrières) — câblage du moteur testé ──
   /** Octroie des PX à un héros. */
   grantXp: (heroId: string, amount: number) => void;
@@ -331,6 +347,11 @@ export interface GameState {
   attackBonusSL: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
+  /** Balayage (Frappe Mortelle, LDB 14 l.12) : enchaîne l'attaque sur une cible adjacente (ouvre une
+   *  modale d'attaque standard) ; borné à BCC enchaînements. */
+  cleaveAttack: (targetId: string) => void;
+  /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */
+  cleaveEnd: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -384,6 +405,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDisengage: null,
   pendingCast: null,
+  pendingCleave: null,
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
@@ -402,6 +424,21 @@ export const useGame = create<GameState>((set, get) => ({
         if (it) {
           it.equipped = !it.equipped;
           recomputeLoadout(clone);
+        }
+        return clone;
+      }),
+    })),
+  setItemSkin: (heroId, uid, patch) =>
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const it = (clone.items ?? []).find((i) => i.uid === uid);
+        if (it) {
+          const next: Record<string, string> = { ...(it.skin ?? {}) };
+          for (const [k, v] of Object.entries(patch)) { if (v == null) delete next[k]; else next[k] = v; }
+          it.skin = Object.keys(next).length ? next : undefined;
+          recomputeLoadout(clone); // propage skin → Weapon.skin actif
         }
         return clone;
       }),
@@ -531,6 +568,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReload: null,
       pendingDefense: null,
       pendingDisengage: null,
+      pendingCleave: null,
       document: null,
       inventory: [],
       money: { gold: 0, silver: 5, brass: 0 },
@@ -575,6 +613,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReload: null,
       pendingDefense: null,
       pendingDisengage: null,
+      pendingCleave: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -699,7 +738,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDisengage: null, pendingCast: null, pendingCleave: null, pendingFumble: null });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
@@ -1216,21 +1255,37 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     // Tir dévié dans la mêlée (LDB 14 l.136) : la touche est appliquée à l'allié intercalé, pas à la cible.
     const victim = pa.victimId ? battle.combatants.find((c) => c.id === pa.victimId) ?? target : target;
+    const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
     set({ pendingAttack: null });
     if (attacker && target && victim) {
       const weapon = firedWeapon(attacker, target);
       applyAttackResult(get, set, attacker, victim, weapon, pa.result);
-      // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53).
+      // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
-        set({ pendingFumble: { combatantId: attacker.id, weapon, result: null } });
+        set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
+      } else {
+        // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand.
+        maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
       }
     }
   },
   attackCancel: () => {
     const pa = get().pendingAttack;
     if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
+    if (pa?.cleave) return get().cleaveEnd(); // annuler un enchaînement = terminer le balayage
     set({ pendingAttack: null });
   },
+  cleaveAttack: (targetId) => {
+    const { battle, pendingCleave: pc } = get();
+    if (!battle || !pc) return;
+    const attacker = battle.combatants.find((c) => c.id === pc.attackerId);
+    const target = battle.combatants.find((c) => c.id === targetId);
+    if (!attacker || !target) return;
+    if (pc.count >= bonus(effectiveChar(attacker, 'CC'))) return; // borné à BCC enchaînements (LDB 14 l.12)
+    if (!cleaveTargets(battle, attacker, pc.hitIds).some((t) => t.id === targetId)) return; // cible invalide (non adjacente / déjà frappée)
+    set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
+  },
+  cleaveEnd: () => set({ pendingCleave: null }),
   fumbleRoll: () => {
     const pf = get().pendingFumble;
     if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
@@ -1298,7 +1353,10 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
-    if (attacker && defender) applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+    if (attacker && defender) {
+      applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+      autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
+    }
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
     // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
     if (defender && defender.kind === 'hero' && defenderFumbled(pd.result) && !isOutOfAction(defender)) {
@@ -1317,6 +1375,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && defender) {
       const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
       applyAttackResult(get, set, attacker, defender, pd.weapon, res);
+      autoCleave(get, set, attacker, defender, res); // Frappe Mortelle : l'ennemi plus grand balaie les autres héros
     }
     resumeEnemyTurn(get, set);
   },

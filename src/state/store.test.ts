@@ -44,6 +44,27 @@ describe('Boucle de jeu (store)', () => {
     vi.useRealTimers();
   });
 
+  it('setItemSkin pose le skin sur l’objet ET le propage à l’arme active (recomputeLoadout)', () => {
+    const hero = {
+      id: 'h1', name: 'Test', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      items: [{ uid: 'w1', name: 'Épée bâtarde', kind: 'melee', damage: '+BF+5', qualities: [], enc: 1, equipped: true } as ItemInstance],
+    } as unknown as Combatant;
+    useGame.setState({ party: [hero] });
+
+    useGame.getState().setItemSkin('h1', 'w1', { metal: '#caa64a' });
+    let h = useGame.getState().party[0];
+    expect(h.items?.find((i) => i.uid === 'w1')?.skin).toEqual({ metal: '#caa64a' });
+    expect(h.weapons.find((w) => w.name === 'Épée bâtarde')?.skin).toEqual({ metal: '#caa64a' }); // propagé à l'arme
+
+    useGame.getState().setItemSkin('h1', 'w1', { metal: undefined }); // reset du seul slot → skin retiré
+    h = useGame.getState().party[0];
+    expect(h.items?.find((i) => i.uid === 'w1')?.skin).toBeUndefined();
+    expect(h.weapons.find((w) => w.name === 'Épée bâtarde')?.skin).toBeUndefined();
+  });
+
   it('charge une scène et place le groupe au départ', () => {
     useGame.getState().startScene(tome1Intro);
     const st = useGame.getState();
