@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { facingView, screenDir } from './facing';
+import { facingView, screenDir, project, facingToward, type Dir8 } from './facing';
 
 describe('facingView', () => {
   it('vers le bas → front, vers le haut → back', () => {
@@ -32,4 +32,39 @@ describe('screenDir', () => {
     // rot 1 sur grille 3×3 : (0,0)->(0,2), (1,0)->(0,1) → dx=1, dy=-1
     expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 }, { w: 3, h: 3, rot: 1 })).toEqual({ dx: 1, dy: -1 });
   });
+});
+
+describe('facingToward (delta grille → Dir8)', () => {
+  it('cardinaux, diagonaux, nul', () => {
+    expect(facingToward({ x: 2, y: 2 }, { x: 2, y: 0 })).toBe('N');
+    expect(facingToward({ x: 2, y: 2 }, { x: 4, y: 2 })).toBe('E');
+    expect(facingToward({ x: 2, y: 2 }, { x: 2, y: 5 })).toBe('S');
+    expect(facingToward({ x: 2, y: 2 }, { x: 0, y: 2 })).toBe('O');
+    expect(facingToward({ x: 0, y: 0 }, { x: 3, y: 3 })).toBe('SE');
+    expect(facingToward({ x: 3, y: 3 }, { x: 0, y: 0 })).toBe('NO');
+    expect(facingToward({ x: 1, y: 1 }, { x: 1, y: 1 })).toBe('S'); // nul → défaut S
+  });
+});
+
+describe('project (8 dirs × 4 rotations = 32 cas)', () => {
+  // [rot0, rot1, rot2, rot3]. Vérité géométrique : cardinaux monde → diagonales écran (front/back) ;
+  // diagonaux monde → cardinales écran (profile pour E/O-écran, front/back pour N/S-écran).
+  const EXP: Record<Dir8, Array<{ view: string; mirror: boolean }>> = {
+    E:  [{ view: 'front', mirror: false }, { view: 'back', mirror: false }, { view: 'back', mirror: true }, { view: 'front', mirror: true }],
+    O:  [{ view: 'back', mirror: true }, { view: 'front', mirror: true }, { view: 'front', mirror: false }, { view: 'back', mirror: false }],
+    N:  [{ view: 'back', mirror: false }, { view: 'back', mirror: true }, { view: 'front', mirror: true }, { view: 'front', mirror: false }],
+    S:  [{ view: 'front', mirror: true }, { view: 'front', mirror: false }, { view: 'back', mirror: false }, { view: 'back', mirror: true }],
+    NE: [{ view: 'profile', mirror: false }, { view: 'back', mirror: false }, { view: 'profile', mirror: true }, { view: 'front', mirror: false }],
+    SE: [{ view: 'front', mirror: false }, { view: 'profile', mirror: false }, { view: 'back', mirror: false }, { view: 'profile', mirror: true }],
+    SO: [{ view: 'profile', mirror: true }, { view: 'front', mirror: false }, { view: 'profile', mirror: false }, { view: 'back', mirror: false }],
+    NO: [{ view: 'back', mirror: false }, { view: 'profile', mirror: true }, { view: 'front', mirror: false }, { view: 'profile', mirror: false }],
+  };
+  const DIRS: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+  for (const d of DIRS) {
+    for (let rot = 0; rot < 4; rot++) {
+      it(`${d} @rot${rot}`, () => {
+        expect(project(d, rot as 0 | 1 | 2 | 3)).toEqual(EXP[d][rot]);
+      });
+    }
+  }
 });
