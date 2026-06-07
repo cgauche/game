@@ -15,7 +15,7 @@ import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './condition
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -292,8 +292,13 @@ export function finishMelee(
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   // Pénalité de parade contre plus grand : −2 DR par catégorie de Taille supérieure (LDB 85 l.305-306) — Parade (CC) seulement, pas l'Esquive.
   const parrySizePenalty = defenseMode === 'parade' ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
-  const drAdjust = (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) : 0) - parrySizePenalty;
-  const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
+  // Pratique (+1) / Peu Fiable (-1) sur un Test RATÉ utilisant l'arme (LDB 60 l.59/88) : modifie le DR
+  // du jet → l'issue du Test opposé ET les Dégâts (via le DR net). L'attaque utilise toujours l'arme ;
+  // la parade utilise l'arme du défenseur (pas l'esquive — l'esquive ne « teste » pas l'arme).
+  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success);
+  const defSL = def.sl - parrySizePenalty
+    + (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) + craftTestDRAdjust(defender.weapons[0], def.success) : 0);
+  const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode, dodgeMod));
 

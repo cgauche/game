@@ -56,6 +56,9 @@ export interface QualityDef {
   };
   /** Encombrement : délta dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
   encDelta?: number;
+  /** +X DR à un Test RATÉ utilisant l'objet (Pratique +1 / Peu Fiable -1, LDB 60 l.59/88). En mêlée
+   *  (Test opposé), un jet raté reste comparé : ce DR modifie l'issue ET les Dégâts (via le DR net). */
+  testFailDR?: number;
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -81,11 +84,11 @@ export const QUALITIES: Record<string, QualityDef> = {
   // --- Qualités d'OBJET (artisanat, LDB 60 l.43-92). Économie : chaque Atout ×2 prix / -1 dispo,
   //     chaque Défaut ÷2 prix / +1 dispo (couche pure craftEconomy.ts). Effets COMBAT = plans B/C. ---
   'Léger': { key: 'Léger', type: 'Atout', subType: 'Objet', encDelta: -1 }, // -1 Enc (l.56)
-  'Pratique': { key: 'Pratique', type: 'Atout', subType: 'Objet' }, // +1 DR à un test raté (effet = Phase B/C)
+  'Pratique': { key: 'Pratique', type: 'Atout', subType: 'Objet', testFailDR: 1 }, // +1 DR à un test raté (l.59)
   'Raffiné': { key: 'Raffiné', type: 'Atout', subType: 'Objet' }, // signe de statut, cumulable (l.61)
-  'Bâclé': { key: 'Bâclé', type: 'Défaut', subType: 'Objet' }, // casse sur test raté-double (effet = Phase B/C)
+  'Bâclé': { key: 'Bâclé', type: 'Défaut', subType: 'Objet' }, // casse sur test raté-double (hook Phase B combatFlow)
   'Laid': { key: 'Laid', type: 'Défaut', subType: 'Objet' }, // -10 Tests de Sociabilité (effet = Phase C)
-  'Peu Fiable': { key: 'Peu Fiable', type: 'Défaut', subType: 'Objet' }, // -1 DR à un test raté (effet = Phase B/C)
+  'Peu Fiable': { key: 'Peu Fiable', type: 'Défaut', subType: 'Objet', testFailDR: -1 }, // -1 DR à un test raté (l.88)
   'Volumineux': { key: 'Volumineux', type: 'Défaut', subType: 'Objet', encDelta: 1 }, // +1 Enc ; porté = Enc 1 (l.91)
   // Assommante : touche à la Tête → Test opposé F vs Endurance+Résistance → Sonné (LDB Armes l.268),
   // déclaré via le hook `onHit` ; le Test (RNG) + addCondition sont interprétés dans combatFlow.

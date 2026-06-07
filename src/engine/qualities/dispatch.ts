@@ -71,6 +71,13 @@ export function isFirearmQuality(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.def.firearm);
 }
 
+/** Ajustement de DR d'un Test RATÉ utilisant l'objet : Pratique +1, Peu Fiable -1 (LDB 60 l.59/88).
+ *  Renvoie 0 si le test est RÉUSSI (la règle ne vise que les échecs). */
+export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolean): number {
+  if (success) return 0;
+  return resolveQualities(w).reduce((s, r) => s + (r.def.testFailDR ?? 0), 0);
+}
+
 export interface DamageStepCtx {
   /** DR-pour-dégâts de base (déjà augmenté de Pointue). */
   effDR: number;
