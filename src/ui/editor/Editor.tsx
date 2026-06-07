@@ -781,11 +781,9 @@ export function Editor() {
               </div>
               <label className="ed-field">
                 Ambiance
-                <select value={scene.ambiance ?? 'jour'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
-                  <option value="jour">Jour</option>
-                  <option value="nuit">Nuit</option>
-                  <option value="interieur">Intérieur</option>
-                  <option value="foret">Forêt</option>
+                <select value={scene.ambiance === 'interieur' ? 'interieur' : 'exterieur'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
+                  <option value="exterieur">Extérieur (jour/nuit = horloge)</option>
+                  <option value="interieur">Intérieur (éclairé)</option>
                 </select>
               </label>
               <label className="ed-field">
@@ -910,7 +908,7 @@ export function Editor() {
                     const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
                     if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                   }
-                if (layers.buildings) for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, scene.ambiance === 'nuit'));
+                if (layers.buildings) for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, false)); // aperçu de jour ; le jour/nuit est runtime via l'horloge (#T1c)
                 for (const e of scene.entities) {
                   if (e.kind === 'heroStart') {
                     const { cx, cy } = tileCenter(e.pos.x, e.pos.y, dims);
