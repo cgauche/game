@@ -47,6 +47,7 @@ import {
   inCareerTalent,
 } from '../engine/advancement';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
+import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../engine/conditions';
@@ -1930,7 +1931,19 @@ export const useGame = create<GameState>((set, get) => ({
     const pt = get().pendingTest;
     if (!pt || pt.roll == null) return; // pas d'acquittement avant le jet
     set({ pendingTest: null });
-    const branch = pt.success ? pt.onSuccess : pt.onFailure;
+    const actor = get().party.find((c) => c.id === pt.actorId);
+    const tool = pt.itemUid ? actor?.items?.find((i) => i.uid === pt.itemUid) : undefined;
+    // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.59/88). Ne repêche qu'un échec qui a
+    // réussi le d100 mais manqué le seuil requireSL (jamais un roll > cible → on ne crée pas de réussite).
+    const drDelta = tool ? craftTestDRAdjust(tool, pt.success) : 0;
+    const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && pt.sl + drDelta >= pt.requireSL : pt.success;
+    // Bâclé : un outil Bâclé qui Maladresse (échec + double) se brise (LDB 60, généralisé hors combat).
+    if (tool && pt.isDouble && !pt.success && hasQuality(tool, 'Bâclé') && !isUnbreakable(tool)) {
+      tool.destroyed = true;
+      set({ party: [...get().party] }); // persiste la casse + re-render
+      get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);
+    }
+    const branch = effSuccess ? pt.onSuccess : pt.onFailure;
     if (branch && branch.length) applyEffects(get, set, branch);
   },
   closeDocument: () => set({ document: null }),

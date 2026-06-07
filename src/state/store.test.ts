@@ -249,6 +249,60 @@ describe('Boucle de jeu (store)', () => {
     expect(typeof useGame.getState().pendingTest!.isDouble).toBe('boolean');
   });
 
+  // resolveTest avec outil : pendingTest injecté à la main (RNG hors combat non seedable → déterministe).
+  function mkToolTest(quality: string, over: Partial<import('./store').PendingTest>): Combatant {
+    const hero = {
+      id: 'h1', name: 'Lest', kind: 'hero',
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 50, Int: 30, FM: 30, Soc: 30 },
+      wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      items: [{ uid: 't1', name: 'Outil', kind: 'melee', qualities: quality ? [quality] : [], enc: 0, equipped: false }],
+    } as unknown as Combatant;
+    useGame.setState({
+      party: [hero], flags: {}, journal: [],
+      pendingTest: {
+        actorId: 'h1', actorName: 'Lest', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 1, target: 50, roll: 48, success: false, sl: 0, isDouble: false, itemUid: 't1',
+        onSuccess: [{ type: 'setFlag', flag: 'reussi', value: true }],
+        onFailure: [{ type: 'setFlag', flag: 'rate', value: true }],
+        ...over,
+      },
+    });
+    return hero;
+  }
+
+  it('resolveTest : Pratique (+1 DR) repêche un échec qui n’a manqué que le seuil requireSL', () => {
+    mkToolTest('Pratique', {}); // roll 48 ≤ 50, sl 0 < requireSL 1 → +1 DR ⇒ sl 1 ≥ 1
+    useGame.getState().resolveTest();
+    expect(useGame.getState().flags['reussi']).toBe(true);
+  });
+
+  it('resolveTest : Pratique ne transforme PAS un d100 raté (roll > cible) en réussite', () => {
+    mkToolTest('Pratique', { roll: 60, sl: -1, requireSL: 0 }); // roll 60 > 50 → raté au dé
+    useGame.getState().resolveTest();
+    expect(useGame.getState().flags['rate']).toBe(true);
+  });
+
+  it('resolveTest : Peu Fiable (−1 DR) ne repêche pas (échec aggravé)', () => {
+    mkToolTest('Peu Fiable', {}); // sl 0 −1 = −1 < requireSL 1 → reste raté
+    useGame.getState().resolveTest();
+    expect(useGame.getState().flags['rate']).toBe(true);
+  });
+
+  it('resolveTest : outil Bâclé qui Maladresse (échec + double) se brise', () => {
+    mkToolTest('Bâclé', { roll: 55, sl: -1, requireSL: 0, isDouble: true });
+    useGame.getState().resolveTest();
+    const item = useGame.getState().party[0].items!.find((i) => i.uid === 't1')!;
+    expect(item.destroyed).toBe(true);
+    expect(useGame.getState().journal.some((l) => l.includes('se brise'))).toBe(true);
+  });
+
+  it('resolveTest : sans outil, l’issue est inchangée (branche échec)', () => {
+    mkToolTest('', { itemUid: undefined });
+    useGame.getState().resolveTest();
+    expect(useGame.getState().flags['rate']).toBe(true);
+  });
+
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
