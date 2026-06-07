@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { spellCastStyle, spellCastClip, isSupportiveCast, classifySpellByLabel } from './spellClips';
+import { spellCastStyle, spellCastClip, isSupportiveCast, classifySpellByLabel, spellFx, spellFxForLabel } from './spellClips';
 import { clipDuration } from './clips';
 
 describe('spellCastStyle — offensif vs soutien (depuis la relation lanceur↔cible)', () => {
@@ -50,5 +50,21 @@ describe('classifySpellByLabel — data-driven (spells.json + engine/magic)', ()
   });
   it('libellé inconnu → défaut arcanique non-missile', () => {
     expect(classifySpellByLabel('Sort Imaginaire')).toEqual({ school: 'arcane', missile: false });
+  });
+});
+
+describe('spellFx — tintage arcane/divin (source de vérité unique du feedback)', () => {
+  it('arcane → gradient violet/bleu, divin → gradient or (gradients distincts)', () => {
+    expect(spellFx('arcane').gradient).toBe('g_arcane');
+    expect(spellFx('divine').gradient).toBe('g_divine');
+    expect(spellFx('arcane').gradient).not.toBe(spellFx('divine').gradient);
+    expect(spellFx('arcane').core).not.toBe(spellFx('divine').core);
+  });
+  it('depuis un libellé : Béni → divin, Magie mineure → arcane', () => {
+    expect(spellFxForLabel('Bénédiction de Bataille')).toEqual(spellFx('divine'));
+    expect(spellFxForLabel('Drain')).toEqual(spellFx('arcane'));
+  });
+  it('libellé absent → arcane par défaut', () => {
+    expect(spellFxForLabel(undefined)).toEqual(spellFx('arcane'));
   });
 });

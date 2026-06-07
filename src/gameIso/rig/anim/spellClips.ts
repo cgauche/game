@@ -50,12 +50,41 @@ export function isSupportiveCast(casterKind?: string, targetKind?: string, isSel
   return spellCastStyle(casterKind, targetKind, isSelf) === 'blessing';
 }
 
+export type SpellSchool = 'divine' | 'arcane';
+
 /** Classification CANONIQUE d'un sort par libellé (data-driven). Pour feedback futur. */
-export function classifySpellByLabel(label: string): { school: 'divine' | 'arcane'; missile: boolean } {
+export function classifySpellByLabel(label: string): { school: SpellSchool; missile: boolean } {
   const spell = findSpell(label);
   if (!spell) return { school: 'arcane', missile: false };
   return {
     school: castInfo(spell).skill === 'Prière' ? 'divine' : 'arcane',
     missile: isMagicMissile(spell),
   };
+}
+
+/**
+ * FEEDBACK VISUEL d'incantation par école — SOURCE DE VÉRITÉ UNIQUE (couleur du
+ * projectile/halo/aura de canalisation). Le rendu (IsoStage) lit ces tokens ; ajouter
+ * une école (Chaos, etc.) = une entrée ici + un gradient `g_<école>` dans `DEFS`,
+ * sans toucher au rendu. `gradient` réfère un <radialGradient> de `sprites.ts`.
+ */
+export interface SpellFx {
+  /** id du <radialGradient> (cf. DEFS) pour le halo/projectile diffus. */
+  gradient: string;
+  /** couleur du cœur dense (étincelle centrale). */
+  core: string;
+}
+const SCHOOL_FX: Record<SpellSchool, SpellFx> = {
+  arcane: { gradient: 'g_arcane', core: '#e7d8ff' }, // Vents de magie — violet/bleu
+  divine: { gradient: 'g_divine', core: '#fff4c2' }, // Miracle — or
+};
+
+/** FX visuel d'une école (couleur de halo + cœur). */
+export function spellFx(school: SpellSchool): SpellFx {
+  return SCHOOL_FX[school];
+}
+
+/** FX visuel depuis le libellé d'un sort (arcane par défaut si inconnu). */
+export function spellFxForLabel(label?: string): SpellFx {
+  return spellFx(label ? classifySpellByLabel(label).school : 'arcane');
 }

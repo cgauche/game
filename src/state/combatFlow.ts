@@ -873,7 +873,7 @@ export function applyCast(
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble) logLines.push(...applyMiscast(caster, 'mineure'));
     else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(caster, 'mineure'));
-    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', defense: 'none' });
+    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
     if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
@@ -917,6 +917,9 @@ export function applyCast(
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
       logLines.push(...applyMiscast(caster, 'mineure'));
     }
+    // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
+    // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
+    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
   }
 
   // Le sort focalisé est consommé après le lancement.

@@ -27,7 +27,8 @@ export const EVT = {
   /** store → rendu : l'état a changé, rafraîchir le rendu. */
   SCENE_DIRTY: 'scene_dirty',
   /** store → rendu : jouer une animation d'attaque
-   *  {from, to, result, kind:'melee'|'ranged'|'spell', defense:'parade'|'esquive'|'none'}. */
+   *  {from, to, result, kind:'melee'|'ranged'|'spell', defense:'parade'|'esquive'|'none',
+   *   spell?:libellé du sort (kind 'spell') → école pour le tintage arcane/divin}. */
   ANIM_ATTACK: 'anim_attack',
   /** rendu → rendu : l'attaque atteint sa cible (timing du recul + dégât flottant) {to, result}. */
   ANIM_IMPACT: 'anim_impact',

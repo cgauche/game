@@ -39,7 +39,7 @@ import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { bodyPlanOf, planStaticSvg } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
 import { facingView, screenDir } from './rig/facing';
-import { isSupportiveCast } from './rig/anim/spellClips';
+import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -214,11 +214,15 @@ export function IsoStage() {
   }, []);
 
   // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
-  type Proj = { key: number; from: { x: number; y: number }; to: { x: number; y: number }; kind: string };
+  // `gradient` = tintage à l'école pour un sort (cf. spellFxForLabel) ; absent pour une flèche.
+  type Proj = { key: number; from: { x: number; y: number }; to: { x: number; y: number }; kind: string; gradient?: string };
   const [projs, setProjs] = useState<Proj[]>([]);
   const projId = useRef(0);
-  // Halos d'incantation de soutien (bénédiction/miracle) : pulsation sur la cible.
-  const [auras, setAuras] = useState<{ key: number; x: number; y: number }[]>([]);
+  // Halos d'incantation, tintés à l'école (arcane/divin). Deux usages :
+  //  - `channel` : canalisation sur le LANCEUR (toute incantation, brève pulsation serrée) ;
+  //  - sinon (bloom) : bénédiction/miracle reçu sur la CIBLE (expansion soutenue).
+  type Aura = { key: number; x: number; y: number; gradient: string; core: string; channel?: boolean };
+  const [auras, setAuras] = useState<Aura[]>([]);
   const auraId = useRef(0);
   useEffect(() => {
     const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
@@ -228,14 +232,23 @@ export function IsoStage() {
       const to = b?.combatants.find((c) => c.id === d.to)?.pos;
       if (!from || !to) return;
       if (d.kind === 'spell') {
+        const fx = spellFxForLabel(d.spell);
+        // Canalisation à l'école sur le lanceur (toute incantation : offensive ou soutien).
+        const ck = ++auraId.current;
+        setAuras((a) => [...a, { key: ck, x: from.x, y: from.y, gradient: fx.gradient, core: fx.core, channel: true }]);
+        setTimeout(() => setAuras((a) => a.filter((x) => x.key !== ck)), 480);
         const caster = b?.combatants.find((c) => c.id === d.from);
         const tgt = b?.combatants.find((c) => c.id === d.to);
         if (isSupportiveCast(caster?.kind, tgt?.kind, d.from === d.to)) {
           const key = ++auraId.current; // soutien : halo sur la cible, pas de projectile
-          setAuras((a) => [...a, { key, x: to.x, y: to.y }]);
+          setAuras((a) => [...a, { key, x: to.x, y: to.y, gradient: fx.gradient, core: fx.core }]);
           setTimeout(() => setAuras((a) => a.filter((x) => x.key !== key)), 620);
           return;
         }
+        const key = ++projId.current; // offensif : projectile magique tinté
+        setProjs((p) => [...p, { key, from, to, kind: d.kind, gradient: fx.gradient }]);
+        setTimeout(() => setProjs((p) => p.filter((x) => x.key !== key)), 340);
+        return;
       }
       const key = ++projId.current;
       setProjs((p) => [...p, { key, from, to, kind: d.kind }]);
@@ -609,7 +622,7 @@ export function IsoStage() {
               style={{ ['--ax' as never]: `${a.cx}px`, ['--ay' as never]: `${a.cy - 18}px`, ['--bx' as never]: `${b.cx}px`, ['--by' as never]: `${b.cy - 18}px` }}
             >
               {p.kind === 'spell' ? (
-                <circle r={5} fill="url(#g_glow)" />
+                <circle r={5} fill={`url(#${p.gradient ?? 'g_glow'})`} />
               ) : (
                 <g transform={`rotate(${ang})`}>
                   <rect x={-8} y={-1} width={16} height={2} rx={1} fill="#caa882" />
@@ -621,14 +634,16 @@ export function IsoStage() {
         })}
         {auras.map((au) => {
           const { cx, cy } = tileCenter(au.x, au.y, dims);
+          // Canalisation (lanceur) : pulsation serrée et brève. Bénédiction (cible) : expansion soutenue.
+          const r0 = au.channel ? 4 : 6, r1 = au.channel ? 18 : 30, dur = au.channel ? '0.45s' : '0.6s';
           return (
             <g key={`au${au.key}`} transform={`translate(${cx},${cy - 18})`} pointerEvents="none">
-              <circle r={6} fill="url(#g_glow)" opacity={0.85}>
-                <animate attributeName="r" from="6" to="30" dur="0.6s" fill="freeze" />
-                <animate attributeName="opacity" from="0.85" to="0" dur="0.6s" fill="freeze" />
+              <circle r={r0} fill={`url(#${au.gradient})`} opacity={0.85}>
+                <animate attributeName="r" from={r0} to={r1} dur={dur} fill="freeze" />
+                <animate attributeName="opacity" from="0.85" to="0" dur={dur} fill="freeze" />
               </circle>
-              <circle r={3} fill="#fff6c0" opacity={0.9}>
-                <animate attributeName="opacity" from="0.9" to="0" dur="0.6s" fill="freeze" />
+              <circle r={3} fill={au.core} opacity={0.9}>
+                <animate attributeName="opacity" from="0.9" to="0" dur={dur} fill="freeze" />
               </circle>
             </g>
           );

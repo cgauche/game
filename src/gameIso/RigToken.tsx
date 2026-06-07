@@ -6,7 +6,7 @@ import { useRigClip } from './rig/anim/useRigClip';
 import { ambientClip } from './rig/anim/ambientClips';
 import { addPose } from './rig/poses';
 import { weaponRest, weaponAttackClip, weaponParryClip, hasShieldEquipped } from './rig/anim/weaponClips';
-import { spellCastStyle, spellCastClip } from './rig/anim/spellClips';
+import { spellCastStyle, spellCastClip, isSupportiveCast } from './rig/anim/spellClips';
 import { isShield, type EquipCtx } from './rig/parts/equipment';
 import { facingView, screenDir, type View } from './rig/facing';
 import type { Appearance } from './rig/appearance';
@@ -79,6 +79,12 @@ export function RigToken({
           playClip(spellCastClip(style), { onImpact });
         } else playClip(gest.current.attack, { onImpact });
       } else if (d.to === id && !d.result?.hit) {
+        // Réaction défensive UNIQUEMENT face à une attaque offensive : une bénédiction / un
+        // soin reçu d'un allié ne se pare ni ne s'esquive (il émet pourtant un ANIM_ATTACK).
+        if (d.kind === 'spell') {
+          const cs = useGame.getState().battle?.combatants;
+          if (isSupportiveCast(cs?.find((c) => c.id === d.from)?.kind, cs?.find((c) => c.id === d.to)?.kind, d.from === d.to)) return;
+        }
         if (d.defense === 'parade') playClip(gest.current.parry);
         else play('dodge');
       }
