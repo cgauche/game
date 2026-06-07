@@ -108,12 +108,33 @@ export function recomputeLoadout(c: Combatant): void {
   const armour = emptyArmour();
   for (const it of items) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
-    for (const l of it.locs) armour[l] = Math.max(armour[l], it.pa);
+    const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
+    for (const l of it.locs) armour[l] = Math.max(armour[l], net);
   }
 
   c.weapons = weapons;
   c.armour = armour;
   c.encumbrance = totalEncumbrance(c);
+}
+
+/** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.52-55). Héros : endommage la
+ *  pièce la plus solide (damageTaken+1) puis re-dérive ; ennemi/figurant (armure plate du statblock,
+ *  sans items) : décrément direct. RETOURNE true si une PA a été retirée. */
+export function damageArmour(c: Combatant, loc: HitLocation): boolean {
+  const pieces = (c.items ?? []).filter(
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+  );
+  if (pieces.length) {
+    const piece = pieces.sort((a, b) => ((b.pa ?? 0) - (b.damageTaken ?? 0)) - ((a.pa ?? 0) - (a.damageTaken ?? 0)))[0];
+    piece.damageTaken = (piece.damageTaken ?? 0) + 1;
+    recomputeLoadout(c);
+    return true;
+  }
+  if ((c.armour?.[loc] ?? 0) > 0) {
+    c.armour[loc] = c.armour[loc] - 1; // armure plate (ennemi/figurant) : décrément direct
+    return true;
+  }
+  return false;
 }
 
 /** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */

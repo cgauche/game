@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour } from './items';
 import { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
@@ -67,6 +67,36 @@ describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.56/91)', () => 
     expect(enc([item({ kind: 'armor', enc: 2, equipped: true })])).toBe(1); // 2-1 (inchangé)
     expect(enc([item({ kind: 'armor', enc: 2, equipped: true, qualities: ['Volumineux'] })])).toBe(1); // forcé à 1
     expect(enc([item({ kind: 'armor', enc: 3, equipped: true, qualities: ['Léger'] })])).toBe(1); // (3-1)-1 = 1
+  });
+});
+
+describe('Dégâts d’armure (LDB 63 l.52-55)', () => {
+  const heroWith = (items: ItemInstance[]): Combatant =>
+    ({ characteristics: { F: 30, E: 30 }, items, armour: emptyArmour() }) as unknown as Combatant;
+
+  it('recomputeLoadout dérive la PA NETTE des dégâts (pa − damageTaken, plancher 0)', () => {
+    const c = heroWith([item({ kind: 'armor', pa: 3, locs: ['corps'], equipped: true, damageTaken: 1 })]);
+    recomputeLoadout(c);
+    expect(c.armour.corps).toBe(2);
+  });
+  it('pièce réduite à 0 (damageTaken ≥ pa) → n’apporte plus de PA', () => {
+    const c = heroWith([item({ kind: 'armor', pa: 2, locs: ['corps'], equipped: true, damageTaken: 5 })]);
+    recomputeLoadout(c);
+    expect(c.armour.corps).toBe(0);
+  });
+  it('damageArmour (héros) : endommage la pièce la plus solide + re-dérive', () => {
+    const c = heroWith([item({ kind: 'armor', pa: 3, locs: ['corps'], equipped: true })]);
+    recomputeLoadout(c);
+    expect(damageArmour(c, 'corps')).toBe(true);
+    expect(c.armour.corps).toBe(2);
+  });
+  it('damageArmour (ennemi sans items : armure plate) : décrément direct', () => {
+    const enemy = { armour: { ...emptyArmour(), tete: 2 } } as unknown as Combatant;
+    expect(damageArmour(enemy, 'tete')).toBe(true);
+    expect(enemy.armour.tete).toBe(1);
+  });
+  it('damageArmour : pas d’armure utilisable → false', () => {
+    expect(damageArmour({ armour: emptyArmour() } as unknown as Combatant, 'corps')).toBe(false);
   });
 });
 
