@@ -42,7 +42,7 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest } from '../engine/skills';
-import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
 import { carryOverState } from '../engine/persistence';
@@ -438,6 +438,26 @@ export function applyCriticalToTarget(
   return false;
 }
 
+/** Déviation Critique (LDB 63 l.63-66) : sacrifie 1 PA à `loc` pour IGNORER le Critique ; la cible
+ *  subit quand même les Blessures normales recalculées avec la PA réduite (probable +1 Blessure). */
+function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log: string[]): void {
+  damageArmour(target, res.location ?? 'corps');
+  const extra = Math.max(0, woundsFromHit(weapon, target, res.location ?? 'corps', res.damage ?? 0) - (res.woundsLost ?? 0));
+  if (extra) target.wounds.current = Math.max(0, target.wounds.current - extra);
+  log.push(`${target.name} dévie le coup sur son armure (−1 PA, Critique ignoré).`);
+}
+
+/** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
+function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): void {
+  const piece = (target.items ?? []).find(
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, 'Bâclé') && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+  );
+  if (!piece) return;
+  piece.damageTaken = piece.pa ?? 0; // inutilisable
+  recomputeLoadout(target);
+  log.push(`L'armure Bâclée de ${target.name} (${loc}) se brise sous le Coup Critique.`);
+}
+
 export function applyAttackResult(
   get: () => GameState,
   set: any,
@@ -456,13 +476,19 @@ export function applyAttackResult(
     const currentBefore = target.wounds.current;
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
-    if (res.critical || overkill > 0) {
-      const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.critical, Math.max(0, overkill), critLog);
+    const loc = res.location ?? 'corps';
+    if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
+    if (res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0) {
+      deviateArmour(target, weapon, res, critLog); // Déviation auto de l'ennemi (dévie toujours s'il a de la PA, LDB 63 l.63-66)
+    } else if (res.critical || overkill > 0) {
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog);
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     } else if (target.wounds.current <= 0) {
       applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
     }
   }
+  // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
+  if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
     const used = selectedAmmo(attacker, weapon);
