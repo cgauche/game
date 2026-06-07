@@ -9,6 +9,7 @@ import type { SpiderProps } from '../arachnid/composeSpider';
 import type { BirdProps } from '../avian/composeBird';
 import type { OctopusProps } from '../cephalopod/composeOctopus';
 import type { SpectreProps } from '../spectral/composeSpectre';
+import type { SquigProps } from '../squig/composeSquig';
 import type { CreatureDef, BipedConfig, CreatureBodyPlan } from './types';
 import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
@@ -74,6 +75,7 @@ export const SPIDER_SPECIES: Record<string, SpiderProps> = Object.fromEntries(CR
 export const BIRD_SPECIES: Record<string, BirdProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'avian').map((c) => [c.name, c.bird!]));
 export const OCTOPUS_SPECIES: Record<string, OctopusProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'cephalopod').map((c) => [c.name, c.octopus!]));
 export const SPECTRE_SPECIES: Record<string, SpectreProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'spectral').map((c) => [c.name, c.spectre!]));
+export const SQUIG_SPECIES: Record<string, SquigProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'squig').map((c) => [c.name, c.squig!]));
 
 // --- Routage GÉNÉRIQUE (registry-driven) : un nom → la def NON-bipède qui matche, quel que soit
 //     son plan (quad/winged/serpentine/arachnid/avian/cephalopod OU monolithic). Plus de chaîne

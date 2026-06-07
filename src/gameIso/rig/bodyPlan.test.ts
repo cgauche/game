@@ -37,8 +37,12 @@ describe('bodyPlanOf', () => {
   it('morts-vivants spectraux → spectral', () => {
     for (const n of ['Spectre de cairn', 'Fantôme', 'Banshee']) expect(bodyPlanOf(n)).toBe('spectral');
   });
-  it('exotiques sans gabarit (bespoke/indéterminé) → monolithic', () => {
-    for (const n of ['Squig vorace', 'Bête de Nurgle', 'Jabberslythe', 'Bête des marais']) {
+  it('squig → squig', () => {
+    expect(bodyPlanOf('Squig des cavernes')).toBe('squig');
+    expect(bodyPlanOf('Squig vorace')).toBe('squig');
+  });
+  it('bêtes du Chaos bespoke + bête des marais → monolithic (apparence unique assumée)', () => {
+    for (const n of ['Bête de Nurgle', 'Jabberslythe', "Fr'hough Mournbreath", 'Bête des marais']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });
