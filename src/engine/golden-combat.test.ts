@@ -1,0 +1,53 @@
+import { describe, it, expect } from 'vitest';
+import { makeRNG } from './dice';
+import { resolveMelee, resolveRanged } from './combat';
+import type { Characteristics, Combatant, Weapon } from './types';
+
+/** Fixture combattant déterministe (pas d'aléa de création). */
+function mk(name: string, chars: Partial<Characteristics>, weapon: Weapon, armourCorps = 0): Combatant {
+  const base: Characteristics = { CC: 40, CT: 40, F: 35, E: 35, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  return {
+    id: name, name, kind: 'enemy',
+    characteristics: { ...base, ...chars },
+    wounds: { current: 25, max: 25 },
+    advantage: 0, conditions: [],
+    weapons: [weapon],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: armourCorps, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4,
+  } as unknown as Combatant;
+}
+
+/** Sérialisation compacte et stable d'un résultat d'attaque (champs déterministes). */
+const ser = (r: ReturnType<typeof resolveMelee>) =>
+  [r.hit, r.attackerRoll, r.defenderRoll ?? null, r.netSL, r.location ?? null, r.damage ?? null, r.woundsLost ?? null, r.critical, r.advantageTo].join('|');
+
+// Combinaisons de qualités d'arme couvrant TOUS les sites migrés.
+const QSETS: string[][] = [[], ['Précise'], ['Perforante'], ['Pointue'], ['Empaleuse'], ['Défensive'], ['À Enroulement'], ['Pistolet'], ['Précise', 'Pointue', 'Perforante'], ['Empaleuse', 'Pointue']];
+
+describe('Golden master — combat (iso-comportement du registre de qualités)', () => {
+  it('mêlée : Parade/Esquive/Subir × qualités × seeds — snapshot stable', () => {
+    const out: string[] = [];
+    for (const q of QSETS) {
+      for (const defense of ['parade', 'esquive', 'none'] as const) {
+        for (let seed = 1; seed <= 25; seed++) {
+          const atk = mk('A', { CC: 55, F: 40 }, { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: q });
+          const def = mk('D', { CC: 45, E: 35 }, { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: ['Défensive'] }, 2);
+          out.push(`${q.join(',')}|${defense}|${seed}=${ser(resolveMelee(atk, def, atk.weapons[0], makeRNG(seed), { defense }))}`);
+        }
+      }
+    }
+    expect(out).toMatchSnapshot();
+  });
+
+  it('distance : portée × qualités × seeds — snapshot stable', () => {
+    const out: string[] = [];
+    for (const q of [[], ['Perforante'], ['Pointue'], ['Empaleuse']]) {
+      for (let seed = 1; seed <= 25; seed++) {
+        const atk = mk('A', { CT: 55 }, { name: 'Arc', type: 'ranged', damage: '+9', range: 50, qualities: q });
+        const def = mk('D', { E: 35 }, { name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }, 2);
+        out.push(`${q.join(',')}|${seed}=${ser(resolveRanged(atk, def, atk.weapons[0], makeRNG(seed), 10))}`);
+      }
+    }
+    expect(out).toMatchSnapshot();
+  });
+});
