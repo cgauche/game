@@ -48,6 +48,7 @@ import { isOutOfAction, addCondition, removeCondition, canTakeAction } from '../
 import { persistentConditions } from '../engine/persistence';
 import { findSpell, levelsForCareer, findSkill, findSpecies } from '../data/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
+import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, pathTo, chebyshev, Pt } from './path';
@@ -1257,8 +1258,9 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
-    const def = rollMeleeDefender(defender, pd.mode, battleRng());
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res } });
   },
   defenseReroll: () => {
@@ -1270,8 +1272,9 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const def = rollMeleeDefender(defender, pd.mode, battleRng());
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined);
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0;
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » du défenseur : +1 DR à SA défense figée (le jet d'attaque reste figé). */

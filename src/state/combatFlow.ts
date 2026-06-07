@@ -324,9 +324,9 @@ export function resolveAttack(
     }
     return { res, weapon };
   }
-  // Mêlée : seule la météo (tempête/neige) s'applique à l'attaque.
+  // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env }), weapon };
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod }), weapon };
 }
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,

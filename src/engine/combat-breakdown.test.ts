@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender } from './combat';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
 
@@ -45,6 +45,18 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
   it('Moyenne par défaut (size absent des deux côtés) : aucun mod de Taille', () => {
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
+  });
+});
+
+describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
+  it('defenseModifiers : −20 en esquive seulement (pas en parade)', () => {
+    expect(defenseModifiers(mk(), 'esquive', -20).some((m) => m.value === -20)).toBe(true);
+    expect(defenseModifiers(mk(), 'parade', -20).some((m) => m.value === -20)).toBe(false);
+  });
+  it('rollMeleeDefender : la neige abaisse la cible de l’esquive, pas de la parade', () => {
+    const d = mk();
+    expect(rollMeleeDefender(d, 'esquive', makeRNG(1), -20).target).toBe(rollMeleeDefender(d, 'esquive', makeRNG(1)).target - 20);
+    expect(rollMeleeDefender(d, 'parade', makeRNG(1), -20).target).toBe(rollMeleeDefender(d, 'parade', makeRNG(1)).target);
   });
 });
 

@@ -176,14 +176,16 @@ export function attackModifiers(
   return out;
 }
 
-/** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). */
-export function defenseModifiers(defender: Combatant, _mode: 'parade' | 'esquive'): ModLine[] {
+/** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). `dodgeMod` = pénalité météo
+ *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). */
+export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0): ModLine[] {
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
   if (adv) out.push({ label: 'Avantage', value: adv });
   const pen = combatTestPenalty(defender);
   if (pen) out.push({ label: 'État', value: pen });
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20 });
+  if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod });
   return out;
 }
 
@@ -193,6 +195,8 @@ export interface AttackOptions {
   location?: HitLocation;
   /** Modificateurs dérivés de la scène (couvert/obscurité/météo/mouvement/tir-mêlée), injectés par combatFlow. */
   env?: ModLine[];
+  /** Pénalité météo à l'esquive (neige épaisse −20, LDB 14 l.115-116), injectée par combatFlow. */
+  dodgeMod?: number;
 }
 
 /** Une arme possède-t-elle l'Atout/Défaut `q` (insensible à la casse ; ignore l'Indice). */
@@ -248,9 +252,11 @@ export function rollMeleeDefender(
   defender: Combatant,
   mode: 'parade' | 'esquive',
   rng: RNG = defaultRNG,
+  dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
 ): TestResult {
   const defVal = defenseValue(defender, mode);
-  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0));
+  const snow = mode === 'esquive' ? dodgeMod : 0;
+  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow);
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
@@ -279,13 +285,14 @@ export function finishMelee(
   defenseMode: 'parade' | 'esquive',
   location?: HitLocation,
   env: ModLine[] = [],
+  dodgeMod = 0,
 ): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   const drAdjust = defenseMode === 'parade' ? (hasQ(defender.weapons[0], 'Défensive') ? 1 : 0) - (hasQ(weapon, 'À Enroulement') ? 1 : 0) : 0;
   const opp = resolveOpposed(atk, drAdjust ? { ...def, sl: def.sl + drAdjust } : def);
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode, dodgeMod));
 
   if (opp.winner === 'defender') {
     return {
@@ -350,8 +357,8 @@ export function resolveMelee(
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
   if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env);
-  const def = rollMeleeDefender(defender, defenseMode, rng);
-  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env);
+  const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod);
+  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod);
 }
 
 /**
