@@ -70,7 +70,7 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
   // ajoutée ici EN CONSCIENCE — c'est le garde-fou anti-empilement.
   const NON_DANS_REGISTRE = new Set([
     'À Répétition', 'Immobilisante', 'Perturbante', 'Piège-lame', 'Protectrice',
-    'Rapide', 'Taille', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente',
+    'Rapide', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente',
   ]);
   it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));

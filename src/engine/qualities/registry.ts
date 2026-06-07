@@ -59,6 +59,8 @@ export interface QualityDef {
   /** +X DR à un Test RATÉ utilisant l'objet (Pratique +1 / Peu Fiable -1, LDB 60 l.59/88). En mêlée
    *  (Test opposé), un jet raté reste comparé : ce DR modifie l'issue ET les Dégâts (via le DR net). */
   testFailDR?: number;
+  /** Arme qui endommage l'armure/le bouclier frappé sur une touche réussie (Taille, LDB 63 l.8). */
+  damagesArmour?: boolean;
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -99,4 +101,6 @@ export const QUALITIES: Record<string, QualityDef> = {
   // Armes à feu : détectées comme Incident de Tir potentiel (oups.ts).
   'À Poudre noire': { key: 'À Poudre noire', type: 'Défaut', subType: 'Arme', firearm: true },
   'À Explosion': { key: 'À Explosion', type: 'Atout', subType: 'Arme', firearm: true },
+  // Taille (arme) : sur une touche, endommage de 1 PA l'armure/le bouclier frappé (LDB 63 l.8). Hook combatFlow.
+  'Taille': { key: 'Taille', type: 'Atout', subType: 'Arme', damagesArmour: true },
 };
