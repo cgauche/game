@@ -11,7 +11,7 @@ import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
-import { SPIDER_SPECIES, spiderSpeciesMatch } from '../creatures';
+import { SPIDER_SPECIES } from '../creatures';
 
 export type SpiderBoneId = 'corps' | 'abdomen';
 type SBone = FKBone & { z: number };
@@ -111,10 +111,6 @@ export const SPIDER_DEFAULT: SpiderProps = {
 export function resolveSpider(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
   return resolveSpiderFromProps(SPIDER_SPECIES[species] ?? SPIDER_DEFAULT, view, pose, colors);
 }
-export function spiderSpeciesFromName(name: string): string {
-  return spiderSpeciesMatch(name) ?? Object.keys(SPIDER_SPECIES)[0] ?? 'Araignée';
-}
-
 export const arachnidPlan: BodyPlan = {
   id: 'arachnid',
   resolve: (sp, view, pose, opts) => resolveSpider(sp, view, pose, opts?.colors),

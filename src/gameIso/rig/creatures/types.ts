@@ -13,10 +13,11 @@ import type { SerpentProps } from '../serpentine/composeSerpent';
 import type { SpiderProps } from '../arachnid/composeSpider';
 import type { BirdProps } from '../avian/composeBird';
 import type { OctopusProps } from '../cephalopod/composeOctopus';
+import type { SpectreProps } from '../spectral/composeSpectre';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' // nouveaux squelettes (limbless/8-pattes/oiseau/tentacules)
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' // nouveaux squelettes
   | 'monolithic';
 
 /** Config d'une ESPÈCE bipède monstrueuse/humanoïde (ce qui était éparpillé dans les tables
@@ -55,4 +56,5 @@ export interface CreatureDef {
   spider?: SpiderProps; // plan = arachnid
   bird?: BirdProps; // plan = avian
   octopus?: OctopusProps; // plan = cephalopod
+  spectre?: SpectreProps; // plan = spectral
 }

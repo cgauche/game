@@ -11,7 +11,7 @@ import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
-import { SERPENT_SPECIES, serpentSpeciesMatch } from '../creatures';
+import { SERPENT_SPECIES } from '../creatures';
 
 export type SerpentBoneId = 'corps' | 'cou' | 'tete';
 type SBone = FKBone & { z: number };
@@ -130,10 +130,6 @@ export const SERPENT_DEFAULT: SerpentProps = {
 export function resolveSerpent(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
   return resolveSerpentFromProps(SERPENT_SPECIES[species] ?? SERPENT_DEFAULT, view, pose, colors);
 }
-export function serpentSpeciesFromName(name: string): string {
-  return serpentSpeciesMatch(name) ?? Object.keys(SERPENT_SPECIES)[0] ?? 'Serpent';
-}
-
 /** Gabarit serpentin enregistrable. L'ondulation de cobra est l'IDLE du plan (animée en continu
  *  par AnimatedPlanToken) ; la marche reprend l'ondulation amplifiée. */
 export const serpentinePlan: BodyPlan = {

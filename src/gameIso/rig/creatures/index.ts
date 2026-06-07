@@ -8,6 +8,7 @@ import type { SerpentProps } from '../serpentine/composeSerpent';
 import type { SpiderProps } from '../arachnid/composeSpider';
 import type { BirdProps } from '../avian/composeBird';
 import type { OctopusProps } from '../cephalopod/composeOctopus';
+import type { SpectreProps } from '../spectral/composeSpectre';
 import type { CreatureDef, BipedConfig, CreatureBodyPlan } from './types';
 import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
@@ -68,18 +69,11 @@ export function wingSpeciesMatch(name: string): string | undefined { return matc
 
 // --- Nouveaux squelettes (serpentin/arachnide/aviaire/céphalopode) : tables de props par
 //     espèce, dérivées des defs comme quad/winged. Chaque plan lit son propre champ de props.
-const SERP = CREATURES.filter((c) => c.plan === 'serpentine');
-const ARAC = CREATURES.filter((c) => c.plan === 'arachnid');
-const AVI = CREATURES.filter((c) => c.plan === 'avian');
-const CEPH = CREATURES.filter((c) => c.plan === 'cephalopod');
-export const SERPENT_SPECIES: Record<string, SerpentProps> = Object.fromEntries(SERP.map((c) => [c.name, c.serpent!]));
-export const SPIDER_SPECIES: Record<string, SpiderProps> = Object.fromEntries(ARAC.map((c) => [c.name, c.spider!]));
-export const BIRD_SPECIES: Record<string, BirdProps> = Object.fromEntries(AVI.map((c) => [c.name, c.bird!]));
-export const OCTOPUS_SPECIES: Record<string, OctopusProps> = Object.fromEntries(CEPH.map((c) => [c.name, c.octopus!]));
-export function serpentSpeciesMatch(name: string): string | undefined { return matchIn(SERP, name)?.name; }
-export function spiderSpeciesMatch(name: string): string | undefined { return matchIn(ARAC, name)?.name; }
-export function birdSpeciesMatch(name: string): string | undefined { return matchIn(AVI, name)?.name; }
-export function octopusSpeciesMatch(name: string): string | undefined { return matchIn(CEPH, name)?.name; }
+export const SERPENT_SPECIES: Record<string, SerpentProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'serpentine').map((c) => [c.name, c.serpent!]));
+export const SPIDER_SPECIES: Record<string, SpiderProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'arachnid').map((c) => [c.name, c.spider!]));
+export const BIRD_SPECIES: Record<string, BirdProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'avian').map((c) => [c.name, c.bird!]));
+export const OCTOPUS_SPECIES: Record<string, OctopusProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'cephalopod').map((c) => [c.name, c.octopus!]));
+export const SPECTRE_SPECIES: Record<string, SpectreProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'spectral').map((c) => [c.name, c.spectre!]));
 
 // --- Routage GÉNÉRIQUE (registry-driven) : un nom → la def NON-bipède qui matche, quel que soit
 //     son plan (quad/winged/serpentine/arachnid/avian/cephalopod OU monolithic). Plus de chaîne

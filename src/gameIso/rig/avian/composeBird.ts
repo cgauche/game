@@ -11,7 +11,7 @@ import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
-import { BIRD_SPECIES, birdSpeciesMatch } from '../creatures';
+import { BIRD_SPECIES } from '../creatures';
 
 export type BirdBoneId = 'corps' | 'tete';
 type BBone = FKBone & { z: number };
@@ -122,10 +122,6 @@ export const BIRD_DEFAULT: BirdProps = {
 export function resolveBird(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
   return resolveBirdFromProps(BIRD_SPECIES[species] ?? BIRD_DEFAULT, view, pose, colors);
 }
-export function birdSpeciesFromName(name: string): string {
-  return birdSpeciesMatch(name) ?? Object.keys(BIRD_SPECIES)[0] ?? 'Pigeon';
-}
-
 export const avianPlan: BodyPlan = {
   id: 'avian',
   resolve: (sp, view, pose, opts) => resolveBird(sp, view, pose, opts?.colors),

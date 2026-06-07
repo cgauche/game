@@ -18,9 +18,10 @@ import { serpentinePlan } from './serpentine/composeSerpent';
 import { arachnidPlan } from './arachnid/composeSpider';
 import { avianPlan } from './avian/composeBird';
 import { cephalopodPlan } from './cephalopod/composeOctopus';
+import { spectralPlan } from './spectral/composeSpectre';
 import { creaturePlanMatch, creatureMatch } from './creatures';
 
-export type BodyPlanId = 'biped' | 'quadruped' | 'winged' | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod';
+export type BodyPlanId = 'biped' | 'quadruped' | 'winged' | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral';
 
 /** Options de résolution communes (le bipède lit appearance/equip/career ; tous lisent colors). */
 export interface ResolveOpts {
@@ -53,6 +54,7 @@ const PLANS: Record<BodyPlanId, BodyPlan> = {
   arachnid: arachnidPlan,
   avian: avianPlan,
   cephalopod: cephalopodPlan,
+  spectral: spectralPlan,
 };
 export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];

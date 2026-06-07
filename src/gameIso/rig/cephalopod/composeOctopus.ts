@@ -11,7 +11,7 @@ import type { Palette, StoredPalette } from '../palette';
 import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
-import { OCTOPUS_SPECIES, octopusSpeciesMatch } from '../creatures';
+import { OCTOPUS_SPECIES } from '../creatures';
 
 export type OctoBoneId = 'tentacules' | 'corps';
 type OBone = FKBone & { z: number };
@@ -96,10 +96,6 @@ export const OCTOPUS_DEFAULT: OctopusProps = {
 export function resolveOctopus(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
   return resolveOctopusFromProps(OCTOPUS_SPECIES[species] ?? OCTOPUS_DEFAULT, view, pose, colors);
 }
-export function octopusSpeciesFromName(name: string): string {
-  return octopusSpeciesMatch(name) ?? Object.keys(OCTOPUS_SPECIES)[0] ?? 'Pieuvre';
-}
-
 export const cephalopodPlan: BodyPlan = {
   id: 'cephalopod',
   resolve: (sp, view, pose, opts) => resolveOctopus(sp, view, pose, opts?.colors),

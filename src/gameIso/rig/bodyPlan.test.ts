@@ -34,8 +34,11 @@ describe('bodyPlanOf', () => {
     expect(bodyPlanOf('Pigeon voyageur')).toBe('avian');
     expect(bodyPlanOf('Pieuvre des tourbières')).toBe('cephalopod');
   });
-  it('exotiques sans gabarit (forme bespoke/indéterminée) → monolithic', () => {
-    for (const n of ['Squig vorace', 'Spectre hurlant', 'Bête de Nurgle', 'Bête des marais']) {
+  it('morts-vivants spectraux → spectral', () => {
+    for (const n of ['Spectre de cairn', 'Fantôme', 'Banshee']) expect(bodyPlanOf(n)).toBe('spectral');
+  });
+  it('exotiques sans gabarit (bespoke/indéterminé) → monolithic', () => {
+    for (const n of ['Squig vorace', 'Bête de Nurgle', 'Jabberslythe', 'Bête des marais']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });
