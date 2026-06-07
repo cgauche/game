@@ -330,7 +330,7 @@ export function resolveAttack(
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
   const scene = get().scene!;
   const battle = get().battle!;
-  const sc = sceneCombatModifiers(scene, get().gameTime);
+  const sc = sceneCombatModifiers(scene);
   const env: ModLine[] = [];
   if (weapon.type === 'ranged') {
     const occupants = battle.combatants
@@ -537,9 +537,10 @@ export function applyAttackResult(
     } else if (res.critical || overkill > 0) {
       const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set);
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
-    } else if (target.wounds.current <= 0) {
-      applyZeroWounds(target); // 0 PB sans critique → À Terre (LDB 18 l.28)
     }
+    // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
+    // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
+    if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, 'Inconscient')) applyZeroWounds(target);
   }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');

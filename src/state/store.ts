@@ -1868,7 +1868,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res } });
@@ -1882,7 +1882,7 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0;
+    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!).dodgeMod : 0;
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
