@@ -4,8 +4,8 @@
  */
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
-import { d10, RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { d10, d100, RNG, defaultRNG } from './dice';
+import { rollTest, isDoubleRoll } from './tests';
 
 /** Nombre de pions (cumul) d'un État donné. */
 const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -149,6 +149,24 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
   }
   return log;
+}
+
+/**
+ * Mort par Hémorragique (LDB 16-États l.105) : « À la fin du Round, vous avez 10 % de chance de mourir
+ * par État Hémorragique que vous possédez » (3 pions → mort sur 1-30). « Si vous faites un double sur ce
+ * jet, vos blessures coagulent un peu et vous perdez 1 État Hémorragique » — le double prime (pas de mort,
+ * mais coagulation). Pur ; renvoie `died` (la finalisation — sauvetage par Destin — revient à l'appelant).
+ */
+export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boolean; log: string[] } {
+  const n = stacks(c, 'Hémorragique');
+  if (n <= 0) return { died: false, log: [] };
+  const r = d100(rng);
+  if (isDoubleRoll(r)) {
+    removeCondition(c, 'Hémorragique', 1); // coagulation (le double prime sur la mort)
+    return { died: false, log: [`${c.name} : une plaie coagule (${r === 100 ? '00' : r}, double) — un État Hémorragique en moins.`] };
+  }
+  if (r <= 10 * n) return { died: true, log: [`${c.name} succombe à l'hémorragie (${r} ≤ ${10 * n}).`] };
+  return { died: false, log: [] };
 }
 
 /** Un figurant (non-héros, non-important) sort directement à 0 PB (Mort Subite, LDB 18 l.51-54). */
