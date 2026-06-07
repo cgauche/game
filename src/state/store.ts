@@ -10,7 +10,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
-  focusSpell, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
   aiMaybeTrample, trampleTarget, TRAMPLE_WEAPON, pushReveal,
@@ -30,7 +30,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
@@ -395,6 +395,13 @@ export interface GameState {
   trampleForceSuccess: () => void;
   trampleConfirm: () => void;
   trampleCancel: () => void;
+  /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
+  focusRoll: () => void;
+  focusReroll: () => void;
+  focusBonusSL: () => void;
+  focusForceSuccess: () => void;
+  focusConfirm: () => void;
+  focusCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
   fumbleRoll: () => void;
   fumbleConfirm: () => void;
@@ -924,8 +931,66 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || battle.acted) return;
-    focusSpell(get, set, active, label);
+    const spell = findSpell(label);
+    if (!spell || !isArcaneSpell(spell)) {
+      get().log('Ce sort ne peut pas être focalisé.');
+      return;
+    }
+    // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
+    set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
+  focusRoll: () => {
+    const { battle, pendingFocus: pf } = get();
+    if (!battle || !pf || pf.result) return;
+    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const spell = findSpell(pf.spellLabel);
+    if (!caster || !spell) return;
+    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()) } });
+  },
+  focusReroll: () => {
+    const { battle, pendingFocus: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    if (!canReroll(pf.result.dr === 0, !!pf.rerolled)) return; // aucun DR gagné → rejouable, 1× max
+    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const spell = findSpell(pf.spellLabel);
+    if (!caster || !spell || (caster.fortune ?? 0) <= 0) return;
+    caster.fortune = (caster.fortune ?? 0) - 1;
+    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, battle: { ...battle } });
+  },
+  focusBonusSL: () => {
+    const { battle, pendingFocus: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    if (!caster || (caster.fortune ?? 0) <= 0) return;
+    caster.fortune = (caster.fortune ?? 0) - 1;
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, battle: { ...battle } });
+  },
+  focusForceSuccess: () => {
+    const { battle, pendingFocus: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    if (!caster || (caster.resilience ?? 0) <= 0) return;
+    caster.resilience = (caster.resilience ?? 0) - 1;
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, battle: { ...battle } });
+  },
+  focusConfirm: () => {
+    const { battle, pendingFocus: pf } = get();
+    if (!battle || !pf || !pf.result) return;
+    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const spell = findSpell(pf.spellLabel);
+    set({ pendingFocus: null });
+    if (!caster || !spell) return;
+    const res = pf.result;
+    const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
+    caster.focus = { spell: pf.spellLabel, dr: prev + res.dr };
+    const ni = spell.cn ?? 0;
+    const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
+    // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
+    if (res.isFumble) logLines.push(...applyMiscast(caster, 'majeure'));
+    set({ battle: { ...get().battle!, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
+    checkBattleOver(get, set);
+  },
+  focusCancel: () => set({ pendingFocus: null }),
 
   battleClickTile: (pt) => {
     const { battle, scene } = get();

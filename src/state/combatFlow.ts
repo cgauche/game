@@ -28,9 +28,7 @@ import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom } fr
 import { sizeGap } from '../engine/size';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
-  resolveFocus,
   isMagicMissile,
-  isArcaneSpell,
   parseHeal,
   parseConditionEffect,
   parseCharBuffs,
@@ -978,31 +976,6 @@ export function applyCast(
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
 export function castInfoIsPrayer(type: string): boolean {
   return type === 'Béni' || type === 'Invocation';
-}
-
-/** Focalise un sort d'Arcane/Domaine : cumule le DR jusqu'à atteindre le NI. */
-export function focusSpell(get: () => GameState, set: any, caster: Combatant, label: string) {
-  const battle = get().battle!;
-  const spell = findSpell(label);
-  if (!spell || !isArcaneSpell(spell)) {
-    get().log('Ce sort ne peut pas être focalisé.');
-    return;
-  }
-  const res = resolveFocus(caster, spell, battleRng());
-  const prev = caster.focus?.spell === label ? caster.focus.dr : 0;
-  caster.focus = { spell: label, dr: prev + res.dr };
-  const logLines = [res.log];
-  const ni = spell.cn ?? 0;
-  if (caster.focus.dr >= ni) {
-    logLines.push(`${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).`);
-  } else {
-    logLines.push(`Focalisation : ${caster.focus.dr}/${ni} DR.`);
-  }
-  // Maladresse en Focalisation → Incantation Imparfaite Majeure (Livre de base l.191).
-  if (res.isFumble) logLines.push(...applyMiscast(caster, 'majeure'));
-  set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
-  bus.emit(EVT.SCENE_DIRTY);
-  checkBattleOver(get, set);
 }
 
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États

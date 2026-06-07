@@ -14,6 +14,7 @@ import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
 import { CleaveModal } from './CleaveModal';
 import { TrampleModal } from './TrampleModal';
+import { FocusModal } from './FocusModal';
 import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
@@ -100,6 +101,7 @@ export function CampaignView() {
       <DisengageModal />
       <CleaveModal />
       <TrampleModal />
+      <FocusModal />
       <CastModal />
       <FumbleModal />
       <RevealModal />
