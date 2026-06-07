@@ -941,7 +941,19 @@ function venomDiffKey(label: string): import('../engine/types').Difficulty {
  *  - Atout Venin de la créature → Test de Résistance (Endurance) à la Difficulté du Venin ;
  *    sur un échec, la cible subit l'État Empoisonné (LDB 85 l.326, voir p.168). */
 export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
-  if (!res.hit || !res.woundsLost) return; // les effets ne se déclenchent que sur Points de Blessure perdus
+  if (!res.hit) return; // les effets se déclenchent sur une touche réussie
+  const traits = attacker.traits ?? [];
+  // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
+  if (traits.some((t) => /^constricteur/i.test(t)) && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    get().log(`${target.name} est Empêtré (Constricteur).`);
+  }
+  if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
+  // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
+  if (kind === 'morsure' && traits.some((t) => /^vampirique/i.test(t))) {
+    attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
+    get().log(`${attacker.name} draine ${res.woundsLost} Blessure(s) (Vampirique).`);
+  }
   if (kind === 'caudale' && sizeGap(attacker.size, target.size) >= 1 && !hasCondition(target, 'À Terre')) {
     addCondition(target, 'À Terre');
     get().log(`${target.name} est mis À Terre (Attaque caudale).`);
@@ -1024,6 +1036,58 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
   checkBattleOver(get, set);
 }
 
+/** Langue préhensile (Jabberslythe, LDB 85) : Attaque gratuite à 1 Avantage, À DISTANCE. Cible
+ *  visible la plus proche, Test opposé CT/Esquive ; sur une touche : Dégâts = Indice + État Empêtré
+ *  (et traction/Empoignade — non modélisées). Instantané. Ne consomme pas l'Action. */
+export function applyTongue(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack): void {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos) return;
+  attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
+  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
+  if (!foes.length) return;
+  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+  const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng());
+  const lines = [`${attacker.name} projette sa Langue préhensile sur ${tgt.name} !`];
+  if (r.attackerWins) {
+    const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
+    if (wl > 0) { tgt.wounds.current = Math.max(0, tgt.wounds.current - wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
+    if (!hasCondition(tgt, 'Empêtré')) addCondition(tgt, 'Empêtré');
+    lines.push(`${tgt.name} est Empêtré (Langue préhensile).`);
+    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  } else lines.push(`${tgt.name} esquive la langue.`);
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+}
+
+/** Hurlement fantomatique (Banshee, LDB 85) : Attaque gratuite (ne consomme pas l'Action), dépense
+ *  TOUS les Avantages (min 2). Toutes les créatures VIVANTES (non Mort-vivant) à Initiative mètres
+ *  subissent 1d10 Blessures (ignore BE et PA), un Test de Résistance Accessible (+20) ou l'État Brisé,
+ *  et 3 États Assourdi. Instantané. Renvoie true si poussé. */
+export function applyWail(get: () => GameState, set: any, attacker: Combatant): boolean {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
+  attacker.advantage = 0; // dépense TOUS les Avantages
+  const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2)); // Initiative mètres → cases (2 m)
+  const living = battle.combatants.filter(
+    (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !(c.traits ?? []).some((t) => /mort-vivant/i.test(t)),
+  );
+  const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
+  for (const tgt of living) {
+    const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
+    tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
+    lines.push(`${tgt.name} subit ${wl} Blessure(s) (ignore Endurance et PA).`);
+    const resAdv = tgt.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
+    if (!rollTest(effectiveChar(tgt, 'E') + resAdv, 'accessible', battleRng()).success) addCondition(tgt, 'Brisé');
+    for (let i = 0; i < 3; i++) addCondition(tgt, 'Assourdi'); // 3 États Assourdi
+    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  }
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  return true;
+}
+
 /** Regard pétrifiant (Basilic, LDB 85) : pour son ACTION, la créature dépense ≥1 Avantage (l'IA
  *  dépense tout ce qu'elle a, min 1) → Test opposé CT/Initiative avec +1 DR par Avantage dépensé.
  *  La cible reçoit 1 État Sonné par tranche de 2 DR de marge ; pétrifiée si la marge atteint 6 DR.
@@ -1099,6 +1163,9 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
     if (souffle && enemy.advantage >= souffle.avantage) applyAreaAttack(get, set, enemy, souffle);
     const vomi = atks.find((a) => a.kind === 'vomi');
     if (vomi && enemy.advantage >= vomi.avantage) applyAreaAttack(get, set, enemy, vomi);
+    const langue = atks.find((a) => a.kind === 'langue');
+    if (langue && enemy.advantage >= langue.avantage) applyTongue(get, set, enemy, langue); // Jabberslythe : langue à distance
+    if (atks.some((a) => a.kind === 'hurlement') && enemy.advantage >= 2) applyWail(get, set, enemy); // Banshee : cri (tous les Av)
     const traitKinds = atks
       .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
       .map((a) => a.kind);

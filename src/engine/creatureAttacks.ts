@@ -20,7 +20,7 @@
  */
 
 /** Type d'attaque naturelle (geste + règle distincts). */
-export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard';
+export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard' | 'langue' | 'hurlement';
 
 /** Déclenchement RAW : action normale, gratuite (coût en Avantage), ou gratuite à la Charge. */
 export type AttackTrigger = 'action' | 'free' | 'charge';
@@ -60,6 +60,8 @@ export const ATTACK_LABEL: Record<AttackKind, string> = {
   tentacules: 'Tentacules',
   etreinte: 'Étreinte glaciale',
   regard: 'Regard pétrifiant',
+  langue: 'Langue préhensile',
+  hurlement: 'Hurlement fantomatique',
 };
 
 // Règle RAW par type (hors Dégâts/type, lus du libellé). Le 1er match du libellé gagne.
@@ -69,6 +71,8 @@ const RULES: Array<{ re: RegExp; kind: AttackKind; base: Omit<CreatureAttack, 'k
   [/^cornes?\b/i, 'cornes', { trigger: 'charge', avantage: 0 }],
   [/^souffle\b/i, 'souffle', { trigger: 'free', avantage: 2, aoe: true, magic: true }],
   [/^vomi(ssement)?\b/i, 'vomi', { trigger: 'free', avantage: 3, aoe: true }], // Vomissement (Troll) : 3 Av, zone, corrosif + Sonné
+  [/^langue préhensile\b/i, 'langue', { trigger: 'free', avantage: 1, entangle: true }], // Jabberslythe : gratuite 1 Av, à distance, Indice + Empêtré
+  [/^hurlement fantomatique\b/i, 'hurlement', { trigger: 'free', avantage: 2, aoe: true }], // Banshee : gratuit, tous les Av (min 2), zone
   [/^regard\b/i, 'regard', { trigger: 'action', avantage: 1 }], // Regard pétrifiant : Action, ≥1 Av (CT/Init, pétrifie)
   [/^tentacules?\b/i, 'tentacules', { trigger: 'free', avantage: 0, entangle: true, perTentacle: true }],
   [/^étreinte glaciale\b/i, 'etreinte', { trigger: 'action', avantage: 2, magic: true }],

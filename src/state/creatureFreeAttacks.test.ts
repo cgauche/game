@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp } from './combatFlow';
+import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp, applyWail } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -148,6 +148,31 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(acted).toBe(true);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2
+  });
+
+  it('Constricteur : toute touche → Empêtré ; Vampirique : la Morsure soigne l’attaquant', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Morsure +14', 'Constricteur', 'Vampirique']; E.advantage = 1;
+    E.wounds = { current: 10, max: 40, base: 40 } as Combatant['wounds']; // blessé → peut se soigner
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.some((c) => c.name === 'Empêtré')).toBe(true);
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBeGreaterThan(10); // drainé (Vampirique)
+  });
+
+  it('Hurlement fantomatique : zone vivante, 1d10 ignore BE+PA + 3 Assourdi, dépense tous les Av', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Hurlement fantomatique']; E.advantage = 4; E.characteristics.I = 40;
+    H.armour = { tete: 6, brasG: 6, brasD: 6, corps: 6, jambeG: 6, jambeD: 6 }; // PA ignorés
+    const before = H.wounds.current;
+    const acted = applyWail(useGame.getState, useGame.setState, E);
+    expect(acted).toBe(true);
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.filter((c) => c.name === 'Assourdi').length >= 1).toBe(true);
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // tous les Avantages dépensés
   });
 
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
