@@ -17,13 +17,13 @@ const QUAD_PEAK: Partial<Record<AttackKind, Record<string, number>>> = {
 };
 
 /** Existe-t-il une pose d'attaque quad/ailé pour ce type ? (sinon → attackPose par défaut du plan). */
-export function hasQuadAttackPose(kind: AttackKind): boolean {
+export function hasQuadAttackPose(kind: string): boolean {
   return kind in QUAD_PEAK;
 }
 
 /** Pose d'attaque quad/ailé à `phase` (0..1) : enveloppe sinus (repos → pic → repos). PUR. */
-export function quadAttackPose(kind: AttackKind, phase: number): Record<string, number> {
-  const peak = QUAD_PEAK[kind];
+export function quadAttackPose(kind: string, phase: number): Record<string, number> {
+  const peak = (QUAD_PEAK as Record<string, Record<string, number>>)[kind];
   if (!peak) return {};
   const e = Math.sin(Math.PI * Math.max(0, Math.min(1, phase)));
   const out: Record<string, number> = {};

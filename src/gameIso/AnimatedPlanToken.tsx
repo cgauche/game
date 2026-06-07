@@ -4,13 +4,14 @@ import { useGame } from '../state/store';
 import { planById, bodyPlanOf, type BodyPlanId } from './rig/bodyPlan';
 import { creatureMatch } from './rig/creatures';
 import { bonesToSvg } from './rig/renderBones';
+import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
 import type { ColorsSel } from '../state/scene';
 
 const STEP_MS = 160; // démarche (aligné déplacement)
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
 
-type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack'; start: number };
+type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack'; start: number; atk?: string };
 
 /**
  * Token ANIMÉ GÉNÉRIQUE pour TOUT gabarit rigué non-bipède (quadrupède, ailé, serpentin,
@@ -49,9 +50,9 @@ export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name
       modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, p?.length ?? 1) * STEP_MS };
       ensureLoop();
     });
-    const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string }) => {
+    const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string; creatureAttack?: string }) => {
       if (d.from !== id) return;
-      modeRef.current = { kind: 'attack', start: performance.now() };
+      modeRef.current = { kind: 'attack', start: performance.now(), atk: d.creatureAttack };
       ensureLoop();
     });
     return () => { offMove(); offAttack(); if (rafRef.current) cancelAnimationFrame(rafRef.current); };
@@ -66,7 +67,11 @@ export function AnimatedPlanToken({ id, name, colors, dead }: { id: string; name
     : m.kind === 'walk'
       ? plan.walkPose(((now / STEP_MS) % 2) / 2)
       : m.kind === 'attack'
-        ? plan.attackPose(Math.min(1, (now - m.start) / 280))
+        // Pose d'attaque SPÉCIFIQUE (morsure/queue/cornes/griffe) pour le gabarit quad/ailé,
+        // sinon attaque générique du plan (serpent/pieuvre/… ou attaque non typée).
+        ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)
+            ? quadAttackPose(m.atk, Math.min(1, (now - m.start) / 280))
+            : plan.attackPose(Math.min(1, (now - m.start) / 280)))
         : plan.idlePose
           ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
           : plan.restPose();

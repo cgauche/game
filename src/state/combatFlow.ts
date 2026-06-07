@@ -575,7 +575,7 @@ export function applyAttackResult(
   if (attacker.pos && target.pos) {
     set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
   }
-  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense });
+  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, creatureAttack: creatureAttackKind(weapon.name) });
   const log = [...battle.log, res.log];
   log.push(...critLog);
   if (assommanteLog) log.push(assommanteLog);
@@ -899,6 +899,18 @@ export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant)
 function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
   return { name: kind === 'caudale' ? 'Attaque caudale' : 'Morsure', type: 'melee', damage: `+${bonus}`, qualities: [] };
+}
+
+/** Type de pose d'attaque (rendu créature) déduit du NOM de l'arme naturelle, ou undefined (arme
+ *  manufacturée → pose générique du gabarit). Sert au tintage de l'animation d'attaque (AnimatedPlanToken). */
+export function creatureAttackKind(weaponName: string): string | undefined {
+  const n = weaponName.toLowerCase();
+  if (n.includes('morsure')) return 'morsure';
+  if (n.includes('caudale') || n.includes('queue')) return 'caudale';
+  if (n.includes('piétin') || n.includes('pietin')) return 'pietinement';
+  if (n.includes('corne')) return 'cornes';
+  if (n.includes('griffe') || n === 'arme') return 'arme';
+  return undefined;
 }
 
 /** Difficulté de Test (clé) depuis le libellé FR de la Difficulté du Venin (défaut Intermédiaire). */
