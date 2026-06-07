@@ -59,4 +59,7 @@ export const QUALITIES: Record<string, QualityDef> = {
   // Inoffensive : posé sur une arme usée à +0 (effectiveWeapon) ; effet « PA doublés » non encore
   // modélisé (dette, cf. ROADMAP). Enregistrée pour la parité (clé connue).
   'Inoffensive': { key: 'Inoffensive', type: 'Défaut', subType: 'Arme' },
+  // Solide (Indice) — Atout d'OBJET (artisanat, LDB 60 l.64-67) : encaisse N dégâts + sauvegarde 9+.
+  // Enregistrée comme exemple canonique d'Indice ; ses HOOKS d'effet seront câblés en Phase A (artisanat).
+  'Solide': { key: 'Solide', type: 'Atout', subType: 'Objet' },
 };

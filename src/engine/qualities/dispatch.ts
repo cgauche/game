@@ -1,52 +1,63 @@
 /**
- * Dispatcher PUR des qualités d'objet : lit le registre (`registry.ts`) et expose des helpers
- * que combat.ts/items.ts appellent au lieu de tester des chaînes en dur. Aucune mutation.
+ * Dispatcher PUR des qualités d'objet : NORMALISE chaque chaîne via `parseQuality` (clé canonique
+ * du registre + Indice typé), puis expose des helpers que combat.ts/items.ts appellent au lieu de
+ * tester des chaînes en dur. Aucune mutation.
  */
 import type { Weapon } from '../types';
 import { QUALITIES, QualityDef, QualityCtx } from './registry';
+import { parseQuality } from './normalize';
 
-/** Une chaîne d'objet « Solide 3 »/« précise » correspond-elle au label `key` ? (startsWith, casse-insensible). */
-const matches = (raw: string, key: string): boolean => raw.toLowerCase().startsWith(key.toLowerCase());
-
-/** L'objet possède-t-il la qualité `key` ? (remplace l'ancien `hasQ`, parité exacte). */
-export function hasQuality(w: Weapon | undefined, key: string): boolean {
-  return !!w && w.qualities.some((q) => matches(q, key));
+/** Une qualité résolue présente sur un objet : sa définition de registre + son Indice éventuel. */
+export interface ResolvedQuality {
+  def: QualityDef;
+  indice?: number;
 }
 
-/** QualityDef présentes sur l'arme (résolues depuis le registre, qualités inconnues ignorées). */
-export function defsOf(w: Weapon | undefined): QualityDef[] {
+/** Qualités du registre présentes sur l'arme (normalisées, avec Indice). Chaînes inconnues ignorées. */
+export function resolveQualities(w: Weapon | undefined): ResolvedQuality[] {
   if (!w) return [];
-  const out: QualityDef[] = [];
-  for (const def of Object.values(QUALITIES)) {
-    if (w.qualities.some((q) => matches(q, def.key))) out.push(def);
+  const out: ResolvedQuality[] = [];
+  for (const raw of w.qualities) {
+    const p = parseQuality(raw);
+    if (p) out.push({ def: QUALITIES[p.key], indice: p.indice });
   }
   return out;
 }
 
+/** L'objet possède-t-il la qualité canonique `key` ? (remplace l'ancien `hasQ` startsWith). */
+export function hasQuality(w: Weapon | undefined, key: string): boolean {
+  return resolveQualities(w).some((r) => r.def.key === key);
+}
+
+/** Indice de la qualité `key` sur l'objet (ex. Solide → N), ou undefined si absente/sans Indice. */
+export function qualityIndice(w: Weapon | undefined, key: string): number | undefined {
+  return resolveQualities(w).find((r) => r.def.key === key)?.indice;
+}
+
 /** Somme d'un champ numérique du registre sur les qualités présentes (0 si aucune). */
 export function qualitySum(w: Weapon | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
-  return defsOf(w).reduce((s, d) => s + (d[field] ?? 0), 0);
+  return resolveQualities(w).reduce((s, r) => s + (r.def[field] ?? 0), 0);
 }
 
 /** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse multiple de 10). */
 export function qualityCritTriggered(w: Weapon | undefined, roll: number): boolean {
   const ctx: QualityCtx = { weapon: w, roll };
-  return defsOf(w).some((d) => d.critTrigger?.(ctx) ?? false);
+  return resolveQualities(w).some((r) => r.def.critTrigger?.(ctx) ?? false);
 }
 
 /** Ajustement de DR de la PARADE (Test opposé) : Défensive (arme du défenseur) +1, À Enroulement (arme de l'attaquant) -1. */
 export function parryDRAdjust(defenderWeapon: Weapon | undefined, attackerWeapon: Weapon | undefined): number {
-  const def = defsOf(defenderWeapon).reduce((s, d) => s + (d.defenderParryDR ?? 0), 0);
-  const atk = defsOf(attackerWeapon).reduce((s, d) => s + (d.attackerParryDR ?? 0), 0);
+  const def = resolveQualities(defenderWeapon).reduce((s, r) => s + (r.def.defenderParryDR ?? 0), 0);
+  const atk = resolveQualities(attackerWeapon).reduce((s, r) => s + (r.def.attackerParryDR ?? 0), 0);
   return def + atk;
 }
 
 /** L'arme peut-elle tirer au Combat rapproché (Atout Pistolet) ? */
 export function canFireWhileEngaged(w: Weapon | undefined): boolean {
-  return !!w && w.type === 'ranged' && defsOf(w).some((d) => d.canFireWhileEngaged);
+  return !!w && w.type === 'ranged' && resolveQualities(w).some((r) => r.def.canFireWhileEngaged);
 }
 
 /** L'objet est-il insensible aux dégâts/destruction (Incassable) ? (remplace les regex /incassable/i). */
 export function isUnbreakable(w: Weapon | undefined): boolean {
-  return defsOf(w).some((d) => d.unbreakable);
+  return resolveQualities(w).some((r) => r.def.unbreakable);
 }
