@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
+import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
 import { rangeBandModifier, rangeBandName } from '../engine/combat';
 import { bus, EVT } from '../state/bus';
@@ -63,6 +64,7 @@ export function IsoStage() {
   const partyPos = useGame((s) => s.partyPos);
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
+  const gameTime = useGame((s) => s.gameTime);
   const dialogue = useGame((s) => s.dialogue);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
@@ -288,7 +290,7 @@ export function IsoStage() {
     mode === 'battle' && battle
       ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
       : [partyPos];
-  const night = scene.ambiance === 'nuit';
+  const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
   for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
