@@ -78,6 +78,11 @@ export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolea
   return resolveQualities(w).reduce((s, r) => s + (r.def.testFailDR ?? 0), 0);
 }
 
+/** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.85) des qualités du porteur. */
+export function qualitySocMod(w: QualityCarrier | undefined): number {
+  return resolveQualities(w).reduce((s, r) => s + (r.def.socMod ?? 0), 0);
+}
+
 export interface DamageStepCtx {
   /** DR-pour-dégâts de base (déjà augmenté de Pointue). */
   effDR: number;

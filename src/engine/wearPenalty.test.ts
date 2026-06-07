@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseWearPenalty, wornArmourPenalty } from './wearPenalty';
 import { testValue, partyBest } from './skills';
+import { qualitySocMod } from './qualities/dispatch';
 import type { Combatant } from './types';
 
 describe('parseWearPenalty', () => {
@@ -66,5 +67,12 @@ describe('testValue + port d’armure', () => {
     const armure = hero('arm', 45, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]); // 35
     const leste = hero('leste', 40, []); // 40
     expect(partyBest([armure, leste], 'Discrétion')!.actor.id).toBe('leste');
+  });
+});
+
+describe('qualitySocMod (Laid)', () => {
+  it('somme socMod (Laid = -10 ; qualité sans socMod = 0)', () => {
+    expect(qualitySocMod({ qualities: ['Laid'] })).toBe(-10);
+    expect(qualitySocMod({ qualities: ['Précise'] })).toBe(0);
   });
 });

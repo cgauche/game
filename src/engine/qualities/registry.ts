@@ -61,6 +61,8 @@ export interface QualityDef {
   testFailDR?: number;
   /** Arme qui endommage l'armure/le bouclier frappé sur une touche réussie (Taille, LDB 63 l.8). */
   damagesArmour?: boolean;
+  /** Modificateur aux Tests de Sociabilité du porteur quand l'objet est équipé (Laid -10, LDB 60 l.85). */
+  socMod?: number;
 }
 
 /** Table des qualités. Clé = label FR canonique. */
@@ -89,7 +91,7 @@ export const QUALITIES: Record<string, QualityDef> = {
   'Pratique': { key: 'Pratique', type: 'Atout', subType: 'Objet', testFailDR: 1 }, // +1 DR à un test raté (l.59)
   'Raffiné': { key: 'Raffiné', type: 'Atout', subType: 'Objet' }, // signe de statut, cumulable (l.61)
   'Bâclé': { key: 'Bâclé', type: 'Défaut', subType: 'Objet' }, // casse sur test raté-double (hook Phase B combatFlow)
-  'Laid': { key: 'Laid', type: 'Défaut', subType: 'Objet' }, // -10 Tests de Sociabilité (effet = Phase C)
+  'Laid': { key: 'Laid', type: 'Défaut', subType: 'Objet', socMod: -10 }, // -10 Tests de Sociabilité (LDB 60 l.85)
   'Peu Fiable': { key: 'Peu Fiable', type: 'Défaut', subType: 'Objet', testFailDR: -1 }, // -1 DR à un test raté (l.88)
   'Volumineux': { key: 'Volumineux', type: 'Défaut', subType: 'Objet', encDelta: 1 }, // +1 Enc ; porté = Enc 1 (l.91)
   // Assommante : touche à la Tête → Test opposé F vs Endurance+Résistance → Sonné (LDB Armes l.268),
