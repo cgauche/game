@@ -22,7 +22,8 @@ import {
   AttackResult,
   ModLine,
 } from '../engine/combat';
-import { engage, isEngaged, decayEngagement, chargeAdvantage } from '../engine/engagement';
+import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom } from '../engine/engagement';
+import { sizeGap } from '../engine/size';
 import { isUnbreakable, hasQuality } from '../engine/qualities/dispatch';
 import {
   resolveFocus,
@@ -346,8 +347,15 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
   const foes = (mover.engagedWith ?? [])
     .map((id) => battle.combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c && !isOutOfAction(c));
-  if (!foes.length) {
-    // Lien d'Engagement périmé (foe mort/parti) : rouvrir simplement le déplacement normal.
+  // Désengagement GRATUIT du plus grand (LDB 85 l.308-309) : une créature plus grande que TOUS ses
+  // adversaires Engagés les écarte et se déplace librement, sans Test ni sacrifice d'Avantage.
+  const freeDisengage = foes.length > 0 && foes.every((f) => sizeGap(mover.size, f.size) >= 1);
+  if (!foes.length || freeDisengage) {
+    if (freeDisengage) {
+      for (const f of foes) disengageFrom(mover, f); // lève les liens Engagé avec les plus petits écartés
+      battle.log.push(`${mover.name} écarte les plus petits et se déplace librement.`);
+    }
+    // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover.id);
     set({ battle: { ...battle, action: 'move', reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
     return;
