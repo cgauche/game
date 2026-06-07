@@ -15,6 +15,7 @@ import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './condition
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
+import { groupMatch } from './groups';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -154,8 +155,17 @@ export function attackModifiers(
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
-  // Peur : −1 DR (−10) aux Tests liés à la source de la Peur (LDB 21-Psychologie l.29).
-  if (target && (attacker.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
+  // Psychologie (LDB 21) : Peur −1 DR vs la source (l.29, sauf immunité Haine/Amour) ; Haine/Animosité
+  // +1 DR contre le groupe haï (l.22/41) ; Amour/Camaraderie +1 DR (défense des aimés/du groupe, l.77/82).
+  if (target) {
+    const psy = attacker.psychState ?? [];
+    const groups = target.groups ?? [];
+    const hatesTarget = psy.some((p) => p.type === 'haine' && p.active && p.cible && groupMatch(p.cible, groups));
+    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active); // Haine (du groupe) / Amour → immunité Peur
+    if (!peurImmune && psy.some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
+    if (hatesTarget || psy.some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) out.push({ label: 'Haine/Animosité', value: 10 });
+    if (psy.some((p) => (p.type === 'amour' || p.type === 'camaraderie') && p.active)) out.push({ label: 'Amour/Camaraderie', value: 10 });
+  }
   if (opts.kind === 'ranged') {
     if (opts.distanceTiles != null && weapon.range) {
       const m = rangeBandModifier(opts.distanceTiles, weapon.range);
