@@ -28,6 +28,7 @@ import {
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
+import { footprintTiles } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
@@ -77,11 +78,20 @@ export function pushReveal(set: any, entry: RevealEntry): void {
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
 }
 
-export function occupied(battle: BattleState, exceptId: string): Set<string> {
+/**
+ * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.55) de chaque AUTRE
+ * combattant, SAUF ceux de Taille STRICTEMENT inférieure au mover — une créature plus grande
+ * « dégage les combattants de taille inférieure du chemin, se déplaçant où elle veut » (LDB 85
+ * l.308-309). Passer un id (legacy/tests) ⇒ aucun filtrage de Taille (toutes les empreintes bloquent).
+ */
+export function occupied(battle: BattleState, mover: Combatant | string): Set<string> {
+  const exceptId = typeof mover === 'string' ? mover : mover.id;
+  const moverSize = typeof mover === 'string' ? undefined : mover.size;
   const s = new Set<string>();
   for (const c of battle.combatants) {
     if (c.id === exceptId || isOutOfAction(c) || !c.pos) continue;
-    s.add(`${c.pos.x},${c.pos.y}`);
+    if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.308-309)
+    for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
   }
   return s;
 }
@@ -396,7 +406,7 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
       battle.log.push(`${mover.name} écarte les plus petits et se déplace librement.`);
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
-    const blocked = occupied(battle, mover.id);
+    const blocked = occupied(battle, mover);
     set({ battle: { ...battle, action: 'move', reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
     return;
   }
@@ -1689,7 +1699,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     return;
   }
 
-  const blocked = occupied(battle, enemy.id);
+  const blocked = occupied(battle, enemy);
   // Premier Projectile magique connu et prêt : la détection a besoin des données
   // de sort, donc elle reste ici (couche impure), pas dans la décision pure (ai.ts).
   const offensiveSpell = enemy.spells?.find((label) => {
