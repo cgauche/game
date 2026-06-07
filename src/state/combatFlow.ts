@@ -653,7 +653,7 @@ export function doAttack(get: () => GameState, set: any, attacker: Combatant, ta
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   const r = resolveAttack(get, attacker, target);
   if (!r) {
-    get().log('Cible hors de portée de mêlée.');
+    get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
     return false;
   }
   applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)

@@ -1168,7 +1168,7 @@ export const useGame = create<GameState>((set, get) => ({
     applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
     const r = resolveAttack(get, attacker, target, pa.location ?? undefined);
     if (!r) {
-      get().log('Cible hors de portée de mêlée.');
+      get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
       set({ pendingAttack: null });
       return;
     }
