@@ -1753,17 +1753,21 @@ export const useGame = create<GameState>((set, get) => ({
     foe.gainedAdvThisRound = true;
     const res = resolveBackstabAttack(foe, mover, battleRng());
     log.push(`${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`);
+    // « Un jet = une modale » : le héros voit le dé du coup dans le dos (jet subi).
+    if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log] });
     if (res.hit && res.woundsLost) {
       mover.wounds.current = Math.max(0, mover.wounds.current - res.woundsLost);
       foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
       const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
       const ct = rollTest(calme, 'intermediaire', battleRng());
-      if (!ct.success) {
-        const broken = 1 + Math.max(0, -ct.sl);
+      const broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
+      if (broken) {
         addCondition(mover, 'Brisé', broken);
         log.push(`${mover.name} panique : ${broken} État(s) Brisé.`);
       }
+      if (mover.kind === 'hero')
+        pushReveal(set, { kind: 'calme', title: 'Test de Calme', dice: ct.roll, lines: [ct.success ? 'Sang-froid gardé.' : `Panique : ${broken} État(s) Brisé.`] });
     }
     const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     for (const f of foes) disengageFrom(mover, f);
