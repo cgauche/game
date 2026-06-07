@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseWearPenalty, wornArmourPenalty, wornSocialMod } from './wearPenalty';
 import { testValue, partyBest } from './skills';
 import { qualitySocMod } from './qualities/dispatch';
+import { totalEncumbrance } from './items';
 import type { Combatant } from './types';
 
 describe('parseWearPenalty', () => {
@@ -100,5 +101,12 @@ describe('testValue + Laid (Sociabilité)', () => {
     } as unknown as Combatant;
     expect(testValue(c, 'Charme')).toBe(30); // Soc 40 − 10
     expect(testValue(c, 'Discrétion')).toBe(40); // non-Soc, pas de pénalité d'armure → inchangé
+  });
+});
+
+describe('Volumineux porté (garde — déjà câblé items.ts)', () => {
+  it('une armure Volumineux portée vaut Enc 1 (LDB 60 l.91)', () => {
+    const c = { items: [{ uid: 'a', name: 'Plastron lourd', kind: 'armor', qualities: ['Volumineux'], enc: 3, equipped: true }] } as unknown as Combatant;
+    expect(totalEncumbrance(c)).toBe(1);
   });
 });
