@@ -1015,6 +1015,66 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
   checkBattleOver(get, set);
 }
 
+/** Regard pétrifiant (Basilic, LDB 85) : pour son ACTION, la créature dépense ≥1 Avantage (l'IA
+ *  dépense tout ce qu'elle a, min 1) → Test opposé CT/Initiative avec +1 DR par Avantage dépensé.
+ *  La cible reçoit 1 État Sonné par tranche de 2 DR de marge ; pétrifiée si la marge atteint 6 DR.
+ *  Cible visible la plus proche. Instantané. Consomme l'Action. Renvoie true si résolu. */
+export function applyGaze(get: () => GameState, set: any, attacker: Combatant): boolean {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos || attacker.advantage < 1) return false;
+  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
+  if (!foes.length) return false;
+  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+  const spent = attacker.advantage; // l'IA met tout (min 1) — +1 DR par Avantage
+  attacker.advantage = 0;
+  const atk = rollTest(combatValue(attacker, 'ranged'), 'intermediaire', battleRng());
+  const initVal = effectiveChar(tgt, 'I') + (tgt.skills.find((s) => s.name.toLowerCase().startsWith('initiative'))?.advances ?? 0);
+  const def = rollTest(initVal, 'intermediaire', battleRng());
+  const margin = atk.sl + spent - def.sl; // DR de l'attaquant (+Avantage) − DR du défenseur
+  const lines = [`${attacker.name} fixe ${tgt.name} de son Regard pétrifiant (${spent} Avantage) !`];
+  if (margin > 0) {
+    if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
+    else { const n = Math.floor(margin / 2); for (let i = 0; i < n; i++) addCondition(tgt, 'Sonné'); lines.push(`${tgt.name} reçoit ${n} État(s) Sonné.`); }
+  } else lines.push(`${tgt.name} soutient le regard.`);
+  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...lines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  return true;
+}
+
+/** Étreinte glaciale (Spectre de cairn, LDB 85) : ACTION + 2 Avantages. Test opposé CC vs Corps à
+ *  corps/Esquive de la cible ; sur un succès, la cible perd 1d10 + DR Blessures ignorant le Bonus
+ *  d'Endurance ET les PA. Attaque magique. Cible adjacente. Instantané. Consomme l'Action. */
+export function applyChillGrasp(get: () => GameState, set: any, attacker: Combatant): boolean {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
+  const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= 1);
+  if (!tgt) return false;
+  attacker.advantage = Math.max(0, attacker.advantage - 2);
+  const r = opposedTest(combatValue(attacker, 'melee'), defenseValue(tgt, bestDefenseMode(tgt)), battleRng());
+  const lines = [`${attacker.name} étreint ${tgt.name} de son toucher glacial !`];
+  if (r.attackerWins) {
+    const wl = d10(battleRng()) + r.netSL; // 1d10 + DR, ignore BE et PA
+    tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
+    lines.push(`${tgt.name} perd ${wl} Blessure(s) (ignore Endurance et PA).`);
+    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  } else lines.push(`${tgt.name} résiste à l'étreinte.`);
+  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...lines] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  return true;
+}
+
+/** Attaque-ACTION spéciale de l'IA (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
+ *  normale, si la créature en a le trait et l'Avantage requis. Renvoie true si elle a agi. */
+export function aiMaybeSpecialAction(get: () => GameState, set: any, enemy: Combatant): boolean {
+  if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return false;
+  const atks = creatureAttacks(enemy.traits ?? []);
+  if (atks.some((a) => a.kind === 'regard') && enemy.advantage >= 1) return applyGaze(get, set, enemy);
+  if (atks.some((a) => a.kind === 'etreinte') && enemy.advantage >= 2) return applyChillGrasp(get, set, enemy);
+  return false;
+}
+
 /** L'IA enchaîne ses attaques gratuites de créature après l'attaque principale (chacune 1 Avantage,
  *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
  *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
@@ -1531,7 +1591,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     setTimeout(() => {
       const b = get().battle;
       if (!b || b.over) return;
-      const suspended = doAttack(get, set, enemy, target);
+      // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
+      // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée).
+      const suspended = aiMaybeSpecialAction(get, set, enemy) ? false : doAttack(get, set, enemy, target);
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm/defenseCancel → resumeEnemyTurn (anti double-advance).
       if (!suspended) {

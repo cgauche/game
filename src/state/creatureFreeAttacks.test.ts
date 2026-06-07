@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { aiCreatureFreeAttacks } from './combatFlow';
+import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -124,6 +124,30 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.name === 'Sonné')).toBe(true);
     expect(h.armour.corps).toBe(beforePA - 1); // corrosion : Armure −1
+  });
+
+  it('Regard pétrifiant : dépense tout l’Avantage, marge ≥ 6 DR → cible Pétrifiée', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Regard pétrifiant']; E.advantage = 6; E.characteristics.CT = 90; // +6 DR d'Avantage + CT élevée
+    H.characteristics.I = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().startsWith('initiative'));
+    const acted = applyGaze(useGame.getState, useGame.setState, E);
+    expect(acted).toBe(true);
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.conditions.some((c) => c.name === 'Pétrifié') || h.wounds.current === 0).toBe(true);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // tout dépensé
+  });
+
+  it('Étreinte glaciale : 2 Avantages, succès → 1d10+DR Blessures ignorant BE et PA', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['Étreinte glaciale']; E.advantage = 2; E.characteristics.CC = 90;
+    H.armour = { tete: 6, brasG: 6, brasD: 6, corps: 6, jambeG: 6, jambeD: 6 }; // PA ignorés
+    const before = H.wounds.current;
+    const acted = applyChillGrasp(useGame.getState, useGame.setState, E);
+    expect(acted).toBe(true);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2
   });
 
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
