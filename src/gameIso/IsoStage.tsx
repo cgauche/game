@@ -26,18 +26,11 @@ import {
   DEFS,
   terrainOverlay,
   placeSprite,
-  enemySprite,
   pnjSprite,
   entitySprite,
 } from './sprites';
-import { hashSeed } from './appearance';
-import { AnimatedRigToken } from './AnimatedRigToken';
-import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { AmbientRigToken } from './AmbientRigToken';
 import { BodyToken } from './BodyToken';
-import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
-import { bodyPlanOf } from './rig/bodyPlan';
-import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
+import { pickBackend } from './pickBackend';
 import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
@@ -337,58 +330,34 @@ export function IsoStage() {
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
-      const prof = isHero ? null : enemyRigProfile(c);
-      if (isHero || prof) {
-        // Héros ET ennemis humanoïdes : rig (arme visible, facing 8-dir, anims). L'échelle
-        // intègre la taille d'espèce bipède (Géant = colosse via bipedSpeciesScale ; 1 sinon).
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedRigToken combatant={c} profile={prof ?? undefined} />, 0.62 * bipedSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
-        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      } else {
-        // TOUT gabarit rigué non-bipède (quadrupède / ailé / serpentin / arachnide / aviaire /
-        // céphalopode) → token ANIMÉ GÉNÉRIQUE : poses du plan (démarche/attaque/mort) + anim de
-        // repos en continu (battement, ondulation, dodelinement…) + facing 8-dir + recolor. Le
-        // scale intègre la taille d'espèce (dragon/géant grands, rat/oiseau petits).
-        const el = tokenNode(c.id, wp.x, wp.y, <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} />, 0.62 * creatureSpeciesScale(c.name), ring, isOutOfAction(c), wp.walking);
-        objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
-      }
+      // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
+      // l'échelle d'espèce (bipède ou créature) vient du backend.
+      const r = pickBackend({ kind: 'combatant', combatant: c });
+      const el = tokenNode(r.id, wp.x, wp.y, r.body, 0.62 * r.speciesScale, ring, isOutOfAction(c), wp.walking);
+      objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
     }
   } else {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue; // props déjà rendus (au-dessus)
-      // Humanoïde (biped) → RIG (cohérent avec le combat) : parts monstrueux + arme
-      // équipée + clip d'ambiance. Non-biped/créature → sprite monolithique + anim CSS.
-      const seed = ent.appearance?.seed ?? hashSeed(ent.id);
-      const prof =
-        ent.kind === 'personnage'
-          ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { career: ent.appearance?.career, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build })
-          : null;
-      if (prof) {
-        objs.push({
-          d: depth(ent.pos.x, ent.pos.y, dims) + 0.1,
-          el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`e-${ent.id}`} facing={ent.facing} />, 0.58 * bipedSpeciesScale(ent.ref ?? ent.label ?? '')),
-        });
+      // Backend par le classifieur unique : rig humanoïde (0.58, +0.1 de profondeur) /
+      // plan non-bipède animé (0.55) / sprite statique (objet, 0.55 + anim CSS d'ambiance).
+      const r = pickBackend({ kind: 'sceneEntity', ent });
+      if (r.backend === 'sprite') {
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(r.id, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
       } else {
-        // Entité quadrupède/ailée (loup/cheval/griffon/dragon… posé dans une scène) → token ANIMÉ
-        // générique (idle vivant + orientation MONDE authored projetée), cohérent avec le combat ;
-        // sinon (objet / monolithique / autre) → sprite d'entité statique.
-        const refName = ent.ref ?? ent.label ?? '';
-        const planId = bodyPlanOf(refName);
-        if (planId !== 'biped' && planId !== 'monolithic') {
-          objs.push({
-            d: depth(ent.pos.x, ent.pos.y, dims),
-            el: tokenNode(`e-${ent.id}`, ent.pos.x, ent.pos.y, <AnimatedPlanToken id={`e-${ent.id}`} name={refName} colors={ent.appearance?.colors} facing={ent.facing} />, 0.55 * creatureSpeciesScale(refName)),
-          });
-        } else {
-          objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
-        }
+        const base = r.backend === 'rig' ? 0.58 : 0.55;
+        const dBoost = r.backend === 'rig' ? 0.1 : 0;
+        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims) + dBoost, el: tokenNode(r.id, ent.pos.x, ent.pos.y, r.body, base * r.speciesScale) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party[0];
     const wp = leader ? walkPosOf(leader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
-    const el = leader
-      ? tokenNode('__party', wp.x, wp.y, <AnimatedRigToken combatant={leader} />, 0.6, HERO_RING[0], false, wp.walking)
-      : token('__party', partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0]);
+    const r = pickBackend({ kind: 'partyLeader', leader });
+    const el =
+      r.backend === 'sprite'
+        ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0])
+        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking);
     objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
