@@ -129,7 +129,30 @@ function rump(p: QuadProps): string {
     <path d="M6 ${y(-20)} Q${x(-14)} ${y(-22)} ${x(-22)} ${y(-8)} L${x(-20)} ${y(-4)} Q-12 ${y(-18)} 6 ${y(-16)} Z" fill="@corpsH" opacity="0.6"/>
   </g>`;
 }
+// --- Hydre : cluster de cous/têtes dessiné dans UN os (encolure) → ondule d'un bloc, pas
+// besoin d'os supplémentaires. Tête reptilienne miniature (museau +x, corne, œil fendu, dents).
+function hydraHeadlet(tx: number, ty: number, rot: number, s: number): string {
+  return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
+    `<path d="M-4 -3 Q-6 3 -1 5 Q5 7 11 4 Q15 2 13 -1 Q7 -2 2 -2 Q-2 -3 -4 -3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M-3 -2.6 l-1.6 -4.5 l3.2 2.4 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.3"/>` +
+    `<ellipse cx="2" cy="0.2" rx="1.4" ry="1.7" fill="#d8b020"/><ellipse cx="2" cy="0.2" rx="0.45" ry="1.5" fill="#0a0603"/>` +
+    `<path d="M4 4.2 l0.6 1.6 M7 4.4 l0.5 1.5 M10 3.8 l0.4 1.4" stroke="#e8e0c8" stroke-width="0.5"/></g>`;
+}
+function hydraNeck(x1: number, y1: number, cx: number, cy: number, x2: number, y2: number): string {
+  return `<path d="M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}" fill="none" stroke="@corps" stroke-width="5.5" stroke-linecap="round"/>` +
+    `<path d="M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}" fill="none" stroke="@corpsO" stroke-width="1.4" opacity="0.45" stroke-linecap="round"/>`;
+}
 function neck(p: QuadProps): string {
+  if (p.head === 'hydre') { // 3 cous serpentins en éventail, chacun coiffé d'une tête reptilienne
+    const L = 30 * p.neckLen;
+    return `<g>` +
+      hydraNeck(-3, 2, -12, -L * 0.6, -15, -L * 0.95) +
+      hydraNeck(0, 2, 4, -L * 0.7, 6, -L * 1.08) +
+      hydraNeck(3, 2, 14, -L * 0.5, 20, -L * 0.8) +
+      hydraHeadlet(-15, -L * 0.95, -25, 1.05) +
+      hydraHeadlet(6, -L * 1.08, 2, 1.15) +
+      hydraHeadlet(20, -L * 0.8, 28, 1.0) + `</g>`;
+  }
   const L = 30 * p.neckLen;
   const mane = p.tail === 'crin';
   const base = `<path d="M-8 2 Q-10 ${-L * 0.5} -5 ${-L} L6 ${-L} Q9 ${-L * 0.5} 8 2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
@@ -147,6 +170,7 @@ function earProfile(p: QuadProps, x: number, s: number): string {
   return `<path d="M${x} -5 q${3 * s} -8 ${6 * s} -6 q${-1 * s} 5 ${-3 * s} 7 z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`;
 }
 function headProfile(p: QuadProps): string {
+  if (p.head === 'hydre') return ''; // têtes dessinées dans l'os encolure (cluster)
   const eye = `<ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/>`;
   if (p.head === 'aigle') // tête emplumée + bec crochu jaune + œil féroce + sourcil saillant
     return `<g transform="rotate(5)"><path d="M-7 -6 Q-9 6 -2 10 Q4 13 11 11 Q15 9 14 4 Q9 4 4 2 Q-1 0 -2 -6 Q-3 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
@@ -209,6 +233,10 @@ function earsFront(p: QuadProps): string {
     `<path d="M5 -12 Q9 -20 4 -19 Q3 -15 2 -13 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><path d="M5 -13 Q7 -18 4.5 -17.6 Q4 -15 3 -13.6 Z" fill="@peauO" opacity="0.5"/>`;
 }
 function headFront(p: QuadProps): string {
+  if (p.head === 'hydre') // 3 têtes dressées en éventail au-dessus du corps, sur cous courts
+    return `<g>` +
+      hydraNeck(-4, 8, -9, -4, -12, -13) + hydraNeck(0, 8, 0, -6, 0, -16) + hydraNeck(4, 8, 9, -4, 12, -13) +
+      hydraHeadlet(-12, -13, -120, 0.92) + hydraHeadlet(0, -16, -90, 0.98) + hydraHeadlet(12, -13, -60, 0.92) + `</g>`;
   const ears = earsFront(p);
   if (p.head === 'aigle') // face emplumée + bec crochu central + 2 yeux féroces jaunes
     return `<g><path d="M-8 -12 Q-10 4 -3 12 Q0 15 3 12 Q10 4 8 -12 Q0 -15 -8 -12 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
@@ -261,6 +289,10 @@ function bodyFront(p: QuadProps): string {
 
 // ============================ DOS (back) ============================
 function napeBack(p: QuadProps): string {
+  if (p.head === 'hydre') // dos des 3 cous + arrière des têtes (ovales sombres)
+    return `<g>` +
+      hydraNeck(-4, 6, -8, -5, -11, -13) + hydraNeck(0, 6, 0, -7, 0, -15) + hydraNeck(4, 6, 8, -5, 11, -13) +
+      `<ellipse cx="-11" cy="-13" rx="2.8" ry="3.2" fill="@corpsO"/><ellipse cx="0" cy="-15" rx="3" ry="3.4" fill="@corpsO"/><ellipse cx="11" cy="-13" rx="2.8" ry="3.2" fill="@corpsO"/></g>`;
   // Arrière du crâne, PETIT et bas : dos des oreilles (petits, discrets) + nuque réduite.
   // (Avant : on réutilisait les oreilles de face → grandes/pointues → dos « cornu debout ».)
   const earBack = p.ears === 'rondes'

@@ -4,8 +4,8 @@ import { bodyPlanOf, planById } from './bodyPlan';
 describe('bodyPlanOf', () => {
   it('quadrupèdes → quadruped', () => {
     for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien',
-      // exotiques rapatriés en quad (reptilien/batracien)
-      'Basilic', 'Crapaud géant']) {
+      // exotiques rapatriés en quad (reptilien/batracien/multi-têtes)
+      'Basilic', 'Crapaud géant', 'Hydre']) {
       expect(bodyPlanOf(n)).toBe('quadruped');
     }
   });
@@ -28,7 +28,7 @@ describe('bodyPlanOf', () => {
     }
   });
   it('exotiques/monstres pas encore rapatriés → monolithic', () => {
-    for (const n of ['Araignée géante', 'Serpent', 'Hydre', 'Bête des marais', 'Pieuvre des tourbières']) {
+    for (const n of ['Araignée géante', 'Serpent', 'Bête des marais', 'Pieuvre des tourbières']) {
       expect(bodyPlanOf(n)).toBe('monolithic');
     }
   });

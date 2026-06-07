@@ -55,8 +55,8 @@ const EXOTIC_RE = new RegExp(
     'nurgle', 'tzeentch',
     'mournbreath', 'whiptongue', 'slenderthigh', 'jabberslythe',
     // bêtes exotiques sans gabarit qui colle (serpent/pieuvre/araignée… restent monolithiques).
-    // Basilic/Crapaud sont sortis : gabarit quad reptilien/batracien → defs/.
-    'serpent', 'araignee', 'hydre',
+    // Basilic/Crapaud/Hydre sont sortis : gabarit quad (reptilien/batracien/multi-têtes) → defs/.
+    'serpent', 'araignee',
     'pieuvre', 'pigeon', 'bete des marais',
     'sangsue',
   ].join('|') + ')\\b',
