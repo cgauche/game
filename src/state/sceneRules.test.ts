@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { sceneCombatModifiers, entityBlockedAt } from './sceneRules';
-import { Scene, SceneEntity } from './scene';
+import { Scene, SceneEntity, isWalkable } from './scene';
 
 const sc = (over: Partial<Scene>): Scene => ({ ambiance: 'jour', ...over } as Scene);
 
@@ -39,5 +39,17 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
   });
   it('décor sans foot (1×1) ne bloque pas (comportement actuel préservé)', () => {
     expect(entityBlockedAt(scene, 0, 0)).toBe(false);
+  });
+});
+
+describe('isWalkable — intègre l’empreinte des décors', () => {
+  const cart: SceneEntity = { id: 'c', kind: 'prop', pos: { x: 1, y: 0 }, ref: 'charrette', foot: { w: 2, h: 1 } } as SceneEntity;
+  const scene = { dimensions: { w: 4, h: 1 }, tiles: ['herbe', 'herbe', 'herbe', 'herbe'], entities: [cart], buildings: [] } as unknown as Scene;
+  it('une case d’empreinte (charrette 2×1) est non-walkable', () => {
+    expect(isWalkable(scene, 1, 0)).toBe(false);
+    expect(isWalkable(scene, 2, 0)).toBe(false);
+  });
+  it('une case libre reste walkable', () => {
+    expect(isWalkable(scene, 0, 0)).toBe(true);
   });
 });
