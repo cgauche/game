@@ -100,6 +100,9 @@ export interface AttackResult {
   attackerDetail?: RollBreakdown;
   /** Détail du jet de défense en Test opposé (cible, d100, DR) — absent si non opposé. */
   defenderDetail?: RollBreakdown;
+  /** Frappe Mortelle (LDB 14 l.12 / 85 l.299) : touche de mêlée réussie d'un attaquant plus grand
+   *  → balayage possible vers un autre adversaire à portée. Orchestré par le store/combatFlow. */
+  cleave?: boolean;
   log: string;
 }
 
@@ -329,6 +332,7 @@ export function finishMelee(
   const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location);
   res.defenderRoll = def.roll;
   res.defenderDetail = defBd;
+  if (res.hit && sizeGap(attacker.size, defender.size) >= 1) res.cleave = true; // Frappe Mortelle (LDB 85 l.299)
   return res;
 }
 
@@ -344,7 +348,9 @@ export function resolveMeleePassive(
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+  if (res.hit && sizeGap(attacker.size, defender.size) >= 1) res.cleave = true; // Frappe Mortelle (LDB 85 l.299)
+  return res;
 }
 
 /** Résout une attaque de mêlée (Test opposé de Corps à corps). Orchestrateur :
@@ -440,6 +446,17 @@ export function resolveStrayRangedHit(
   const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
   res.log = `Le tir dévie dans la mêlée et touche ${victim.name} !`;
   return res;
+}
+
+/** Attaque de Piétinement (LDB 85 l.320-321) : créature plus grande, Dégâts = Bonus de Force (+0),
+ *  via Corps à corps (Bagarre). Action gratuite — le coût de 1 Avantage est géré par le store. */
+export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
+  const fist: Weapon = { name: 'Piétinement', type: 'melee', damage: '+BF', qualities: [] };
+  const mods = attackModifiers(attacker, target, fist, { kind: 'melee' });
+  const atk = rollTest(combatValue(attacker, 'melee'), 'intermediaire', rng, combineMods(mods));
+  const atkBd = bd('Corps à corps (Piétinement)', combatValue(attacker, 'melee'), atk, mods);
+  if (!atk.success) return miss(attacker, target, atkBd, null);
+  return applyHit(attacker, target, fist, atkBd, atk.sl, atk.isDouble && atk.success);
 }
 
 function applyHit(

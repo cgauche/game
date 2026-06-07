@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
@@ -74,6 +74,22 @@ describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   });
   it('Inoffensive annule Dévastatrice et Percutante', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice', 'Percutante', 'Inoffensive']), 34, 52).woundsLost).toBe(7);
+  });
+});
+
+describe('Taille — Frappe Mortelle (cleave) + Piétinement (LDB 85 l.299/320-321)', () => {
+  const hit = evaluateTest(20, 60); // succès
+  it('cleave posé sur une touche de mêlée d’un plus grand', () => {
+    const r = resolveMeleePassive(mk({ size: 'enorme' }), mk({ size: 'moyenne' }), sword, hit);
+    expect(r.hit).toBe(true);
+    expect(r.cleave).toBe(true);
+  });
+  it('pas de cleave si l’attaquant n’est pas plus grand', () => {
+    expect(resolveMeleePassive(mk(), mk(), sword, hit).cleave).toBeFalsy();
+  });
+  it('resolveTrample : attaque CC qui se résout', () => {
+    const r = resolveTrample(mk({ size: 'enorme', characteristics: { ...mk().characteristics, CC: 60 } }), mk({ size: 'moyenne' }), makeRNG(3));
+    expect(typeof r.hit).toBe('boolean');
   });
 });
 
