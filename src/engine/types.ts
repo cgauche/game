@@ -147,6 +147,8 @@ export interface Combatant {
   kind: 'hero' | 'enemy' | 'npc';
   species?: string;
   career?: string;
+  /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
+  size?: import('./size').SizeCategory;
   characteristics: Characteristics;
   wounds: { current: number; max: number };
   advantage: number;
