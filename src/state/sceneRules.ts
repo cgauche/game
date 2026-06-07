@@ -43,7 +43,7 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>)
  *  Un décor 1×1 (sans `foot`) ne bloque PAS (comportement historique préservé). */
 export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {
   return scene.entities.some((e: SceneEntity) => {
-    if (e.kind !== 'prop' && e.kind !== 'objet') return false;
+    if (e.kind !== 'prop') return false;
     if (!e.foot) return false;
     return x >= e.pos.x && x < e.pos.x + e.foot.w && y >= e.pos.y && y < e.pos.y + e.foot.h;
   });

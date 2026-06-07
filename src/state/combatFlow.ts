@@ -110,13 +110,14 @@ export function removeEntity(get: () => GameState, set: any, id: string) {
   bus.emit(EVT.SCENE_DIRTY);
 }
 
-/** Items ramassables d'une entité `objet` : noms de `loot` + trappings du `search`.
- *  `key` = `loot:<i>` (nom dans inventaire de groupe) ou `trap:<i>` (vrai objet à stats). */
-export function entityPickables(ent: { loot?: string[]; search?: Effect[] }): { key: string; label: string }[] {
+/** Items ramassables d'un prop interactif : un par effet « donneur » de son `interact`.
+ *  `key` = `eff:<index dans interact.effects>`. Les effets non-objet (journal/document…) sont ignorés. */
+export function entityPickables(ent: { interact?: { effects: Effect[] } }): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
-  (ent.loot ?? []).forEach((name, i) => out.push({ key: `loot:${i}`, label: name }));
-  (ent.search ?? []).forEach((e, i) => {
-    if (e.type === 'giveTrapping') out.push({ key: `trap:${i}`, label: e.trapping });
+  (ent.interact?.effects ?? []).forEach((e, i) => {
+    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: e.trapping });
+    else if (e.type === 'giveItem') out.push({ key: `eff:${i}`, label: e.item });
+    else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
   });
   return out;
 }

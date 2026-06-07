@@ -79,7 +79,7 @@ function entityTiles(e: SceneEntity): Pt[] {
 
 const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
   scene.entities.find(
-    (e) => (e.kind === 'prop' || e.kind === 'objet') && entityTiles(e).some((p) => p.x === x && p.y === y),
+    (e) => e.kind === 'prop' && entityTiles(e).some((p) => p.x === x && p.y === y),
   );
 
 /**

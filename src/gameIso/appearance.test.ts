@@ -76,9 +76,6 @@ describe('entitySprite — apparence découplée du rôle', () => {
     const zombie = (creatureSprites as Record<string, string>)['Zombie'];
     expect(entitySprite({ kind: 'ennemi', id: 'e1', ref: 'Zombie' })).toBe(zombie);
   });
-  it('objet → sprite objet non vide', () => {
-    expect(entitySprite({ kind: 'objet', id: 'o1' }).length).toBeGreaterThan(0);
-  });
   it("prop → sprite décor non vide", () => {
     expect(entitySprite({ kind: 'prop', id: 'd1', ref: 'arbre' })).toBe(propSprite('arbre'));
   });

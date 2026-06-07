@@ -89,49 +89,61 @@ function build(): Scene {
       // Le premier cocher, près de Rolf : tué d'un carreau, porte une chemise de mailles (ch.2).
       {
         id: 'corps-cocher1',
-        kind: 'objet',
+        kind: 'prop',
+        ref: 'cadavre',
         pos: { x: 8, y: 8 },
         label: 'Corps du cocher',
-        search: [
-          { type: 'journal', text: 'Le cocher des Quatre Saisons, tué d\'un carreau d\'arbalète au cou. Il porte encore sa chemise de mailles à manches.' },
-          { type: 'giveTrapping', trapping: 'Chemise de mailles' },
-        ],
+        interact: {
+          effects: [
+            { type: 'journal', text: 'Le cocher des Quatre Saisons, tué d\'un carreau d\'arbalète au cou. Il porte encore sa chemise de mailles à manches.' },
+            { type: 'giveTrapping', trapping: 'Chemise de mailles' },
+          ],
+        },
       },
       // Le second cocher, au massacre : chemise de mailles + tromblon avec ses munitions (ch.2).
       {
         id: 'corps-cocher2',
-        kind: 'objet',
+        kind: 'prop',
+        ref: 'cadavre',
         pos: { x: 22, y: 8 },
         label: 'Second cocher',
-        search: [
-          { type: 'journal', text: 'Le second cocher gît près de la diligence ; son tromblon repose à côté de lui.' },
-          { type: 'giveTrapping', trapping: 'Chemise de mailles' },
-          { type: 'giveTrapping', trapping: 'Tromblon' },
-        ],
+        interact: {
+          effects: [
+            { type: 'journal', text: 'Le second cocher gît près de la diligence ; son tromblon repose à côté de lui.' },
+            { type: 'giveTrapping', trapping: 'Chemise de mailles' },
+            { type: 'giveTrapping', trapping: 'Tromblon' },
+          ],
+        },
       },
       // Les autres victimes (artisans, initié de Sigmar, ouvrier) : Knud a déjà tout pillé (ch.2).
       {
         id: 'corps-victimes',
-        kind: 'objet',
+        kind: 'prop',
+        ref: 'cadavre',
         pos: { x: 19, y: 8 },
         label: 'Victimes de l\'attaque',
-        search: [{ type: 'journal', text: 'Un couple d\'artisans, un initié de Sigmar, un ouvrier. Aucun objet de valeur : Knud a déjà tout ramassé.' }],
+        interact: {
+          effects: [{ type: 'journal', text: 'Un couple d\'artisans, un initié de Sigmar, un ouvrier. Aucun objet de valeur : Knud a déjà tout ramassé.' }],
+        },
       },
       // Kastor Lieberung, à l'écart sous un buisson : LE sosie, et ses deux lettres (ch.2).
       {
         id: 'corps-lieberung',
-        kind: 'objet',
+        kind: 'prop',
+        ref: 'cadavre',
         pos: { x: 24, y: 5 },
         label: 'Cadavre sous un buisson',
-        search: [
-          { type: 'journal', text: 'Deux carreaux dans le dos. En le retournant, vous le reconnaissez : c\'est le sosie de l\'un de vous ! Un parchemin dépasse de sa veste.' },
-          { type: 'document', title: 'Document 3 — L\'héritage', text: HERITAGE },
-          { type: 'document', title: 'Document 4 — L\'affidavit', text: AFFIDAVIT },
-          { type: 'giveItem', item: 'Lettre d\'héritage de Kastor Lieberung' },
-          { type: 'giveItem', item: 'Affidavit d\'identité' },
-          { type: 'giveXp', amount: 10 }, // « 10 points chacun pour avoir découvert la lettre d'héritage »
-          { type: 'setFlag', flag: 'heritage_trouve' },
-        ],
+        interact: {
+          effects: [
+            { type: 'journal', text: 'Deux carreaux dans le dos. En le retournant, vous le reconnaissez : c\'est le sosie de l\'un de vous ! Un parchemin dépasse de sa veste.' },
+            { type: 'document', title: 'Document 3 — L\'héritage', text: HERITAGE },
+            { type: 'document', title: 'Document 4 — L\'affidavit', text: AFFIDAVIT },
+            { type: 'giveItem', item: 'Lettre d\'héritage de Kastor Lieberung' },
+            { type: 'giveItem', item: 'Affidavit d\'identité' },
+            { type: 'giveXp', amount: 10 }, // « 10 points chacun pour avoir découvert la lettre d'héritage »
+            { type: 'setFlag', flag: 'heritage_trouve' },
+          ],
+        },
       },
     ],
 

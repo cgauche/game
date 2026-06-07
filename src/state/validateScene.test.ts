@@ -35,7 +35,7 @@ describe('validateScene', () => {
 
   it('ids dupliqués → erreur', () => {
     const s = base();
-    s.entities.push({ id: 'dup', kind: 'objet', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'objet', pos: { x: 1, y: 1 } });
+    s.entities.push({ id: 'dup', kind: 'prop', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'prop', pos: { x: 1, y: 1 } });
     expect(msgs(validateScene([s])).some((m) => /dupliqué/.test(m))).toBe(true);
   });
 

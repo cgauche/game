@@ -64,10 +64,17 @@ function build(): Scene {
       { id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } },
       {
         id: 'corps',
-        kind: 'objet',
+        kind: 'prop',
+        ref: 'cadavre',
         pos: { x: 19, y: 12 },
         label: 'Cadavre près de la diligence',
-        loot: ['Lettre scellée de Kastor Lieberung', "Papiers d'identité"],
+        interact: {
+          consume: true, // l'ancien `loot` retirait le corps une fois ramassé → consume
+          effects: [
+            { type: 'giveItem', item: 'Lettre scellée de Kastor Lieberung' },
+            { type: 'giveItem', item: "Papiers d'identité" },
+          ],
+        },
       },
     ],
     // Gustav et sa salle de bar vivent désormais dans la scène d'intérieur

@@ -33,11 +33,10 @@ import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 const TERRAIN_IDS = Object.keys(TERRAIN_META);
-const KINDS: EntityKind[] = ['heroStart', 'personnage', 'objet', 'prop'];
+const KINDS: EntityKind[] = ['heroStart', 'personnage', 'prop'];
 const KIND_LABEL: Record<EntityKind, string> = {
   heroStart: 'Départ héros',
   personnage: 'Personnage',
-  objet: 'Objet',
   prop: 'Décor',
 };
 
@@ -262,7 +261,7 @@ export function Editor() {
    *  Quadrupède (loup/cheval/…) → gabarit rigué recolorié (même dispatch qu'IsoStage). */
   function entitySvg(e: SceneEntity): string {
     const refName = e.ref ?? e.label ?? '';
-    if (e.kind !== 'prop' && e.kind !== 'objet' && bodyPlanOf(refName) === 'quadruped') {
+    if (e.kind !== 'prop' && bodyPlanOf(refName) === 'quadruped') {
       return quadrupedSvg(refName, 'front', { colors: e.appearance?.colors });
     }
     return entitySprite(e);
@@ -1356,25 +1355,6 @@ export function Editor() {
                     </label>
                   </>
                 )}
-                {sel.kind === 'objet' && (
-                  <>
-                    <label className="ed-field">
-                      Butin simple (ramassé, l'objet disparaît ; séparé par ;)
-                      <input
-                        value={(sel.loot ?? []).join('; ')}
-                        onChange={(e) => updateSel({ loot: e.target.value.split(';').map((s) => s.trim()).filter(Boolean) })}
-                      />
-                    </label>
-                    <div className="ed-field">
-                      <span className="mini-title">Fouille (Effets) — le corps reste, fouillé une fois</span>
-                      <EffectList
-                        effects={sel.search ?? []}
-                        onChange={(eff) => updateSel({ search: eff })}
-                        ctx={{ encounters: scene.encounters, dialogues: scene.dialogues }}
-                      />
-                    </div>
-                  </>
-                )}
                 {sel.kind === 'prop' && (
                   <>
                     <label className="ed-field">
@@ -1412,6 +1392,34 @@ export function Editor() {
                         />
                       </span>
                     </label>
+                    <label className="ed-field">
+                      <input
+                        type="checkbox"
+                        checked={!!sel.interact}
+                        onChange={(e) => updateSel({ interact: e.target.checked ? (sel.interact ?? { effects: [] }) : undefined })}
+                      />{' '}
+                      Interactif (fouille / ramassage)
+                    </label>
+                    {sel.interact && (
+                      <>
+                        <label className="ed-field">
+                          <input
+                            type="checkbox"
+                            checked={!!sel.interact.consume}
+                            onChange={(e) => updateSel({ interact: { ...sel.interact!, consume: e.target.checked } })}
+                          />{' '}
+                          Disparaît quand pris (butin) — sinon reste, fouillé une fois
+                        </label>
+                        <div className="ed-field">
+                          <span className="mini-title">Effets de la fouille / du ramassage</span>
+                          <EffectList
+                            effects={sel.interact.effects}
+                            onChange={(eff) => updateSel({ interact: { ...sel.interact!, effects: eff } })}
+                            ctx={{ encounters: scene.encounters, dialogues: scene.dialogues }}
+                          />
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
                 <button className="btn small" onClick={duplicateSel}>Dupliquer</button>

@@ -432,7 +432,7 @@ export function IsoStage() {
       return;
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y);
-    if (ent && (ent.dialogueId || ent.kind === 'objet')) {
+    if (ent && (ent.dialogueId || !!ent.interact)) {
       st.interactEntity(ent.id);
       return;
     }

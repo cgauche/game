@@ -157,16 +157,11 @@ export function entitySprite(ent: EntityViz): string {
       return enemySprite(ent.ref, seed, ent.appearance?.pins);
     case 'ennemi':
       return enemySprite(ent.ref ?? '', seed, ent.appearance?.pins);
-    case 'objet':
-      return objetSprite();
     case 'prop':
       return propSprite(ent.ref);
     default:
       return '';
   }
-}
-export function objetSprite(): string {
-  return propSvg('caisse');
 }
 export function propSprite(ref?: string): string {
   return propSvg(ref ?? 'tonneau');

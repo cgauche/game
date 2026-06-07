@@ -18,14 +18,14 @@ describe('scene + terrain registre', () => {
 });
 
 describe('normalizeEntityKind — compat fusion pnj/ennemi', () => {
-  it('mappe les anciennes valeurs vers personnage', () => {
+  it('mappe les anciennes valeurs (pnj/ennemi → personnage, objet → prop)', () => {
     expect(normalizeEntityKind('pnj')).toBe('personnage');
     expect(normalizeEntityKind('ennemi')).toBe('personnage');
+    expect(normalizeEntityKind('objet')).toBe('prop'); // dissous dans prop (décor interactif)
   });
   it('conserve les kinds canoniques', () => {
     expect(normalizeEntityKind('personnage')).toBe('personnage');
     expect(normalizeEntityKind('heroStart')).toBe('heroStart');
-    expect(normalizeEntityKind('objet')).toBe('objet');
     expect(normalizeEntityKind('prop')).toBe('prop');
   });
   it('valeur inconnue → personnage (défaut sûr)', () => {

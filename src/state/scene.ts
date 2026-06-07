@@ -12,6 +12,7 @@ import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
 import { entityBlockedAt } from './sceneRules';
+import { migrateEntityKind } from './sceneMigrate';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
@@ -25,13 +26,12 @@ export type Facing = 'N' | 'S' | 'E' | 'O';
  * Les valeurs `pnj`/`ennemi` restent acceptées au chargement des scènes anciennes
  * (normalisées via `normalizeEntityKind`).
  */
-export type EntityKind = 'heroStart' | 'personnage' | 'objet' | 'prop';
+export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 
-/** Mappe les anciennes valeurs de kind (`pnj`/`ennemi`) vers `personnage`. */
+/** Mappe les anciennes valeurs de kind (`pnj`/`ennemi` → `personnage`, `objet` → `prop`).
+ *  Délègue à `migrateEntityKind` — source unique de la normalisation des kinds. */
 export function normalizeEntityKind(k: string): EntityKind {
-  if (k === 'pnj' || k === 'ennemi') return 'personnage';
-  if (k === 'heroStart' || k === 'personnage' || k === 'objet' || k === 'prop') return k;
-  return 'personnage';
+  return migrateEntityKind(k);
 }
 
 export interface CustomStatblock {
@@ -95,18 +95,13 @@ export interface SceneEntity {
   /** Orientation MONDE (8 directions) — éditable, projetée au rendu (project + camRot). */
   facing?: Dir8;
   label?: string;
-  /** Référence au bestiaire (ennemi) ou à l'équipement (objet). */
+  /** Référence au bestiaire (personnage) ou au catalogue de décor (prop, cf. PROPS). */
   ref?: string;
   /** Profil personnalisé (sinon on utilise `ref`). */
   statblock?: CustomStatblock;
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;
-  /** Butin remis quand l'objet est ramassé (ramassage simple : l'objet disparaît). */
-  loot?: string[];
-  /** Fouille à Effets (corps, coffre, meuble…) : Effets appliqués quand on cherche l'objet.
-   *  Contrairement à `loot`, l'objet RESTE en place et est marqué « fouillé » (une seule fois). */
-  search?: Effect[];
   /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `effects` appliqués une fois ;
    *  `consume:true` → le décor disparaît quand pris, sinon il reste (marqué `__fouille_<id>`). */
   interact?: { effects: Effect[]; consume?: boolean };

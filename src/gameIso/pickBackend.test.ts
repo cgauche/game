@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { pickBackend } from './pickBackend';
 import type { SceneEntity } from '../state/scene';
 
-const ent = (over: Partial<SceneEntity>): SceneEntity => ({ id: 'x', kind: 'objet', pos: { x: 0, y: 0 }, ...over });
+const ent = (over: Partial<SceneEntity>): SceneEntity => ({ id: 'x', kind: 'prop', pos: { x: 0, y: 0 }, ...over });
 
 describe('pickBackend — classifieur de backend (rig / plan / sprite)', () => {
   it('leader absent → sprite, id __party', () => {
@@ -11,8 +11,8 @@ describe('pickBackend — classifieur de backend (rig / plan / sprite)', () => {
     expect(r.id).toBe('__party');
   });
 
-  it('entité objet sans ref → sprite, id préfixé e-', () => {
-    const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: 'a', kind: 'objet' }) });
+  it('entité prop sans ref → sprite, id préfixé e-', () => {
+    const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: 'a', kind: 'prop' }) });
     expect(r.backend).toBe('sprite');
     expect(r.id).toBe('e-a');
   });

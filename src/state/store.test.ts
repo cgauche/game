@@ -32,6 +32,7 @@ function reset() {
     pendingDeviation: null,
     pendingDisengage: null,
     pendingCast: null,
+    pendingHeal: null,
     pendingRoundStart: null,
     pendingFateSave: null,
     pendingReload: null,
@@ -1235,21 +1236,23 @@ describe('Avancement par PX (store) — câblage moteur', () => {
 describe('Fouille / butin par objet cherchable (store)', () => {
   beforeEach(() => reset());
 
-  const looter = (): Combatant => ({ id: 'a', name: 'A', xp: 0 }) as unknown as Combatant;
+  const looter = (): Combatant => ({ id: 'a', name: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] }) as unknown as Combatant;
 
-  it('fouiller un objet à Effets applique les Effets, laisse le corps en place, et ne se refait pas', () => {
+  it('fouiller un prop interactif applique les Effets, laisse le corps en place, et ne se refait pas', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'fouille-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
       id: 'cadavre',
-      kind: 'objet',
+      kind: 'prop',
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
-      search: [
-        { type: 'giveMoney', gold: 2 },
-        { type: 'giveXp', amount: 10 },
-      ],
+      interact: {
+        effects: [
+          { type: 'giveMoney', gold: 2 },
+          { type: 'giveXp', amount: 10 },
+        ],
+      },
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
@@ -1268,11 +1271,11 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(st.party[0].xp).toBe(10);
   });
 
-  it('objet legacy à `loot` (noms) : ramassage dans l’inventaire + disparition (compat conservée)', () => {
+  it('prop consommable (butin) : ramassage dans l’inventaire + disparition (consume)', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'loot-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'coffre', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Coffre', loot: ['Fiole', 'Lettre'] });
+    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, effects: [{ type: 'giveItem', item: 'Fiole' }, { type: 'giveItem', item: 'Lettre' }] } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
@@ -1305,10 +1308,10 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
       id: 'cadavre',
-      kind: 'objet',
+      kind: 'prop',
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
-      search: [{ type: 'giveTrapping', trapping: 'Dague' }],
+      interact: { effects: [{ type: 'giveTrapping', trapping: 'Dague' }] },
     });
     useGame.setState({ party: [heroWithBag()] });
     useGame.getState().startScene(scene);
@@ -1510,12 +1513,14 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     scene.id = 'pickup-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
-      id: 'corps', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Cocher',
-      search: [
-        { type: 'journal', text: 'Son tromblon repose à côté.' }, // index 0
-        { type: 'giveTrapping', trapping: 'Dague' }, // index 1
-        { type: 'giveTrapping', trapping: 'Tromblon' }, // index 2
-      ],
+      id: 'corps', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cocher',
+      interact: {
+        effects: [
+          { type: 'journal', text: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
+          { type: 'giveTrapping', trapping: 'Dague' }, // index 1
+          { type: 'giveTrapping', trapping: 'Tromblon' }, // index 2
+        ],
+      },
     });
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
     const battle: BattleState = {
@@ -1528,7 +1533,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
 
   it('ramasse UN objet : il arrive dans l’inventaire (battle + party), consomme l’Action, retire du pool', () => {
     const bh = setup();
-    useGame.getState().battlePickup('corps', 'trap:2'); // index 2 = Tromblon
+    useGame.getState().battlePickup('corps', 'eff:2'); // index 2 = Tromblon
     const st = useGame.getState();
     const bH = st.battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.name === 'Tromblon')).toBe(true); // utilisable ce combat
@@ -1536,14 +1541,14 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     expect((bH.items ?? []).filter((i) => i.name === 'Tromblon').length).toBe(1); // un SEUL objet ramassé
     expect(st.battle!.acted).toBe(true); // coûte l'Action
     const corps = st.scene!.entities.find((e) => e.id === 'corps')!;
-    expect((corps.search ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Tromblon')).toBe(false);
-    expect((corps.search ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Dague')).toBe(true);
+    expect((corps.interact?.effects ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Tromblon')).toBe(false);
+    expect((corps.interact?.effects ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Dague')).toBe(true);
   });
 
   it('refusé si l’Action est déjà consommée', () => {
     const bh = setup();
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
-    useGame.getState().battlePickup('corps', 'trap:2');
+    useGame.getState().battlePickup('corps', 'eff:2');
     const bH = useGame.getState().battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.name === 'Tromblon')).toBe(false);
   });
@@ -1969,8 +1974,8 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     const scene = emptyScene(6, 6);
     scene.id = 'fouille-temps';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'objet', pos: { x: 1, y: 0 }, label: 'Cadavre', search: [{ type: 'giveMoney', gold: 1 }] });
-    useGame.setState({ party: [{ id: 'a', name: 'A', xp: 0 } as unknown as Combatant] });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { effects: [{ type: 'giveMoney', gold: 1 }] } });
+    useGame.setState({ party: [{ id: 'a', name: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 }, gameTime: CAMPAIGN_START });
 
