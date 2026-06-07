@@ -40,7 +40,7 @@ npm run build:data   # (re)génère src/data/*.json depuis Source/all-data.json 
 npm run dev          # serveur de dev (http://localhost:5173)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
-node scripts/gen-gallery.mjs   # galerie QC des sprites -> public/sprites-gallery.html
+npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
 ```
 
 **Vérification** : après une feature UI, valider dans le navigateur (Playwright MCP) — charger

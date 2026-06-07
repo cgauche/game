@@ -6,12 +6,11 @@
 import { execSync } from 'node:child_process';
 
 const STEPS = [
-  ['Bestiaire — sprites', 'node scripts/gen-gallery.mjs'],
-  ['Tenues de carrière (64)', 'npx tsx scripts/gen-tenue-gallery.mts'],
+  ['Bestiaire — rendu en jeu (rig)', 'npx tsx scripts/gen-bestiary-gallery.mts'],
+  ['Tenues de carrière', 'npx tsx scripts/gen-tenue-gallery.mts'],
   ['Rig — espèces × équipement', 'npx tsx scripts/gen-rig-gallery.mts'],
   ['Armes', 'npx tsx scripts/gen-weapon-gallery.mts'],
   ['Animations par arme', 'npx tsx scripts/gen-anim-gallery.mts'],
-  ['Bestiaire — 3 vues', 'npx tsx scripts/gen-bestiary-views-gallery.mts'],
   ['Têtes — 3 vues', 'npx tsx scripts/gen-head-views-gallery.mts'],
   ['Tenues — 3 vues', 'npx tsx scripts/gen-tenue-views-gallery.mts'],
   ['Debug — ancrage sol & armes', 'npx tsx scripts/_dbg-species.mts'],
