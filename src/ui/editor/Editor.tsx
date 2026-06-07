@@ -113,6 +113,8 @@ export function Editor() {
   const [painting, setPainting] = useState(false);
   const [clip, setClip] = useState<SceneEntity | null>(null); // presse-papier (copier/coller)
   const hoverRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // dernière case survolée (cible de Ctrl+V)
+  const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
+  const [creatureFilter, setCreatureFilter] = useState(''); // recherche dans la palette créatures
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
@@ -268,9 +270,14 @@ export function Editor() {
     const { w, h } = scene.dimensions;
     if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return;
     if (tool.mode === 'tile') {
-      const idx = p.y * w + p.x;
       const tiles = [...scene.tiles];
-      tiles[idx] = tool.terrain;
+      const r = Math.floor((brush - 1) / 2); // pinceau carré de côté `brush`
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          const x = p.x + dx,
+            y = p.y + dy;
+          if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = tool.terrain;
+        }
       setSceneNoHistory({ ...scene, tiles }); // geste coalescé (snapshot poussé au pointer-down)
     } else if (tool.mode === 'erase') {
       const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
@@ -590,6 +597,14 @@ export function Editor() {
           {palTab === 'carte' && (
             <div className="pal-tab">
               <div className="mini-title">Terrains</div>
+              <div className="brush-sizes">
+                Pinceau :{' '}
+                {[1, 3, 5].map((n) => (
+                  <button key={n} className={`btn small ${brush === n ? 'btn-primary' : ''}`} onClick={() => setBrush(n)}>
+                    {n}×{n}
+                  </button>
+                ))}
+              </div>
               <div className="terrain-palette">
                 {TERRAIN_IDS.map((t) => (
                   <button
@@ -656,13 +671,16 @@ export function Editor() {
                     </option>
                   ))}
                 </select>
+                <input className="ed-search" placeholder="🔎 filtrer créature…" value={creatureFilter} onChange={(e) => setCreatureFilter(e.target.value)} />
                 <select value={encRef} onChange={(e) => setEncRef(e.target.value)} title="Créature à placer">
                   <option value="">{enemyCreatures[0]?.label ?? 'créature'}…</option>
-                  {enemyCreatures.map((c) => (
-                    <option key={c.label} value={c.label}>
-                      {c.label}
-                    </option>
-                  ))}
+                  {enemyCreatures
+                    .filter((c) => c.label.toLowerCase().includes(creatureFilter.toLowerCase()))
+                    .map((c) => (
+                      <option key={c.label} value={c.label}>
+                        {c.label}
+                      </option>
+                    ))}
                 </select>
                 <button
                   className={`btn small ${tool.mode === 'encounter' ? 'btn-primary' : ''}`}
