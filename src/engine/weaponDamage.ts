@@ -4,10 +4,7 @@
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
 import { Weapon } from './types';
-
-function isUnbreakable(w: Weapon): boolean {
-  return w.qualities.some((q) => /incassable/i.test(q));
-}
+import { isUnbreakable } from './qualities/dispatch';
 
 /** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
 function flatDamage(damage: string): number {
