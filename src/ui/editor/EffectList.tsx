@@ -6,6 +6,7 @@
 import { Effect, EncounterDef, Dialogue } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
+import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 
 export interface Ctx {
   encounters: EncounterDef[];
@@ -25,6 +26,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'transitionBack',
   'startDialogue',
   'test',
+  'setTime',
   'endDialogue',
 ];
 const EFFECT_LABEL: Record<Effect['type'], string> = {
@@ -68,6 +70,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'endDialogue':
       return { type: 'endDialogue' };
+    case 'setTime':
+      return { type: 'setTime', phase: 'nuit' };
     default:
       return { type: 'journal', text: '' };
   }
@@ -121,6 +125,18 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
           <label className="dr">
             PX (groupe)
             <input type="number" value={e.amount ?? 0} onChange={(ev) => upd({ amount: Number(ev.target.value) })} />
+          </label>
+        )}
+        {effect.type === 'setTime' && (
+          <label className="dr">
+            Régler l’heure sur
+            <select value={e.phase ?? 'nuit'} onChange={(ev) => onChange({ type: 'setTime', phase: ev.target.value as DayPhaseKey })}>
+              {DAY_PHASES.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.icon} {p.label}
+                </option>
+              ))}
+            </select>
           </label>
         )}
         {effect.type === 'startCombat' && (
