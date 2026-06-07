@@ -4,7 +4,7 @@
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
 import { Weapon } from './types';
-import { isUnbreakable } from './qualities/dispatch';
+import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 
 /** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
 function flatDamage(damage: string): number {
@@ -12,12 +12,18 @@ function flatDamage(damage: string): number {
   return (rest.match(/[+-]?\d+/g) ?? []).reduce((s, n) => s + parseInt(n, 10), 0);
 }
 
+/** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
+ *  Points de Dégâts sans pénalité (LDB 60 l.64). */
+function effectiveDamageTaken(w: Weapon): number {
+  return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, 'Solide') ?? 0));
+}
+
 /** Dégâts d'arme effectifs après réduction par `damageTaken` (la composante fixe positive est
  *  réduite, plancher 0 → BF+0 improvisée ; une composante négative — mains nues — est préservée). */
 export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number {
   const usesBF = /BF/i.test(w.damage ?? '');
   const flat = flatDamage(w.damage ?? '');
-  const dt = w.damageTaken ?? 0;
+  const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.64)
   const reduced = flat >= 0 ? Math.max(0, flat - dt) : flat;
   return Math.max(0, (usesBF ? strengthBonus : 0) + reduced);
 }
@@ -25,7 +31,7 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */
 export function isImprovised(w: Weapon): boolean {
   const flat = flatDamage(w.damage ?? '');
-  return flat >= 0 && flat - (w.damageTaken ?? 0) <= 0;
+  return flat >= 0 && flat - effectiveDamageTaken(w) <= 0;
 }
 
 /**
@@ -49,4 +55,11 @@ export function damageWeapon(w: Weapon): void {
 export function destroyWeapon(w: Weapon): void {
   if (isUnbreakable(w)) return;
   w.destroyed = true;
+}
+
+/** Seuil de Sauvegarde (1d10 ≥ seuil ⇒ l'arme résiste) contre une cassure instantanée pour une arme
+ *  Solide(N) : 9+ pour N=1, amélioré de 1 par Indice (8+ pour N=2…), LDB 60 l.64-67. null si non Solide. */
+export function solideSaveThreshold(w: Weapon): number | null {
+  const n = qualityIndice(w, 'Solide');
+  return n && n > 0 ? Math.max(2, 10 - n) : null;
 }

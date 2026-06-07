@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon } from './weaponDamage';
+import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
 import { recomputeLoadout } from './items';
 import type { Weapon, Combatant } from './types';
 
@@ -33,6 +33,21 @@ describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', ()
   it('arme non usée renvoyée telle quelle (même référence)', () => {
     const w = sword({ damageTaken: 2, qualities: ['Empaleuse'] });
     expect(effectiveWeapon(w)).toBe(w);
+  });
+});
+
+describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.64-67)', () => {
+  it('Solide(N) absorbe les N premiers points de damageTaken (pas de pénalité)', () => {
+    expect(effectiveWeaponDamage(sword({ damageTaken: 3, qualities: ['Solide 3'] }), 3)).toBe(7); // BF3+4 (3 absorbés)
+    expect(effectiveWeaponDamage(sword({ damageTaken: 4, qualities: ['Solide 3'] }), 3)).toBe(6); // BF3 + (4 - max(0,4-3))
+    expect(isImprovised(sword({ damageTaken: 4, qualities: ['Solide 3'] }))).toBe(false);
+    expect(isImprovised(sword({ damageTaken: 7, qualities: ['Solide 3'] }))).toBe(true);
+  });
+  it('seuil de sauvegarde : 9+ (Solide 1), 8+ (Solide 2), null sans Solide', () => {
+    expect(solideSaveThreshold(sword({ qualities: ['Solide 1'] }))).toBe(9);
+    expect(solideSaveThreshold(sword({ qualities: ['Solide 2'] }))).toBe(8);
+    expect(solideSaveThreshold(sword({ qualities: ['Solide 4'] }))).toBe(6);
+    expect(solideSaveThreshold(sword())).toBeNull();
   });
 });
 
