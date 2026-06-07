@@ -1060,6 +1060,22 @@ export function Editor() {
                   Libellé
                   <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
                 </label>
+                <label className="ed-field">
+                  Orientation
+                  <select
+                    value={sel.facing ?? 'S'}
+                    onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}
+                  >
+                    <option value="N">Nord</option>
+                    <option value="NE">Nord-Est</option>
+                    <option value="E">Est</option>
+                    <option value="SE">Sud-Est</option>
+                    <option value="S">Sud</option>
+                    <option value="SO">Sud-Ouest</option>
+                    <option value="O">Ouest</option>
+                    <option value="NO">Nord-Ouest</option>
+                  </select>
+                </label>
                 {sel.kind === 'personnage' && (
                   <>
                     <label className="ed-field">

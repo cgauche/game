@@ -22,7 +22,7 @@ export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dim
       <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
       <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>
         {prof ? (
-          <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`ent-${ent.id}`} />
+          <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={`ent-${ent.id}`} facing={ent.facing} />
         ) : (
           <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
         )}

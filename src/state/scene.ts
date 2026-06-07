@@ -7,6 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
+import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
 import { entityBlockedAt } from './sceneRules';
@@ -88,7 +89,8 @@ export interface SceneEntity {
   id: string;
   kind: EntityKind;
   pos: { x: number; y: number };
-  facing?: Facing;
+  /** Orientation MONDE (8 directions) — éditable, projetée au rendu (project + camRot). */
+  facing?: Dir8;
   label?: string;
   /** Référence au bestiaire (ennemi) ou à l'équipement (objet). */
   ref?: string;
