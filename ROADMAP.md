@@ -135,6 +135,34 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - *(Parties pures **commitées** — `iso.ts`/`buildings.ts`/`facing.ts`/`store.ts`/`ViewControls.tsx` ;
   le **câblage React** vit dans `IsoStage`/`Editor`/`CampaignView`, à committer avec le WIP rendu en cours.)*
 
+## ✅ Jalon 0.10 — Registre de créatures « dépose un fichier → intégré » *(fait — 2026-06-06)*
+
+- **But** (énoncé utilisateur) : « il suffit de mettre une créature dans un dossier et POUF, il est
+  intégré au jeu » — calqué sur l'auto-chargement des scénarios de test. **Réalisé** : ajouter une
+  créature = **UN fichier** `src/gameIso/rig/creatures/defs/<Nom>.ts` (un `CreatureDef`), au lieu d'en
+  référencer le label dans **8 fichiers** (l'ancien smell).
+- **Architecture** : `defs/*.ts` → **codegen générique** `scripts/gen-registry.mjs` écrit
+  `_registry.generated.ts` (imports explicites) → `creatures/index.ts` **DÉRIVE tout** (plus aucune table
+  `SPECIES_*` centrale) : routage de gabarit (`bodyPlanOf`), matchers nom→espèce
+  (`quad/wing/bipedSpeciesMatch`, l'ordre `matchPriority` désambiguïse « rat ogre »→Skaven avant Ogre),
+  config bipède (career/monster/sex/parts/colors), **token-scale par espèce** (rat petit, dragon/géant
+  énormes). **Codegen choisi plutôt qu'`import.meta.glob`** : glob est Vite-only et **`undefined` sous tsx**
+  (les scripts QC cassent) ; le codegen marche partout (Vite + Vitest + tsx), inspectable, zéro runtime.
+  **Plugin Vite `registry-gen`** régénère au démarrage + à chaque ajout/suppression dans `defs/` (POUF en
+  dev) ; intégré au `npm run build`.
+- **Générateur GÉNÉRIQUE** (config `REGISTRIES`) → réutilisable tel quel pour **tenues / modèles** (prochaine étape demandée).
+- **Logique mise à plat** : `detectSpecies` (if-chain) + **5 tables `SPECIES_*`** supprimées d'`enemyProfile.ts` ;
+  `quadSkeleton`/`composeWing` **re-exportent** depuis `creatures` → consommateurs inchangés. Helper **`norm`
+  unifié** (1 copie, 7 inline supprimées).
+- **Recatégorisations hors monolithique** : **Liche**→bipède (squelette), **Manticore/Varghulf**→ailé
+  (réutilisent feline/canine + membrane), **Démonette**→bipède (cornes + griffe + peau mauve), **Fimir**→bipède
+  (tête `cyclope` ajoutée à `monstrous.ts`), **Géant**→bipède (token-scale ×2.4, sinon il déborde la boîte
+  120×150). Restent monolithiques **seulement** les formes qu'aucun gabarit ne couvre (serpent, araignée,
+  pieuvre, hydre, squig, basilic…).
+- **« Charognard » supprimé** (espèce inventée, non canon, indistincte du loup ; variante Mutant `mutantCharognard`
+  conservée). **`public/qc/` gitignoré** (sorties QC régénérables — git ralentissait sur 1000+ fichiers non suivis).
+- **588 tests verts, typecheck 0**, poussé en prod (`feat/wfrp4-rpg-foundation`).
+
 ---
 
 ## 🎯 Jalon 1 — Profondeur des règles de combat *(quasi complet — reste : distance fine : ligne de vue, couvert)*
@@ -259,11 +287,13 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 - ✅ **Reprise des sprites de bestiaire ratés (galerie QC)** — régénérés via workflow
   best-of-2 (lecture art officiel + desc canon + consigne silhouette) : ~52/57 redessinés,
   fin du vert mutant par défaut, silhouettes reconnaissables.
+- ✅ **Gros ailés rapatriés dans le rig** : **Dragon** (déjà), **Manticore / Varghulf** (Jalon 0.10) rendus
+  par le gabarit **winged** — plus de sprite monolithique pour eux. Restent monolithiques seulement les formes
+  hors gabarit (serpent, araignée, pieuvre, hydre…).
 - **Reste (fin)** : vues **dos/profil** des tenues/armes héros partielles (Garde fait main, le reste en
   fallback front) ; **tintage arcane/divin** des sorts (ajouter `spell: label` à l'emit `ANIM_ATTACK`
-  de `store.castSpell`) ; **Dragon / Manticore** encore en sprite monolithique (hors rig) ; proportions
-  Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique** dans l'éditeur (slot-picker
-  + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
+  de `store.castSpell`) ; proportions Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique**
+  dans l'éditeur (slot-picker + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
 - Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI** (tests+build ; lint à venir).
 
 ---
@@ -290,9 +320,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
 
 - ✅ **Sprites par équipement reflétés** : le **rig 2D** compose arme + armure depuis le `Combatant`
   (`gameIso/rig/parts/equipment.ts`) — fini les sprites figés par carrière.
-- Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ;
-  restent quelques complexes perfectibles (Dragon, Manticore, Mutant). Le SVG dessiné main
-  plafonne sur les gros ailés.
+- Sprites de bestiaire **régénérés** (workflow best-of-2, fidélité silhouette + palette) ; les gros
+  ailés (Dragon, Manticore, Varghulf) sont désormais **riggés** (gabarit winged, Jalon 0.10) — restent
+  perfectibles en proportions ; le Mutant (homme-chien/tentacule) reste le sprite le plus perfectible.
 - **Apparences par calques** : le **rig 2D** (`gameIso/rig/`) enrichit désormais **6 espèces jouables**
   (Humain, Nain, Halfling, Elfe, Ogre, Gnome) + calques de mutation au seed ; le reste du bestiaire
   reste en sprite unique (fallback). Proportions des morphologies mutant **homme-chien / tentacule**
