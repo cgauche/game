@@ -14,6 +14,8 @@ const QUAD_PEAK: Partial<Record<AttackKind, Record<string, number>>> = {
   cornes: { encolure: 16, tete: -36, tronc: -7 }, // tête baissée puis coup de cornes vers l'avant
   arme: { hautAvD: -48, basAvD: 36, piedAvD: 18, tronc: -9, encolure: -6 }, // patte avant lève et griffe
   souffle: { encolure: -30, tete: -22 }, // tête levée, gueule ouverte vers l'avant (souffle)
+  vomi: { encolure: -8, tete: 34, tronc: 6 }, // haut-le-corps : tête projetée en avant pour vomir
+  regard: { encolure: -10, tete: -6, tronc: -2 }, // tête dressée, fixe la cible (regard pétrifiant)
 };
 
 /** Existe-t-il une pose d'attaque quad/ailé pour ce type ? (sinon → attackPose par défaut du plan). */

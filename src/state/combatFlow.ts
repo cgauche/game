@@ -990,6 +990,12 @@ function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, ta
   return false;
 }
 
+/** Émet l'animation d'attaque d'une attaque SPÉCIALE de créature → AnimatedPlanToken joue la pose
+ *  dédiée (creatureAttackPoses) ; les biped/spectraux jouent leur clip d'attaque générique. */
+function emitCreatureAttackAnim(attacker: Combatant, kind: string): void {
+  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: attacker.id, kind: 'creature', defense: 'none', result: { hit: true }, creatureAttack: kind });
+}
+
 /** Attaque de ZONE gratuite : Souffle (LDB 85, 2 Av) ou Vomissement (Troll, 3 Av). Cible visible la
  *  plus proche dans la portée (Souffle BE+20 m ; Vomi BE m), puis tous les ennemis dans la zone
  *  (Souffle : BF de la cible ; Vomi : 2 m). Test opposé CT/Esquive PAR cible ; sur un échec de la
@@ -1013,6 +1019,7 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
   const corrosif = isVomi || /corros/.test(type);
   const damage = isVomi ? be + 4 : a.bonus; // Vomi = BE+4 ; Souffle = Indice
   const lines: string[] = [`${attacker.name} déclenche ${ATTACK_LABEL[a.kind]}${a.type ? ` (${a.type})` : ''} !`];
+  emitCreatureAttackAnim(attacker, a.kind);
   for (const tgt of affected) {
     // Test opposé CT/Esquive (Vomi : Facile +40 pour l'attaquant à courte distance).
     const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng(), isVomi ? 'facile' : 'intermediaire', 'intermediaire');
@@ -1048,6 +1055,7 @@ export function applyTongue(get: () => GameState, set: any, attacker: Combatant,
   const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
   const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng());
   const lines = [`${attacker.name} projette sa Langue préhensile sur ${tgt.name} !`];
+  emitCreatureAttackAnim(attacker, a.kind);
   if (r.attackerWins) {
     const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
     if (wl > 0) { tgt.wounds.current = Math.max(0, tgt.wounds.current - wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
@@ -1073,6 +1081,7 @@ export function applyWail(get: () => GameState, set: any, attacker: Combatant): 
     (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !(c.traits ?? []).some((t) => /mort-vivant/i.test(t)),
   );
   const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
+  emitCreatureAttackAnim(attacker, 'hurlement');
   for (const tgt of living) {
     const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
     tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
@@ -1105,6 +1114,7 @@ export function applyGaze(get: () => GameState, set: any, attacker: Combatant): 
   const def = rollTest(initVal, 'intermediaire', battleRng());
   const margin = atk.sl + spent - def.sl; // DR de l'attaquant (+Avantage) − DR du défenseur
   const lines = [`${attacker.name} fixe ${tgt.name} de son Regard pétrifiant (${spent} Avantage) !`];
+  emitCreatureAttackAnim(attacker, 'regard');
   if (margin > 0) {
     if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
     else { const n = Math.floor(margin / 2); for (let i = 0; i < n; i++) addCondition(tgt, 'Sonné'); lines.push(`${tgt.name} reçoit ${n} État(s) Sonné.`); }
@@ -1126,6 +1136,7 @@ export function applyChillGrasp(get: () => GameState, set: any, attacker: Combat
   attacker.advantage = Math.max(0, attacker.advantage - 2);
   const r = opposedTest(combatValue(attacker, 'melee'), defenseValue(tgt, bestDefenseMode(tgt)), battleRng());
   const lines = [`${attacker.name} étreint ${tgt.name} de son toucher glacial !`];
+  emitCreatureAttackAnim(attacker, 'etreinte');
   if (r.attackerWins) {
     const wl = d10(battleRng()) + r.netSL; // 1d10 + DR, ignore BE et PA
     tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
