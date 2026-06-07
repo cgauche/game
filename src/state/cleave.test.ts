@@ -1,0 +1,161 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { useGame } from './store';
+import { cleaveTargets, doAttack } from './combatFlow';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
+import { tome1Intro } from '../scenes/tome1-intro';
+import type { Combatant } from '../engine/types';
+import type { BattleState } from './store';
+
+// ---------------------------------------------------------------------------
+// Frappe Mortelle — balayage (LDB 14 - _GoBack.md l.9-12 + 85 l.299)
+// ---------------------------------------------------------------------------
+
+const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Partial<Combatant> = {}): Combatant =>
+  ({
+    id,
+    name: id,
+    kind,
+    characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 12, max: 12 },
+    advantage: 0,
+    conditions: [],
+    weapons: [{ name: 'Griffe', type: 'melee', damage: '+BF', qualities: [] }],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [],
+    talents: [],
+    movement: 4,
+    pos: { x, y },
+    ...over,
+  }) as unknown as Combatant;
+
+describe('cleaveTargets — cibles de balayage adjacentes (pur)', () => {
+  it('renvoie les adversaires vivants adjacents non déjà frappés ; exclut alliés, lointains, morts', () => {
+    const attacker = at('enemy', 'OGRE', 5, 5, { size: 'enorme' });
+    const adj1 = at('hero', 'H1', 5, 6); // adjacent
+    const adj2 = at('hero', 'H2', 4, 4); // adjacent (diagonale)
+    const far = at('hero', 'H3', 5, 9); // hors de portée
+    const dead = at('hero', 'H4', 6, 5, { dead: true } as Partial<Combatant>); // adjacent mais hors de combat
+    const ally = at('enemy', 'E2', 4, 5); // même camp que l'attaquant
+    const battle = { combatants: [attacker, adj1, adj2, far, dead, ally] } as unknown as BattleState;
+
+    expect(cleaveTargets(battle, attacker, []).map((c) => c.id).sort()).toEqual(['H1', 'H2']);
+    // une cible déjà frappée ce balayage est exclue
+    expect(cleaveTargets(battle, attacker, ['H1']).map((c) => c.id)).toEqual(['H2']);
+  });
+});
+
+describe('Balayage en combat (store)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    useGame.setState({ pendingAttack: null, pendingCleave: null, pendingDefense: null, battle: null });
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  /** Prépare un combat enc-mutants avec `nHeroes` héros, puis renvoie le state. */
+  function setupBattle(nHeroes: number) {
+    const party = Array.from({ length: nHeroes }, (_, i) =>
+      createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: `H${i}`, rng: makeRNG(i + 1) }),
+    );
+    useGame.setState({ party });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers(); // on pilote l'ordre nous-mêmes
+    return useGame.getState().battle!;
+  }
+
+  it('IA : un Énorme adjacent à deux héros enchaîne (Frappe Mortelle) sur le second', () => {
+    useGame.getState().seedRng(2);
+    const b = setupBattle(2);
+    const heroes = b.combatants.filter((c) => c.kind === 'hero');
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const E = enemies[0];
+    // Un seul ennemi actif (Énorme, CC élevée pour des touches fiables) ; les autres écartés.
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    E.size = 'enorme';
+    E.characteristics.CC = 80;
+    E.characteristics.F = 45;
+    E.pos = { x: 10, y: 10 };
+    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }];
+    const [H1, H2] = heroes;
+    H1.pos = { x: 9, y: 10 };
+    H2.pos = { x: 11, y: 10 };
+    for (const h of [H1, H2]) {
+      h.conditions = [{ name: 'Surpris', value: 1 }]; // ne peuvent pas se défendre → résolution instantanée
+      h.wounds = { current: 60, max: 60, base: 60 } as Combatant['wounds'];
+      h.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    }
+    useGame.setState({ battle: { ...b } });
+
+    // L'IA attaque H1 ; la Frappe Mortelle enchaîne sur H2 (adjacent).
+    doAttack(useGame.getState, useGame.setState, E, H1);
+
+    const st = useGame.getState().battle!;
+    const h1 = st.combatants.find((c) => c.id === H1.id)!;
+    const h2 = st.combatants.find((c) => c.id === H2.id)!;
+    expect(h1.wounds.current).toBeLessThan(60); // touche primaire
+    expect(h2.wounds.current).toBeLessThan(60); // enchaînement (balayage)
+  });
+
+  it('Héros plus grand : pendingCleave s’ouvre après la touche, l’enchaînement le ferme', () => {
+    useGame.getState().seedRng(2);
+    const b = setupBattle(1);
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const [E1, E2] = enemies;
+    enemies.slice(2).forEach((e) => (e.dead = true));
+    H.size = 'grande';
+    H.characteristics.CC = 85;
+    H.characteristics.F = 45;
+    H.pos = { x: 10, y: 10 };
+    E1.pos = { x: 9, y: 10 };
+    E2.pos = { x: 11, y: 10 };
+    for (const e of [E1, E2]) {
+      e.wounds = { current: 40, max: 40, base: 40 } as Combatant['wounds'];
+      e.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    }
+    const turn = b.order.indexOf(H.id);
+    useGame.setState({ battle: { ...b, turn, action: 'attack', moved: true, acted: false } });
+
+    // Touche primaire sur E1 → balayage déclenché (héros plus grand).
+    useGame.getState().battleClickEntity(E1.id);
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    let pc = useGame.getState().pendingCleave;
+    expect(pc).toBeTruthy();
+    expect(pc!.hitIds).toEqual([E1.id]);
+    expect(pc!.count).toBe(0);
+
+    // Enchaînement sur E2 → résout puis ferme le balayage (plus de cible adjacente).
+    const e2Before = useGame.getState().battle!.combatants.find((c) => c.id === E2.id)!.wounds.current;
+    useGame.getState().cleaveAttack(E2.id);
+    expect(useGame.getState().pendingAttack!.cleave).toBe(true);
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().pendingCleave).toBeNull();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E2.id)!.wounds.current).toBeLessThan(e2Before);
+  });
+
+  it('borne BCC : cleaveAttack refusé une fois le quota d’enchaînements atteint ; cleaveEnd ferme', () => {
+    const b = setupBattle(1);
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const E1 = b.combatants.find((c) => c.kind === 'enemy')!;
+    H.characteristics.CC = 25; // BCC = 2
+    H.pos = { x: 10, y: 10 };
+    E1.pos = { x: 11, y: 10 };
+    useGame.setState({
+      battle: { ...b },
+      pendingAttack: null,
+      pendingCleave: { attackerId: H.id, hitIds: ['x', 'y'], count: 2 }, // quota BCC déjà atteint
+    });
+    useGame.getState().cleaveAttack(E1.id);
+    expect(useGame.getState().pendingAttack).toBeNull(); // refusé : count >= BCC
+
+    useGame.getState().cleaveEnd();
+    expect(useGame.getState().pendingCleave).toBeNull();
+  });
+});

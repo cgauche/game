@@ -658,7 +658,71 @@ export function doAttack(get: () => GameState, set: any, attacker: Combatant, ta
     return false;
   }
   applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
+  autoCleave(get, set, attacker, r.victim ?? target, r.res); // Frappe Mortelle : balayage auto si l'ennemi est plus grand
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Frappe Mortelle — balayage (LDB 14 - _GoBack.md l.9-12 + 85 l.299)
+// ---------------------------------------------------------------------------
+
+/** Cibles de balayage : adversaires encore actifs, ADJACENTS (Chebyshev ≤ 1 — « à portée de ses
+ *  attaques » = adjacence tant que l'Allonge n'est pas modélisée) et non déjà frappés dans ce
+ *  balayage. Sans position connue (tests purs), on ne filtre pas sur la distance. */
+export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: string[]): Combatant[] {
+  return battle.combatants.filter((c) => {
+    if (c.kind === attacker.kind || isOutOfAction(c) || hitIds.includes(c.id)) return false;
+    if (!attacker.pos || !c.pos) return true;
+    return chebyshev(attacker.pos, c.pos) <= 1;
+  });
+}
+
+/** Balayage AUTOMATIQUE d'un ennemi (IA) après une touche de mêlée d'un plus grand (`res.cleave`,
+ *  LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore frappés,
+ *  se déplaçant sur la case d'une cible tuée (l.10). Résolution instantanée — les enchaînements
+ *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA). */
+export function autoCleave(get: () => GameState, set: any, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
+  if (attacker.kind !== 'enemy' || !res.cleave) return;
+  const bcc = bonus(effectiveChar(attacker, 'CC'));
+  if (bcc < 1) return;
+  const hitIds = [primaryTarget.id];
+  // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
+  if (isOutOfAction(primaryTarget) && primaryTarget.pos) attacker.pos = { ...primaryTarget.pos };
+  for (let n = 0; n < bcc; n++) {
+    const battle = get().battle;
+    if (!battle || battle.over) break;
+    const next = cleaveTargets(battle, attacker, hitIds)[0];
+    if (!next) break;
+    hitIds.push(next.id);
+    const r = resolveAttack(get, attacker, next);
+    if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
+    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res);
+    if (isOutOfAction(next) && next.pos) attacker.pos = { ...next.pos }; // se déplace sur la case libérée
+  }
+  set({ battle: { ...get().battle! } });
+  bus.emit(EVT.SCENE_DIRTY);
+}
+
+/** Balayage d'un HÉROS (interactif) : appelé après l'application d'une attaque. Démarre le balayage
+ *  sur une touche d'un plus grand (`res.cleave`), ou le poursuit si `wasChain` (un enchaînement vient
+ *  d'être résolu). Ouvre/maintient `pendingCleave` tant qu'il reste des cibles adjacentes ET que le
+ *  nombre d'enchaînements reste < BCC (LDB 14 l.12) ; sinon le ferme. Déplacement sur la case d'une
+ *  cible tuée (l.10). */
+export function maybeHeroCleave(get: () => GameState, set: any, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
+  if (attacker.kind !== 'hero') return;
+  const pc = get().pendingCleave;
+  if (!pc && !res.cleave) return; // ni balayage en cours, ni déclenché par cette touche
+  const count = wasChain ? (pc?.count ?? 0) + 1 : pc?.count ?? 0; // un enchaînement résolu consomme une attaque
+  const hitIds = pc ? [...new Set([...pc.hitIds, target.id])] : [target.id];
+  if (isOutOfAction(target) && target.pos) attacker.pos = { ...target.pos }; // case libérée (l.10)
+  const battle = get().battle!;
+  const bcc = bonus(effectiveChar(attacker, 'CC'));
+  const remaining = cleaveTargets(battle, attacker, hitIds);
+  if (!battle.over && count < bcc && remaining.length) {
+    set({ pendingCleave: { attackerId: attacker.id, hitIds, count }, battle: { ...battle } });
+  } else {
+    set({ pendingCleave: null, battle: { ...battle } });
+  }
 }
 
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
