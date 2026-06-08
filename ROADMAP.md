@@ -241,6 +241,45 @@ fois les 57 créatures passées au rig, sont **supprimées** — non-régression
   d'aperçu — Playwright partagé verrouillé par une session //. ⚠️ « passe par le rig » ≠ bonne silhouette :
   quelques bipèdes — Minotaure, Fimir, Rat ogre — restent à QC, chantier séparé `game-bestiary-sprite-bar`.)*
 
+## ✅ Jalon 0.13 — Apparence bipède en registres « Gabarit × Race » ; pilote Ogre + tells *(fait — 2026-06-08)*
+
+**But** : l'apparence d'un bipède était **centralisée et rigide** (proportions dans `PROPS`, peau dans
+`SPECIES_PALETTES`, posture dans `SPECIES_POSE`, config d'espèce sur les defs créature) → créatures
+samey, et **l'Ogre cassé** (son gutplate = un disque/dalle flottant). On range tout en **2 registres** :
+une créature = **Plan × Gabarit (carrure) × Race (peau/tête/traits/posture + défauts) × Perso**, composé
+à plat par id. Spec/plan : `docs/superpowers/{specs,plans}/2026-06-08-rig-races-gabarits-*.md`.
+
+- **Garde-fou central : golden master** (`rig/golden/biped-golden.test.ts`, commit `80ed017`) — snapshot du
+  SVG résolu de **26 espèces bipèdes × front+profil + cas héros équipés** (os arme/bouclier, palette,
+  couleurs, pose mêlée). Toute la dissolution des tables est **iso-rendu (0 snapshot modifié)** ; seuls
+  l'Ogre + les races « tells » bougent **intentionnellement** (`-u` + diff vérifié à la ligne près).
+- **Registre Gabarit** (`rig/gabarits/defs/`, 13 carrures) — dissout `PROPS` ; `baseSkeleton` lit un
+  `GabaritDef` (au lieu de `PROPS[baseSpeciesOf]`). `baseSpeciesOf` **reste le canonicaliseur** (string
+  espèce → 1 des ~20 id de race, gère les variantes héros « Hauts Elfes »/« Nains (Norse) »).
+- **Registre Race** (`rig/races/defs/`, ~22) — dissout `SPECIES_PALETTES` (fichier généré supprimé,
+  `racePalette(id,sex)` + variante `paletteF`), `SPECIES_POSE`, et la config `biped` des defs créature
+  (`bipedConfig`/`BipedConfig` **supprimés**). `composeRig` résout via `raceById(baseSpeciesOf(species))`.
+  Les defs créature se réduisent à `{plan, race?, gabarit?, perso?}`.
+- **Features échelonnées à l'os** (`scale:'bone'|'fixed'`, `featureToPart`) — une feature `scale:'bone'`
+  hérite de l'échelle de l'os qu'elle habille → elle **REMPLIT le corps** (correctif du disque flottant) ;
+  `'fixed'` = enveloppe d'échelle inverse (taille constante).
+- **Pilote Ogre réparé + enrichi** : `head:'ogre'` + features (panse+plastron qui remplit le ventre,
+  heaume cornu, brassards de plates couvrant les bras-moignons brute). **Audit aveugle 3× = « ogre »
+  conf 4/5** (méthode QC `docs/qc-reconnaissabilite-sprites.md` réécrit pour le rig + `scripts/_qc-creatures-rig.mts`).
+- **Tells de race** (changements volontaires, golden ciblé) : **Nain** barbe ancrée à la mâchoire (5/5),
+  **Haut-Elfe/Elfe sylvain** oreilles pointues au niveau joue (4/5), **Guerrier du Chaos** = race dédiée
+  (plastron sombre à étoile + cornes, plus « soldat de l'Empire », 4/5), **Mutant** cornes+œil+tentacule
+  garantis (5/5). Piège attrapé : Démonette retombe sur la race **Démon** via `baseSpeciesOf` (préfixe).
+- **Migration des 12 races restantes hors du champ `monster`** → `head`/`legs`/`armG`/`armD`/`features`
+  (+`dropHeadgear` vampire), **iso-rendu (golden 0 modifié)** ; garde `hasPersoMonster` = un `perso.monster`
+  non-vide override intégralement la race. `RaceDef.monster` retiré. Le champ `monster`/`monsterInjection`
+  **reste pour l'éditeur + créatures scriptées + 3 perso** (Fimir/Liche/Démonette).
+- **Nettoyage legacy** : overlays morts `OV_VENTRE`/`OV_COTES` + champs `ventre`/`cotes`/`RaceFeature.anchor`
+  supprimés ; bridge temporaire `gabaritForSpecies` retiré ; table générée `speciesPalettes.ts` supprimée.
+- **Revue finale opus** (correctness + dette legacy) : 0 bug actif. **Suite complète 1760 tests verts,
+  typecheck 0**, poussé sur `feat/wfrp4-rpg-foundation`. *(Reste hors humanoïdes : **SP2 quadrupèdes**
+  — longueur de pattes + corps par espèce + vue profil + tête de loup ; **SP3 sous-espèces**.)*
+
 ---
 
 ## ✅ Jalon 1 — Profondeur des règles de combat *(complet — 2026-06-07)*
