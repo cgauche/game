@@ -396,6 +396,13 @@ export interface PendingHeal {
   /** Soin par un PNJ (médecin payant) : héros éligibles parmi lesquels le JOUEUR choisit la cible
    *  (>1 → sélecteur dans la modale). Absent = cible déjà fixée (auto-soin du groupe via la fiche). */
   candidateIds?: string[];
+  /** CHIRURGIE = Test ÉTENDU de Guérison (LDB 10 l.154 / 12 l.200) : on cumule le DR de passe en passe
+   *  jusqu'à `surgeryTargetDR` (cible 5-10, MJ) ; `surgeryCumDR` = total courant (repart à 0 s'il passe
+   *  sous 0, LDB 12 l.200). CHAQUE passe inflige 1d10 PB + 1 Hémorragie. `surgeryTraumaIdx` = quelle
+   *  Blessure Critique opérer (choix du joueur). Présents seulement en mode 'surgery'. */
+  surgeryTargetDR?: number;
+  surgeryCumDR?: number;
+  surgeryTraumaIdx?: number;
 }
 
 export interface BattleState {
@@ -559,6 +566,10 @@ export interface GameState {
   healAlly: (targetId: string, mode: HealMode) => void;
   /** Soin par un PNJ : le joueur choisit la cible parmi `pendingHeal.candidateIds` (avant le jet). */
   healSetTarget: (targetId: string) => void;
+  /** Chirurgie (Test étendu) : choisit la Blessure Critique à opérer avant la 1re passe. */
+  surgerySetWound: (idx: number) => void;
+  /** Chirurgie (Test étendu) : effectue une passe (1d10 PB + Hémorragie, cumule le DR jusqu'à la cible). */
+  surgeryPass: () => void;
   healRoll: () => void;
   healReroll: () => void;
   healBonusSL: () => void;
@@ -1566,6 +1577,7 @@ export const useGame = create<GameState>((set, get) => ({
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
         mode, intBonus: bonus(effectiveChar(healer, 'Int')),
         skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
+        ...(mode === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}),
       },
       battle: { ...battle, action: null },
     });
@@ -1585,6 +1597,7 @@ export const useGame = create<GameState>((set, get) => ({
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
         mode, intBonus: bonus(effectiveChar(healer, 'Int')),
         skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
+        ...(mode === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}),
       },
     });
   },
@@ -1641,24 +1654,13 @@ export const useGame = create<GameState>((set, get) => ({
   healConfirm: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.roll == null) return;
+    if (ph.mode === 'surgery') return; // Chirurgie = Test ÉTENDU multi-passes (surgeryPass), pas un « Appliquer » unique
     set({ pendingHeal: null });
     const st = get();
     const target = actorIn(st, ph.targetId);
     if (!target) return;
     let log: string[];
-    if (ph.mode === 'surgery') {
-      // Chirurgie (LDB 10 l.149-154 / 18 l.398) : opération RISQUÉE. Réussite → retire le trauma chirurgical ;
-      // dans TOUS les cas 1d10 Blessures + 1 Hémorragique ; puis Test de Résistance +20 ou Infection Mineure.
-      log = ph.success ? removeSurgicalTrauma(target) : [`${target.name} : l'opération échoue (blessure non réparée).`];
-      const harm = battleRng().int(1, 10);
-      loseWounds(target, harm);
-      addCondition(target, 'Hémorragique');
-      log.push(`L'opération inflige ${harm} Blessure(s) et ouvre une hémorragie.`);
-      const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-      // Talent Chirurgie (LDB 10 l.365) : « Après la Chirurgie, Test de Résistance Accessible (+20) ou gagner
-      // une Infection Mineure ». Contractée pour de bon (maladie suivie au repos), plus juste journalisée.
-      log.push(...rollContraction(target, 'Infection Mineure', resVal, 'accessible', battleRng()));
-    } else if (ph.mode === 'wounds') {
+    if (ph.mode === 'wounds') {
       log = applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success));
       // LDB 09-Compétences (Guérison) : « Sur un Échec Stupéfiant, votre patient contractera également une
       // Infection mineure ». Échec Stupéfiant = DR ≤ −6 ; contraction automatique (pas de Test de Résistance).
@@ -1685,6 +1687,49 @@ export const useGame = create<GameState>((set, get) => ({
     if (!t) return;
     set({ pendingHeal: { ...ph, targetId, targetName: t.name } });
   },
+
+  /** Choix de la Blessure Critique à opérer (avant la 1re passe), s'il y en a plusieurs. */
+  surgerySetWound: (idx) => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.mode !== 'surgery' || (ph.surgeryCumDR ?? 0) > 0) return; // figé dès qu'on a commencé
+    set({ pendingHeal: { ...ph, surgeryTraumaIdx: idx } });
+  },
+
+  /** Une PASSE de Chirurgie (Test ÉTENDU de Guérison, LDB 10 l.154 / 12 l.200) : on cumule le DR du jet
+   *  (repart à 0 s'il passe sous 0) ; CHAQUE passe inflige 1d10 PB + 1 Hémorragie. À la cible atteinte :
+   *  retire la Blessure Critique choisie + Test de Résistance +20 ou Infection Mineure. Patient à 0 PB →
+   *  opération interrompue (« de fortes chances de tuer », LDB 10). Modale rouverte tant que ce n'est pas fini. */
+  surgeryPass: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.mode !== 'surgery') return;
+    const target = actorIn(get(), ph.targetId);
+    if (!target) { set({ pendingHeal: null }); return; }
+    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
+    let cum = (ph.surgeryCumDR ?? 0) + res.sl; // additionne le DR (signé)
+    if (cum < 0) cum = 0; // total < 0 → on recommence (LDB 12 l.200)
+    const cible = ph.surgeryTargetDR ?? 7;
+    const harm = battleRng().int(1, 10); // 1d10 PB + 1 Hémorragie PAR passe (LDB 10 l.154)
+    loseWounds(target, harm);
+    addCondition(target, 'Hémorragique');
+    const log = [`${ph.healerName} opère ${target.name} — passe : DR ${res.sl >= 0 ? '+' : ''}${res.sl} (total ${cum}/${cible}), ${harm} PB + 1 Hémorragie.`];
+    if (target.wounds.current <= 0) { // trop risqué de continuer : on interrompt
+      log.push(`${target.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
+      set({ pendingHeal: null });
+      finishPlayerAction(get, set, log);
+      return;
+    }
+    if (cum >= cible) { // cible atteinte : la Blessure Critique est réparée
+      log.push(...removeSurgicalTrauma(target, ph.surgeryTraumaIdx ?? 0));
+      const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+      log.push(...rollContraction(target, 'Infection Mineure', resVal, 'accessible', battleRng())); // LDB 10 l.365
+      set({ pendingHeal: null });
+      finishPlayerAction(get, set, log);
+      return;
+    }
+    set({ pendingHeal: { ...ph, surgeryCumDR: cum, roll: res.roll, sl: res.sl, success: res.success }, ...touchActors(get()) });
+    get().log(log[0]);
+  },
+
   healCancel: () => set({ pendingHeal: null }),
 
   /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. */

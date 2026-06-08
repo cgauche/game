@@ -412,6 +412,7 @@ function openMedicalAid(get: () => GameState, set: any, e: { act: 'wounds' | 'bl
       mode: e.act, intBonus: e.intBonus, skillValue: e.skill,
       difficulty: 'intermediaire', target: e.skill, roll: null, success: false, sl: 0,
       candidateIds: cands.map((c) => c.id),
+      ...(e.act === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}), // cible MJ 5-10 (LDB 10)
     },
   });
 }

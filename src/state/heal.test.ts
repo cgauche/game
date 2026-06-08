@@ -132,18 +132,33 @@ describe('Guérison — flux hors combat', () => {
     expect(p.diseases?.some((d) => d.name === 'Infection Mineure')).toBe(true);
   });
 
-  it('mode surgery : un chirurgien retire le trauma chirurgical, mais l’opération blesse (1d10 + Hémorragique)', () => {
+  it('mode surgery : Test ÉTENDU (LDB 10 l.154 / 12 l.200) — cumul de DR jusqu’à la cible, retire le trauma (1d10 + Hémorragie/passe)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }], talents: [{ name: 'Chirurgie' } as never] });
-    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 12, max: 12 }, traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
     useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null });
     useGame.getState().healAlly('p', 'surgery');
-    expect(useGame.getState().pendingHeal!.mode).toBe('surgery');
-    useGame.getState().healRoll();
-    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
-    useGame.getState().healConfirm();
+    const ph0 = useGame.getState().pendingHeal!;
+    expect(ph0.mode).toBe('surgery');
+    expect(ph0.surgeryTargetDR).toBeGreaterThanOrEqual(5); // cible MJ 5-10 (LDB 10)
+    expect(ph0.surgeryCumDR).toBe(0);
+    // cible basse + compétence très haute → quelques passes suffisent (patient à 40 PB survit aux 1d10).
+    useGame.setState({ pendingHeal: { ...ph0, surgeryTargetDR: 1, skillValue: 99 } });
+    for (let i = 0; i < 12 && useGame.getState().pendingHeal; i++) useGame.getState().surgeryPass();
     const p = useGame.getState().party.find((c) => c.id === 'p')!;
-    expect(p.traumas!.length).toBe(0); // trauma chirurgical réparé
-    expect(p.wounds.current).toBeLessThan(12); // 1d10 dégâts de l'opération
+    expect(p.traumas!.length).toBe(0); // blessure chirurgicale réparée par le Test étendu
+    expect(p.wounds.current).toBeLessThan(40); // 1d10 par passe
     expect(p.conditions.some((c) => c.name === 'Hémorragique')).toBe(true);
+  });
+
+  it('Chirurgie : le joueur choisit QUELLE Blessure Critique opérer (surgerySetWound)', () => {
+    const surgeon = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }], talents: [{ name: 'Chirurgie' } as never] });
+    const patient = hero({
+      id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 },
+      traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 }), traumaFromKind('fracture', 'majeur', 'brasD', { be: 4, d10: 5 })],
+    });
+    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null });
+    useGame.getState().healAlly('p', 'surgery');
+    useGame.getState().surgerySetWound(1); // opérer la 2e blessure (brasD)
+    expect(useGame.getState().pendingHeal!.surgeryTraumaIdx).toBe(1);
   });
 });
