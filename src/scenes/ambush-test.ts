@@ -3,8 +3,8 @@
  *
  * Une diligence éventrée en travers d'une route forestière ; ses passagers gisent,
  * dépecés. Des MUTANTS de morphologies variées (charognard quadrupède, homme-chien
- * hurlant, bras-tentacule, reptilien) se repaissent des cadavres — modèles par CALQUES
- * (variantes choisies via `appearance.pins.forme`) et animés en CSS (feed/howl/wrap…),
+ * hurlant, bras-tentacule, reptilien) se repaissent des cadavres — composés par le rig
+ * (parts monstrueuses) et animés en CSS (feed/howl/wrap…),
  * comme dans ambush.html. L'approche déclenche un DIALOGUE ; sa fin lance le COMBAT.
  * Le décor (épave, corps, sang) reste visible pendant le combat.
  *

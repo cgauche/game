@@ -247,7 +247,7 @@ function pick(table: Record<string, string[]>, key: string, fallbackKey: string,
 
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
  *  Priorité à l'art généré par espèce (dessiné depuis le LDB) ; sinon tables de secours.
- *  CHEVEUX : choix dans [défaut espèce, ...pool de coiffures partagé] via idx (pins/seed). */
+ *  CHEVEUX : choix dans [défaut espèce, ...pool de coiffures partagé] via idx (parts/seed). */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const base = baseSpeciesOf(species);
   const key = `${base}:${sex}`;

@@ -82,7 +82,7 @@ export interface EntityViz {
   kind: string;
   id: string;
   ref?: string;
-  appearance?: { seed?: number; pins?: Record<string, number> };
+  appearance?: { seed?: number };
 }
 
 /**
