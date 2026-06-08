@@ -412,7 +412,7 @@ export interface GameState {
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
-  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; stock: { label: string; qty: number }[]; bargain?: { won: boolean; drNet: number; negotiator: boolean } | null } | null;
+  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; stock: { label: string; qty: number }[]; bargainBuy?: { won: boolean; drNet: number; negotiator: boolean } | null; bargainSell?: { won: boolean; drNet: number; negotiator: boolean } | null; soured?: boolean } | null;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
@@ -1075,7 +1075,7 @@ export const useGame = create<GameState>((set, get) => ({
     const m = get().merchant; if (!m) return;
     const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
     const t = findTrapping(label); if (!t) return;
-    const factor = m.bargain ? bargainBuyFactor(m.bargain.won, m.bargain.drNet, m.bargain.negotiator) : 1;
+    const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
     const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor));
     if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
     const it = itemFromTrapping(label); if (!it) return;
@@ -1098,7 +1098,7 @@ export const useGame = create<GameState>((set, get) => ({
     const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
     const t = findTrapping(item.name);
     const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-    const sellFactor = m.bargain ? bargainSellFactor(m.bargain.won, m.bargain.drNet, m.bargain.negotiator) : 1;
+    const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 1;
     const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
     set((s) => ({
       money: moneyAdd(s.money, gain),
@@ -1135,7 +1135,8 @@ export const useGame = create<GameState>((set, get) => ({
   },
   startBargain: (mode) => {
     const m = get().merchant; if (!m) return;
-    if (m.bargain) return; // 1 marchandage par visite (verrouillé)
+    if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
+    if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
     const arch = MERCHANTS[m.archetype];
     const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;
     const negotiator = (best.actor.talents ?? []).some((t) => t.name === 'Négociateur' && t.times > 0);
@@ -1178,11 +1179,18 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pb || !pb.result) return; // pas d'acquittement avant le jet
     const won = pb.result.attackerWins; // le joueur est l'attaquant
     const drNet = pb.result.netSL;
+    // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
+    // +6 qui donne −20 %) → le marchand se méfie de votre monnaie : plus aucun marchandage cette visite.
+    const botch = !won && drNet >= 6;
+    const outcome = { won, drNet, negotiator: pb.negotiator };
+    const patch = pb.mode === 'buy' ? { bargainBuy: outcome } : { bargainSell: outcome };
     set((s) => ({
       pendingBargain: null,
-      merchant: s.merchant ? { ...s.merchant, bargain: { won, drNet, negotiator: pb.negotiator } } : s.merchant,
+      merchant: s.merchant ? { ...s.merchant, ...patch, soured: s.merchant.soured || botch } : s.merchant,
     }));
-    get().log(won ? `Marchandage réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'} à l'achat).` : `Marchandage échoué (vente réduite à ¼).`);
+    if (botch) get().log('Marchandage raté de beaucoup : le marchand se méfie de votre monnaie (fini de marchander cette visite).');
+    else if (pb.mode === 'buy') get().log(won ? `Marchandage d’achat réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'}).` : 'Marchandage d’achat échoué (prix plein).');
+    else get().log(won ? 'Marchandage de vente réussi (½ du prix listé).' : 'Marchandage de vente échoué (¼ du prix listé).');
   },
   bargainCancel: () => set({ pendingBargain: null }),
 

@@ -37,10 +37,17 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
 }) {
   // Armures endommagées du groupe (réparables chez le marchand).
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
-  // Marchandage verrouillé pour la visite (LDB 60 l.12) : module les prix d'achat et de vente.
-  const b = merchant.bargain;
-  const buyFactor = b ? bargainBuyFactor(b.won, b.drNet, b.negotiator) : 1;
-  const sellFactor = b ? bargainSellFactor(b.won, b.drNet, b.negotiator) : 1;
+  // Marchandage (LDB 60 l.12) : l'achat et la vente sont DEUX négociations distinctes, chacune 1 jet/visite ;
+  // un échec « de beaucoup » rend le marchand méfiant (`soured`) → plus aucun marchandage cette visite.
+  const buyFactor = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
+  const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 1;
+  const haggleLine = (mode: 'buy' | 'sell') => {
+    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie (LDB 60 l.12)">🚫 Marchand méfiant — fini de marchander</span>;
+    const res = mode === 'buy' ? merchant.bargainBuy : merchant.bargainSell;
+    if (res == null) return <button className="btn small" onClick={() => onBargain(mode)} title="Test opposé de Marchandage (LDB 60 l.12)">Marchander {mode === 'buy' ? 'l’achat' : 'la vente'}</button>;
+    if (mode === 'buy') return <span className="bargain-tag">{res.won ? `Achat marchandé ✔ ×${buyFactor}` : 'Achat : marchandage ✘ (prix plein)'}</span>;
+    return <span className="bargain-tag">{res.won ? 'Vente marchandée ✔ (½)' : 'Vente : marchandage ✘ (¼)'}</span>;
+  };
   const [heroId, setHeroId] = useState(party[0]?.id ?? '');
   return (
     <div className="merchant-panel modal-overlay">
@@ -48,18 +55,12 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
         <div className="merchant-head">
           <strong>Marchand</strong>
           <span className="purse">Bourse : {formatMoney(money)}</span>
-          {b == null ? (
-            <button className="btn small" onClick={() => onBargain('buy')} title="Test opposé de Marchandage (1 par visite, LDB 60)">Marchander</button>
-          ) : (
-            <span className="bargain-tag" title="Résultat de Marchandage verrouillé pour la visite">
-              {b.won ? `Marchandage ✔ (achat ×${buyFactor}, vente ×${sellFactor})` : 'Marchandage ✘ échoué (vente à ¼)'}
-            </span>
-          )}
           <button className="btn small" onClick={onClose}>Fermer</button>
         </div>
         <div className="merchant-cols">
           <div className="merchant-stock">
             <div className="mini-title">En vente</div>
+            <div className="haggle-bar">{haggleLine('buy')}</div>
             <label className="hero-sel">Donner à
               <select value={heroId} onChange={(e) => setHeroId(e.target.value)}>
                 {party.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
@@ -76,6 +77,7 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
           </div>
           <div className="merchant-sell">
             <div className="mini-title">Vendre (équipement du groupe)</div>
+            <div className="haggle-bar">{haggleLine('sell')}</div>
             {party.flatMap((h) => (h.items ?? []).map((it) => (
               <div className="merch-row" key={it.uid}>
                 <span>{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>

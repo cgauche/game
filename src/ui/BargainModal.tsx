@@ -29,11 +29,22 @@ export function BargainModalView({
   const won = pb.result?.attackerWins ?? false;
   const drNet = pb.result?.netSL ?? 0;
   const discount = won ? (drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %') : '—';
+  // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
+  const botch = !won && drNet >= 6;
+  const verdictText = botch
+    ? 'Raté de beaucoup — le marchand se méfie (fini de marchander)'
+    : won
+      ? pb.mode === 'buy'
+        ? `Gagné (${discount} à l’achat)`
+        : 'Gagné (½ du prix listé)'
+      : pb.mode === 'buy'
+        ? 'Perdu (prix plein)'
+        : 'Perdu (¼ du prix listé)';
 
   return (
     <div className="modal-overlay">
       <div className="modal test-modal">
-        <h3>Marchander — {pb.merchantName}</h3>
+        <h3>Marchander {pb.mode === 'buy' ? 'l’achat' : 'la vente'} — {pb.merchantName}</h3>
         <p className="test-actor">
           <strong>{pb.playerName}</strong> — Marchandage {pb.playerSkill} contre {pb.merchantName} {pb.merchantValue}
           {pb.negotiator && ' · Négociateur'}
@@ -57,7 +68,7 @@ export function BargainModalView({
                 vous {pb.roll!.sl >= 0 ? '+' : ''}
                 {pb.roll!.sl} DR · marchand {dice(pb.merchantRoll!.roll)}/{pb.merchantRoll!.target} ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
                 {pb.merchantRoll!.sl} DR) →{' '}
-                {won ? `Gagné (${discount} à l'achat, ½ à la vente)` : 'Perdu (vente réduite à ¼)'}
+                {verdictText}
               </span>
             </div>
             <div className="modal-actions">

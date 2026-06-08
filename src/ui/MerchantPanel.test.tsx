@@ -43,17 +43,21 @@ describe('MerchantPanel (#2)', () => {
     expect(html).toContain('Chemise de mailles');
   });
 
-  it('affiche le bouton Marchander (avant jet) puis le résultat verrouillé (#2c)', () => {
+  it('Marchandage : deux négociations (achat/vente) distinctes + état méfiant (B/C, #2c)', () => {
     const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
     const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] };
-    const before = renderToStaticMarkup(
-      <MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} onBuy={() => {}} onSell={() => {}} onRepair={() => {}} onBargain={() => {}} onAppraise={() => {}} onClose={() => {}} />,
-    );
-    expect(before).toMatch(/Marchander/);
-    const after = renderToStaticMarkup(
-      <MerchantPanelView merchant={{ ...base, bargain: { won: true, drNet: 2, negotiator: false } }} party={party} money={{ gold: 1, silver: 0, brass: 0 }} onBuy={() => {}} onSell={() => {}} onRepair={() => {}} onBargain={() => {}} onAppraise={() => {}} onClose={() => {}} />,
-    );
-    expect(after).toContain('Marchandage'); // résultat verrouillé affiché
-    expect(after).not.toMatch(/>Marchander</); // plus de bouton Marchander
+    const props = { party, money: { gold: 1, silver: 0, brass: 0 }, onBuy: () => {}, onSell: () => {}, onRepair: () => {}, onBargain: () => {}, onAppraise: () => {}, onClose: () => {} };
+    const count = (s: string) => (s.match(/Marchander/g) || []).length;
+    // aucune négociation : un bouton Marchander pour l'achat ET un pour la vente
+    const fresh = renderToStaticMarkup(<MerchantPanelView merchant={base} {...props} />);
+    expect(count(fresh)).toBe(2);
+    // achat négocié (gagné) : l'achat affiche son résultat, la vente reste à marchander
+    const buyDone = renderToStaticMarkup(<MerchantPanelView merchant={{ ...base, bargainBuy: { won: true, drNet: 2, negotiator: false } }} {...props} />);
+    expect(buyDone).toContain('Achat marchandé');
+    expect(count(buyDone)).toBe(1); // il ne reste que le bouton de vente
+    // marchand méfiant (botch) : plus aucun marchandage possible
+    const soured = renderToStaticMarkup(<MerchantPanelView merchant={{ ...base, soured: true }} {...props} />);
+    expect(soured).toContain('méfiant');
+    expect(count(soured)).toBe(0);
   });
 });
