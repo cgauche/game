@@ -11,7 +11,7 @@ import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
-import { combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
+import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -383,6 +383,19 @@ export function finishMelee(
   return res;
 }
 
+/**
+ * Cible Inconscient (LDB 16 l.112) : l'attaquant bénéficie de « Je ne faillirai pas ! »
+ * (LDB 17 l.73) sans dépenser de Résilience — il *choisit* le résultat, donc on prend le
+ * meilleur : une réussite **critique** (double choisi). À distance, les Dégâts sont ceux
+ * d'un tir **à bout portant** (+6 DR ≈ le +60 au toucher de la bande de portée). Le jet
+ * brut est conservé pour la Localisation et l'Atout Empaleuse (le tireur peut la choisir,
+ * non modélisé). Variante MJ « tue automatiquement » non retenue (trop sèche pour un héros à terre).
+ */
+function helplessTest(atk: TestResult, kind: 'melee' | 'ranged'): TestResult {
+  const dr = Math.max(atk.sl, 0) + (kind === 'ranged' ? 6 : 0);
+  return { ...atk, success: true, isDouble: true, sl: dr };
+}
+
 /** Issue d'une attaque de mêlée SANS défense (Surpris, ou « Subir ») à partir
  *  d'un jet d'attaque déjà obtenu : un simple succès suffit à toucher. */
 export function resolveMeleePassive(
@@ -411,7 +424,8 @@ export function resolveMelee(
   opts: AttackOptions = {},
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
-  const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
+  let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
+  if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'melee'); // auto-réussite + critique (LDB 16 l.112)
   if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
   const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod);
   return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
@@ -459,7 +473,8 @@ export function resolveRanged(
   if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
-  const atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
+  let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
+  if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd('Projectiles', atkVal, atk, mods);
   if (!atk.success) {
     return {

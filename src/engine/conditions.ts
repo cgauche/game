@@ -83,9 +83,10 @@ export function meleeAttackerBonus(target: Combatant): number {
   return cand.length ? Math.max(...cand) : 0;
 }
 
-/** Une cible Surprise ne peut pas se défendre lors d'un Test opposé (LDB ch.16 l.132). */
+/** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)
+ *  ne peut pas se défendre lors d'un Test opposé. */
 export function cannotDefend(c: Combatant): boolean {
-  return hasCondition(c, 'Surpris');
+  return hasCondition(c, 'Surpris') || hasCondition(c, 'Inconscient');
 }
 
 /** Sonné : « vous êtes incapable d'effectuer votre Action » (LDB États l.123). Le combattant

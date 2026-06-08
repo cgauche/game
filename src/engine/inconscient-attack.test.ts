@@ -1,0 +1,70 @@
+import { describe, it, expect } from 'vitest';
+import { resolveMelee, resolveRanged } from './combat';
+import { addCondition, cannotDefend } from './conditions';
+import type { RNG } from './dice';
+import type { Combatant, Weapon } from './types';
+
+const rngOf = (roll: number): RNG => ({ int: () => roll });
+
+const mk = (over: Partial<Combatant> = {}): Combatant =>
+  ({
+    id: 'c',
+    name: 'C',
+    kind: 'enemy',
+    characteristics: { CC: 40, CT: 40, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 12, max: 12 },
+    advantage: 0,
+    conditions: [],
+    skills: [],
+    talents: [],
+    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    movement: 4,
+    size: 'moyenne',
+  } as unknown as Combatant);
+
+const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [] };
+
+describe('Attaque contre un Inconscient (LDB 16 l.112)', () => {
+  it('un Inconscient ne peut pas se défendre', () => {
+    const ko = mk();
+    addCondition(ko, 'Inconscient');
+    expect(cannotDefend(ko)).toBe(true);
+  });
+
+  it('mêlée : touche automatiquement même sur un jet raté (98) et inflige un Critique', () => {
+    const target = mk();
+    addCondition(target, 'Inconscient');
+    // CC 40, jet 98 → échec normal ; vs Inconscient → « Je ne faillirai pas ! » : réussite + critique.
+    const res = resolveMelee(mk(), target, sword, rngOf(98));
+    expect(res.hit).toBe(true);
+    expect(res.critical).toBe(true);
+  });
+
+  it('mêlée : un défenseur conscient esquive/pare ce même jet raté (pas de touche)', () => {
+    const target = mk();
+    const res = resolveMelee(mk(), target, sword, rngOf(98), { defense: 'none' });
+    expect(res.hit).toBe(false); // jet 98 vs CC 40 → échec, cible consciente
+  });
+
+  it('distance : touche automatiquement et inflige un Critique', () => {
+    const target = mk();
+    addCondition(target, 'Inconscient');
+    const res = resolveRanged(mk(), target, bow, rngOf(95), 5);
+    expect(res.hit).toBe(true);
+    expect(res.critical).toBe(true);
+  });
+
+  it('distance : Dégâts « à bout portant » > Dégâts à portée moyenne (même jet réussi)', () => {
+    const consc = mk();
+    const ko = mk();
+    addCondition(ko, 'Inconscient');
+    // Jet 35 ≤ CT 40 → réussite dans les deux cas ; l'Inconscient ajoute +6 DR (bout portant).
+    const hitConsc = resolveRanged(mk(), consc, bow, rngOf(35), 30); // portée moyenne
+    const hitKO = resolveRanged(mk(), ko, bow, rngOf(35), 30);
+    expect(hitConsc.hit).toBe(true);
+    expect(hitKO.hit).toBe(true);
+    expect(hitKO.damage!).toBeGreaterThan(hitConsc.damage!);
+  });
+});
