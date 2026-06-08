@@ -894,6 +894,10 @@ textarea:focus {
   background: #16261a;
   border-color: #3a6b3a;
 }
+.fx-chip.state {
+  background: rgba(224, 151, 63, 0.18);
+  border-color: #e8973f;
+}
 .fx-chip.more {
   color: var(--muted);
 }

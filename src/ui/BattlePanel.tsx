@@ -38,7 +38,7 @@ export function BattlePanel() {
           const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
           const ratio = c.wounds.max > 0 ? c.wounds.current / c.wounds.max : 0;
           const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
-          const fx = summarizeEffects(c.conditions, [], 3); // jusqu'à 3 icônes d'États (malus)
+          const fx = summarizeEffects(c.conditions, [], 3, { frenzied: c.frenzied }); // jusqu'à 3 icônes (États + Frénésie)
           return (
             <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`}>
               <span className="ord-portrait">

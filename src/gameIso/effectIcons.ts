@@ -9,7 +9,8 @@ export interface EffectChip {
   key: string;
   icon: string;
   label: string;
-  kind: 'malus' | 'buff';
+  /** malus = État négatif ; buff = effet temporisé (activeEffects) ; state = état-drapeau (Frénésie…). */
+  kind: 'malus' | 'buff' | 'state';
   severity: number;
   /** Empilement (n>1) — ex. Hémorragique ×3. */
   count?: number;
@@ -76,16 +77,25 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
   }));
 }
 
+/** États-drapeaux (hors `conditions[]`) : Frénésie (`c.frenzied`), etc. */
+export interface EffectFlags { frenzied?: boolean; }
+function flagChips(flags?: EffectFlags): EffectChip[] {
+  const out: EffectChip[] = [];
+  if (flags?.frenzied) out.push({ key: 'f-frenzied', icon: '🐗', label: 'Frénésie', kind: 'state', severity: 68 });
+  return out;
+}
+
 export interface EffectSummary { visible: EffectChip[]; moreCount: number; }
 
-/** Liste compacte des effets : malus (triés par sévérité décroissante) puis buffs,
+/** Liste compacte des effets : malus (triés par sévérité) → états-drapeaux → buffs,
  *  tronquée à `maxVisible` ; le surplus est reporté dans `moreCount` (« +N »). */
 export function summarizeEffects(
   conditions: ConditionInstance[] = [],
   effects: ActiveEffect[] = [],
   maxVisible = Infinity,
+  flags?: EffectFlags,
 ): EffectSummary {
-  const all = [...malusChips(conditions), ...buffChips(effects)];
+  const all = [...malusChips(conditions), ...flagChips(flags), ...buffChips(effects)];
   if (all.length <= maxVisible) return { visible: all, moreCount: 0 };
   return { visible: all.slice(0, maxVisible), moreCount: all.length - maxVisible };
 }

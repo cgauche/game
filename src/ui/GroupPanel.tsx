@@ -31,7 +31,7 @@ function GroupRow({ c, ring, active, onOpen }: { c: Combatant; ring: string; act
           {c.advantage > 0 && <span className="adv"> Av+{c.advantage}</span>}
           {weapon && <span className="grp-wpn"> · {weapon}</span>}
         </div>
-        <EffectChips conditions={c.conditions} effects={c.activeEffects} max={6} />
+        <EffectChips conditions={c.conditions} effects={c.activeEffects} frenzied={c.frenzied} max={6} />
       </div>
     </div>
   );

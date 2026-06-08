@@ -17,13 +17,15 @@ function chipTitle(c: EffectChip): string {
 export function EffectChips({
   conditions,
   effects,
+  frenzied,
   max = Infinity,
 }: {
   conditions?: ConditionInstance[];
   effects?: ActiveEffect[];
+  frenzied?: boolean;
   max?: number;
 }) {
-  const { visible, moreCount } = summarizeEffects(conditions, effects, max);
+  const { visible, moreCount } = summarizeEffects(conditions, effects, max, { frenzied });
   if (visible.length === 0 && moreCount === 0) return null;
   return (
     <div className="fx-chips">

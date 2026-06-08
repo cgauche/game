@@ -303,7 +303,7 @@ export function ActionBar() {
             <span className="ab-pb-val">{active.wounds.current}/{active.wounds.max} PB</span>
             {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
           </div>
-          <EffectChips conditions={active.conditions} effects={active.activeEffects} max={8} />
+          <EffectChips conditions={active.conditions} effects={active.activeEffects} frenzied={active.frenzied} max={8} />
           {isHero && (
             <div className="ab-pools" title="Chance · Résilience · Détermination · Destin">
               🍀 {active.fortune ?? 0} · 🔥 {active.resilience ?? 0} · ✊ {active.resolve ?? 0} · ✨ {active.fate ?? 0}

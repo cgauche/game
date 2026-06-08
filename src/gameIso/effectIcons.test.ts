@@ -65,3 +65,20 @@ describe('topImportantCondition', () => {
     expect(topImportantCondition([cond('Exténué')])).toBeNull();
   });
 });
+
+describe('summarizeEffects — états-drapeaux (Frénésie)', () => {
+  it('ajoute une pastille Frénésie (kind state) quand le drapeau est posé', () => {
+    const r = summarizeEffects([], [], 5, { frenzied: true });
+    const fr = r.visible.find((c) => c.label === 'Frénésie');
+    expect(fr).toBeTruthy();
+    expect(fr?.kind).toBe('state');
+    expect(fr?.icon).toBeTruthy();
+  });
+  it('sans drapeau, aucune pastille Frénésie', () => {
+    expect(summarizeEffects([cond('Sonné')], []).visible.some((c) => c.label === 'Frénésie')).toBe(false);
+  });
+  it('ordonne malus → état-drapeau → buff', () => {
+    const r = summarizeEffects([cond('Sonné')], [buff('Bénédiction', 10, 2)], 5, { frenzied: true });
+    expect(r.visible.map((c) => c.kind)).toEqual(['malus', 'state', 'buff']);
+  });
+});

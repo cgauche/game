@@ -401,7 +401,7 @@ export function IsoStage() {
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
       const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
-      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3);
+      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, { frenzied: c.frenzied });
       const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking, {
         hp: c.wounds,
         icons: fxSum.visible.map((v) => v.icon),
