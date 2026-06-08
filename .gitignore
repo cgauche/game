@@ -20,3 +20,6 @@ art-ref/
 # Sorties de QC (planches/sprites de revue régénérables via les scripts _qc-*) — pas du source.
 # C'étaient ~1000 fichiers non-suivis qui ralentissaient chaque commande git.
 public/qc/
+
+# compagnon visuel brainstorm
+.superpowers/
