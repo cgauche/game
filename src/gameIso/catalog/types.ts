@@ -31,6 +31,8 @@ export interface BuildingViz {
 export interface PropViz {
   id: string;
   label: string;
+  /** Décor « naturellement fouillable/ramassable » : l'éditeur pré-arme `interact` à la pose (SP2↔SP1). */
+  searchable?: boolean;
   paramsSchema?: ParamField[];
   render(params: Record<string, unknown>, ctx: RenderCtx): string;
 }

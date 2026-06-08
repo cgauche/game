@@ -38,6 +38,18 @@ const chevalMort = () =>
 const epaveCarrosse = () =>
   `<g><ellipse cx="60" cy="146" rx="44" ry="12" fill="#000" opacity="0.3"/><g transform="rotate(-8 60 110)"><rect x="24" y="84" width="78" height="46" rx="8" fill="#6e2a30" stroke="#2a0e0e" stroke-width="3"/><rect x="24" y="84" width="78" height="10" rx="5" fill="#7a2630"/><rect x="40" y="103" width="24" height="24" rx="3" fill="#39151a" stroke="#d8a93b" stroke-width="2"/><path d="M24 116 h78" stroke="#d8a93b" stroke-width="1.5" opacity="0.7"/></g><ellipse cx="33" cy="140" rx="18" ry="8" fill="none" stroke="#241a10" stroke-width="5"/><line x1="15" y1="140" x2="51" y2="140" stroke="#3a2a18" stroke-width="2.5"/><line x1="33" y1="132" x2="33" y2="148" stroke="#3a2a18" stroke-width="2.5"/><circle cx="93" cy="126" r="15" fill="none" stroke="#241a10" stroke-width="5"/><circle cx="93" cy="126" r="4" fill="#3a2a18"/></g>`;
 
+// Décors fouillables/ramassables (SP2) — `searchable` pré-arme l'interact à la pose (éditeur).
+const lettre = () =>
+  `<g><ellipse cx="60" cy="148" rx="28" ry="6" fill="#000" opacity="0.18"/><path d="M30 150 L88 132 Q96 130 95 138 L40 156 Q30 158 30 150 Z" fill="#e8dcae"/><path d="M30 150 L88 132" stroke="#c9b988" stroke-width="2"/><path d="M46 147 h26 M46 151 h22" stroke="#7a6a44" stroke-width="1" opacity="0.6"/><ellipse cx="36" cy="150" rx="8" ry="9" fill="#d8c79a"/><ellipse cx="36" cy="150" rx="3.4" ry="5" fill="#b8a06e"/><circle cx="74" cy="142" r="7" fill="#9e2a22"/><circle cx="74" cy="142" r="7" fill="#000" opacity="0.12"/><path d="M71 142 l3 3 l4 -5" stroke="#5e120e" stroke-width="1.4" fill="none"/></g>`;
+const coffre = () =>
+  `<g><ellipse cx="60" cy="148" rx="32" ry="8" fill="#000" opacity="0.22"/><rect x="30" y="118" width="60" height="30" rx="3" fill="#6e4a28"/><path d="M30 118 Q60 96 90 118 Z" fill="#7a5230"/><path d="M30 118 Q60 100 90 118" fill="none" stroke="#4a3018" stroke-width="2"/><path d="M44 102 L44 148 M76 102 L76 148" stroke="#7d7a74" stroke-width="4"/><path d="M30 118 h60" stroke="#5a5550" stroke-width="3"/><rect x="54" y="124" width="12" height="12" rx="2" fill="#d8a93b"/><circle cx="60" cy="130" r="2.4" fill="#3a2a10"/></g>`;
+const cle = () =>
+  `<g><ellipse cx="60" cy="146" rx="22" ry="6" fill="#000" opacity="0.18"/><g transform="rotate(20 60 142)"><circle cx="36" cy="142" r="11" fill="none" stroke="#9a968e" stroke-width="5"/><rect x="46" y="139.5" width="42" height="5" rx="2.5" fill="#9a968e"/><path d="M82 144 v8 h4 v-4 h4 v4 h4 v-8 Z" fill="#9a968e"/></g><circle cx="33" cy="139" r="2" fill="#cfccc4"/></g>`;
+const bourse = () =>
+  `<g><ellipse cx="58" cy="148" rx="26" ry="7" fill="#000" opacity="0.2"/><path d="M40 128 Q38 150 58 150 Q78 150 76 128 Q70 122 58 122 Q46 122 40 128 Z" fill="#6a4a2a"/><path d="M44 134 Q58 142 72 134" stroke="#4a3018" stroke-width="1.5" fill="none" opacity="0.7"/><path d="M48 124 Q58 116 68 124" fill="#7a5a32"/><path d="M48 124 q5 4 10 0 q5 4 10 0" stroke="#3a2818" stroke-width="2" fill="none"/><ellipse cx="84" cy="147" rx="6" ry="3" fill="#d8a93b"/><ellipse cx="80" cy="144" rx="6" ry="3" fill="#e8c25a"/></g>`;
+const etagere = () =>
+  `<g><ellipse cx="60" cy="148" rx="28" ry="7" fill="#000" opacity="0.2"/><rect x="34" y="60" width="6" height="88" fill="#5a3c22"/><rect x="80" y="60" width="6" height="88" fill="#5a3c22"/><rect x="32" y="62" width="56" height="7" fill="#6e4a28"/><rect x="32" y="96" width="56" height="7" fill="#6e4a28"/><rect x="32" y="130" width="56" height="7" fill="#6e4a28"/><rect x="42" y="50" width="9" height="12" rx="2" fill="#7a5a32"/><path d="M58 50 q6 0 6 6 v6 h-12 v-6 q0 -6 6 -6z" fill="#8a6a3c"/><rect x="44" y="84" width="14" height="12" fill="#9e2a22"/><rect x="62" y="86" width="10" height="10" rx="2" fill="#3a6a8a"/></g>`;
+
 export const PROPS: Record<string, PropViz> = {
   tonneau: { id: 'tonneau', label: 'Tonneau', render: tonneau },
   caisse: { id: 'caisse', label: 'Caisse', render: caisse },
@@ -56,6 +68,11 @@ export const PROPS: Record<string, PropViz> = {
   'mare-sang': { id: 'mare-sang', label: 'Mare de sang', render: mareSang },
   'cheval-mort': { id: 'cheval-mort', label: 'Cheval mort', render: chevalMort },
   'epave-carrosse': { id: 'epave-carrosse', label: 'Épave de carrosse', render: epaveCarrosse },
+  lettre: { id: 'lettre', label: 'Lettre', render: lettre, searchable: true },
+  coffre: { id: 'coffre', label: 'Coffre', render: coffre, searchable: true },
+  cle: { id: 'cle', label: 'Clé', render: cle, searchable: true },
+  bourse: { id: 'bourse', label: 'Bourse', render: bourse, searchable: true },
+  etagere: { id: 'etagere', label: 'Étagère', render: etagere, searchable: true },
 };
 
 export function propSvg(ref: string): string {
