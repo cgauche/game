@@ -56,7 +56,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
-import { sweepDismountDeaths } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -405,6 +405,7 @@ export function resolveAttack(
       return !!ally && ally.kind === attacker.kind;
     });
     if (inMelee) env.push({ label: 'Tir dans la mêlée', value: -20 });
+    env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
@@ -416,7 +417,9 @@ export function resolveAttack(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod }), weapon };
+  env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
+  // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → s'ajoute au dodgeMod météo.
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target) }), weapon };
 }
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
@@ -1630,6 +1633,26 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   setTimeout(() => runEnemyAI(get, set, active.id), 450);
 }
 
+/** LDB 21 l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un Test de Calme
+ *  Intermédiaire (+0) ou gagner un État Brisé. » Appelé APRÈS le déplacement de `mover` (IA) : tout héros
+ *  qui le craint (Peur active non vaincue) ET dont il s'est rapproché fait un Test de Calme ; échec → Brisé.
+ *  Jet montré en révélation témoin (comme la Fuite). */
+export function approachFearTrigger(get: () => GameState, set: any, mover: Combatant, fromPos: Pt): void {
+  const battle = get().battle;
+  if (!battle || !mover.pos) return;
+  for (const c of battle.combatants) {
+    if (c.kind === mover.kind || isOutOfAction(c) || !c.pos) continue;
+    const peur = (c.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === mover.id && (p.calmeDR ?? 0) < (p.indice ?? 0));
+    if (!peur) continue;
+    if (chebyshev(mover.pos, c.pos) >= chebyshev(fromPos, c.pos)) continue; // ne s'est pas rapproché
+    const t = rollTest(calmeValue(c), 'intermediaire', battleRng());
+    const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
+    if (!t.success) addCondition(c, 'Brisé', 1);
+    battle.log.push(line);
+    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line] });
+  }
+}
+
 /** Récupération du Brisé en fin de Round (LDB 16 l.57-59) — combattant par combattant :
  *  - pas de Test si Engagé (l.57) ; sinon Test de Calme dont la Difficulté suit les circonstances
  *    (caché hors de vue → Accessible +20 ; ennemi à ≤ 3 cases → Très difficile −30 ; sinon Intermédiaire +0),
@@ -1868,11 +1891,13 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
+      const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
       const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(enemy.size));
       enemy.pos = action.to;
       displaceSmaller(get, enemy); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(enemy.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
+      approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
