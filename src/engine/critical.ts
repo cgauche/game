@@ -27,37 +27,70 @@ export function parseAmputation(note: string): Difficulty | null {
   return m ? AMPUTATION_DIFFICULTY[m[1]] : null;
 }
 
+// Prothèses qui ANNULENT TOTALEMENT une séquelle (LDB 73) — par partie remplacée.
+const MERVEILLE = { name: "Merveille d'ingénierie", cancels: 'all' as const }; // oreille/main/bras/jambe (l.28)
+
 /**
- * Séquelle PERMANENTE d'une amputation (LDB 18 l.335-370) — distincte de la plaie chirurgicale : elle
- * survit à la Chirurgie (le membre reste absent). On NE mécanise QUE les cas sans latéralité ni comptage :
- *  - Jambe/Pied (l.369/347) : Mouvement ÷2 + −20 aux Tests de mobilité (Esquive). À pied seulement — une
- *    monture rétablit le déplacement (`mountMovement` lit la Caractéristique de la monture).
- *  - Orteil (l.366) : −1 Agilité et −1 CC (par orteil ; un critique = un orteil).
- * Bras/main/doigt/œil/oreille/nez/langue/dents → latéralité ou comptage non modélisés : effet journalisé
- * (dans la note de la plaie chirurgicale), pas de pénalité chiffrée.
+ * Séquelles PERMANENTES d'une amputation (LDB 18 l.335-370) — distinctes de la plaie chirurgicale : elles
+ * survivent à la Chirurgie (le membre reste absent). La latéralité de membre (brasG/brasD, jambeG/jambeD) et
+ * la partie de tête (lues dans `name`+`note` : œil/oreille/nez/langue/dents) SONT connues, donc on mécanise —
+ * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Une tête peut perdre PLUSIEURS
+ * parties d'un coup (Coup défigurant = œil+nez ; Mâchoire mutilée = langue+dents) → on renvoie un tableau.
+ * Non modélisé (comptage cumulatif) : DEUX yeux/oreilles (−30 vue / −20 ouïe), plusieurs doigts/dents — on
+ * pose l'effet d'UNE perte (chaque critique en ajoute une).
  */
-export function permanentAmputation(note: string, location: HitLocation): Trauma | null {
-  if (location !== 'jambeG' && location !== 'jambeD') return null;
-  if (/orteil/i.test(note)) {
-    return {
-      label: `Orteil(s) amputé(s) (${location})`,
-      location,
-      charPenalty: { Ag: -1, CC: -1 },
-      note: 'LDB 18 l.366 : −1 Agilité et −1 CC par orteil perdu (séquelle permanente).',
-    };
+export function permanentAmputations(name: string, note: string, location: HitLocation): Trauma[] {
+  const t = `${name} ${note}`.toLowerCase();
+  const out: Trauma[] = [];
+  if (location === 'jambeG' || location === 'jambeD') {
+    if (/orteil/.test(t)) {
+      out.push({ label: `Orteil(s) amputé(s) (${location})`, location, charPenalty: { Ag: -1, CC: -1 },
+        note: 'LDB 18 l.366 : −1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
+    } else {
+      out.push({ label: `Membre inférieur amputé (${location})`, location, movementHalved: true, dodgePenalty: -20,
+        prosthesis: [MERVEILLE, { name: 'Fausse jambe', cancels: 'movement' }],
+        note: 'LDB 18 l.369/347 : Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse (LDB 73) : Fausse jambe / Merveille.' });
+    }
+    return out;
   }
-  return {
-    label: `Membre inférieur amputé (${location})`,
-    location,
-    movementHalved: true,
-    dodgePenalty: -20,
-    // Prothèses (LDB 73) : la Merveille d'ingénierie annule tout ; la Fausse jambe rétablit le déplacement.
-    prosthesis: [
-      { name: "Merveille d'ingénierie", cancels: 'all' },
-      { name: 'Fausse jambe', cancels: 'movement' },
-    ],
-    note: 'LDB 18 l.369/347 : Mouvement ÷2 permanent + −20 aux Tests de mobilité (Esquive). À pied seulement — une monture rétablit le déplacement. Annulable par une prothèse (LDB 73 : Fausse jambe / Merveille d’ingénierie).',
-  };
+  if (location === 'brasG' || location === 'brasD') {
+    const dominant = location === 'brasD'; // droitier
+    if (/doigt/.test(t)) {
+      out.push({ label: `Doigt(s) amputé(s) (${location})`, location, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
+        prosthesis: [MERVEILLE],
+        note: `LDB 18 l.341 : −5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire, sans effet de combat modélisé'}. Risque de Maladresse + cumul non modélisés. Prothèse : Merveille (LDB 73).` });
+    } else if (/\bmain\b|bras inutilisable/.test(t)) {
+      out.push({ label: `Main/bras amputé (${location})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
+        prosthesis: [MERVEILLE],
+        note: `LDB 18 l.352/335 : pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille (LDB 73).` });
+    }
+    return out;
+  }
+  if (location === 'tete') {
+    if (/langue/.test(t)) {
+      out.push({ label: 'Langue amputée', location, skillPenalty: { langue: -100 }, // « auto-échec » de la parole
+        note: 'LDB 18 l.349 : sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
+    }
+    if (/\bnez\b/.test(t)) {
+      out.push({ label: 'Nez amputé', location, charPenalty: { Soc: -20 }, prosthesis: [{ name: 'Nez doré', cancels: 'all' }],
+        note: 'LDB 18 l.357 : −20 Sociabilité permanent (perte du nez). Prothèse : Nez doré (LDB 73).' });
+    }
+    if (/œil|oeil/.test(t)) {
+      out.push({ label: 'Œil perdu', location, charPenalty: { Soc: -5 },
+        prosthesis: [{ name: 'Cache-œil', cancels: 'all' }, { name: 'Œil de verre', cancels: 'all' }],
+        note: 'LDB 18 l.360 : −5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre (LDB 73).' });
+    }
+    if (/oreille/.test(t)) {
+      out.push({ label: 'Oreille perdue', location, charPenalty: { Soc: -5 }, prosthesis: [MERVEILLE],
+        note: 'LDB 18 l.363 : −5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille (LDB 73).' });
+    }
+    if (/dents?\b/.test(t)) {
+      out.push({ label: 'Dents perdues', location, charPenalty: { Soc: -2 }, prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
+        note: 'LDB 18 l.338 : −1 Sociabilité par paire de dents (≈ −2 pour 1d10 dents, représentatif). Prothèse : Dents en bois (LDB 73).' });
+    }
+    return out;
+  }
+  return out; // corps : pas d'amputation
 }
 
 export interface CriticalResolved {
@@ -132,9 +165,8 @@ export function rollCritical(
       needsSurgery: true,
       note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
     });
-    // Séquelle PERMANENTE (membre absent) : survit à la Chirurgie. Mécanisée pour jambe/pied/orteil (l.335-370).
-    const perm = permanentAmputation(entry.note, location);
-    if (perm) traumas.push(perm);
+    // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler.
+    traumas.push(...permanentAmputations(entry.name, entry.note, location));
   }
   return {
     location,

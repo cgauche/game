@@ -156,9 +156,12 @@ export interface Trauma {
   needsSurgery?: boolean;
   /** Prothèses (LDB 73) qui annulent la séquelle permanente d'une amputation TANT QUE l'objet est porté
    *  (dans `items`). `cancels: 'all'` annule toute la pénalité (Merveille d'ingénierie : « ignorer
-   *  complètement la perte… d'une jambe ») ; `'movement'` rétablit le déplacement seul (Fausse jambe :
-   *  « ignorer 1 Point de Mouvement perdu » — l'Esquive demande 200 PX, non modélisé). */
+   *  complètement la perte… d'une jambe » ; Nez doré ; Œil de verre…) ; `'movement'` rétablit le déplacement
+   *  seul (Fausse jambe : « ignorer 1 Point de Mouvement perdu » — l'Esquive demande 200 PX, non modélisé). */
   prosthesis?: { name: string; cancels: 'all' | 'movement' }[];
+  /** Main/bras amputé (LDB 18 l.352/335) : interdit le port d'une arme à DEUX mains. Levé par une prothèse
+   *  `cancels:'all'` (Merveille d'ingénierie). */
+  noTwoHanded?: boolean;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

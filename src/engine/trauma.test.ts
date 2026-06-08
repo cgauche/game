@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty } from './trauma';
+import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
@@ -76,6 +76,12 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   it('prothèse perdue (retirée des items) : la pénalité revient', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('Couverture')] });
     expect(traumaMovementHalved(c)).toBe(true);
+  });
+
+  it('Nez doré annule le −20 Sociabilité de l’amputation du nez (charPenalty, LDB 73)', () => {
+    const nez: Trauma = { label: 'Nez amputé', location: 'tete', charPenalty: { Soc: -20 }, prosthesis: [{ name: 'Nez doré', cancels: 'all' }], note: '' };
+    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'Soc')).toEqual([-20]);
+    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('Nez doré')] }), 'Soc')).toEqual([]);
   });
 });
 

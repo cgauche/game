@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
-import { rollCritical, critLocationRoll, parseAmputation, permanentAmputation } from './critical';
+import { rollCritical, critLocationRoll, parseAmputation, permanentAmputations } from './critical';
 import { removeSurgicalTrauma } from './trauma';
 import type { Combatant } from './types';
 
@@ -96,14 +96,37 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
   });
 });
 
-describe('permanentAmputation — séquelle permanente (LDB 18 l.335-370)', () => {
-  it('jambe/pied → Mouvement ÷2 + −20 mobilité ; orteil → −1 Ag/CC ; autres membres → non mécanisé', () => {
-    const pied = permanentAmputation('Pied sectionné — Amputation (Difficile).', 'jambeG')!;
+describe('permanentAmputations — séquelles permanentes (LDB 18 l.335-370, tout le monde DROITIER)', () => {
+  it('jambe : pied → Mouvement ÷2 + −20 Esquive ; orteil → −1 Ag/CC', () => {
+    const [pied] = permanentAmputations('Pied sectionné', 'Amputation (Difficile).', 'jambeG');
     expect(pied.movementHalved).toBe(true);
     expect(pied.dodgePenalty).toBe(-20);
-    const orteil = permanentAmputation("perte d'un orteil — Amputation (Accessible).", 'jambeD')!;
+    const [orteil] = permanentAmputations("Coupure à l'orteil", "perte d'un orteil — Amputation (Accessible).", 'jambeD');
     expect(orteil.charPenalty).toEqual({ Ag: -1, CC: -1 });
-    expect(permanentAmputation('Perte de la main — Amputation (Difficile).', 'brasD')).toBeNull();
+  });
+  it('bras DROIT (dominant) main : pas d’arme à 2 mains + −20 CC/CT ; bras GAUCHE : juste pas de 2 mains', () => {
+    const [mainD] = permanentAmputations('Main mutilée', 'Perte de la main — Amputation (Difficile).', 'brasD');
+    expect(mainD.noTwoHanded).toBe(true);
+    expect(mainD.charPenalty).toEqual({ CC: -20, CT: -20 });
+    const [mainG] = permanentAmputations('Main mutilée', 'Perte de la main — Amputation (Difficile).', 'brasG');
+    expect(mainG.noTwoHanded).toBe(true);
+    expect(mainG.charPenalty).toBeUndefined();
+  });
+  it('bras : « Main ouverte » (perte d’un DOIGT) → doigt −5 CC/CT (droitier), pas la règle de la main', () => {
+    const [doigt] = permanentAmputations('Main ouverte', 'Perdez 1 doigt — Amputation (Complexe).', 'brasD');
+    expect(doigt.label).toMatch(/Doigt/);
+    expect(doigt.charPenalty).toEqual({ CC: -5, CT: -5 });
+    expect(doigt.noTwoHanded).toBeFalsy();
+  });
+  it('tête : « Coup défigurant » cumule œil (−5 Soc) + nez (−20 Soc)', () => {
+    const s = permanentAmputations('Coup défigurant', "Perte d'un œil et du nez — Amputation (Difficile).", 'tete');
+    expect(s.map((x) => x.label).sort()).toEqual(['Nez amputé', 'Œil perdu']);
+    expect(s.find((x) => x.label === 'Nez amputé')!.charPenalty).toEqual({ Soc: -20 });
+  });
+  it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (−2 Soc)', () => {
+    const s = permanentAmputations('Mâchoire mutilée', 'perte de la langue et 1d10 dents — Amputation (Difficile).', 'tete');
+    expect(s.find((x) => x.label === 'Langue amputée')!.skillPenalty).toEqual({ langue: -100 });
+    expect(s.find((x) => x.label === 'Dents perdues')!.charPenalty).toEqual({ Soc: -2 });
   });
 
   it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {

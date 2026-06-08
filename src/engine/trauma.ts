@@ -217,10 +217,14 @@ export function traumaMovementHalved(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.movementHalved === true && !prosthesisCancels(c, t, 'movement'));
 }
 
-/** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »). */
+/** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
+ *  Une prothèse qui annule TOUT (Nez doré, Œil de verre, Merveille…, LDB 73) lève la pénalité de sa séquelle. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   if (c.ignoreCritMods) return []; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
-  return (c.traumas ?? []).map((t) => t.charPenalty?.[key] ?? 0).filter((p) => p < 0);
+  return (c.traumas ?? [])
+    .filter((t) => !prosthesisCancels(c, t, 'all'))
+    .map((t) => t.charPenalty?.[key] ?? 0)
+    .filter((p) => p < 0);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
@@ -241,6 +245,7 @@ export function traumaSkillPenalty(c: Combatant, skill?: string): number {
   if (!skill || c.ignoreCritMods) return 0;
   const low = skill.toLowerCase();
   const pens = (c.traumas ?? [])
+    .filter((t) => !prosthesisCancels(c, t, 'all'))
     .map((t) => {
       const sp = t.skillPenalty;
       if (!sp) return 0;
