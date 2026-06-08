@@ -91,6 +91,9 @@ const NON_BIPED = CREATURES.filter((c) => c.plan !== 'biped');
 export function creatureMatch(name: string): CreatureDef | undefined { return matchIn(NON_BIPED, name); }
 /** Plan corporel d'un nom non-bipède (ou undefined → bipède par défaut chez l'appelant). */
 export function creaturePlanMatch(name: string): CreatureBodyPlan | undefined { return creatureMatch(name)?.plan; }
+/** Noms canon des créatures riggées — source du sélecteur d'apparence de l'éditeur
+ *  (remplace l'ex-`creatureNames()` qui listait les clés du bestiaire monolithique). */
+export const creatureSpeciesNames = (): string[] => CREATURES.map((c) => c.name);
 /** Échelle de token (sl) du gabarit rigué qui matche — lit le champ de props présent. Défaut 1. */
 export function creatureSpeciesScale(name: string): number {
   const c = creatureMatch(name);

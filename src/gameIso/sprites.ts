@@ -4,8 +4,6 @@
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
 import { TW, TH, tileCenter, depth, Dims } from './iso';
-import creatureSprites from './creatureSprites.json';
-import creatureViews from './creatureViews.json';
 import { propSvg } from './catalog/decor';
 
 const e = (cx: number, cy: number, r = 2) =>
@@ -75,59 +73,8 @@ function villager() {
     <path d="M54 64 q6 4 12 0" stroke="#9a7a5a" stroke-width="1.5" fill="none"/></g>`;
 }
 
-// --- Mutants (pose debout pour le combat tactique) ------------------------
-function mutantStand() {
-  return `<g class="bob"><path d="M48 100 L42 150 L58 150 L60 104 Z" fill="url(#g_mutD)"/><path d="M74 100 L84 150 L66 150 L62 104 Z" fill="url(#g_mutD)"/>
-    <path d="M42 96 L38 122 L52 114 L60 124 L70 114 L80 122 L76 96 Z" fill="#544c32"/>
-    <path d="M30 92 Q26 50 60 46 Q98 44 96 86 Q92 108 62 112 Q40 112 30 92 Z" fill="url(#g_mut)"/>
-    <g fill="#2a3c18" opacity="0.7"><ellipse cx="46" cy="64" rx="6" ry="4"/><ellipse cx="74" cy="58" rx="7" ry="5"/><ellipse cx="84" cy="80" rx="6" ry="4"/><ellipse cx="58" cy="88" rx="8" ry="5"/></g>
-    <path d="M34 90 Q18 100 16 120" stroke="url(#g_mut)" stroke-width="11" fill="none" stroke-linecap="round"/>
-    <path d="M16 120 l-4 10 m4 -10 l6 9" stroke="#cdd9a0" stroke-width="3" stroke-linecap="round"/>
-    <path d="M92 88 Q110 100 110 122" stroke="url(#g_mut)" stroke-width="12" fill="none" stroke-linecap="round"/>
-    <path d="M110 122 l-4 11 m4 -11 l8 8" stroke="#cdd9a0" stroke-width="3.5" stroke-linecap="round"/>
-    <circle cx="60" cy="42" r="11" fill="url(#g_mut)"/>${e(56, 41, 2.2)}${e(64, 41, 2.2)}
-    <path d="M53 48 q7 5 14 0" stroke="#2a160f" stroke-width="2" fill="none"/></g>`;
-}
-
-// --- Registre -------------------------------------------------------------
-const CREATURE_SPRITES = creatureSprites as Record<string, string>;
-const CREATURE_BY_NORM: Record<string, string> = {};
-for (const [k, v] of Object.entries(CREATURE_SPRITES)) CREATURE_BY_NORM[k.toLowerCase()] = v;
-
-/** Sprite monolithique d'une créature du bestiaire (par nom, insensible casse), sinon mutant
- *  générique. Backend SPRITE uniquement (non-rig) : les humains/mutants passent par le rig. */
-export function enemySprite(label: string): string {
-  if (!label) return mutantStand();
-  return CREATURE_SPRITES[label] ?? CREATURE_BY_NORM[label.toLowerCase()] ?? mutantStand();
-}
-
-// Vues directionnelles (dos/profil) générées pour les créatures non-humanoïdes (F2).
-type CreatureViewSet = { back?: string; profile?: string };
-const CREATURE_VIEWS = creatureViews as Record<string, CreatureViewSet>;
-const CREATURE_VIEWS_BY_NORM: Record<string, CreatureViewSet> = {};
-for (const [k, v] of Object.entries(CREATURE_VIEWS)) CREATURE_VIEWS_BY_NORM[k.toLowerCase()] = v;
-
-/**
- * Sprite d'une créature pour une VUE donnée (front/back/profile). La vue de profil
- * est tournée à droite ; le miroir gauche/droite est appliqué par le rendu (token).
- * Repli sur le front si la vue directionnelle n'existe pas pour ce bestiaire.
- */
-export function creatureView(label: string, view: 'front' | 'back' | 'profile'): string {
-  if (view !== 'front' && label) {
-    const v = CREATURE_VIEWS[label] ?? CREATURE_VIEWS_BY_NORM[label.toLowerCase()];
-    const svg = v?.[view];
-    if (svg) return svg;
-  }
-  return enemySprite(label);
-}
-
 export function pnjSprite(): string {
   return villager();
-}
-
-/** Noms d'apparence disponibles (clés du bestiaire) — pour le sélecteur éditeur. */
-export function creatureNames(): string[] {
-  return Object.keys(CREATURE_SPRITES);
 }
 
 /** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
@@ -139,22 +86,18 @@ export interface EntityViz {
 }
 
 /**
- * Sprite d'une entité de scène — apparence DÉCOUPLÉE du rôle. Un pnj peut
- * porter n'importe quelle apparence créature via `ref` (ex. un pigeon qui
- * donne une quête) ; sans `ref` (ou ref 'Villageois') il reste villageois.
- * Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
+ * Sprite d'une entité de scène pour le backend SPRITE (pickBackend l.78). Après le passage de
+ * tout le bestiaire au rig, ce backend ne sert plus que le DÉCOR (props → propSprite) ; les
+ * personnages/pnj sont routés vers le rig EN AMONT et n'arrivent pas ici — on retombe sur le
+ * villageois par sécurité. Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
  */
 export function entitySprite(ent: EntityViz): string {
   switch (ent.kind) {
-    // 'personnage' = kind unifié ; 'pnj'/'ennemi' = anciennes valeurs (compat).
-    case 'personnage':
-    case 'pnj':
-      if (!ent.ref || ent.ref === 'Villageois') return pnjSprite();
-      return enemySprite(ent.ref);
-    case 'ennemi':
-      return enemySprite(ent.ref ?? '');
     case 'prop':
       return propSprite(ent.ref);
+    case 'personnage':
+    case 'pnj':
+      return pnjSprite();
     default:
       return '';
   }

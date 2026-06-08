@@ -112,8 +112,9 @@ src/state/
   spawn.ts / path.ts / bus.ts
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)
-  sprites.ts                  bibliothèque de sprites SVG + DEFS (gradients) + enemySprite()
-  creatureSprites.json        57 sprites de bestiaire générés depuis l'art officiel
+  sprites.ts                  décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
+  rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
+  pickBackend.tsx             classifieur unique : rig humanoïde / gabarit animé / sprite décor
   IsoStage.tsx                composant de rendu (caméra, clics, dégâts flottants)
 src/ui/                     React : menus, créateur, CampaignView (HUD), CharacterSheet, modales
   editor/                     Éditeur : Editor.tsx (iso WYSIWYG, onglets), TriggersEditor, DialogueEditor,
@@ -131,8 +132,10 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   compétence interactifs (modal + branches), inventaire/argent/handouts (state party-level).
 - **Inventaire/équipement** : chaque héros a `items: ItemInstance[]` ; `weapons`/`armour`
   ACTIFS dérivés via `recomputeLoadout` (équiper change le combat). Fiche = `CharacterSheet.tsx`.
-- **Sprites** : `enemySprite(label)` → `creatureSprites.json` (bestiaire) ; héros par carrière
-  (sprites dessinés main dans `sprites.ts`). PAS encore composables (l'équipement ne se voit pas).
+- **Rendu des entités** : tout passe par `pickBackend` → le **rig** (`src/gameIso/rig/`) : humanoïdes
+  bipèdes (carrière + arme + armure + mutations visibles) et créatures non-bipèdes via gabarit corporel
+  animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props) et le villageois.
+  Le sprite monolithique (`creatureSprites.json` + `enemySprite`/`creatureView`) a été retiré (juin 2026).
 - **Éditeur** : iso WYSIWYG, onglets Carte/Logique/Scène, triggers/dialogues/rencontres
   structurés, outil « Zone » (drag → trigger). Bouton « Tester » lance la scène en jeu.
 

@@ -148,8 +148,8 @@ function mutationOverlays(seed: number): RigOverlay[] {
 }
 
 /**
- * Profil rig d'un combattant, ou null si non-humanoïde (→ garder enemySprite).
- * PURE et déterministe (seed dérivé de l'id).
+ * Profil rig d'un combattant, ou null si non-humanoïde (→ rendu par son gabarit corporel
+ * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
  */
 export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   if (classifyEnemy(c.name) === 'creature') return null;

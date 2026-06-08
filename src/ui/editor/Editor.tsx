@@ -9,17 +9,15 @@ import { EntityListPanel } from './EntityListPanel';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
-import { bodyPlanOf } from '../../gameIso/rig/bodyPlan';
-import { quadrupedSvg } from '../../gameIso/rig/quadruped/composeQuad';
+import { DEFS, placeSprite, terrainOverlay } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
-import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
-import { AmbientRigToken } from '../../gameIso/AmbientRigToken';
+import { pickBackend } from '../../gameIso/pickBackend';
+import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
 import { groundTile } from '../../gameIso/ground';
 import { BUILDINGS, BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
@@ -259,16 +257,6 @@ export function Editor() {
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
     return screenToTile(loc.x, loc.y, dims);
-  }
-
-  /** Sprite de jeu correspondant à une entité (WYSIWYG, source unique partagée).
-   *  Quadrupède (loup/cheval/…) → gabarit rigué recolorié (même dispatch qu'IsoStage). */
-  function entitySvg(e: SceneEntity): string {
-    const refName = e.ref ?? e.label ?? '';
-    if (e.kind !== 'prop' && bodyPlanOf(refName) === 'quadruped') {
-      return quadrupedSvg(refName, 'front', { colors: e.appearance?.colors });
-    }
-    return entitySprite(e);
   }
 
   function applyAt(p: { x: number; y: number }) {
@@ -1243,14 +1231,11 @@ export function Editor() {
                       <text x="60" y="92" textAnchor="middle" fontSize="44" fill="#2ecc71">
                         ★
                       </text>
-                    ) : (() => {
-                      const prof = sel.kind === 'personnage'
-                        ? entityRigProfile(sel.ref ?? sel.label ?? 'Villageois', sel.appearance?.seed ?? hashSeed(sel.id), { career: sel.appearance?.career, monster: sel.appearance?.monster, weapon: sel.weapon, colors: sel.appearance?.colors, parts: sel.appearance?.parts, sex: sel.appearance?.sex, build: sel.appearance?.build })
-                        : null;
-                      return prof
-                        ? <AmbientRigToken profile={prof} anim={sel.anim ?? ''} id={`prev-${sel.id}`} />
-                        : <g dangerouslySetInnerHTML={{ __html: entitySvg(sel) }} />;
-                    })()}
+                    ) : (
+                      // Aperçu unifié via le MÊME classifieur que le canvas (pickBackend) :
+                      // rig humanoïde / gabarit animé / sprite décor — plus aucun recours au monolithique.
+                      pickBackend({ kind: 'sceneEntity', ent: sel }).body
+                    )}
                   </svg>
                 </div>
                 <p>
@@ -1285,7 +1270,7 @@ export function Editor() {
                         onChange={(e) => updateSel({ ref: e.target.value })}
                       >
                         <option value="Villageois">Villageois</option>
-                        {creatureNames().map((name) => (
+                        {creatureSpeciesNames().map((name) => (
                           <option key={name} value={name}>
                             {name}
                           </option>
