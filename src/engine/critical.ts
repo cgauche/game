@@ -27,6 +27,34 @@ export function parseAmputation(note: string): Difficulty | null {
   return m ? AMPUTATION_DIFFICULTY[m[1]] : null;
 }
 
+/**
+ * Séquelle PERMANENTE d'une amputation (LDB 18 l.335-370) — distincte de la plaie chirurgicale : elle
+ * survit à la Chirurgie (le membre reste absent). On NE mécanise QUE les cas sans latéralité ni comptage :
+ *  - Jambe/Pied (l.369/347) : Mouvement ÷2 + −20 aux Tests de mobilité (Esquive). À pied seulement — une
+ *    monture rétablit le déplacement (`mountMovement` lit la Caractéristique de la monture).
+ *  - Orteil (l.366) : −1 Agilité et −1 CC (par orteil ; un critique = un orteil).
+ * Bras/main/doigt/œil/oreille/nez/langue/dents → latéralité ou comptage non modélisés : effet journalisé
+ * (dans la note de la plaie chirurgicale), pas de pénalité chiffrée.
+ */
+export function permanentAmputation(note: string, location: HitLocation): Trauma | null {
+  if (location !== 'jambeG' && location !== 'jambeD') return null;
+  if (/orteil/i.test(note)) {
+    return {
+      label: `Orteil(s) amputé(s) (${location})`,
+      location,
+      charPenalty: { Ag: -1, CC: -1 },
+      note: 'LDB 18 l.366 : −1 Agilité et −1 CC par orteil perdu (séquelle permanente).',
+    };
+  }
+  return {
+    label: `Membre inférieur amputé (${location})`,
+    location,
+    movementHalved: true,
+    dodgePenalty: -20,
+    note: 'LDB 18 l.369/347 : Mouvement ÷2 permanent + −20 aux Tests de mobilité (Esquive). À pied seulement — une monture rétablit le déplacement.',
+  };
+}
+
 export interface CriticalResolved {
   location: HitLocation;
   name: string;
@@ -92,12 +120,16 @@ export function rollCritical(
       if (res.sl <= -2) conditions.push({ name: 'Sonné', value: 1 });
       if (res.sl <= -4) conditions.push({ name: 'Inconscient', value: 1 });
     }
+    // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
     traumas.push({
       label: `Amputation (${location})`,
       location,
       needsSurgery: true,
       note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
     });
+    // Séquelle PERMANENTE (membre absent) : survit à la Chirurgie. Mécanisée pour jambe/pied/orteil (l.335-370).
+    const perm = permanentAmputation(entry.note, location);
+    if (perm) traumas.push(perm);
   }
   return {
     location,

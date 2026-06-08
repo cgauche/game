@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
-import { rollCritical, critLocationRoll, parseAmputation } from './critical';
+import { rollCritical, critLocationRoll, parseAmputation, permanentAmputation } from './critical';
+import { removeSurgicalTrauma } from './trauma';
 import type { Combatant } from './types';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
@@ -92,6 +93,33 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 5])); // 5 ≤ 50 → réussite
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
     expect(r.conditions.some((c) => c.name === 'À Terre')).toBe(false);
+  });
+});
+
+describe('permanentAmputation — séquelle permanente (LDB 18 l.335-370)', () => {
+  it('jambe/pied → Mouvement ÷2 + −20 mobilité ; orteil → −1 Ag/CC ; autres membres → non mécanisé', () => {
+    const pied = permanentAmputation('Pied sectionné — Amputation (Difficile).', 'jambeG')!;
+    expect(pied.movementHalved).toBe(true);
+    expect(pied.dodgePenalty).toBe(-20);
+    const orteil = permanentAmputation("perte d'un orteil — Amputation (Accessible).", 'jambeD')!;
+    expect(orteil.charPenalty).toEqual({ Ag: -1, CC: -1 });
+    expect(permanentAmputation('Perte de la main — Amputation (Difficile).', 'brasD')).toBeNull();
+  });
+
+  it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([95, 5])); // « Pied sectionné » (94-96), Résistance réussie
+    expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
+    expect(r.traumas.some((t) => t.movementHalved && !t.needsSurgery)).toBe(true);
+  });
+
+  it('la séquelle permanente survit à la Chirurgie (le membre reste absent)', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([95, 5]));
+    const c = victim(30);
+    c.traumas = r.traumas;
+    c.criticalWounds = 1;
+    removeSurgicalTrauma(c); // opère la plaie chirurgicale
+    expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false); // plaie réparée
+    expect(c.traumas!.some((t) => t.movementHalved)).toBe(true); // mobilité réduite à VIE
   });
 });
 
