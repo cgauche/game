@@ -9,7 +9,10 @@ import {
   sizeGrantedQualities,
   forceOpposedOutcome,
   woundsForSize,
+  stepSize,
+  resizeBySteps,
 } from './size';
+import type { Characteristics } from './types';
 
 describe('size — modèle de Taille (LDB 85 l.279-280 ; 14 l.151-170)', () => {
   it('ordonne les 7 catégories 0..6', () => {
@@ -73,5 +76,28 @@ describe('Taille en combat (T2/T3/T4) — LDB 85 l.293-352', () => {
     expect(woundsForSize(3, 4, 3, 'grande')).toBe(28); // ×2
     expect(woundsForSize(3, 4, 3, 'enorme')).toBe(56); // ×4
     expect(woundsForSize(3, 4, 3, 'monstrueuse')).toBe(112); // ×8
+  });
+});
+
+describe('Agrandir/Réduire — « Utiliser les Tailles » (LDB 85 l.276-277)', () => {
+  it('stepSize : décale la catégorie, bornée Minuscule..Monstrueuse', () => {
+    expect(stepSize('grande', 1)).toBe('enorme');
+    expect(stepSize('enorme', 1)).toBe('monstrueuse');
+    expect(stepSize('moyenne', -2)).toBe('tresPetite');
+    expect(stepSize('monstrueuse', 3)).toBe('monstrueuse'); // plafonné
+    expect(stepSize('minuscule', -3)).toBe('minuscule'); // plancher
+    expect(stepSize(undefined, 1)).toBe('grande'); // défaut Moyenne +1
+  });
+  it('resizeBySteps : +10 F, +10 E, −5 Ag PAR catégorie (inverse en réduction)', () => {
+    const base = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Characteristics;
+    const up2 = resizeBySteps(base, 2);
+    expect(up2.F).toBe(50); // +10 ×2
+    expect(up2.E).toBe(50);
+    expect(up2.Ag).toBe(20); // −5 ×2
+    expect(up2.CC).toBe(30); // inchangé
+    const down1 = resizeBySteps(base, -1);
+    expect(down1.F).toBe(20);
+    expect(down1.Ag).toBe(35); // +5
+    expect(resizeBySteps(base, 0)).toEqual(base); // no-op
   });
 });

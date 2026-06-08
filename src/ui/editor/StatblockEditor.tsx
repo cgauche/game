@@ -11,7 +11,7 @@
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
 import { creatures, findCreature } from '../../data';
-import { woundsForSize } from '../../engine/size';
+import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
 
@@ -42,6 +42,13 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
     if (raw.trim() === '') delete char.B;
     else char.B = Number(raw);
     onChange({ ...stat, char });
+  };
+  /** « Utiliser les Tailles » (LDB 85 l.276-277) : agrandir/réduire de `steps` catégories ajuste F/E
+   *  (+10/cat.) et Ag (−5/cat.) et met à jour le Trait « Taille (X) » (visible dans la liste). */
+  const applyResize = (steps: number) => {
+    const traits = (stat.traits ?? []).filter((t) => !/^Taille\s*\(/i.test(t));
+    traits.push(`Taille (${SIZE_LABEL[stepSize(size, steps)]})`);
+    onChange({ ...stat, char: resizeBySteps(stat.char, steps), traits });
   };
   return (
     <div className="statblock-editor">
@@ -86,6 +93,12 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
             onChange={(e) => setB(e.target.value)}
           />
         </label>
+      </div>
+      <div className="ed-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <span>Taille : <b>{SIZE_LABEL[size]}</b></span>
+        <button type="button" onClick={() => applyResize(-1)} disabled={SIZE_ORDER[size] === 0} title="Réduire d'une catégorie (−10 F, −10 E, +5 Ag)">▼ Réduire</button>
+        <button type="button" onClick={() => applyResize(1)} disabled={SIZE_ORDER[size] === 6} title="Agrandir d'une catégorie (+10 F, +10 E, −5 Ag)">Agrandir ▲</button>
+        <span style={{ opacity: 0.7, fontSize: '0.85em' }}>« Utiliser les Tailles » (LDB 85) : ±10 F/E, ∓5 Ag par catégorie</span>
       </div>
       <label className="ed-field">
         Traits (un par ligne — armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ;

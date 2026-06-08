@@ -126,3 +126,20 @@ export function woundsForSize(bf: number, be: number, bfm: number, size: SizeCat
       return moyenne * 8;
   }
 }
+
+/** Décale une catégorie de Taille de `steps` crans (positif = agrandir), bornée Minuscule..Monstrueuse. */
+export function stepSize(size: SizeCategory | undefined, steps: number): SizeCategory {
+  const next = Math.max(0, Math.min(6, SIZE_ORDER[effectiveSize(size)] + steps));
+  return (Object.keys(SIZE_ORDER) as SizeCategory[]).find((k) => SIZE_ORDER[k] === next)!;
+}
+
+/**
+ * « Utiliser les Tailles » (LDB 85 l.276-277) : agrandir une créature de `steps` catégories augmente
+ * **F** et **E** de +10 et réduit **Ag** de −5 PAR catégorie ; réduire (`steps` < 0) inverse le procédé.
+ * Générique (carac. complètes OU statbloc partiel : une carac. absente part de `def`, défaut 30).
+ * Retourne un NOUVEL objet (les autres carac. inchangées). Outil de construction d'une variante.
+ */
+export function resizeBySteps<T extends { F?: number; E?: number; Ag?: number }>(chars: T, steps: number, def = 30): T {
+  if (!steps) return { ...chars };
+  return { ...chars, F: (chars.F ?? def) + 10 * steps, E: (chars.E ?? def) + 10 * steps, Ag: (chars.Ag ?? def) - 5 * steps };
+}
