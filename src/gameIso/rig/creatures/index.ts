@@ -12,12 +12,14 @@ import type { SpectreProps } from '../spectral/composeSpectre';
 import type { SquigProps } from '../squig/composeSquig';
 import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
-import type { CreatureDef, BipedConfig, CreatureBodyPlan } from './types';
+import type { CreatureDef, CreatureBodyPlan } from './types';
 import { norm } from '../../../lib/normalize';
 import { CREATURES } from './_registry.generated';
+import { raceById } from '../races';
+import { baseSpeciesOf } from '../skeletons';
 
 export { CREATURES };
-export type { CreatureDef, CreatureBodyPlan, BipedConfig } from './types';
+export type { CreatureDef, CreatureBodyPlan, CreaturePerso } from './types';
 
 /** Définition dont la CLÉ (nom) ou un ALIAS matche le nom donné (limite de mot). PUR. */
 function matchIn(defs: CreatureDef[], name: string): CreatureDef | undefined {
@@ -34,10 +36,12 @@ const QUAD = CREATURES.filter((c) => c.plan === 'quadruped');
 const WING = CREATURES.filter((c) => c.plan === 'winged');
 const BIPED = CREATURES.filter((c) => c.plan === 'biped');
 
-/** Config d'espèce bipède (career/monster/sex/parts/colors) par NOM d'espèce — dérivée des
- *  fichiers defs. Remplace les tables SPECIES_* d'enemyProfile. */
+/** Def bipède par NOM d'espèce — dérivée des fichiers defs. Les défauts d'apparence
+ *  (career/monster/sex/parts/colors) vivent désormais sur la Race (cf. `raceById`) ;
+ *  les surcharges propres à une créature non-canonique vivent sur `def.perso`. */
 const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map((c) => [c.name, c]));
-export function bipedConfig(species: string): BipedConfig | undefined { return BIPED_BY_NAME[species]?.biped; }
+/** Def bipède canonique par nom (lookup direct), ou undefined. */
+export function bipedDef(name: string): CreatureDef | undefined { return BIPED_BY_NAME[name]; }
 
 // Matchers bipèdes triés par PRIORITÉ (plus bas = testé d'abord) — chaque def porte sa regex
 // EXACTE `match` (reprise de l'ancien detectSpecies). L'ordre désambiguïse les chevauchements
@@ -52,10 +56,13 @@ export function bipedSpeciesMatch(name: string): string | undefined {
   for (const m of BIPED_MATCHERS) if (m.re.test(n)) return m.name;
   return undefined;
 }
-/** Échelle de token d'un bipède (Géant = grand) — à multiplier au scale du token en jeu. Défaut 1. */
+/** Échelle de token d'un bipède (Géant = grand) — à multiplier au scale du token en jeu. Défaut 1.
+ *  Résout l'espèce (regex+priorité), puis échelle = perso.scale ?? race.scale ?? 1. */
 export function bipedSpeciesScale(name: string): number {
   const sp = bipedSpeciesMatch(name);
-  return (sp ? BIPED_BY_NAME[sp]?.biped?.scale : undefined) ?? 1;
+  if (!sp) return 1;
+  const d = BIPED_BY_NAME[sp];
+  return d?.perso?.scale ?? raceById(d?.race ?? baseSpeciesOf(sp)).scale ?? 1;
 }
 
 /** Tables de props de rendu par espèce — dérivées des fichiers defs. */

@@ -5,4 +5,6 @@ export const race: RaceDef = {
   gabarit: 'trapu-voute',
   palette: { peau: "#8e8a7a", peauO: "#605c4d", peauH: "#a8a390", cheveux: "#454c36", cheveuxO: "#2c3024", cheveuxH: "#5a6248" },
   pose: { torse: 8, cou: 6, tete: -4 },
+  career: 'Mendiant',
+  monster: { tete: 'pourri', plaie: true },
 };

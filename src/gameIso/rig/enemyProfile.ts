@@ -14,7 +14,9 @@ import { weaponGroupKey } from './parts/weaponGroup';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
-import { bipedConfig, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
+import { bipedDef, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
+import { raceById } from './races';
+import { baseSpeciesOf } from './skeletons';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
@@ -75,9 +77,10 @@ function detectSpecies(n: string): string {
   return bipedSpeciesMatch(n) ?? 'Humain';
 }
 
-// La config d'espèce bipède (career / monster / sex / parts / colors) vit désormais dans
-// `creatures/defs/<Nom>.ts` (un fichier par espèce) et est lue via `bipedConfig(species)` —
-// plus de tables SPECIES_* éparpillées ici.
+// Les défauts d'apparence (career / monster / sex / parts / colors / scale) d'un bipède viennent
+// désormais de sa RACE (canonique, partagée — cf. `raceById(baseSpeciesOf(species))`), surchargés
+// par les éventuelles surcharges propres à la créature (`def.perso`, pour les espèces
+// non-canoniques repliées sur une race partagée : Fimir/Géant/Liche/Démonette).
 
 /** Carrière (→ tenue) mappée du nom. */
 function detectCareer(n: string): string {
@@ -156,18 +159,20 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const n = norm(c.name);
   const seed = hashSeed(c.id);
   const species = c.species ?? detectSpecies(n);
-  const cfg = bipedConfig(species); // config d'espèce (career/monster/sex/parts/colors), dérivée du registre
-  const sex: 'M' | 'F' = cfg?.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
+  const d = bipedDef(species); // def bipède canonique (porte le perso éventuel + override race/gabarit)
+  const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
+  const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
+  const sex: 'M' | 'F' = perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
-  const autoMon = cfg?.monster;
-  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: cfg?.parts, colors: cfg?.colors };
+  const autoMon = perso?.monster ?? race.monster;
+  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit };
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
   // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
   const isHumanMutant = isMutant || (hasMonster && species === 'Humain');
-  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (cfg?.career ?? detectCareer(n)));
+  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (perso?.career ?? race.career ?? detectCareer(n)));
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -193,12 +198,14 @@ export function entityRigProfile(
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
   const species = detectSpecies(n);
-  const cfg = bipedConfig(species);
-  const monster = opts?.monster ?? cfg?.monster; // auto skaven/… si non précisé
+  const d = bipedDef(species);
+  const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
+  const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
+  const monster = opts?.monster ?? perso?.monster ?? race.monster; // auto skaven/… si non précisé
   const appearance: Appearance = riggedAppearance(name, seed, {
-    monster, colors: opts?.colors ?? cfg?.colors,
-    parts: opts?.parts ?? cfg?.parts,
-    sex: opts?.sex ?? cfg?.sex, build: opts?.build,
+    monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
+    parts: opts?.parts ?? perso?.parts ?? race.parts,
+    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build,
   });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
@@ -206,7 +213,7 @@ export function entityRigProfile(
   const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: opts?.career ?? cfg?.career ?? detectCareer(n),
+    career: opts?.career ?? perso?.career ?? race.career ?? detectCareer(n),
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
     overlays: isMutant && !hasMonster ? mutationOverlays(seed) : undefined,
   };

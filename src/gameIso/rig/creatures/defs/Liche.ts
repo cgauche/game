@@ -7,5 +7,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 19, // après Skaven, avant Squelette (le mot « liche » est unique de toute façon)
   match: 'liche',
-  biped: { career: 'Squelette', monster: { tete: 'crane' } },
+  // Espèce NON-canonique : baseSpeciesOf('Liche')→'Humain'. Sa config distincte (tenue ossuaire +
+  // crâne, comme le squelette) vit sur le perso, pour ne pas polluer la race Humain partagée.
+  perso: { career: 'Squelette', monster: { tete: 'crane' } },
 };

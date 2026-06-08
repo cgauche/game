@@ -8,5 +8,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 46,
   match: '\\bgeant',
-  biped: { career: 'Nu', sex: 'M', scale: 2.4 }, // brute torse-nu (M par défaut, pas de couettes)
+  // Espèce NON-canonique : baseSpeciesOf('Géant')→'Humain'. Sa config distincte (échelle ×2.4,
+  // M, torse nu) vit sur le perso, pour ne pas polluer la race Humain partagée.
+  perso: { career: 'Nu', sex: 'M', scale: 2.4 }, // brute torse-nu (M par défaut, pas de couettes)
 };

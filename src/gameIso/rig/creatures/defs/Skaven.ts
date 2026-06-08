@@ -5,5 +5,4 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 18,
   match: "skaven|homme.?rat|\\brat\\b|vermine|guerrier des clans|rat ogre",
-  biped: {"career":"Skaven","monster":{"tete":"rat","queue":true}},
 };

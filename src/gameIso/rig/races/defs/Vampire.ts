@@ -5,4 +5,9 @@ export const race: RaceDef = {
   gabarit: 'elance',
   gabaritOverride: { sl: 1.04, st: 0.96, legs: 1.0 },
   palette: { peau: "#e8cdb6", peauO: "#c2a288", peauH: "#f4e2d0", cheveux: "#161214", cheveuxO: "#0a0808", cheveuxH: "#2c262a" },
+  career: 'Vampire',
+  monster: { cape: true },
+  sex: 'M',
+  parts: { cheveux: 1, visage: 0 },
+  colors: { vet1: "#241018", vet2: "#6a0e18", cuir: "#1a0e12", metal: "#8a8f9e" },
 };

@@ -5,5 +5,4 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 34,
   match: "gobelin|gobbo|gobbe",
-  biped: {"career":"Mendiant","monster":{"tete":"gobelin"},"colors":{"vet1":"#3a5a28","vet2":"#5a3f24","cuir":"#4a3320"}},
 };

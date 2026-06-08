@@ -5,5 +5,4 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 20,
   match: "squelette",
-  biped: {"career":"Squelette","monster":{"tete":"crane"}},
 };

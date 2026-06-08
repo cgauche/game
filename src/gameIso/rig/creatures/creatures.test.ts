@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   CREATURES, QUAD_SPECIES, WINGED_SPECIES,
   quadSpeciesMatch, wingSpeciesMatch, quadSpeciesNames, wingedSpeciesNames,
-  bipedSpeciesMatch, bipedConfig,
+  bipedSpeciesMatch,
 } from './index';
+import { raceById } from '../races';
 
 describe('registre de créatures (auto-collecté depuis defs/)', () => {
   it('CREATURES non vide + chaque entrée bien formée', () => {
@@ -53,11 +54,11 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
     for (const [name, exp] of cases) expect(bipedSpeciesMatch(name), name).toBe(exp);
   });
 
-  it('config bipède dérivée des defs', () => {
-    expect(bipedConfig('Skaven')?.career).toBe('Skaven');
-    expect(bipedConfig('Vampire')?.sex).toBe('M');
-    expect(bipedConfig('Goule')?.monster?.tete).toBe('goule');
-    expect(bipedConfig('Nain')).toBeUndefined(); // humanoïde simple : pas de config
+  it('défauts d\'apparence bipède portés par la Race', () => {
+    expect(raceById('Skaven').career).toBe('Skaven');
+    expect(raceById('Vampire').sex).toBe('M');
+    expect(raceById('Goule').monster?.tete).toBe('goule');
+    expect(raceById('Nain').career).toBeUndefined(); // humanoïde simple : pas de défaut de tenue
   });
 
   it('routage par clé/alias à limite de mot', () => {

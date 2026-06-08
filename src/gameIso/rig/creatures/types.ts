@@ -23,17 +23,17 @@ export type CreatureBodyPlan =
   | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' // nouveaux squelettes
   | 'monolithic';
 
-/** Config d'une ESPÈCE bipède monstrueuse/humanoïde (ce qui était éparpillé dans les tables
- *  SPECIES_* d'enemyProfile). Tout optionnel : un bipède « humain nu » n'a besoin de rien. */
-export interface BipedConfig {
-  career?: string; // tenue par défaut (SPECIES_CAREER) — ex. Skaven, Nu, Mendiant…
-  monster?: MonsterParts; // parts monstrueuses auto (SPECIES_AUTO_MONSTER) — tête/queue/…
-  sex?: 'M' | 'F'; // sexe forcé (SPECIES_SEX) — ex. Vampire = M
-  parts?: { cheveux?: number; visage?: number }; // coiffure/visage épinglés (SPECIES_PARTS)
-  colors?: Palette; // surcharges de palette (SPECIES_COLORS)
-  /** Échelle GLOBALE du token en jeu (×) — pour les bipèdes hors-norme (Géant) qui doivent
-   *  apparaître bien plus grands sans déformer/clipper la boîte 120×150. Défaut 1. */
+/** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
+ *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf
+ *  (Fimir→Ogre, Géant/Liche/Démonette→Humain) : leur config distincte vit ici, pas sur la race. */
+export interface CreaturePerso {
+  career?: string;
+  monster?: MonsterParts;
+  sex?: 'M' | 'F';
+  parts?: { cheveux?: number; visage?: number };
+  colors?: Palette;
   scale?: number;
+  gabarit?: string;
 }
 
 export interface CreatureDef {
@@ -52,8 +52,14 @@ export interface CreatureDef {
   matchPriority?: number;
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;
-  /** Config d'espèce bipède (si plan = biped). */
-  biped?: BipedConfig;
+  /** Race d'apparence (défauts career/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(name).
+   *  À ne préciser que pour forcer une race autre que celle dérivée du nom. */
+  race?: string;
+  /** Gabarit (carrure) explicite, rare — sinon hérité de la race (ou du perso). */
+  gabarit?: string;
+  /** Surcharges d'apparence propres à cette créature (espèces NON-canoniques repliées sur une race
+   *  partagée : Fimir/Géant/Liche/Démonette). Par-dessus les défauts de la race. */
+  perso?: CreaturePerso;
   /** Props de rendu des nouveaux squelettes (un champ par gabarit ; requis si plan correspond). */
   serpent?: SerpentProps; // plan = serpentine
   spider?: SpiderProps; // plan = arachnid
