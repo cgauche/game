@@ -600,9 +600,13 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
   tant que **PORTÉ** (équipé, pas juste possédé) : Fausse jambe (déplacement ; +200 PX `trainProsthesis` → Esquive),
   Merveille (tout : oreille/main/bras/jambe), Nez doré, Œil de verre/Cache-œil, Dents en bois. Pansement/Guérison
   pendant le combat → `woundDressed` → pas d'Infection post-critique (l.382). Panneau **Afflictions** sur la fiche.
-  **Résidus** : comptage cumulatif (DEUX yeux −30 vue / oreilles −20 ouïe, multi-doigts/dents) ; Crochet (rachat
-  −20 deux-mains 400 PX + arme Dague greffée) ; armes à DISTANCE bimanuelles (non marquées) ; maintien/défaisage
-  du bandage (l.302).
+  **Cumuls par comptage** (`Trauma.count` + `consolidateAmputations`/`escalateSensoryLoss`, posés en combat) :
+  doigts −5/doigt (4+ → règle de la main), dents −1 Soc/paire, DEUX yeux → Cécité (−30 vue), DEUX oreilles →
+  Surdité (−20 Perception). **Crochet** = arme Dague + rachat 400 PX (armes à 2 mains), **arcs/arbalètes** (sauf
+  « de poing ») bloqués pour une main amputée.
+  **Résidus** : armes à DISTANCE Poudre noire/ingénierie (pistolet vs arquebuse, subType ambigu) non classées ;
+  maintien/défaisage du bandage de fracture (l.302 — événement MJ, pas de déclencheur de jeu) ; appliquer
+  rétroactivement une amputation à un PJ existant (pas d'Effet/outil d'édition de trauma).
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
