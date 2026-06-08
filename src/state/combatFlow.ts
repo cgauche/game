@@ -984,6 +984,8 @@ export function maybeOpenDefense(
  *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
 export function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
   if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
+  // Tir ennemi : annoncer la cible dans le journal (« jamais su sur qui il tirait », Lot 1 tranche 3).
+  if (firedWeapon(attacker, target).type === 'ranged') get().log(`${attacker.name} tire sur ${target.name}.`);
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).

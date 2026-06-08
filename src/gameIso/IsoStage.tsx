@@ -94,6 +94,10 @@ export function IsoStage() {
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
   const dialogue = useGame((s) => s.dialogue);
+  // Tir/sort à distance (Lot 1 tranche 3) : ligne de tir + réticule + cadrage des deux.
+  const pendingAttack = useGame((s) => s.pendingAttack);
+  const pendingDefense = useGame((s) => s.pendingDefense);
+  const pendingCast = useGame((s) => s.pendingCast);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   const zoom = useGame((s) => s.zoom);
@@ -452,8 +456,28 @@ export function IsoStage() {
   objs.sort((a, b) => a.d - b.d);
 
   // --- Caméra : recadre autour du point focal (groupe / combattant actif) ---
-  let focus = partyPos;
+  // Couple (tireur, cible) d'un tir/sort à distance (≥ 2 cases) : pour la ligne, le réticule et le cadrage.
+  let targeting: { from: { x: number; y: number }; to: { x: number; y: number } } | null = null;
   if (mode === 'battle' && battle) {
+    const pair: [string, string] | null = pendingAttack
+      ? [pendingAttack.attackerId, pendingAttack.targetId]
+      : pendingCast
+        ? [pendingCast.casterId, pendingCast.targetId]
+        : pendingDefense
+          ? [pendingDefense.attackerId, pendingDefense.defenderId]
+          : null;
+    if (pair) {
+      const a = battle.combatants.find((c) => c.id === pair[0]);
+      const b = battle.combatants.find((c) => c.id === pair[1]);
+      if (a?.pos && b?.pos && cheb(a.pos, b.pos) >= 2) targeting = { from: a.pos, to: b.pos };
+    }
+  }
+
+  let focus = partyPos;
+  if (targeting) {
+    // Cadrer les DEUX : on centre sur le milieu tireur ↔ cible (« centré sur lui » corrigé).
+    focus = { x: Math.round((targeting.from.x + targeting.to.x) / 2), y: Math.round((targeting.from.y + targeting.to.y) / 2) };
+  } else if (mode === 'battle' && battle) {
     const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
     if (active?.pos) focus = active.pos;
     else {
@@ -584,6 +608,25 @@ export function IsoStage() {
           <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
         )}
         <g>{objs.map((o) => o.el)}</g>
+        {/* Tir/sort à distance : ligne de tir tireur→cible + réticule (Lot 1 tranche 3). */}
+        {targeting && (() => {
+          const f = tileCenter(targeting.from.x, targeting.from.y, dims);
+          const t = tileCenter(targeting.to.x, targeting.to.y, dims);
+          const fy = f.cy - 34, ty = t.cy - 34; // viser le buste, pas les pieds
+          return (
+            <g pointerEvents="none">
+              <line x1={f.cx} y1={fy} x2={t.cx} y2={ty} stroke="#e0533a" strokeWidth={2.5} strokeDasharray="7 6" opacity={0.85} />
+              <g transform={`translate(${t.cx},${ty})`}>
+                <circle r={20} fill="none" stroke="#ffd34d" strokeWidth={2} />
+                <circle r={13} fill="none" stroke="#ffd34d" strokeWidth={1} opacity={0.6} />
+                <line x1={0} y1={-26} x2={0} y2={-14} stroke="#ffd34d" strokeWidth={2} />
+                <line x1={0} y1={14} x2={0} y2={26} stroke="#ffd34d" strokeWidth={2} />
+                <line x1={-26} y1={0} x2={-14} y2={0} stroke="#ffd34d" strokeWidth={2} />
+                <line x1={14} y1={0} x2={26} y2={0} stroke="#ffd34d" strokeWidth={2} />
+              </g>
+            </g>
+          );
+        })()}
         {/* Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance). */}
         {scene.entities
           .filter((e) => e.kind === 'prop' && e.ref === 'cadavre')
