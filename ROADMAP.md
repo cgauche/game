@@ -448,6 +448,41 @@ systèmes étaient modélisés combat-only à tort** → audit transversal, corr
 - **1445 tests verts**, typecheck propre ; committé sur `feat/wfrp4-rpg-foundation` (branche en avance, non
   encore poussée). Commits clés : base `0d8b715` + `1b89a0e`, incantation hors combat `8788140`, scénario `f567ef6`.
 
+## ✅ Jalon 1.8 — Audit Psychologie & États (fidélité RAW) + Système de Repos *(fait — 2026-06-08)*
+
+**Origine** : retours d'un audit multi-agents (suite Jalon 1.7) → plusieurs sous-systèmes Psychologie/États
+étaient incomplets ou modélisés à tort comme combat-only. Traités **dans l'ordre** (Lots 1-5), chaque
+correctif **sourcé au LDB FR** + couvert par un test. Audit : `docs/superpowers/specs/2026-06-08-psychologie-etats-fidelite-audit.md`.
+
+- ✅ **Détermination & immunité psy** : prédicat **`isPsychImmune(c)`** centralisé (Immunité trait / Frénésie /
+  immunité temporaire `psychImmuneRoundsLeft`) consommé partout ; un point de Détermination **RETARDE** l'effet
+  psy (ré-exposé à l'expiration) sauf si la créature source MEURT — **tous les effets psy d'une créature prennent
+  fin à sa mort** (`clearPsychOf`). « Ignorer les modifs de Critique » câblé.
+- ✅ **Brisé complet + approche** : restriction d'action (fuir à couvert / se cacher), récupération (Calme fin de
+  Round si pas Engagé, ou 1 Round caché), **source de Peur qui s'approche → Test de Calme** (LDB 21 l.29).
+- ✅ **Surprise & orientation** : `Surpris` en début de combat (Test opposé Discrétion/Perception), **retrait après
+  la 1ʳᵉ attaque** (l.136), **flanc/dos +20** (consomme le facing Dir8).
+- ✅ **Finitions d'États** (LDB 16) : À Terre −20 dépl ; Sonné +1 Av ; **Inconscient** « Je ne faillirai pas ! »
+  auto-réussite+critique / tir auto à bout portant (l.112, `0d9ebdd`) ; Empoisonné (Résistance fin de Round +
+  Exténué) ; **Hémorragique** coagulation → Exténué (l.109, `892848e`) ; perte d'Avantage à l'ajout de TOUT État ;
+  **Empêtré « se libérer »** (Test opposé de Force vs source) + **En flammes « se rouler »** (Athlétisme) — Action
+  + modale `pendingStateRecovery` + IA instantanée (`b24b578`) ; helper pur partagé `recoveredStacks`.
+- ✅ **Méta/éditeur** : Effet **`restoreFortune`** (Chance regagnée, max = Destin, l.47) exposé éditeur (`8e5129e`) ;
+  **Trauma cauchemars** — `nightmareCheck` (Calme Facile +40 → Exténué, l.92), flag héros `nightmares`, Effet éditeur
+  `inflictNightmares` (l'auteur assigne le trauma — jamais inventé).
+
+**✅ Système de REPOS** (suite retour utilisateur — *« les cauchemars surviennent pendant le SOMMEIL »*) : actions
+**« Dormir jusqu'à l'aube »** + **« Se reposer N jours »** (HUD exploration, hors combat). `restRecovery` (pur,
+`engine/rest.ts`) par journée de repos : retrait de TOUT l'Exténué (16 l.91/102) ; **soin de Blessures DEUX volets**
+(18 l.380) — **a** Test de Résistance Accessible (+20) → DR+BE, **b** +BE inconditionnel **par journée** ; **cauchemars**
+(le trauma re-gagne un Exténué malgré le repos) ; réveille un Inconscient / relève un À Terre dès > 0 PB (l.28).
+**Revue adversariale** (4 lentilles) → correctif **bloquant** (« Dormir » rejouait ~1 Round/min d'entretien → mort
+par hémorragie avant tout soin ; désormais l'horloge avance SANS la spirale, et un héros Hémorragique/En flammes/
+Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c1`.
+
+**Dette sourcée** (hors lot) : Faim/Soif bloquant la récup (l.418) ; **Blessures CRITIQUES** = piste SÉPARÉE
+(convalescence, Guérison) → traitée au **Jalon 5** (ci-dessous). **~1657 tests verts**, typecheck propre.
+
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
 - ✅ Sorts/Bénédictions/Miracles en combat, Incantation, Focalisation, Projectiles, effets actifs,
@@ -492,7 +527,13 @@ systèmes étaient modélisés combat-only à tort** → audit transversal, corr
 ## 🎯 Jalon 5 — Méta-jeu & persistance
 
 - **Sauvegarde/chargement** (localStorage + export/import).
-- **Entre deux aventures** : achats/marchandage, fabrication, activités, soins/maladies.
+- **Entre deux aventures** : achats/marchandage ✅ (Marchand, Jalon 1.6), fabrication, activités, soins/maladies.
+- ✅ **Repos & récupération naturelle** (Jalon 1.8) : « Dormir / Se reposer N jours » — Exténué dissipé,
+  Blessures soignées (Résistance +20 → DR+BE, +BE/jour, LDB 18 l.380), cauchemars.
+- 🚧 **Guérison des Blessures critiques** *(en cours)* : chaque trauma (déchirure/fracture) a une **durée de
+  convalescence** (LDB 18 : déchirure mineure 30−BE j ; majeure 2×(30−BE) ; fracture 30+1d10 (+10 majeure)),
+  décomptée au repos ; la **Compétence Guérison accélère** (déchirure −1 j −1/DR, une fois, l.317) ; les
+  pénalités du trauma tombent quand il est guéri. (`criticalWounds`/`traumas[]` déjà traqués + durées notées.)
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
