@@ -39,6 +39,7 @@ import { roofHidden } from '../state/buildings';
 import { walkXY, walkDuration } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
+import { entitySize } from '../state/spawn';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
@@ -390,7 +391,10 @@ export function IsoStage() {
       } else {
         const base = r.backend === 'rig' ? 0.58 : 0.55;
         const dBoost = r.backend === 'rig' ? 0.1 : 0;
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims) + dBoost, el: tokenNode(r.id, ent.pos.x, ent.pos.y, r.body, base * r.speciesScale) });
+        // Créature posée : centrée et mise à l'échelle de son empreinte par Taille (comme en combat).
+        const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
+        const ex = ent.pos.x + off, ey = ent.pos.y + off;
+        objs.push({ d: depth(ex, ey, dims) + dBoost, el: tokenNode(r.id, ex, ey, r.body, base * r.speciesScale * sizeTokenScale(entitySize(ent))) });
       }
     }
     // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)

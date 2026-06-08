@@ -111,6 +111,14 @@ export function sizeFromTraits(traits: string[]): SizeCategory | null {
   return null;
 }
 
+/** Catégorie de Taille d'une entité de scène (créature posée) : champ explicite du statbloc, sinon
+ *  dérivée des Traits (statbloc ou créature du bestiaire via `ref`). `undefined` ⇒ Moyenne au rendu. */
+export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): SizeCategory | undefined {
+  if (ent.statblock?.size) return ent.statblock.size;
+  const traits = ent.statblock?.traits ?? (ent.ref ? findCreature(ent.ref)?.traits : undefined);
+  return (traits && sizeFromTraits(traits)) || undefined;
+}
+
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }): Combatant {
   const chars = charsFrom(creature.char);
   const size = sizeFromTraits(creature.traits) ?? 'moyenne';

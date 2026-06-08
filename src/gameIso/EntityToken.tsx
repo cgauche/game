@@ -1,6 +1,9 @@
 import { type Dims } from './iso';
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
+import { sizeTokenScale } from './sizeScale';
+import { sizeFootprint } from '../state/footprint';
+import { entitySize } from '../state/spawn';
 import type { SceneEntity } from '../state/scene';
 
 /**
@@ -11,8 +14,12 @@ import type { SceneEntity } from '../state/scene';
  */
 export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dims: Dims; scale?: number }) {
   const r = pickBackend({ kind: 'sceneEntity', ent });
+  // Centrée + mise à l'échelle de son empreinte par Taille (LDB 15 l.55) : une grande créature est
+  // aussi grande dans l'éditeur qu'en combat. Objets/statiques : Taille indéfinie ⇒ ×1, inchangé.
+  const sz = entitySize(ent);
+  const off = (sizeFootprint(sz) - 1) / 2;
   return (
-    <BodyToken x={ent.pos.x} y={ent.pos.y} dims={dims} scale={scale} bakedDeath={r.backend !== 'sprite'}>
+    <BodyToken x={ent.pos.x + off} y={ent.pos.y + off} dims={dims} scale={scale * sizeTokenScale(sz)} bakedDeath={r.backend !== 'sprite'}>
       {r.body}
     </BodyToken>
   );
