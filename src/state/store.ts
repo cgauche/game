@@ -563,7 +563,7 @@ export interface GameState {
   oocCastSpell: (casterId: string, label: string, targetId: string) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
-  battleClickEntity: (id: string) => void;
+  battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
   battleEndTurn: () => void;
   /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
@@ -657,6 +657,11 @@ export interface GameState {
    *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
   battleMount: () => void;
   battleDismount: () => void;
+  /** Combat monté (LDB 14 l.219) : clic sur un couple cavalier+monture (deux ennemis) → choisir lequel
+   *  frapper (le cavalier −10 si l'on est plus petit que la monture ; abattre la monture désarçonne). */
+  pendingMountTarget: { riderId: string; mountId: string } | null;
+  mountTargetSelect: (id: string) => void;
+  mountTargetCancel: () => void;
   /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
   battleDisengage: () => void;
   disengageConfirmA: () => void; // Sacrifier l'Avantage
@@ -735,6 +740,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReload: null,
   pendingDefense: null,
   pendingDeviation: null,
+  pendingMountTarget: null,
   pendingDisengage: null,
   pendingInteract: null,
   pendingCast: null,
@@ -1324,7 +1330,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingDisengage: null, pendingCast: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -1874,7 +1880,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
 
-  battleClickEntity: (id) => {
+  battleClickEntity: (id, skipMountChoice) => {
     const { battle, scene } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1891,6 +1897,16 @@ export const useGame = create<GameState>((set, get) => ({
       // L'incantation peut viser un allié, un ennemi ou soi-même.
       castSpell(get, set, active, target, battle.selectedSpell);
       return;
+    }
+    // Combat monté (LDB 14 l.219) : frapper un couple cavalier+monture → choisir lequel (le cavalier OU
+    // la monture). On n'ouvre la modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
+    if (!skipMountChoice && (battle.action === 'attack' || battle.action === 'charge')) {
+      const rider = target.mountId ? target : battle.combatants.find((c) => c.id === target.riderId);
+      const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
+      if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
+        set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id } });
+        return;
+      }
     }
     if (battle.action === 'charge') {
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
@@ -2621,6 +2637,14 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} descend de ${mountName}.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+  // Combat monté (LDB 14 l.219) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
+  // sur l'id choisi en court-circuitant la modale (skipMountChoice). Annuler ne consomme rien.
+  mountTargetSelect: (id) => {
+    if (!get().pendingMountTarget) return;
+    set({ pendingMountTarget: null });
+    get().battleClickEntity(id, true);
+  },
+  mountTargetCancel: () => set({ pendingMountTarget: null }),
 
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
   battleDisengage: () => {

@@ -15,6 +15,7 @@ import { BargainModal } from './BargainModal';
 import { AppraiseModal } from './AppraiseModal';
 import { DefenseModal } from './DefenseModal';
 import { DeviationModal } from './DeviationModal';
+import { MountTargetModal } from './MountTargetModal';
 import { RoundStartModal } from './RoundStartModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
@@ -120,6 +121,7 @@ export function CampaignView() {
       <AppraiseModal />
       <DefenseModal />
       <DeviationModal />
+      <MountTargetModal />
       <DisengageModal />
       <CleaveModal />
       <TrampleModal />
