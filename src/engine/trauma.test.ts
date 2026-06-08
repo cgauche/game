@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaMovementHalved } from './trauma';
+import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
-import type { Combatant } from './types';
+import type { Combatant, ItemInstance, Trauma } from './types';
 
 function c(traumas: Combatant['traumas']): Combatant {
   return { traumas } as Combatant;
@@ -47,6 +47,35 @@ describe('traumaFromKind (LDB 18-Traumatisme)', () => {
     const t = traumaFromKind('fracture', 'mineur', 'brasD');
     expect(t.movementHalved).toBeFalsy();
     expect(t.charPenalty).toBeUndefined();
+  });
+});
+
+describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB 73)', () => {
+  const legSequela: Trauma = {
+    label: 'Membre inférieur amputé (jambeD)', location: 'jambeD', movementHalved: true, dodgePenalty: -20,
+    prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }, { name: 'Fausse jambe', cancels: 'movement' }],
+    note: '',
+  };
+  const item = (name: string): ItemInstance => ({ uid: name, name, kind: 'misc', qualities: [], enc: 0, equipped: false } as ItemInstance);
+
+  it('sans prothèse : Mouvement ÷2 et −20 Esquive s’appliquent', () => {
+    const c = fullCombatant({ traumas: [legSequela], items: [] });
+    expect(traumaMovementHalved(c)).toBe(true);
+    expect(traumaDodgePenalty(c)).toBe(-20);
+  });
+  it('Fausse jambe portée : rétablit le déplacement, l’Esquive reste pénalisée (200 PX non modélisés)', () => {
+    const c = fullCombatant({ traumas: [legSequela], items: [item('Fausse jambe')] });
+    expect(traumaMovementHalved(c)).toBe(false);
+    expect(traumaDodgePenalty(c)).toBe(-20);
+  });
+  it('Merveille d’ingénierie portée : annule TOUT (déplacement + Esquive)', () => {
+    const c = fullCombatant({ traumas: [legSequela], items: [item("Merveille d'ingénierie")] });
+    expect(traumaMovementHalved(c)).toBe(false);
+    expect(traumaDodgePenalty(c)).toBe(0);
+  });
+  it('prothèse perdue (retirée des items) : la pénalité revient', () => {
+    const c = fullCombatant({ traumas: [legSequela], items: [item('Couverture')] });
+    expect(traumaMovementHalved(c)).toBe(true);
   });
 });
 

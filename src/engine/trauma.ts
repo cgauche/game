@@ -201,10 +201,20 @@ export function treatTrauma(c: Combatant, dr: number): string[] {
   return [`${c.name} : la Guérison raccourcit la convalescence de ${t.label} de ${cut} jour(s) (reste ${t.recoveryDays}).`];
 }
 
-/** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64.) */
+/** Une prothèse portée (présente dans `items`, LDB 73) annule-t-elle l'`aspect` de la séquelle `t` ?
+ *  `'movement'` est couvert par une prothèse `'movement'` OU `'all'` ; `'all'` exige une prothèse `'all'`. */
+function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'): boolean {
+  if (!t.prosthesis?.length) return false;
+  return t.prosthesis.some(
+    (p) => (aspect === 'movement' ? true : p.cancels === 'all') && (c.items ?? []).some((i) => i.name === p.name),
+  );
+}
+
+/** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64 ;
+ *  une prothèse portée — Fausse jambe / Merveille — annule la séquelle de jambe, LDB 73.) */
 export function traumaMovementHalved(c: Combatant): boolean {
   if (c.ignoreCritMods) return false;
-  return (c.traumas ?? []).some((t) => t.movementHalved === true);
+  return (c.traumas ?? []).some((t) => t.movementHalved === true && !prosthesisCancels(c, t, 'movement'));
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »). */
@@ -213,10 +223,15 @@ export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   return (c.traumas ?? []).map((t) => t.charPenalty?.[key] ?? 0).filter((p) => p < 0);
 }
 
-/** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). */
+/** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
+ *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive (la Fausse jambe ne rend PAS l'Esquive
+ *  sans 200 PX, non modélisé → son −20 subsiste). */
 export function traumaDodgePenalty(c: Combatant): number {
   if (c.ignoreCritMods) return 0; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
-  const pens = (c.traumas ?? []).map((t) => t.dodgePenalty ?? 0).filter((p) => p < 0);
+  const pens = (c.traumas ?? [])
+    .filter((t) => !prosthesisCancels(c, t, 'all'))
+    .map((t) => t.dodgePenalty ?? 0)
+    .filter((p) => p < 0);
   return pens.length ? Math.min(...pens) : 0;
 }
 

@@ -51,7 +51,12 @@ export function permanentAmputation(note: string, location: HitLocation): Trauma
     location,
     movementHalved: true,
     dodgePenalty: -20,
-    note: 'LDB 18 l.369/347 : Mouvement ÷2 permanent + −20 aux Tests de mobilité (Esquive). À pied seulement — une monture rétablit le déplacement.',
+    // Prothèses (LDB 73) : la Merveille d'ingénierie annule tout ; la Fausse jambe rétablit le déplacement.
+    prosthesis: [
+      { name: "Merveille d'ingénierie", cancels: 'all' },
+      { name: 'Fausse jambe', cancels: 'movement' },
+    ],
+    note: 'LDB 18 l.369/347 : Mouvement ÷2 permanent + −20 aux Tests de mobilité (Esquive). À pied seulement — une monture rétablit le déplacement. Annulable par une prothèse (LDB 73 : Fausse jambe / Merveille d’ingénierie).',
   };
 }
 

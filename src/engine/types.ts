@@ -154,6 +154,11 @@ export interface Trauma {
   /** Trauma exigeant de la CHIRURGIE pour guérir (amputation, fracture majeure « peu probable sans
    *  intervention médicale », LDB 18 l.305/398) — traité par le Talent Chirurgie, pas par le simple repos. */
   needsSurgery?: boolean;
+  /** Prothèses (LDB 73) qui annulent la séquelle permanente d'une amputation TANT QUE l'objet est porté
+   *  (dans `items`). `cancels: 'all'` annule toute la pénalité (Merveille d'ingénierie : « ignorer
+   *  complètement la perte… d'une jambe ») ; `'movement'` rétablit le déplacement seul (Fausse jambe :
+   *  « ignorer 1 Point de Mouvement perdu » — l'Esquive demande 200 PX, non modélisé). */
+  prosthesis?: { name: string; cancels: 'all' | 'movement' }[];
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

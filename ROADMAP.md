@@ -550,11 +550,16 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
   **Contraction** depuis 4 sources : post-critique (Résistance +60, l.72), **Chirurgie** (+20), **Guérison Échec
   Stupéfiant** (DR ≤ −6, l.09-Compétences), Effet d'éditeur **`inflictDisease`**. **Guérison** : soin de Blessures (BI+DR,
   dégât si BI+DR<0), arrêt d'Hémorragie, **traiter une maladie** (−1 j/jour de soins, min 1). Persistance hors combat.
-- ✅ **Amputations** (LDB 18 l.328-333) : critique « Amputation (Difficulté) » → Test de Résistance ou À Terre
-  (DR ≤ −2 +Sonné, DR ≤ −4 +Inconscient) ; trauma `needsSurgery` opérable par la Chirurgie.
-  **Résidus** : pénalités PERMANENTES d'amputation par membre (Mouvement÷2 pied, −20 main… journalisées, non
-  mécanisées) ; pansements stériles « empêchent l'Infection » (l.382) ; maintien/défaisage du bandage (l.302) ;
-  panneau Maladies/Traumas sur la fiche.
+- ✅ **Amputations** (LDB 18 l.328-370) : critique « Amputation (Difficulté) » → Test de Résistance ou À Terre
+  (DR ≤ −2 +Sonné, DR ≤ −4 +Inconscient) ; **plaie chirurgicale** `needsSurgery` opérable par la Chirurgie + **séquelle
+  PERMANENTE** (survit à l'opération) mécanisée pour **jambe/pied** (Mouvement ÷2 + −20 Esquive, l.369/347 — **à pied
+  seulement** : la monture compense via `mountMovement`) et **orteil** (−1 Ag/CC, l.366). **Prothèses** (LDB 73, déjà
+  dans `trappings.json`) : porter une **Fausse jambe** rétablit le déplacement, une **Merveille d'ingénierie** annule
+  toute la séquelle (champ `Trauma.prosthesis`, levé tant que l'objet est porté).
+  **Résidus** : séquelles à latéralité/comptage (main −20, doigts, œil, oreille, nez, langue) toujours journalisées
+  (prothèses Crochet/Dents/Nez doré/Œil sans effet mécanique tant que ces séquelles ne le sont pas) ; rachat PX
+  (Esquive +200 PX, Fausse jambe) ; pansements stériles « empêchent l'Infection » (l.382) ; maintien/défaisage du
+  bandage (l.302) ; panneau Maladies/Traumas sur la fiche.
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
