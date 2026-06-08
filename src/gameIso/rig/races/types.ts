@@ -11,7 +11,6 @@ export interface RaceFeature {
   layer?: number;               // ordre peintre (défaut: derrière la part de l'os si négatif)
   scale?: 'bone' | 'fixed';     // 'bone' = suit (thickness,length) de l'os ; 'fixed' = taille fixe (défaut)
   view?: View;                  // limite la feature à une vue (ex. crocs vampire = 'front' seul)
-  anchor?: { x?: number; y?: number };
 }
 
 /** Identité d'une race bipède : carrure par défaut + peau/tête/traits/posture + défauts d'espèce

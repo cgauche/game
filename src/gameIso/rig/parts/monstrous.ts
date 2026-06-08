@@ -22,11 +22,9 @@ export interface MonsterParts {
   jambes?: string;
   cornes?: boolean;
   queue?: boolean;
-  cotes?: boolean; // côtes apparentes (mort-vivant)
   griffes?: boolean; // longues griffes aux mains (goule)
   verrues?: boolean; // peau verruqueuse + ventre pâle (troll) — casse l'aplat « blob »
   plaie?: boolean; // plaie de chair exposée (zombie)
-  ventre?: boolean; // énorme ventre à gutplate (ogre)
   cape?: boolean; // col de cape dressé en éventail + crocs (vampire)
   membresRouges?: boolean; // bras/jambes rouge sang + stries au torse (démon bicolore)
 }
@@ -43,11 +41,6 @@ const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau"
 // Queue de RAT (skaven) — longue, NUE, ROSE, en S, traînant au sol : c'est LE tell de
 // silhouette du skaven (sans elle il lit comme un nain trapu brun). Repère os `bassin`.
 const OV_QUEUE_RAT = `<path d="M0 3 Q16 6 22 18 Q26 28 20 34 Q24 26 17 21 Q9 17 1 14 Z" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.7"/><path d="M2 5 Q15 8 20 18" fill="none" stroke="#b87f74" stroke-width="0.6" opacity="0.6"/><path d="M6 9 q1 1 0 2 M11 12 q1 1 0 2 M16 16 q1 1 0 2" stroke="#9a6a60" stroke-width="0.5" fill="none" opacity="0.6"/>`;
-// Côtes apparentes (mort-vivant) — calque sur le torse, repère os `torse` (haut ~ -28..-2).
-// Sillons SOMBRES (creux entre les côtes) + fine arête claire au-dessus (relief) + sternum
-// sombre : sur un corps en os/chair claire, des nervures @peauH (claires) disparaissaient —
-// il faut des CREUX sombres pour que la cage thoracique se lise.
-const OV_COTES = `<g><path d="M-7 -22 Q0 -19 7 -22 M-8 -16 Q0 -12 8 -16 M-8 -10 Q0 -6 8 -10 M-7 -4 Q0 0 7 -4" stroke="#2e2a1e" stroke-width="1.3" fill="none" opacity="0.7"/><path d="M-7 -20.6 Q0 -17.6 7 -20.6 M-8 -14.6 Q0 -10.6 8 -14.6 M-8 -8.6 Q0 -4.6 8 -8.6" stroke="@peauH" stroke-width="0.55" fill="none" opacity="0.65"/><path d="M0 -24 L0 -1" stroke="#2e2a1e" stroke-width="1.1" opacity="0.6"/></g>`;
 // Longues griffes recourbées aux mains (goule) — calque sur l'os `main` (poignet origine,
 // doigts vers +y). Griffes sombres dépassant des doigts.
 const OV_GRIFFES = `<path d="M-2.6 3.4 q-1.4 3 -1.2 6 M-0.9 4.4 q-0.5 3.4 -0.2 6.4 M0.9 4.4 q0.5 3.4 0.2 6.4 M2.6 3.4 q1.4 3 1.2 6" stroke="#241a12" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
@@ -65,8 +58,6 @@ const OV_VERRUES = `<g>`
   + `<circle cx="2" cy="-17" r="1.3" fill="@peauO"/><circle cx="2.6" cy="-17.6" r="0.6" fill="@peauH" opacity="0.7"/>`
   + `<circle cx="4" cy="14" r="1.4" fill="@peauO"/>`
   + `</g>`;
-// Énorme ventre globulaire à gutplate (ogre) — calque bassin/torse bas. Repère os `torse`.
-const OV_VENTRE = `<g><ellipse cx="0" cy="4" rx="20" ry="17" fill="@peau" stroke="@peauO" stroke-width="0.8"/><ellipse cx="0" cy="6" rx="13" ry="11" fill="@metal" stroke="#3a4048" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#5a6068" stroke="#3a4048" stroke-width="0.6"/><circle cx="0" cy="6" r="1.4" fill="#2a3036"/></g>`;
 // Crocs de vampire (calque sur la tête, par-dessus le visage humain).
 const OV_CROCS = `<path d="M-2 11 l-0.5 2.4 l1 0 z M2 11 l0.5 2.4 l-1 0 z" fill="#f4ecd8" stroke="#b8a888" stroke-width="0.3"/>`;
 // Membres rouge sang (démon de Khorne bicolore) — calques sur épaules/cuisses (repère os).
@@ -109,11 +100,9 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   }
   // Queue : rose et longue pour un homme-rat (tell skaven), sinon queue générique en pelage.
   if (m.queue) overlays.push({ bone: 'bassin', svg: m.tete === 'rat' ? OV_QUEUE_RAT : OV_QUEUE, behind: true });
-  if (m.cotes) overlays.push({ bone: 'torse', svg: OV_COTES });
   if (m.griffes) { overlays.push({ bone: 'mainG', svg: OV_GRIFFES }); overlays.push({ bone: 'mainD', svg: OV_GRIFFES }); }
   if (m.plaie) overlays.push({ bone: 'torse', svg: OV_PLAIE });
   if (m.verrues) overlays.push({ bone: 'torse', svg: OV_VERRUES });
-  if (m.ventre) overlays.push({ bone: 'torse', svg: OV_VENTRE, behind: true });
   // Cape : le col haut est désormais dans la TENUE Vampire (réutilisable) ; ici on ne garde que
   // les CROCS, détail de visage propre au vampire, en vue de FACE seulement (sinon ils flottaient
   // sur la nuque de dos / hors du museau de profil).

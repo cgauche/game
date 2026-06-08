@@ -1173,33 +1173,6 @@ exports[`monsterInjection — golden master > overlays booléens × 3 vues (cape
     "overlays": [],
     "replace": {},
   },
-  "cotes.back": {
-    "overlays": [
-      {
-        "bone": "torse",
-        "svg": "<g><path d="M-7 -22 Q0 -19 7 -22 M-8 -16 Q0 -12 8 -16 M-8 -10 Q0 -6 8 -10 M-7 -4 Q0 0 7 -4" stroke="#2e2a1e" stroke-width="1.3" fill="none" opacity="0.7"/><path d="M-7 -20.6 Q0 -17.6 7 -20.6 M-8 -14.6 Q0 -10.6 8 -14.6 M-8 -8.6 Q0 -4.6 8 -8.6" stroke="@peauH" stroke-width="0.55" fill="none" opacity="0.65"/><path d="M0 -24 L0 -1" stroke="#2e2a1e" stroke-width="1.1" opacity="0.6"/></g>",
-      },
-    ],
-    "replace": {},
-  },
-  "cotes.front": {
-    "overlays": [
-      {
-        "bone": "torse",
-        "svg": "<g><path d="M-7 -22 Q0 -19 7 -22 M-8 -16 Q0 -12 8 -16 M-8 -10 Q0 -6 8 -10 M-7 -4 Q0 0 7 -4" stroke="#2e2a1e" stroke-width="1.3" fill="none" opacity="0.7"/><path d="M-7 -20.6 Q0 -17.6 7 -20.6 M-8 -14.6 Q0 -10.6 8 -14.6 M-8 -8.6 Q0 -4.6 8 -8.6" stroke="@peauH" stroke-width="0.55" fill="none" opacity="0.65"/><path d="M0 -24 L0 -1" stroke="#2e2a1e" stroke-width="1.1" opacity="0.6"/></g>",
-      },
-    ],
-    "replace": {},
-  },
-  "cotes.profile": {
-    "overlays": [
-      {
-        "bone": "torse",
-        "svg": "<g><path d="M-7 -22 Q0 -19 7 -22 M-8 -16 Q0 -12 8 -16 M-8 -10 Q0 -6 8 -10 M-7 -4 Q0 0 7 -4" stroke="#2e2a1e" stroke-width="1.3" fill="none" opacity="0.7"/><path d="M-7 -20.6 Q0 -17.6 7 -20.6 M-8 -14.6 Q0 -10.6 8 -14.6 M-8 -8.6 Q0 -4.6 8 -8.6" stroke="@peauH" stroke-width="0.55" fill="none" opacity="0.65"/><path d="M0 -24 L0 -1" stroke="#2e2a1e" stroke-width="1.1" opacity="0.6"/></g>",
-      },
-    ],
-    "replace": {},
-  },
   "griffes.back": {
     "overlays": [
       {
@@ -1337,36 +1310,6 @@ exports[`monsterInjection — golden master > overlays booléens × 3 vues (cape
       {
         "bone": "torse",
         "svg": "<ellipse cx="-2" cy="-10" rx="3" ry="4" fill="#7a1010"/><ellipse cx="-2" cy="-10" rx="1.6" ry="2.6" fill="#b03a2e"/>",
-      },
-    ],
-    "replace": {},
-  },
-  "ventre.back": {
-    "overlays": [
-      {
-        "behind": true,
-        "bone": "torse",
-        "svg": "<g><ellipse cx="0" cy="4" rx="20" ry="17" fill="@peau" stroke="@peauO" stroke-width="0.8"/><ellipse cx="0" cy="6" rx="13" ry="11" fill="@metal" stroke="#3a4048" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#5a6068" stroke="#3a4048" stroke-width="0.6"/><circle cx="0" cy="6" r="1.4" fill="#2a3036"/></g>",
-      },
-    ],
-    "replace": {},
-  },
-  "ventre.front": {
-    "overlays": [
-      {
-        "behind": true,
-        "bone": "torse",
-        "svg": "<g><ellipse cx="0" cy="4" rx="20" ry="17" fill="@peau" stroke="@peauO" stroke-width="0.8"/><ellipse cx="0" cy="6" rx="13" ry="11" fill="@metal" stroke="#3a4048" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#5a6068" stroke="#3a4048" stroke-width="0.6"/><circle cx="0" cy="6" r="1.4" fill="#2a3036"/></g>",
-      },
-    ],
-    "replace": {},
-  },
-  "ventre.profile": {
-    "overlays": [
-      {
-        "behind": true,
-        "bone": "torse",
-        "svg": "<g><ellipse cx="0" cy="4" rx="20" ry="17" fill="@peau" stroke="@peauO" stroke-width="0.8"/><ellipse cx="0" cy="6" rx="13" ry="11" fill="@metal" stroke="#3a4048" stroke-width="0.8"/><circle cx="0" cy="6" r="3.4" fill="#5a6068" stroke="#3a4048" stroke-width="0.6"/><circle cx="0" cy="6" r="1.4" fill="#2a3036"/></g>",
       },
     ],
     "replace": {},

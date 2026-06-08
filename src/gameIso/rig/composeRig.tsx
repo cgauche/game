@@ -48,6 +48,8 @@ export function resolveRig(
   overlays: RigOverlay[] = [],
 ): ResolvedBone[] {
   const race = raceById(baseSpeciesOf(appearance.species));
+  // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
+  // de la race (réglé pour son gabarit par défaut) ne s'applique PAS dans ce cas.
   const gDef = appearance.gabarit
     ? gabaritById(appearance.gabarit)
     : { ...gabaritById(race.gabarit), ...(race.gabaritOverride ?? {}) };
