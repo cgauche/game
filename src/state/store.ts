@@ -653,8 +653,8 @@ export interface GameState {
   defenseCancel: () => void;
   /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
   deviationApply: (deviate: boolean) => void;
-  /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Le RAW ne
-   *  chiffre pas le coût d'enfourcher en plein combat → modélisé comme l'Action du tour. */
+  /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
+   *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
   battleMount: () => void;
   battleDismount: () => void;
   /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
@@ -2574,27 +2574,28 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
-  // Le RAW ne chiffre pas le coût d'enfourcher/descendre en plein combat ; on le modélise comme l'Action
-  // du tour (pas d'attaque le même tour) — choix de jeu, le canon étant muet sur ce point.
+  // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.99)
+  // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement
+  // sur/hors la monture). On consomme donc le Mouvement du tour, pas l'Action — on peut enfourcher PUIS attaquer.
   battleMount: () => {
     const { battle, scene } = get();
-    if (!battle || !scene || battle.over || battle.acted) return;
+    if (!battle || !scene || battle.over || battle.moved) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || active.mountId) return;
     const mount = mountableNear(battle, active);
     if (!mount) return;
     mountUp(active, mount);
-    set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} enfourche ${mount.name}.`] } });
+    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} enfourche ${mount.name}.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   battleDismount: () => {
     const { battle, scene } = get();
-    if (!battle || !scene || battle.over || battle.acted) return;
+    if (!battle || !scene || battle.over || battle.moved) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !active.mountId) return;
     const mountName = mountOf(battle, active)?.name ?? 'sa monture';
     dismount(battle, scene, active);
-    set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} descend de ${mountName}.`] } });
+    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} descend de ${mountName}.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 

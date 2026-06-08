@@ -55,7 +55,7 @@ export function ActionBar() {
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
   const mounted = isHero && !!active.mountId;
-  const mountCandidate = isHero && !active.mountId && !battle.acted && !stunned ? mountableNear(battle, active) : undefined;
+  const mountCandidate = isHero && !active.mountId && !battle.moved ? mountableNear(battle, active) : undefined; // enfourcher = Mouvement (pas de jet → pas une Action)
   const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
   const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
   const canCharge = isHero && !engaged && !prone && !broken && active.weapons[0]?.type === 'melee';
@@ -190,12 +190,12 @@ export function ActionBar() {
           )}
           {mountCandidate && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte l'Action">🐎 Monter sur {mountCandidate.name}</button>
+              <button className="btn btn-sm" disabled={battle.moved || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
             </div>
           )}
           {mounted && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte l'Action">🥾 Descendre de monture</button>
+              <button className="btn btn-sm" disabled={battle.moved || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
             </div>
           )}
         </div>
