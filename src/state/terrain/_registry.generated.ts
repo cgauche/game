@@ -16,7 +16,9 @@ import { terrain as e11 } from './defs/porte';
 import { terrain as e12 } from './defs/roche';
 import { terrain as e13 } from './defs/route';
 import { terrain as e14 } from './defs/sable';
-import { terrain as e15 } from './defs/sol';
-import { terrain as e16 } from './defs/terre';
+import { terrain as e15 } from './defs/sang';
+import { terrain as e16 } from './defs/sol';
+import { terrain as e17 } from './defs/terre';
+import { terrain as e18 } from './defs/tourbe';
 
-export const TERRAIN_DEFS: TerrainDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16];
+export const TERRAIN_DEFS: TerrainDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18];

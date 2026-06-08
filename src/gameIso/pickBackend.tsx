@@ -52,12 +52,12 @@ const CREATURE_BOX = '22 14 80 80';
 export function pickBackend(subject: TokenSubject): PickedBackend {
   if (subject.kind === 'combatant') {
     const c = subject.combatant;
-    // Le rig humanoïde sert aux héros JOUEURS et aux ennemis bipèdes. Une créature NON-bipède
-    // basculée alliée (cheval libre `side:'ally'` → kind='hero') doit garder son GABARIT (plan),
-    // pas devenir un humanoïde — donc on gate le raccourci héros sur le plan corporel, pas sur kind.
-    const heroBiped = c.kind === 'hero' && classifyEnemy(c.name) === 'rig';
-    const prof = heroBiped ? null : enemyRigProfile(c);
-    if (heroBiped || prof) {
+    // On décide par le PLAN CORPOREL (humanoïde vs créature), PAS par le camp. `kind==='hero'` est
+    // surchargé (PJ bipède OU acteur allié — store bascule `side:'ally'` en kind='hero', cheval libre
+    // compris) : router sur kind dessinerait un cheval allié comme un humanoïde. Donc : nom humanoïde
+    // → rig (héros = son appearance, ennemi = profil dérivé) ; créature → gabarit animé (plan).
+    if (classifyEnemy(c.name) === 'rig') {
+      const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
       return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} /> };
     }
     return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} /> };

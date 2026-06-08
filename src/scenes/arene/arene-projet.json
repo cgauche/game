@@ -8,23 +8,24 @@
       "h": 11
     },
     "ambiance": "exterieur",
-    "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Avancez sur le sable (couvert : tonneaux, caisses, statue).",
+    "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Avancez sur le sable (couvert : tonneaux, caisses, statues).",
     "tiles": [
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -38,6 +39,8 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -48,7 +51,11 @@
       "sable",
       "sable",
       "sable",
+      "terre",
+      "terre",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -62,7 +69,11 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
+      "terre",
+      "terre",
       "sable",
       "sable",
       "sable",
@@ -73,6 +84,8 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -86,7 +99,11 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
+      "terre",
+      "terre",
       "sable",
       "sable",
       "sable",
@@ -97,6 +114,8 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -110,6 +129,8 @@
       "sable",
       "sable",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -120,7 +141,11 @@
       "sable",
       "sable",
       "sable",
+      "terre",
+      "terre",
       "sable",
+      "mur",
+      "mur",
       "sable",
       "sable",
       "sable",
@@ -134,47 +159,22 @@
       "sable",
       "sable",
       "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "sable",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -189,26 +189,26 @@
         "id": "zone1-p0",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 2
+          "x": 6,
+          "y": 1
         },
-        "ref": "tas-foin"
+        "ref": "tonneau"
       },
       {
         "id": "zone1-p1",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 8
+          "x": 10,
+          "y": 1
         },
-        "ref": "tas-foin"
+        "ref": "caisse"
       },
       {
         "id": "zone1-p2",
         "kind": "prop",
         "pos": {
-          "x": 7,
-          "y": 5
+          "x": 3,
+          "y": 2
         },
         "ref": "statue"
       },
@@ -216,7 +216,7 @@
         "id": "zone1-p3",
         "kind": "prop",
         "pos": {
-          "x": 5,
+          "x": 6,
           "y": 3
         },
         "ref": "tonneau"
@@ -226,24 +226,24 @@
         "kind": "prop",
         "pos": {
           "x": 5,
-          "y": 7
+          "y": 5
         },
-        "ref": "tonneau"
+        "ref": "feu-camp"
       },
       {
         "id": "zone1-p5",
         "kind": "prop",
         "pos": {
-          "x": 9,
-          "y": 3
+          "x": 6,
+          "y": 7
         },
-        "ref": "caisse"
+        "ref": "tonneau"
       },
       {
         "id": "zone1-p6",
         "kind": "prop",
         "pos": {
-          "x": 9,
+          "x": 10,
           "y": 7
         },
         "ref": "caisse"
@@ -252,19 +252,28 @@
         "id": "zone1-p7",
         "kind": "prop",
         "pos": {
-          "x": 1,
-          "y": 0
+          "x": 3,
+          "y": 8
         },
-        "ref": "feu-camp"
+        "ref": "statue"
       },
       {
         "id": "zone1-p8",
         "kind": "prop",
         "pos": {
-          "x": 13,
-          "y": 0
+          "x": 6,
+          "y": 9
         },
-        "ref": "feu-camp"
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone1-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 9
+        },
+        "ref": "caisse"
       }
     ],
     "dialogues": [],
@@ -293,29 +302,29 @@
           {
             "ref": "Snotling",
             "pos": {
-              "x": 8,
+              "x": 9,
               "y": 3
-            }
-          },
-          {
-            "ref": "Snotling",
-            "pos": {
-              "x": 8,
-              "y": 7
-            }
-          },
-          {
-            "ref": "Snotling",
-            "pos": {
-              "x": 12,
-              "y": 5
             }
           },
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 11,
+              "x": 10,
               "y": 4
+            }
+          },
+          {
+            "ref": "Snotling",
+            "pos": {
+              "x": 13,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Snotling",
+            "pos": {
+              "x": 8,
+              "y": 6
             }
           }
         ],
@@ -356,6 +365,20 @@
     "ambiance": "interieur",
     "startMessage": "Antichambre du maître d’arène. Marchande, fais évaluer ton butin, soigne-toi, dors (payant)… puis repars saigner.",
     "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -367,6 +390,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -378,6 +403,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -389,6 +416,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -400,6 +429,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -411,6 +442,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -422,6 +455,8 @@
       "plancher",
       "plancher",
       "plancher",
+      "mur",
+      "mur",
       "plancher",
       "plancher",
       "plancher",
@@ -433,46 +468,20 @@
       "plancher",
       "plancher",
       "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher",
-      "plancher"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -487,8 +496,8 @@
         "id": "maitre",
         "kind": "personnage",
         "pos": {
-          "x": 6,
-          "y": 2
+          "x": 2,
+          "y": 4
         },
         "label": "Maître d’arène",
         "facing": "S",
@@ -509,7 +518,7 @@
         "kind": "personnage",
         "pos": {
           "x": 3,
-          "y": 4
+          "y": 2
         },
         "label": "Médecin",
         "facing": "E",
@@ -525,55 +534,59 @@
         }
       },
       {
-        "id": "hub-ton",
+        "id": "hub-p0",
         "kind": "prop",
         "pos": {
-          "x": 10,
+          "x": 8,
           "y": 2
         },
         "ref": "tonneau"
       },
       {
-        "id": "hub-cai",
+        "id": "hub-p1",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 6
-        },
-        "ref": "caisse"
-      },
-      {
-        "id": "hub-feu",
-        "kind": "prop",
-        "pos": {
-          "x": 6,
-          "y": 5
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "hub-eta",
-        "kind": "prop",
-        "pos": {
-          "x": 10,
+          "x": 8,
           "y": 4
+        },
+        "ref": "epave-carrosse",
+        "foot": {
+          "w": 2,
+          "h": 2
+        }
+      },
+      {
+        "id": "hub-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 5
         },
         "ref": "etal-marche"
       },
       {
-        "id": "hub-coffre",
+        "id": "hub-p3",
         "kind": "prop",
         "pos": {
-          "x": 2,
+          "x": 3,
           "y": 6
         },
         "ref": "coffre"
       },
       {
-        "id": "hub-lamp",
+        "id": "hub-p4",
         "kind": "prop",
         "pos": {
-          "x": 9,
+          "x": 8,
+          "y": 6
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "hub-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
           "y": 7
         },
         "ref": "lampadaire"
@@ -781,7 +794,7 @@
                 ]
               },
               {
-                "text": "⚔️ Entrer — La Fosse.",
+                "text": "⚔️ Entrer — Le Nid.",
                 "condition": "zone6_clear,!zone7_clear",
                 "effects": [
                   {
@@ -791,7 +804,7 @@
                 ]
               },
               {
-                "text": "⚔️ Entrer — La Caverne du Troll.",
+                "text": "⚔️ Entrer — La Fosse.",
                 "condition": "zone7_clear,!zone8_clear",
                 "effects": [
                   {
@@ -801,7 +814,7 @@
                 ]
               },
               {
-                "text": "⚔️ Entrer — Le Sépulcre.",
+                "text": "⚔️ Entrer — La Caverne du Troll.",
                 "condition": "zone8_clear,!zone9_clear",
                 "effects": [
                   {
@@ -811,7 +824,7 @@
                 ]
               },
               {
-                "text": "⚔️ Entrer — L’Antre du Dragon.",
+                "text": "⚔️ Entrer — Le Nid de Vermine.",
                 "condition": "zone9_clear,!zone10_clear",
                 "effects": [
                   {
@@ -821,8 +834,38 @@
                 ]
               },
               {
+                "text": "⚔️ Entrer — Le Cercle Maudit.",
+                "condition": "zone10_clear,!zone11_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone11"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Le Sépulcre.",
+                "condition": "zone11_clear,!zone12_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone12"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — L’Antre du Dragon.",
+                "condition": "zone12_clear,!zone13_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone13"
+                  }
+                ]
+              },
+              {
                 "text": "🏆 Savourer ta gloire de champion.",
-                "condition": "zone10_clear",
+                "condition": "zone13_clear",
                 "effects": [
                   {
                     "type": "journal",
@@ -859,24 +902,24 @@
       "h": 11
     },
     "ambiance": "exterieur",
-    "startMessage": "LES RUINES. Un mur éventré coupe la vue : contournez ou passez la brèche. Gobelins et un Orc.",
+    "startMessage": "LES RUINES. Un mur éventré coupe la cour en deux : passez la porte (brèche) ou contournez. Gobelins et un Orc derrière.",
     "tiles": [
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -890,8 +933,8 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
-      "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -905,8 +948,8 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
-      "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -920,53 +963,53 @@
       "dalle",
       "dalle",
       "dalle",
+      "mur",
+      "mur",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
+      "porte",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
+      "mur",
+      "mur",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -980,13 +1023,13 @@
       "dalle",
       "dalle",
       "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "dalle",
+      "dalle",
       "dalle",
       "mur",
       "dalle",
@@ -995,13 +1038,13 @@
       "dalle",
       "dalle",
       "dalle",
+      "mur",
+      "mur",
       "dalle",
       "dalle",
       "dalle",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
+      "dalle",
+      "dalle",
       "dalle",
       "mur",
       "dalle",
@@ -1010,22 +1053,22 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -1033,15 +1076,15 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 2
         }
       },
       {
         "id": "zone2-p0",
         "kind": "prop",
         "pos": {
-          "x": 5,
-          "y": 3
+          "x": 4,
+          "y": 2
         },
         "ref": "tonneau"
       },
@@ -1049,7 +1092,7 @@
         "id": "zone2-p1",
         "kind": "prop",
         "pos": {
-          "x": 5,
+          "x": 10,
           "y": 7
         },
         "ref": "tonneau"
@@ -1058,32 +1101,10 @@
         "id": "zone2-p2",
         "kind": "prop",
         "pos": {
-          "x": 9,
-          "y": 4
-        },
-        "ref": "epave-carrosse",
-        "foot": {
-          "w": 2,
-          "h": 2
-        }
-      },
-      {
-        "id": "zone2-p3",
-        "kind": "prop",
-        "pos": {
-          "x": 2,
-          "y": 1
+          "x": 3,
+          "y": 8
         },
         "ref": "statue"
-      },
-      {
-        "id": "zone2-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 13,
-          "y": 9
-        },
-        "ref": "cadavre"
       }
     ],
     "dialogues": [],
@@ -1112,33 +1133,33 @@
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 11,
-              "y": 3
+              "x": 9,
+              "y": 2
             }
           },
           {
             "ref": "Gobelin",
             "pos": {
               "x": 12,
-              "y": 7
+              "y": 4
             }
           },
           {
             "ref": "Orc",
             "pos": {
-              "x": 13,
-              "y": 5
+              "x": 10,
+              "y": 6
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 40
+            "gold": 45
           },
           {
             "type": "giveXp",
-            "amount": 70
+            "amount": 75
           },
           {
             "type": "setFlag",
@@ -1166,8 +1187,24 @@
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LES ÉGOUTS. Une NUÉE de rats grouille (tirez dessus : +40 ; elle submerge en mêlée). Canaux d’eau infranchissables.",
+    "startMessage": "LES ÉGOUTS. Une NUÉE de rats grouille (tirez dessus : +40 ; elle submerge en mêlée). Les canaux d’eau canalisent le combat.",
     "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "sol",
       "sol",
       "sol",
@@ -1175,27 +1212,44 @@
       "sol",
       "sol",
       "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "mur",
+      "sol",
+      "sol",
+      "eau",
       "eau",
       "sol",
       "sol",
       "sol",
       "sol",
       "sol",
+      "eau",
+      "eau",
       "sol",
       "sol",
+      "mur",
+      "mur",
       "sol",
       "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
+      "eau",
       "eau",
       "sol",
       "sol",
       "sol",
       "sol",
       "sol",
+      "eau",
+      "eau",
+      "sol",
+      "sol",
+      "mur",
+      "mur",
       "sol",
       "sol",
       "sol",
@@ -1205,112 +1259,72 @@
       "sol",
       "sol",
       "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "mur",
+      "sol",
+      "sol",
+      "eau",
       "eau",
       "sol",
       "sol",
       "sol",
       "sol",
       "sol",
+      "eau",
+      "eau",
       "sol",
       "sol",
+      "mur",
+      "mur",
       "sol",
       "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
+      "eau",
       "eau",
       "sol",
       "sol",
       "sol",
       "sol",
       "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
+      "eau",
       "eau",
       "sol",
       "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "eau",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "eau",
+      "mur",
+      "mur",
       "sol",
       "sol",
       "sol",
@@ -1324,15 +1338,22 @@
       "sol",
       "sol",
       "sol",
-      "sol",
-      "eau",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol",
-      "sol"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -1340,15 +1361,15 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 4
         }
       },
       {
         "id": "zone3-p0",
         "kind": "prop",
         "pos": {
-          "x": 5,
-          "y": 4
+          "x": 6,
+          "y": 1
         },
         "ref": "tonneau"
       },
@@ -1357,7 +1378,7 @@
         "kind": "prop",
         "pos": {
           "x": 5,
-          "y": 6
+          "y": 5
         },
         "ref": "tonneau"
       },
@@ -1365,28 +1386,19 @@
         "id": "zone3-p2",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 3
+          "x": 9,
+          "y": 5
         },
-        "ref": "caisse"
+        "ref": "tonneau"
       },
       {
         "id": "zone3-p3",
         "kind": "prop",
         "pos": {
-          "x": 9,
-          "y": 8
+          "x": 6,
+          "y": 9
         },
-        "ref": "mare-sang"
-      },
-      {
-        "id": "zone3-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
-          "y": 0
-        },
-        "ref": "feu-camp"
+        "ref": "tonneau"
       }
     ],
     "dialogues": [],
@@ -1413,6 +1425,13 @@
         "id": "enc-zone3",
         "enemies": [
           {
+            "ref": "Snotling",
+            "pos": {
+              "x": 7,
+              "y": 3
+            }
+          },
+          {
             "statblock": {
               "name": "Nuée de rats",
               "char": {
@@ -1429,21 +1448,35 @@
               ]
             },
             "pos": {
-              "x": 9,
-              "y": 5
+              "x": 6,
+              "y": 4
+            }
+          },
+          {
+            "statblock": {
+              "name": "Nuée de rats",
+              "char": {
+                "M": 4,
+                "CC": 30,
+                "F": 25,
+                "E": 30,
+                "Ag": 40,
+                "B": 5
+              },
+              "traits": [
+                "Nuée",
+                "Taille (Petite)"
+              ]
+            },
+            "pos": {
+              "x": 10,
+              "y": 6
             }
           },
           {
             "ref": "Snotling",
             "pos": {
-              "x": 11,
-              "y": 3
-            }
-          },
-          {
-            "ref": "Snotling",
-            "pos": {
-              "x": 11,
+              "x": 6,
               "y": 7
             }
           }
@@ -1451,11 +1484,11 @@
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 55
+            "gold": 60
           },
           {
             "type": "giveXp",
-            "amount": 100
+            "amount": 110
           },
           {
             "type": "setFlag",
@@ -1487,8 +1520,24 @@
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LE CHARNIER. Les morts se lèvent (Peur). Un poignard à l’éclat trouble traîne dans l’ossuaire (à faire évaluer).",
+    "startMessage": "LE CHARNIER. Les morts se lèvent derrière l’ossuaire (Peur). Un poignard à l’éclat trouble traîne près du coffre (à faire évaluer).",
     "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1496,6 +1545,14 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "mur",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1503,51 +1560,14 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1559,7 +1579,10 @@
       "ossuaire",
       "terre",
       "terre",
-      "terre",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1567,17 +1590,29 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "porte",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
-      "terre",
-      "terre",
-      "terre",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1589,7 +1624,10 @@
       "ossuaire",
       "terre",
       "terre",
-      "terre",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1597,6 +1635,14 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "mur",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1604,6 +1650,14 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "mur",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "ossuaire",
+      "mur",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
@@ -1611,49 +1665,28 @@
       "ossuaire",
       "ossuaire",
       "ossuaire",
+      "mur",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
       "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire",
-      "ossuaire"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -1661,24 +1694,24 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 2
         }
       },
       {
         "id": "zone4-p0",
         "kind": "prop",
         "pos": {
-          "x": 8,
-          "y": 3
+          "x": 3,
+          "y": 1
         },
-        "ref": "statue"
+        "ref": "cadavre"
       },
       {
         "id": "zone4-p1",
         "kind": "prop",
         "pos": {
-          "x": 8,
-          "y": 7
+          "x": 7,
+          "y": 2
         },
         "ref": "statue"
       },
@@ -1687,16 +1720,16 @@
         "kind": "prop",
         "pos": {
           "x": 4,
-          "y": 5
+          "y": 4
         },
-        "ref": "tonneau"
+        "ref": "mare-sang"
       },
       {
         "id": "zone4-p3",
         "kind": "prop",
         "pos": {
-          "x": 12,
-          "y": 9
+          "x": 3,
+          "y": 7
         },
         "ref": "cadavre"
       },
@@ -1704,19 +1737,28 @@
         "id": "zone4-p4",
         "kind": "prop",
         "pos": {
-          "x": 2,
-          "y": 2
+          "x": 7,
+          "y": 7
         },
-        "ref": "cadavre"
+        "ref": "statue"
       },
       {
         "id": "zone4-p5",
         "kind": "prop",
         "pos": {
-          "x": 7,
-          "y": 5
+          "x": 12,
+          "y": 8
         },
-        "ref": "mare-sang"
+        "ref": "coffre"
+      },
+      {
+        "id": "zone4-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 9
+        },
+        "ref": "tonneau"
       }
     ],
     "dialogues": [],
@@ -1745,22 +1787,15 @@
           {
             "ref": "Squelette",
             "pos": {
-              "x": 9,
-              "y": 3
+              "x": 10,
+              "y": 1
             }
           },
           {
             "ref": "Squelette",
             "pos": {
-              "x": 9,
-              "y": 7
-            }
-          },
-          {
-            "ref": "Squelette",
-            "pos": {
-              "x": 12,
-              "y": 5
+              "x": 13,
+              "y": 2
             }
           },
           {
@@ -1769,16 +1804,23 @@
               "x": 11,
               "y": 4
             }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 10,
+              "y": 7
+            }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 70
+            "gold": 80
           },
           {
             "type": "giveXp",
-            "amount": 130
+            "amount": 150
           },
           {
             "type": "giveTrapping",
@@ -1810,27 +1852,30 @@
     "nom": "Arène — Les Lices",
     "description": "Les Lices",
     "dimensions": {
-      "w": 15,
-      "h": 11
+      "w": 17,
+      "h": 9
     },
     "ambiance": "exterieur",
-    "startMessage": "LES LICES. Un cavalier vous CHARGE ! Un cheval de bataille LIBRE attend près de vous (≈3,5) : Chevauchez-le pour combattre monté.",
+    "startMessage": "LES LICES. Un cavalier mutant vous CHARGE le long de la lice ! Un cheval de bataille LIBRE attend près de vous : Chevauchez-le pour rendre coup pour coup.",
     "tiles": [
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1846,6 +1891,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1861,6 +1908,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1876,6 +1925,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1891,6 +1942,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1906,6 +1959,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1921,6 +1976,8 @@
       "terre",
       "terre",
       "terre",
+      "mur",
+      "mur",
       "terre",
       "terre",
       "terre",
@@ -1936,51 +1993,24 @@
       "terre",
       "terre",
       "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -1988,7 +2018,7 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 1
         }
       },
       {
@@ -1996,49 +2026,81 @@
         "kind": "prop",
         "pos": {
           "x": 6,
-          "y": 2
+          "y": 1
         },
-        "ref": "tonneau"
+        "ref": "cloture"
       },
       {
         "id": "zone5-p1",
         "kind": "prop",
         "pos": {
-          "x": 6,
-          "y": 9
+          "x": 8,
+          "y": 1
         },
-        "ref": "tonneau"
+        "ref": "cloture"
       },
       {
         "id": "zone5-p2",
         "kind": "prop",
         "pos": {
-          "x": 9,
-          "y": 5
+          "x": 10,
+          "y": 1
         },
-        "ref": "charrette",
-        "foot": {
-          "w": 2,
-          "h": 1
-        }
+        "ref": "cloture"
       },
       {
         "id": "zone5-p3",
         "kind": "prop",
         "pos": {
-          "x": 1,
-          "y": 0
+          "x": 6,
+          "y": 2
         },
-        "ref": "feu-camp"
+        "ref": "cloture"
       },
       {
         "id": "zone5-p4",
         "kind": "prop",
         "pos": {
-          "x": 13,
-          "y": 0
+          "x": 8,
+          "y": 2
         },
-        "ref": "feu-camp"
+        "ref": "cloture"
+      },
+      {
+        "id": "zone5-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 2
+        },
+        "ref": "cloture"
+      },
+      {
+        "id": "zone5-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 6
+        },
+        "ref": "cloture"
+      },
+      {
+        "id": "zone5-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 6
+        },
+        "ref": "cloture"
+      },
+      {
+        "id": "zone5-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 6
+        },
+        "ref": "cloture"
       }
     ],
     "dialogues": [],
@@ -2048,8 +2110,8 @@
         "rect": {
           "x": 5,
           "y": 0,
-          "w": 10,
-          "h": 11
+          "w": 12,
+          "h": 9
         },
         "once": true,
         "effects": [
@@ -2065,12 +2127,20 @@
         "id": "enc-zone5",
         "enemies": [
           {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 15,
+              "y": 1
+            }
+          },
+          {
             "ref": "Cheval",
             "pos": {
-              "x": 12,
+              "x": 2,
               "y": 3
             },
-            "mount": true
+            "mount": true,
+            "side": "ally"
           },
           {
             "ref": "Mutant",
@@ -2078,33 +2148,41 @@
               "x": 12,
               "y": 3
             },
-            "rides": 0
+            "rides": 4
           },
           {
             "ref": "Cheval",
             "pos": {
-              "x": 3,
-              "y": 5
+              "x": 2,
+              "y": 4
             },
             "mount": true,
             "side": "ally"
           },
           {
+            "ref": "Cheval",
+            "pos": {
+              "x": 12,
+              "y": 4
+            },
+            "mount": true
+          },
+          {
             "ref": "Gobelin",
             "pos": {
-              "x": 11,
-              "y": 8
+              "x": 15,
+              "y": 6
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 90
+            "gold": 100
           },
           {
             "type": "giveXp",
-            "amount": 160
+            "amount": 180
           },
           {
             "type": "setFlag",
@@ -2132,50 +2210,30 @@
     "nom": "Arène — Le Marais",
     "description": "Le Marais",
     "dimensions": {
-      "w": 16,
-      "h": 11
+      "w": 17,
+      "h": 9
     },
     "ambiance": "exterieur",
     "weather": "brouillard",
-    "startMessage": "LE MARAIS. Le brouillard cache une EMBUSCADE : Test de Perception ou vos héros démarrent Surpris. Meute de loups funestes (Peur) et un Gor enragé.",
+    "startMessage": "LE MARAIS. Le brouillard cache une EMBUSCADE : Test de Perception ou vos héros démarrent Surpris. Meute de loups funestes (Peur, Taille Grande) et un Gor enragé entre les fourrés.",
     "tiles": [
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
       "bois",
       "herbe",
       "herbe",
@@ -2192,86 +2250,7 @@
       "herbe",
       "herbe",
       "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
       "bois",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "herbe",
-      "herbe",
-      "herbe",
-      "bois",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "bois",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
-      "herbe",
       "bois",
       "herbe",
       "herbe",
@@ -2288,6 +2267,42 @@
       "herbe",
       "herbe",
       "herbe",
+      "bois",
+      "bois",
+      "herbe",
+      "herbe",
+      "eau",
+      "eau",
+      "eau",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "bois",
+      "bois",
+      "herbe",
+      "herbe",
+      "eau",
+      "eau",
+      "eau",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "bois",
+      "bois",
       "herbe",
       "herbe",
       "herbe",
@@ -2303,6 +2318,8 @@
       "herbe",
       "herbe",
       "herbe",
+      "bois",
+      "bois",
       "herbe",
       "herbe",
       "herbe",
@@ -2314,7 +2331,45 @@
       "herbe",
       "herbe",
       "herbe",
-      "herbe"
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "bois",
+      "bois",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "herbe",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois",
+      "bois"
     ],
     "entities": [
       {
@@ -2322,7 +2377,7 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 1
         }
       },
       {
@@ -2330,7 +2385,7 @@
         "kind": "prop",
         "pos": {
           "x": 4,
-          "y": 4
+          "y": 1
         },
         "ref": "arbre"
       },
@@ -2338,8 +2393,8 @@
         "id": "zone6-p1",
         "kind": "prop",
         "pos": {
-          "x": 4,
-          "y": 6
+          "x": 15,
+          "y": 3
         },
         "ref": "arbre"
       },
@@ -2347,35 +2402,17 @@
         "id": "zone6-p2",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 2
+          "x": 9,
+          "y": 7
         },
-        "ref": "tas-foin"
+        "ref": "cheval-mort"
       },
       {
         "id": "zone6-p3",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 8
-        },
-        "ref": "cheval-mort"
-      },
-      {
-        "id": "zone6-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 13,
-          "y": 1
-        },
-        "ref": "arbre"
-      },
-      {
-        "id": "zone6-p5",
-        "kind": "prop",
-        "pos": {
-          "x": 2,
-          "y": 9
+          "x": 15,
+          "y": 7
         },
         "ref": "arbre"
       }
@@ -2387,8 +2424,8 @@
         "rect": {
           "x": 5,
           "y": 0,
-          "w": 11,
-          "h": 11
+          "w": 12,
+          "h": 9
         },
         "once": true,
         "effects": [
@@ -2406,29 +2443,29 @@
           {
             "ref": "Loup funeste",
             "pos": {
-              "x": 12,
+              "x": 11,
+              "y": 1
+            }
+          },
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 9,
               "y": 3
             }
           },
           {
             "ref": "Loup funeste",
             "pos": {
-              "x": 8,
-              "y": 1
+              "x": 11,
+              "y": 5
             }
           },
           {
             "ref": "Loup funeste",
             "pos": {
-              "x": 8,
-              "y": 9
-            }
-          },
-          {
-            "ref": "Gor",
-            "pos": {
-              "x": 12,
-              "y": 7
+              "x": 6,
+              "y": 6
             }
           }
         ],
@@ -2436,11 +2473,11 @@
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 120
+            "gold": 130
           },
           {
             "type": "giveXp",
-            "amount": 210
+            "amount": 220
           },
           {
             "type": "setFlag",
@@ -2465,191 +2502,165 @@
   },
   {
     "id": "arene-zone7",
-    "nom": "Arène — La Fosse",
-    "description": "La Fosse",
+    "nom": "Arène — Le Nid",
+    "description": "Le Nid",
     "dimensions": {
-      "w": 16,
-      "h": 11
+      "w": 15,
+      "h": 10
     },
     "ambiance": "interieur",
-    "startMessage": "LA FOSSE. Un Minotaure (Taille Grande : occupe 2×2, peut Piétiner) flanqué de Gors. Gardez vos distances de sa charge.",
+    "startMessage": "LE NID. Une Vouivre (VENIN, Énorme — occupe 3×3) niche au fond ; des araignées géantes (Toile → Empêtré) gardent les alcôves, des serpents filent au sol. Le poison ronge — soignez vite.",
     "tiles": [
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
       "mur",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
       "mur",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche",
-      "roche"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "porte",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -2657,24 +2668,24 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 1
         }
       },
       {
         "id": "zone7-p0",
         "kind": "prop",
         "pos": {
-          "x": 7,
-          "y": 5
+          "x": 3,
+          "y": 3
         },
-        "ref": "statue"
+        "ref": "mare-sang"
       },
       {
         "id": "zone7-p1",
         "kind": "prop",
         "pos": {
-          "x": 5,
-          "y": 3
+          "x": 3,
+          "y": 6
         },
         "ref": "tonneau"
       },
@@ -2683,45 +2694,9 @@
         "kind": "prop",
         "pos": {
           "x": 5,
-          "y": 7
-        },
-        "ref": "tonneau"
-      },
-      {
-        "id": "zone7-p3",
-        "kind": "prop",
-        "pos": {
-          "x": 11,
-          "y": 2
-        },
-        "ref": "caisse"
-      },
-      {
-        "id": "zone7-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone7-p5",
-        "kind": "prop",
-        "pos": {
-          "x": 14,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone7-p6",
-        "kind": "prop",
-        "pos": {
-          "x": 8,
           "y": 8
         },
-        "ref": "mare-sang"
+        "ref": "cadavre"
       }
     ],
     "dialogues": [],
@@ -2731,8 +2706,8 @@
         "rect": {
           "x": 5,
           "y": 0,
-          "w": 11,
-          "h": 11
+          "w": 10,
+          "h": 10
         },
         "once": true,
         "effects": [
@@ -2748,35 +2723,71 @@
         "id": "enc-zone7",
         "enemies": [
           {
-            "ref": "Minotaure",
+            "ref": "Araignée géante",
             "pos": {
-              "x": 12,
-              "y": 5
+              "x": 13,
+              "y": 1
             }
           },
           {
-            "ref": "Gor",
+            "ref": "Araignée géante",
             "pos": {
-              "x": 9,
+              "x": 10,
               "y": 2
             }
           },
           {
-            "ref": "Gor",
+            "ref": "Serpent",
+            "pos": {
+              "x": 13,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Vouivre",
             "pos": {
               "x": 9,
-              "y": 8
+              "y": 4
+            }
+          },
+          {
+            "ref": "Serpent",
+            "pos": {
+              "x": 13,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Araignée géante",
+            "pos": {
+              "x": 10,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Araignée géante",
+            "pos": {
+              "x": 13,
+              "y": 7
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 145
+            "gold": 160
           },
           {
             "type": "giveXp",
-            "amount": 250
+            "amount": 270
+          },
+          {
+            "type": "giveTrapping",
+            "trapping": "Lance",
+            "qualities": [
+              "Perçante"
+            ],
+            "identified": false
           },
           {
             "type": "setFlag",
@@ -2784,7 +2795,7 @@
           },
           {
             "type": "journal",
-            "text": "La Fosse : vaincue ! Retournez voir le maître d’arène."
+            "text": "Le Nid : vaincue ! Retournez voir le maître d’arène."
           },
           {
             "type": "transition",
@@ -2797,180 +2808,180 @@
   },
   {
     "id": "arene-zone8",
-    "nom": "Arène — La Caverne du Troll",
-    "description": "La Caverne du Troll",
+    "nom": "Arène — La Fosse",
+    "description": "La Fosse",
     "dimensions": {
       "w": 15,
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LA CAVERNE. Un Troll (Régénération, Vomissement) et ses Gors (Rage). Avant l’épreuve finale.",
+    "startMessage": "LA FOSSE. Un Minotaure (Taille Grande : occupe 2×2, peut Piétiner) tourne autour d’un pilier creux, flanqué de Gors. Servez-vous du pilier pour briser sa charge.",
     "tiles": [
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
       "mur",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pierre",
-      "pierre",
       "mur",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
       "mur",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre",
-      "pierre"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "roche",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "roche",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "roche",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -2978,71 +2989,35 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 1
         }
       },
       {
         "id": "zone8-p0",
         "kind": "prop",
         "pos": {
-          "x": 11,
-          "y": 2
+          "x": 6,
+          "y": 8
         },
-        "ref": "statue"
+        "ref": "mare-sang"
       },
       {
         "id": "zone8-p1",
         "kind": "prop",
         "pos": {
-          "x": 11,
-          "y": 8
+          "x": 3,
+          "y": 9
         },
-        "ref": "statue"
+        "ref": "tonneau"
       },
       {
         "id": "zone8-p2",
         "kind": "prop",
         "pos": {
-          "x": 4,
-          "y": 5
-        },
-        "ref": "tonneau"
-      },
-      {
-        "id": "zone8-p3",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone8-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 13,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone8-p5",
-        "kind": "prop",
-        "pos": {
-          "x": 8,
-          "y": 4
-        },
-        "ref": "mare-sang"
-      },
-      {
-        "id": "zone8-p6",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
+          "x": 11,
           "y": 9
         },
-        "ref": "cadavre"
+        "ref": "tonneau"
       }
     ],
     "dialogues": [],
@@ -3069,35 +3044,314 @@
         "id": "enc-zone8",
         "enemies": [
           {
-            "ref": "Troll",
+            "ref": "Gor",
             "pos": {
               "x": 12,
-              "y": 5
+              "y": 1
+            }
+          },
+          {
+            "ref": "Minotaure",
+            "pos": {
+              "x": 9,
+              "y": 4
             }
           },
           {
             "ref": "Gor",
             "pos": {
-              "x": 8,
-              "y": 2
-            }
-          },
-          {
-            "ref": "Gor",
-            "pos": {
-              "x": 8,
-              "y": 8
+              "x": 12,
+              "y": 7
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 160
+            "gold": 190
           },
           {
             "type": "giveXp",
-            "amount": 280
+            "amount": 320
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone8_clear"
+          },
+          {
+            "type": "journal",
+            "text": "La Fosse : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone9",
+    "nom": "Arène — La Caverne du Troll",
+    "description": "La Caverne du Troll",
+    "dimensions": {
+      "w": 15,
+      "h": 10
+    },
+    "ambiance": "interieur",
+    "startMessage": "LA CAVERNE. Un Troll (Régénération, Vomissement, Taille Grande) garde son antre derrière la herse, ses Gors (Rage) en sentinelle. Le feu/l’acide arrête sa régénération — frappez fort.",
+    "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "porte",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "pierre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 1
+        }
+      },
+      {
+        "id": "zone9-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 3
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone9-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 6
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone9-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone9-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 8
+        },
+        "ref": "coffre"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone9",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 10
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone9"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone9",
+        "enemies": [
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 12,
+              "y": 1
+            }
+          },
+          {
+            "ref": "Troll",
+            "pos": {
+              "x": 9,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 12,
+              "y": 7
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 220
+          },
+          {
+            "type": "giveXp",
+            "amount": 380
           },
           {
             "type": "giveTrapping",
@@ -3112,7 +3366,7 @@
           },
           {
             "type": "setFlag",
-            "flag": "zone8_clear"
+            "flag": "zone9_clear"
           },
           {
             "type": "setFlag",
@@ -3132,181 +3386,166 @@
     "flags": {}
   },
   {
-    "id": "arene-zone9",
-    "nom": "Arène — Le Sépulcre",
-    "description": "Le Sépulcre",
+    "id": "arene-zone10",
+    "nom": "Arène — Le Nid de Vermine",
+    "description": "Le Nid de Vermine",
     "dimensions": {
       "w": 15,
-      "h": 11
+      "h": 10
     },
     "ambiance": "interieur",
-    "startMessage": "LE SÉPULCRE. Un Spectre de cairn s’élève — sa TERREUR fige le sang (Test de Terreur, plus dur que la Peur). Avant l’Antre du Dragon.",
+    "startMessage": "LE NID DE VERMINE. Une HORDE skaven déferle : un Rat-ogre (Taille Grande, Stupide) lancé en avant, une nuée de Guerriers des clans et une Vermine de choc en surnombre. Tenez les couloirs.",
     "tiles": [
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "marbre",
-      "marbre",
       "mur",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "marbre",
-      "marbre",
       "mur",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre"
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "terre",
+      "terre",
+      "terre",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "terre",
+      "pave",
+      "terre",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "terre",
+      "terre",
+      "terre",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -3314,126 +3553,815 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 5
+          "y": 1
         }
       },
       {
-        "id": "zone9-p0",
+        "id": "zone10-p0",
         "kind": "prop",
         "pos": {
-          "x": 6,
-          "y": 3
-        },
-        "ref": "statue"
-      },
-      {
-        "id": "zone9-p1",
-        "kind": "prop",
-        "pos": {
-          "x": 6,
+          "x": 5,
           "y": 7
-        },
-        "ref": "statue"
-      },
-      {
-        "id": "zone9-p2",
-        "kind": "prop",
-        "pos": {
-          "x": 4,
-          "y": 5
-        },
-        "ref": "tonneau"
-      },
-      {
-        "id": "zone9-p3",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone9-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 13,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone9-p5",
-        "kind": "prop",
-        "pos": {
-          "x": 8,
-          "y": 5
         },
         "ref": "mare-sang"
       },
       {
-        "id": "zone9-p6",
+        "id": "zone10-p1",
         "kind": "prop",
         "pos": {
-          "x": 13,
-          "y": 9
+          "x": 3,
+          "y": 8
         },
-        "ref": "cadavre"
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone10-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 8
+        },
+        "ref": "tonneau"
       }
     ],
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-zone9",
+        "id": "fight-enc-zone10",
         "rect": {
           "x": 5,
           "y": 0,
           "w": 10,
-          "h": 11
+          "h": 10
         },
         "once": true,
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-zone9"
+            "encounter": "enc-zone10"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-zone9",
+        "id": "enc-zone10",
         "enemies": [
           {
-            "ref": "Spectre de cairn",
+            "ref": "Guerrier des clans",
             "pos": {
-              "x": 12,
-              "y": 5
+              "x": 13,
+              "y": 1
             }
           },
           {
-            "ref": "Squelette",
+            "ref": "Guerrier des clans",
             "pos": {
-              "x": 8,
+              "x": 13,
               "y": 2
             }
           },
           {
-            "ref": "Squelette",
+            "ref": "Rat ogre",
             "pos": {
-              "x": 8,
-              "y": 8
+              "x": 6,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Guerrier des clans",
+            "pos": {
+              "x": 13,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Vermine de choc",
+            "pos": {
+              "x": 13,
+              "y": 4
+            }
+          },
+          {
+            "ref": "Guerrier des clans",
+            "pos": {
+              "x": 13,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Guerrier des clans",
+            "pos": {
+              "x": 13,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Guerrier des clans",
+            "pos": {
+              "x": 13,
+              "y": 7
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 200
+            "gold": 260
           },
           {
             "type": "giveXp",
-            "amount": 360
+            "amount": 440
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone10_clear"
+          },
+          {
+            "type": "journal",
+            "text": "Le Nid de Vermine : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone11",
+    "nom": "Arène — Le Cercle Maudit",
+    "description": "Le Cercle Maudit",
+    "dimensions": {
+      "w": 17,
+      "h": 10
+    },
+    "ambiance": "interieur",
+    "startMessage": "LE CERCLE MAUDIT. Un cercle d’invocation saigne : Cultistes et Mutants (CORROMPUS) protègent un Guerrier du Chaos (CHAMPION, Armure 5) et deux Sanguinaires de Khorne (DÉMONIAQUE, Frénésie, Instable, Peur). Le sol corrompu teste l’âme.",
+    "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "terre",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "terre",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "sang",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 1
+        }
+      },
+      {
+        "id": "zone11-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 1
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone11-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 1
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone11-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone11-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone11-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone11-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone11-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone11-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 8
+        },
+        "ref": "coffre"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone11",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 12,
+          "h": 10
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone11"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone11",
+        "enemies": [
+          {
+            "ref": "Cultiste",
+            "pos": {
+              "x": 13,
+              "y": 1
+            }
+          },
+          {
+            "ref": "Sanguinaire de Khorne",
+            "pos": {
+              "x": 3,
+              "y": 2
+            }
+          },
+          {
+            "ref": "Mutant",
+            "pos": {
+              "x": 15,
+              "y": 2
+            }
+          },
+          {
+            "ref": "Guerrier du Chaos",
+            "pos": {
+              "x": 14,
+              "y": 4
+            }
+          },
+          {
+            "ref": "Mutant",
+            "pos": {
+              "x": 3,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Sanguinaire de Khorne",
+            "pos": {
+              "x": 15,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Cultiste",
+            "pos": {
+              "x": 12,
+              "y": 7
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 320
+          },
+          {
+            "type": "giveXp",
+            "amount": 520
+          },
+          {
+            "type": "giveTrapping",
+            "trapping": "Hallebarde",
+            "qualities": [
+              "Tranchante"
+            ],
+            "identified": false
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone11_clear"
+          },
+          {
+            "type": "setFlag",
+            "flag": "chance_dispo"
+          },
+          {
+            "type": "journal",
+            "text": "Le Cercle Maudit : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone12",
+    "nom": "Arène — Le Sépulcre",
+    "description": "Le Sépulcre",
+    "dimensions": {
+      "w": 15,
+      "h": 10
+    },
+    "ambiance": "interieur",
+    "startMessage": "LE SÉPULCRE. Un Spectre de cairn s’élève du caveau central — sa TERREUR fige le sang (Test de Terreur, plus dur que la Peur). Ultime palier avant l’Antre du Dragon.",
+    "tiles": [
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "terre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "terre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
+      "terre",
+      "terre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "terre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "terre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 1
+        }
+      },
+      {
+        "id": "zone12-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 1
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone12-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 1
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone12-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone12-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone12-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone12-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone12-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone12-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 8
+        },
+        "ref": "coffre"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone12",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 10
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone12"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone12",
+        "enemies": [
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 13,
+              "y": 1
+            }
+          },
+          {
+            "ref": "Spectre de cairn",
+            "pos": {
+              "x": 7,
+              "y": 4
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 13,
+              "y": 7
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 380
+          },
+          {
+            "type": "giveXp",
+            "amount": 600
           },
           {
             "type": "giveTrapping",
@@ -3448,7 +4376,7 @@
           },
           {
             "type": "setFlag",
-            "flag": "zone9_clear"
+            "flag": "zone12_clear"
           },
           {
             "type": "journal",
@@ -3464,39 +4392,35 @@
     "flags": {}
   },
   {
-    "id": "arene-zone10",
+    "id": "arene-zone13",
     "nom": "Arène — L’Antre du Dragon",
     "description": "L’Antre du Dragon",
     "dimensions": {
-      "w": 18,
-      "h": 14
+      "w": 19,
+      "h": 13
     },
     "ambiance": "interieur",
     "startMessage": "L’ANTRE DU DRAGON. Un Dragon des ténèbres MONSTRUEUX (occupe 4×4) crache un SOUFFLE de ténèbres (attaque de zone) et inspire la TERREUR. L’épreuve ULTIME — le trésor est à ce prix.",
     "tiles": [
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
       "mur",
       "cendre",
       "cendre",
@@ -3515,193 +4439,45 @@
       "cendre",
       "cendre",
       "cendre",
+      "mur",
+      "mur",
       "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "terre",
       "terre",
       "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
-      "terre",
-      "terre",
-      "terre",
       "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
       "cendre",
+      "mur",
+      "mur",
       "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "terre",
       "terre",
       "terre",
-      "terre",
-      "terre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
-      "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
       "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
       "cendre",
+      "mur",
       "mur",
       "cendre",
       "cendre",
@@ -3720,12 +4496,159 @@
       "cendre",
       "cendre",
       "cendre",
+      "mur",
+      "mur",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
       "cendre",
-      "cendre"
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "terre",
+      "terre",
+      "terre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "terre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur",
+      "mur"
     ],
     "entities": [
       {
@@ -3733,87 +4656,60 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 7
+          "y": 1
         }
       },
       {
-        "id": "zone10-p0",
+        "id": "zone13-p0",
         "kind": "prop",
         "pos": {
-          "x": 4,
-          "y": 4
+          "x": 6,
+          "y": 1
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone13-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 5
         },
         "ref": "statue"
       },
       {
-        "id": "zone10-p1",
+        "id": "zone13-p2",
         "kind": "prop",
         "pos": {
-          "x": 4,
+          "x": 6,
           "y": 9
-        },
-        "ref": "statue"
-      },
-      {
-        "id": "zone10-p2",
-        "kind": "prop",
-        "pos": {
-          "x": 6,
-          "y": 6
-        },
-        "ref": "tonneau"
-      },
-      {
-        "id": "zone10-p3",
-        "kind": "prop",
-        "pos": {
-          "x": 6,
-          "y": 7
-        },
-        "ref": "caisse"
-      },
-      {
-        "id": "zone10-p4",
-        "kind": "prop",
-        "pos": {
-          "x": 1,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone10-p5",
-        "kind": "prop",
-        "pos": {
-          "x": 16,
-          "y": 0
-        },
-        "ref": "feu-camp"
-      },
-      {
-        "id": "zone10-p6",
-        "kind": "prop",
-        "pos": {
-          "x": 9,
-          "y": 10
         },
         "ref": "mare-sang"
       },
       {
-        "id": "zone10-p7",
+        "id": "zone13-p3",
         "kind": "prop",
         "pos": {
-          "x": 2,
-          "y": 12
+          "x": 14,
+          "y": 9
         },
         "ref": "cadavre"
       },
       {
-        "id": "zone10-p8",
+        "id": "zone13-p4",
         "kind": "prop",
         "pos": {
-          "x": 16,
-          "y": 12
+          "x": 3,
+          "y": 10
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone13-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 17,
+          "y": 10
         },
         "ref": "coffre"
       }
@@ -3821,26 +4717,33 @@
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-zone10",
+        "id": "fight-enc-zone13",
         "rect": {
           "x": 5,
           "y": 0,
-          "w": 13,
-          "h": 14
+          "w": 14,
+          "h": 13
         },
         "once": true,
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-zone10"
+            "encounter": "enc-zone13"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-zone10",
+        "id": "enc-zone13",
         "enemies": [
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 16,
+              "y": 1
+            }
+          },
           {
             "statblock": {
               "name": "Dragon des ténèbres",
@@ -3870,21 +4773,21 @@
               "size": "monstrueuse"
             },
             "pos": {
-              "x": 13,
-              "y": 5
+              "x": 7,
+              "y": 4
             }
           },
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 8,
-              "y": 2
+              "x": 1,
+              "y": 11
             }
           },
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 8,
+              "x": 17,
               "y": 11
             }
           }
@@ -3892,11 +4795,11 @@
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 320
+            "gold": 480
           },
           {
             "type": "giveXp",
-            "amount": 500
+            "amount": 780
           },
           {
             "type": "giveTrapping",
@@ -3911,7 +4814,7 @@
           },
           {
             "type": "setFlag",
-            "flag": "zone10_clear"
+            "flag": "zone13_clear"
           },
           {
             "type": "journal",

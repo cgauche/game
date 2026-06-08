@@ -5,6 +5,16 @@ import { validateScene } from '../../state/validateScene';
 import { isWalkable, type Scene } from '../../state/scene';
 import { findCreature, findTrapping } from '../../data';
 import { MERCHANTS } from '../../state/merchants/index';
+import { entitySize } from '../../state/spawn';
+import { footprintTiles } from '../../state/footprint';
+import { terrainWalkable } from '../../state/terrain';
+
+/** Terrain de base d'une zone = tuile la PLUS fréquente (le sol remplit la grille ; murs/eau = minorité). */
+function baseTerrain(tiles: string[]): string {
+  const count: Record<string, number> = {};
+  for (const t of tiles) count[t] = (count[t] ?? 0) + 1;
+  return Object.entries(count).sort((a, b) => b[1] - a[1])[0][0];
+}
 
 /**
  * L'arène est un PROJET de données pures (créable/éditable dans l'éditeur) qui tourne sur le moteur
@@ -16,12 +26,15 @@ const project = JSON.parse(
 ) as Scene[];
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('11 scènes, entrée = arene-zone1, hub + 10 zones reliées', () => {
-    expect(project).toHaveLength(11);
+  it('14 scènes, entrée = arene-zone1, hub + 13 zones reliées (rampe longue)', () => {
+    expect(project).toHaveLength(14);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
-    expect(ids).toContain('arene-zone10'); // L'Antre du Dragon (finale)
+    expect(ids).toContain('arene-zone13'); // L'Antre du Dragon (finale)
+    // 13 zones distinctes (zone1..zone13)
+    const zones = ids.filter((id) => id.startsWith('arene-zone'));
+    expect(new Set(zones).size).toBe(13);
   });
 
   it('validateScene(projet) ne lève AUCUNE erreur (transitions/dialogues/ids OK)', () => {
@@ -38,14 +51,18 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('chaque ennemi spawn sur une case DANS la carte et MARCHABLE (pas sur un mur/eau/décor)', () => {
+  it('chaque ennemi spawn sur une EMPREINTE entière DANS la carte et MARCHABLE (mur/eau/décor exclus)', () => {
+    // Footprint complet (Grande 2×2 / Énorme 3×3 / Monstrueuse 4×4) : toutes les cases occupées doivent
+    // être dans la carte ET marchables — sinon un grand monstre déborde sur un mur (placement incohérent).
     const bad: string[] = [];
     for (const sc of project)
       for (const enc of sc.encounters)
         for (const e of enc.enemies) {
-          const { x, y } = e.pos;
-          const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
-          if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? '?'}@(${x},${y})`);
+          const size = entitySize(e);
+          for (const { x, y } of footprintTiles(e.pos, size)) {
+            const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
+            if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? e.statblock?.name ?? '?'}@(${x},${y})`);
+          }
         }
     expect(bad).toEqual([]);
   });
@@ -76,8 +93,38 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('chaque zone est UNIQUE : terrains de base distincts (campagne démo)', () => {
     const zones = project.filter((s) => s.id.startsWith('arene-zone'));
-    const bases = zones.map((z) => z.tiles[0]); // 1re tuile = terrain de base
-    expect(new Set(bases).size).toBeGreaterThanOrEqual(4); // au moins 4 sols différents sur 10 zones
+    const bases = zones.map((z) => baseTerrain(z.tiles)); // sol dominant de la zone
+    expect(new Set(bases).size).toBeGreaterThanOrEqual(10); // ≥10 sols différents sur 13 zones
+  });
+
+  it('VRAIS MURS : chaque zone est CLÔTURÉE par une structure (mur/eau/sous-bois), pas un champ vide', () => {
+    // Un layout tactique cohérent est borné par des tuiles INFRANCHISSABLES : murs de pierre (intérieur),
+    // sous-bois/eau (marais). On exige une masse structurelle ≥ périmètre minimal — preuve d'une enceinte
+    // (et de structure interne), pas un empilement d'objets sur un sol vide.
+    for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
+      const structural = sc.tiles.filter((t) => !terrainWalkable(t)).length;
+      const { w, h } = sc.dimensions;
+      expect(structural, `${sc.id} doit être clôturé`).toBeGreaterThanOrEqual(w + h); // ~un demi-périmètre au moins
+    }
+  });
+
+  it('VITRINE du bestiaire & des Traits (même non codés) : Champion, Corruption, Démoniaque, Venin, Taille', () => {
+    // L'arène fait découvrir un large bestiaire et des Traits canoniques pas encore tous codés mais déjà
+    // présents en DONNÉES (« ça reste des systèmes qu'on veut tester »). On vérifie qu'ils sont référencés.
+    const refs = new Set(
+      project.flatMap((s) => s.encounters.flatMap((e) => e.enemies.map((en) => en.ref).filter(Boolean))),
+    );
+    expect(refs.size).toBeGreaterThanOrEqual(18); // large vitrine (≥18 créatures distinctes)
+    // Traits canoniques (LDB 85) portés par les créatures référencées.
+    const traitsOf = (ref?: string) => (ref ? findCreature(ref)?.traits ?? [] : []);
+    const allTraits = [...refs].flatMap((r) => traitsOf(r as string));
+    for (const trait of [/^Champion$/, /^Corruption \(/, /^Démoniaque/, /^Venin$/]) {
+      expect(allTraits.some((t) => trait.test(t)), `Trait ${trait}`).toBe(true);
+    }
+    // Une créature MONSTRUEUSE (Dragon, statbloc) + une Énorme (Vouivre, par ref) au moins.
+    const sizes = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies.map((en) => entitySize(en))));
+    expect(sizes).toContain('monstrueuse');
+    expect(sizes).toContain('enorme');
   });
 
   it('les ennemis d’une vague sont RÉPARTIS (pas tous dans la même colonne)', () => {
