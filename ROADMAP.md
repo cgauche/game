@@ -343,7 +343,7 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
   *(Queue/Langue : ✅ attaques de créature, Jalon 1. Immunité Psychologie : ✅ T5. Réserve : offset de selle à affiner à l'œil ; charge montée de l'IA garde encore la F du cavalier — `dmgProxy` côté joueur seulement.)*
 - **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
-## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(en cours — #1 Qualité COMPLET ; Temps #T1 Horloge + #T1c Jour/Nuit LIVRÉS ; #T2/#T3 EN SUSPENS ; Marchand remonté = PROCHAIN)*
+## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(en cours — #1 Qualité COMPLET ; Temps #T1 + #T1c LIVRÉS ; #2 Marchand COMPLET (v1 + lot 2 + prix paramétrables) ; #T2/#T3 EN SUSPENS ; #3 Arène = PROCHAIN)*
 
 Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
 Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
@@ -354,7 +354,7 @@ Voyage** s'insère **AVANT le Marchand** — le re-stock de Disponibilité, la F
 guérison en dépendent. **Re-séquencé une 2e fois 2026-06-07** (décision utilisateur) : seul **#T1
 Horloge** (+ **#T1c Jour/Nuit**) était nécessaire au Marchand (il est *time-ready*, l'horloge est en
 place) ; **#T2 Voyage et #T3 Cascade sont MIS EN SUSPENS** et le **Marchand est remonté AVANT eux**.
-Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand → (#T2 / #T3 en suspens) → Arène** :
+Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand ✓ → (#T2 / #T3 en suspens) → Arène** :
 
 - **#1 — Qualité d'objet (Fabrication)** *(spec faite)* : Atouts/Défauts d'objet **par instance**
   (artisanat — Léger/Pratique/Raffiné/Solide ; Bâclé/Laid/Peu Fiable/Volumineux) ; effets **prix
@@ -377,13 +377,14 @@ Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand → (#T2 / #T3 en s
   - **✅ #T1c — Cycle jour/nuit piloté par l'horloge LIVRÉ** (2026-06-07, specs+plans `2026-06-07-cycle-jour-nuit-*`) : le jour/nuit vient de l'**heure**, plus de la scène (`ambiance` = Intérieur/Extérieur) ; **7 phases d'affichage** + obscurité binaire paramétrable (`NIGHT_WINDOW`) ; **`sceneIsDark` unique** câblé au combat (−20 tir nuit, LDB 14 l.107) + rendu ; Effet **`setTime`** (forcer une scène de nuit via trigger) ; HUD jour-de-semaine + phase + heure ; exposition éditeur (ambiance + builder `setTime`).
   - **⏸️ #T2 — Voyage** *(EN SUSPENS)* : graphe de lieux + distances + coût-temps (vitesse = Mouvement, RAW Déplacement) + rencontres + repos. Consommera `advanceTime`.
   - **⏸️ #T3 — Cascade RAW** *(EN SUSPENS)* : ce que le temps déclenche sur `EVT.TIME_ADVANCED` — guérison (LDB 18), Fatigue/Exténué, maladies (LDB 20), Corruption, **re-stock marchand**.
-- **#2 — Marchand** *(**REMONTÉ — PROCHAIN livrable** ; #T1 horloge en place → le cœur transactionnel ne dépend PAS de #T2/#T3, seul le re-stock dans le temps attendra #T3. Décisions en **annexe** de la spec temps-voyage : v1 transactionnel #2a (monnaie `bronze`↔`brass`) + #2b (UI achat/vente) + #2f (éditeur) ; **rachat 10 % paramétrable** — aucune règle RAW, LDB 59 « achat/vente optionnels » ; **scopé par catégorie** (herboriste ≠ arquebuses) ; archétype = 6ᵉ famille `defs/` ; **time-ready** — re-stock branché une fois #T3 en place)* (étend **Jalon 5** « achats/marchandage, fabrication ») : pérenne et
-  **paramétrable dans l'éditeur** (famille de registre + override par entité) ; **Disponibilité**
-  RAW (% par taille de colonie, LDB 59) ; **Marchandage** = Test opposé (gagner −10 % / **−20 % si DR
-  net ≥ 6 ou talent Négociateur**, LDB 60), **un jet par transaction VERROUILLÉ** (anti-abus de
-  re-tirage) ; **Évaluation** (révèle la qualité cachée ; estime ±10 % Rare/Exotique) ; **achat/vente**
-  (revente ½ prix, LDB 60) ; **réparation d'armure** (10 %/PA, LDB 63) ; `spendMoney`. Inventaire
-  par **liste** ou **catégorie auto-gérée**, `restockOnVisit`.
+- **✅ #2 — Marchand COMPLET (v1 + lot 2 + prix paramétrables)** *(2026-06-08, suite verte, RAW cité, cf. mémoire `game-marchand-v1`)* (étend **Jalon 5** « achats/marchandage, fabrication ») :
+  - **v1 transactionnel** : achat/vente, **Disponibilité RAW** (LDB 59 : Commune toujours ; Limitée 30/60/90, Rare 15/30/45 par Village/Ville/Cité), **monnaie canon** (`money.ts` — CO/pa/sc), **archétype = 7ᵉ famille `defs/`** (scopé par catégorie : herboriste ≠ arquebuses), `MerchantPanel` (vue à props testable + connecté), exposition éditeur.
+  - **Marchandage** (LDB 60 l.12) = Test **opposé** (gagner −10 % / **−20 % si Succès Stupéfiant DR≥6 ou talent Négociateur**) ; **achat et vente = 2 négociations distinctes** (B), **1 jet/visite chacune** ; **botch** = perdre par net DR≥6 → **marchand méfiant** (plus de marchandage la visite, C).
+  - **Évaluation** (LDB 60 l.10) : révèle la **qualité cachée** d'un **objet non identifié** (flag `identified` — masque l'affichage, qualités actives mécaniquement) + estime ±10 % Rare/Exotique. **Qualité magique** ADE2 « De plaies atroces » (= Dévastatrice) en démo.
+  - **Réparation d'armure** (10 %/PA perdu, 30 % si pièce brisée — LDB 63 l.97-98).
+  - **Prix paramétrables** (override archétype **et** par entité, **champs éditeur**) : **`resaleRate`** (rachat à la vente) + **`buyMarkup`** (majoration à l'achat — « vend plus cher »). **Vente Option 2** (lecture miroir LDB 60 l.22) : **¼ par défaut** (le marchand lowballe), **½ si Marchandage GAGNÉ** (½ = plafond, on ne dépasse jamais).
+  - **Marchand dans un dialogue** : Effet **`openMerchant`** (`interactEntity` priorise le dialogue → un choix « voir les marchandises » ouvre la boutique). 2 scénarios de test (`10-marchand`, `11-deux-marchands`).
+  - **Reste** : **re-stock dans le temps** (#T3 — re-seed `rollStock` sur `EVT.TIME_ADVANCED` + persistance de la déplétion entre visites) ; recette navigateur (scénarios prêts).
 - **#3 — Arène** (banc d'essai du marchand) : vagues croissantes + interlude marchand (restock par
   vague) + loot.
 
