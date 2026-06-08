@@ -289,6 +289,34 @@ function FicheBody({ hero }: { hero: Combatant }) {
         )}
       </div>
 
+      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0) && (
+        <div className="sheet-afflictions">
+          <div className="mini-title">Afflictions</div>
+          <div className="inv-rows">
+            {(hero.traumas ?? []).map((t, i) => (
+              <div key={`t${i}`} className="inv-row" title={t.note} style={{ alignItems: 'center' }}>
+                <span className="ir-name">🩼 {t.label}</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  {t.recoveryDays != null
+                    ? `convalescence ${t.recoveryDays} j`
+                    : t.needsSurgery
+                    ? 'Chirurgie requise'
+                    : 'permanent'}
+                </span>
+              </div>
+            ))}
+            {(hero.diseases ?? []).map((d, i) => (
+              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => s.kind).join(' · ')} style={{ alignItems: 'center' }}>
+                <span className="ir-name">🦠 {d.name}</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  {d.phase === 'incubation' ? `incubation : ${d.daysLeft} j` : `${d.daysLeft} j restants`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="sheet-inventory">
         <div className="mini-title">Inventaire & équipement ({items.length})</div>
         <div className="inv-rows">
