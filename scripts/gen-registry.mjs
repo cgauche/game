@@ -101,6 +101,15 @@ export const REGISTRIES = [
     type: 'BuildingDef',
     typeFrom: '../types',
   },
+  {
+    // Terrains / sols : 1 terrain = 1 fichier defs/ (méta PURE + viz gradient/swatch unifiés).
+    dir: 'src/state/terrain/defs',
+    out: 'src/state/terrain/_registry.generated.ts',
+    exportName: 'terrain',
+    arrayName: 'TERRAIN_DEFS',
+    type: 'TerrainDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {
