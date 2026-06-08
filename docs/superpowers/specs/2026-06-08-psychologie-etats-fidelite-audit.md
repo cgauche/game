@@ -68,3 +68,17 @@ Détermination « retirer un État +1 PB » ; « Je ne faillirai pas ! » ; Fré
    cauchemars (hook fin de jour) — selon temps.
 
 Chaque correctif est **sourcé au LDB FR** (citation chap.+lignes) et **couvert par un test** avant commit.
+
+## État (2026-06-08) — LOTS 1-5 LIVRÉS
+
+- **Lot 1-3** : Détermination/immunité psy, Brisé+approche, Surprise/orientation (flanc-dos) — livrés.
+- **Lot 4 (Finitions d'États)** : À Terre −20 dépl ; Sonné +1 Av ; **Inconscient** « Je ne faillirai pas ! »
+  auto-réussite+critique / tir auto à bout portant (`0d9ebdd`) ; Empoisonné (Résistance fin de Round
+  + Exténué) ; **Hémorragique** coagulation→Exténué (`892848e`) ; perte d'Avantage à l'ajout d'État ;
+  **Empêtré « se libérer »** (Test opposé de Force vs source `sourceId`) + **En flammes « se rouler »**
+  (Athlétisme) — Action + modale `pendingStateRecovery` + ActionBar + IA instantanée (`b24b578`).
+- **Lot 5 (Méta/éditeur)** : Effet **`restoreFortune`** (Chance regagnée, max = Destin) exposé éditeur
+  (`8e5129e`) ; **Trauma cauchemars** — `nightmareCheck` (Calme Facile +40 nocturne → Exténué),
+  hook `nightsCrossed` dans `advanceTime`, flag héros `nightmares`, Effet éditeur `inflictNightmares`
+  (l'auteur assigne le trauma — jamais inventé). Helper pur partagé `recoveredStacks` (Empêtré/En
+  flammes/Hémorragie). Suite verte, typecheck propre.

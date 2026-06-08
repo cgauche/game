@@ -22,6 +22,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveMoney',
   'giveXp',
   'restoreFortune',
+  'inflictNightmares',
   'startCombat',
   'transition',
   'transitionBack',
@@ -40,6 +41,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveMoney: 'Donner/retirer de l’argent',
   giveXp: 'Donner des PX (groupe)',
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
+  inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -78,6 +80,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'endDialogue' };
     case 'restoreFortune':
       return { type: 'restoreFortune' };
+    case 'inflictNightmares':
+      return { type: 'inflictNightmares', heroId: '' };
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
     default:
@@ -121,6 +125,9 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         {effect.type === 'giveItem' && <input placeholder="Nom de l’objet" value={e.item ?? ''} onChange={(ev) => upd({ item: ev.target.value })} />}
         {effect.type === 'giveTrapping' && (
           <input placeholder="Libellé exact (trappings.json), ex. Chemise de mailles" value={e.trapping ?? ''} onChange={(ev) => upd({ trapping: ev.target.value })} />
+        )}
+        {effect.type === 'inflictNightmares' && (
+          <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">

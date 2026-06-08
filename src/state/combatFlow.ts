@@ -224,6 +224,19 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         }));
         get().log('Début de session : Points de Chance regagnés (maximum = Destin).');
         break;
+      case 'inflictNightmares': {
+        // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
+          const target = idx >= 0 ? idx : 0;
+          who = s.party[target].name;
+          return { party: s.party.map((h, i) => (i === target ? { ...h, nightmares: true } : h)) };
+        });
+        if (who) get().log(`${who} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+        break;
+      }
       case 'giveTrapping': {
         const it = itemFromTrapping(e.trapping);
         if (!it) {

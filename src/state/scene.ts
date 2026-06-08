@@ -183,6 +183,9 @@ export type Effect =
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }
+  /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
+   *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
+  | { type: 'inflictNightmares'; heroId?: string }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

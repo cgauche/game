@@ -56,12 +56,12 @@ import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks, nightmareCheck } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
-import { CAMPAIGN_START } from '../engine/clock';
+import { CAMPAIGN_START, nightsCrossed } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
@@ -3039,7 +3039,8 @@ export const useGame = create<GameState>((set, get) => ({
 
   advanceTime: (minutes) => {
     if (minutes <= 0) return;
-    set({ gameTime: get().gameTime + minutes });
+    const before = get().gameTime;
+    set({ gameTime: before + minutes });
     bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
     // HORS COMBAT : faire progresser les États qui tickent (Hémorragique/Poison/Flammes) et l'agonie au
     // prorata du temps écoulé (1 Round ≈ TIME_COST.combatRound min). En combat, la frontière de Round le fait.
@@ -3049,6 +3050,14 @@ export const useGame = create<GameState>((set, get) => ({
         const party = get().party;
         const log = outOfCombatUpkeep(party, rounds, battleRng());
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
+      }
+      // Cauchemars (LDB 21 l.92) : un Test de Calme Facile (+40) par nuit franchie, pour chaque héros marqué.
+      const nights = nightsCrossed(before, before + minutes);
+      if (nights > 0) {
+        const party = get().party;
+        const lines: string[] = [];
+        for (const h of party) if (h.nightmares) for (let n = 0; n < nights; n++) lines.push(...nightmareCheck(h, battleRng()));
+        if (lines.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...lines] });
       }
     }
   },

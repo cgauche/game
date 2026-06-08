@@ -251,6 +251,9 @@ export interface Combatant {
   criticalWounds?: number;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou
+   *  Exténué. Posé par l'Effet d'éditeur `inflictNightmares` (assigné par l'auteur, jamais inventé). */
+  nightmares?: boolean;
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
   nextActionPenalty?: number;
