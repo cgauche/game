@@ -37,6 +37,8 @@ import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
 import { walkXY, walkDuration } from './walkPath';
+import { sizeTokenScale } from './sizeScale';
+import { sizeFootprint, occupiesTile } from '../state/footprint';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
@@ -371,8 +373,11 @@ export function IsoStage() {
       // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
       // l'échelle d'espèce (bipède ou créature) vient du backend.
       const r = pickBackend({ kind: 'combatant', combatant: c });
-      const el = tokenNode(r.id, wp.x, wp.y, r.body, 0.62 * r.speciesScale, ring, isOutOfAction(c), wp.walking);
-      objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
+      // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
+      const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
+      const cx = wp.x + off, cy = wp.y + off;
+      const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking);
+      objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
   } else {
     for (const ent of scene.entities) {
@@ -466,7 +471,7 @@ export function IsoStage() {
     const { x, y } = t;
 
     if (st.mode === 'battle') {
-      const occ = st.battle?.combatants.find((c) => c.pos && c.pos.x === x && c.pos.y === y && !isOutOfAction(c));
+      const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
       // En mode incantation, on peut cibler n'importe quel combattant (allié,
       // ennemi ou soi) ; sinon seuls les ennemis sont cliquables pour attaquer.
       if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast')) st.battleClickEntity(occ.id);
