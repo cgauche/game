@@ -79,35 +79,6 @@ export function baseSpeciesOf(species: string): string {
   return 'Humain';
 }
 
-/** TEMPORAIRE (sera supprimé quand les Races fournissent le gabarit) : reproduit l'ex-table
- *  PROPS — nom d'espèce → carrure EXACTE, pour rester ISO-RENDU pendant la migration. */
-const PROPS_GABARIT: Record<string, GabaritDef> = {
-  Humain:         { id: 'moyen',           sl: 1.0,  st: 1.0,  legs: 1.0 },
-  Halfling:       { id: 'halfling',        sl: 0.66, st: 1.05, legs: 0.7 },
-  Nain:           { id: 'courtaud',        sl: 0.74, st: 1.25, legs: 0.62 },
-  Gnome:          { id: 'gnome',           sl: 0.5,  st: 0.72, legs: 0.66 },
-  Ogre:           { id: 'brute',           sl: 1.35, st: 1.7,  legs: 0.8 },
-  Skaven:         { id: 'elance-voute',    sl: 0.96, st: 0.84, legs: 0.92 }, // homme-rat voûté ÉLANCÉ (anti-nain : maigre, pas trapu), longue queue rose
-  'Haut-Elfe':    { id: 'elance',          sl: 1.08, st: 0.92, legs: 1.12 },
-  'Elfe sylvain': { id: 'elance',          sl: 1.05, st: 0.9,  legs: 1.12 },
-  // Phase B — familles monstrueuses bipèdes :
-  Orc:            { id: 'trapu-massif',    sl: 1.05, st: 1.5,  legs: 0.78 }, // massif épaules larges, voûté, jambes courtes trapues
-  Gobelin:        { id: 'gremlin',         sl: 0.74, st: 0.92, legs: 0.78, head: 1.3 }, // petit fourbe, grosse tête, menu voûté
-  Snotling:       { id: 'gremlin-mini',    sl: 0.46, st: 1.05, legs: 0.66, head: 1.9 }, // minuscule dodu, énorme tête de gremlin
-  'Homme-bête':   { id: 'trapu-massif',    sl: 1.02, st: 1.35, legs: 0.92 }, // trapu musclé voûté
-  Minotaure:      { id: 'brute',           sl: 1.32, st: 1.7,  legs: 0.9 },  // colossal, épaules surdimensionnées
-  Squelette:      { id: 'decharne',        sl: 1.0,  st: 0.74, legs: 1.0 },  // décharné, membres grêles
-  Zombie:         { id: 'trapu-voute',     sl: 0.98, st: 1.08, legs: 0.92 }, // trapu voûté
-  Goule:          { id: 'trapu-voute',     sl: 0.96, st: 0.92, legs: 0.9 },  // maigre noueux, semi-quadrupède
-  Troll:          { id: 'brute-bras-longs', sl: 1.45, st: 1.55, legs: 0.7, arms: 1.6 }, // grand, bras démesurés jusqu'au sol, petites jambes, moins « blob »
-  Vampire:        { id: 'elance',          sl: 1.04, st: 0.96, legs: 1.0 },  // élancé aristocratique
-  Démon:          { id: 'elance',          sl: 1.06, st: 0.92, legs: 1.06 }, // élancé nerveux, membres longs
-};
-
-/** TEMPORAIRE : nom d'espèce → GabaritDef exact (ex-PROPS via baseSpeciesOf). Iso-rendu. */
-export function gabaritForSpecies(species: string): GabaritDef {
-  return PROPS_GABARIT[baseSpeciesOf(species)] ?? PROPS_GABARIT.Humain;
-}
 
 export function baseSkeleton(p: GabaritDef, sex: 'M' | 'F'): Skeleton {
   let sk = scaleSkeleton(HUMAIN_M, p.sl, p.st);

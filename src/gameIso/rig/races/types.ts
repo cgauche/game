@@ -18,8 +18,6 @@ export interface RaceFeature {
  *  SPECIES_POSE et la config biped des defs créature. */
 export interface RaceDef {
   id: string;                   // 'Humain', 'Ogre', 'Skaven'… (== sortie canonique de baseSpeciesOf)
-  match?: string;               // regex nom→race (remplace l'if-chain detectSpecies/baseSpeciesOf)
-  matchPriority?: number;       // plus bas = testé d'abord
   gabarit: string;              // id du gabarit par défaut
   gabaritOverride?: Partial<Pick<GabaritDef, 'sl' | 'st' | 'legs' | 'arms' | 'head'>>;
   palette?: StoredPalette;      // peau/cheveux/yeux par défaut (ex-SPECIES_PALETTES)
