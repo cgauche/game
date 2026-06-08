@@ -946,12 +946,15 @@ export function Editor() {
                             selectSpawn(encIdx, idx);
                           }}
                         >
-                          <path
-                            d={diamondPath(en.pos.x, en.pos.y, dims)}
-                            fill="rgba(192,57,43,0.32)"
-                            stroke={isSel ? '#ffe066' : '#c0392b'}
-                            strokeWidth={isSel ? 2.5 : 1.5}
-                          />
+                          {footprintTiles(en.pos, entitySize(en)).map((t) => (
+                            <path
+                              key={`fp-${t.x}-${t.y}`}
+                              d={diamondPath(t.x, t.y, dims)}
+                              fill="rgba(192,57,43,0.32)"
+                              stroke={isSel ? '#ffe066' : '#c0392b'}
+                              strokeWidth={isSel ? 2.5 : 1.5}
+                            />
+                          ))}
                           <EntityToken ent={synth} dims={dims} />
                         </g>
                       ),
