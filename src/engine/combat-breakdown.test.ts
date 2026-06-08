@@ -85,6 +85,9 @@ describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged([]), 34, 52).woundsLost).toBe(7);
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice']), 34, 52).woundsLost).toBe(9);
   });
+  it('De plaies atroces (qualité magique ADE2 l.228) = Dévastatrice : max(DR, dé des unités)', () => {
+    expect(resolveStrayRangedHit(mk(), mk(), ranged(['De plaies atroces']), 34, 52).woundsLost).toBe(9);
+  });
   it('Percutante : +dé des unités sur les dégâts', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Percutante']), 34, 52).woundsLost).toBe(11);
   });
