@@ -57,7 +57,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf, mountUp, mountableNear } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -1888,7 +1888,23 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     return;
   }
 
-  const blocked = occupied(battle, enemy);
+  // Combat monté (LDB 14) : un PNJ à pied, non Engagé, adjacent à une monture LIBRE de son camp décide
+  // de l'enfourcher (aucun jet → simple Mouvement ; il pourra ensuite ATTAQUER, mais pas se déplacer en plus).
+  let justMounted = false;
+  if (!enemy.mountId && !isEngaged(enemy) && canTakeAction(enemy)) {
+    const freeMount = mountableNear(battle, enemy);
+    if (freeMount) {
+      mountUp(enemy, freeMount);
+      justMounted = true;
+      battle.log.push(`${enemy.name} enfourche ${freeMount.name}.`);
+      set({ battle: { ...battle } });
+      bus.emit(EVT.SCENE_DIRTY);
+    }
+  }
+  // Combat monté (LDB 14 l.215) : un cavalier ENNEMI se déplace selon la géométrie de sa MONTURE
+  // (empreinte + Mouvement) ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
+  const geom = mountOf(battle, enemy) ?? enemy;
+  const blocked = occupied(battle, geom);
   // Premier Projectile magique connu et prêt : la détection a besoin des données
   // de sort, donc elle reste ici (couche impure), pas dans la décision pure (ai.ts).
   const offensiveSpell = enemy.spells?.find((label) => {
@@ -1900,7 +1916,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     heroes,
     scene,
     blocked,
-    movement: effectiveMovement(enemy),
+    movement: justMounted ? 0 : effectiveMovement(geom), // à cheval : Mouvement de la monture (LDB 14 l.215) ; vient d'enfourcher → plus de déplacement ce tour
     offensiveSpell,
     smoke: smokeOf(battle),
   });
@@ -1925,6 +1941,17 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       }
     }, 350);
   };
+
+  // Combat monté (LDB 14 l.221) : une monture MONTÉE est dirigée par son cavalier — elle ne se déplace
+  // pas seule (le couple bouge au tour du cavalier). Sans le Trait Nerveux, elle peut consacrer SA propre
+  // Action à attaquer un adversaire au contact ; sinon elle passe son tour.
+  if (enemy.riderId) {
+    const nerveux = (enemy.traits ?? []).some((t) => /nerveux/i.test(t));
+    const foe = nerveux || !canAct ? undefined
+      : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= 1);
+    if (foe) { attackThenAdvance(foe); return; }
+    return advanceTurn(get, set);
+  }
 
   // Sonné : l'ennemi ne peut pas agir → il renonce à son Action (l'éventuel déplacement
   // a déjà été réduit de moitié via effectiveMovement). Le « move » plus bas garde son
@@ -1951,11 +1978,14 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
-      const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(enemy.size));
+      const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(geom.size));
       enemy.pos = action.to;
-      displaceSmaller(get, enemy); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+      if (geom !== enemy) geom.pos = { ...action.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
+      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(enemy.id, path);
+      if (geom !== enemy) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
+      if (geom !== enemy) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1963,7 +1993,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       if (canAct && combatDistance(enemy, tgt) <= 1) {
         // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
         if (!wasEngaged) {
-          const adv = chargeAdvantage(effectiveMovement(enemy), distBefore);
+          const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
           if (adv) {
             enemy.advantage += adv;
             enemy.gainedAdvThisRound = true;
