@@ -13,7 +13,7 @@
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, manhattan, chebyshev, Pt } from './path';
-import { footprintChebyshev } from './footprint';
+import { footprintChebyshev, sizeFootprint } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
 import { groupMatch } from '../engine/groups';
 
@@ -91,7 +91,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const canCast = !frenzied && offensiveSpell != null && shootableHeroes.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0).
-  const reach = reachable(scene, pos, movement, blocked);
+  const reach = reachable(scene, pos, movement, blocked, sizeFootprint(enemy.size));
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
   // case atteignable lui est adjacente.

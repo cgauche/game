@@ -14,15 +14,17 @@ import { ResilienceButton } from './ResilienceButton';
 export function CastModal() {
   const pc = useGame((s) => s.pendingCast);
   const battle = useGame((s) => s.battle);
+  const party = useGame((s) => s.party);
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
   const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
-  if (!pc || !battle) return null;
-  const caster = battle.combatants.find((c) => c.id === pc.casterId);
-  const target = battle.combatants.find((c) => c.id === pc.targetId);
+  if (!pc) return null;
+  const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
+  const caster = pool.find((c) => c.id === pc.casterId);
+  const target = pool.find((c) => c.id === pc.targetId);
   const spell = findSpell(pc.spellLabel);
   if (!caster || !target || !spell) return null;
   const res = pc.result;

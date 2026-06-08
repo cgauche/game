@@ -4,7 +4,8 @@ import { maxEncumbrance } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, availableHealModes, isHealable } from '../engine/healing';
-import { careers } from '../data';
+import { isMagicMissile, isArcaneSpell } from '../engine/magic';
+import { careers, findSpell } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { pickView } from '../gameIso/rig/parts/types';
@@ -100,6 +101,67 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   );
 }
 
+/** Grimoire/livre de prières — incantation HORS COMBAT (couture D). Un héros lanceur cible self/allié.
+ *  Les Projectiles magiques (offensifs) sont marqués « en combat » : ils exigent une cible ennemie. */
+function SpellbookSection({ hero }: { hero: Combatant }) {
+  const party = useGame((s) => s.party);
+  const oocCastSpell = useGame((s) => s.oocCastSpell);
+  const oocFocusSpell = useGame((s) => s.oocFocusSpell);
+  const [targetId, setTargetId] = useState(hero.id);
+  const spells = (hero.spells ?? [])
+    .map((label) => findSpell(label))
+    .filter((s): s is NonNullable<ReturnType<typeof findSpell>> => !!s);
+  if (!spells.length) return null;
+  return (
+    <div className="sc-block sheet-spells">
+      <span className="mini-title">Sorts — incantation hors combat</span>
+      <label className="spell-target">
+        Cible :{' '}
+        <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+          {party.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.id === hero.id ? `${m.name} (soi)` : m.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="spell-list">
+        {spells.map((sp) => {
+          const offensive = isMagicMissile(sp);
+          return (
+            <div className="spell-row" key={sp.label} title={sp.desc}>
+              <span className="spell-name">
+                {sp.label}
+                {sp.cn != null ? ` · NI ${sp.cn}` : ''}
+              </span>
+              {offensive ? (
+                <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
+                  en combat
+                </span>
+              ) : (
+                <span className="spell-actions">
+                  {isArcaneSpell(sp) && (
+                    <button
+                      className="btn small"
+                      title="Test étendu de Focalisation : accumule du DR pour lancer au NI 0"
+                      onClick={() => oocFocusSpell(hero.id, sp.label)}
+                    >
+                      ✨ Focaliser
+                    </button>
+                  )}
+                  <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.label, targetId)}>
+                    🎲 Lancer
+                  </button>
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function FicheBody({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const setItemSkin = useGame((s) => s.setItemSkin);
@@ -184,6 +246,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
           )}
         </div>
       </div>
+
+      {!inBattle && <SpellbookSection hero={hero} />}
 
       <div className="sheet-skills">
         <div className="mini-title">Compétences</div>

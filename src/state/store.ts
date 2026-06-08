@@ -33,7 +33,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
@@ -68,13 +68,19 @@ import {
   encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
   encounterPsychConfirm as encounterPsychConfirmFlow,
 } from './encounterPsychFlow';
-import { findSpell, levelsForCareer, findSkill } from '../data/index';
+import { findSpell, levelsForCareer, findSkill, findTrapping, trappings } from '../data/index';
+import { makeRNG } from '../engine/dice';
+import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
+import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass } from '../engine/money';
+import { craftPriceFactor } from '../engine/qualities/craftEconomy';
+import { MERCHANTS } from './merchants/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
+import { sizeFootprint } from './footprint';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
@@ -359,6 +365,8 @@ export interface GameState {
   flags: Record<string, boolean>;
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
+  /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
+  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; stock: { label: string; qty: number }[] } | null;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
@@ -428,6 +436,10 @@ export interface GameState {
   setPendingInteract: (id: string | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
+  openMerchant: (entityId: string) => void;
+  closeMerchant: () => void;
+  buyItem: (label: string, heroId: string) => void;
+  sellItem: (uid: string, heroId: string) => void;
   testRoll: () => void;
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
@@ -479,6 +491,8 @@ export interface GameState {
   castBonusSL: () => void;
   castConfirm: () => void;
   castCancel: () => void;
+  /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
+  oocCastSpell: (casterId: string, label: string, targetId: string) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string) => void;
@@ -538,6 +552,8 @@ export interface GameState {
   focusForceSuccess: () => void;
   focusConfirm: () => void;
   focusCancel: () => void;
+  /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
+  oocFocusSpell: (casterId: string, label: string) => void;
   /** Test de Psychologie héros (Peur/Terreur, LDB 21) : Lancer, Chance, Appliquer. */
   psychRoll: () => void;
   psychReroll: () => void;
@@ -597,6 +613,17 @@ function healSubject(state: GameState, ph: PendingHeal, id: string): Combatant |
   return ph.inCombat ? state.battle?.combatants.find((c) => c.id === id) : state.party.find((c) => c.id === id);
 }
 
+/** Acteur d'incantation : en combat dans la file (`battle.combatants`), sinon dans le groupe (`party`).
+ *  Module-level (hors du scan « un jet = une modale »). Le MÊME flux d'incantation sert les deux
+ *  contextes — couture D, zéro duplication de la résolution/des effets. */
+function castActor(state: GameState, id: string): Combatant | undefined {
+  return (state.battle?.combatants ?? state.party).find((c) => c.id === id);
+}
+/** Patch de re-rendu après mutation EN PLACE d'un acteur (Chance/Résilience) : combat → battle, sinon groupe. */
+function castTouch(state: GameState): Partial<GameState> {
+  return state.battle ? { battle: { ...state.battle } } : { party: [...state.party] };
+}
+
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
   gameTime: CAMPAIGN_START,
@@ -641,6 +668,7 @@ export const useGame = create<GameState>((set, get) => ({
   flags: {},
   journal: [],
   dialogue: null,
+  merchant: null,
   battle: null,
   campaignSceneId: null,
   inventory: [],
@@ -928,6 +956,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
       return;
     }
+    if (ent.merchant) { get().openMerchant(ent.id); return; }
     if (ent.interact) {
       // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
       if (get().flags[`__fouille_${entityId}`]) {
@@ -963,6 +992,66 @@ export const useGame = create<GameState>((set, get) => ({
   closeDialogue: () => {
     if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
     set({ dialogue: null });
+  },
+
+  // ─── Marchand (#2) ───
+  openMerchant: (entityId) => {
+    const ent = get().scene?.entities.find((e) => e.id === entityId);
+    if (!ent?.merchant) return;
+    const arch = MERCHANTS[ent.merchant.archetype];
+    if (!arch) { get().log(`Archétype marchand inconnu : « ${ent.merchant.archetype} ».`); return; }
+    const settlement: Settlement = ent.merchant.settlement ?? arch.settlement;
+    const resaleRate = ent.merchant.resaleRate ?? arch.resaleRate;
+    // Catalogue filtré par catégorie (type/subType) de l'archétype.
+    const cat: CatalogItem[] = trappings
+      .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
+      .map((t) => ({ label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
+    // Instantané déterministe (seed dérivé de l'entité — stable pour la visite ; #T3 re-seedera au temps écoulé).
+    const seed = [...entityId].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+    const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
+    const tested = lines.filter((l) => l.test);
+    if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
+    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, stock: lines.map((l) => ({ label: l.label, qty: l.qty })) } });
+  },
+  closeMerchant: () => set({ merchant: null }),
+  buyItem: (label, heroId) => {
+    const m = get().merchant; if (!m) return;
+    const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
+    const t = findTrapping(label); if (!t) return;
+    const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities })));
+    if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
+    const it = itemFromTrapping(label); if (!it) return;
+    set((s) => ({
+      money: moneySub(s.money, cost)!,
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        clone.items = [...(clone.items ?? []), it];
+        recomputeLoadout(clone);
+        return clone;
+      }),
+      merchant: { ...s.merchant!, stock: s.merchant!.stock.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l)) },
+    }));
+    get().log(`Achat : ${label}.`);
+  },
+  sellItem: (uid, heroId) => {
+    const m = get().merchant; if (!m) return;
+    const hero = get().party.find((h) => h.id === heroId);
+    const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
+    const t = findTrapping(item.name);
+    const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
+    const gain = fromBrass(Math.round(base * m.resaleRate));
+    set((s) => ({
+      money: moneyAdd(s.money, gain),
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        clone.items = (clone.items ?? []).filter((i) => i.uid !== uid);
+        recomputeLoadout(clone);
+        return clone;
+      }),
+    }));
+    get().log(`Vente : ${item.name}.`);
   },
 
   seedRng: (seed) => {
@@ -1058,12 +1147,12 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
       const blocked = occupied(battle, active);
-      reach = reachable(scene, active.pos!, effectiveMovement(active), blocked);
+      reach = reachable(scene, active.pos!, effectiveMovement(active), blocked, sizeFootprint(active.size));
     }
     // Charge : seulement si pas déjà Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
     if (a === 'charge' && !battle.moved && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
       const blocked = occupied(battle, active);
-      reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked);
+      reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked, sizeFootprint(active.size));
     }
     // Quitter le mode incantation oublie le sort sélectionné.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
@@ -1220,11 +1309,13 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
 
+  // Le flux d'incantation est COMMUN au combat et au hors-combat (couture D) : les acteurs sont
+  // résolus dans `battle.combatants` OU `party` via `castActor`. Aucune branche d'effet dupliquée.
   castRoll: () => {
-    const { battle, pendingCast: pc } = get();
-    if (!battle || !pc || pc.result) return;
-    const caster = battle.combatants.find((c) => c.id === pc.casterId);
-    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const { pendingCast: pc } = get();
+    if (!pc || pc.result) return;
+    const caster = castActor(get(), pc.casterId);
+    const target = castActor(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell) return;
     const res = pc.missile
@@ -1233,42 +1324,57 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCast: { ...pc, result: res } });
   },
   castReroll: () => {
-    const { battle, pendingCast: pc } = get();
-    if (!battle || !pc || !pc.result) return;
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
     // Échec d'incantation = d100 propre > cible (roll > target), 1× max.
     if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
-    const caster = battle.combatants.find((c) => c.id === pc.casterId);
-    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const caster = castActor(get(), pc.casterId);
+    const target = castActor(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
-    set({ pendingCast: { ...pc, result: res, rerolled: true }, battle: { ...battle } });
+    set({ pendingCast: { ...pc, result: res, rerolled: true }, ...castTouch(get()) });
   },
   /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
   castBonusSL: () => {
-    const { battle, pendingCast: pc } = get();
-    if (!battle || !pc || !pc.result) return;
-    const caster = battle.combatants.find((c) => c.id === pc.casterId);
-    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
+    const caster = castActor(get(), pc.casterId);
+    const target = castActor(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
     const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
-    set({ pendingCast: { ...pc, result: res }, battle: { ...battle } });
+    set({ pendingCast: { ...pc, result: res }, ...castTouch(get()) });
   },
   castConfirm: () => {
-    const { battle, pendingCast: pc } = get();
-    if (!battle || !pc || !pc.result) return;
-    const caster = battle.combatants.find((c) => c.id === pc.casterId);
-    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
+    const caster = castActor(get(), pc.casterId);
+    const target = castActor(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     set({ pendingCast: null });
     if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused);
   },
   castCancel: () => set({ pendingCast: null }),
+  /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
+   *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
+  oocCastSpell: (casterId, label, targetId) => {
+    const { battle, party } = get();
+    if (battle) return; // en combat : l'incantation passe par l'action de combat
+    const caster = party.find((c) => c.id === casterId);
+    const spell = findSpell(label);
+    if (!caster || !spell) return;
+    if (isMagicMissile(spell)) {
+      get().log(`${spell.label} est un Projectile magique — il faut une cible ennemie (en combat).`);
+      return;
+    }
+    const target = party.find((c) => c.id === targetId) ?? caster;
+    castSpell(get, set, caster, target, label); // pose `pendingCast` (missile:false, focused selon caster.focus)
+  },
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
   battleFocusSpell: (label) => {
@@ -1284,44 +1390,45 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
+  // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `castActor`, sortie journal hors combat.
   focusRoll: () => {
-    const { battle, pendingFocus: pf } = get();
-    if (!battle || !pf || pf.result) return;
-    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const { pendingFocus: pf } = get();
+    if (!pf || pf.result) return;
+    const caster = castActor(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     if (!caster || !spell) return;
     set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()) } });
   },
   focusReroll: () => {
-    const { battle, pendingFocus: pf } = get();
-    if (!battle || !pf || !pf.result) return;
+    const { pendingFocus: pf } = get();
+    if (!pf || !pf.result) return;
     if (!canReroll(pf.result.dr === 0, !!pf.rerolled)) return; // aucun DR gagné → rejouable, 1× max
-    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const caster = castActor(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     if (!caster || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, battle: { ...battle } });
+    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, ...castTouch(get()) });
   },
   focusBonusSL: () => {
-    const { battle, pendingFocus: pf } = get();
-    if (!battle || !pf || !pf.result) return;
-    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const { pendingFocus: pf } = get();
+    if (!pf || !pf.result) return;
+    const caster = castActor(get(), pf.casterId);
     if (!caster || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, battle: { ...battle } });
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, ...castTouch(get()) });
   },
   focusForceSuccess: () => {
-    const { battle, pendingFocus: pf } = get();
-    if (!battle || !pf || !pf.result) return;
-    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    const { pendingFocus: pf } = get();
+    if (!pf || !pf.result) return;
+    const caster = castActor(get(), pf.casterId);
     if (!caster || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, battle: { ...battle } });
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, ...castTouch(get()) });
   },
   focusConfirm: () => {
     const { battle, pendingFocus: pf } = get();
-    if (!battle || !pf || !pf.result) return;
-    const caster = battle.combatants.find((c) => c.id === pf.casterId);
+    if (!pf || !pf.result) return;
+    const caster = castActor(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     set({ pendingFocus: null });
     if (!caster || !spell) return;
@@ -1332,10 +1439,27 @@ export const useGame = create<GameState>((set, get) => ({
     const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
     // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
-    set({ battle: { ...get().battle!, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
-    checkBattleOver(get, set);
+    if (battle) {
+      set({ battle: { ...get().battle!, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
+      checkBattleOver(get, set);
+    } else {
+      set({ party: [...get().party], journal: [...get().journal.slice(-40), ...logLines] });
+    }
   },
   focusCancel: () => set({ pendingFocus: null }),
+  /** Ouvre une Focalisation HORS COMBAT (couture D) : accumule `caster.focus` pour un Sort d'Arcane/Domaine. */
+  oocFocusSpell: (casterId, label) => {
+    const { battle, party } = get();
+    if (battle) return; // en combat : Focalisation = action de combat
+    const caster = party.find((c) => c.id === casterId);
+    const spell = findSpell(label);
+    if (!caster || !spell) return;
+    if (!isArcaneSpell(spell)) {
+      get().log('Ce sort ne peut pas être focalisé.');
+      return;
+    }
+    set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
+  },
   // ── Test de Psychologie héros (Peur/Terreur, LDB 21) ── (pas d'« Annuler » : le Test est obligatoire)
   psychRoll: () => {
     const { battle, pendingPsych: pp } = get();
@@ -1500,7 +1624,7 @@ export const useGame = create<GameState>((set, get) => ({
         }
       }
       const blocked = occupied(battle, active);
-      const path = pathTo(scene, active.pos!, pt, blocked);
+      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(active.size));
       active.pos = { ...pt };
       get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
@@ -1531,7 +1655,7 @@ export const useGame = create<GameState>((set, get) => ({
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
       if (!scene || target.kind === 'hero' || isEngaged(active)) return; // pas de Charge si déjà Engagé (l.74)
       const blocked = occupied(battle, active);
-      const reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked); // portée de Course
+      const reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked, sizeFootprint(active.size)); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
         get().log('Cible hors de portée de Charge.');
@@ -1539,7 +1663,7 @@ export const useGame = create<GameState>((set, get) => ({
       }
       const distFrom = chebyshev(active.pos!, target.pos!); // distance de combat AVANT déplacement (l.77 ; ≤ 2M+1 pour toute charge valide)
       const adv = chargeAdvantage(effectiveMovement(active), distFrom);
-      const path = pathTo(scene, active.pos!, dest, blocked);
+      const path = pathTo(scene, active.pos!, dest, blocked, sizeFootprint(active.size));
       active.pos = { ...dest };
       get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
@@ -2045,7 +2169,7 @@ export const useGame = create<GameState>((set, get) => ({
     const range = effectiveMovement(c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
     const blocked = occupied(battle, c);
     const log = [...battle.log, `${c.name} prend sa Course (Athlétisme ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
-    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked), log } });
+    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(c.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),
@@ -2223,7 +2347,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: {
         ...battle,
         action: 'move', // mouvement libre rouvert, sans pénalité (l.87) ; Action préservée
-        reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked),
+        reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
         log: [...battle.log, `${mover.name} se désengage en sacrifiant son Avantage.`],
       },
     });
@@ -2309,10 +2433,10 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },
   castForceSuccess: () => {
-    const { battle, pendingCast: pc } = get();
-    if (!battle || !pc || !pc.result) return;
-    const caster = battle.combatants.find((c) => c.id === pc.casterId);
-    const target = battle.combatants.find((c) => c.id === pc.targetId);
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
+    const caster = castActor(get(), pc.casterId);
+    const target = castActor(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
@@ -2320,7 +2444,7 @@ export const useGame = create<GameState>((set, get) => ({
     const cur = pc.result;
     const bonusNeeded = Math.max(1, ni - cur.sl); // au moins le NI ; on force aussi un d100 propre réussi
     const res = rederiveCastSL(caster, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, pc.missile, pc.focused, bonusNeeded);
-    set({ pendingCast: { ...pc, result: res }, battle: { ...battle } });
+    set({ pendingCast: { ...pc, result: res }, ...castTouch(get()) });
   },
   disengageForceSuccess: () => {
     const { battle, pendingDisengage: pd } = get();
@@ -2352,7 +2476,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, mover);
       log.push(`${mover.name} se désengage (Esquive réussie, +1 Avantage).`);
       set({
-        battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked), log },
+        battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
       });
     } else if (pd.result === 'tie') {
       // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
@@ -2403,7 +2527,7 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, mover);
     // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
     // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
-    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked), log } });
+    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked, sizeFootprint(mover.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   },

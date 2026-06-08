@@ -28,7 +28,7 @@ import {
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
-import { footprintTiles, combatDistance } from './footprint';
+import { footprintTiles, combatDistance, sizeFootprint } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
@@ -45,7 +45,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
@@ -1060,7 +1060,7 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
     const tb = bonus(effectiveChar(tgt, 'E'));
     const pa = ignorePA ? 0 : Math.max(0, tgt.armour.corps ?? 0);
     const wl = Math.max(0, damage - tb - pa);
-    if (wl > 0) { tgt.wounds.current = Math.max(0, tgt.wounds.current - wl); lines.push(`${tgt.name} subit ${wl} Blessure(s)${ignorePA ? ' (ignore PA)' : ''}.`); }
+    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s)${ignorePA ? ' (ignore PA)' : ''}.`); }
     if (isVomi || /électric|electric/.test(type)) addCondition(tgt, 'Sonné');
     else if (/froid/.test(type) && wl > 0) for (let i = 0; i < Math.max(1, Math.floor(wl / 5)); i++) addCondition(tgt, 'Sonné'); // 1 Sonné / 5 Blessures
     if (/feu/.test(type)) addCondition(tgt, 'En flammes');
@@ -1099,7 +1099,7 @@ export function applyTongue(get: () => GameState, set: any, attacker: Combatant,
   emitCreatureAttackAnim(attacker, a.kind);
   if (r.attackerWins) {
     const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
-    if (wl > 0) { tgt.wounds.current = Math.max(0, tgt.wounds.current - wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
+    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
     if (!hasCondition(tgt, 'Empêtré')) addCondition(tgt, 'Empêtré');
     lines.push(`${tgt.name} est Empêtré (Langue préhensile).`);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
@@ -1125,7 +1125,7 @@ export function applyWail(get: () => GameState, set: any, attacker: Combatant): 
   emitCreatureAttackAnim(attacker, 'hurlement');
   for (const tgt of living) {
     const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
-    tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
+    loseWounds(tgt, wl);
     lines.push(`${tgt.name} subit ${wl} Blessure(s) (ignore Endurance et PA).`);
     const resAdv = tgt.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
     if (!rollTest(effectiveChar(tgt, 'E') + resAdv, 'accessible', battleRng()).success) addCondition(tgt, 'Brisé');
@@ -1180,7 +1180,7 @@ export function applyChillGrasp(get: () => GameState, set: any, attacker: Combat
   emitCreatureAttackAnim(attacker, 'etreinte');
   if (r.attackerWins) {
     const wl = d10(battleRng()) + r.netSL; // 1d10 + DR, ignore BE et PA
-    tgt.wounds.current = Math.max(0, tgt.wounds.current - wl);
+    loseWounds(tgt, wl);
     lines.push(`${tgt.name} perd ${wl} Blessure(s) (ignore Endurance et PA).`);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   } else lines.push(`${tgt.name} résiste à l'étreinte.`);
@@ -1276,7 +1276,7 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
       addCondition(caster, 'Inconscient');
       lines.push(`${caster.name} : Blessures réduites à 0 (Inconscient).`);
     } else if (op.wounds != null) {
-      caster.wounds.current = Math.max(0, caster.wounds.current - op.wounds);
+      loseWounds(caster, op.wounds); // miscast : perte de PB centralisée (−Avantage + À Terre à 0)
       lines.push(`${caster.name} subit ${op.wounds} Blessure(s) (ignorant BE et PA).`);
     } else if (op.condition) {
       addCondition(caster, op.condition.name, op.condition.value);
@@ -1320,7 +1320,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
 ) {
-  const battle = get().battle!;
+  const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   const logLines: string[] = [res.log];
 
   if (missile) {
@@ -1390,17 +1390,25 @@ export function applyCast(
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
     // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
     // Soutien : le lanceur se tourne vers la cible ; pas de réaction de la cible (ce n'est pas une frappe).
-    if (caster.pos && target.pos && caster.id !== target.id) {
+    // Hors combat (pas de file/token tactique), on n'anime pas le geste iso.
+    if (battle && caster.pos && target.pos && caster.id !== target.id) {
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!) } }));
     }
-    bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
+    if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
   }
 
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
-  set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
-  bus.emit(EVT.SCENE_DIRTY);
-  checkBattleOver(get, set);
+  if (battle) {
+    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+  } else {
+    // Hors combat : aucune file de combat. Le MÊME applyCast a déjà appliqué l'effet (modélisé)
+    // au membre du groupe ; ici on ne fait que tracer le journal (zéro logique d'effet dupliquée).
+    set({ party: [...get().party], journal: [...get().journal.slice(-40), ...logLines] });
+    bus.emit(EVT.SCENE_DIRTY);
+  }
 }
 
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
@@ -1762,7 +1770,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
-      const path = pathTo(scene, enemy.pos!, action.to, blocked);
+      const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(enemy.size));
       enemy.pos = action.to;
       get().faceFromPath(enemy.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });

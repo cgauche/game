@@ -11,14 +11,15 @@ import { ResilienceButton } from './ResilienceButton';
 export function FocusModal() {
   const pf = useGame((s) => s.pendingFocus);
   const battle = useGame((s) => s.battle);
+  const party = useGame((s) => s.party);
   const roll = useGame((s) => s.focusRoll);
   const reroll = useGame((s) => s.focusReroll);
   const bonusSL = useGame((s) => s.focusBonusSL);
   const force = useGame((s) => s.focusForceSuccess);
   const confirm = useGame((s) => s.focusConfirm);
   const cancel = useGame((s) => s.focusCancel);
-  if (!pf || !battle) return null;
-  const caster = battle.combatants.find((c) => c.id === pf.casterId);
+  if (!pf) return null;
+  const caster = (battle?.combatants ?? party).find((c) => c.id === pf.casterId); // combat (file) ou hors combat (groupe)
   if (!caster) return null;
   const spell = findSpell(pf.spellLabel);
   const ni = spell?.cn ?? 0;
