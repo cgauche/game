@@ -75,7 +75,8 @@ import {
 import { findSpell, levelsForCareer, findSkill, findTrapping, trappings } from '../data/index';
 import { makeRNG } from '../engine/dice';
 import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
-import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass } from '../engine/money';
+import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
+import { appraiseEstimate } from '../engine/appraisal';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { MERCHANTS } from './merchants/index';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
@@ -183,6 +184,26 @@ export interface PendingBargain {
   merchantRoll: TestResult | null;
   /** Résultat opposé (joueur = attaquant). */
   result: OpposedResult | null;
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
+/** Évaluation en attente (LDB 60 l.10 : « estimer les prix … à ±10 % »). Test d'Évaluation (Int) ;
+ *  un succès RÉVÈLE l'objet (`identified = true`, ses qualités cachées deviennent visibles) et donne
+ *  une fourchette de prix. La modale affiche « Lancer », le résultat puis Chance avant d'acquitter. */
+export interface PendingAppraise {
+  actorId: string;
+  actorName: string;
+  itemUid: string;
+  itemName: string;
+  truePriceBrass: number; // valeur réelle de base (catalogue) en sous de cuivre
+  availability: string | null; // Disponibilité (Rare/Exotique → estimation ±10 %)
+  skillValue: number;
+  difficulty: Difficulty;
+  target: number;
+  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
+  roll: number | null;
+  success: boolean;
+  sl: number;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }
@@ -397,6 +418,7 @@ export interface GameState {
   money: Money;
   pendingTest: PendingTest | null;
   pendingBargain: PendingBargain | null;
+  pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
   pendingReload: PendingReload | null;
   pendingDefense: PendingDefense | null;
@@ -474,6 +496,13 @@ export interface GameState {
   bargainBonusSL: () => void;
   bargainConfirm: () => void;
   bargainCancel: () => void;
+  /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix. */
+  appraiseItem: (uid: string, heroId: string) => void;
+  appraiseRoll: () => void;
+  appraiseReroll: () => void;
+  appraiseBonusSL: () => void;
+  resolveAppraise: () => void;
+  appraiseCancel: () => void;
   testRoll: () => void;
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
@@ -696,6 +725,7 @@ export const useGame = create<GameState>((set, get) => ({
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
   pendingBargain: null,
+  pendingAppraise: null,
   pendingAttack: null,
   pendingReload: null,
   pendingDefense: null,
@@ -1150,6 +1180,64 @@ export const useGame = create<GameState>((set, get) => ({
     get().log(won ? `Marchandage réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'} à l'achat).` : `Marchandage échoué (vente réduite à ¼).`);
   },
   bargainCancel: () => set({ pendingBargain: null }),
+
+  appraiseItem: (uid, heroId) => {
+    const hero = get().party.find((h) => h.id === heroId);
+    const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
+    const best = partyBest(get().party, 'Évaluation', 'Int'); if (!best) return;
+    const t = findTrapping(item.name);
+    set({ pendingAppraise: {
+      actorId: best.actor.id, actorName: best.actor.name, itemUid: uid, itemName: item.name,
+      truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
+      availability: (t?.availability as string | undefined) ?? null,
+      skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
+    } });
+  },
+  appraiseRoll: () => {
+    const pa = get().pendingAppraise;
+    if (!pa || pa.roll != null) return; // déjà lancé
+    const res: TestResult = rollTest(pa.skillValue, pa.difficulty);
+    set({ pendingAppraise: { ...pa, roll: res.roll, sl: res.sl, success: res.success } });
+  },
+  appraiseReroll: () => {
+    const pa = get().pendingAppraise;
+    if (!pa || pa.roll == null) return;
+    if (!canReroll(pa.roll > pa.target, !!pa.rerolled)) return; // 1 relance, d100 raté propre
+    const party = get().party;
+    const actor = party.find((c) => c.id === pa.actorId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const res: TestResult = rollTest(pa.skillValue, pa.difficulty);
+    set({ pendingAppraise: { ...pa, roll: res.roll, sl: res.sl, success: res.success, rerolled: true }, party: [...party] });
+  },
+  appraiseBonusSL: () => {
+    const pa = get().pendingAppraise;
+    if (!pa || pa.roll == null) return;
+    const party = get().party;
+    const actor = party.find((c) => c.id === pa.actorId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const sl = pa.sl + 1;
+    set({ pendingAppraise: { ...pa, sl, success: pa.roll <= pa.target && sl >= 0 }, party: [...party] });
+  },
+  resolveAppraise: () => {
+    const pa = get().pendingAppraise;
+    if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
+    set({ pendingAppraise: null });
+    if (!pa.success) { get().log(`Évaluation ratée : ${pa.itemName} reste non identifié.`); return; }
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const it = clone.items?.find((i) => i.uid === pa.itemUid); if (it) it.identified = true;
+        return clone;
+      }),
+    }));
+    const est = appraiseEstimate(pa.availability as Parameters<typeof appraiseEstimate>[0], pa.truePriceBrass);
+    const range = est.min === est.max ? formatMoney(fromBrass(est.min)) : `${formatMoney(fromBrass(est.min))} – ${formatMoney(fromBrass(est.max))}`;
+    get().log(`Évaluation : ${pa.itemName} révélé (valeur estimée ${range}).`);
+  },
+  appraiseCancel: () => set({ pendingAppraise: null }),
 
   seedRng: (seed) => {
     seedBattleRng(seed);

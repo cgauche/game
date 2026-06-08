@@ -2263,4 +2263,37 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     const quarter = sellWith({ won: false, drNet: 0, negotiator: false }); // ¼ (marchandage perdu)
     expect(quarter).toBeLessThan(halfBase);
   });
+
+  const appraiser = (): Combatant => ({ id: 'h', name: 'H', characteristics: { Int: 40 }, skills: [], talents: [], items: [{ uid: 'm', name: 'Épée', kind: 'melee', qualities: ['De plaies atroces'], enc: 1, equipped: false, identified: false }], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+
+  it('appraiseItem : crée un pendingAppraise sur l’objet non identifié (#2e)', () => {
+    useGame.setState({ party: [appraiser()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().appraiseItem('m', 'h');
+    const pa = useGame.getState().pendingAppraise!;
+    expect(pa).toBeTruthy();
+    expect(pa.itemUid).toBe('m');
+    expect(pa.target).toBe(40); // Int 40, Intermédiaire +0
+  });
+
+  it('resolveAppraise : succès → identified=true (révèle l’objet) (#2e)', () => {
+    useGame.setState({ party: [appraiser()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().appraiseItem('m', 'h');
+    const pa = useGame.getState().pendingAppraise!;
+    useGame.setState({ pendingAppraise: { ...pa, roll: 10, success: true, sl: 2 } });
+    useGame.getState().resolveAppraise();
+    expect(useGame.getState().party[0].items!.find((i) => i.uid === 'm')!.identified).toBe(true);
+    expect(useGame.getState().pendingAppraise).toBeNull();
+  });
+
+  it('resolveAppraise : échec → l’objet reste non identifié (#2e)', () => {
+    useGame.setState({ party: [appraiser()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().appraiseItem('m', 'h');
+    const pa = useGame.getState().pendingAppraise!;
+    useGame.setState({ pendingAppraise: { ...pa, roll: 90, success: false, sl: -3 } });
+    useGame.getState().resolveAppraise();
+    expect(useGame.getState().party[0].items!.find((i) => i.uid === 'm')!.identified).toBe(false);
+  });
 });

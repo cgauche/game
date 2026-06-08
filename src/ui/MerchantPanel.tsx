@@ -24,7 +24,7 @@ function repairPrice(item: ItemInstance): string {
 }
 
 /** Présentationnel (props) — testable hors store. */
-export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRepair, onBargain, onClose }: {
+export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRepair, onBargain, onAppraise, onClose }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
@@ -32,6 +32,7 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
   onSell: (uid: string, heroId: string) => void;
   onRepair: (uid: string, heroId: string) => void;
   onBargain: (mode: 'buy' | 'sell') => void;
+  onAppraise: (uid: string, heroId: string) => void;
   onClose: () => void;
 }) {
   // Armures endommagées du groupe (réparables chez le marchand).
@@ -79,6 +80,9 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
               <div className="merch-row" key={it.uid}>
                 <span>{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>
                 <span className="price">{formatMoney(fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor)))}</span>
+                {it.identified === false && (
+                  <button className="btn small" onClick={() => onAppraise(it.uid, h.id)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
+                )}
                 <button className="btn small" onClick={() => onSell(it.uid, h.id)}>Vendre</button>
               </div>
             )))}
@@ -110,7 +114,8 @@ export function MerchantPanel() {
   const sellItem = useGame((s) => s.sellItem);
   const repairArmour = useGame((s) => s.repairArmour);
   const startBargain = useGame((s) => s.startBargain);
+  const appraiseItem = useGame((s) => s.appraiseItem);
   const closeMerchant = useGame((s) => s.closeMerchant);
   if (!merchant) return null;
-  return <MerchantPanelView merchant={merchant} party={party} money={money} onBuy={buyItem} onSell={sellItem} onRepair={repairArmour} onBargain={startBargain} onClose={closeMerchant} />;
+  return <MerchantPanelView merchant={merchant} party={party} money={money} onBuy={buyItem} onSell={sellItem} onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant} />;
 }
