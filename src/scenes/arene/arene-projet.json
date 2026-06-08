@@ -559,6 +559,51 @@
                 ]
               },
               {
+                "text": "🩹 Soin des Blessures (jet de Guérison) — 5 pa.",
+                "cost": {
+                  "silver": 5
+                },
+                "effects": [
+                  {
+                    "type": "medicalAid",
+                    "act": "wounds",
+                    "skill": 55,
+                    "intBonus": 4,
+                    "entityId": "medecin"
+                  }
+                ]
+              },
+              {
+                "text": "🩸 Stopper une hémorragie (jet de Guérison) — 5 pa.",
+                "cost": {
+                  "silver": 5
+                },
+                "effects": [
+                  {
+                    "type": "medicalAid",
+                    "act": "bleed",
+                    "skill": 55,
+                    "intBonus": 4,
+                    "entityId": "medecin"
+                  }
+                ]
+              },
+              {
+                "text": "🔪 Opérer une blessure grave (Chirurgie) — 6 pa.",
+                "cost": {
+                  "silver": 6
+                },
+                "effects": [
+                  {
+                    "type": "medicalAid",
+                    "act": "surgery",
+                    "skill": 55,
+                    "intBonus": 4,
+                    "entityId": "medecin"
+                  }
+                ]
+              },
+              {
                 "text": "Plus tard.",
                 "effects": [
                   {

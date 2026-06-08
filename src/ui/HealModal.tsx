@@ -18,13 +18,19 @@ export function HealModal() {
   const force = useGame((s) => s.healForceSuccess);
   const confirm = useGame((s) => s.healConfirm);
   const cancel = useGame((s) => s.healCancel);
+  const setTarget = useGame((s) => s.healSetTarget);
   if (!ph) return null;
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
+  // Le soigneur PEUT être un PNJ hors du groupe (médecin payant) : on n'exige plus sa présence ; sa Chance/
+  // Résilience valent alors 0 (boutons inertes — le joueur voit le jet sans pouvoir l'influencer).
   const healer = pool.find((c) => c.id === ph.healerId);
-  if (!healer) return null;
-  const fortune = healer.fortune ?? 0;
+  const fortune = healer?.fortune ?? 0;
   const rolled = ph.roll != null;
   const rerollable = rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0;
+  // Sélection de la cible (PNJ soigneur) : avant le jet, si plusieurs héros sont éligibles.
+  const choices = !rolled && (ph.candidateIds?.length ?? 0) > 1
+    ? (ph.candidateIds ?? []).map((id) => party.find((c) => c.id === id)).filter(Boolean) as typeof party
+    : [];
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
   const surgery = ph.mode === 'surgery';
@@ -38,6 +44,22 @@ export function HealModal() {
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
           <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
         </p>
+        {choices.length > 0 && (
+          <div className="heal-target-pick">
+            <span className="branch-label">Qui soigner ?</span>
+            <div className="modal-actions">
+              {choices.map((c) => (
+                <button
+                  key={c.id}
+                  className={`btn small${c.id === ph.targetId ? ' btn-primary' : ''}`}
+                  onClick={() => setTarget(c.id)}
+                >
+                  {c.name} ({c.wounds.current}/{c.wounds.max})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {!rolled ? (
           <div className="modal-actions">
             <button className="btn" onClick={cancel}>Annuler</button>
@@ -65,7 +87,7 @@ export function HealModal() {
             </div>
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
-              <ResilienceButton resilience={healer.resilience ?? 0} show={!ph.success} onForce={force} />
+              <ResilienceButton resilience={healer?.resilience ?? 0} show={!ph.success} onForce={force} />
               <button className="btn btn-primary" onClick={confirm}>Appliquer</button>
             </div>
           </>

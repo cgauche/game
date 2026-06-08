@@ -182,6 +182,15 @@ export type Effect =
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }
+  /** Acte de soin PAYANT d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », aide
+   *  médicale 4-6 pistoles ; le PRIX est porté par le CHOIX de dialogue, `cost`). Le PNJ (JAMAIS dans le
+   *  groupe) effectue le jet — on ouvre la MÊME modale de Guérison (le joueur voit le résultat sans
+   *  pouvoir l'influencer). `act` : soin de Blessures | arrêt d'hémorragie | chirurgie (1d10+Hémorragie,
+   *  LDB 10/18). `skill`/`intBonus` = compétence de Guérison du PNJ (sa fiche, éditable — rien d'inventé :
+   *  le moteur applique le RAW Guérison/Chirurgie existant). `entityId` = le PNJ soigneur (son `label`
+   *  donne le NOM affiché, son `id` le soigneur) → aucun nom codé en dur ; nommez-le « Frère Wilhelm »
+   *  et c'est lui qui opère. Le JOUEUR choisit le héros à soigner (modale). */
+  | { type: 'medicalAid'; act: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }

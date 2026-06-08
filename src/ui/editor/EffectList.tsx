@@ -34,6 +34,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'transitionBack',
   'startDialogue',
   'openMerchant',
+  'medicalAid',
   'test',
   'setTime',
   'endDialogue',
@@ -55,6 +56,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   transitionBack: 'Retour scène précédente',
   startDialogue: 'Ouvrir un dialogue',
   openMerchant: 'Ouvrir une boutique (marchand)',
+  medicalAid: 'Acte de soin payant (PNJ médecin/guérisseur)',
   test: 'Test de compétence',
   setTime: 'Régler l’heure (jour/nuit)',
   endDialogue: 'Fermer le dialogue',
@@ -82,6 +84,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'startDialogue', dialogue: '' };
     case 'openMerchant':
       return { type: 'openMerchant', entityId: '' };
+    case 'medicalAid':
+      return { type: 'medicalAid', act: 'wounds', skill: 50, intBonus: 4 };
     case 'test':
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'endDialogue':
@@ -220,6 +224,24 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'openMerchant' && (
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
+        )}
+        {effect.type === 'medicalAid' && (
+          <div className="test-fields">
+            <div className="tf-row">
+              <label className="dr">
+                Acte
+                <select value={e.act ?? 'wounds'} onChange={(ev) => upd({ act: ev.target.value })}>
+                  <option value="wounds">Soin de Blessures (Guérison)</option>
+                  <option value="bleed">Arrêt d’hémorragie (Guérison)</option>
+                  <option value="surgery">Chirurgie (1d10 + Hémorragie, LDB 10/18)</option>
+                </select>
+              </label>
+              <label className="dr">Guérison (PNJ)<input type="number" value={e.skill ?? 50} onChange={(ev) => upd({ skill: Number(ev.target.value) })} /></label>
+              <label className="dr">Bonus Int<input type="number" value={e.intBonus ?? 4} onChange={(ev) => upd({ intBonus: Number(ev.target.value) })} /></label>
+            </div>
+            <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />
+            <span className="branch-label">PNJ soigneur (jamais dans le groupe ; le joueur choisit qui soigner) ; prix via le coût du choix de dialogue (LDB 75).</span>
+          </div>
         )}
         {effect.type === 'test' && (
           <div className="test-fields">

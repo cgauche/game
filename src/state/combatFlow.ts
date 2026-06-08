@@ -53,7 +53,7 @@ import { rollContraction, contractDisease } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaFromKind } from '../engine/trauma';
+import { traumaFromKind, hasSurgeryTrauma } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -370,12 +370,50 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
       case 'openMerchant':
         get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
         break;
+      case 'medicalAid':
+        openMedicalAid(get, set, e); // soin payant d'un PNJ : ouvre la modale de Guérison avec la compétence du PNJ
+        break;
       case 'endDialogue':
         if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
         set({ dialogue: null });
         break;
     }
   }
+}
+
+/**
+ * Acte de soin PAYANT d'un PNJ (Effet `medicalAid`, LDB 75). Le PNJ n'est PAS dans le groupe : on
+ * ouvre la modale `pendingHeal` avec SA compétence (`skill`/`intBonus`, fiche du PNJ) et le héros le
+ * plus en besoin pour l'acte ; le joueur voit le jet sans pouvoir le relancer (la Chance interroge
+ * `actorIn(healerId)` → introuvable pour un PNJ → boutons inertes). La résolution (`healConfirm`)
+ * applique le RAW Guérison/Chirurgie existant : aucun calcul dupliqué. Le PRIX est déjà débité par
+ * le choix de dialogue (`DialogueChoice.cost`). Sans patient pertinent : rien (le prix reste dû —
+ * comme tout service, à ne déclencher qu'à bon escient).
+ */
+function openMedicalAid(get: () => GameState, set: any, e: { act: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
+  const party = get().party;
+  const needs = (h: Combatant): boolean =>
+    e.act === 'wounds' ? !h.dead && !h.outOfRencontre && h.wounds.current < h.wounds.max
+      : e.act === 'bleed' ? (h.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)
+        : hasSurgeryTrauma(h); // chirurgie
+  const cands = party.filter(needs);
+  if (!cands.length) { get().log(`Le soigneur examine le groupe : personne ne requiert cet acte pour l'instant.`); return; }
+  // Le PNJ soigneur : NOM et id viennent de l'entité de scène (`entityId`) — rien de codé en dur.
+  const npc = e.entityId ? get().scene?.entities.find((x) => x.id === e.entityId) : undefined;
+  const healerId = npc?.id ?? e.entityId ?? 'pnj-soigneur';
+  const healerName = npc?.label ?? 'Soigneur';
+  // Cible PAR DÉFAUT = le plus en besoin ; le joueur peut en choisir une autre (candidateIds).
+  const target = e.act === 'wounds'
+    ? cands.reduce((a, b) => (a.wounds.max - a.wounds.current) >= (b.wounds.max - b.wounds.current) ? a : b)
+    : cands[0];
+  set({
+    pendingHeal: {
+      healerId, healerName, targetId: target.id, targetName: target.name,
+      mode: e.act, intBonus: e.intBonus, skillValue: e.skill,
+      difficulty: 'intermediaire', target: e.skill, roll: null, success: false, sl: 0,
+      candidateIds: cands.map((c) => c.id),
+    },
+  });
 }
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive

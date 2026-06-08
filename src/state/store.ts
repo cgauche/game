@@ -393,6 +393,9 @@ export interface PendingHeal {
   success: boolean;
   sl: number; // DR
   rerolled?: boolean;
+  /** Soin par un PNJ (médecin payant) : héros éligibles parmi lesquels le JOUEUR choisit la cible
+   *  (>1 → sélecteur dans la modale). Absent = cible déjà fixée (auto-soin du groupe via la fiche). */
+  candidateIds?: string[];
 }
 
 export interface BattleState {
@@ -554,6 +557,8 @@ export interface GameState {
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** Guérison HORS COMBAT : le meilleur soigneur du groupe soigne `targetId`. */
   healAlly: (targetId: string, mode: HealMode) => void;
+  /** Soin par un PNJ : le joueur choisit la cible parmi `pendingHeal.candidateIds` (avant le jet). */
+  healSetTarget: (targetId: string) => void;
   healRoll: () => void;
   healReroll: () => void;
   healBonusSL: () => void;
@@ -1668,6 +1673,13 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** Annule avant tout jet (aucun coût). */
+  healSetTarget: (targetId) => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.roll != null || !(ph.candidateIds ?? []).includes(targetId)) return; // choix avant le jet seulement
+    const t = get().party.find((c) => c.id === targetId);
+    if (!t) return;
+    set({ pendingHeal: { ...ph, targetId, targetName: t.name } });
+  },
   healCancel: () => set({ pendingHeal: null }),
 
   /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. */
