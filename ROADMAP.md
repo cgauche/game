@@ -344,7 +344,7 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
   *(Queue/Langue : ✅ attaques de créature, Jalon 1. Immunité Psychologie : ✅ T5. Seule réserve = le **rendu en selle** ci-dessus, PARKÉ. La mécanique est complète et testée.)*
 - **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
-## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(en cours — #1 Qualité COMPLET ; Temps #T1 + #T1c LIVRÉS ; #2 Marchand COMPLET (v1 + lot 2 + prix paramétrables) ; #T2/#T3 EN SUSPENS ; #3 Arène = PROCHAIN)*
+## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(quasi complet — #1 Qualité ✓ ; Temps #T1 + #T1c ✓ ; #2 Marchand ✓ (v1 + lot 2 + prix paramétrables + re-stock) ; #3 Arène ✓ ; reste #T2 Voyage / #T3 Cascade EN SUSPENS)*
 
 Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
 Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
@@ -387,8 +387,14 @@ Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand ✓ → (#T2 / #T3 
   - **Marchand dans un dialogue** : Effet **`openMerchant`** (`interactEntity` priorise le dialogue → un choix « voir les marchandises » ouvre la boutique). 2 scénarios de test (`10-marchand`, `11-deux-marchands`).
   - **✅ Re-stock dans le temps** *(2026-06-08)* : **stock PERSISTANT par marchand** (`merchantStocks` — la déplétion survit aux visites) ; **réassort** = re-tirage frais (nouvelle Disponibilité, seed lié à la période) seulement après **`restockDays`** écoulés sur l'horloge (#T1) ; `restockDays` paramétrable (archétype + override entité + champ éditeur, défaut 1 j) ; reset en nouvelle partie.
   - **Reste** : recette navigateur (scénarios `10-marchand` / `11-deux-marchands` prêts).
-- **#3 — Arène** (banc d'essai du marchand) : vagues croissantes + interlude marchand (restock par
-  vague) + loot.
+- **✅ #3 — Arène COMPLET** *(2026-06-08, banc d'essai du marchand)* : vagues croissantes + maître
+  d'arène (= marchand) entre les vagues + butin. **100 % DONNÉES, zéro mécanique dédiée** (revue : on
+  a abandonné un `Scene.arena`/Effets `arenaNextWave` au profit des briques existantes) : vagues =
+  `encounters` (butin + `setFlag` dans `onVictory`), maître = entité `dialogueId` + `merchant`, choix de
+  dialogue **gated par flags composés** (`startCombat`/`openMerchant`). Seule généralisation (générale) :
+  `condMet` accepte des **flags combinés en ET** (`v1,!v2`) et est **dé-dupliqué** (source unique
+  `scene.ts`). Blessures **persistantes** (attrition ; Guérison 1/rencontre + achats). Scénario test
+  `12-arene` (3 vagues) + test du séquençage. Spec `docs/superpowers/specs/2026-06-08-arene-design.md`.
 
 **Choix assumés / non-RAW** (défaut = RAW ; tracés §10 de la spec) : **Raffiné** = aucun effet
 mécanique (RAW muet, juste prix/dispo/affichage) ; **Volumineux / Fatigue ×2** modélisé a minima ;
