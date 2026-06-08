@@ -2,14 +2,15 @@
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { GENERATED_HEADS } from '../src/gameIso/rig/parts/generated/heads';
-import { SPECIES_PALETTES } from '../src/gameIso/rig/parts/generated/speciesPalettes';
+import { racePalette } from '../src/gameIso/rig/races';
 import { buildTokenMap, applyTokenMap, type Palette } from '../src/gameIso/rig/palette';
 import { DEFS } from '../src/gameIso/sprites';
 
 const keys = Object.keys(GENERATED_HEADS);
 const cell = (key: string, overrides: Palette, label: string, x: number, y: number) => {
   const h = GENERATED_HEADS[key] as { visage?: string; cheveux?: string };
-  const tmap = buildTokenMap(SPECIES_PALETTES[key] ?? {}, overrides);
+  const [raceId, sexStr] = key.split(':');
+  const tmap = buildTokenMap(racePalette(raceId, sexStr as 'M' | 'F'), overrides);
   const inner = `<g>${applyTokenMap(h.cheveux ?? '', tmap)}</g><g>${applyTokenMap(h.visage ?? '', tmap)}</g>`;
   return `<g transform="translate(${x},${y})"><rect width="86" height="104" fill="#2b3142"/>` +
     `<g transform="translate(43,30) scale(2.5)">${inner}</g>` +

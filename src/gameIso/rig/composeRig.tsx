@@ -2,7 +2,7 @@ import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { gabaritById } from './gabarits';
-import { raceById } from './races';
+import { raceById, racePalette } from './races';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
@@ -117,7 +117,7 @@ export function resolveRig(
   // un Humain à qui on greffe une tête de lézard) : si l'espèce a sa propre palette de peau
   // (Skaven, Orc, Goule…), celle-ci prime — sinon la peau de la tête écraserait la teinte
   // d'espèce (ex. la Goule grise deviendrait fauve à cause de sa tête « chien »).
-  const speciesPalette = (appearance.sex === 'F' && race.paletteF) ? race.paletteF : race.palette;
+  const speciesPalette = racePalette(race.id, appearance.sex);
   const SKIN_FROM_HEAD: Record<string, string> = {
     lezard: '#5d7a42', chien: '#6e4a2c', rat: '#6e4a2e',
   };

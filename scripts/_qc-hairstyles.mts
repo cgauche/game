@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { GENERATED_HEADS } from '../src/gameIso/rig/parts/generated/heads';
-import { SPECIES_PALETTES } from '../src/gameIso/rig/parts/generated/speciesPalettes';
+import { racePalette } from '../src/gameIso/rig/races';
 import { buildTokenMap, applyTokenMap } from '../src/gameIso/rig/palette';
 import { DEFS } from '../src/gameIso/sprites';
 
@@ -10,7 +10,7 @@ const hairs: { sex: 'M' | 'F'; style: string; svg: string }[] = JSON.parse(readF
 const COLS = 4;
 const cells = hairs.map((h, i) => {
   const key = `Humain:${h.sex}`;
-  const tmap = buildTokenMap(SPECIES_PALETTES[key] ?? {}, {});
+  const tmap = buildTokenMap(racePalette('Humain', h.sex), {});
   const visage = applyTokenMap((GENERATED_HEADS[key] as { visage?: string }).visage ?? '', tmap);
   const hair = applyTokenMap(h.svg.replace(/<!--scalp-->/g, ''), tmap);
   const inner = `<g>${hair}</g><g>${visage}</g>`;

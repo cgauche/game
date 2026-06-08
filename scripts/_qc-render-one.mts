@@ -20,7 +20,7 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { GENERATED_HEADS } from '../src/gameIso/rig/parts/generated/heads';
 import { HAIRSTYLES } from '../src/gameIso/rig/parts/generated/hairstyles';
-import { SPECIES_PALETTES } from '../src/gameIso/rig/parts/generated/speciesPalettes';
+import { racePalette } from '../src/gameIso/rig/races';
 import { buildTokenMap, applyTokenMap } from '../src/gameIso/rig/palette';
 import { baseSpeciesOf } from '../src/gameIso/rig/skeletons';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -56,7 +56,7 @@ function rigSvg(view: View, mirror: boolean): string {
   let inner: string;
   if ((kind === 'head' || kind === 'hair') && (visageOv || cheveuxOv)) {
     // Composition tête isolée (override), tokens résolus avec la palette espèce.
-    const tmap = buildTokenMap(SPECIES_PALETTES[headKey] ?? {}, {});
+    const tmap = buildTokenMap(racePalette(baseSpeciesOf(species), sex), {});
     const gen = GENERATED_HEADS[headKey] as { visage?: string; cheveux?: string };
     const visage = applyTokenMap(visageOv ?? gen.visage ?? '', tmap);
     let cheveuxSrc = cheveuxOv;
