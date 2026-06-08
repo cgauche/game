@@ -9,6 +9,7 @@
  */
 import { Combatant, ItemInstance, CHAR_BY_LABEL } from './types';
 import { bonus, effectiveChar } from './characteristics';
+import { removeCondition } from './conditions';
 
 export interface ItemEffect {
   /** Blessures rendues. */
@@ -17,6 +18,28 @@ export interface ItemEffect {
   removeCondition?: string;
   /** Nombre de pions retirés (Bandages : « +1 État Hémorragique », LDB 74 l.70). Absent = tout l'État. */
   removeStacks?: number;
+}
+
+/** Applique un effet d'objet à `target` (mutation) : soin de PB et/ou retrait d'État. Renvoie le journal.
+ *  Partagé par l'usage EN COMBAT (`battleUseItem`) et HORS COMBAT (`usePartyItem`) — zéro duplication. */
+export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
+  const log: string[] = [];
+  if (eff.heal != null && eff.heal > 0) {
+    const before = target.wounds.current;
+    target.wounds.current = Math.min(target.wounds.max, target.wounds.current + eff.heal);
+    log.push(`${target.name} regagne ${target.wounds.current - before} Blessure(s).`);
+  }
+  if (eff.removeCondition) {
+    const cond = target.conditions.find((c) => c.name === eff.removeCondition);
+    if (cond) {
+      const n = eff.removeStacks ?? cond.value; // Bandages : +1 pion ; Potion : tout l'État
+      removeCondition(target, eff.removeCondition, n);
+      log.push(eff.removeStacks
+        ? `${target.name} : ${Math.min(n, cond.value)} pion ${eff.removeCondition} retiré.`
+        : `${target.name} n'est plus ${eff.removeCondition}.`);
+    } else log.push(`${target.name} n'a pas l'État ${eff.removeCondition}.`);
+  }
+  return log;
 }
 
 /** Effet d'usage d'un consommable pour un buveur donné, ou `null` si l'objet n'est pas utilisable. */

@@ -4,6 +4,7 @@ import { maxEncumbrance } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
+import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { careers, findSpell } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -166,6 +167,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
+  const usePartyItem = useGame((s) => s.usePartyItem);
+  const inBattleNow = useGame((s) => !!s.battle);
   const [skinFor, setSkinFor] = useState<string | null>(null);
   const items = hero.items ?? [];
   const enc = hero.encumbrance ?? 0;
@@ -293,6 +296,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
           {items.map((it) => {
             const equipable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
+            const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
             const open = isSkinnable && skinFor === it.uid;
             return (
@@ -320,6 +324,15 @@ function FicheBody({ hero }: { hero: Combatant }) {
                   {equipable ? (
                     <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} onClick={() => toggleEquip(hero.id, it.uid)}>
                       {it.equipped ? 'Équipé' : 'Équiper'}
+                    </button>
+                  ) : consumable ? (
+                    <button
+                      className="btn small"
+                      title={inBattleNow ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
+                      disabled={inBattleNow}
+                      onClick={() => usePartyItem(hero.id, it.uid)}
+                    >
+                      Utiliser
                     </button>
                   ) : (
                     <span className="ir-kind">{it.kind}</span>

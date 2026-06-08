@@ -54,7 +54,7 @@ import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/it
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
-import { itemUse } from '../engine/consumables';
+import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
@@ -597,6 +597,8 @@ export interface GameState {
   battleSelectSpell: (label: string) => void;
   /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
   battleUseItem: (uid: string) => void;
+  /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche. */
+  usePartyItem: (heroId: string, uid: string) => void;
   /** Incantation par modale : « Lancer » fige le jet, Chance le relance, « Appliquer » résout. */
   castRoll: () => void;
   castReroll: () => void;
@@ -1652,27 +1654,26 @@ export const useGame = create<GameState>((set, get) => ({
     if (!it) return;
     const eff = itemUse(it, active);
     if (!eff) return;
-    const log: string[] = [`${active.name} utilise : ${it.name}.`];
-    if (eff.heal != null && eff.heal > 0) {
-      const before = active.wounds.current;
-      active.wounds.current = Math.min(active.wounds.max, active.wounds.current + eff.heal);
-      log.push(`${active.name} regagne ${active.wounds.current - before} Blessure(s).`);
-    }
-    if (eff.removeCondition) {
-      const cond = active.conditions.find((c) => c.name === eff.removeCondition);
-      if (cond) {
-        const n = eff.removeStacks ?? cond.value; // Bandages : +1 pion ; Potion : tout l'État
-        removeCondition(active, eff.removeCondition, n);
-        log.push(eff.removeStacks
-          ? `${active.name} : ${Math.min(n, cond.value)} pion ${eff.removeCondition} stoppé (${it.name}).`
-          : `${active.name} n'est plus ${eff.removeCondition}.`);
-      } else {
-        log.push(`${active.name} n'a pas l'État ${eff.removeCondition}.`);
-      }
-    }
+    const log = [`${active.name} utilise : ${it.name}.`, ...applyItemUse(active, eff)];
     active.items = (active.items ?? []).filter((i) => i.uid !== uid); // consommé
     active.aiming = false; // une autre action que le tir gâche la visée
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...log] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
+   *  qu'en combat (`applyItemUse`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
+  usePartyItem: (heroId, uid) => {
+    if (get().battle) return; // en combat → battleUseItem
+    const party = get().party;
+    const hero = party.find((h) => h.id === heroId);
+    const it = hero?.items?.find((i) => i.uid === uid);
+    if (!hero || !it) return;
+    const eff = itemUse(it, hero);
+    if (!eff) return;
+    const log = [`${hero.name} utilise : ${it.name}.`, ...applyItemUse(hero, eff)];
+    hero.items = (hero.items ?? []).filter((i) => i.uid !== uid);
+    set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2194,7 +2195,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
     const w = active.weapons.find((x) => x.type === 'ranged');
     if (!w || (w.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
-    const skillValue = combatValue(active, 'ranged'); // CT + avances Projectiles (groupe d'arme)
+    const skillValue = combatValue(active, 'ranged', w); // CT + avances Projectiles (Spé du groupe d'arme)
     set({
       pendingReload: {
         actorId: active.id,
