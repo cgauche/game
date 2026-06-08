@@ -34,6 +34,11 @@ export function canAfford(purse: Money, cost: Money): boolean {
 export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number }): Money {
   return { gold: p.gold ?? 0, silver: p.silver ?? 0, brass: p.bronze ?? 0 };
 }
+/** Normalise un montant partiel `{gold?,silver?,brass?}` en `Money` plein (champs manquants = 0).
+ *  `toBrass`/`canAfford` n'admettent pas les champs undefined → passer par ici pour un coût authored. */
+export function toMoney(p: { gold?: number; silver?: number; brass?: number }): Money {
+  return { gold: p.gold ?? 0, silver: p.silver ?? 0, brass: p.brass ?? 0 };
+}
 /** « 2 CO 3 pa », zéros omis (sauf « 0 sc » si tout est nul). Noms canon FR : CO=couronne d'or,
  *  pa=pistole d'argent, sc=sou de cuivre (LDB 57). SOURCE UNIQUE d'affichage de la monnaie. */
 export function formatMoney(m: Money): string {

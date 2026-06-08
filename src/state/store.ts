@@ -59,7 +59,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
-import { accelerateTrauma } from '../engine/trauma';
+import { treatTrauma } from '../engine/trauma';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -77,7 +77,7 @@ import {
 import { findSpell, levelsForCareer, findSkill, findTrapping, trappings } from '../data/index';
 import { makeRNG } from '../engine/dice';
 import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
-import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
+import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, toMoney } from '../engine/money';
 import { appraiseEstimate } from '../engine/appraisal';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { MERCHANTS } from './merchants/index';
@@ -1094,8 +1094,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!choice) return;
     // Option payante (auberge, péage, pot-de-vin) : débit AVANT les effets ; refus si insolvable.
     if (choice.cost) {
-      if (!canAfford(get().money, choice.cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
-      set((s) => ({ money: moneySub(s.money, choice.cost!)! }));
+      const cost = toMoney(choice.cost);
+      if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
+      set((s) => ({ money: moneySub(s.money, cost)! }));
     }
     if (choice.effects) applyEffects(get, set, choice.effects);
     if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next } });
@@ -1581,7 +1582,7 @@ export const useGame = create<GameState>((set, get) => ({
       ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
       : ph.mode === 'bleed'
       ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
-      : ph.success ? accelerateTrauma(target, ph.sl) : [`${target.name} : la déchirure ne réagit pas au soin.`]; // mode 'trauma'
+      : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
     finishPlayerAction(get, set, log); // sortie commune combat / hors combat
   },
 

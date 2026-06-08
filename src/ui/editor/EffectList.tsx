@@ -128,7 +128,20 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'giveItem' && <input placeholder="Nom de l’objet" value={e.item ?? ''} onChange={(ev) => upd({ item: ev.target.value })} />}
         {effect.type === 'giveTrapping' && (
-          <input placeholder="Libellé exact (trappings.json), ex. Chemise de mailles" value={e.trapping ?? ''} onChange={(ev) => upd({ trapping: ev.target.value })} />
+          <>
+            <input placeholder="Libellé exact (trappings.json), ex. Chemise de mailles" value={e.trapping ?? ''} onChange={(ev) => upd({ trapping: ev.target.value })} />
+            <input
+              placeholder="Qualités magiques ajoutées (virgules, ex. De plaies atroces)"
+              value={(e.qualities ?? []).join(', ')}
+              onChange={(ev) => {
+                const q = ev.target.value.split(',').map((s: string) => s.trim()).filter(Boolean);
+                upd({ qualities: q.length ? q : undefined });
+              }}
+            />
+            <label className="radio">
+              <input type="checkbox" checked={e.identified === false} onChange={(ev) => upd({ identified: ev.target.checked ? false : undefined })} /> non identifié (qualités masquées jusqu’à Évaluation)
+            </label>
+          </>
         )}
         {effect.type === 'inflictNightmares' && (
           <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />

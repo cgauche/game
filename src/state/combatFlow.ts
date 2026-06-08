@@ -245,6 +245,11 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           get().log(`Objet inconnu : « ${e.trapping} ».`);
           break;
         }
+        // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
+        // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
+        if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
+        if (e.identified === false) it.identified = false;
+        if (e.skin) it.skin = e.skin;
         let who = '';
         set((s: GameState) => {
           if (!s.party.length) return {};
@@ -341,6 +346,9 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
       }
       case 'openMerchant':
         get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
+        break;
+      case 'rest':
+        restPartyOvernight(get, set, e.days ?? 1); // repos (LDB 16/18/21) ; prix éventuel = sur le choix de dialogue
         break;
       case 'endDialogue':
         if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min

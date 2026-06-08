@@ -81,6 +81,24 @@ export function DialogueEditor({
                             </select>
                           </label>
                           <input className="choice-cond" value={c.condition ?? ''} onChange={(e) => updChoice(di, ni, ci, { condition: e.target.value || undefined })} placeholder="condition" />
+                          <span className="choice-cost" title="Coût de l’option (service payant : auberge, péage, pot-de-vin) — CO / pa / sc">
+                            💰
+                            {(['gold', 'silver', 'brass'] as const).map((k) => (
+                              <input
+                                key={k}
+                                type="number"
+                                min={0}
+                                style={{ width: 38 }}
+                                placeholder={k === 'gold' ? 'CO' : k === 'silver' ? 'pa' : 'sc'}
+                                value={c.cost?.[k] ?? ''}
+                                onChange={(e) => {
+                                  const merged = { ...c.cost, [k]: e.target.value === '' ? undefined : Number(e.target.value) };
+                                  const any = merged.gold || merged.silver || merged.brass;
+                                  updChoice(di, ni, ci, { cost: any ? merged : undefined });
+                                }}
+                              />
+                            ))}
+                          </span>
                           <button className="btn small danger" onClick={() => updNode(di, ni, { choices: n.choices.filter((_, i) => i !== ci) })}>
                             ✕
                           </button>
