@@ -74,6 +74,15 @@ export const REGISTRIES = [
     type: 'BodyPlan',
     typeFrom: '../bodyPlan',
   },
+  {
+    // Archétypes marchands (#2) : 1 archétype = 1 fichier defs/.
+    dir: 'src/state/merchants/defs',
+    out: 'src/state/merchants/_registry.generated.ts',
+    exportName: 'merchantArchetype',
+    arrayName: 'MERCHANT_ARCHETYPES',
+    type: 'MerchantArchetypeDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {
