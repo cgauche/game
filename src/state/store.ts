@@ -12,7 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
-  finishPlayerAction,
+  finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
@@ -56,12 +56,12 @@ import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks, nightmareCheck } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
-import { CAMPAIGN_START, nightsCrossed } from '../engine/clock';
+import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
@@ -436,6 +436,9 @@ export interface GameState {
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
   merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; buyMarkup?: number; stock: { label: string; qty: number }[]; bargainBuy?: { won: boolean; drNet: number; negotiator: boolean } | null; bargainSell?: { won: boolean; drNet: number; negotiator: boolean } | null; soured?: boolean } | null;
+  /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
+   *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. Reset en nouvelle partie. */
+  merchantStocks: Record<string, { stock: { label: string; qty: number }[]; rolledAt: number }>;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
@@ -719,6 +722,9 @@ export interface GameState {
   gameTime: number;
   /** Avance l'horloge in-game de `minutes` (no-op si ≤ 0) et émet TIME_ADVANCED (#T3 cascade). */
   advanceTime: (minutes: number) => void;
+  /** « Dormir » (hors combat) : sommeil jusqu'à l'aube — retire l'Exténué, soigne des Blessures
+   *  (Résistance +20 → DR+BE) et déclenche les cauchemars des héros marqués (LDB 16/18/21). */
+  restParty: () => void;
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -766,6 +772,7 @@ export const useGame = create<GameState>((set, get) => ({
   journal: [],
   dialogue: null,
   merchant: null,
+  merchantStocks: {},
   battle: null,
   campaignSceneId: null,
   inventory: [],
@@ -1105,16 +1112,26 @@ export const useGame = create<GameState>((set, get) => ({
     const settlement: Settlement = ent.merchant.settlement ?? arch.settlement;
     const resaleRate = ent.merchant.resaleRate ?? arch.resaleRate;
     const buyMarkup = ent.merchant.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
-    // Catalogue filtré par catégorie (type/subType) de l'archétype.
-    const cat: CatalogItem[] = trappings
-      .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
-      .map((t) => ({ label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
-    // Instantané déterministe (seed dérivé de l'entité — stable pour la visite ; #T3 re-seedera au temps écoulé).
-    const seed = [...entityId].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
-    const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
-    const tested = lines.filter((l) => l.test);
-    if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
-    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: lines.map((l) => ({ label: l.label, qty: l.qty })) } });
+    const restockPeriod = (ent.merchant.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY; // réassort (#T3)
+    const now = get().gameTime;
+    const prev = get().merchantStocks[entityId];
+    // Re-stock dans le temps (#T3) : on conserve le stock DÉPLÉTÉ entre visites ; on ne re-tire un stock
+    // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
+    let stock = prev?.stock;
+    if (!prev || now - prev.rolledAt >= restockPeriod) {
+      const cat: CatalogItem[] = trappings
+        .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
+        .map((t) => ({ label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
+      // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
+      const period = Math.floor(now / restockPeriod);
+      const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+      const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
+      stock = lines.map((l) => ({ label: l.label, qty: l.qty }));
+      const tested = lines.filter((l) => l.test);
+      if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
+      set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now } } }));
+    }
+    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock! } });
   },
   closeMerchant: () => set({ merchant: null }),
   buyItem: (label, heroId) => {
@@ -1125,17 +1142,25 @@ export const useGame = create<GameState>((set, get) => ({
     const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
     if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
     const it = itemFromTrapping(label); if (!it) return;
-    set((s) => ({
-      money: moneySub(s.money, cost)!,
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        clone.items = [...(clone.items ?? []), it];
-        recomputeLoadout(clone);
-        return clone;
-      }),
-      merchant: { ...s.merchant!, stock: s.merchant!.stock.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l)) },
-    }));
+    const decr = (st: { label: string; qty: number }[]) => st.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l));
+    set((s) => {
+      const newStock = decr(s.merchant!.stock);
+      const eid = s.merchant!.entityId;
+      const persisted = s.merchantStocks[eid];
+      return {
+        money: moneySub(s.money, cost)!,
+        party: s.party.map((h) => {
+          if (h.id !== heroId) return h;
+          const clone: Combatant = JSON.parse(JSON.stringify(h));
+          clone.items = [...(clone.items ?? []), it];
+          recomputeLoadout(clone);
+          return clone;
+        }),
+        merchant: { ...s.merchant!, stock: newStock },
+        // Déplétion PERSISTANTE (#T3) : la quantité reste réduite entre visites (rolledAt inchangé).
+        merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
+      };
+    });
     get().log(`Achat : ${label}.`);
   },
   sellItem: (uid, heroId) => {
@@ -3039,8 +3064,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   advanceTime: (minutes) => {
     if (minutes <= 0) return;
-    const before = get().gameTime;
-    set({ gameTime: before + minutes });
+    set({ gameTime: get().gameTime + minutes });
     bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
     // HORS COMBAT : faire progresser les États qui tickent (Hémorragique/Poison/Flammes) et l'agonie au
     // prorata du temps écoulé (1 Round ≈ TIME_COST.combatRound min). En combat, la frontière de Round le fait.
@@ -3051,14 +3075,8 @@ export const useGame = create<GameState>((set, get) => ({
         const log = outOfCombatUpkeep(party, rounds, battleRng());
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
       }
-      // Cauchemars (LDB 21 l.92) : un Test de Calme Facile (+40) par nuit franchie, pour chaque héros marqué.
-      const nights = nightsCrossed(before, before + minutes);
-      if (nights > 0) {
-        const party = get().party;
-        const lines: string[] = [];
-        for (const h of party) if (h.nightmares) for (let n = 0; n < nights; n++) lines.push(...nightmareCheck(h, battleRng()));
-        if (lines.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...lines] });
-      }
     }
   },
+  // « Dormir » : sommeil jusqu'à l'aube — récupération (Exténué/Blessures) + cauchemars (LDB 16/18/21).
+  restParty: () => restPartyOvernight(get, set),
 }));

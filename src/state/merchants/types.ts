@@ -18,6 +18,9 @@ export interface MerchantArchetypeDef {
   buyMarkup?: number;
   /** Valeur de Marchandage du marchand (opposant au Test, LDB 60 l.12). Défaut 40 si absent. */
   bargainSkill?: number;
+  /** Délai de réassort en JOURS (#T3) : le stock est re-tiré (nouvelle Disponibilité) après ce délai
+   *  écoulé sur l'horloge ; entre deux, la déplétion persiste. Défaut 1 jour si absent. */
+  restockDays?: number;
   /** Articles garantis en stock (labels exacts), Disponibilité ignorée. */
   curated?: string[];
 }

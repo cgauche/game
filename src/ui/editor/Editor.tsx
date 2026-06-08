@@ -1372,6 +1372,17 @@ export function Editor() {
                             onChange={(e) => updateSel({ merchant: { ...sel.merchant!, buyMarkup: e.target.value === '' ? undefined : Number(e.target.value) } })}
                           />
                         </label>
+                        <label className="ed-field">
+                          ↳ Réassort (jours, override — défaut 1)
+                          <input
+                            type="number"
+                            step="1"
+                            min="0"
+                            placeholder="défaut archétype (1 j)"
+                            value={sel.merchant.restockDays ?? ''}
+                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, restockDays: e.target.value === '' ? undefined : Number(e.target.value) } })}
+                          />
+                        </label>
                       </>
                     )}
                   </>

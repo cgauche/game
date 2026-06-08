@@ -39,6 +39,8 @@ function reset() {
     pendingReload: null,
     pendingReveals: [],
     document: null,
+    merchant: null,
+    merchantStocks: {},
   });
 }
 
@@ -2366,5 +2368,31 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     useGame.setState({ party: [hero()], scene: merchantScene() });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'openMerchant', entityId: 'pnj' }]);
     expect(useGame.getState().merchant?.entityId).toBe('pnj');
+  });
+
+  it('re-stock : la déplétion PERSISTE entre visites sans temps écoulé (#T3)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    const q0 = useGame.getState().merchant!.stock.find((l) => l.label === label)!.qty;
+    useGame.getState().buyItem(label, 'h');
+    useGame.getState().closeMerchant();
+    useGame.getState().openMerchant('pnj'); // ré-ouverture immédiate → stock déplété conservé
+    expect(useGame.getState().merchant!.stock.find((l) => l.label === label)!.qty).toBe(q0 - 1);
+  });
+
+  it('re-stock : après ≥ restockDays (1 j), le stock est re-tiré frais (#T3)', () => {
+    const t0 = useGame.getState().gameTime;
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const rolled0 = useGame.getState().merchantStocks['pnj'].rolledAt;
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().buyItem(label, 'h');
+    useGame.getState().closeMerchant();
+    useGame.setState({ gameTime: t0 + 2 * 24 * 60 }); // +2 jours (≥ restockDays défaut 1)
+    useGame.getState().openMerchant('pnj');
+    const rolled1 = useGame.getState().merchantStocks['pnj'].rolledAt;
+    expect(rolled1).toBeGreaterThan(rolled0); // re-tiré au nouveau temps (stock frais)
+    expect(rolled1).toBe(t0 + 2 * 24 * 60);
   });
 });
