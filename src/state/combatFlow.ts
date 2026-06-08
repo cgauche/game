@@ -57,7 +57,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -414,6 +414,7 @@ export function resolveAttack(
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
+  fromCharge?: boolean,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
@@ -458,7 +459,10 @@ export function resolveAttack(
     env.push({ label: 'Flanc/dos', value: 20 });
   env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → s'ajoute au dodgeMod météo.
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target) }), weapon };
+  // Charge montée (LDB 14 l.223) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.
+  const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
+  const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy }), weapon };
 }
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,

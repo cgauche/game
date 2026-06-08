@@ -241,6 +241,9 @@ export interface AttackOptions {
   env?: ModLine[];
   /** Pénalité météo à l'esquive (neige épaisse −20, LDB 14 l.115-116), injectée par combatFlow. */
   dodgeMod?: number;
+  /** Combat monté — CHARGE (LDB 14 l.223) : pour le calcul des DÉGÂTS seulement, on substitue la Force
+   *  (Bonus `sb`) et la Taille de la MONTURE à celles du cavalier (le toucher reste la CC du cavalier). */
+  dmgProxy?: { sb: number; size: Combatant['size'] };
 }
 
 /**
@@ -326,6 +329,7 @@ export function finishMelee(
   location?: HitLocation,
   env: ModLine[] = [],
   dodgeMod = 0,
+  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
 ): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
@@ -372,10 +376,10 @@ export function finishMelee(
     };
   }
   const critical = atk.isDouble && atk.success;
-  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location);
+  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy);
   res.defenderRoll = def.roll;
   res.defenderDetail = defBd;
-  if (res.hit && (attacker.swarm || sizeGap(attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200)
+  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
 
@@ -388,11 +392,12 @@ export function resolveMeleePassive(
   atk: TestResult,
   location?: HitLocation,
   env: ModLine[] = [],
+  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
-  if (res.hit && (attacker.swarm || sizeGap(attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200)
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location, dmgProxy);
+  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
 
@@ -407,9 +412,9 @@ export function resolveMelee(
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   const atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
-  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env);
+  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
   const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod);
-  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod);
+  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
 }
 
 /**
@@ -510,10 +515,13 @@ function applyHit(
   dr: number,
   critical: boolean,
   forcedLoc?: HitLocation,
+  dmgProxy?: AttackOptions['dmgProxy'],
 ): AttackResult {
   weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
-  const sb = bonus(effectiveChar(attacker, 'F')) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
+  // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
+  const sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
+  const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
   const effDR = dr + qualitySum(weapon, 'damageDR'); // Atout Pointue : +1 DR sur une touche (l.301)
@@ -521,9 +529,9 @@ function applyHit(
   // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
   const noSize = !!attacker.swarm || !!defender.swarm;
-  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units }, noSize ? [] : sizeGrantedQualities(attacker.size, defender.size));
+  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
-  if (!noSize) damage *= sizeDamageMultiplier(attacker.size, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
+  if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
   const woundsLost = woundsFromHit(weapon, defender, loc, damage);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;

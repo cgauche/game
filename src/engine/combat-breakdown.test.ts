@@ -205,3 +205,25 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
     expect(mods).toContainEqual({ label: 'Cible vulnérable', value: 20 });
   });
 });
+
+describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14 l.223)', () => {
+  it('dmgProxy augmente les dégâts (Force de la monture) et déclenche le balayage (Taille de la monture)', () => {
+    const att = mk({ name: 'Cavalier', size: 'moyenne' }); // BF 3, Moyenne
+    const def = mk({ name: 'Gobelin', size: 'moyenne' });
+    const okAtk = { roll: 35, target: 50, success: true, sl: 2, isDouble: false }; // touche nette (déterministe)
+    // Seul le proxy de dégâts (monture Grande, BF 6) change : touche identique → DÉGÂTS isolés.
+    const normal = resolveMeleePassive(att, def, sword, okAtk);
+    const charge = resolveMeleePassive(att, def, sword, okAtk, undefined, [], { sb: 6, size: 'grande' });
+    expect(normal.hit && charge.hit).toBe(true);
+    expect(charge.damage!).toBeGreaterThan(normal.damage!); // Force de la monture (6) > Force du cavalier (3)
+    expect(charge.cleave).toBe(true); // monture Grande vs Moyenne → Frappe Mortelle (balayage)
+    expect(normal.cleave).toBeFalsy(); // à pied, Moyenne vs Moyenne → pas de balayage
+  });
+  it('le toucher reste celui du CAVALIER (le proxy n’affecte que les dégâts)', () => {
+    const att = mk({ name: 'Cavalier' });
+    const def = mk({ name: 'Cible' });
+    const a = resolveMelee(att, def, sword, makeRNG(5), { defense: 'none' });
+    const b = resolveMelee(att, def, sword, makeRNG(5), { defense: 'none', dmgProxy: { sb: 9, size: 'enorme' } });
+    expect(a.attackerRoll).toBe(b.attackerRoll); // jet d'attaque identique : la CC du cavalier n'est pas touchée
+  });
+});
