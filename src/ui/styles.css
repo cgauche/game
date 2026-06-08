@@ -446,6 +446,81 @@ textarea:focus {
   opacity: 0.5;
   border-color: var(--danger);
 }
+/* ── Groupe détaillé (gauche, combat + exploration) ── */
+.group-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.grp-card {
+  display: flex;
+  gap: 9px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.grp-card:hover {
+  border-color: var(--accent2);
+}
+.grp-card.active {
+  outline: 2px solid var(--gold);
+  outline-offset: -1px;
+  background: #2a2138;
+}
+.grp-card.ko {
+  background: rgba(192, 57, 43, 0.16);
+  border-color: #e0533a;
+}
+.grp-portrait {
+  position: relative;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+.grp-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.grp-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: baseline;
+}
+.grp-top b {
+  font-size: 13px;
+}
+.grp-pv {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.grp-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: #000;
+  overflow: hidden;
+}
+.grp-bar > i {
+  display: block;
+  height: 100%;
+  transition: width 0.3s, background 0.3s;
+}
+.grp-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+.grp-meta .adv {
+  color: var(--gold);
+}
+.grp-wpn {
+  color: #c9bfe0;
+}
 .phc-top {
   display: flex;
   justify-content: space-between;
@@ -674,27 +749,44 @@ textarea:focus {
   color: var(--muted);
 }
 
-/* ── Colonne d'action gauche : panneau Perso (héros actif) + actions (Lot 1) ── */
+/* ── Barre d'action EN BAS : panneau Perso (héros actif) + actions (Lot 1) ── */
 .action-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  max-width: 96%;
+  z-index: 5;
+  pointer-events: none;
+}
+.action-bar > * {
+  pointer-events: auto;
 }
 .ab-bar {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: stretch;
+  gap: 12px;
+  background: rgba(12, 9, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(5px);
+  max-width: 100%;
 }
-/* Panneau Perso (rappel du héros actif) */
+/* Panneau Perso (rappel du héros actif), bloc gauche de la barre */
 .ab-actor {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent2);
-  border-radius: 10px;
-  padding: 9px;
+  gap: 6px;
+  width: 224px;
+  flex: 0 0 auto;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
 .ab-actor-head {
   display: flex;
@@ -805,30 +897,33 @@ textarea:focus {
 .fx-chip.more {
   color: var(--muted);
 }
-/* Liste d'actions (colonne, libellés complets) */
+/* Liste d'actions (tuiles, libellés complets) */
 .ab-slots {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 6px;
+  align-content: center;
+  max-width: 560px;
 }
 .ab-slot {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 9px 11px;
+  justify-content: center;
+  gap: 3px;
+  min-width: 66px;
+  padding: 7px 9px;
   border-radius: 9px;
-  border: 1px solid var(--border);
-  background: var(--panel2);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text, #ececf2);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   transition: background 0.12s, border-color 0.12s, transform 0.06s;
 }
 .ab-slot:hover:not(:disabled) {
-  background: #34294a;
-  border-color: var(--accent2);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 .ab-slot:active:not(:disabled) {
   transform: translateY(1px);
@@ -851,12 +946,10 @@ textarea:focus {
 }
 .ab-ico {
   font-size: 18px;
-  width: 20px;
-  text-align: center;
-  flex: 0 0 auto;
 }
 .ab-lbl {
-  font-size: 13px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 .ab-enemy {
   font-size: 14px;

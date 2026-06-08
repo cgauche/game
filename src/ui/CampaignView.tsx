@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { IsoStage } from '../gameIso/IsoStage';
-import { hpColor } from '../gameIso/teamColors';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
@@ -34,12 +33,11 @@ import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
-import { Combatant } from '../engine/types';
+import { GroupPanel } from './GroupPanel';
 
 export function CampaignView() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
-  const party = useGame((s) => s.party);
   const journal = useGame((s) => s.journal);
   const dialogue = useGame((s) => s.dialogue);
   const battle = useGame((s) => s.battle);
@@ -62,16 +60,10 @@ export function CampaignView() {
           ← Quitter
         </button>
         <h3>{scene?.nom}</h3>
-        {mode === 'battle' && battle ? (
-          // En combat : la colonne gauche = panneau Perso (héros actif) + actions (cf. ActionBar).
-          <ActionBar />
-        ) : (
+        {/* Groupe détaillé (PB + équipement + effets) — affiché EN COMBAT comme HORS COMBAT. */}
+        <GroupPanel onOpen={setSheetId} />
+        {mode !== 'battle' && (
           <>
-            <div className="party-hud">
-              {party.map((h) => (
-                <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} onOpen={() => setSheetId(h.id)} />
-              ))}
-            </div>
             <div className="purse">
               <span className="mini-title">Bourse</span>
               <span className="coins">
@@ -121,6 +113,8 @@ export function CampaignView() {
         )}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
+        {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
+        {mode === 'battle' && battle && <ActionBar />}
       </main>
 
       {mode === 'battle' && battle && <BattlePanel />}
@@ -149,36 +143,6 @@ export function CampaignView() {
       <FateSaveModal />
       <DocumentModal />
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
-    </div>
-  );
-}
-
-function battleVersion(combatants: Combatant[] | undefined, h: Combatant): Combatant | null {
-  return combatants?.find((c) => c.id === h.id) ?? null;
-}
-
-function PartyHudCard({ hero, onOpen }: { hero: Combatant; onOpen?: () => void }) {
-  const ratio = hero.wounds.max > 0 ? hero.wounds.current / hero.wounds.max : 0;
-  const down = hero.wounds.current <= 0;
-  return (
-    <div className={`party-hud-card clickable ${down ? 'down' : ''}`} onClick={onOpen} title="Voir la fiche / l'équipement">
-      <div className="phc-top">
-        <strong>{hero.name}</strong>
-        <span>
-          {hero.wounds.current}/{hero.wounds.max}
-        </span>
-      </div>
-      <div className="hp-bar">
-        <div className="hp-fill" style={{ width: `${Math.max(0, ratio) * 100}%`, background: hpColor(ratio) }} />
-      </div>
-      <div className="phc-sub">
-        {hero.career} {hero.advantage > 0 && <span className="adv">Av +{hero.advantage}</span>}
-        {hero.conditions.map((c) => (
-          <span className="cond" key={c.name}>
-            {c.name}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
