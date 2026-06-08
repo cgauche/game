@@ -16,12 +16,12 @@ const project = JSON.parse(
 ) as Scene[];
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('5 scènes, entrée = arene-zone1, hub + 4 zones reliées', () => {
-    expect(project).toHaveLength(5);
+  it('6 scènes, entrée = arene-zone1, hub + 5 zones reliées', () => {
+    expect(project).toHaveLength(6);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
-    expect(ids).toContain('arene-zone4');
+    expect(ids).toContain('arene-zone5'); // Le Sépulcre (épreuve finale Terreur)
   });
 
   it('validateScene(projet) ne lève AUCUNE erreur (transitions/dialogues/ids OK)', () => {
@@ -48,6 +48,16 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
           if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? '?'}@(${x},${y})`);
         }
     expect(bad).toEqual([]);
+  });
+
+  it('couvre les types de rencontre ÉTENDUS : Surprise/embuscade, Nuée (statbloc), Terreur, Test interactif', () => {
+    const encs = project.flatMap((s) => s.encounters);
+    expect(encs.some((e) => e.surprise === 'party')).toBe(true); // embuscade
+    expect(encs.some((e) => e.enemies.some((en) => (en.statblock?.traits ?? []).includes('Nuée')))).toBe(true); // Nuée = statbloc custom
+    expect(encs.some((e) => e.enemies.some((en) => en.ref === 'Spectre de cairn'))).toBe(true); // créature Terreur
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.effects?.some((ef) => ef.type === 'test'))));
+    expect(hasTest).toBe(true); // Effet `test` (Crochetage) avec branches succès/échec
   });
 
   it('la Cour met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {

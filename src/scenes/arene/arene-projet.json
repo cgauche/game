@@ -771,8 +771,50 @@
                 ]
               },
               {
+                "text": "⚰️ Entrer — Le Sépulcre (épreuve finale).",
+                "condition": "zone4_clear,!zone5_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone5"
+                  }
+                ]
+              },
+              {
+                "text": "🔓 Crocheter le vieux coffre du maître (Test de Crochetage).",
+                "condition": "!coffre_pris",
+                "effects": [
+                  {
+                    "type": "test",
+                    "skill": "Crochetage",
+                    "difficulty": "intermediaire",
+                    "label": "Crocheter le coffre",
+                    "onSuccess": [
+                      {
+                        "type": "setFlag",
+                        "flag": "coffre_pris"
+                      },
+                      {
+                        "type": "giveMoney",
+                        "gold": 30
+                      },
+                      {
+                        "type": "journal",
+                        "text": "Le coffre cède : 30 couronnes !"
+                      }
+                    ],
+                    "onFailure": [
+                      {
+                        "type": "journal",
+                        "text": "Le mécanisme rouillé résiste — peut-être plus tard."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
                 "text": "🏆 Savourer ta gloire de champion.",
-                "condition": "zone4_clear",
+                "condition": "zone5_clear",
                 "effects": [
                   {
                     "type": "journal",
@@ -1111,6 +1153,27 @@
               "x": 6,
               "y": 8
             }
+          },
+          {
+            "statblock": {
+              "name": "Nuée de rats",
+              "char": {
+                "M": 4,
+                "CC": 30,
+                "F": 25,
+                "E": 30,
+                "Ag": 40,
+                "B": 5
+              },
+              "traits": [
+                "Nuée",
+                "Taille (Petite)"
+              ]
+            },
+            "pos": {
+              "x": 4,
+              "y": 4
+            }
           }
         ],
         "onVictory": [
@@ -1161,7 +1224,7 @@
     },
     "ambiance": "exterieur",
     "weather": "brouillard",
-    "startMessage": "LE MARAIS. Une mare coupe le centre, des bosquets gênent la vue (brouillard). Bêtes d’élite.",
+    "startMessage": "LE MARAIS. Le brouillard cache une EMBUSCADE : Test de Perception ou vos héros démarrent Surpris ! Mare au centre, bosquets, bêtes d’élite.",
     "tiles": [
       "herbe",
       "herbe",
@@ -1449,6 +1512,7 @@
             }
           }
         ],
+        "surprise": "party",
         "onVictory": [
           {
             "type": "giveMoney",
@@ -1484,7 +1548,7 @@
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LA CAVERNE. Piliers de roche, statues anciennes — et un Troll. Le combat final.",
+    "startMessage": "LA CAVERNE. Piliers de roche, statues anciennes — et un Troll (régénère, vomit). Avant l’épreuve finale.",
     "tiles": [
       "sol",
       "sol",
@@ -1797,6 +1861,338 @@
           {
             "type": "journal",
             "text": "LE TROLL EST TOMBÉ. Une lame d’un éclat surnaturel gît près de la carcasse (à faire évaluer)."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone5",
+    "nom": "Arène — Le Sépulcre",
+    "description": "Crypte glaciale : l’épreuve ultime.",
+    "dimensions": {
+      "w": 15,
+      "h": 11
+    },
+    "ambiance": "interieur",
+    "startMessage": "LE SÉPULCRE. Un Spectre de cairn s’élève — sa TERREUR fige le sang (Test de Terreur, plus dur que la Peur). Tenez bon, champions.",
+    "tiles": [
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "id": "z5-stat-a",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 3
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "z5-stat-b",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "z5-ton",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 5
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "z5-feu-a",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "z5-feu-b",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "z5-sang",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 5
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "z5-os",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 9
+        },
+        "ref": "cadavre"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-z5",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 11
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-z5"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-z5",
+        "enemies": [
+          {
+            "ref": "Spectre de cairn",
+            "pos": {
+              "x": 12,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 8,
+              "y": 2
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 8,
+              "y": 8
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 220
+          },
+          {
+            "type": "giveXp",
+            "amount": 400
+          },
+          {
+            "type": "giveTrapping",
+            "trapping": "Dague",
+            "qualities": [
+              "Dévastatrice"
+            ],
+            "identified": false,
+            "skin": {
+              "metal": "#caa64a"
+            }
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone5_clear"
+          },
+          {
+            "type": "journal",
+            "text": "LE SPECTRE EST DISSIPÉ. Vous êtes CHAMPION DE L’ARÈNE — une dague dorée à l’éclat trouble repose dans la poussière."
           },
           {
             "type": "transition",
