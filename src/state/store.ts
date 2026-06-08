@@ -56,7 +56,7 @@ import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { resolveRun } from '../engine/movement';
@@ -165,6 +165,29 @@ export interface PendingReload {
   sl: number; // DR du jet
   success: boolean;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
+/** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.61 Empêtré / l.77 En flammes) :
+ *  une Action pour retirer l'État via un Test ; succès ⇒ 1 + DR pions retirés. Empêtré = Test OPPOSÉ
+ *  de Force contre la source ; En flammes = Test d'Athlétisme simple. Modale Lancer → DR → Chance. */
+export interface PendingStateRecovery {
+  actorId: string;
+  actorName: string;
+  state: 'Empêtré' | 'En flammes';
+  skillLabel: string; // 'Force' | 'Athlétisme'
+  skillValue: number;
+  difficulty: Difficulty;
+  /** Empêtré avec une source vivante → Test opposé ; sinon Test simple. */
+  opposed: boolean;
+  opponentValue?: number; // Force de la source (Empêtré opposé)
+  opponentName?: string;
+  stacks: number; // pions présents (max retirables)
+  /** Jet de l'acteur ; null tant que pas lancé (Chance possible ensuite). */
+  roll: TestResult | null;
+  /** Jet de la source, figé au 1ᵉʳ lancer (les relances Chance ne re-roulent que l'acteur). */
+  opponentRoll: TestResult | null;
+  netSL: number; // DR net (après opposition le cas échéant)
+  success: boolean;
   rerolled?: boolean;
 }
 /** Marchandage en attente (LDB 60 l.12) : Test OPPOSÉ Marchandage (joueur) vs Marchandage (marchand).
@@ -422,6 +445,8 @@ export interface GameState {
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
   pendingReload: PendingReload | null;
+  /** « Se libérer » (Empêtré) / « se rouler » (En flammes) en cours — modale interactive (LDB 16). */
+  pendingStateRecovery: PendingStateRecovery | null;
   pendingDefense: PendingDefense | null;
   /** Déviation Critique d'un héros en attente (choix Dévier/Subir, LDB 63 l.63-66). */
   pendingDeviation: PendingDeviation | null;
@@ -537,6 +562,18 @@ export interface GameState {
   reloadConfirm: () => void;
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
+  /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
+  battleRecoverState: (state: 'Empêtré' | 'En flammes') => void;
+  /** Modale « se libérer/se rouler » : « Lancer » effectue le Test (DR / opposition). */
+  recoverRoll: () => void;
+  /** Chance : relance le jet de récupération raté (1 max). */
+  recoverReroll: () => void;
+  /** Chance « +1 DR » sur le jet de récupération figé. */
+  recoverBonusSL: () => void;
+  /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
+  recoverConfirm: () => void;
+  /** Ferme la modale de récupération sans coût (avant le jet). */
+  recoverCancel: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
   battleSelectAmmo: (uid: string) => void;
   /** Détermination (Resolve, LDB ch.17 l.66) : retire un État de l'actif (+1 PB si À Terre).
@@ -738,6 +775,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingAppraise: null,
   pendingAttack: null,
   pendingReload: null,
+  pendingStateRecovery: null,
   pendingDefense: null,
   pendingDeviation: null,
   pendingMountTarget: null,
@@ -957,6 +995,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingTest: null,
       pendingAttack: null,
       pendingReload: null,
+      pendingStateRecovery: null,
       pendingDefense: null,
       pendingDisengage: null,
       pendingInteract: null,
@@ -1333,7 +1372,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
     pushReveal(set, {
@@ -2136,6 +2175,83 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
+  battleRecoverState: (state) => {
+    const { battle } = get();
+    if (!battle || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+    const n = stacks(active, state);
+    if (n <= 0) return; // pas porteur de l'État
+    // Empêtré : Test OPPOSÉ de Force contre la source vivante (LDB 16 l.61) ; sinon Test simple.
+    let opposed = false, opponentValue: number | undefined, opponentName: string | undefined;
+    if (state === 'Empêtré') {
+      const srcId = active.conditions.find((c) => c.name === 'Empêtré')?.sourceId;
+      const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
+      if (src) { opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name; }
+    }
+    const skillValue = state === 'Empêtré' ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
+    set({
+      pendingStateRecovery: {
+        actorId: active.id, actorName: active.name, state,
+        skillLabel: state === 'Empêtré' ? 'Force' : 'Athlétisme',
+        skillValue, difficulty: 'intermediaire',
+        opposed, opponentValue, opponentName, stacks: n,
+        roll: null, opponentRoll: null, netSL: 0, success: false,
+      },
+    });
+  },
+  recoverRoll: () => {
+    const sr = get().pendingStateRecovery;
+    if (!sr || sr.roll != null) return; // déjà lancé
+    const actorT = rollTest(sr.skillValue, sr.difficulty, battleRng());
+    if (sr.opposed && sr.opponentValue != null) {
+      const oppT = rollTest(sr.opponentValue, 'intermediaire', battleRng());
+      const opp = resolveOpposed(actorT, oppT);
+      set({ pendingStateRecovery: { ...sr, roll: actorT, opponentRoll: oppT, netSL: opp.netSL, success: opp.attackerWins } });
+    } else {
+      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success } });
+    }
+  },
+  recoverReroll: () => {
+    const { battle, pendingStateRecovery: sr } = get();
+    if (!battle || !sr || sr.roll == null) return;
+    if (!canReroll(!sr.success, !!sr.rerolled)) return; // jet raté, 1× max
+    const a = battle.combatants.find((c) => c.id === sr.actorId);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    const actorT = rollTest(sr.skillValue, sr.difficulty, battleRng());
+    if (sr.opposed && sr.opponentRoll) {
+      const opp = resolveOpposed(actorT, sr.opponentRoll); // la source garde son jet figé
+      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: opp.netSL, success: opp.attackerWins, rerolled: true }, battle: { ...battle } });
+    } else {
+      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success, rerolled: true }, battle: { ...battle } });
+    }
+  },
+  recoverBonusSL: () => {
+    const { battle, pendingStateRecovery: sr } = get();
+    if (!battle || !sr || sr.roll == null) return;
+    const a = battle.combatants.find((c) => c.id === sr.actorId);
+    if (!a || (a.fortune ?? 0) <= 0) return;
+    a.fortune = (a.fortune ?? 0) - 1;
+    set({ pendingStateRecovery: { ...sr, netSL: sr.netSL + 1 }, battle: { ...battle } });
+  },
+  recoverConfirm: () => {
+    const { battle, pendingStateRecovery: sr } = get();
+    if (!battle || !sr || sr.roll == null) return;
+    const a = battle.combatants.find((c) => c.id === sr.actorId);
+    set({ pendingStateRecovery: null });
+    if (!a) return;
+    const removed = recoveredStacks(sr.netSL, stacks(a, sr.state), sr.success); // 1 + DR, borné
+    const lines: string[] = [];
+    if (removed > 0) {
+      removeCondition(a, sr.state, removed);
+      lines.push(sr.state === 'Empêtré'
+        ? `${a.name} se libère (${removed} État${removed > 1 ? 's' : ''} Empêtré retiré${removed > 1 ? 's' : ''}).`
+        : `${a.name} étouffe les flammes (${removed} État${removed > 1 ? 's' : ''} En flammes retiré${removed > 1 ? 's' : ''}).`);
+    } else lines.push(sr.state === 'Empêtré' ? `${a.name} ne parvient pas à se libérer.` : `${a.name} ne parvient pas à éteindre les flammes.`);
+    finishPlayerAction(get, set, lines); // consomme l'Action
+  },
+  recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
   battleSelectAmmo: (uid) => {
     const { battle } = get();
     if (!battle) return;

@@ -4,7 +4,7 @@
  * Pur + testé ; ne dépend que de types/conditions (déjà purs).
  */
 import { Combatant } from './types';
-import { loseWounds, addCondition, removeCondition, hasCondition } from './conditions';
+import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
 const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -54,9 +54,8 @@ export function healWoundsDelta(intBonus: number, dr: number, success: boolean):
 /** Arrêt d'Hémorragie (LDB 09 l.235 / 16-États l.107-109) : succès ⇒ retire 1+DR pions (borné) ;
  *  tous retirés ⇒ Exténué. Échec ⇒ rien. */
 export function stopBleedOutcome(dr: number, stacks: number, success: boolean): { removed: number; gainExtenue: boolean } {
-  if (!success || stacks <= 0) return { removed: 0, gainExtenue: false };
-  const removed = Math.min(stacks, 1 + Math.max(0, dr));
-  return { removed, gainExtenue: removed >= stacks };
+  const removed = recoveredStacks(dr, stacks, success); // « 1 + DR » borné, partagé avec Empêtré/En flammes
+  return { removed, gainExtenue: removed > 0 && removed >= stacks };
 }
 
 /** Applique un soin de Blessures (mutation). Lève l'Inconscient et remet l'horloge de mort à zéro

@@ -104,6 +104,8 @@ export type ArmourPoints = Record<HitLocation, number>;
 export interface ConditionInstance {
   name: string;
   value: number; // certains États s'empilent (ex. Hémorragique)
+  /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
+  sourceId?: string;
 }
 
 /**

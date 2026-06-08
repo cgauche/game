@@ -46,7 +46,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
@@ -1075,6 +1075,7 @@ export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant
   // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
   if (traits.some((t) => /^constricteur/i.test(t)) && !hasCondition(target, 'Empêtré')) {
     addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
     get().log(`${target.name} est Empêtré (Constricteur).`);
   }
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
@@ -1197,6 +1198,7 @@ export function applyTongue(get: () => GameState, set: any, attacker: Combatant,
     const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
     if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
     if (!hasCondition(tgt, 'Empêtré')) addCondition(tgt, 'Empêtré');
+    const cond = tgt.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
     lines.push(`${tgt.name} est Empêtré (Langue préhensile).`);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   } else lines.push(`${tgt.name} esquive la langue.`);
@@ -1975,6 +1977,29 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       if (!canAct) return advanceTurn(get, set);
       attackThenAdvance(targetOf(action.targetId));
       return;
+    case 'recover': {
+      // Se libérer (Empêtré, Test opposé de Force, l.61) / se rouler (En flammes, Athlétisme, l.77).
+      // IA = résolution INSTANTANÉE (pas de modale ni de Chance). Coûte l'Action.
+      if (!canAct) return advanceTurn(get, set);
+      let success: boolean, netSL: number;
+      if (action.state === 'Empêtré') {
+        const srcId = enemy.conditions.find((c) => c.name === 'Empêtré')?.sourceId;
+        const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
+        if (src) { const opp = opposedTest(testValue(enemy, undefined, 'F'), testValue(src, undefined, 'F'), battleRng()); success = opp.attackerWins; netSL = opp.netSL; }
+        else { const t = rollTest(testValue(enemy, undefined, 'F'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl); }
+      } else {
+        const t = rollTest(testValue(enemy, 'Athlétisme'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl);
+      }
+      const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
+      if (removed > 0) removeCondition(enemy, action.state, removed);
+      const line = removed > 0
+        ? (action.state === 'Empêtré' ? `${enemy.name} se libère (${removed} État Empêtré retiré).` : `${enemy.name} étouffe les flammes (${removed} État En flammes retiré).`)
+        : (action.state === 'Empêtré' ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
+      set({ battle: { ...battle, log: [...battle.log, line] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => advanceTurn(get, set), 350);
+      return;
+    }
     case 'move': {
       // Simplifications IA assumées (sévérité mineure, relevées par la revue de fidélité) :
       //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15-Dépl l.84-89) : un

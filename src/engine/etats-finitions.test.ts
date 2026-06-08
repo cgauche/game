@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addCondition, testStatePenalty, endOfRound, hasCondition, bleedDeathRoll } from './conditions';
+import { addCondition, testStatePenalty, endOfRound, hasCondition, bleedDeathRoll, recoveredStacks } from './conditions';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
 import type { Combatant } from './types';
@@ -25,6 +25,15 @@ describe('Finitions d\'États (LDB 16)', () => {
     endOfRound(c, makeRNG(1)); // E 90 → Résistance réussie → retire le poison
     expect(hasCondition(c, 'Empoisonné')).toBe(false);
     expect(hasCondition(c, 'Exténué')).toBe(true);
+  });
+
+  it('recoveredStacks : « 1 + DR » borné aux pions ; échec ⇒ 0 (l.61/77/107)', () => {
+    expect(recoveredStacks(0, 3, true)).toBe(1);   // DR 0 → 1 pion
+    expect(recoveredStacks(2, 3, true)).toBe(3);   // 1+2 = 3, borné à 3
+    expect(recoveredStacks(5, 2, true)).toBe(2);   // borné au nombre de pions
+    expect(recoveredStacks(-3, 3, true)).toBe(1);  // DR négatif clampé à 0 → 1
+    expect(recoveredStacks(4, 3, false)).toBe(0);  // échec → rien
+    expect(recoveredStacks(4, 0, true)).toBe(0);   // aucun pion → rien
   });
 
   it('Hémorragique : coagulation (double) du dernier État → 1 Exténué (l.109)', () => {

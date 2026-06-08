@@ -10,6 +10,13 @@ import { rollTest, isDoubleRoll } from './tests';
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
+/** Retrait d'États « 1 + DR » borné au nombre de pions présents (LDB 16 : Empêtré l.61,
+ *  En flammes l.77, Empoisonné l.70, Sonné l.125, arrêt d'Hémorragie l.107). Un Test raté n'en retire aucun. */
+export function recoveredStacks(dr: number, stacks: number, success: boolean): number {
+  if (!success || stacks <= 0) return 0;
+  return Math.min(stacks, 1 + Math.max(0, dr));
+}
+
 export function addCondition(c: Combatant, name: string, value = 1): void {
   c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
   const existing = c.conditions.find((x) => x.name === name);

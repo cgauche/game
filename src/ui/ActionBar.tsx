@@ -40,6 +40,7 @@ export function ActionBar() {
   const standUp = useGame((s) => s.battleStandUp);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
+  const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
   const heal = useGame((s) => s.battleHeal);
@@ -58,6 +59,8 @@ export function ActionBar() {
   const mountCandidate = isHero && !active.mountId && !battle.moved ? mountableNear(battle, active) : undefined; // enfourcher = Mouvement (pas de jet → pas une Action)
   const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
   const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
+  const entangled = isHero && hasCondition(active, 'Empêtré'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
+  const onFire = isHero && hasCondition(active, 'En flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
   const canCharge = isHero && !engaged && !prone && !broken && active.weapons[0]?.type === 'melee';
   // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu.
   const canRun = isHero && !engaged && !prone && !battle.moved && !battle.acted && !stunned;
@@ -333,6 +336,28 @@ export function ActionBar() {
               <span className="ab-ico">🛡️</span>
               <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
             </button>
+            {onFire && (
+              <button
+                className="ab-slot"
+                disabled={battle.acted || stunned}
+                onClick={() => recoverState('En flammes')}
+                title="Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action, LDB 16 l.77)"
+              >
+                <span className="ab-ico">🔥</span>
+                <span className="ab-lbl">Se rouler{battle.acted && ' ✓'}</span>
+              </button>
+            )}
+            {entangled && (
+              <button
+                className="ab-slot"
+                disabled={battle.acted || stunned}
+                onClick={() => recoverState('Empêtré')}
+                title="Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action, LDB 16 l.61)"
+              >
+                <span className="ab-ico">🪢</span>
+                <span className="ab-lbl">Se libérer{battle.acted && ' ✓'}</span>
+              </button>
+            )}
 
             {/* ── Catégories repliables ── */}
             {hasMvt && (
