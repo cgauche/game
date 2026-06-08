@@ -117,6 +117,12 @@ export const DEFS = `
   <linearGradient id="g_terre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a5f3c"/><stop offset="100%" stop-color="#57452b"/></linearGradient>
   <linearGradient id="g_dalle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a7a39d"/><stop offset="100%" stop-color="#7c7872"/></linearGradient>
   <linearGradient id="g_pave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8f8d96"/><stop offset="100%" stop-color="#63616b"/></linearGradient>
+  <linearGradient id="g_sable" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cdb37a"/><stop offset="100%" stop-color="#a88a4e"/></linearGradient>
+  <linearGradient id="g_ossuaire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4b896"/><stop offset="100%" stop-color="#9a8c66"/></linearGradient>
+  <linearGradient id="g_roche" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e6a62"/><stop offset="100%" stop-color="#4a463e"/></linearGradient>
+  <linearGradient id="g_pierre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5c606a"/><stop offset="100%" stop-color="#3c4049"/></linearGradient>
+  <linearGradient id="g_marbre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cbc6bd"/><stop offset="100%" stop-color="#a49e92"/></linearGradient>
+  <linearGradient id="g_cendre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a3c34"/><stop offset="100%" stop-color="#241c18"/></linearGradient>
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
   <linearGradient id="g_steelD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b94a6"/><stop offset="100%" stop-color="#444b5a"/></linearGradient>
   <linearGradient id="g_cloak" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8323a"/><stop offset="100%" stop-color="#5e1418"/></linearGradient>
