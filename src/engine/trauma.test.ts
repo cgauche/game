@@ -74,6 +74,12 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(0);
   });
+  it('Fausse jambe ENTRAÎNÉE (200 PX, LDB 73) rétablit AUSSI l’Esquive', () => {
+    const trained: ItemInstance = { ...item('Fausse jambe'), prosthesisTrained: true };
+    const c = fullCombatant({ traumas: [legSequela], items: [trained] });
+    expect(traumaMovementHalved(c)).toBe(false);
+    expect(traumaDodgePenalty(c)).toBe(0); // entraînée → −20 Esquive levé
+  });
   it('prothèse perdue (retirée des items) : la pénalité revient', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('Couverture')] });
     expect(traumaMovementHalved(c)).toBe(true);

@@ -168,6 +168,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
+  const trainProsthesis = useGame((s) => s.trainProsthesis);
   const inBattleNow = useGame((s) => !!s.battle);
   const [skinFor, setSkinFor] = useState<string | null>(null);
   const items = hero.items ?? [];
@@ -348,6 +349,16 @@ function FicheBody({ hero }: { hero: Combatant }) {
                       onClick={() => setSkinFor(open ? null : it.uid)}
                     >
                       ✨
+                    </button>
+                  )}
+                  {isProsthesis && it.equipped && it.name === 'Fausse jambe' && !it.prosthesisTrained && (
+                    <button
+                      className="btn small"
+                      title="Réapprendre l’Esquive avec la fausse jambe (200 PX) — LDB 73"
+                      disabled={(hero.xp ?? 0) < 200}
+                      onClick={() => trainProsthesis(hero.id, it.uid)}
+                    >
+                      Esquive (200 PX)
                     </button>
                   )}
                   {equipable ? (

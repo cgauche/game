@@ -506,6 +506,8 @@ export interface GameState {
   buySkillAdvance: (heroId: string, skillName: string) => void;
   /** Achète/augmente un Talent (refusé hors carrière, LDB l.97). */
   buyTalent: (heroId: string, talentName: string) => void;
+  /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
+  trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (coût 100 si Niveau actuel complété, 200 sinon). */
   changeCareer: (heroId: string, newCareer: string, newLevel: number) => void;
   startScene: (scene: Scene) => void;
@@ -948,6 +950,26 @@ export const useGame = create<GameState>((set, get) => ({
           return h;
         }
         msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
+        return clone;
+      }),
+    }));
+    if (msg) get().log(msg);
+  },
+
+  trainProsthesis: (heroId, uid) => {
+    const COST = 200; // Fausse jambe : « pour 200 PX, vous réapprenez à utiliser Esquive » (LDB 73)
+    let msg = '';
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const it = (clone.items ?? []).find((i) => i.uid === uid);
+        if (!it || it.name !== 'Fausse jambe' || !it.equipped) { msg = `${clone.name} : prothèse non portée.`; return h; }
+        if (it.prosthesisTrained) { msg = `${clone.name} : Esquive déjà réapprise.`; return h; }
+        if ((clone.xp ?? 0) < COST) { msg = `${clone.name} : PX insuffisants (${COST}).`; return h; }
+        clone.xp = (clone.xp ?? 0) - COST;
+        it.prosthesisTrained = true;
+        msg = `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${COST} PX).`;
         return clone;
       }),
     }));

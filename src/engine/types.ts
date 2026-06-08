@@ -194,6 +194,9 @@ export interface ItemInstance {
   /** Objet NON identifié (objet magique/légendaire trouvé) : ses qualités sont MASQUÉES à l'affichage
    *  (elles restent ACTIVES mécaniquement) tant qu'une Évaluation ne l'a pas révélé. Absent/true = identifié. */
   identified?: boolean;
+  /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
+   *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
+  prosthesisTrained?: boolean;
 }
 
 export interface Combatant {

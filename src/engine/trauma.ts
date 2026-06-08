@@ -213,9 +213,12 @@ export function treatTrauma(c: Combatant, dr: number): string[] {
  *  exige une prothèse `'all'`. La simple POSSESSION (objet au sac, non porté) ne suffit pas. */
 function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'): boolean {
   if (!t.prosthesis?.length) return false;
-  return t.prosthesis.some(
-    (p) => (aspect === 'movement' ? true : p.cancels === 'all') && (c.items ?? []).some((i) => i.name === p.name && i.equipped),
-  );
+  return t.prosthesis.some((p) => {
+    const worn = (c.items ?? []).find((i) => i.name === p.name && i.equipped);
+    if (!worn) return false;
+    const eff = worn.prosthesisTrained ? 'all' : p.cancels; // 200 PX → Esquive réapprise (Fausse jambe, LDB 73)
+    return aspect === 'movement' ? true : eff === 'all';
+  });
 }
 
 /** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64 ;
