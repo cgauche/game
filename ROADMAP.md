@@ -552,14 +552,18 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
   dégât si BI+DR<0), arrêt d'Hémorragie, **traiter une maladie** (−1 j/jour de soins, min 1). Persistance hors combat.
 - ✅ **Amputations** (LDB 18 l.328-370) : critique « Amputation (Difficulté) » → Test de Résistance ou À Terre
   (DR ≤ −2 +Sonné, DR ≤ −4 +Inconscient) ; **plaie chirurgicale** `needsSurgery` opérable par la Chirurgie + **séquelle
-  PERMANENTE** (survit à l'opération) mécanisée pour **jambe/pied** (Mouvement ÷2 + −20 Esquive, l.369/347 — **à pied
-  seulement** : la monture compense via `mountMovement`) et **orteil** (−1 Ag/CC, l.366). **Prothèses** (LDB 73, déjà
-  dans `trappings.json`) : porter une **Fausse jambe** rétablit le déplacement, une **Merveille d'ingénierie** annule
-  toute la séquelle (champ `Trauma.prosthesis`, levé tant que l'objet est porté).
-  **Résidus** : séquelles à latéralité/comptage (main −20, doigts, œil, oreille, nez, langue) toujours journalisées
-  (prothèses Crochet/Dents/Nez doré/Œil sans effet mécanique tant que ces séquelles ne le sont pas) ; rachat PX
-  (Esquive +200 PX, Fausse jambe) ; pansements stériles « empêchent l'Infection » (l.382) ; maintien/défaisage du
-  bandage (l.302) ; panneau Maladies/Traumas sur la fiche.
+  PERMANENTE** (survit à l'opération). Toutes les parties mécanisées (latéralité connue via brasG/brasD–jambeG/jambeD,
+  partie de tête via name+note ; **hypothèse : tout le monde DROITIER**, main principale = brasD) :
+  jambe/pied (Mouvement÷2 + −20 Esquive ; **monture compense** via `mountMovement`), orteil (−1 Ag/CC), main
+  (`noTwoHanded` → `recomputeLoadout` exclut les armes à 2 mains + −20 CC/CT si dominante), doigt (−5 CC/CT si
+  dominante), nez (−20 Soc), œil (−5 Soc), oreille (−5 Soc), langue (Tests de Langue échouent), dents (−2 Soc).
+  **Prothèses** (LDB 73, dans `trappings.json`, rendues équipables : Enc 0 portées) — `Trauma.prosthesis`, levé
+  tant que **PORTÉ** (équipé, pas juste possédé) : Fausse jambe (déplacement ; +200 PX `trainProsthesis` → Esquive),
+  Merveille (tout : oreille/main/bras/jambe), Nez doré, Œil de verre/Cache-œil, Dents en bois. Pansement/Guérison
+  pendant le combat → `woundDressed` → pas d'Infection post-critique (l.382). Panneau **Afflictions** sur la fiche.
+  **Résidus** : comptage cumulatif (DEUX yeux −30 vue / oreilles −20 ouïe, multi-doigts/dents) ; Crochet (rachat
+  −20 deux-mains 400 PX + arme Dague greffée) ; armes à DISTANCE bimanuelles (non marquées) ; maintien/défaisage
+  du bandage (l.302).
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
