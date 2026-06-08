@@ -30,6 +30,8 @@ export function ActionBar() {
   const disengage = useGame((s) => s.battleDisengage);
   const useItem = useGame((s) => s.battleUseItem);
   const spendResolve = useGame((s) => s.battleSpendResolve);
+  const resolvePsychImmune = useGame((s) => s.battleResolvePsychImmune);
+  const resolveIgnoreCrit = useGame((s) => s.battleResolveIgnoreCrit);
   const frenzy = useGame((s) => s.battleFrenzy);
   const run = useGame((s) => s.battleRun);
   const standUp = useGame((s) => s.battleStandUp);
@@ -223,8 +225,20 @@ export function ActionBar() {
           ))}
         </div>
       )}
-      {removableConditions.length > 0 && battle.action === 'resolve' && (
+      {battle.action === 'resolve' && resolve > 0 && (
         <div className="ab-spells">
+          <div className="ab-spell-row">
+            <button className="btn btn-sm" onClick={resolvePsychImmune} title="Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)">
+              🛡️ Immunité Psychologie (ce Round + le prochain)
+            </button>
+          </div>
+          {(active.traumas?.length ?? 0) > 0 && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" onClick={resolveIgnoreCrit} title="Détermination : ignorer les modificateurs de Blessure critique ce Round (LDB 17 l.64)">
+                🩹 Ignorer modifs de critique (ce Round)
+              </button>
+            </div>
+          )}
           {removableConditions.map((c) => (
             <div key={c.name} className="ab-spell-row">
               <button className="btn btn-sm" onClick={() => spendResolve(c.name)} title="Dépense un point de Détermination pour retirer cet État (LDB Destin)">

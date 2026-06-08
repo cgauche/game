@@ -56,8 +56,9 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
+import { sweepDismountDeaths } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
@@ -1478,6 +1479,16 @@ export function finalizeBattle(get: () => GameState, set: any): void {
 export function checkBattleOver(get: () => GameState, set: any): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return true;
+  // Combat monté (LDB 14 l.212-225) : une monture mise hors de combat désarçonne son cavalier (strict
+  // RAW : à pied, pas de chute). Balayage centralisé ici car checkBattleOver suit chaque résolution de combat.
+  const scene = get().scene;
+  if (scene) {
+    const dismounted = sweepDismountDeaths(battle, scene);
+    if (dismounted.length) {
+      set({ battle: { ...battle, log: [...battle.log, ...dismounted] } });
+      bus.emit(EVT.SCENE_DIRTY);
+    }
+  }
   const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   if (!enemiesAlive) {
@@ -1525,6 +1536,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); });
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
+      for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       set({ battle: { ...battle, turn: 0, round } });
@@ -1621,10 +1633,11 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
  *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
  *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
 export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || enemy.psychImmune || enemy.frenzied || isOutOfAction(enemy)) return; // Frénésie = immunité psy (LDB 21 l.34)
+  if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return;
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
+  if (isPsychImmune(enemy, battle.round)) return; // Immunité (Psychologie) / Frénésie / Détermination temp
   enemy.psychState ??= [];
   const log: string[] = [];
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
@@ -1676,7 +1689,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
 export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: PsychType; sourceId: string; indice: number; prevDR: number; cible?: string } | null {
   const battle = get().battle;
   const scene = get().scene;
-  if (!battle || !scene || !c.pos || c.psychImmune || c.frenzied) return null; // Frénésie = immunité psy
+  if (!battle || !scene || !c.pos || isPsychImmune(c, battle.round)) return null; // Immunité psy (trait/Frénésie/Détermination temp)
   const state = c.psychState ?? [];
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;

@@ -58,18 +58,21 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
   };
 }
 
-/** Un trauma réduit-il le Mouvement de moitié ? */
+/** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64.) */
 export function traumaMovementHalved(c: Combatant): boolean {
+  if (c.ignoreCritMods) return false;
   return (c.traumas ?? []).some((t) => t.movementHalved === true);
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »). */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
+  if (c.ignoreCritMods) return []; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
   return (c.traumas ?? []).map((t) => t.charPenalty?.[key] ?? 0).filter((p) => p < 0);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). */
 export function traumaDodgePenalty(c: Combatant): number {
+  if (c.ignoreCritMods) return 0; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
   const pens = (c.traumas ?? []).map((t) => t.dodgePenalty ?? 0).filter((p) => p < 0);
   return pens.length ? Math.min(...pens) : 0;
 }

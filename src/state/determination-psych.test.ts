@@ -1,0 +1,72 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame } from './store';
+import { isPsychImmune } from '../engine/psychology';
+import { traumaCharPenalties, traumaMovementHalved, traumaDodgePenalty } from '../engine/trauma';
+import type { Combatant } from '../engine/types';
+
+const C = (o: Partial<Combatant>): Combatant => o as unknown as Combatant;
+
+describe('isPsychImmune — prédicat central (trait / Frénésie / Détermination temp)', () => {
+  it('trait Immunité ou Frénésie → immunisé (hors round)', () => {
+    expect(isPsychImmune(C({ psychImmune: true }))).toBe(true);
+    expect(isPsychImmune(C({ frenzied: true }))).toBe(true);
+    expect(isPsychImmune(C({}))).toBe(false);
+  });
+  it('Détermination temporaire : immunisé tant que round ≤ psychImmuneThroughRound (LDB 17 l.62)', () => {
+    expect(isPsychImmune(C({ psychImmuneThroughRound: 3 }), 3)).toBe(true);
+    expect(isPsychImmune(C({ psychImmuneThroughRound: 3 }), 4)).toBe(false);
+  });
+  it('hors combat (round absent) : l\'immunité TEMPORAIRE ne s\'applique pas', () => {
+    expect(isPsychImmune(C({ psychImmuneThroughRound: 99 }))).toBe(false);
+  });
+});
+
+describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule les pénalités de trauma', () => {
+  const trauma = () => C({ traumas: [{ charPenalty: { F: -30 }, dodgePenalty: -20, movementHalved: true } as never] });
+  it('actif : pénalités normales', () => {
+    const c = trauma();
+    expect(traumaCharPenalties(c, 'F')).toEqual([-30]);
+    expect(traumaDodgePenalty(c)).toBe(-20);
+    expect(traumaMovementHalved(c)).toBe(true);
+  });
+  it('ignoreCritMods : toutes les pénalités de trauma sont annulées', () => {
+    const c = trauma();
+    c.ignoreCritMods = true;
+    expect(traumaCharPenalties(c, 'F')).toEqual([]);
+    expect(traumaDodgePenalty(c)).toBe(0);
+    expect(traumaMovementHalved(c)).toBe(false);
+  });
+});
+
+describe('Actions Détermination — immunité psy & ignore-crit (store)', () => {
+  beforeEach(() => useGame.setState({ battle: null }));
+  function withHero() {
+    const hero = C({ id: 'h', kind: 'hero', name: 'H', resolve: 2, conditions: [], wounds: { current: 10, max: 10 } });
+    useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, round: 2, over: false, log: [], acted: false } as never });
+    return hero;
+  }
+
+  it('battleResolvePsychImmune : immunisé jusqu\'au Round courant+1, −1 Détermination, ne consomme pas l\'Action', () => {
+    withHero();
+    useGame.getState().battleResolvePsychImmune();
+    const h = useGame.getState().battle!.combatants[0];
+    expect(h.psychImmuneThroughRound).toBe(3); // round 2 + 1
+    expect(h.resolve).toBe(1);
+    expect(useGame.getState().battle!.acted).toBe(false); // gratuit
+  });
+
+  it('battleResolveIgnoreCrit : pose ignoreCritMods, −1 Détermination', () => {
+    withHero();
+    useGame.getState().battleResolveIgnoreCrit();
+    const h = useGame.getState().battle!.combatants[0];
+    expect(h.ignoreCritMods).toBe(true);
+    expect(h.resolve).toBe(1);
+  });
+
+  it('sans Détermination (0) : no-op', () => {
+    const hero = C({ id: 'h', kind: 'hero', name: 'H', resolve: 0, conditions: [], wounds: { current: 10, max: 10 } });
+    useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, round: 1, over: false, log: [], acted: false } as never });
+    useGame.getState().battleResolvePsychImmune();
+    expect(useGame.getState().battle!.combatants[0].psychImmuneThroughRound).toBeUndefined();
+  });
+});

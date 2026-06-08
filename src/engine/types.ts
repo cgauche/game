@@ -187,6 +187,11 @@ export interface Combatant {
   frenzied?: boolean;
   /** Frénésie : l'attaque de CC GRATUITE de ce Round (l.34) a-t-elle déjà été utilisée ? (réinitialisé chaque Round.) */
   frenzyFreeUsed?: boolean;
+  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la FIN de ce n° de Round (inclus). */
+  psychImmuneThroughRound?: number;
+  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes) ; posé à la
+   *  dépense, effacé au DÉBUT du prochain Round (passage de Round). */
+  ignoreCritMods?: boolean;
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];
@@ -196,6 +201,11 @@ export interface Combatant {
   /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
    *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
   swarm?: boolean;
+  /** Combat monté (LDB 14 l.212-225). `mountId` = la monture que CE combattant chevauche (→ il est
+   *  cavalier) ; `riderId` = le cavalier porté (→ il est monture). Appairage DYNAMIQUE (Monter/Descendre).
+   *  Le couple partage la position et l'empreinte de la MONTURE. */
+  mountId?: string;
+  riderId?: string;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

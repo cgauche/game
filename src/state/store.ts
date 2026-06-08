@@ -35,7 +35,7 @@ import {
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
-import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
+import { rollTest, TestResult, OpposedResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
 import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, resolveCalmeSimple, CIBLE_TYPES, type PsychType } from '../engine/psychology';
@@ -51,6 +51,7 @@ import {
 } from '../engine/advancement';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
 import { repairCostBrass } from '../engine/repair';
+import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -161,6 +162,27 @@ export interface PendingReload {
   target: number; // cible effective après difficulté
   sl: number; // DR du jet
   success: boolean;
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  rerolled?: boolean;
+}
+/** Marchandage en attente (LDB 60 l.12) : Test OPPOSÉ Marchandage (joueur) vs Marchandage (marchand).
+ *  La modale affiche « Lancer » (2 jets), puis le verdict + Chance ; gagner réduit le prix de 10 %
+ *  (20 % avec Succès Stupéfiant DR≥6 ou le talent Négociateur). 1 jet verrouillé par visite. */
+export interface PendingBargain {
+  playerId: string;
+  playerName: string;
+  merchantName: string;
+  merchantValue: number; // valeur Marchandage du marchand (opposant)
+  playerSkill: number; // valeur Marchandage du meilleur négociateur du groupe
+  mode: 'buy' | 'sell';
+  /** Le négociateur possède-t-il le talent Négociateur (−20 % même sans Succès Stupéfiant) ? */
+  negotiator: boolean;
+  /** Jet du joueur ; null tant que pas lancé (Chance possible ensuite). */
+  roll: TestResult | null;
+  /** Jet du marchand, figé au 1ᵉʳ lancer (les relances Chance ne re-roulent que le joueur). */
+  merchantRoll: TestResult | null;
+  /** Résultat opposé (joueur = attaquant). */
+  result: OpposedResult | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }
@@ -368,12 +390,13 @@ export interface GameState {
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
-  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; stock: { label: string; qty: number }[] } | null;
+  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; stock: { label: string; qty: number }[]; bargain?: { won: boolean; drNet: number; negotiator: boolean } | null } | null;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
   money: Money;
   pendingTest: PendingTest | null;
+  pendingBargain: PendingBargain | null;
   pendingAttack: PendingAttack | null;
   pendingReload: PendingReload | null;
   pendingDefense: PendingDefense | null;
@@ -444,6 +467,13 @@ export interface GameState {
   sellItem: (uid: string, heroId: string) => void;
   /** Réparation d'armure chez le marchand : remet damageTaken à 0 contre 10 %/PA perdu (LDB 63 l.97-98). */
   repairArmour: (uid: string, heroId: string) => void;
+  /** Marchandage (LDB 60 l.12) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
+  startBargain: (mode: 'buy' | 'sell') => void;
+  bargainRoll: () => void;
+  bargainReroll: () => void;
+  bargainBonusSL: () => void;
+  bargainConfirm: () => void;
+  bargainCancel: () => void;
   testRoll: () => void;
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
@@ -479,9 +509,13 @@ export interface GameState {
   reloadCancel: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
   battleSelectAmmo: (uid: string) => void;
-  /** Détermination (Resolve, LDB ch.17 l.62-66) : retire un État de l'actif (+1 PB si À Terre).
+  /** Détermination (Resolve, LDB ch.17 l.66) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
+  /** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
+  battleResolvePsychImmune: () => void;
+  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique ce Round. */
+  battleResolveIgnoreCrit: () => void;
   /** Ramasser UN objet au sol pendant un Round (LDB ch.13 l.115-116) : applique au combattant
    *  actif un item ramassable d'un `prop` interactif adjacent. Consomme l'Action, pas d'auto-équipe.
    *  `key` = `eff:<index dans interact.effects>` (cf. entityPickables). */
@@ -661,6 +695,7 @@ export const useGame = create<GameState>((set, get) => ({
   inventory: [],
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
+  pendingBargain: null,
   pendingAttack: null,
   pendingReload: null,
   pendingDefense: null,
@@ -1005,7 +1040,8 @@ export const useGame = create<GameState>((set, get) => ({
     const m = get().merchant; if (!m) return;
     const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
     const t = findTrapping(label); if (!t) return;
-    const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities })));
+    const factor = m.bargain ? bargainBuyFactor(m.bargain.won, m.bargain.drNet, m.bargain.negotiator) : 1;
+    const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor));
     if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
     const it = itemFromTrapping(label); if (!it) return;
     set((s) => ({
@@ -1027,7 +1063,8 @@ export const useGame = create<GameState>((set, get) => ({
     const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
     const t = findTrapping(item.name);
     const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-    const gain = fromBrass(Math.round(base * m.resaleRate));
+    const sellFactor = m.bargain ? bargainSellFactor(m.bargain.won, m.bargain.drNet, m.bargain.negotiator) : 1;
+    const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
     set((s) => ({
       money: moneyAdd(s.money, gain),
       party: s.party.map((h) => {
@@ -1061,6 +1098,58 @@ export const useGame = create<GameState>((set, get) => ({
     }));
     get().log(`Réparation : ${item.name}.`);
   },
+  startBargain: (mode) => {
+    const m = get().merchant; if (!m) return;
+    if (m.bargain) return; // 1 marchandage par visite (verrouillé)
+    const arch = MERCHANTS[m.archetype];
+    const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;
+    const negotiator = (best.actor.talents ?? []).some((t) => t.name === 'Négociateur' && t.times > 0);
+    set({ pendingBargain: {
+      playerId: best.actor.id, playerName: best.actor.name,
+      merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
+      playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
+    } });
+  },
+  bargainRoll: () => {
+    const pb = get().pendingBargain;
+    if (!pb || pb.roll != null) return; // déjà lancé
+    const player = rollTest(pb.playerSkill, 'intermediaire');
+    const merchant = rollTest(pb.merchantValue, 'intermediaire');
+    set({ pendingBargain: { ...pb, roll: player, merchantRoll: merchant, result: resolveOpposed(player, merchant) } });
+  },
+  bargainReroll: () => {
+    const pb = get().pendingBargain;
+    if (!pb || pb.roll == null || pb.merchantRoll == null) return;
+    if (!canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)) return; // 1 relance, d100 raté propre
+    const party = get().party;
+    const actor = party.find((c) => c.id === pb.playerId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const player = rollTest(pb.playerSkill, 'intermediaire');
+    set({ pendingBargain: { ...pb, roll: player, result: resolveOpposed(player, pb.merchantRoll), rerolled: true }, party: [...party] });
+  },
+  bargainBonusSL: () => {
+    const pb = get().pendingBargain;
+    if (!pb || pb.roll == null || pb.merchantRoll == null) return;
+    const party = get().party;
+    const actor = party.find((c) => c.id === pb.playerId);
+    if (!actor || (actor.fortune ?? 0) <= 0) return;
+    actor.fortune = (actor.fortune ?? 0) - 1;
+    const boosted: TestResult = { ...pb.roll, sl: pb.roll.sl + 1 };
+    set({ pendingBargain: { ...pb, roll: boosted, result: resolveOpposed(boosted, pb.merchantRoll) }, party: [...party] });
+  },
+  bargainConfirm: () => {
+    const pb = get().pendingBargain;
+    if (!pb || !pb.result) return; // pas d'acquittement avant le jet
+    const won = pb.result.attackerWins; // le joueur est l'attaquant
+    const drNet = pb.result.netSL;
+    set((s) => ({
+      pendingBargain: null,
+      merchant: s.merchant ? { ...s.merchant, bargain: { won, drNet, negotiator: pb.negotiator } } : s.merchant,
+    }));
+    get().log(won ? `Marchandage réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'} à l'achat).` : `Marchandage échoué (vente réduite à ¼).`);
+  },
+  bargainCancel: () => set({ pendingBargain: null }),
 
   seedRng: (seed) => {
     seedBattleRng(seed);
@@ -1885,13 +1974,35 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
     if (!active.conditions.some((c) => c.name === conditionName)) return;
     active.resolve = (active.resolve ?? 0) - 1;
-    removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.64
+    removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
     let extra = '';
     if (conditionName === 'À Terre') {
       active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }
     set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la fin du PROCHAIN Round. */
+  battleResolvePsychImmune: () => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
+    active.resolve = (active.resolve ?? 0) - 1;
+    active.psychImmuneThroughRound = battle.round + 1; // ce Round + le prochain (fin du prochain Round)
+    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du Round ${battle.round + 1}.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */
+  battleResolveIgnoreCrit: () => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
+    active.resolve = (active.resolve ?? 0) - 1;
+    active.ignoreCritMods = true; // effacé au début du prochain Round (passage de Round)
+    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : ignore les modificateurs de Blessure critique ce Round.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 

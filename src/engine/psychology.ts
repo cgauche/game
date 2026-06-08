@@ -109,6 +109,20 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
   return null;
 }
 
+/**
+ * Immunité à la Psychologie — PRÉDICAT CENTRAL (toute source d'immunité passe par ici) :
+ * - trait « Immunité (Psychologie) » (`psychImmune`, LDB 85 l.143-144) ;
+ * - Frénésie active (LDB 21 l.34) ;
+ * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.62) —
+ *   nécessite le n° de Round courant ; hors combat (`round` absent) l'immunité TEMPORAIRE ne s'applique pas.
+ * Futurs Talents/effets d'immunité psy : ajouter ICI, pas en `||` éparpillé.
+ */
+export function isPsychImmune(c: Combatant, round?: number): boolean {
+  if (c.psychImmune || c.frenzied) return true;
+  if (round != null && c.psychImmuneThroughRound != null && round <= c.psychImmuneThroughRound) return true;
+  return false;
+}
+
 /** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
 export function isFrenzyCapable(c: Combatant): boolean {
   return (c.traits ?? []).some((t) => /^Frénésie/i.test(t)) || (c.talents ?? []).some((t) => /^Frénésie/i.test(t.name));

@@ -13,7 +13,7 @@
  * `pendingPsych`) vit dans la couche state.
  */
 import { Combatant } from './types';
-import { fearSourceFor, targetedTrigger, PsychType } from './psychology';
+import { fearSourceFor, targetedTrigger, isPsychImmune, PsychType } from './psychology';
 
 export interface EncounterPsychTrigger {
   kind: PsychType;
@@ -26,7 +26,7 @@ export interface EncounterPsychTrigger {
  *  statbloc d'abord, puis Trait ciblé déclenché par un membre du groupe), ou null si aucun. Une source
  *  déjà en `psychState` n'est pas re-déclenchée. Immunité (Psychologie) et Frénésie court-circuitent. */
 export function encounterPsych(hero: Combatant, npcs: Combatant[]): EncounterPsychTrigger | null {
-  if (hero.psychImmune || hero.frenzied) return null;
+  if (isPsychImmune(hero)) return null; // hors combat : pas d'immunité temporaire (Détermination)
   const state = hero.psychState ?? [];
   for (const npc of npcs) {
     const src = fearSourceFor(hero, npc); // Peur/Terreur (Taille LDB 85 + statbloc « Peur N »/« Terreur N »)
