@@ -7,6 +7,10 @@ import { Effect, EncounterDef, Dialogue } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
+import { DISEASE_DEFS } from '../../engine/disease';
+
+/** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
+const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
 
 export interface Ctx {
   encounters: EncounterDef[];
@@ -23,6 +27,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveXp',
   'restoreFortune',
   'inflictNightmares',
+  'inflictDisease',
   'rest',
   'startCombat',
   'transition',
@@ -43,6 +48,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveXp: 'Donner des PX (groupe)',
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
+  inflictDisease: 'Infliger une maladie (LDB 20)',
   rest: 'Repos (Dormir / Se reposer N jours)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
@@ -84,6 +90,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'restoreFortune' };
     case 'inflictNightmares':
       return { type: 'inflictNightmares', heroId: '' };
+    case 'inflictDisease':
+      return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
     case 'rest':
       return { type: 'rest', days: 1 };
     case 'setTime':
@@ -145,6 +153,16 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'inflictNightmares' && (
           <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+        )}
+        {effect.type === 'inflictDisease' && (
+          <>
+            <select value={e.disease ?? ''} onChange={(ev) => upd({ disease: ev.target.value })}>
+              {DISEASE_NAMES.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
         )}
         {effect.type === 'rest' && (
           <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>

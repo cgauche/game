@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { finalizeBattle } from './combatFlow';
+import { finalizeBattle, applyEffects } from './combatFlow';
 import { contractDisease } from '../engine/disease';
 import { seedBattleRng, battleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
@@ -45,5 +45,22 @@ describe('finalizeBattle — infection post-critique (LDB 20 l.72) & persistance
     useGame.setState({ party: [hero({ id: 'a' })] });
     finalizeBattle(useGame.getState, useGame.setState);
     expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['Infection Mineure']);
+  });
+});
+
+describe('Effet d’éditeur inflictDisease (LDB 20)', () => {
+  beforeEach(() => { seedBattleRng(1); useGame.setState({ battle: null, mode: 'exploration', journal: [] }); });
+
+  it('contracte la maladie nommée sur le premier héros', () => {
+    useGame.setState({ party: [hero({ id: 'a' })] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'Blessure Purulente' }]);
+    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['Blessure Purulente']);
+  });
+
+  it('dédoublonne : pas deux fois la même maladie', () => {
+    const a = hero({ id: 'a', diseases: [contractDisease('Blessure Purulente', battleRng(), { incubation: 1, duration: 5 })!] });
+    useGame.setState({ party: [a] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'Blessure Purulente' }]);
+    expect(useGame.getState().party[0].diseases).toHaveLength(1);
   });
 });

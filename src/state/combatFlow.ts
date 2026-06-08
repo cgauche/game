@@ -49,7 +49,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction } from '../engine/disease';
+import { rollContraction, contractDisease } from '../engine/disease';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
@@ -238,6 +238,27 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           return { party: s.party.map((h, i) => (i === target ? { ...h, nightmares: true } : h)) };
         });
         if (who) get().log(`${who} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+        break;
+      }
+      case 'inflictDisease': {
+        // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
+        // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
+          const target = idx >= 0 ? idx : 0;
+          return {
+            party: s.party.map((h, i) => {
+              if (i !== target || (h.diseases ?? []).some((d) => d.name === e.disease)) return h;
+              const dz = contractDisease(e.disease, battleRng());
+              if (!dz) return h;
+              who = h.name;
+              return { ...h, diseases: [...(h.diseases ?? []), dz] };
+            }),
+          };
+        });
+        if (who) get().log(`${who} a contracté : ${e.disease} (LDB 20 — symptômes au repos).`);
         break;
       }
       case 'giveTrapping': {
