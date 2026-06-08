@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
-import type { Scene } from '../../state/scene';
+import { isWalkable, type Scene } from '../../state/scene';
 import { findCreature, findTrapping } from '../../data';
 import { MERCHANTS } from '../../state/merchants/index';
 
@@ -36,6 +36,25 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
         for (const e of enc.enemies)
           if (e.ref && !findCreature(e.ref)) missing.push(`${sc.id}:${e.ref}`);
     expect(missing).toEqual([]);
+  });
+
+  it('chaque ennemi spawn sur une case DANS la carte et MARCHABLE (pas sur un mur/eau/décor)', () => {
+    const bad: string[] = [];
+    for (const sc of project)
+      for (const enc of sc.encounters)
+        for (const e of enc.enemies) {
+          const { x, y } = e.pos;
+          const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
+          if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? '?'}@(${x},${y})`);
+        }
+    expect(bad).toEqual([]);
+  });
+
+  it('les ennemis d’une vague sont RÉPARTIS (pas tous dans la même colonne)', () => {
+    for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
+      const xs = new Set(sc.encounters[0].enemies.map((e) => e.pos.x));
+      expect(xs.size, sc.id).toBeGreaterThanOrEqual(2); // au moins 2 colonnes distinctes
+    }
   });
 
   it('boucle complète : chaque zone se solde par un retour au hub (transition)', () => {
