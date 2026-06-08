@@ -62,41 +62,48 @@ export function CampaignView() {
           ← Quitter
         </button>
         <h3>{scene?.nom}</h3>
-        <div className="party-hud">
-          {party.map((h) => (
-            <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} onOpen={() => setSheetId(h.id)} />
-          ))}
-        </div>
-        <div className="purse">
-          <span className="mini-title">Bourse</span>
-          <span className="coins">
-            {formatMoney(money)}
-          </span>
-        </div>
-        <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
-          {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
-        </div>
-        {/* Pas de bouton « Dormir » global : le repos est une OPTION DE CONTENU (choix de dialogue avec
-            coût éventuel, ex. l'auberge — Effet `rest`), jamais une action gratuite imposée par le HUD. */}
-        <div className="inventory">
-          <div className="mini-title">Inventaire ({inventory.length})</div>
-          <div className="inv-list">
-            {inventory.length === 0 && <p className="empty">— vide —</p>}
-            {inventory.map((it, i) => (
-              <span className="inv-item" key={i}>
-                {it}
+        {mode === 'battle' && battle ? (
+          // En combat : la colonne gauche = panneau Perso (héros actif) + actions (cf. ActionBar).
+          <ActionBar />
+        ) : (
+          <>
+            <div className="party-hud">
+              {party.map((h) => (
+                <PartyHudCard key={h.id} hero={battleVersion(battle?.combatants, h) ?? h} onOpen={() => setSheetId(h.id)} />
+              ))}
+            </div>
+            <div className="purse">
+              <span className="mini-title">Bourse</span>
+              <span className="coins">
+                {formatMoney(money)}
               </span>
-            ))}
-          </div>
-        </div>
-        <div className="journal">
-          <div className="mini-title">Journal</div>
-          <div className="journal-lines">
-            {journal.slice(-12).map((l, i) => (
-              <p key={i}>{l}</p>
-            ))}
-          </div>
-        </div>
+            </div>
+            <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
+              {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
+            </div>
+            {/* Pas de bouton « Dormir » global : le repos est une OPTION DE CONTENU (choix de dialogue avec
+                coût éventuel, ex. l'auberge — Effet `rest`), jamais une action gratuite imposée par le HUD. */}
+            <div className="inventory">
+              <div className="mini-title">Inventaire ({inventory.length})</div>
+              <div className="inv-list">
+                {inventory.length === 0 && <p className="empty">— vide —</p>}
+                {inventory.map((it, i) => (
+                  <span className="inv-item" key={i}>
+                    {it}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="journal">
+              <div className="mini-title">Journal</div>
+              <div className="journal-lines">
+                {journal.slice(-12).map((l, i) => (
+                  <p key={i}>{l}</p>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </aside>
 
       <main className="stage">
@@ -114,7 +121,6 @@ export function CampaignView() {
         )}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
-        {mode === 'battle' && battle && <ActionBar />}
       </main>
 
       {mode === 'battle' && battle && <BattlePanel />}

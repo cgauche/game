@@ -1,7 +1,7 @@
 import { useGame, activeCombatant, entityPickables, trampleTarget } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
-import { canTakeAction, hasCondition } from '../engine/conditions';
+import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable } from '../engine/psychology';
 import { itemUse } from '../engine/consumables';
@@ -9,7 +9,9 @@ import { compatibleAmmo } from '../engine/items';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
-import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
+import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
+import { RigPortrait } from './RigPortrait';
+import { EffectChips } from './EffectChips';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -72,6 +74,11 @@ export function ActionBar() {
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
+  const pbRatio = active.wounds.max > 0 ? active.wounds.current / active.wounds.max : 0;
+  // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
+  const assailliN = isHero && active.pos
+    ? battle.combatants.filter((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && Math.max(Math.abs(c.pos.x - active.pos!.x), Math.abs(c.pos.y - active.pos!.y)) <= 1).length
+    : 0;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
   const usable = isHero ? (active.items ?? []).filter((it) => itemUse(it, active) != null) : [];
@@ -274,16 +281,29 @@ export function ActionBar() {
 
       <div className="ab-bar">
         <div className="ab-actor">
-          <span className="ab-portrait" style={{ borderColor: ring, color: ring }}>
-            {active.name.charAt(0)}
-          </span>
-          <div className="ab-actor-info">
-            <strong>{active.name}</strong>
-            <span className="ab-meta">
-              {active.career ?? (isHero ? '' : 'Ennemi')} · {active.wounds.current}/{active.wounds.max}
-              {active.advantage > 0 && <span className="adv"> Av+{active.advantage}</span>}
-            </span>
+          <div className="ab-actor-head">
+            <RigPortrait combatant={active} size={46} ring={ring} />
+            <div className="ab-actor-info">
+              <strong>{active.name}</strong>
+              <span className="ab-meta">{active.career ?? (isHero ? '' : 'Ennemi')}</span>
+            </div>
+            {assailliN >= 2 && (
+              <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
+            )}
           </div>
+          <div className="ab-pb">
+            <div className="ab-pb-bar">
+              <i style={{ width: `${Math.max(0, pbRatio) * 100}%`, background: hpColor(pbRatio) }} />
+            </div>
+            <span className="ab-pb-val">{active.wounds.current}/{active.wounds.max} PB</span>
+            {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
+          </div>
+          <EffectChips conditions={active.conditions} effects={active.activeEffects} max={8} />
+          {isHero && (
+            <div className="ab-pools" title="Chance · Résilience · Détermination · Destin">
+              🍀 {active.fortune ?? 0} · 🔥 {active.resilience ?? 0} · ✊ {active.resolve ?? 0} · ✨ {active.fate ?? 0}
+            </div>
+          )}
         </div>
 
         {isHero ? (
