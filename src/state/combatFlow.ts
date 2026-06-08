@@ -165,7 +165,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             brass: s.money.brass + (e.brass ?? 0),
           },
         }));
-        const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} SC`, e.brass && `${e.brass} PA`].filter(Boolean);
+        const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} pa`, e.brass && `${e.brass} sc`].filter(Boolean); // noms canon FR (couronne/pistole/sou)
         if (parts.length) get().log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
         break;
       }
