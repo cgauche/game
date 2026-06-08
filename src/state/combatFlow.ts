@@ -45,7 +45,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollCritical, critLocationRoll } from '../engine/critical';
@@ -1537,6 +1537,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
+      brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       set({ battle: { ...battle, turn: 0, round } });
@@ -1627,6 +1628,35 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), 450);
+}
+
+/** Récupération du Brisé en fin de Round (LDB 16 l.57-59) — combattant par combattant :
+ *  - pas de Test si Engagé (l.57) ; sinon Test de Calme dont la Difficulté suit les circonstances
+ *    (caché hors de vue → Accessible +20 ; ennemi à ≤ 3 cases → Très difficile −30 ; sinon Intermédiaire +0),
+ *    retirant 1 + DR États Brisé sur un succès ;
+ *  - +1 État Brisé retiré si l'on est resté caché hors de vue de TOUT ennemi ce Round (l.59).
+ *  Pousse les jets dans `roundLines` (révélation d'entretien — pas de Chance, comme la Fuite/l'Initiative). */
+export function brokenRecovery(get: () => GameState, roundLines: string[]): void {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle) return;
+  for (const c of battle.combatants) {
+    if (!stacks(c, 'Brisé') || isOutOfAction(c) || !c.pos) continue;
+    const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
+    const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
+    if (hidden) { removeCondition(c, 'Brisé', 1); roundLines.push(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`); }
+    if (isEngaged(c) || !stacks(c, 'Brisé')) continue; // pas de récupération si Engagé (l.57), ou plus de Brisé
+    const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
+    const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
+    const t = rollTest(calmeValue(c), diff, battleRng());
+    if (t.success) {
+      const removed = Math.min(stacks(c, 'Brisé'), 1 + Math.max(0, t.sl));
+      removeCondition(c, 'Brisé', removed);
+      roundLines.push(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`);
+    } else {
+      roundLines.push(`${c.name} reste Brisé (Test de Calme raté).`);
+    }
+  }
 }
 
 /** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources

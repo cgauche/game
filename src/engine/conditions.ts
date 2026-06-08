@@ -8,7 +8,7 @@ import { d10, d100, RNG, defaultRNG } from './dice';
 import { rollTest, isDoubleRoll } from './tests';
 
 /** Nombre de pions (cumul) d'un État donné. */
-const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
+export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
 export function addCondition(c: Combatant, name: string, value = 1): void {
   const existing = c.conditions.find((x) => x.name === name);
