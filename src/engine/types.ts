@@ -162,6 +162,9 @@ export interface Trauma {
   /** Main/bras amputé (LDB 18 l.352/335) : interdit le port d'une arme à DEUX mains. Levé par une prothèse
    *  `cancels:'all'` (Merveille d'ingénierie). */
   noTwoHanded?: boolean;
+  /** Nombre d'éléments perdus pour une séquelle CUMULATIVE par comptage (LDB 18) : doigts (−5/doigt, 4+ →
+   *  règle de la main, l.341/344) ou dents (−1 Soc/paire, l.338). Fusionné à chaque nouvelle perte. */
+  count?: number;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

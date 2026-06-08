@@ -153,6 +153,48 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
+const PROSTHESIS_MERVEILLE = { name: "Merveille d'ingénierie", cancels: 'all' as const };
+
+/**
+ * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé (≠ modèle non-cumul : ici le
+ * RAW est explicitement cumulatif). Mute `c.traumas`, renvoie le journal. Idempotent. Appelé après l'ajout
+ * d'une séquelle d'amputation (combat) :
+ *  - Doigts par bras (l.341) : −5 aux Tests d'Arme PAR doigt (main principale = brasD) ; **4+ doigts → règle
+ *    de la main tranchée** (l.344 : `noTwoHanded` + −20).
+ *  - Dents (l.338) : −1 Sociabilité PAR PAIRE perdue (1 dent = 0, 3 = −1, 4 = −2…).
+ * `dominant = brasD` (tout le monde droitier). Prothèses : Merveille (doigts/main), Dents en bois (dents).
+ */
+export function consolidateAmputations(c: Combatant): string[] {
+  const log: string[] = [];
+  const traumas = c.traumas ?? [];
+  const isFinger = (t: Trauma) => !!t.label?.startsWith('Doigts amputés');
+  const isTeeth = (t: Trauma) => t.label === 'Dents perdues';
+  if (!traumas.some((t) => isFinger(t) || isTeeth(t))) return log;
+  const kept = traumas.filter((t) => !isFinger(t) && !isTeeth(t));
+  for (const loc of ['brasG', 'brasD'] as const) {
+    const grp = traumas.filter((t) => isFinger(t) && t.location === loc);
+    if (!grp.length) continue;
+    const total = grp.reduce((s, t) => s + (t.count ?? 1), 0);
+    const dominant = loc === 'brasD';
+    if (total >= 4) {
+      if (grp.length > 1) log.push(`${c.name} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
+      if (!kept.some((t) => t.label?.startsWith('Main/bras amputé') && t.location === loc)) {
+        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `LDB 18 l.344 : ${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
+      }
+    } else {
+      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(dominant ? { charPenalty: { CC: -5 * total, CT: -5 * total } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `LDB 18 l.341 : ${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
+    }
+  }
+  const teeth = traumas.filter(isTeeth);
+  if (teeth.length) {
+    const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
+    const soc = -Math.floor(total / 2);
+    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `LDB 18 l.338 : ${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois (LDB 73).` });
+  }
+  c.traumas = kept;
+  return log;
+}
+
 /**
  * Cumul de pertes sensorielles (LDB 18 l.360/363) : perdre le SECOND œil/oreille agrège une séquelle —
  * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher) ou Surdité (−20 Perception auditive,

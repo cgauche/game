@@ -123,10 +123,18 @@ describe('permanentAmputations — séquelles permanentes (LDB 18 l.335-370, tou
     expect(s.map((x) => x.label).sort()).toEqual(['Nez amputé', 'Œil perdu']);
     expect(s.find((x) => x.label === 'Nez amputé')!.charPenalty).toEqual({ Soc: -20 });
   });
-  it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (−2 Soc)', () => {
-    const s = permanentAmputations('Mâchoire mutilée', 'perte de la langue et 1d10 dents — Amputation (Difficile).', 'tete');
+  it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (1d10=4 → 2 paires → −2 Soc)', () => {
+    const s = permanentAmputations('Mâchoire mutilée', 'perte de la langue et 1d10 dents — Amputation (Difficile).', 'tete', seq([4]));
     expect(s.find((x) => x.label === 'Langue amputée')!.skillPenalty).toEqual({ langue: -100 });
-    expect(s.find((x) => x.label === 'Dents perdues')!.charPenalty).toEqual({ Soc: -2 });
+    const dents = s.find((x) => x.label === 'Dents perdues')!;
+    expect(dents.count).toBe(4);
+    expect(dents.charPenalty).toEqual({ Soc: -2 }); // 4 dents = 2 paires
+  });
+  it('dents : 1 dent perdue = AUCUNE pénalité (il faut une paire, l.338)', () => {
+    const s = permanentAmputations('Bouche explosée', "Perdez 1 dent — Amputation (Facile).", 'tete'); // pas « 1d10 » → 1 dent
+    const dents = s.find((x) => x.label === 'Dents perdues')!;
+    expect(dents.count).toBe(1);
+    expect(dents.charPenalty).toBeUndefined(); // floor(1/2) = 0 → pas de Soc
   });
 
   it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {

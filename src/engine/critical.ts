@@ -39,7 +39,7 @@ const MERVEILLE = { name: "Merveille d'ingénierie", cancels: 'all' as const }; 
  * Non modélisé (comptage cumulatif) : DEUX yeux/oreilles (−30 vue / −20 ouïe), plusieurs doigts/dents — on
  * pose l'effet d'UNE perte (chaque critique en ajoute une).
  */
-export function permanentAmputations(name: string, note: string, location: HitLocation): Trauma[] {
+export function permanentAmputations(name: string, note: string, location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
   const t = `${name} ${note}`.toLowerCase();
   const out: Trauma[] = [];
   if (location === 'jambeG' || location === 'jambeD') {
@@ -56,9 +56,10 @@ export function permanentAmputations(name: string, note: string, location: HitLo
   if (location === 'brasG' || location === 'brasD') {
     const dominant = location === 'brasD'; // droitier
     if (/doigt/.test(t)) {
-      out.push({ label: `Doigt(s) amputé(s) (${location})`, location, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
+      // 1 doigt par critique (« Doigt sectionné » / « Main ouverte : perdez 1 doigt »). Cumulé par consolidateAmputations.
+      out.push({ label: `Doigts amputés (${location})`, location, count: 1, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
         prosthesis: [MERVEILLE],
-        note: `LDB 18 l.341 : −5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire, sans effet de combat modélisé'}. Risque de Maladresse + cumul non modélisés. Prothèse : Merveille (LDB 73).` });
+        note: `LDB 18 l.341 : −5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille (LDB 73).` });
     } else if (/\bmain\b|bras inutilisable/.test(t)) {
       out.push({ label: `Main/bras amputé (${location})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
         prosthesis: [MERVEILLE],
@@ -85,8 +86,10 @@ export function permanentAmputations(name: string, note: string, location: HitLo
         note: 'LDB 18 l.363 : −5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille (LDB 73).' });
     }
     if (/dents?\b/.test(t)) {
-      out.push({ label: 'Dents perdues', location, charPenalty: { Soc: -2 }, prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
-        note: 'LDB 18 l.338 : −1 Sociabilité par paire de dents (≈ −2 pour 1d10 dents, représentatif). Prothèse : Dents en bois (LDB 73).' });
+      const n = /1d10/.test(t) ? d10(rng) : 1; // « 1d10 dents » (Bouche explosée/Mâchoire) ou 1 dent. Cumulé.
+      const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
+      out.push({ label: 'Dents perdues', location, count: n, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
+        note: `LDB 18 l.338 : ${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois (LDB 73).` });
     }
     return out;
   }
@@ -165,8 +168,9 @@ export function rollCritical(
       needsSurgery: true,
       note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
     });
-    // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler.
-    traumas.push(...permanentAmputations(entry.name, entry.note, location));
+    // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler
+    // (la perte de dents tire 1d10 — placé après le Test de Résistance d'amputation pour ne pas décaler le reste).
+    traumas.push(...permanentAmputations(entry.name, entry.note, location, rng));
   }
   return {
     location,

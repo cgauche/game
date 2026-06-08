@@ -53,7 +53,7 @@ import { rollContraction, contractDisease } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss } from '../engine/trauma';
+import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -659,7 +659,9 @@ export function applyCriticalToTarget(
       log.push(line);
       revealLines.push(line);
     }
-    // Cumul sensoriel (LDB 18 l.360/363) : 2e œil/oreille → Cécité / Surdité agrégée.
+    // Cumuls par comptage (LDB 18) : doigts (−5/doigt, 4+ → main) et dents (−1 Soc/paire) fusionnés ;
+    // 2e œil/oreille → Cécité / Surdité agrégée (l.360/363).
+    consolidateAmputations(target);
     for (const l of escalateSensoryLoss(target)) {
       log.push(`  ↳ ${l}`);
       revealLines.push(`  ↳ ${l}`);
