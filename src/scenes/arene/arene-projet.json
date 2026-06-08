@@ -499,10 +499,23 @@
         }
       },
       {
+        "id": "medecin",
+        "kind": "personnage",
+        "pos": {
+          "x": 3,
+          "y": 4
+        },
+        "label": "Médecin",
+        "dialogueId": "dlg-medecin",
+        "merchant": {
+          "archetype": "medecin"
+        }
+      },
+      {
         "id": "hub-ton",
         "kind": "prop",
         "pos": {
-          "x": 2,
+          "x": 10,
           "y": 2
         },
         "ref": "tonneau"
@@ -512,7 +525,7 @@
         "kind": "prop",
         "pos": {
           "x": 10,
-          "y": 2
+          "y": 6
         },
         "ref": "caisse"
       },
@@ -520,13 +533,43 @@
         "id": "hub-feu",
         "kind": "prop",
         "pos": {
-          "x": 2,
-          "y": 6
+          "x": 6,
+          "y": 5
         },
         "ref": "feu-camp"
       }
     ],
     "dialogues": [
+      {
+        "id": "dlg-medecin",
+        "start": "accueil",
+        "nodes": [
+          {
+            "id": "accueil",
+            "speaker": "Médecin",
+            "text": "Encore vivant ? Bien. J’ai des potions, des cataplasmes, du faxtoryll pour les saignements… et des membres de rechange si l’arène t’en a pris un.",
+            "choices": [
+              {
+                "text": "⚕️ Voir les remèdes et prothèses.",
+                "effects": [
+                  {
+                    "type": "openMerchant",
+                    "entityId": "medecin"
+                  }
+                ]
+              },
+              {
+                "text": "Plus tard.",
+                "effects": [
+                  {
+                    "type": "endDialogue"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       {
         "id": "dlg-hub",
         "start": "accueil",

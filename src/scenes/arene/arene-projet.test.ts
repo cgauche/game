@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
 import type { Scene } from '../../state/scene';
-import { findCreature } from '../../data';
+import { findCreature, findTrapping } from '../../data';
+import { MERCHANTS } from '../../state/merchants/index';
 
 /**
  * L'arène est un PROJET de données pures (créable/éditable dans l'éditeur) qui tourne sur le moteur
@@ -47,9 +48,22 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('le hub ouvre la zone suivante via flags (porte gated zoneN_clear)', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const choices = hub.dialogues[0].nodes[0].choices;
+    const door = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const choices = door.nodes[0].choices;
     const doors = choices.filter((c) => c.effects?.some((e) => e.type === 'transition' && e.scene.startsWith('arene-zone')));
     expect(doors.length).toBeGreaterThanOrEqual(3); // zones 2,3,4 ouvertes par progression
     expect(doors.every((c) => /clear/.test(c.condition ?? ''))).toBe(true);
+  });
+
+  it('le hub a un Médecin (LDB 75) qui vend des soins ET des prothèses, curatifs garantis', () => {
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const medecin = hub.entities.find((e) => e.id === 'medecin');
+    expect(medecin?.merchant?.archetype).toBe('medecin');
+    const arch = MERCHANTS['medecin'];
+    expect(arch).toBeTruthy();
+    expect(arch.category.subTypes).toContain('Herbes et potions');
+    expect(arch.category.subTypes).toContain('Prothèses');
+    // tous les articles garantis (curated) référencent un vrai trapping
+    for (const label of arch.curated ?? []) expect(findTrapping(label), label).toBeTruthy();
   });
 });

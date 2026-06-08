@@ -53,7 +53,8 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     useGame.getState().loadProject(project, 'arene-zone1');
     applyEffects(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
     const hub = useGame.getState().scene!;
-    const ruines = hub.dialogues[0].nodes[0].choices.find((c) => c.text.includes('Ruines'))!;
+    const dlgHub = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const ruines = dlgHub.nodes[0].choices.find((c) => c.text.includes('Ruines'))!;
     expect(condMet(ruines.condition!, useGame.getState().flags)).toBe(true); // zone1_clear && !zone2_clear
   });
 });
