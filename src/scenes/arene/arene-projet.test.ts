@@ -16,12 +16,12 @@ const project = JSON.parse(
 ) as Scene[];
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('6 scènes, entrée = arene-zone1, hub + 5 zones reliées', () => {
-    expect(project).toHaveLength(6);
+  it('11 scènes, entrée = arene-zone1, hub + 10 zones reliées', () => {
+    expect(project).toHaveLength(11);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
-    expect(ids).toContain('arene-zone5'); // Le Sépulcre (épreuve finale Terreur)
+    expect(ids).toContain('arene-zone10'); // L'Antre du Dragon (finale)
   });
 
   it('validateScene(projet) ne lève AUCUNE erreur (transitions/dialogues/ids OK)', () => {
@@ -60,11 +60,24 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(hasTest).toBe(true); // Effet `test` (Crochetage) avec branches succès/échec
   });
 
-  it('la Cour met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {
-    const z1 = project.find((s) => s.id === 'arene-zone1')!;
-    const en = z1.encounters[0].enemies;
-    expect(en.some((e) => e.rides != null)).toBe(true); // cavalier pré-monté (rides → index de la monture)
-    expect(en.some((e) => e.mount && e.side === 'ally')).toBe(true); // monture LIBRE côté héros
+  it('une zone met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {
+    const allEnemies = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies));
+    expect(allEnemies.some((e) => e.rides != null)).toBe(true); // cavalier pré-monté (rides → index de la monture)
+    expect(allEnemies.some((e) => e.mount && e.side === 'ally')).toBe(true); // monture LIBRE côté héros
+  });
+
+  it('FINALE : un boss MONSTRUEUX (4×4) au SOUFFLE de ténèbres (statbloc inline)', () => {
+    const dragon = project
+      .flatMap((s) => s.encounters.flatMap((e) => e.enemies))
+      .find((e) => e.statblock?.size === 'monstrueuse');
+    expect(dragon, 'un ennemi de Taille Monstrueuse').toBeTruthy();
+    expect((dragon!.statblock!.traits ?? []).some((t) => /Souffle/i.test(t))).toBe(true); // attaque de Souffle
+  });
+
+  it('chaque zone est UNIQUE : terrains de base distincts (campagne démo)', () => {
+    const zones = project.filter((s) => s.id.startsWith('arene-zone'));
+    const bases = zones.map((z) => z.tiles[0]); // 1re tuile = terrain de base
+    expect(new Set(bases).size).toBeGreaterThanOrEqual(4); // au moins 4 sols différents sur 10 zones
   });
 
   it('les ennemis d’une vague sont RÉPARTIS (pas tous dans la même colonne)', () => {

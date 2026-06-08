@@ -2,13 +2,13 @@
   {
     "id": "arene-zone1",
     "nom": "Arène — La Cour",
-    "description": "La cour de sable de l’arène. Premiers adversaires.",
+    "description": "La Cour",
     "dimensions": {
       "w": 15,
       "h": 11
     },
     "ambiance": "exterieur",
-    "startMessage": "L’ARÈNE — La Cour. Un cavalier vous charge sur le sable ! Un cheval de bataille LIBRE attend près de vous (case ~3,5) : approchez-le et Chevauchez-le pour combattre monté.",
+    "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Avancez sur le sable (couvert : tonneaux, caisses, statue).",
     "tiles": [
       "pave",
       "pave",
@@ -186,7 +186,7 @@
         }
       },
       {
-        "id": "z1-foin-a",
+        "id": "zone1-p0",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -195,7 +195,7 @@
         "ref": "tas-foin"
       },
       {
-        "id": "z1-foin-b",
+        "id": "zone1-p1",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -204,7 +204,7 @@
         "ref": "tas-foin"
       },
       {
-        "id": "z1-stat",
+        "id": "zone1-p2",
         "kind": "prop",
         "pos": {
           "x": 7,
@@ -213,7 +213,7 @@
         "ref": "statue"
       },
       {
-        "id": "z1-ton-a",
+        "id": "zone1-p3",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -222,7 +222,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z1-ton-b",
+        "id": "zone1-p4",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -231,7 +231,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z1-cai-a",
+        "id": "zone1-p5",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -240,7 +240,7 @@
         "ref": "caisse"
       },
       {
-        "id": "z1-cai-b",
+        "id": "zone1-p6",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -249,20 +249,7 @@
         "ref": "caisse"
       },
       {
-        "id": "z1-char",
-        "kind": "prop",
-        "pos": {
-          "x": 10,
-          "y": 5
-        },
-        "ref": "charrette",
-        "foot": {
-          "w": 2,
-          "h": 1
-        }
-      },
-      {
-        "id": "z1-feu-a",
+        "id": "zone1-p7",
         "kind": "prop",
         "pos": {
           "x": 1,
@@ -271,104 +258,75 @@
         "ref": "feu-camp"
       },
       {
-        "id": "z1-feu-b",
+        "id": "zone1-p8",
         "kind": "prop",
         "pos": {
           "x": 13,
           "y": 0
         },
         "ref": "feu-camp"
-      },
-      {
-        "id": "z1-eta",
-        "kind": "prop",
-        "pos": {
-          "x": 0,
-          "y": 9
-        },
-        "ref": "etal-marche"
-      },
-      {
-        "id": "z1-cadavre",
-        "kind": "prop",
-        "pos": {
-          "x": 12,
-          "y": 10
-        },
-        "ref": "cadavre"
       }
     ],
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-z1",
+        "id": "fight-enc-zone1",
         "rect": {
-          "x": 6,
+          "x": 5,
           "y": 0,
-          "w": 9,
+          "w": 10,
           "h": 11
         },
         "once": true,
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-z1"
+            "encounter": "enc-zone1"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-z1",
+        "id": "enc-zone1",
         "enemies": [
           {
-            "ref": "Cheval",
-            "pos": {
-              "x": 12,
-              "y": 3
-            },
-            "mount": true
-          },
-          {
-            "ref": "Mutant",
-            "pos": {
-              "x": 12,
-              "y": 3
-            },
-            "rides": 0
-          },
-          {
-            "ref": "Cheval",
-            "pos": {
-              "x": 3,
-              "y": 5
-            },
-            "mount": true,
-            "side": "ally"
-          },
-          {
-            "ref": "Gobelin",
+            "ref": "Snotling",
             "pos": {
               "x": 8,
-              "y": 8
+              "y": 3
             }
           },
           {
             "ref": "Snotling",
             "pos": {
-              "x": 13,
-              "y": 8
+              "x": 8,
+              "y": 7
+            }
+          },
+          {
+            "ref": "Snotling",
+            "pos": {
+              "x": 12,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 11,
+              "y": 4
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 40
+            "gold": 25
           },
           {
             "type": "giveXp",
-            "amount": 60
+            "amount": 40
           },
           {
             "type": "setFlag",
@@ -376,7 +334,7 @@
           },
           {
             "type": "journal",
-            "text": "La Cour est nettoyée ! Une porte s’ouvre vers l’antichambre du maître d’arène."
+            "text": "La Cour : vaincue ! Retournez voir le maître d’arène."
           },
           {
             "type": "transition",
@@ -390,13 +348,13 @@
   {
     "id": "arene-hub",
     "nom": "Arène — Antichambre du Maître",
-    "description": "Repos, marchand, et portes vers les arènes.",
+    "description": "Repos, marchand, médecin, et portes vers les arènes.",
     "dimensions": {
       "w": 13,
       "h": 9
     },
     "ambiance": "interieur",
-    "startMessage": "Antichambre du maître d’arène. Marchande, fais évaluer ton butin, dors (payant), médite… puis repars saigner.",
+    "startMessage": "Antichambre du maître d’arène. Marchande, fais évaluer ton butin, soigne-toi, dors (payant)… puis repars saigner.",
     "tiles": [
       "plancher",
       "plancher",
@@ -741,46 +699,6 @@
                 ]
               },
               {
-                "text": "⚔️ Entrer — Les Ruines.",
-                "condition": "zone1_clear,!zone2_clear",
-                "effects": [
-                  {
-                    "type": "transition",
-                    "scene": "arene-zone2"
-                  }
-                ]
-              },
-              {
-                "text": "⚔️ Entrer — Le Marais.",
-                "condition": "zone2_clear,!zone3_clear",
-                "effects": [
-                  {
-                    "type": "transition",
-                    "scene": "arene-zone3"
-                  }
-                ]
-              },
-              {
-                "text": "⚔️ Entrer — La Caverne du Troll.",
-                "condition": "zone3_clear,!zone4_clear",
-                "effects": [
-                  {
-                    "type": "transition",
-                    "scene": "arene-zone4"
-                  }
-                ]
-              },
-              {
-                "text": "⚰️ Entrer — Le Sépulcre (épreuve finale).",
-                "condition": "zone4_clear,!zone5_clear",
-                "effects": [
-                  {
-                    "type": "transition",
-                    "scene": "arene-zone5"
-                  }
-                ]
-              },
-              {
                 "text": "🔓 Crocheter le vieux coffre du maître (Test de Crochetage).",
                 "condition": "!coffre_pris",
                 "effects": [
@@ -813,8 +731,98 @@
                 ]
               },
               {
+                "text": "⚔️ Entrer — Les Ruines.",
+                "condition": "zone1_clear,!zone2_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone2"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Les Égouts.",
+                "condition": "zone2_clear,!zone3_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone3"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Le Charnier.",
+                "condition": "zone3_clear,!zone4_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone4"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Les Lices.",
+                "condition": "zone4_clear,!zone5_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone5"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Le Marais.",
+                "condition": "zone5_clear,!zone6_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone6"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — La Fosse.",
+                "condition": "zone6_clear,!zone7_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone7"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — La Caverne du Troll.",
+                "condition": "zone7_clear,!zone8_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone8"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — Le Sépulcre.",
+                "condition": "zone8_clear,!zone9_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone9"
+                  }
+                ]
+              },
+              {
+                "text": "⚔️ Entrer — L’Antre du Dragon.",
+                "condition": "zone9_clear,!zone10_clear",
+                "effects": [
+                  {
+                    "type": "transition",
+                    "scene": "arene-zone10"
+                  }
+                ]
+              },
+              {
                 "text": "🏆 Savourer ta gloire de champion.",
-                "condition": "zone5_clear",
+                "condition": "zone10_clear",
                 "effects": [
                   {
                     "type": "journal",
@@ -845,13 +853,13 @@
   {
     "id": "arene-zone2",
     "nom": "Arène — Les Ruines",
-    "description": "Pans de murs effondrés : lignes de vue brisées.",
+    "description": "Les Ruines",
     "dimensions": {
       "w": 15,
       "h": 11
     },
     "ambiance": "exterieur",
-    "startMessage": "LES RUINES. Un mur éventré coupe la vue — contournez ou passez la brèche. Morts-vivants et Orques.",
+    "startMessage": "LES RUINES. Un mur éventré coupe la vue : contournez ou passez la brèche. Gobelins et un Orc.",
     "tiles": [
       "dalle",
       "dalle",
@@ -879,9 +887,9 @@
       "dalle",
       "dalle",
       "dalle",
-      "pave",
-      "pave",
-      "pave",
+      "dalle",
+      "dalle",
+      "dalle",
       "dalle",
       "dalle",
       "dalle",
@@ -894,9 +902,9 @@
       "dalle",
       "dalle",
       "dalle",
-      "pave",
-      "pave",
-      "pave",
+      "dalle",
+      "dalle",
+      "dalle",
       "dalle",
       "dalle",
       "dalle",
@@ -1029,7 +1037,7 @@
         }
       },
       {
-        "id": "z2-ton-a",
+        "id": "zone2-p0",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -1038,7 +1046,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z2-ton-b",
+        "id": "zone2-p1",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -1047,7 +1055,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z2-epave",
+        "id": "zone2-p2",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -1060,16 +1068,7 @@
         }
       },
       {
-        "id": "z2-foin",
-        "kind": "prop",
-        "pos": {
-          "x": 3,
-          "y": 9
-        },
-        "ref": "tas-foin"
-      },
-      {
-        "id": "z2-stat",
+        "id": "zone2-p3",
         "kind": "prop",
         "pos": {
           "x": 2,
@@ -1078,16 +1077,7 @@
         "ref": "statue"
       },
       {
-        "id": "z2-sang",
-        "kind": "prop",
-        "pos": {
-          "x": 8,
-          "y": 5
-        },
-        "ref": "mare-sang"
-      },
-      {
-        "id": "z2-cadavre",
+        "id": "zone2-p4",
         "kind": "prop",
         "pos": {
           "x": 13,
@@ -1099,7 +1089,7 @@
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-z2",
+        "id": "fight-enc-zone2",
         "rect": {
           "x": 5,
           "y": 0,
@@ -1110,50 +1100,318 @@
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-z2"
+            "encounter": "enc-zone2"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-z2",
+        "id": "enc-zone2",
         "enemies": [
           {
-            "ref": "Orc",
+            "ref": "Gobelin",
             "pos": {
               "x": 11,
               "y": 3
             }
           },
           {
-            "ref": "Orc",
+            "ref": "Gobelin",
             "pos": {
               "x": 12,
               "y": 7
             }
           },
           {
-            "ref": "Goule de crypte",
-            "pos": {
-              "x": 9,
-              "y": 7
-            }
-          },
-          {
-            "ref": "Squelette",
+            "ref": "Orc",
             "pos": {
               "x": 13,
-              "y": 2
+              "y": 5
             }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 40
           },
           {
-            "ref": "Squelette",
-            "pos": {
-              "x": 6,
-              "y": 8
-            }
+            "type": "giveXp",
+            "amount": 70
           },
+          {
+            "type": "setFlag",
+            "flag": "zone2_clear"
+          },
+          {
+            "type": "journal",
+            "text": "Les Ruines : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone3",
+    "nom": "Arène — Les Égouts",
+    "description": "Les Égouts",
+    "dimensions": {
+      "w": 15,
+      "h": 11
+    },
+    "ambiance": "interieur",
+    "startMessage": "LES ÉGOUTS. Une NUÉE de rats grouille (tirez dessus : +40 ; elle submerge en mêlée). Canaux d’eau infranchissables.",
+    "tiles": [
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "eau",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "id": "zone3-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 4
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone3-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 6
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone3-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 3
+        },
+        "ref": "caisse"
+      },
+      {
+        "id": "zone3-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone3-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone3",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 11
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone3"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone3",
+        "enemies": [
           {
             "statblock": {
               "name": "Nuée de rats",
@@ -1171,31 +1429,37 @@
               ]
             },
             "pos": {
-              "x": 4,
-              "y": 4
+              "x": 9,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Snotling",
+            "pos": {
+              "x": 11,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Snotling",
+            "pos": {
+              "x": 11,
+              "y": 7
             }
           }
         ],
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 60
+            "gold": 55
           },
           {
             "type": "giveXp",
-            "amount": 110
-          },
-          {
-            "type": "giveTrapping",
-            "trapping": "Dague",
-            "qualities": [
-              "Dévastatrice"
-            ],
-            "identified": false
+            "amount": 100
           },
           {
             "type": "setFlag",
-            "flag": "zone2_clear"
+            "flag": "zone3_clear"
           },
           {
             "type": "setFlag",
@@ -1203,7 +1467,7 @@
           },
           {
             "type": "journal",
-            "text": "Les Ruines sont à vous — un poignard à l’éclat trouble traîne dans les gravats (à faire évaluer chez le maître)."
+            "text": "Les Égouts : vaincue ! Retournez voir le maître d’arène."
           },
           {
             "type": "transition",
@@ -1215,16 +1479,665 @@
     "flags": {}
   },
   {
-    "id": "arene-zone3",
+    "id": "arene-zone4",
+    "nom": "Arène — Le Charnier",
+    "description": "Le Charnier",
+    "dimensions": {
+      "w": 15,
+      "h": 11
+    },
+    "ambiance": "interieur",
+    "startMessage": "LE CHARNIER. Les morts se lèvent (Peur). Un poignard à l’éclat trouble traîne dans l’ossuaire (à faire évaluer).",
+    "tiles": [
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "dalle",
+      "terre",
+      "terre",
+      "terre",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "id": "zone4-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 3
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone4-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 7
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone4-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 5
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone4-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 12,
+          "y": 9
+        },
+        "ref": "cadavre"
+      },
+      {
+        "id": "zone4-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 2
+        },
+        "ref": "cadavre"
+      },
+      {
+        "id": "zone4-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 5
+        },
+        "ref": "mare-sang"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone4",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 11
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone4"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone4",
+        "enemies": [
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 9,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 9,
+              "y": 7
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 12,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Goule de crypte",
+            "pos": {
+              "x": 11,
+              "y": 4
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 70
+          },
+          {
+            "type": "giveXp",
+            "amount": 130
+          },
+          {
+            "type": "giveTrapping",
+            "trapping": "Dague",
+            "qualities": [
+              "Dévastatrice"
+            ],
+            "identified": false
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone4_clear"
+          },
+          {
+            "type": "journal",
+            "text": "Le Charnier : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone5",
+    "nom": "Arène — Les Lices",
+    "description": "Les Lices",
+    "dimensions": {
+      "w": 15,
+      "h": 11
+    },
+    "ambiance": "exterieur",
+    "startMessage": "LES LICES. Un cavalier vous CHARGE ! Un cheval de bataille LIBRE attend près de vous (≈3,5) : Chevauchez-le pour combattre monté.",
+    "tiles": [
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "id": "zone5-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 2
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone5-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 9
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone5-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 5
+        },
+        "ref": "charrette",
+        "foot": {
+          "w": 2,
+          "h": 1
+        }
+      },
+      {
+        "id": "zone5-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone5-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone5",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 10,
+          "h": 11
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone5"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone5",
+        "enemies": [
+          {
+            "ref": "Cheval",
+            "pos": {
+              "x": 12,
+              "y": 3
+            },
+            "mount": true
+          },
+          {
+            "ref": "Mutant",
+            "pos": {
+              "x": 12,
+              "y": 3
+            },
+            "rides": 0
+          },
+          {
+            "ref": "Cheval",
+            "pos": {
+              "x": 3,
+              "y": 5
+            },
+            "mount": true,
+            "side": "ally"
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 11,
+              "y": 8
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 90
+          },
+          {
+            "type": "giveXp",
+            "amount": 160
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone5_clear"
+          },
+          {
+            "type": "setFlag",
+            "flag": "chance_dispo"
+          },
+          {
+            "type": "journal",
+            "text": "Les Lices : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone6",
     "nom": "Arène — Le Marais",
-    "description": "Eaux stagnantes et bosquets : couloirs étroits.",
+    "description": "Le Marais",
     "dimensions": {
       "w": 16,
       "h": 11
     },
     "ambiance": "exterieur",
     "weather": "brouillard",
-    "startMessage": "LE MARAIS. Le brouillard cache une EMBUSCADE : Test de Perception ou vos héros démarrent Surpris ! Mare au centre, bosquets, bêtes d’élite.",
+    "startMessage": "LE MARAIS. Le brouillard cache une EMBUSCADE : Test de Perception ou vos héros démarrent Surpris. Meute de loups funestes (Peur) et un Gor enragé.",
     "tiles": [
       "herbe",
       "herbe",
@@ -1349,9 +2262,9 @@
       "herbe",
       "bois",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
       "herbe",
       "herbe",
       "herbe",
@@ -1365,9 +2278,9 @@
       "herbe",
       "herbe",
       "herbe",
-      "terre",
-      "terre",
-      "terre",
+      "herbe",
+      "herbe",
+      "herbe",
       "herbe",
       "herbe",
       "herbe",
@@ -1413,7 +2326,7 @@
         }
       },
       {
-        "id": "z3-arb-a",
+        "id": "zone6-p0",
         "kind": "prop",
         "pos": {
           "x": 4,
@@ -1422,7 +2335,7 @@
         "ref": "arbre"
       },
       {
-        "id": "z3-arb-b",
+        "id": "zone6-p1",
         "kind": "prop",
         "pos": {
           "x": 4,
@@ -1431,7 +2344,7 @@
         "ref": "arbre"
       },
       {
-        "id": "z3-foin",
+        "id": "zone6-p2",
         "kind": "prop",
         "pos": {
           "x": 10,
@@ -1440,7 +2353,7 @@
         "ref": "tas-foin"
       },
       {
-        "id": "z3-cheval",
+        "id": "zone6-p3",
         "kind": "prop",
         "pos": {
           "x": 10,
@@ -1449,7 +2362,7 @@
         "ref": "cheval-mort"
       },
       {
-        "id": "z3-arb-c",
+        "id": "zone6-p4",
         "kind": "prop",
         "pos": {
           "x": 13,
@@ -1458,7 +2371,7 @@
         "ref": "arbre"
       },
       {
-        "id": "z3-arb-d",
+        "id": "zone6-p5",
         "kind": "prop",
         "pos": {
           "x": 2,
@@ -1470,7 +2383,7 @@
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-z3",
+        "id": "fight-enc-zone6",
         "rect": {
           "x": 5,
           "y": 0,
@@ -1481,20 +2394,20 @@
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-z3"
+            "encounter": "enc-zone6"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-z3",
+        "id": "enc-zone6",
         "enemies": [
           {
-            "ref": "Minotaure",
+            "ref": "Loup funeste",
             "pos": {
-              "x": 13,
-              "y": 5
+              "x": 12,
+              "y": 3
             }
           },
           {
@@ -1510,25 +2423,36 @@
               "x": 8,
               "y": 9
             }
+          },
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 12,
+              "y": 7
+            }
           }
         ],
         "surprise": "party",
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 90
+            "gold": 120
           },
           {
             "type": "giveXp",
-            "amount": 170
+            "amount": 210
           },
           {
             "type": "setFlag",
-            "flag": "zone3_clear"
+            "flag": "zone6_clear"
+          },
+          {
+            "type": "setFlag",
+            "flag": "chance_dispo"
           },
           {
             "type": "journal",
-            "text": "Le Marais ne respire plus. Retournez voir le maître."
+            "text": "Le Marais : vaincue ! Retournez voir le maître d’arène."
           },
           {
             "type": "transition",
@@ -1540,15 +2464,347 @@
     "flags": {}
   },
   {
-    "id": "arene-zone4",
+    "id": "arene-zone7",
+    "nom": "Arène — La Fosse",
+    "description": "La Fosse",
+    "dimensions": {
+      "w": 16,
+      "h": 11
+    },
+    "ambiance": "interieur",
+    "startMessage": "LA FOSSE. Un Minotaure (Taille Grande : occupe 2×2, peut Piétiner) flanqué de Gors. Gardez vos distances de sa charge.",
+    "tiles": [
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "id": "zone7-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 5
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone7-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 3
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone7-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 7
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone7-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 2
+        },
+        "ref": "caisse"
+      },
+      {
+        "id": "zone7-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone7-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 14,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone7-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone7",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 11,
+          "h": 11
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone7"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone7",
+        "enemies": [
+          {
+            "ref": "Minotaure",
+            "pos": {
+              "x": 12,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 9,
+              "y": 2
+            }
+          },
+          {
+            "ref": "Gor",
+            "pos": {
+              "x": 9,
+              "y": 8
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 145
+          },
+          {
+            "type": "giveXp",
+            "amount": 250
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone7_clear"
+          },
+          {
+            "type": "journal",
+            "text": "La Fosse : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone8",
     "nom": "Arène — La Caverne du Troll",
-    "description": "Caverne resserrée : le boss et sa garde.",
+    "description": "La Caverne du Troll",
     "dimensions": {
       "w": 15,
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LA CAVERNE. Piliers de roche, statues anciennes — et un Troll (régénère, vomit). Avant l’épreuve finale.",
+    "startMessage": "LA CAVERNE. Un Troll (Régénération, Vomissement) et ses Gors (Rage). Avant l’épreuve finale.",
     "tiles": [
       "sol",
       "sol",
@@ -1726,7 +2982,7 @@
         }
       },
       {
-        "id": "z4-stat-a",
+        "id": "zone8-p0",
         "kind": "prop",
         "pos": {
           "x": 11,
@@ -1735,7 +2991,7 @@
         "ref": "statue"
       },
       {
-        "id": "z4-stat-b",
+        "id": "zone8-p1",
         "kind": "prop",
         "pos": {
           "x": 11,
@@ -1744,7 +3000,7 @@
         "ref": "statue"
       },
       {
-        "id": "z4-ton",
+        "id": "zone8-p2",
         "kind": "prop",
         "pos": {
           "x": 4,
@@ -1753,7 +3009,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z4-feu-a",
+        "id": "zone8-p3",
         "kind": "prop",
         "pos": {
           "x": 1,
@@ -1762,7 +3018,7 @@
         "ref": "feu-camp"
       },
       {
-        "id": "z4-feu-b",
+        "id": "zone8-p4",
         "kind": "prop",
         "pos": {
           "x": 13,
@@ -1771,7 +3027,7 @@
         "ref": "feu-camp"
       },
       {
-        "id": "z4-sang",
+        "id": "zone8-p5",
         "kind": "prop",
         "pos": {
           "x": 8,
@@ -1780,7 +3036,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "z4-os",
+        "id": "zone8-p6",
         "kind": "prop",
         "pos": {
           "x": 1,
@@ -1792,7 +3048,7 @@
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-z4",
+        "id": "fight-enc-zone8",
         "rect": {
           "x": 5,
           "y": 0,
@@ -1803,14 +3059,14 @@
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-z4"
+            "encounter": "enc-zone8"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-z4",
+        "id": "enc-zone8",
         "enemies": [
           {
             "ref": "Troll",
@@ -1837,7 +3093,7 @@
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 150
+            "gold": 160
           },
           {
             "type": "giveXp",
@@ -1856,11 +3112,15 @@
           },
           {
             "type": "setFlag",
-            "flag": "zone4_clear"
+            "flag": "zone8_clear"
+          },
+          {
+            "type": "setFlag",
+            "flag": "chance_dispo"
           },
           {
             "type": "journal",
-            "text": "LE TROLL EST TOMBÉ. Une lame d’un éclat surnaturel gît près de la carcasse (à faire évaluer)."
+            "text": "La Caverne du Troll : vaincue ! Retournez voir le maître d’arène."
           },
           {
             "type": "transition",
@@ -1872,15 +3132,15 @@
     "flags": {}
   },
   {
-    "id": "arene-zone5",
+    "id": "arene-zone9",
     "nom": "Arène — Le Sépulcre",
-    "description": "Crypte glaciale : l’épreuve ultime.",
+    "description": "Le Sépulcre",
     "dimensions": {
       "w": 15,
       "h": 11
     },
     "ambiance": "interieur",
-    "startMessage": "LE SÉPULCRE. Un Spectre de cairn s’élève — sa TERREUR fige le sang (Test de Terreur, plus dur que la Peur). Tenez bon, champions.",
+    "startMessage": "LE SÉPULCRE. Un Spectre de cairn s’élève — sa TERREUR fige le sang (Test de Terreur, plus dur que la Peur). Avant l’Antre du Dragon.",
     "tiles": [
       "dalle",
       "dalle",
@@ -2058,7 +3318,7 @@
         }
       },
       {
-        "id": "z5-stat-a",
+        "id": "zone9-p0",
         "kind": "prop",
         "pos": {
           "x": 6,
@@ -2067,7 +3327,7 @@
         "ref": "statue"
       },
       {
-        "id": "z5-stat-b",
+        "id": "zone9-p1",
         "kind": "prop",
         "pos": {
           "x": 6,
@@ -2076,7 +3336,7 @@
         "ref": "statue"
       },
       {
-        "id": "z5-ton",
+        "id": "zone9-p2",
         "kind": "prop",
         "pos": {
           "x": 4,
@@ -2085,7 +3345,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "z5-feu-a",
+        "id": "zone9-p3",
         "kind": "prop",
         "pos": {
           "x": 1,
@@ -2094,7 +3354,7 @@
         "ref": "feu-camp"
       },
       {
-        "id": "z5-feu-b",
+        "id": "zone9-p4",
         "kind": "prop",
         "pos": {
           "x": 13,
@@ -2103,7 +3363,7 @@
         "ref": "feu-camp"
       },
       {
-        "id": "z5-sang",
+        "id": "zone9-p5",
         "kind": "prop",
         "pos": {
           "x": 8,
@@ -2112,7 +3372,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "z5-os",
+        "id": "zone9-p6",
         "kind": "prop",
         "pos": {
           "x": 13,
@@ -2124,7 +3384,7 @@
     "dialogues": [],
     "triggers": [
       {
-        "id": "fight-enc-z5",
+        "id": "fight-enc-zone9",
         "rect": {
           "x": 5,
           "y": 0,
@@ -2135,14 +3395,14 @@
         "effects": [
           {
             "type": "startCombat",
-            "encounter": "enc-z5"
+            "encounter": "enc-zone9"
           }
         ]
       }
     ],
     "encounters": [
       {
-        "id": "enc-z5",
+        "id": "enc-zone9",
         "enemies": [
           {
             "ref": "Spectre de cairn",
@@ -2169,11 +3429,11 @@
         "onVictory": [
           {
             "type": "giveMoney",
-            "gold": 220
+            "gold": 200
           },
           {
             "type": "giveXp",
-            "amount": 400
+            "amount": 360
           },
           {
             "type": "giveTrapping",
@@ -2188,11 +3448,474 @@
           },
           {
             "type": "setFlag",
-            "flag": "zone5_clear"
+            "flag": "zone9_clear"
           },
           {
             "type": "journal",
-            "text": "LE SPECTRE EST DISSIPÉ. Vous êtes CHAMPION DE L’ARÈNE — une dague dorée à l’éclat trouble repose dans la poussière."
+            "text": "Le Sépulcre : vaincue ! Retournez voir le maître d’arène."
+          },
+          {
+            "type": "transition",
+            "scene": "arene-hub"
+          }
+        ]
+      }
+    ],
+    "flags": {}
+  },
+  {
+    "id": "arene-zone10",
+    "nom": "Arène — L’Antre du Dragon",
+    "description": "L’Antre du Dragon",
+    "dimensions": {
+      "w": 18,
+      "h": 14
+    },
+    "ambiance": "interieur",
+    "startMessage": "L’ANTRE DU DRAGON. Un Dragon des ténèbres MONSTRUEUX (occupe 4×4) crache un SOUFFLE de ténèbres (attaque de zone) et inspire la TERREUR. L’épreuve ULTIME — le trésor est à ce prix.",
+    "tiles": [
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "mur",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol",
+      "sol"
+    ],
+    "entities": [
+      {
+        "id": "start",
+        "kind": "heroStart",
+        "pos": {
+          "x": 1,
+          "y": 7
+        }
+      },
+      {
+        "id": "zone10-p0",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 4
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone10-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 9
+        },
+        "ref": "statue"
+      },
+      {
+        "id": "zone10-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 6
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone10-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 7
+        },
+        "ref": "caisse"
+      },
+      {
+        "id": "zone10-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone10-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 16,
+          "y": 0
+        },
+        "ref": "feu-camp"
+      },
+      {
+        "id": "zone10-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 10
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone10-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 12
+        },
+        "ref": "cadavre"
+      },
+      {
+        "id": "zone10-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 16,
+          "y": 12
+        },
+        "ref": "coffre"
+      }
+    ],
+    "dialogues": [],
+    "triggers": [
+      {
+        "id": "fight-enc-zone10",
+        "rect": {
+          "x": 5,
+          "y": 0,
+          "w": 13,
+          "h": 14
+        },
+        "once": true,
+        "effects": [
+          {
+            "type": "startCombat",
+            "encounter": "enc-zone10"
+          }
+        ]
+      }
+    ],
+    "encounters": [
+      {
+        "id": "enc-zone10",
+        "enemies": [
+          {
+            "statblock": {
+              "name": "Dragon des ténèbres",
+              "char": {
+                "M": 6,
+                "CC": 55,
+                "CT": 45,
+                "F": 55,
+                "E": 55,
+                "I": 50,
+                "Ag": 35,
+                "Dex": 30,
+                "Int": 40,
+                "FM": 60,
+                "Soc": 40,
+                "B": 104
+              },
+              "traits": [
+                "Taille (Monstrueuse)",
+                "Souffle +15 (Ténèbres)",
+                "Terreur 2",
+                "Armure 5",
+                "Arme +10",
+                "Morsure +10",
+                "Vol"
+              ],
+              "size": "monstrueuse"
+            },
+            "pos": {
+              "x": 13,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 8,
+              "y": 2
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 8,
+              "y": 11
+            }
+          }
+        ],
+        "onVictory": [
+          {
+            "type": "giveMoney",
+            "gold": 320
+          },
+          {
+            "type": "giveXp",
+            "amount": 500
+          },
+          {
+            "type": "giveTrapping",
+            "trapping": "Épée bâtarde",
+            "qualities": [
+              "Dévastatrice"
+            ],
+            "identified": false,
+            "skin": {
+              "metal": "#caa64a"
+            }
+          },
+          {
+            "type": "setFlag",
+            "flag": "zone10_clear"
+          },
+          {
+            "type": "journal",
+            "text": "CHAMPION DE L’ARÈNE ! L’épreuve ultime est tombée."
           },
           {
             "type": "transition",
