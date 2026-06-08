@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { rollCritical, critLocationRoll } from './critical';
+import type { RNG } from './dice';
+import { rollCritical, critLocationRoll, parseAmputation } from './critical';
 import type { Combatant } from './types';
+
+/** RNG scripté : renvoie les valeurs dans l'ordre. */
+function seq(values: number[]): RNG {
+  let i = 0;
+  return { int: () => values[i++] };
+}
 
 const victim = (E = 30): Combatant =>
   ({
@@ -51,6 +58,40 @@ describe('rollCritical — résolution d’une Blessure critique (LDB 18-Traumat
       }
     }
     throw new Error('aucune Fracture trouvée sur 60 seeds');
+  });
+});
+
+describe('parseAmputation — lecture « Amputation (Difficulté) » des notes (LDB 18)', () => {
+  it('mappe chaque palier ; « Très Difficile » n’est pas capturé comme « Difficile »', () => {
+    expect(parseAmputation('… — Amputation (Très Difficile).')).toBe('tresDifficile');
+    expect(parseAmputation('Bras inutilisable — Amputation (Difficile).')).toBe('difficile');
+    expect(parseAmputation("Perte de l'œil — Amputation (Complexe)")).toBe('complexe');
+    expect(parseAmputation('Amputation (Accessible).')).toBe('accessible');
+    expect(parseAmputation('Perdez 1d10 dents — Amputation (Facile)')).toBe('facile');
+    expect(parseAmputation('Une simple coupure, rien de grave.')).toBeNull();
+  });
+});
+
+describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
+  // « Doigt sectionné » (BRAS 81-85) : note « Amputation (Accessible) », sans entry.resist ni fracture →
+  // exactement 2 jets (d100 du critique, puis d100 du Test de Résistance d'amputation).
+  it('crée un trauma chirurgical (needsSurgery) et inflige À Terre sur Résistance ratée', () => {
+    const r = rollCritical(victim(30), 'brasD', seq([83, 60])); // E30 → Accessible cible 50 ; 60 > 50 → échec (DR −1)
+    expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'À Terre')).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'Inconscient')).toBe(false); // DR −1 : pas d'Inconscient
+  });
+
+  it('échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient', () => {
+    const r = rollCritical(victim(30), 'brasD', seq([83, 99])); // cible 50 ; 99 → DR −4
+    expect(r.conditions.some((c) => c.name === 'Sonné')).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'Inconscient')).toBe(true);
+  });
+
+  it('Résistance réussie : le membre est quand même amputé (trauma chirurgical), sans À Terre du choc', () => {
+    const r = rollCritical(victim(30), 'brasD', seq([83, 5])); // 5 ≤ 50 → réussite
+    expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'À Terre')).toBe(false);
   });
 });
 

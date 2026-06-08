@@ -7,9 +7,25 @@ import { d100, d10, RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape } from './combat';
-import { BodyShape, Combatant, HitLocation, Trauma } from './types';
+import { BodyShape, Combatant, Difficulty, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
 import { traumaFromKind } from './trauma';
+
+/** Difficulté de l'« Amputation (X) » d'une note de critique → palier de Difficulté (LDB 18 l.331). */
+const AMPUTATION_DIFFICULTY: Record<string, Difficulty> = {
+  Facile: 'facile',
+  Accessible: 'accessible',
+  Complexe: 'complexe',
+  Difficile: 'difficile',
+  'Très Difficile': 'tresDifficile',
+};
+
+/** Extrait « Amputation (Difficulté) » du texte d'un critique (verbatim LDB 18), ou `null`. L'ordre des
+ *  alternatives place « Très Difficile » avant « Difficile » (sinon le sous-mot capturerait à tort). */
+export function parseAmputation(note: string): Difficulty | null {
+  const m = note.match(/Amputation \((Très Difficile|Difficile|Complexe|Accessible|Facile)\)/);
+  return m ? AMPUTATION_DIFFICULTY[m[1]] : null;
+}
 
 export interface CriticalResolved {
   location: HitLocation;
@@ -52,11 +68,11 @@ export function rollCritical(
   const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
   const roll = Math.max(1, d100(rng) - reduction);
   const entry = findEntry(CRITICAL_TABLES[location], roll);
+  const resistVal =
+    effectiveChar(target, 'E') +
+    (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
   const conditions = [...(entry.conditions ?? [])];
   if (entry.resist) {
-    const resistVal =
-      effectiveChar(target, 'E') +
-      (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
     if (!res.success) conditions.push(...entry.resist.onFail);
   }
@@ -64,6 +80,25 @@ export function rollCritical(
   // afin de ne pas décaler le flux RNG des critiques sans fracture.
   const traumas = (entry.traumas ?? []).map((t) =>
     traumaFromKind(t.kind, t.severity, location, { be, d10: t.kind === 'fracture' ? d10(rng) : undefined }));
+  // Amputation (LDB 18 l.328-333) : « à chaque fois qu'un critique indique Amputation (Difficulté) »,
+  // Test de Résistance ou À Terre ; échec −2 DR → +Sonné ; échec −4 DR → +Inconscient. Le membre perdu
+  // exige la Chirurgie (l.333/401) : trauma `needsSurgery` (opérable via le Talent Chirurgie). Roll placé
+  // en DERNIER (rien ne tire après) pour ne décaler le flux RNG que des critiques d'amputation.
+  const ampDiff = entry.lethal ? null : parseAmputation(entry.note);
+  if (ampDiff) {
+    const res = rollTest(resistVal, ampDiff, rng);
+    if (!res.success) {
+      conditions.push({ name: 'À Terre', value: 1 });
+      if (res.sl <= -2) conditions.push({ name: 'Sonné', value: 1 });
+      if (res.sl <= -4) conditions.push({ name: 'Inconscient', value: 1 });
+    }
+    traumas.push({
+      label: `Amputation (${location})`,
+      location,
+      needsSurgery: true,
+      note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
+    });
+  }
   return {
     location,
     name: entry.name,
