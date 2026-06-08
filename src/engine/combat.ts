@@ -208,7 +208,10 @@ export function attackModifiers(
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) out.push({ label: 'Précise', value: precise });
-  if (opts.location) out.push({ label: 'Localisation visée', value: -10 });
+  // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
+  // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
+  // d'Impact des Créatures » p.312 / `76` l.39).
+  if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)) out.push({ label: 'Localisation visée', value: -10 });
   // Modificateurs dérivés de la SCÈNE (couvert / obscurité / météo / mouvement / tir-mêlée), calculés
   // côté state (combatFlow) et injectés ici — la table de Difficultés de Combat n'est pas exhaustive.
   if (opts.env) out.push(...opts.env);
