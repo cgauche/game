@@ -418,6 +418,7 @@ export function resolveAttack(
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
   if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
+  // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const scene = get().scene!;
   const battle = get().battle!;
   const sc = sceneCombatModifiers(scene, get().gameTime);
@@ -1718,17 +1719,21 @@ export function brokenRecovery(get: () => GameState, roundLines: string[]): void
     const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
     const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
     if (hidden) { removeCondition(c, 'Brisé', 1); roundLines.push(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`); }
-    if (isEngaged(c) || !stacks(c, 'Brisé')) continue; // pas de récupération si Engagé (l.57), ou plus de Brisé
-    const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
-    const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
-    const t = rollTest(calmeValue(c), diff, battleRng());
-    if (t.success) {
-      const removed = Math.min(stacks(c, 'Brisé'), 1 + Math.max(0, t.sl));
-      removeCondition(c, 'Brisé', removed);
-      roundLines.push(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`);
-    } else {
-      roundLines.push(`${c.name} reste Brisé (Test de Calme raté).`);
+    // Récupération par Test de Calme : seulement si pas Engagé (l.57) et qu'il reste du Brisé.
+    if (!isEngaged(c) && stacks(c, 'Brisé')) {
+      const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
+      const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
+      const t = rollTest(calmeValue(c), diff, battleRng());
+      if (t.success) {
+        const removed = Math.min(stacks(c, 'Brisé'), 1 + Math.max(0, t.sl));
+        removeCondition(c, 'Brisé', removed);
+        roundLines.push(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`);
+      } else {
+        roundLines.push(`${c.name} reste Brisé (Test de Calme raté).`);
+      }
     }
+    // « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80).
+    if (!stacks(c, 'Brisé')) { addCondition(c, 'Exténué'); roundLines.push(`${c.name} est Exténué (après s'être ressaisi).`); }
   }
 }
 

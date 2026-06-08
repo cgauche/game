@@ -186,10 +186,10 @@ describe('États en combat (LDB ch.16)', () => {
     expect(cannotDefend(t)).toBe(true);
   });
   it('Empoisonné inflige 1 Blessure par point en fin de Round', () => {
-    const c = { name: 'x', conditions: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
+    const c = { name: 'x', conditions: [], characteristics: { E: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
     addCondition(c, 'Empoisonné', 2);
     endOfRound(c);
-    expect(c.wounds.current).toBe(8);
+    expect(c.wounds.current).toBe(8); // 2 Blessures de poison (la récupération éventuelle ne restaure pas les PB)
   });
   it('En flammes : le +1 par État en plus s’ajoute aux Dégâts AVANT réduction BE+PA (l.77)', () => {
     // 3 États → « 1d10+2 » ; BE 7 absorbe tout jusqu’au plancher de 1 (et non 1+2 = 3, le bug).

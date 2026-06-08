@@ -11,6 +11,7 @@ import { rollTest, isDoubleRoll } from './tests';
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
 export function addCondition(c: Combatant, name: string, value = 1): void {
+  c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) existing.value += value;
   else c.conditions.push({ name, value });
@@ -52,6 +53,7 @@ export function combatTestPenalty(c: Combatant): number {
  * PAS appliqués ici faute de classification du Test (rare hors combat ; raffinement futur).
  */
 const BRISE_EXEMPT = /athl[ée]tisme|discr[ée]tion/i; // course / dissimulation (LDB 16 l.55)
+const MOVEMENT_SKILL = /athl[ée]tisme|esquive|escalade|acrobat|[ée]quitation|nage/i; // Tests « impliquant un déplacement »
 export function testStatePenalty(c: Combatant, skill?: string): number {
   if (!c.conditions?.length) return 0;
   const cand: number[] = [];
@@ -60,6 +62,11 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   const ext = stacks(c, 'Exténué');
   if (ext > 0) cand.push(-10 * ext);
   if (hasCondition(c, 'Brisé') && !BRISE_EXEMPT.test(skill ?? '')) cand.push(-10);
+  // À Terre / Empêtré : pénalité aux Tests impliquant un déplacement (LDB 16 l.37 / l.85).
+  if (MOVEMENT_SKILL.test(skill ?? '')) {
+    if (hasCondition(c, 'À Terre')) cand.push(-20);
+    if (hasCondition(c, 'Empêtré')) cand.push(-10);
+  }
   return cand.length ? Math.min(...cand) : 0;
 }
 
@@ -104,6 +111,16 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   if (poison) {
     loseWounds(c, poison);
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
+    // Test de Résistance en fin de Round → retire 1 + DR États ; une fois tous retirés, 1 Exténué (l.70-72).
+    // (Difficulté « dictée par le poison » non modélisée → Intermédiaire +0 par défaut.)
+    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
+    if (res.success) {
+      const removed = Math.min(poison, 1 + Math.max(0, res.sl));
+      removeCondition(c, 'Empoisonné', removed);
+      log.push(`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`);
+      if (!hasCondition(c, 'Empoisonné')) { addCondition(c, 'Exténué'); log.push(`${c.name} est Exténué (poison surmonté).`); }
+    }
   }
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
   const fire = stacks(c, 'En flammes');
