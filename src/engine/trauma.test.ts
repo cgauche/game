@@ -56,7 +56,8 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }, { name: 'Fausse jambe', cancels: 'movement' }],
     note: '',
   };
-  const item = (name: string): ItemInstance => ({ uid: name, name, kind: 'misc', qualities: [], enc: 0, equipped: false } as ItemInstance);
+  // Une prothèse doit être PORTÉE (équipée) pour lever le malus (LDB 73), pas seulement possédée.
+  const item = (name: string, equipped = true): ItemInstance => ({ uid: name, name, kind: 'misc', subType: 'Prothèses', qualities: [], enc: 0, equipped } as ItemInstance);
 
   it('sans prothèse : Mouvement ÷2 et −20 Esquive s’appliquent', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [] });
@@ -75,6 +76,10 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   });
   it('prothèse perdue (retirée des items) : la pénalité revient', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('Couverture')] });
+    expect(traumaMovementHalved(c)).toBe(true);
+  });
+  it('prothèse POSSÉDÉE mais non portée (au sac) : le malus reste — il faut l’ÉQUIPER (LDB 73)', () => {
+    const c = fullCombatant({ traumas: [legSequela], items: [item('Fausse jambe', false)] }); // equipped:false
     expect(traumaMovementHalved(c)).toBe(true);
   });
 

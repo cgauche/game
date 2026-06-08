@@ -153,6 +153,13 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
+/** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.352) — sauf
+ *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` (armes de mêlée
+ *  du Groupe « Deux-mains »). NB : les armes à distance bimanuelles ne sont pas marquées → non couvertes. */
+export function cannotWieldTwoHanded(c: Combatant): boolean {
+  return (c.traumas ?? []).some((t) => t.noTwoHanded && !prosthesisCancels(c, t, 'all'));
+}
+
 /** Retire un trauma chirurgical (opération réussie) ; décrémente `criticalWounds`. Mute `c`, renvoie le journal.
  *  Les DÉGÂTS de l'opération (1d10 + Hémorragique) et le risque d'Infection sont appliqués par l'appelant
  *  (le store) — ils dépendent de `loseWounds`/`addCondition`, hors de ce module pur (cycle d'import évité). */
@@ -201,12 +208,13 @@ export function treatTrauma(c: Combatant, dr: number): string[] {
   return [`${c.name} : la Guérison raccourcit la convalescence de ${t.label} de ${cut} jour(s) (reste ${t.recoveryDays}).`];
 }
 
-/** Une prothèse portée (présente dans `items`, LDB 73) annule-t-elle l'`aspect` de la séquelle `t` ?
- *  `'movement'` est couvert par une prothèse `'movement'` OU `'all'` ; `'all'` exige une prothèse `'all'`. */
+/** Une prothèse ÉQUIPÉE (portée — `items` avec `equipped`, LDB 73 « Enc 0 quand portées ») annule-t-elle
+ *  l'`aspect` de la séquelle `t` ? `'movement'` est couvert par une prothèse `'movement'` OU `'all'` ; `'all'`
+ *  exige une prothèse `'all'`. La simple POSSESSION (objet au sac, non porté) ne suffit pas. */
 function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'): boolean {
   if (!t.prosthesis?.length) return false;
   return t.prosthesis.some(
-    (p) => (aspect === 'movement' ? true : p.cancels === 'all') && (c.items ?? []).some((i) => i.name === p.name),
+    (p) => (aspect === 'movement' ? true : p.cancels === 'all') && (c.items ?? []).some((i) => i.name === p.name && i.equipped),
   );
 }
 

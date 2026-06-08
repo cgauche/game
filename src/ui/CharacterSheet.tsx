@@ -294,7 +294,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
         <div className="inv-rows">
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
           {items.map((it) => {
-            const equipable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
+            const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
+            const equipable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor' || isProsthesis;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
             const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
@@ -322,8 +323,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
                     </button>
                   )}
                   {equipable ? (
-                    <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} onClick={() => toggleEquip(hero.id, it.uid)}>
-                      {it.equipped ? 'Équipé' : 'Équiper'}
+                    <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} title={isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined} onClick={() => toggleEquip(hero.id, it.uid)}>
+                      {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
                     </button>
                   ) : consumable ? (
                     <button

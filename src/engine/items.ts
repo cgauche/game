@@ -6,6 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon } from './types';
 import { bonus } from './characteristics';
+import { cannotWieldTwoHanded } from './trauma';
 import { findTrapping } from '../data';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
@@ -77,6 +78,7 @@ export function maxEncumbrance(c: Combatant): number {
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
     const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60 l.56/91)
+    if (!!i.equipped && i.subType === 'Prothèses') return s; // prothèse portée = Enc 0 (LDB 73)
     const worn = !!i.equipped && i.kind === 'armor';
     // Objet porté : -1 (LDB Enc l.22) ; une armure Volumineux portée vaut Enc 1 (LDB 60 l.91).
     const eff = worn ? (hasQuality(i, 'Volumineux') ? 1 : enc - 1) : enc;
@@ -97,6 +99,8 @@ export function recomputeLoadout(c: Combatant): void {
     if (!it.equipped) continue;
     if (it.kind === 'melee' || it.kind === 'ranged') {
       if (it.destroyed) continue; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
+      // Amputation de main/bras (LDB 18 l.352) : pas d'arme à deux mains (Groupe « Deux-mains ») → repli mains nues.
+      if (it.kind === 'melee' && (it.subType ?? '').toLowerCase() === 'deux-mains' && cannotWieldTwoHanded(c)) continue;
       // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
       const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
       weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken, skin: it.skin });

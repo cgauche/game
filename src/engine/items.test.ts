@@ -31,6 +31,24 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = { items: [item({ enc: 2 }), item({ enc: 3 }), item({ enc: 0 })] } as unknown as Combatant;
     expect(totalEncumbrance(c)).toBe(5);
   });
+  it('amputation de main : arme à deux mains exclue de la dotation ; Merveille PORTÉE la rétablit (LDB 18 l.352 / 73)', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }], note: '' }],
+      items: [item({ name: 'Espadon', kind: 'melee', damage: '+BF+5', subType: 'deux-mains', equipped: true })],
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).not.toContain('Espadon'); // pas d'arme à 2 mains avec une main amputée
+    c.items!.push(item({ name: "Merveille d'ingénierie", subType: 'Prothèses', equipped: true }));
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toContain('Espadon'); // prothèse portée → arme à 2 mains de nouveau utilisable
+  });
+  it('prothèse PORTÉE = Enc 0 ; possédée mais non portée = son Enc (LDB 73)', () => {
+    const worn = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: true })] } as unknown as Combatant;
+    expect(totalEncumbrance(worn)).toBe(0);
+    const carried = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: false })] } as unknown as Combatant;
+    expect(totalEncumbrance(carried)).toBe(2);
+  });
   it("maxEncumbrance = Bonus de Force + Bonus d'Endurance (LDB)", () => {
     expect(maxEncumbrance({ characteristics: { F: 35, E: 42 } } as unknown as Combatant)).toBe(3 + 4);
   });
