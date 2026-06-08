@@ -153,6 +153,27 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
+/**
+ * Cumul de pertes sensorielles (LDB 18 l.360/363) : perdre le SECOND œil/oreille agrège une séquelle —
+ * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher) ou Surdité (−20 Perception auditive,
+ * approximée à toute la Perception). Mute `c.traumas`, renvoie le journal ; idempotent. Appelé après l'ajout
+ * d'une séquelle d'amputation (combat). Non annulable par prothèse (yeux/oreilles de remplacement = cosmétiques).
+ */
+export function escalateSensoryLoss(c: Combatant): string[] {
+  const log: string[] = [];
+  const eyes = (c.traumas ?? []).filter((t) => t.label === 'Œil perdu').length;
+  const ears = (c.traumas ?? []).filter((t) => t.label === 'Oreille perdue').length;
+  if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Cécité')) {
+    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', charPenalty: { CC: -30, CT: -30 }, dodgePenalty: -30, skillPenalty: { chevaucher: -30 }, note: 'LDB 18 l.360 : perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
+    log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
+  }
+  if (ears >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Surdité')) {
+    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', skillPenalty: { perception: -20 }, note: 'LDB 18 l.363 : perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
+    log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
+  }
+  return log;
+}
+
 /** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.352) — sauf
  *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` (armes de mêlée
  *  du Groupe « Deux-mains »). NB : les armes à distance bimanuelles ne sont pas marquées → non couvertes. */

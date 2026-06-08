@@ -91,6 +91,15 @@ export function emptyArmour(ap = 0): ArmourPoints {
   return { tete: ap, brasG: ap, brasD: ap, corps: ap, jambeG: ap, jambeD: ap };
 }
 
+/** Arme exigeant DEUX mains (LDB 62) : mêlée du Groupe « Deux-mains », arc (tous), arbalète SAUF « de poing ».
+ *  Pistolets/arquebuses (Poudre noire/Ingénierie) partagent un subType ambigu (1 vs 2 mains) → non classés. */
+export function isTwoHandedWeapon(it: ItemInstance): boolean {
+  const st = (it.subType ?? '').toLowerCase();
+  if (it.kind === 'melee') return st === 'deux-mains';
+  if (it.kind === 'ranged') return st === 'arc' || (st === 'arbalète' && !/poing/i.test(it.name));
+  return false;
+}
+
 /** Recalcule armes/armure actives + encombrement depuis l'équipement porté. */
 export function recomputeLoadout(c: Combatant): void {
   const items = c.items ?? [];
@@ -99,12 +108,18 @@ export function recomputeLoadout(c: Combatant): void {
     if (!it.equipped) continue;
     if (it.kind === 'melee' || it.kind === 'ranged') {
       if (it.destroyed) continue; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
-      // Amputation de main/bras (LDB 18 l.352) : pas d'arme à deux mains (Groupe « Deux-mains ») → repli mains nues.
-      if (it.kind === 'melee' && (it.subType ?? '').toLowerCase() === 'deux-mains' && cannotWieldTwoHanded(c)) continue;
+      // Amputation de main/bras (LDB 18 l.352) : pas d'arme à DEUX mains → repli mains nues. Mêlée = Groupe
+      // « Deux-mains » ; distance = arcs (tous) et arbalètes (sauf « de poing »). Poudre noire/ingénierie = ambigu
+      // (pistolet 1 main vs arquebuse 2 mains, même subType) → non bloqué.
+      if (isTwoHandedWeapon(it) && cannotWieldTwoHanded(c)) continue;
       // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
       const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
       weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken, skin: it.skin });
     }
+  }
+  // Crochet PORTÉ (prothèse, LDB 73) : « en Combat rapproché, considéré comme une Dague ». Arme dérivée.
+  if (items.some((i) => i.equipped && i.name === 'Crochet')) {
+    weapons.push({ name: 'Crochet', type: 'melee', damage: '+BF+2', reach: 'Très courte', qualities: [], subType: 'Base' });
   }
   // Mains nues toujours disponibles en dernier recours.
   weapons.push({ name: 'Mains nues', type: 'melee', damage: '+BF-2', reach: 'Très courte', qualities: [] });

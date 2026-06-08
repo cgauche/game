@@ -43,6 +43,25 @@ describe('items — recomputeLoadout / encombrement', () => {
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).toContain('Espadon'); // prothèse portée → arme à 2 mains de nouveau utilisable
   });
+  it('Crochet porté (prothèse) fournit une arme « Dague » (+BF+2, LDB 73)', () => {
+    const c = { characteristics: { F: 30, E: 30 }, items: [item({ name: 'Crochet', subType: 'Prothèses', equipped: true })] } as unknown as Combatant;
+    recomputeLoadout(c);
+    const cr = c.weapons.find((w) => w.name === 'Crochet');
+    expect(cr?.damage).toBe('+BF+2');
+  });
+  it('amputation de main : Arc exclu, mais « Arbalète de poing » (1 main) reste utilisable', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, note: '' }],
+      items: [
+        item({ name: 'Arc long', kind: 'ranged', subType: 'Arc', equipped: true }),
+        item({ name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', equipped: true }),
+      ],
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).not.toContain('Arc long'); // arc bimanuel exclu
+    expect(c.weapons.map((w) => w.name)).toContain('Arbalète de poing'); // 1 main → utilisable
+  });
   it('prothèse PORTÉE = Enc 0 ; possédée mais non portée = son Enc (LDB 73)', () => {
     const worn = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: true })] } as unknown as Combatant;
     expect(totalEncumbrance(worn)).toBe(0);

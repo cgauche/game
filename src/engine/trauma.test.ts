@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties } from './trauma';
+import { traumaFromKind, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, escalateSensoryLoss } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
@@ -93,6 +93,30 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     const nez: Trauma = { label: 'Nez amputé', location: 'tete', charPenalty: { Soc: -20 }, prosthesis: [{ name: 'Nez doré', cancels: 'all' }], note: '' };
     expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'Soc')).toEqual([-20]);
     expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('Nez doré')] }), 'Soc')).toEqual([]);
+  });
+});
+
+describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', () => {
+  const eye = (): Trauma => ({ label: 'Œil perdu', location: 'tete', charPenalty: { Soc: -5 }, note: '' });
+  const ear = (): Trauma => ({ label: 'Oreille perdue', location: 'tete', charPenalty: { Soc: -5 }, note: '' });
+  it('un seul œil : pas de cécité', () => {
+    const c = fullCombatant({ traumas: [eye()] });
+    expect(escalateSensoryLoss(c)).toHaveLength(0);
+    expect((c.traumas ?? []).some((t) => t.label === 'Cécité')).toBe(false);
+  });
+  it('deux yeux : Cécité (−30 vue : Arme/Esquive/Chevaucher) ; idempotent', () => {
+    const c = fullCombatant({ traumas: [eye(), eye()] });
+    escalateSensoryLoss(c);
+    const cec = (c.traumas ?? []).find((t) => t.label === 'Cécité')!;
+    expect(cec.dodgePenalty).toBe(-30);
+    expect(cec.charPenalty).toEqual({ CC: -30, CT: -30 });
+    expect(escalateSensoryLoss(c)).toHaveLength(0); // pas de doublon
+    expect((c.traumas ?? []).filter((t) => t.label === 'Cécité')).toHaveLength(1);
+  });
+  it('deux oreilles : Surdité (−20 Perception)', () => {
+    const c = fullCombatant({ traumas: [ear(), ear()] });
+    escalateSensoryLoss(c);
+    expect((c.traumas ?? []).find((t) => t.label === 'Surdité')!.skillPenalty).toEqual({ perception: -20 });
   });
 });
 
