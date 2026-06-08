@@ -6,6 +6,9 @@
  */
 import type { Combatant } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
+import { effectiveMovement } from '../engine/encumbrance';
+import { sizeGap } from '../engine/size';
+import type { ModLine } from '../engine/combat';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, sizeFootprint } from './footprint';
 import type { Pt } from './path';
@@ -101,4 +104,47 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
     if (rider) lines.push(`${rider.name} est désarçonné — sa monture (${mount.name}) est hors de combat.`);
   }
   return lines;
+}
+
+// ── Combat monté : Mouvement & modificateurs de combat (LDB 14 l.215-225) ──────────────────────────
+/** Acrobaties équestres (LDB 10) : annule la pénalité d'Esquive du cavalier (l.225). */
+const hasAcrobatiesEquestres = (c: Combatant): boolean =>
+  (c.talents ?? []).some((t) => (t.times ?? 0) > 0 && t.name?.toLowerCase().startsWith('acrobaties équestres'));
+
+/** Mouvement effectif d'un combattant : celui de sa MONTURE s'il est cavalier (LDB 14 l.215), sinon le sien. */
+export function mountMovement(battle: BattleState, c: Combatant): number {
+  const mount = mountOf(battle, c);
+  return effectiveMovement(mount ?? c);
+}
+
+/** Modificateurs d'attaque liés au Combat monté, injectés dans `env` (combat.ts reste pur, ignorant des
+ *  montures) :
+ *  - +20 si l'attaquant est un CAVALIER frappant une cible plus petite que SA monture (l.217, « toute attaque ») ;
+ *  - −10 en MÊLÉE si l'on cible un CAVALIER (la cible chevauche) alors qu'on est plus petit que sa monture (l.219). */
+export function mountedAttackMods(battle: BattleState, attacker: Combatant, target: Combatant | null, kind: 'melee' | 'ranged'): ModLine[] {
+  const out: ModLine[] = [];
+  if (!target) return out;
+  const attMount = mountOf(battle, attacker);
+  if (attMount && sizeGap(attMount.size, target.size) >= 1) out.push({ label: 'Combat monté (cible plus petite)', value: 20 });
+  const tgtMount = mountOf(battle, target); // la cible est-elle un cavalier ? (on frappe alors le cavalier, pas la monture)
+  if (kind === 'melee' && tgtMount && sizeGap(attacker.size, tgtMount.size) <= -1) out.push({ label: 'Cibler le cavalier (plus petit que la monture)', value: -10 });
+  return out;
+}
+
+/** Pénalité d'Esquive d'un cavalier (LDB 14 l.225) : −20, sauf Talent Acrobaties équestres. 0 à pied. */
+export function mountedDodgePenalty(defender: Combatant): number {
+  return defender.mountId && !hasAcrobatiesEquestres(defender) ? -20 : 0;
+}
+
+/** Monture LIBRE la plus proche que `rider` (à pied) peut enfourcher : marquée `mountable`, du MÊME camp
+ *  (on n'enfourche pas la monture d'un ennemi), sans cavalier, à une case de son empreinte (LDB 14). */
+export function mountableNear(battle: BattleState, rider: Combatant): Combatant | undefined {
+  let best: Combatant | undefined;
+  let bestD = Infinity;
+  for (const m of battle.combatants) {
+    if (!m.mountable || m.kind !== rider.kind || !canMount(battle, rider, m)) continue;
+    const d = m.pos && rider.pos ? Math.max(Math.abs(m.pos.x - rider.pos.x), Math.abs(m.pos.y - rider.pos.y)) : Infinity;
+    if (d < bestD) { bestD = d; best = m; }
+  }
+  return best;
 }
