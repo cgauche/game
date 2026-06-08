@@ -16,6 +16,7 @@ import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
+import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -177,7 +178,8 @@ export function attackModifiers(
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
   // Psychologie (LDB 21) : Peur −1 DR vs la source (l.29, sauf immunité Haine/Amour) ; Haine/Animosité
   // +1 DR contre le groupe haï (l.22/41) ; Amour/Camaraderie +1 DR (défense des aimés/du groupe, l.77/82).
-  if (target) {
+  // Immunité à la Psychologie (trait/Frénésie/Détermination, LDB 17 l.62) → AUCUN modificateur psy.
+  if (target && !isPsychImmune(attacker)) {
     const psy = attacker.psychState ?? [];
     const groups = target.groups ?? [];
     const hatesTarget = psy.some((p) => p.type === 'haine' && p.active && p.cible && groupMatch(p.cible, groups));

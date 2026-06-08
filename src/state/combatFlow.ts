@@ -58,7 +58,7 @@ import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
@@ -604,7 +604,11 @@ export function applyAttackResult(
     if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, 'Inconscient')) applyZeroWounds(target);
     // Cible neutralisée → on ne reste pas Engagé avec elle (LDB 13) : on lève ses liens immédiatement
     // (sinon ils persisteraient jusqu'au franchissement de Round, bloquant Charge/déplacement libre).
-    if (isOutOfAction(target)) clearEngagementOf(get().battle?.combatants ?? [], target.id);
+    // Et ses effets PSYCHOLOGIQUES (Peur/Terreur/traits ciblés) prennent fin : on les retire des autres.
+    if (isOutOfAction(target)) {
+      clearEngagementOf(get().battle?.combatants ?? [], target.id);
+      clearPsychOf(get().battle?.combatants ?? [], target.id);
+    }
   }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
@@ -1540,8 +1544,10 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
+      for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
       brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
@@ -1690,7 +1696,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
-  if (isPsychImmune(enemy, battle.round)) return; // Immunité (Psychologie) / Frénésie / Détermination temp
+  if (isPsychImmune(enemy)) return; // Immunité (Psychologie) / Frénésie / Détermination temp
   enemy.psychState ??= [];
   const log: string[] = [];
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
@@ -1742,7 +1748,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
 export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: PsychType; sourceId: string; indice: number; prevDR: number; cible?: string } | null {
   const battle = get().battle;
   const scene = get().scene;
-  if (!battle || !scene || !c.pos || isPsychImmune(c, battle.round)) return null; // Immunité psy (trait/Frénésie/Détermination temp)
+  if (!battle || !scene || !c.pos || isPsychImmune(c)) return null; // Immunité psy (trait/Frénésie/Détermination temp)
   const state = c.psychState ?? [];
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;

@@ -113,14 +113,24 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
  * Immunité à la Psychologie — PRÉDICAT CENTRAL (toute source d'immunité passe par ici) :
  * - trait « Immunité (Psychologie) » (`psychImmune`, LDB 85 l.143-144) ;
  * - Frénésie active (LDB 21 l.34) ;
- * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.62) —
- *   nécessite le n° de Round courant ; hors combat (`round` absent) l'immunité TEMPORAIRE ne s'applique pas.
- * Futurs Talents/effets d'immunité psy : ajouter ICI, pas en `||` éparpillé.
+ * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.62), via le
+ *   compteur `psychImmuneRoundsLeft` (décrémenté au passage de Round) → l'immunité ne fait que RETARDER :
+ *   à expiration, les déclencheurs/effets reprennent (sauf si la source est morte entre-temps).
+ * Round-indépendant : utilisable autant dans les déclencheurs (collectHeroPsych…) que dans les
+ * modificateurs purs (attackModifiers). Futurs Talents/effets d'immunité psy : ajouter ICI.
  */
-export function isPsychImmune(c: Combatant, round?: number): boolean {
-  if (c.psychImmune || c.frenzied) return true;
-  if (round != null && c.psychImmuneThroughRound != null && round <= c.psychImmuneThroughRound) return true;
-  return false;
+export function isPsychImmune(c: Combatant): boolean {
+  return !!c.psychImmune || !!c.frenzied || (c.psychImmuneRoundsLeft ?? 0) > 0;
+}
+
+/** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)
+ *  générées par la créature `deadId` — LDB : les effets psy d'une créature prennent fin à sa mort.
+ *  Mute `psychState`. (Les États génériques déjà acquis, ex. Brisé, restent — ils ont leur propre
+ *  récupération ; seul le lien Peur↔source disparaît, donc plus de re-Test ni de −1 DR vs la source.) */
+export function clearPsychOf(all: Combatant[], deadId: string): void {
+  for (const c of all) {
+    if (c.psychState?.length) c.psychState = c.psychState.filter((p) => p.sourceId !== deadId);
+  }
 }
 
 /** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */

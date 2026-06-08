@@ -39,7 +39,7 @@ import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isAr
 import { rollTest, TestResult, OpposedResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, resolveFrenzyEntry, resolveCalmeSimple, CIBLE_TYPES, type PsychType } from '../engine/psychology';
+import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, resolveFrenzyEntry, resolveCalmeSimple, CIBLE_TYPES, type PsychType } from '../engine/psychology';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -1828,15 +1828,17 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action === 'move' && !battle.moved) {
       const k = `${pt.x},${pt.y}`;
       if (!battle.reachable.has(k)) return;
-      // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise.
-      for (const p of active.psychState ?? []) {
-        if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
-        const src = battle.combatants.find((c) => c.id === p.sourceId);
-        if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
-          get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
-          return;
+      // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
+      // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
+      if (!isPsychImmune(active))
+        for (const p of active.psychState ?? []) {
+          if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
+          const src = battle.combatants.find((c) => c.id === p.sourceId);
+          if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
+            get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
+            return;
+          }
         }
-      }
       // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
@@ -2130,8 +2132,8 @@ export const useGame = create<GameState>((set, get) => ({
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
     active.resolve = (active.resolve ?? 0) - 1;
-    active.psychImmuneThroughRound = battle.round + 1; // ce Round + le prochain (fin du prochain Round)
-    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du Round ${battle.round + 1}.`] } });
+    active.psychImmuneRoundsLeft = 2; // ce Round + le prochain (décompté au passage de Round) — ne fait que RETARDER
+    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round.`] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */

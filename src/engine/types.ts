@@ -187,8 +187,10 @@ export interface Combatant {
   frenzied?: boolean;
   /** Frénésie : l'attaque de CC GRATUITE de ce Round (l.34) a-t-elle déjà été utilisée ? (réinitialisé chaque Round.) */
   frenzyFreeUsed?: boolean;
-  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la FIN de ce n° de Round (inclus). */
-  psychImmuneThroughRound?: number;
+  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie « jusqu'à la fin du prochain Round ».
+   *  Compteur de Rounds restants (2 à la dépense = ce Round + le prochain), décrémenté au passage de
+   *  Round ; immunisé tant que > 0. Round-indépendant → consommé partout (déclencheurs ET modificateurs). */
+  psychImmuneRoundsLeft?: number;
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes) ; posé à la
    *  dépense, effacé au DÉBUT du prochain Round (passage de Round). */
   ignoreCritMods?: boolean;
