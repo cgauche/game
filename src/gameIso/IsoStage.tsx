@@ -42,7 +42,8 @@ import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
-import { HERO_RING, ENEMY_RING } from './teamColors';
+import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
+import { summarizeEffects } from './effectIcons';
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
 
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
@@ -269,6 +270,18 @@ export function IsoStage() {
       const [x, y] = k.split(',').map(Number);
       highlights.push(<path key={`h${k}`} d={diamondPath(x, y, dims)} fill="#4f8fe0" opacity={0.32} />);
     }
+    // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
+    for (const c of battle.combatants) {
+      if (!c.pos || isOutOfAction(c)) continue;
+      const isActiveC = c.id === activeC?.id;
+      const fill = tileTint(c.kind === 'hero', isActiveC);
+      const fp = sizeFootprint(c.size);
+      for (let dx = 0; dx < fp; dx++)
+        for (let dy = 0; dy < fp; dy++)
+          highlights.push(
+            <path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, dims)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />,
+          );
+    }
     if (activeC?.pos)
       highlights.push(
         <path key="active" d={diamondPath(activeC.pos.x, activeC.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
@@ -329,8 +342,10 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean) => (
-    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} bakedDeath>
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean };
+  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
+    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} bakedDeath
+      hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}>
       {child}
     </BodyToken>
   );
@@ -382,7 +397,14 @@ export function IsoStage() {
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
       const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
-      const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking);
+      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3);
+      const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking, {
+        hp: c.wounds,
+        icons: fxSum.visible.map((v) => v.icon),
+        iconsMore: fxSum.moreCount,
+        veil: veilTint(isHero),
+        active: c.id === activeC?.id,
+      });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
     // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
@@ -470,7 +492,7 @@ export function IsoStage() {
     const sc = useGame.getState().scene;
     const overInteractive =
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact));
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact || !!e.merchant));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     if (!aimWeapon) {
       if (hover) setHover(null);
@@ -503,7 +525,7 @@ export function IsoStage() {
       return;
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y);
-    if (ent && (ent.dialogueId || !!ent.interact)) {
+    if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
       if (dist <= 1) {
         st.setPendingInteract(null);

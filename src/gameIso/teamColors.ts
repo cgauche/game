@@ -18,6 +18,25 @@ export const ENEMY_RING = '#c0392b';
 export const HERO_RING = ['#4f8fe0', '#37c07a', '#36b6c0', '#7a6cff'];
 
 /**
+ * Teintes SÉMANTIQUES d'équipe (Lot 1) — case sous le pion + voile léger sur le modèle :
+ * allié = vert, ennemi = rouge, unité active = jaune (prime sur la couleur d'équipe pour la case).
+ * Distinct des anneaux d'IDENTITÉ par héros (HERO_RING), qui restent un indice secondaire.
+ */
+export const ALLY_TINT = '#37c07a';
+export const ENEMY_TINT = '#c0392b';
+export const ACTIVE_TINT = '#ffe066';
+
+/** Couleur de teinte d'une CASE selon l'appartenance (l'actif prime). */
+export function tileTint(isHero: boolean, active: boolean): string {
+  return active ? ACTIVE_TINT : isHero ? ALLY_TINT : ENEMY_TINT;
+}
+
+/** Couleur du VOILE d'équipe sur le modèle (encode l'équipe ; l'« actif » est porté par le halo/la case). */
+export function veilTint(isHero: boolean): string {
+  return isHero ? ALLY_TINT : ENEMY_TINT;
+}
+
+/**
  * Couleur PLEINE d'une barre de vie selon le ratio (PB courant / max) :
  * rouge sombre à 0, rouge en zone critique, orange entamé, vert sain.
  * (Corrige l'ancien dégradé rouge→vert figé qui laissait le bord vert même blessé.)
