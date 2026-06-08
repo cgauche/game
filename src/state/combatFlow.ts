@@ -7,6 +7,7 @@ import type { GameState, BattleState, RevealEntry } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
+import type { Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
 import {
   resolveMelee,
@@ -376,6 +377,15 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
 /** Cases enfumées actives de la bataille (Souffle (Fumée)) → bloquent la Ligne de Vue. */
 export const smokeOf = (battle: BattleState): Pt[] => (battle.smoke ?? []).map((s) => ({ x: s.x, y: s.y }));
 
+const DIR8_RING: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+/** Flanc/dos (LDB 14 l.91) : l'attaquant frappe-t-il hors du champ de vision avant du défenseur ?
+ *  Front = orientation du défenseur ±45° (3 directions avant) ; flanc/dos = les 5 autres (écart ≥ 2 sur l'anneau). */
+export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean {
+  const a = DIR8_RING.indexOf(targetFacing);
+  const b = DIR8_RING.indexOf(dirToAttacker);
+  return Math.min(Math.abs(a - b), 8 - Math.abs(a - b)) >= 2;
+}
+
 export function resolveAttack(
   get: () => GameState,
   attacker: Combatant,
@@ -417,6 +427,11 @@ export function resolveAttack(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
+  // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
+  // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
+  const tFacing = get().facing[target.id];
+  if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
+    env.push({ label: 'Flanc/dos', value: 20 });
   env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → s'ajoute au dodgeMod météo.
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target) }), weapon };
