@@ -80,6 +80,7 @@ export function applyHealWounds(target: Combatant, delta: number): string[] {
   const before = target.wounds.current;
   target.wounds.current = Math.min(target.wounds.max, target.wounds.current + delta);
   target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
+  target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
   const log = [`${target.name} : +${target.wounds.current - before} PB (${target.wounds.current}/${target.wounds.max}).`];
   if (target.wounds.current > 0 && hasCondition(target, 'Inconscient')) {
     removeCondition(target, 'Inconscient', condStacks(target, 'Inconscient')); // reprend connaissance (LDB 18 l.28)

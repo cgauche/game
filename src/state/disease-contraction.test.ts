@@ -39,6 +39,15 @@ describe('finalizeBattle — infection post-critique (LDB 20 l.72) & persistance
     expect(useGame.getState().party[0].diseases?.some((d) => d.name === 'Infection Mineure')).toBe(true);
   });
 
+  it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.382)', () => {
+    seedBattleRng(4); // ce seed ferait ÉCHOUER le Test +60 (E 30) sans pansement
+    const combatant = hero({ id: 'a', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, tookCriticalThisFight: true, woundDressed: true });
+    setBattle([combatant]);
+    useGame.setState({ party: [hero({ id: 'a' })] });
+    finalizeBattle(useGame.getState, useGame.setState);
+    expect(useGame.getState().party[0].diseases ?? []).toHaveLength(0); // pansé → aucune infection
+  });
+
   it('une maladie déjà contractée survit à la fin du combat (carryOverState)', () => {
     const combatant = hero({ id: 'a', diseases: [contractDisease('Infection Mineure', battleRng(), { incubation: 2, duration: 5 })!] });
     setBattle([combatant]);

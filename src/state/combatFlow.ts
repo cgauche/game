@@ -1617,8 +1617,10 @@ export function finalizeBattle(get: () => GameState, set: any): void {
   const infectLog: string[] = [];
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || !c.tookCriticalThisFight) continue;
+    const dressed = c.woundDressed; // pansement/Guérison pendant le combat → pas d'Infection (LDB 18 l.382)
     c.tookCriticalThisFight = false; // consommé (idempotent même si finalizeBattle est rappelé)
-    if (c.dead) continue;
+    c.woundDressed = false;
+    if (c.dead || dressed) continue;
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
     infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
   }

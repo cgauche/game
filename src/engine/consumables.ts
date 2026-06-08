@@ -29,6 +29,9 @@ export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
     target.wounds.current = Math.min(target.wounds.max, target.wounds.current + eff.heal);
     log.push(`${target.name} regagne ${target.wounds.current - before} Blessure(s).`);
   }
+  if (eff.removeCondition === 'Hémorragique') {
+    target.woundDressed = true; // un pansement/bandage panse la plaie → pas d'Infection (LDB 18 l.382)
+  }
   if (eff.removeCondition) {
     const cond = target.conditions.find((c) => c.name === eff.removeCondition);
     if (cond) {

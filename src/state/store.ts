@@ -1388,6 +1388,8 @@ export const useGame = create<GameState>((set, get) => ({
         meleeThisRound: [],
         roundsAtZero: 0, // l'horloge de mort lente repart à neuf
         soinRencontreUtilise: false, // nouvelle rencontre → droit à un soin de Blessures (LDB 09 l.233)
+        woundDressed: false, // « pansé pendant CE combat » repart à zéro (anti-Infection, LDB 18 l.382)
+        tookCriticalThisFight: false, // critique « de ce combat » : repart à zéro
         wounds: { ...h.wounds },
       } as Combatant;
       // Re-dérive les armes ACTIVES depuis les items persistés : une arme usée/détruite au combat
