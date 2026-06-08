@@ -41,20 +41,48 @@ export function EncountersEditor({
               </div>
               <div className="enemy-list">
                 {enc.enemies.map((en, ni) => (
-                  <div className="enemy-row" key={ni}>
-                    <select value={en.ref ?? ''} onChange={(e) => updEnemy(ei, ni, { ref: e.target.value })}>
-                      <option value="">— créature —</option>
-                      {creatures.map((c) => (
-                        <option key={c.label} value={c.label}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                    <label>x<input type="number" value={en.pos.x} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, x: Number(e.target.value) } })} /></label>
-                    <label>y<input type="number" value={en.pos.y} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, y: Number(e.target.value) } })} /></label>
-                    <button className="btn small danger" onClick={() => upd(ei, { enemies: enc.enemies.filter((_, j) => j !== ni) })}>
-                      ✕
-                    </button>
+                  <div key={ni}>
+                    <div className="enemy-row">
+                      <select value={en.ref ?? ''} onChange={(e) => updEnemy(ei, ni, { ref: e.target.value })}>
+                        <option value="">— créature —</option>
+                        {creatures.map((c) => (
+                          <option key={c.label} value={c.label}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                      <label>x<input type="number" value={en.pos.x} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, x: Number(e.target.value) } })} /></label>
+                      <label>y<input type="number" value={en.pos.y} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, y: Number(e.target.value) } })} /></label>
+                      <button className="btn small danger" onClick={() => upd(ei, { enemies: enc.enemies.filter((_, j) => j !== ni) })}>
+                        ✕
+                      </button>
+                    </div>
+                    {/* Combat monté (LDB 14) : marquer une monture rideable, pré-monter un cavalier (Chevauche), basculer le camp. */}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12, margin: '1px 0 7px 6px', opacity: 0.92 }}>
+                      <label title="Cette créature est une monture rideable (peut être enfourchée — LDB 14).">
+                        <input type="checkbox" checked={!!en.mount} onChange={(e) => updEnemy(ei, ni, { mount: e.target.checked || undefined })} /> 🐎 Monture
+                      </label>
+                      <label title="Monture (de cette rencontre) que cet acteur chevauche au spawn. ⚠ référence par index : change si on réordonne/supprime des ennemis.">
+                        Chevauche{' '}
+                        <select value={en.rides ?? ''} onChange={(e) => updEnemy(ei, ni, { rides: e.target.value === '' ? undefined : Number(e.target.value) })}>
+                          <option value="">— aucune —</option>
+                          {enc.enemies.map((m, idx) =>
+                            idx !== ni && (m.mount || en.rides === idx) ? (
+                              <option key={idx} value={idx}>
+                                #{idx} {m.ref ?? '?'}
+                              </option>
+                            ) : null,
+                          )}
+                        </select>
+                      </label>
+                      <label title="Camp au spawn : « Allié » place la créature du côté du groupe (monture libre prêtable). Défaut : Ennemi.">
+                        Camp{' '}
+                        <select value={en.side ?? 'enemy'} onChange={(e) => updEnemy(ei, ni, { side: e.target.value === 'ally' ? 'ally' : undefined })}>
+                          <option value="enemy">Ennemi</option>
+                          <option value="ally">Allié</option>
+                        </select>
+                      </label>
+                    </div>
                   </div>
                 ))}
                 <button
@@ -63,6 +91,18 @@ export function EncountersEditor({
                 >
                   + Ennemi
                 </button>
+              </div>
+              <div className="enc-surprise">
+                <span className="mini-title">Surprise (embuscade, LDB 13)</span>
+                <select
+                  value={enc.surprise ?? ''}
+                  onChange={(e) => upd(ei, { surprise: (e.target.value || undefined) as 'party' | 'enemies' | undefined })}
+                  title="Camp pris en embuscade au début du combat : Test opposé Perception vs Discrétion ; les vaincus gagnent l'État Surpris."
+                >
+                  <option value="">Aucune surprise</option>
+                  <option value="enemies">Les ennemis sont surpris (le groupe embusque)</option>
+                  <option value="party">Le groupe est surpris (les ennemis embusquent)</option>
+                </select>
               </div>
               <div className="enc-victory">
                 <span className="mini-title">À la victoire (récompenses : PX, butin, flag…)</span>

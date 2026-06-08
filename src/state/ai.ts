@@ -69,6 +69,7 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke } = input;
   if (heroes.length === 0) return { kind: 'end' };
+  if (hasCondition(enemy, 'Surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   const pos = enemy.pos!;
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
   const inMelee = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size) <= 1;

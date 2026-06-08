@@ -43,7 +43,7 @@ import {
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel } from '../engine/skills';
+import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks } from '../engine/conditions';
@@ -380,6 +380,26 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
 /** Cases enfumées actives de la bataille (Souffle (Fumée)) → bloquent la Ligne de Vue. */
 export const smokeOf = (battle: BattleState): Pt[] => (battle.smoke ?? []).map((s) => ({ x: s.x, y: s.y }));
 
+/** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
+ *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77) ;
+ *  les vaincus gagnent l'État `Surpris`. Mute les combatants, retourne le journal. */
+export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 'enemies'): string[] {
+  const surprisedKind = surprisedSide === 'party' ? 'hero' : 'enemy';
+  const surprised = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind === 'hero' : c.kind !== 'hero') && !isOutOfAction(c));
+  const ambushers = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind !== 'hero' : c.kind === 'hero') && !isOutOfAction(c));
+  if (!surprised.length || !ambushers.length) return [];
+  const ambushDiscretion = Math.min(...ambushers.map((a) => testValue(a, 'Discrétion'))); // la plus faible (l.77)
+  const lines: string[] = [];
+  for (const c of surprised) {
+    // Embusqueur (Discrétion) vs guetteur (Perception) : si l'embusqueur l'emporte → le guetteur est Surpris.
+    if (opposedTest(ambushDiscretion, testValue(c, 'Perception'), battleRng()).attackerWins) {
+      addCondition(c, 'Surpris');
+      lines.push(`${c.name} est pris par surprise !`);
+    }
+  }
+  return lines;
+}
+
 const DIR8_RING: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
 /** Flanc/dos (LDB 14 l.91) : l'attaquant frappe-t-il hors du champ de vision avant du défenseur ?
  *  Front = orientation du défenseur ±45° (3 directions avant) ; flanc/dos = les 5 autres (écart ≥ 2 sur l'anneau). */
@@ -587,6 +607,12 @@ export function applyAttackResult(
   res: AttackResult,
   deviated?: boolean,
 ): boolean {
+  // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
+  // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
+  // de défense ont déjà joué pour CELLE-CI ; les suivantes n'en bénéficieront plus. Les attaques GRATUITES
+  // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
+  // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
+  if (deviated === undefined && hasCondition(target, 'Surpris')) removeCondition(target, 'Surpris', 1);
   // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
   // résolution (deviationApply) rappelle cette fonction avec `deviated` défini (early-return sauté →

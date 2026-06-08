@@ -230,6 +230,10 @@ export interface EncounterDef {
   }[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];
+  /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp
+   *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
+   *  l'État `Surpris`. Absent = personne n'est surpris. */
+  surprise?: 'party' | 'enemies';
 }
 
 export interface Scene {

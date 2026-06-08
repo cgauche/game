@@ -17,7 +17,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
   aiMaybeTrample, aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
-  maybeOpenHeroPsych, displaceSmaller,
+  maybeOpenHeroPsych, displaceSmaller, applySurprise,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { mountedDodgePenalty, mountMovement, mountUp, dismount, mountOf, mountableNear } from './mount';
@@ -1295,6 +1295,8 @@ export const useGame = create<GameState>((set, get) => ({
       mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
     });
     const all = [...heroes, ...enemies];
+    // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
+    const surpriseLines = enc.surprise ? applySurprise(all, enc.surprise) : [];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
     for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
     const order = initiativeOrder(all).map((c) => c.id);
@@ -1309,7 +1311,7 @@ export const useGame = create<GameState>((set, get) => ({
       reachable: new Map(),
       moved: false,
       acted: false,
-      log: [`Le combat commence ! (Round 1)`],
+      log: [`Le combat commence ! (Round 1)`, ...surpriseLines],
       over: null,
       onVictory: onVictory ?? enc.onVictory,
     };
@@ -1320,10 +1322,13 @@ export const useGame = create<GameState>((set, get) => ({
     pushReveal(set, {
       kind: 'round',
       title: 'Initiative',
-      lines: order.map((id, i) => {
-        const c = all.find((x) => x.id === id)!;
-        return `${i + 1}. ${c.name} (${c.initiative})`;
-      }),
+      lines: [
+        ...surpriseLines,
+        ...order.map((id, i) => {
+          const c = all.find((x) => x.id === id)!;
+          return `${i + 1}. ${c.name} (${c.initiative})`;
+        }),
+      ],
     });
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
@@ -1334,6 +1339,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour — seule la Détermination (resolve) peut
+    // le retirer (LDB 13 l.81). Tout le reste est bloqué.
+    if (hasCondition(active, 'Surpris') && a !== 'resolve' && a !== null) {
+      get().log(`${active.name} est Surpris : ni Mouvement ni Action ce tour (Détermination possible).`);
+      return;
+    }
     // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
     // offensive. Seuls « move » (fuir), « resolve » (Détermination, qui peut retirer le Brisé) et la
     // fermeture (null) sont permis. (« Se cacher » par Discrétion = pas de système de furtivité en
