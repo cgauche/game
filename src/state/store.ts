@@ -722,9 +722,10 @@ export interface GameState {
   gameTime: number;
   /** Avance l'horloge in-game de `minutes` (no-op si ≤ 0) et émet TIME_ADVANCED (#T3 cascade). */
   advanceTime: (minutes: number) => void;
-  /** « Dormir » (hors combat) : sommeil jusqu'à l'aube — retire l'Exténué, soigne des Blessures
-   *  (Résistance +20 → DR+BE) et déclenche les cauchemars des héros marqués (LDB 16/18/21). */
-  restParty: () => void;
+  /** « Dormir / Se reposer N jours » (hors combat) : repos de `days` journée(s) — retire l'Exténué,
+   *  soigne des Blessures (l.380 volet a Résistance +20 → DR+BE, ET volet b +BE/jour) et déclenche les
+   *  cauchemars des héros marqués (LDB 16/18/21). `days` par défaut = 1 (une nuit). */
+  restParty: (days?: number) => void;
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -3077,6 +3078,6 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
   },
-  // « Dormir » : sommeil jusqu'à l'aube — récupération (Exténué/Blessures) + cauchemars (LDB 16/18/21).
-  restParty: () => restPartyOvernight(get, set),
+  // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
+  restParty: (days = 1) => restPartyOvernight(get, set, days),
 }));

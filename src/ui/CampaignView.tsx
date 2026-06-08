@@ -77,13 +77,20 @@ export function CampaignView() {
           {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
         </div>
         {!battle && (
-          <button
-            className="btn small rest-btn"
-            onClick={() => restParty()}
-            title="Dormir jusqu'à l'aube : retire l'Exténué, soigne des Blessures (Résistance +20 → DR+BE) et déclenche d'éventuels cauchemars (LDB 16/18/21)"
-          >
-            🛌 Dormir jusqu'à l'aube
-          </button>
+          <div className="rest-controls">
+            <button
+              className="btn small rest-btn"
+              onClick={() => restParty(1)}
+              title="Dormir jusqu'à l'aube : retire l'Exténué, soigne des Blessures (Résistance +20 → DR+BE, +BE/jour) et déclenche d'éventuels cauchemars (LDB 16/18/21)"
+            >
+              🛌 Dormir jusqu'à l'aube
+            </button>
+            <div className="rest-days" title="Convalescence : chaque journée de repos soigne le Test de Résistance +20 (DR+BE) ET +BE inconditionnel (LDB 18 l.380)">
+              <span className="mini-title">Se reposer</span>
+              <button className="btn xsmall" onClick={() => restParty(3)}>3 j</button>
+              <button className="btn xsmall" onClick={() => restParty(7)}>7 j</button>
+            </div>
+          </div>
         )}
         <div className="inventory">
           <div className="mini-title">Inventaire ({inventory.length})</div>

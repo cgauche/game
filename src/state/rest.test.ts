@@ -23,17 +23,23 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(hasCondition(c, 'Exténué')).toBe(false);
   });
 
-  it('soigne des Blessures sur un Test de Résistance +20 réussi : DR + BE PB', () => {
-    const c = hero({ wounds: { current: 4, max: 12 } }); // E 40 → BE 4
-    // Résistance Accessible (+20) : cible 40+20=60 ; jet 30 ≤ 60 → réussite, DR=3 ; soin = 3 + BE(4) = 7.
+  it('soigne des Blessures : Test Résistance +20 réussi (DR+BE, volet a) ET +BE de la journée (volet b)', () => {
+    const c = hero({ wounds: { current: 4, max: 20 } }); // E 40 → BE 4
+    // Résistance Accessible (+20) : cible 60 ; jet 30 → réussite DR=3 → volet a = 3+4 = 7 ; volet b = +4.
     restRecovery(c, { int: () => 30 });
-    expect(c.wounds.current).toBe(11); // 4 + 7
+    expect(c.wounds.current).toBe(15); // 4 + 7 (volet a) + 4 (volet b)
   });
 
-  it('Résistance ratée → aucune Blessure soignée', () => {
-    const c = hero({ wounds: { current: 4, max: 12 } });
-    restRecovery(c, { int: () => 95 }); // 95 > 60 → échec
-    expect(c.wounds.current).toBe(4);
+  it('Résistance ratée → seul le +BE de la journée soigne (volet b, inconditionnel)', () => {
+    const c = hero({ wounds: { current: 4, max: 20 } });
+    restRecovery(c, { int: () => 95 }); // 95 > 60 → Test raté → volet a = 0
+    expect(c.wounds.current).toBe(8); // 4 + 4 (volet b uniquement)
+  });
+
+  it('repos de plusieurs jours : volet a + volet b cumulés CHAQUE jour (LDB 18 l.380)', () => {
+    const c = hero({ wounds: { current: 0, max: 100 } }); // E 40 → BE 4 ; pas de plafond
+    restRecovery(c, { int: () => 30 }, 3); // 3 jours, chaque jour Résistance réussie (DR 3)
+    expect(c.wounds.current).toBe(33); // 3 × (volet a 7 + volet b 4)
   });
 
   it('cauchemars : un héros marqué qui échoue regagne l’Exténué malgré le repos (l’ironie du trauma)', () => {
@@ -93,6 +99,17 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
     const after = useGame.getState().party[0];
     expect(after.dead).not.toBe(true);
     expect(hasCondition(after, 'Hémorragique')).toBe(true); // toujours à stabiliser (Guérison), pas mort en dormant
+  });
+
+  it('restParty(3) avance ~3 jours et soigne davantage qu’une nuit', () => {
+    const c = hero({ id: 'a', wounds: { current: 2, max: 100 } });
+    useGame.setState({ party: [c], gameTime: 12 * 60 });
+    const t0 = useGame.getState().gameTime;
+    useGame.getState().restParty(3);
+    const after = useGame.getState();
+    expect(after.gameTime - t0).toBeGreaterThanOrEqual(2 * 24 * 60); // au moins 2 jours pleins + la 1re nuit
+    expect(after.party[0].wounds.current).toBeGreaterThan(2 + 4); // bien plus qu’un seul +BE
+    expect(after.journal.some((l) => /se repose 3 jours/i.test(l))).toBe(true);
   });
 
   it('ne fait rien en plein combat', () => {

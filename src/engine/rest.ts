@@ -8,12 +8,15 @@
  *  - Cauchemars (21-Psychologie l.92) : héros marqué ⇒ Test de Calme Facile (+40) ou Exténué regagné.
  * Pur : mute `c`, renvoie le journal. Ne dépend que d'autres modules purs du moteur.
  *
- * DETTE ASSUMÉE (hors périmètre de ce lot, sourcée pour mémoire) :
+ * Soin de Blessures (18-Traumatisme l.380), DEUX volets cumulés par journée de repos :
+ *  - volet a : « une fois par jour… Test de Résistance Accessible (+20)… DR + Bonus d'Endurance » ;
+ *  - volet b : « pour chaque journée de repos, vous guérissez ÉGALEMENT le Bonus d'Endurance » (inconditionnel).
+ *
+ * DETTE ASSUMÉE (hors périmètre, sourcée pour mémoire) :
  *  - Faim & Soif (18-Traumatisme l.418) : « sans nourriture ni boisson… ne peuvent pas récupérer de PB
- *    ni se débarrasser de l'Exténué ». Pas de suivi des provisions dans le jeu → on autorise toujours la
- *    récup naturelle (raccourci explicite, à verrouiller quand le sous-système Faim/Soif existera).
- *  - Repos prolongé (l.380, volet b) : « pour chaque journée de repos, +BE PB » EN PLUS du Test quotidien.
- *    Non modélisé : « Dormir » ne couvre qu'UNE nuit. Une action « Se reposer N jours » l'ajouterait.
+ *    ni se débarrasser de l'Exténué ». Pas de suivi des provisions → récup toujours autorisée (raccourci).
+ *  - Blessures CRITIQUES (l.386-403) : piste de guérison SÉPARÉE (jours de convalescence, accélérée par
+ *    la Compétence Guérison / Chirurgie) — le repos soigne les PB mais JAMAIS les critiques. Lot distinct.
  */
 import { Combatant } from './types';
 import { RNG, defaultRNG } from './dice';
@@ -28,54 +31,55 @@ function unstable(c: Combatant): boolean {
   return hasCondition(c, 'Hémorragique') || hasCondition(c, 'En flammes') || hasCondition(c, 'Empoisonné');
 }
 
-/** Repos d'une nuit pour UN personnage : retrait de l'Exténué, soin de Blessures, réveil, puis cauchemars.
- *  L'ordre compte : on dissipe d'abord la fatigue (sommeil), PUIS les cauchemars peuvent en regagner. */
-export function restRecovery(c: Combatant, rng: RNG = defaultRNG): string[] {
+/**
+ * Repos de `days` journée(s) pour UN personnage (défaut 1 = « Dormir jusqu'à l'aube »). Par journée :
+ * dissipe l'Exténué (sommeil, 16-États l.91/102), soigne les PB (l.380 volet a Résistance +20 → DR+BE,
+ * ET volet b +BE inconditionnel), puis les cauchemars (21 l.92) peuvent en regagner un. Réveille un
+ * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (l.28). Mute `c`, renvoie un résumé.
+ */
+export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): string[] {
   if (c.dead || c.outOfRencontre) return []; // un mort / éjecté ne se repose pas
   // LDB 16 l.105 : un héros qui saigne, brûle ou est empoisonné ne trouve pas le repos — à stabiliser
   // d'abord (Test de Guérison, Sort). Pas de récupération réparatrice tant que ces États subsistent.
   if (unstable(c)) return [`${c.name} ne trouve pas le repos (blessures à stabiliser d'abord — Guérison).`];
-  const log: string[] = [];
 
-  // 1) Une nuit de sommeil dissipe TOUS les États Exténué (16-États l.91 ; cadence « nuit complète », l.102).
-  const fatigue = stacks(c, 'Exténué');
-  if (fatigue > 0) {
-    removeCondition(c, 'Exténué', fatigue);
-    log.push(`${c.name} récupère de sa fatigue (${fatigue} Exténué dissipé${fatigue > 1 ? 's' : ''}).`);
-  }
+  const be = bonus(effectiveChar(c, 'E'));
+  const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+  const startPB = c.wounds.current;
+  const hadFatigue = stacks(c, 'Exténué') > 0;
+  let nightmareNights = 0;
 
-  // 2) Soin de Blessures (18-Traumatisme l.380, volet a) : Test de Résistance Accessible (+20) → DR + BE PB.
-  if (c.wounds.current < c.wounds.max) {
-    const be = bonus(effectiveChar(c, 'E'));
-    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-    const res = rollTest(resVal, 'accessible', rng); // Accessible = +20
-    if (res.success) {
-      const heal = Math.max(0, res.sl) + be;
-      const before = c.wounds.current;
-      c.wounds.current = Math.min(c.wounds.max, c.wounds.current + heal);
-      log.push(`${c.name} se soigne en dormant : +${c.wounds.current - before} PB (DR ${Math.max(0, res.sl)} + BE ${be}).`);
-    } else {
-      log.push(`${c.name} dort mal : aucune Blessure soignée (Résistance ratée).`);
+  for (let d = 0; d < Math.max(1, days); d++) {
+    // Sommeil : dissipe TOUS les Exténué (incl. le cauchemar de la nuit précédente).
+    const fat = stacks(c, 'Exténué');
+    if (fat > 0) removeCondition(c, 'Exténué', fat);
+    // volet a (l.380) : Test de Résistance Accessible (+20) → DR + BE PB (une fois par jour).
+    if (c.wounds.current < c.wounds.max) {
+      const res = rollTest(resVal, 'accessible', rng); // Accessible = +20
+      if (res.success) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, res.sl) + be);
+    }
+    // volet b (l.380) : +BE par journée de repos, INCONDITIONNEL (même Test raté).
+    if (c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
+    // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
+    if (c.nightmares) {
+      const before = stacks(c, 'Exténué');
+      nightmareCheck(c, rng);
+      if (stacks(c, 'Exténué') > before) nightmareNights++;
     }
   }
 
-  // 3) Réveil : repasser > 0 PB lève l'Inconscient et remet l'horloge de mort à zéro (LDB 18 l.28). On NE
-  //    passe PAS par applyHealWounds (qui consommerait le soin de Guérison de la rencontre) — récup naturelle.
-  //    Au matin, un dormeur soigné se relève aussi (À Terre retiré : pas de « se relever » hors combat).
+  // Réveil : repasser > 0 PB lève l'Inconscient et relève l'À Terre (LDB 18 l.28 ; pas de « se relever »
+  // hors combat). On NE passe PAS par applyHealWounds (qui consommerait le soin de Guérison de rencontre).
+  const log: string[] = [];
   if (c.wounds.current > 0) {
     c.roundsAtZero = 0;
-    if (hasCondition(c, 'Inconscient')) {
-      removeCondition(c, 'Inconscient', stacks(c, 'Inconscient'));
-      log.push(`${c.name} reprend connaissance au matin.`);
-    }
-    if (hasCondition(c, 'À Terre')) {
-      removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
-      log.push(`${c.name} se relève, reposé.`);
-    }
+    if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); log.push(`${c.name} reprend connaissance.`); }
+    if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
   }
-
-  // 4) Cauchemars (21-Psychologie l.92) : un héros marqué peut regagner un Exténué malgré le repos.
-  if (c.nightmares) log.push(...nightmareCheck(c, rng));
-
+  const healed = c.wounds.current - startPB;
+  const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
+  if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
+  if (hadFatigue && stacks(c, 'Exténué') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
+  if (nightmareNights > 0) log.push(`${c.name} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
   return log;
 }
