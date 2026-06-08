@@ -3,6 +3,7 @@
  */
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties } from './trauma';
+import { diseaseCharPenalties } from './disease';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
@@ -25,6 +26,8 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
   mods.push(...traumaCharPenalties(c, key));
+  // Pénalités de maladie (LDB 20 : fièvre −10 aux Tests Physiques/Sociaux) — même pool non-cumul.
+  mods.push(...diseaseCharPenalties(c, key));
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));

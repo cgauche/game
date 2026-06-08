@@ -6,6 +6,7 @@
  * La récupération elle-même (temps, repos, Guérison, Chirurgie) reste hors périmètre (Jalon 5).
  */
 import { Combatant, ConditionInstance, Trauma, ItemInstance } from './types';
+import type { Disease } from './disease';
 
 /** États qui persistent après le combat (LDB 16-États : Brisé l.57, Empoisonné l.70,
  *  En flammes l.77, Exténué l.91, Hémorragique l.107, Inconscient l.116). */
@@ -23,6 +24,7 @@ export function carryOverState(c: Combatant): {
   outOfRencontre: boolean;
   soinRencontreUtilise: boolean;
   traumas: Trauma[];
+  diseases?: Disease[];
   items?: ItemInstance[];
 } {
   return {
@@ -35,6 +37,8 @@ export function carryOverState(c: Combatant): {
     // reçu en combat bloque un re-soin juste après ; remis à zéro au prochain startCombat.
     soinRencontreUtilise: c.soinRencontreUtilise === true,
     traumas: (c.traumas ?? []).map((t) => ({ ...t })),
+    // Maladies (LDB 20) : persistent hors combat — incubation/durée décomptées au repos.
+    ...(c.diseases ? { diseases: c.diseases.map((d) => ({ ...d })) } : {}),
     // Inventaire à stats : persiste l'usure d'arme (damageTaken/destroyed) et la munition consommée
     // (qty) entre combats (LDB 62 l.177-180). roundsAtZero N'est PAS persisté : l'horloge de mort
     // lente repart à neuf au combat suivant (cohérent avec startCombat).

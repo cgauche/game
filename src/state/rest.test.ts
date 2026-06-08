@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { restRecovery } from '../engine/rest';
 import { traumaFromKind } from '../engine/trauma';
+import { contractDisease } from '../engine/disease';
 import { hasCondition, stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
 import { dayPhase } from '../engine/clock';
@@ -83,6 +84,22 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     const c = hero({ dead: true, conditions: [{ name: 'Exténué', value: 1 }] });
     restRecovery(c, { int: () => 1 });
     expect(hasCondition(c, 'Exténué')).toBe(true);
+  });
+
+  it('maladie : l’incubation se déclare au repos et le malaise impose un Exténué « collant » (LDB 20 l.153)', () => {
+    // Infection Mineure : incubation 1 j, durée 5 j. E 40 → blessé Accessible (cible 60) réussi avec d100=10.
+    const c = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 1, duration: 5 })!] });
+    restRecovery(c, { int: () => 10 }, 2); // jour 1 → symptômes déclarés ; jour 2 → malaise garde l’Exténué
+    expect(c.diseases![0].phase).toBe('active');
+    expect(stacks(c, 'Exténué')).toBe(1); // le malaise garde 1 Exténué malgré la nuit de sommeil
+  });
+
+  it('maladie : un symptôme « blessé » bloque la guérison d’1 PB (LDB 20 l.110)', () => {
+    const base = hero({ wounds: { current: 4, max: 20 } }); // E 40 → BE 4 ; sans maladie
+    restRecovery(base, { int: () => 30 });
+    const sick = hero({ wounds: { current: 4, max: 20 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 5 })!] });
+    restRecovery(sick, { int: () => 30 }); // blessé Accessible réussi (d100=30 ≤ 60) → pas de Blessure Purulente
+    expect(sick.wounds.current).toBe(base.wounds.current - 1); // exactement 1 PB de moins (1 symptôme « blessé »)
   });
 });
 

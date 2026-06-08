@@ -49,6 +49,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
+import { rollContraction } from '../engine/disease';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
@@ -587,6 +588,7 @@ export function applyCriticalToTarget(
   const loc = isCoupCritique ? critLocationRoll(battleRng(), target.bodyShape) : location; // Coup Critique = localisation fraîche (l.62)
   const crit = rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
+  target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
   log.push(crit.log);
   const revealLines = [crit.log];
   if (crit.traumas.length) {
@@ -1583,11 +1585,22 @@ export function castInfoIsPrayer(type: string): boolean {
 export function finalizeBattle(get: () => GameState, set: any): void {
   const { battle, party } = get();
   if (!battle) return;
+  // « Après un combat où vous avez subi une Blessure critique » (LDB 20 l.72) : Test de Résistance Très
+  // Facile (+60) ou Infection Mineure. Auto-résolu (comme le Test de Résistance interne d'un critique) sur
+  // les héros survivants ; mute le combattant AVANT le report d'état (carryOverState copie `diseases`).
+  const infectLog: string[] = [];
+  for (const c of battle.combatants) {
+    if (c.kind !== 'hero' || !c.tookCriticalThisFight) continue;
+    c.tookCriticalThisFight = false; // consommé (idempotent même si finalizeBattle est rappelé)
+    if (c.dead) continue;
+    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
+  }
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;
   });
-  set({ party: newParty });
+  set({ party: newParty, ...(infectLog.length ? { journal: [...get().journal.slice(-40), ...infectLog] } : {}) });
 }
 
 export function checkBattleOver(get: () => GameState, set: any): boolean {

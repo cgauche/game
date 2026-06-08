@@ -60,6 +60,7 @@ import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeActi
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
+import { rollContraction, contractDisease } from '../engine/disease';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -1620,11 +1621,22 @@ export const useGame = create<GameState>((set, get) => ({
       addCondition(target, 'Hémorragique');
       log.push(`L'opération inflige ${harm} Blessure(s) et ouvre une hémorragie.`);
       const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-      if (!rollTest(resVal, 'accessible', battleRng()).success) log.push(`${target.name} contracte une Infection Mineure (maladie, LDB 20 — à surveiller).`);
+      // Talent Chirurgie (LDB 10 l.365) : « Après la Chirurgie, Test de Résistance Accessible (+20) ou gagner
+      // une Infection Mineure ». Contractée pour de bon (maladie suivie au repos), plus juste journalisée.
+      log.push(...rollContraction(target, 'Infection Mineure', resVal, 'accessible', battleRng()));
+    } else if (ph.mode === 'wounds') {
+      log = applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success));
+      // LDB 09-Compétences (Guérison) : « Sur un Échec Stupéfiant, votre patient contractera également une
+      // Infection mineure ». Échec Stupéfiant = DR ≤ −6 ; contraction automatique (pas de Test de Résistance).
+      if (!ph.success && ph.sl <= -6) {
+        const dz = contractDisease('Infection Mineure', battleRng());
+        if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
+          target.diseases = [...(target.diseases ?? []), dz];
+          log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
+        }
+      }
     } else {
-      log = ph.mode === 'wounds'
-        ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
-        : ph.mode === 'bleed'
+      log = ph.mode === 'bleed'
         ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
         : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
     }

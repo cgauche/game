@@ -119,6 +119,19 @@ describe('Guérison — flux hors combat', () => {
     expect(p.traumas![0].healAccelerated).toBe(true);
   });
 
+  it('Guérison Échec Stupéfiant (DR ≤ −6) : le patient contracte une Infection Mineure (LDB 09-Compétences)', () => {
+    const doc = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 6, max: 12 } });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null });
+    useGame.getState().healAlly('p', 'wounds');
+    useGame.getState().healRoll();
+    // fige un Échec Stupéfiant reproductible (DR −6) avant Appliquer.
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: false, sl: -6 } });
+    useGame.getState().healConfirm();
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.diseases?.some((d) => d.name === 'Infection Mineure')).toBe(true);
+  });
+
   it('mode surgery : un chirurgien retire le trauma chirurgical, mais l’opération blesse (1d10 + Hémorragique)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }], talents: [{ name: 'Chirurgie' } as never] });
     const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 12, max: 12 }, traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
