@@ -92,6 +92,15 @@ export const REGISTRIES = [
     type: 'PropViz',
     typeFrom: '../types',
   },
+  {
+    // Bâtiments (catalogue) : 1 bâtiment = 1 fichier defs/ (méta + render unifiés).
+    dir: 'src/gameIso/catalog/buildings/defs',
+    out: 'src/gameIso/catalog/buildings/_registry.generated.ts',
+    exportName: 'building',
+    arrayName: 'BUILDING_DEFS',
+    type: 'BuildingDef',
+    typeFrom: '../types',
+  },
 ];
 
 function genOne(r) {

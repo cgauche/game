@@ -1,5 +1,6 @@
-/** Registre PUR des bâtiments + helpers (sémantique : empreinte, porte, cutaway).
- *  Présentation (render SVG) → src/gameIso/catalog/buildings.ts, joint par `type` id. */
+/** Helpers PURS des bâtiments (sémantique : empreinte, porte, cutaway) + le TYPE `BuildingMeta`.
+ *  Le registre unifié vit dans `src/gameIso/catalog/buildings/defs/` ; `BUILDINGS_META` (méta
+ *  éditeur) en DÉRIVE dans `catalog/buildings/index.ts`. Ce module reste PUR (aucun rendu). */
 import type { Scene, BuildingFeature, Facing } from './scene';
 
 export interface BuildingMeta {
@@ -9,16 +10,6 @@ export interface BuildingMeta {
   defaultFoot: { w: number; h: number };
   defaultReveal: 'cutaway' | 'door';
 }
-
-export const BUILDINGS_META: Record<string, BuildingMeta> = {
-  maison: { id: 'maison', label: 'Maison à colombages', category: 'petit', defaultFoot: { w: 3, h: 3 }, defaultReveal: 'cutaway' },
-  echoppe: { id: 'echoppe', label: 'Échoppe', category: 'petit', defaultFoot: { w: 2, h: 2 }, defaultReveal: 'cutaway' },
-  taverne: { id: 'taverne', label: 'Taverne', category: 'petit', defaultFoot: { w: 4, h: 3 }, defaultReveal: 'cutaway' },
-  forge: { id: 'forge', label: 'Forge', category: 'petit', defaultFoot: { w: 3, h: 2 }, defaultReveal: 'cutaway' },
-  chapelle: { id: 'chapelle', label: 'Chapelle', category: 'monument', defaultFoot: { w: 4, h: 5 }, defaultReveal: 'door' },
-  tour: { id: 'tour', label: 'Tour', category: 'monument', defaultFoot: { w: 2, h: 2 }, defaultReveal: 'door' },
-  manoir: { id: 'manoir', label: 'Manoir', category: 'monument', defaultFoot: { w: 5, h: 4 }, defaultReveal: 'door' },
-};
 
 function inFoot(b: BuildingFeature, x: number, y: number): boolean {
   return x >= b.foot.x && x < b.foot.x + b.foot.w && y >= b.foot.y && y < b.foot.y + b.foot.h;

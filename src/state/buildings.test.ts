@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene } from './scene';
-import { buildingBlockedAt, buildingAt, doorAt, roofHidden, BUILDINGS_META, defaultDoor } from './buildings';
+import { buildingBlockedAt, buildingAt, doorAt, roofHidden, defaultDoor } from './buildings';
 import type { BuildingFeature } from './scene';
 
 const house: BuildingFeature = {
@@ -38,11 +38,6 @@ describe('helpers bâtiment', () => {
     expect(roofHidden(house, [{ x: 3, y: 3 }])).toBe(true);
     expect(roofHidden(house, [{ x: 0, y: 0 }])).toBe(false);
   });
-  it('catalogue meta contient maison + chapelle', () => {
-    expect(BUILDINGS_META.maison).toBeDefined();
-    expect(BUILDINGS_META.chapelle.category).toBe('monument');
-  });
-
   it('defaultDoor place la porte au milieu du mur du côté facing', () => {
     const foot = { x: 2, y: 2, w: 3, h: 3 };
     expect(defaultDoor(foot, 'S')).toEqual({ x: 3, y: 4 }); // bas

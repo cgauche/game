@@ -1,5 +1,6 @@
 import type { Dims } from '../iso';
 import type { BuildingParams, Facing } from '../../state/scene';
+import type { BuildingMeta } from '../../state/buildings';
 
 export type ParamField =
   | { key: string; label: string; type: 'number'; min?: number; max?: number; step?: number }
@@ -26,6 +27,14 @@ export interface BuildingViz {
   id: string;
   paramsSchema?: ParamField[];
   render(foot: Rect, params: BuildingParams, ctx: RenderCtx): BuildingLayers;
+}
+
+/** Bâtiment UNIFIÉ (registre defs/) : méta sémantique (label/catégorie/empreinte/reveal, côté
+ *  state) + présentation (schéma de params + render). `BUILDINGS` (viz) et `BUILDINGS_META` (pur)
+ *  en dérivent. Un fichier `buildings/defs/<id>.ts` = un `export const building: BuildingDef`. */
+export interface BuildingDef extends BuildingMeta {
+  paramsSchema?: ParamField[];
+  render: BuildingViz['render'];
 }
 
 export interface PropViz {

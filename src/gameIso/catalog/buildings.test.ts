@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildingLayers, BUILDINGS, footCorners, rotateFacing } from './buildings';
-import { BUILDINGS_META } from '../../state/buildings';
+import { buildingLayers, BUILDINGS, BUILDINGS_META, footCorners, rotateFacing } from './buildings';
 import type { Dims } from '../iso';
 
 const dims = { w: 10, h: 10 };
