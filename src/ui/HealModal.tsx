@@ -26,12 +26,13 @@ export function HealModal() {
   const rolled = ph.roll != null;
   const rerollable = rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0;
   const wounds = ph.mode === 'wounds';
+  const trauma = ph.mode === 'trauma';
   const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : null;
 
   return (
     <div className="modal-overlay">
       <div className="modal roll-modal">
-        <h3>{wounds ? '🩹 Soigner les Blessures' : '🩸 Arrêter l’Hémorragie'}</h3>
+        <h3>{wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}</h3>
         <p className="rm-vs">
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
           <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
@@ -49,7 +50,9 @@ export function HealModal() {
                 {ph.success
                   ? wounds
                     ? `Réussi (+${ph.sl} DR) — +${preview} PB`
-                    : `Réussi (+${ph.sl} DR) — ${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s)`
+                    : trauma
+                      ? `Réussi (+${ph.sl} DR) — convalescence raccourcie de ${1 + Math.max(0, ph.sl)} jour(s)`
+                      : `Réussi (+${ph.sl} DR) — ${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s)`
                   : wounds && ph.intBonus + ph.sl < 0
                     ? `Échec — le soin blesse (${ph.intBonus + ph.sl} PB)`
                     : 'Échec — sans effet'}

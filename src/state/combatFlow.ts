@@ -221,6 +221,11 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         }));
         get().log('Début de session : Points de Chance regagnés (maximum = Destin).');
         break;
+      case 'rest':
+        // Repos déclenché par l'éditeur (trigger/dialogue) : `days` journée(s) (défaut 1). Même flux que
+        // l'action « Dormir » — récup Exténué/Blessures + convalescence + cauchemars (no-op en combat).
+        restPartyOvernight(get, set, e.days ?? 1);
+        break;
       case 'inflictNightmares': {
         // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
         let who = '';
@@ -827,7 +832,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
     case 'trauma': {
       c.criticalWounds = (c.criticalWounds ?? 0) + 1; // « compte comme une Blessure critique » (l.41)
       const leg: HitLocation = battleRng().int(0, 1) === 0 ? 'jambeG' : 'jambeD'; // « se tord la cheville »
-      c.traumas = [...(c.traumas ?? []), traumaFromKind('dechirure', 'mineur', leg)];
+      c.traumas = [...(c.traumas ?? []), traumaFromKind('dechirure', 'mineur', leg, { be: bonus(effectiveChar(c, 'E')) })];
       log.push(`  ↳ Déchirure musculaire (Mineure) à la ${leg === 'jambeG' ? 'jambe gauche' : 'jambe droite'}.`);
       break;
     }

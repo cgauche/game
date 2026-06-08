@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { restRecovery } from '../engine/rest';
+import { traumaFromKind } from '../engine/trauma';
 import { hasCondition, stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
 import { dayPhase } from '../engine/clock';
@@ -70,6 +71,12 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     restRecovery(c, { int: () => 30 }); // Résistance réussie → soigne, >0 PB
     expect(c.wounds.current).toBeGreaterThan(0);
     expect(hasCondition(c, 'À Terre')).toBe(false);
+  });
+
+  it('le repos fait avancer la convalescence des traumas (guéri quand les jours sont écoulés)', () => {
+    const c = hero({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
+    restRecovery(c, { int: () => 30 }, 3); // 3 jours ≥ 2 → guéri
+    expect(c.traumas!.length).toBe(0);
   });
 
   it('un mort ne se repose pas', () => {

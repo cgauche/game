@@ -15,8 +15,29 @@ export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
-export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, location: HitLocation): Trauma {
+/**
+ * Durée de convalescence d'un trauma en JOURS (LDB 18) : déchirure mineure 30−BE (l.317) ; déchirure
+ * majeure 2×(30−BE), deux périodes (l.326) ; fracture 30+1d10 (l.300), +10 jours si majeure (l.309).
+ * `be` = Bonus d'Endurance, `d10` = 1d10 (fractures). Plancher 1 jour.
+ */
+export function traumaRecoveryDays(kind: TraumaKind, severity: TraumaSeverity, be: number, d10 = 5): number {
+  if (kind === 'dechirure') {
+    const base = Math.max(1, 30 - be);
+    return severity === 'majeur' ? base * 2 : base;
+  }
+  return 30 + d10 + (severity === 'majeur' ? 10 : 0);
+}
+
+/** `opts.be` (Bonus d'Endurance) + `opts.d10` (1d10 des fractures) → durée de convalescence `recoveryDays`.
+ *  Omis (tests/legacy) ⇒ pas de décompte (trauma permanent jusqu'à traitement explicite). */
+export function traumaFromKind(
+  kind: TraumaKind,
+  severity: TraumaSeverity,
+  location: HitLocation,
+  opts?: { be?: number; d10?: number },
+): Trauma {
   const sev = severity === 'mineur' ? 'Mineure' : 'Majeure';
+  const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(kind, severity, opts.be, opts.d10 ?? 5);
   if (kind === 'dechirure') {
     const onLeg = LEG.includes(location);
     // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
@@ -25,9 +46,10 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
       label: `Déchirure musculaire (${sev})`,
       location,
       ...(onLeg ? { movementHalved: true, dodgePenalty: dodge } : {}),
+      recoveryDays,
       note: onLeg
-        ? `LDB 18 l.315 : Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours (Jalon 5).`
-        : 'LDB 18 l.315 : −10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours (Jalon 5).',
+        ? `LDB 18 l.315 : Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
+        : 'LDB 18 l.315 : −10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours.',
     };
   }
   // fracture
@@ -37,7 +59,8 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
       location,
       movementHalved: true,
       charPenalty: { F: -30, Ag: -30 },
-      note: 'LDB 18 l.298 (Torse) : −30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours (Jalon 5).',
+      recoveryDays,
+      note: 'LDB 18 l.298 (Torse) : −30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
     };
   }
   if (LEG.includes(location)) {
@@ -46,16 +69,59 @@ export function traumaFromKind(kind: TraumaKind, severity: TraumaSeverity, locat
       location,
       movementHalved: true,
       dodgePenalty: -20, // règle du Pied (l.369) : −20 aux Tests de mobilité, dont l'Esquive
-      note: 'LDB 18 l.298 (Jambe) : Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours (Jalon 5).',
+      recoveryDays,
+      note: 'LDB 18 l.298 (Jambe) : Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
     };
   }
   return {
     label: `Fracture (${sev})`,
     location,
+    recoveryDays,
     note: location === 'tete'
-      ? 'LDB 18 l.298 (Tête) : −30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours (Jalon 5).'
-      : 'LDB 18 l.298 (Bras) : membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours (Jalon 5).',
+      ? 'LDB 18 l.298 (Tête) : −30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours.'
+      : 'LDB 18 l.298 (Bras) : membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours.',
   };
+}
+
+/**
+ * Convalescence : décompte `days` jours sur chaque trauma à durée. À 0, le trauma disparaît (ses
+ * pénalités, lues depuis `traumas[]`, tombent avec) et une Blessure critique est résolue (`criticalWounds`
+ * décrémenté). Les traumas sans `recoveryDays` (legacy) restent. Pur ; mute `c`, renvoie le journal.
+ */
+export function tickTraumaRecovery(c: Combatant, days: number): string[] {
+  if (!c.traumas?.length || days <= 0) return [];
+  const log: string[] = [];
+  const remaining: Trauma[] = [];
+  for (const t of c.traumas) {
+    if (t.recoveryDays == null) { remaining.push(t); continue; }
+    const left = t.recoveryDays - days;
+    if (left <= 0) {
+      log.push(`${c.name} guérit de : ${t.label} (${t.location}).`);
+      if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+    } else remaining.push({ ...t, recoveryDays: left });
+  }
+  c.traumas = remaining;
+  return log;
+}
+
+/**
+ * Soin assisté d'une déchirure par la Compétence Guérison (LDB 18 l.317) : réduit sa convalescence de
+ * **1 jour + 1 par DR**, une seule fois (`healAccelerated`). RAW : seules les déchirures en profitent
+ * (la fracture relève d'un autre flux ; la déchirure majeure n'est pas accélérée — laissé en dette).
+ * Renvoie le journal (message d'échec si aucune déchirure éligible).
+ */
+/** Le personnage a-t-il une déchirure dont la Guérison peut encore raccourcir la convalescence ? */
+export function hasTreatableTrauma(c: Combatant): boolean {
+  return (c.traumas ?? []).some((t) => t.recoveryDays != null && !t.healAccelerated && /déchirure/i.test(t.label));
+}
+
+export function accelerateTrauma(c: Combatant, dr: number): string[] {
+  const t = (c.traumas ?? []).find((x) => x.recoveryDays != null && !x.healAccelerated && /déchirure/i.test(x.label));
+  if (!t) return [`${c.name} : aucune déchirure dont la Guérison puisse accélérer la convalescence.`];
+  const cut = 1 + Math.max(0, dr);
+  t.recoveryDays = Math.max(0, (t.recoveryDays ?? 0) - cut);
+  t.healAccelerated = true;
+  return [`${c.name} : la Guérison raccourcit la convalescence de ${t.label} de ${cut} jour(s) (reste ${t.recoveryDays}).`];
 }
 
 /** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64.) */

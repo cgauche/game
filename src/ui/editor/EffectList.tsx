@@ -23,6 +23,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveXp',
   'restoreFortune',
   'inflictNightmares',
+  'rest',
   'startCombat',
   'transition',
   'transitionBack',
@@ -42,6 +43,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveXp: 'Donner des PX (groupe)',
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
+  rest: 'Repos (Dormir / Se reposer N jours)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -82,6 +84,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'restoreFortune' };
     case 'inflictNightmares':
       return { type: 'inflictNightmares', heroId: '' };
+    case 'rest':
+      return { type: 'rest', days: 1 };
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
     default:
@@ -128,6 +132,9 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'inflictNightmares' && (
           <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+        )}
+        {effect.type === 'rest' && (
+          <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">

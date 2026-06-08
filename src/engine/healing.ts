@@ -5,6 +5,7 @@
  */
 import { Combatant } from './types';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
+import { hasTreatableTrauma } from './trauma';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
 const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -15,20 +16,23 @@ export function hasHealSkill(c: Combatant): boolean {
   return (c.skills ?? []).some((s) => s.name.toLowerCase().startsWith('guérison'));
 }
 
-/** Cible soignable : blessée (PB perdus) OU porteuse d'≥1 État Hémorragique ; ni morte ni éjectée.
- *  Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.28). */
+/** Cible soignable : blessée (PB perdus) OU porteuse d'≥1 État Hémorragique OU avec une déchirure traitable ;
+ *  ni morte ni éjectée. Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.28). */
 export function isHealable(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
-  return c.wounds.current < c.wounds.max || condStacks(c, 'Hémorragique') > 0;
+  return c.wounds.current < c.wounds.max || condStacks(c, 'Hémorragique') > 0 || hasTreatableTrauma(c);
 }
 
-export type HealMode = 'wounds' | 'bleed';
+export type HealMode = 'wounds' | 'bleed' | 'trauma';
 
-/** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ». */
+/** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ».
+ *  Le mode `trauma` (accélérer la convalescence d'une déchirure, LDB 18 l.317) est hors-combat — les
+ *  consommateurs en combat le filtrent. */
 export function availableHealModes(target: Combatant): HealMode[] {
   const modes: HealMode[] = [];
   if (target.wounds.current < target.wounds.max && !target.soinRencontreUtilise) modes.push('wounds');
   if (condStacks(target, 'Hémorragique') > 0) modes.push('bleed');
+  if (hasTreatableTrauma(target)) modes.push('trauma');
   return modes;
 }
 

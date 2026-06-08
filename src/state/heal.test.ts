@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
+import { traumaFromKind } from '../engine/trauma';
 import { seedBattleRng } from './battleRng';
 
 function hero(p: Partial<Combatant>): Combatant {
@@ -102,5 +103,19 @@ describe('Guérison — flux hors combat', () => {
     useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
     useGame.getState().healConfirm();
     expect(useGame.getState().party.find((c) => c.id === 'al')!.wounds.current).toBeGreaterThan(4);
+  });
+
+  it('mode trauma : la Guérison accélère la convalescence d’une déchirure (LDB 18 l.317)', () => {
+    const doc = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null });
+    useGame.getState().healAlly('p', 'trauma');
+    expect(useGame.getState().pendingHeal!.mode).toBe('trauma');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 2 } });
+    useGame.getState().healConfirm();
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.traumas![0].recoveryDays).toBe(26 - (1 + 2)); // −1 jour −1/DR
+    expect(p.traumas![0].healAccelerated).toBe(true);
   });
 });

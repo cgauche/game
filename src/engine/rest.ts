@@ -23,6 +23,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
 import { removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
+import { tickTraumaRecovery } from './trauma';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
@@ -76,6 +77,8 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
     if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); log.push(`${c.name} reprend connaissance.`); }
     if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
   }
+  // Convalescence des Blessures critiques (LDB 18) : le repos fait avancer la guérison de chaque trauma.
+  log.push(...tickTraumaRecovery(c, Math.max(1, days)));
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);

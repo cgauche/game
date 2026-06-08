@@ -135,6 +135,11 @@ export interface Trauma {
   /** Pénalité (négative) aux Tests de mobilité/Esquive — trauma de jambe (LDB 18 l.298/315/369). */
   dodgePenalty?: number;
   note: string;
+  /** Jours de convalescence restants (LDB 18 : déchirure 30−BE, fracture 30+1d10…). Décompté au repos ;
+   *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */
+  recoveryDays?: number;
+  /** Accélération par la Compétence Guérison déjà appliquée (l.317 : −1 j −1/DR, une seule fois). */
+  healAccelerated?: boolean;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

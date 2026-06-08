@@ -223,7 +223,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
                 onClick={() => healAlly(hero.id, m)}
                 title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)"
               >
-                {m === 'wounds' ? '🩹 Soigner' : '🩸 Stopper hémorragie'}
+                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : '🦵 Soigner déchirure'}
               </button>
             ))}
           </span>

@@ -3,7 +3,7 @@
  * Jet 1d100 sur la table de la localisation ; -20 si l'overkill dépasse le Bonus d'Endurance
  * (l.30, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
  */
-import { d100, RNG, defaultRNG } from './dice';
+import { d100, d10, RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape } from './combat';
@@ -60,7 +60,10 @@ export function rollCritical(
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
     if (!res.success) conditions.push(...entry.resist.onFail);
   }
-  const traumas = (entry.traumas ?? []).map((t) => traumaFromKind(t.kind, t.severity, location));
+  // Durée de convalescence (Jalon 5) : BE déjà calculé ; 1d10 tiré seulement pour les fractures (RAW 30+1d10)
+  // afin de ne pas décaler le flux RNG des critiques sans fracture.
+  const traumas = (entry.traumas ?? []).map((t) =>
+    traumaFromKind(t.kind, t.severity, location, { be, d10: t.kind === 'fracture' ? d10(rng) : undefined }));
   return {
     location,
     name: entry.name,

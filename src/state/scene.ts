@@ -146,8 +146,10 @@ export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   | { type: 'giveItem'; item: string }
   /** Donne un VRAI objet à stats (depuis trappings.json) à un héros (défaut : le premier).
-   *  L'objet arrive NON équipé dans son inventaire — à équiper via la fiche. */
-  | { type: 'giveTrapping'; trapping: string; heroId?: string }
+   *  L'objet arrive NON équipé dans son inventaire — à équiper via la fiche. Champs MAGIQUES optionnels
+   *  (butin/quête) : `qualities` AJOUTÉES (Atout/Défaut, ex. « De plaies atroces »), `identified:false`
+   *  = qualités masquées jusqu'à Évaluation (#2), `skin` = recoloration (objet légendaire). */
+  | { type: 'giveTrapping'; trapping: string; heroId?: string; qualities?: string[]; identified?: boolean; skin?: Record<string, string> }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
   | { type: 'giveXp'; amount: number }
@@ -183,6 +185,11 @@ export type Effect =
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }
+  /** Repos (LDB 16/18/21) : `days` journée(s) de sommeil (défaut 1, « jusqu'à l'aube ») → dissipe
+   *  l'Exténué + soigne des PB (Résistance +20 → DR+BE, +BE/jour) ; avance l'horloge jusqu'à l'aube.
+   *  GRATUIT en soi (on peut dormir chez soi) ; un prix éventuel (auberge) est porté par le CHOIX de
+   *  dialogue (`DialogueChoice.cost`), pas par le repos. */
+  | { type: 'rest'; days?: number }
   /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
    *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
   | { type: 'inflictNightmares'; heroId?: string }
@@ -190,8 +197,11 @@ export type Effect =
 
 export interface DialogueChoice {
   text: string;
-  /** N'afficher que si ce flag est vrai (ou faux si préfixé par « ! »). */
+  /** Condition de flag (cf. `condMet`) : un flag, `!flag`, ou plusieurs en ET (« v1,!v2 »). */
   condition?: string;
+  /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais
+   *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT les effets. */
+  cost?: { gold?: number; silver?: number; brass?: number };
   effects?: Effect[];
   next?: string; // id du nœud suivant
 }

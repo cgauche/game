@@ -59,6 +59,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
+import { accelerateTrauma } from '../engine/trauma';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -1091,6 +1092,11 @@ export const useGame = create<GameState>((set, get) => ({
     const node = st.dialogue.dialogue.nodes.find((n) => n.id === st.dialogue!.nodeId);
     const choice = node?.choices[choiceIndex];
     if (!choice) return;
+    // Option payante (auberge, péage, pot-de-vin) : débit AVANT les effets ; refus si insolvable.
+    if (choice.cost) {
+      if (!canAfford(get().money, choice.cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
+      set((s) => ({ money: moneySub(s.money, choice.cost!)! }));
+    }
     if (choice.effects) applyEffects(get, set, choice.effects);
     if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next } });
     else {
@@ -1573,7 +1579,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!target) return;
     const log = ph.mode === 'wounds'
       ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
-      : ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`];
+      : ph.mode === 'bleed'
+      ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
+      : ph.success ? accelerateTrauma(target, ph.sl) : [`${target.name} : la déchirure ne réagit pas au soin.`]; // mode 'trauma'
     finishPlayerAction(get, set, log); // sortie commune combat / hors combat
   },
 
