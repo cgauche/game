@@ -217,6 +217,13 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         }));
         get().log(`Groupe : +${e.amount} PX.`);
         break;
+      case 'restoreFortune':
+        // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
+        set((s: GameState) => ({
+          party: s.party.map((h) => (h.kind === 'hero' && h.fate != null ? { ...h, fortune: h.fate } : h)),
+        }));
+        get().log('Début de session : Points de Chance regagnés (maximum = Destin).');
+        break;
       case 'giveTrapping': {
         const it = itemFromTrapping(e.trapping);
         if (!it) {

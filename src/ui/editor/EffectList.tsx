@@ -21,6 +21,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveTrapping',
   'giveMoney',
   'giveXp',
+  'restoreFortune',
   'startCombat',
   'transition',
   'transitionBack',
@@ -38,6 +39,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveTrapping: 'Donner un objet à stats (équipement/potion)',
   giveMoney: 'Donner/retirer de l’argent',
   giveXp: 'Donner des PX (groupe)',
+  restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -74,6 +76,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'endDialogue':
       return { type: 'endDialogue' };
+    case 'restoreFortune':
+      return { type: 'restoreFortune' };
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
     default:

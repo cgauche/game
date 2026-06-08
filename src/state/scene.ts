@@ -180,6 +180,9 @@ export type Effect =
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }
+  /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
+   *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
+  | { type: 'restoreFortune' }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
