@@ -114,8 +114,9 @@ export interface SceneEntity {
    *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */
   foot?: { w: number; h: number };
   /** Marchand (#2) : ce PNJ ouvre un panneau d'achat/vente (référence un archétype de `state/merchants`).
-   *  `settlement`/`resaleRate` surchargent l'archétype pour cette entité. */
-  merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number };
+   *  `settlement`/`resaleRate`/`buyMarkup` surchargent l'archétype pour cette entité (prix paramétrables :
+   *  resaleRate = rachat à la vente, buyMarkup = majoration à l'achat). */
+  merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number; buyMarkup?: number };
 }
 
 export interface BuildingParams {

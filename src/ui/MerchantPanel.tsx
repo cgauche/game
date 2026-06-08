@@ -39,13 +39,16 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
   // Marchandage (LDB 60 l.12) : l'achat et la vente sont DEUX négociations distinctes, chacune 1 jet/visite ;
   // un échec « de beaucoup » rend le marchand méfiant (`soured`) → plus aucun marchandage cette visite.
-  const buyFactor = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
-  const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 1;
+  // Achat : prix listé × majoration du marchand (buyMarkup) × facteur de Marchandage. Vente (Option 2) :
+  // ¼ par défaut (lowball, sellFactor 0.5 sur la base resaleRate ½) ; ½ seulement sur un Marchandage GAGNÉ.
+  const buyHaggle = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
+  const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle; // prix d'achat affiché (majoration × marchandage)
+  const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 0.5;
   const haggleLine = (mode: 'buy' | 'sell') => {
     if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie (LDB 60 l.12)">🚫 Marchand méfiant — fini de marchander</span>;
     const res = mode === 'buy' ? merchant.bargainBuy : merchant.bargainSell;
     if (res == null) return <button className="btn small" onClick={() => onBargain(mode)} title="Test opposé de Marchandage (LDB 60 l.12)">Marchander {mode === 'buy' ? 'l’achat' : 'la vente'}</button>;
-    if (mode === 'buy') return <span className="bargain-tag">{res.won ? `Achat marchandé ✔ ×${buyFactor}` : 'Achat : marchandage ✘ (prix plein)'}</span>;
+    if (mode === 'buy') return <span className="bargain-tag">{res.won ? `Achat marchandé ✔ ×${buyHaggle}` : 'Achat : marchandage ✘ (prix plein)'}</span>;
     return <span className="bargain-tag">{res.won ? 'Vente marchandée ✔ (½)' : 'Vente : marchandage ✘ (¼)'}</span>;
   };
   const [heroId, setHeroId] = useState(party[0]?.id ?? '');

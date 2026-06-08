@@ -1350,7 +1350,7 @@ export function Editor() {
                           </select>
                         </label>
                         <label className="ed-field">
-                          ↳ Taux de rachat (override, ex. 0.5 = ½)
+                          ↳ Taux de rachat à la vente (override, ex. 0.5 = ½ si marchandé, ¼ sinon)
                           <input
                             type="number"
                             step="0.05"
@@ -1359,6 +1359,17 @@ export function Editor() {
                             placeholder="défaut archétype"
                             value={sel.merchant.resaleRate ?? ''}
                             onChange={(e) => updateSel({ merchant: { ...sel.merchant!, resaleRate: e.target.value === '' ? undefined : Number(e.target.value) } })}
+                          />
+                        </label>
+                        <label className="ed-field">
+                          ↳ Majoration d'achat (override, 1 = prix listé ; 1.25 = +25 %)
+                          <input
+                            type="number"
+                            step="0.05"
+                            min="0"
+                            placeholder="défaut archétype (1)"
+                            value={sel.merchant.buyMarkup ?? ''}
+                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, buyMarkup: e.target.value === '' ? undefined : Number(e.target.value) } })}
                           />
                         </label>
                       </>

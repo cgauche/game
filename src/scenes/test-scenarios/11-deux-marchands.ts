@@ -29,7 +29,8 @@ scene.entities.push(
   // Armurier : interaction directe → la boutique s'ouvre tout de suite (entité marchande « nue »).
   { id: 'armurier', kind: 'personnage', label: 'Armurier', pos: { x: 7, y: 2 }, merchant: { archetype: 'armurier' } },
   // Herboriste : DIALOGUE d'abord (dialogueId prioritaire), puis un choix ouvre sa boutique via openMerchant.
-  { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste' } },
+  // Village isolé → elle VEND PLUS CHER (buyMarkup 1.25 = +25 %) : prix paramétrable par entité (#2).
+  { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste', buyMarkup: 1.25 } },
 );
 scene.dialogues = [
   {

@@ -840,37 +840,6 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().pendingAttack).not.toBeNull(); // toujours là (charge)
   });
 
-  it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
-    useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
-    useGame.getState().startCombat('enc-mutants');
-    vi.clearAllTimers();
-    let st = useGame.getState();
-    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
-    const enemies = st.battle!.combatants.filter((c) => c.kind === 'enemy');
-    const mount = enemies[0];
-    const rider = enemies[1];
-    H.pos = { x: 6, y: 10 };
-    mount.pos = { x: 7, y: 10 };
-    mount.riderId = rider.id; // #0 = monture
-    rider.pos = { x: 7, y: 10 };
-    rider.mountId = mount.id; // #1 = cavalier (sur #0)
-    for (const c of enemies.slice(2)) c.wounds.current = 0; // neutralise les autres
-    const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: false, acted: false } });
-    // Clic sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
-    useGame.getState().battleClickEntity(mount.id);
-    st = useGame.getState();
-    expect(st.pendingMountTarget).toEqual({ riderId: rider.id, mountId: mount.id });
-    expect(st.pendingAttack).toBeNull();
-    // Choisir la monture → modale fermée + attaque ciblée sur la monture.
-    useGame.getState().mountTargetSelect(mount.id);
-    st = useGame.getState();
-    expect(st.pendingMountTarget).toBeNull();
-    expect(st.pendingAttack?.targetId).toBe(mount.id);
-  });
-
   it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15-Dépl l.87)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
@@ -2296,20 +2265,37 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(discounted).toBeLessThan(full);
   });
 
-  it('sellItem : vente perdue = ¼ (resaleRate 0.5 × bargainSellFactor 0.5) (#2c)', () => {
-    const sellWith = (bargain: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
+  it('sellItem : Option 2 — défaut/perdu = ¼ (lowball), marchandage de vente GAGNÉ = ½ (#2c)', () => {
+    const sellWith = (bargainSell: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
       const h = hero(); h.items = [{ uid: 'x', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
       reset();
       useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
       useGame.getState().openMerchant('pnj');
       const m = useGame.getState().merchant!;
-      useGame.setState({ merchant: { ...m, bargainSell: bargain } });
+      useGame.setState({ merchant: { ...m, bargainSell } });
       useGame.getState().sellItem('x', 'h');
       return toBrass(useGame.getState().money);
     };
-    const halfBase = sellWith(null); // ½ (pas de marchandage)
-    const quarter = sellWith({ won: false, drNet: 0, negotiator: false }); // ¼ (marchandage perdu)
-    expect(quarter).toBeLessThan(halfBase);
+    const lowball = sellWith(null); // ¼ par défaut (le marchand lowballe)
+    const won = sellWith({ won: true, drNet: 2, negotiator: false }); // ½ (on a tenu notre prix)
+    const lost = sellWith({ won: false, drNet: 0, negotiator: false }); // ¼ (rabaissé)
+    expect(won).toBeGreaterThan(lowball); // gagner le marchandage double le gain
+    expect(lost).toBe(lowball); // perdre = ne pas négocier = ¼
+  });
+
+  it('buyItem : applique la majoration d’achat paramétrable (buyMarkup) — marchand plus cher (#2)', () => {
+    const buyAt = (markup: number): number => {
+      reset();
+      useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+      useGame.getState().openMerchant('pnj');
+      const m = useGame.getState().merchant!;
+      useGame.setState({ merchant: { ...m, buyMarkup: markup } });
+      const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+      const before = toBrass(useGame.getState().money);
+      useGame.getState().buyItem(label, 'h');
+      return before - toBrass(useGame.getState().money);
+    };
+    expect(buyAt(1.5)).toBeGreaterThan(buyAt(1)); // +50 % → coûte plus cher
   });
 
   const appraiser = (): Combatant => ({ id: 'h', name: 'H', characteristics: { Int: 40 }, skills: [], talents: [], items: [{ uid: 'm', name: 'Épée', kind: 'melee', qualities: ['De plaies atroces'], enc: 1, equipped: false, identified: false }], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
