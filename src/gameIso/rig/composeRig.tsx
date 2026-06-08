@@ -10,6 +10,7 @@ import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
+import { HEADS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
 import { tenuePaletteFor } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
@@ -103,6 +104,14 @@ export function resolveRig(
       // — sinon le pied arrière pointe à l'envers (« chaussures vers l'intérieur »).
       boneParts[bid].push({ svg: part.svg, layer: SLOT_LAYER[slot], mirror: idx === 1 && view !== 'profile' });
     });
+  }
+
+  // Tête de RACE (ex. Ogre) : remplace visage/cheveux par la part de tête de la race.
+  // Priorité inférieure à appearance.monster.tete — si les deux sont définis, le bloc
+  // monster ci-dessous écrase (en pratique une race a SOIT head SOIT monster, pas les deux).
+  if (race.head) {
+    const h = HEADS[race.head];
+    if (h) boneParts['tete'] = [{ svg: pickView(h, view), layer: 5 }];
   }
 
   // Parts MONSTRUEUSES (mutant modulaire) : REMPLACENT la part normale de l'os ciblé

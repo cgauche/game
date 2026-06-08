@@ -8,8 +8,10 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 44,
   match: '\\bfimir',
-  // Espèce NON-canonique : baseSpeciesOf('Fimir')→'Ogre' (proportions d'ogre). Sa config distincte
-  // (œil unique + queue + chair gris-vert) vit sur le perso, pour ne pas polluer la race Ogre.
+  // Race dédiée (même gabarit brute que l'Ogre, mais SANS les features cosmétiques Ogre :
+  // heaume/pauldrons/gut-plate sont propres à l'Ogre et ne doivent pas contaminer le Fimir).
+  race: 'Fimir',
+  // Config distincte (œil unique + queue + chair gris-vert) vit ici, pas sur la race.
   perso: {
     career: 'Nu',
     monster: { tete: 'cyclope', queue: true },

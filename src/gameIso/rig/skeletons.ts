@@ -75,7 +75,7 @@ export function baseSpeciesOf(species: string): string {
   if (s.startsWith('troll')) return 'Troll';
   if (s.startsWith('vampire')) return 'Vampire';
   if (s.startsWith('démon') || s.startsWith('demon')) return 'Démon';
-  if (s.startsWith('fimir')) return 'Ogre'; // brute hulking à œil unique → proportions d'ogre
+  if (s.startsWith('fimir')) return 'Fimir'; // brute hulking à œil unique — race dédiée (gabarit brute, sans features Ogre)
   return 'Humain';
 }
 
