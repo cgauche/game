@@ -2149,7 +2149,7 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     const m = useGame.getState().merchant!;
     expect(m.entityId).toBe('pnj');
     expect(m.stock.length).toBeGreaterThan(0); // au moins les Communes de la catégorie
-    expect(m.resaleRate).toBe(0.10);
+    expect(m.resaleRate).toBe(0.5); // base ½ du prix listé (LDB 60 l.22)
   });
 
   it('buyItem : débite la Bourse, donne l’objet à stats au héros, décrémente la qty', () => {
@@ -2200,5 +2200,67 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     const before = toBrass(useGame.getState().money);
     useGame.getState().repairArmour('b', 'h');
     expect(toBrass(useGame.getState().money)).toBe(before); // rien à réparer
+  });
+
+  const negotiator = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 40 }, skills: [], talents: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+
+  it('startBargain : crée un pendingBargain (marchand = bargainSkill de l’archétype) (#2c)', () => {
+    useGame.setState({ party: [negotiator()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().startBargain('buy');
+    const pb = useGame.getState().pendingBargain!;
+    expect(pb).toBeTruthy();
+    expect(pb.playerId).toBe('h');
+    expect(pb.merchantValue).toBe(45); // armurier.bargainSkill
+  });
+
+  it('bargainConfirm : verrouille merchant.bargain ; un 2ᵉ startBargain est un no-op (1/visite) (#2c)', () => {
+    useGame.setState({ party: [negotiator()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().startBargain('buy');
+    // force un résultat gagné, sans RNG
+    const pb = useGame.getState().pendingBargain!;
+    const win = { roll: 10, target: 40, success: true, sl: 3, isDouble: false };
+    const lose = { roll: 80, target: 45, success: false, sl: -3, isDouble: false };
+    useGame.setState({ pendingBargain: { ...pb, roll: win, merchantRoll: lose, result: { attacker: win, defender: lose, winner: 'attacker', attackerWins: true, netSL: 6 } } });
+    useGame.getState().bargainConfirm();
+    expect(useGame.getState().pendingBargain).toBeNull();
+    expect(useGame.getState().merchant!.bargain).toEqual({ won: true, drNet: 6, negotiator: false });
+    useGame.getState().startBargain('buy'); // verrouillé
+    expect(useGame.getState().pendingBargain).toBeNull();
+  });
+
+  it('buyItem : applique le facteur de Marchandage verrouillé (−20 % < plein) (#2c)', () => {
+    const buyWith = (bargain: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
+      reset();
+      useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+      useGame.getState().openMerchant('pnj');
+      const m = useGame.getState().merchant!;
+      useGame.setState({ merchant: { ...m, bargain } });
+      const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+      const before = toBrass(useGame.getState().money);
+      useGame.getState().buyItem(label, 'h');
+      return before - toBrass(useGame.getState().money);
+    };
+    const full = buyWith(null);
+    const discounted = buyWith({ won: true, drNet: 6, negotiator: false }); // ×0.8
+    expect(full).toBeGreaterThan(0);
+    expect(discounted).toBeLessThan(full);
+  });
+
+  it('sellItem : vente perdue = ¼ (resaleRate 0.5 × bargainSellFactor 0.5) (#2c)', () => {
+    const sellWith = (bargain: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
+      const h = hero(); h.items = [{ uid: 'x', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
+      reset();
+      useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+      useGame.getState().openMerchant('pnj');
+      const m = useGame.getState().merchant!;
+      useGame.setState({ merchant: { ...m, bargain } });
+      useGame.getState().sellItem('x', 'h');
+      return toBrass(useGame.getState().money);
+    };
+    const halfBase = sellWith(null); // ½ (pas de marchandage)
+    const quarter = sellWith({ won: false, drNet: 0, negotiator: false }); // ¼ (marchandage perdu)
+    expect(quarter).toBeLessThan(halfBase);
   });
 });

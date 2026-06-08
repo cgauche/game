@@ -14,6 +14,7 @@ describe('MerchantPanel (#2)', () => {
         onBuy={() => {}}
         onSell={() => {}}
         onRepair={() => {}}
+        onBargain={() => {}}
         onClose={() => {}}
       />,
     );
@@ -34,10 +35,25 @@ describe('MerchantPanel (#2)', () => {
         onBuy={() => {}}
         onSell={() => {}}
         onRepair={() => {}}
+        onBargain={() => {}}
         onClose={() => {}}
       />,
     );
     expect(html).toMatch(/Réparer/);
     expect(html).toContain('Chemise de mailles');
+  });
+
+  it('affiche le bouton Marchander (avant jet) puis le résultat verrouillé (#2c)', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] };
+    const before = renderToStaticMarkup(
+      <MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} onBuy={() => {}} onSell={() => {}} onRepair={() => {}} onBargain={() => {}} onClose={() => {}} />,
+    );
+    expect(before).toMatch(/Marchander/);
+    const after = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, bargain: { won: true, drNet: 2, negotiator: false } }} party={party} money={{ gold: 1, silver: 0, brass: 0 }} onBuy={() => {}} onSell={() => {}} onRepair={() => {}} onBargain={() => {}} onClose={() => {}} />,
+    );
+    expect(after).toContain('Marchandage'); // résultat verrouillé affiché
+    expect(after).not.toMatch(/>Marchander</); // plus de bouton Marchander
   });
 });

@@ -11,8 +11,10 @@ export interface MerchantArchetypeDef {
   category: { types?: string[]; subTypes?: string[] };
   /** Taille d'agglo par défaut (overridable par l'entité de scène). */
   settlement: Settlement;
-  /** Taux de rachat (défaut 0.10 — non RAW, LDB 59 « achat/vente optionnels »). */
+  /** Taux de rachat : base ½ du prix listé (LDB 60 l.22), modulé par le Marchandage (¼–½). */
   resaleRate: number;
+  /** Valeur de Marchandage du marchand (opposant au Test, LDB 60 l.12). Défaut 40 si absent. */
+  bargainSkill?: number;
   /** Articles garantis en stock (labels exacts), Disponibilité ignorée. */
   curated?: string[];
 }

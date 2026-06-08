@@ -5,5 +5,6 @@ export const merchantArchetype: MerchantArchetypeDef = {
   label: 'Herboriste',
   category: { subTypes: ['Herbes et potions', 'Drogues et poisons'] },
   settlement: 'village',
-  resaleRate: 0.10,
+  resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22) ; Marchandage la module ¼–½
+  bargainSkill: 40,
 };

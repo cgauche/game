@@ -11,6 +11,7 @@ import { ActionBar } from './ActionBar';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
+import { BargainModal } from './BargainModal';
 import { DefenseModal } from './DefenseModal';
 import { DeviationModal } from './DeviationModal';
 import { RoundStartModal } from './RoundStartModal';
@@ -114,6 +115,7 @@ export function CampaignView() {
       <TestModal />
       <RollModal />
       <ReloadModal />
+      <BargainModal />
       <DefenseModal />
       <DeviationModal />
       <DisengageModal />
