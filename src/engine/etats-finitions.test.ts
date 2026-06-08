@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { addCondition, testStatePenalty, endOfRound, hasCondition } from './conditions';
+import { addCondition, testStatePenalty, endOfRound, hasCondition, bleedDeathRoll } from './conditions';
 import { makeRNG } from './dice';
+import type { RNG } from './dice';
 import type { Combatant } from './types';
 
 const C = (over: Partial<Combatant>): Combatant =>
@@ -23,6 +24,15 @@ describe('Finitions d\'États (LDB 16)', () => {
     const c = C({ characteristics: { E: 90 } as never, conditions: [{ name: 'Empoisonné', value: 1 }] });
     endOfRound(c, makeRNG(1)); // E 90 → Résistance réussie → retire le poison
     expect(hasCondition(c, 'Empoisonné')).toBe(false);
+    expect(hasCondition(c, 'Exténué')).toBe(true);
+  });
+
+  it('Hémorragique : coagulation (double) du dernier État → 1 Exténué (l.109)', () => {
+    const c = C({ conditions: [{ name: 'Hémorragique', value: 1 }] });
+    const dbl: RNG = { int: () => 11 }; // jet 11 = double → coagule
+    const out = bleedDeathRoll(c, dbl);
+    expect(out.died).toBe(false);
+    expect(hasCondition(c, 'Hémorragique')).toBe(false);
     expect(hasCondition(c, 'Exténué')).toBe(true);
   });
 });
