@@ -4,6 +4,8 @@ import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { IsoStage } from '../gameIso/IsoStage';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
+import { MerchantPanel } from './MerchantPanel';
+import { formatMoney } from '../engine/money';
 import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
 import { TestModal } from './TestModal';
@@ -38,6 +40,7 @@ export function CampaignView() {
   const battle = useGame((s) => s.battle);
   const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
+  const merchant = useGame((s) => s.merchant);
   const gameTime = useGame((s) => s.gameTime);
   const setScreen = useGame((s) => s.setScreen);
   const zoom = useGame((s) => s.zoom);
@@ -62,7 +65,7 @@ export function CampaignView() {
         <div className="purse">
           <span className="mini-title">Bourse</span>
           <span className="coins">
-            <b className="co">{money.gold}</b> CO · <b className="sc">{money.silver}</b> SC · <b className="pa">{money.brass}</b> PA
+            {formatMoney(money)}
           </span>
         </div>
         <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
@@ -103,6 +106,7 @@ export function CampaignView() {
           <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
         )}
         {dialogue && <DialogueBox />}
+        {merchant && <MerchantPanel />}
         {mode === 'battle' && battle && <ActionBar />}
       </main>
 
