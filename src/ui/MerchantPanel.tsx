@@ -3,7 +3,8 @@ import { useGame } from '../state/store';
 import { findTrapping } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
-import type { Combatant } from '../engine/types';
+import { repairCostBrass } from '../engine/repair';
+import type { Combatant, ItemInstance } from '../engine/types';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -14,15 +15,25 @@ function buyPrice(label: string): string {
   return formatMoney(fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }))));
 }
 
+/** Coût de réparation d'une armure endommagée (LDB 63 l.97-98). */
+function repairPrice(item: ItemInstance): string {
+  const t = findTrapping(item.name);
+  const base = t ? toBrass(priceToMoney(t.price)) : 0;
+  return formatMoney(fromBrass(repairCostBrass(item, base)));
+}
+
 /** Présentationnel (props) — testable hors store. */
-export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onClose }: {
+export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRepair, onClose }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
   onBuy: (label: string, heroId: string) => void;
   onSell: (uid: string, heroId: string) => void;
+  onRepair: (uid: string, heroId: string) => void;
   onClose: () => void;
 }) {
+  // Armures endommagées du groupe (réparables chez le marchand).
+  const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
   const [heroId, setHeroId] = useState(party[0]?.id ?? '');
   return (
     <div className="merchant-panel modal-overlay">
@@ -60,6 +71,17 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onClo
             )))}
             {party.every((h) => !(h.items ?? []).length) && <p className="empty">— rien à vendre —</p>}
           </div>
+          <div className="merchant-repair">
+            <div className="mini-title">Réparer (armures endommagées)</div>
+            {damaged.map(({ h, it }) => (
+              <div className="merch-row" key={it.uid}>
+                <span>{h.name} : {it.name}</span>
+                <span className="price">{repairPrice(it)}</span>
+                <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
+              </div>
+            ))}
+            {damaged.length === 0 && <p className="empty">— aucune armure à réparer —</p>}
+          </div>
         </div>
       </div>
     </div>
@@ -73,7 +95,8 @@ export function MerchantPanel() {
   const money = useGame((s) => s.money);
   const buyItem = useGame((s) => s.buyItem);
   const sellItem = useGame((s) => s.sellItem);
+  const repairArmour = useGame((s) => s.repairArmour);
   const closeMerchant = useGame((s) => s.closeMerchant);
   if (!merchant) return null;
-  return <MerchantPanelView merchant={merchant} party={party} money={money} onBuy={buyItem} onSell={sellItem} onClose={closeMerchant} />;
+  return <MerchantPanelView merchant={merchant} party={party} money={money} onBuy={buyItem} onSell={sellItem} onRepair={repairArmour} onClose={closeMerchant} />;
 }

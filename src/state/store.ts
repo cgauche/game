@@ -50,6 +50,7 @@ import {
   inCareerTalent,
 } from '../engine/advancement';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
+import { repairCostBrass } from '../engine/repair';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -441,6 +442,8 @@ export interface GameState {
   closeMerchant: () => void;
   buyItem: (label: string, heroId: string) => void;
   sellItem: (uid: string, heroId: string) => void;
+  /** Réparation d'armure chez le marchand : remet damageTaken à 0 contre 10 %/PA perdu (LDB 63 l.97-98). */
+  repairArmour: (uid: string, heroId: string) => void;
   testRoll: () => void;
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
@@ -1036,6 +1039,27 @@ export const useGame = create<GameState>((set, get) => ({
       }),
     }));
     get().log(`Vente : ${item.name}.`);
+  },
+  repairArmour: (uid, heroId) => {
+    const m = get().merchant; if (!m) return;
+    const hero = get().party.find((h) => h.id === heroId);
+    const item = hero?.items?.find((i) => i.uid === uid);
+    if (!item || item.kind !== 'armor' || (item.damageTaken ?? 0) <= 0) return;
+    const t = findTrapping(item.name);
+    const base = t ? toBrass(priceToMoney(t.price)) : 0;
+    const cost = fromBrass(repairCostBrass(item, base));
+    if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.name}.`); return; }
+    set((s) => ({
+      money: moneySub(s.money, cost)!,
+      party: s.party.map((h) => {
+        if (h.id !== heroId) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const it = clone.items?.find((i) => i.uid === uid); if (it) it.damageTaken = 0;
+        recomputeLoadout(clone);
+        return clone;
+      }),
+    }));
+    get().log(`Réparation : ${item.name}.`);
   },
 
   seedRng: (seed) => {
