@@ -1,79 +1,82 @@
-# QC sprites — audit de reconnaissabilité (runbook)
+# QC sprites — audit de reconnaissabilité du RIG (runbook)
 
-> **Barème** : chaque élément (arme, monstre, tête, tenue…) doit se **reconnaître au
-> premier coup d'œil, sans connaître son nom**. Reconnaître ≠ parfait — c'est le socle ;
-> le vernis esthétique est une passe ultérieure.
+> **Barème** : chaque créature/élément doit se **reconnaître au premier coup d'œil, sans
+> connaître son nom**. Reconnaître ≠ parfait — c'est le socle ; le vernis esthétique vient après.
 
-Méthode **headless** (pas besoin de naviguer le jeu) : on rend chaque élément en PNG, des
-**agents aveugles** devinent ce que c'est, on corrige ce qui n'est pas reconnu, on re-vérifie.
-Rasterisation SVG→PNG via `@resvg/resvg-js` (déjà installé) ; inspection directe par `Read`.
+Tout le bestiaire passe désormais par le **rig** (`src/gameIso/rig/`) : plus aucun sprite
+monolithique. Une créature bipède = **Plan × Gabarit (carrure) × Race (peau/tête/traits/posture)
+× Perso**. On améliore une créature en éditant **sa Race** (ou son Gabarit), pas une table centrale
+(les ex-`PROPS`/`SPECIES_PALETTES`/`SPECIES_POSE`/`bipedConfig` ont été dissoutes dans les registres
+`gabarits/defs/` et `races/defs/`).
 
-## Pipeline en 5 étapes
+Méthode **headless** (pas besoin de naviguer le jeu) : on rend chaque créature en PNG via le rig,
+des **agents aveugles** devinent ce que c'est, on corrige la Race, on re-vérifie. Rasterisation
+SVG→PNG via `@resvg/resvg-js` ; inspection directe par `Read` (le contrôleur ET les agents voient
+les images).
 
-### 1. Rendre les éléments en PNG
-```bash
-npx tsx scripts/_qc-render.mts        # → public/qc/w*.png (armes) + c*.png (créatures) + manifest.json
+## Pipeline
+
+### 1. Rendre le bestiaire en PNG
+```powershell
+npx tsx scripts/_qc-creatures-rig.mts    # → public/qc/creatures-rig/c*.png + manifest.json
 ```
-Le manifest mappe `id → {kind, intended}` (gardé pour la comparaison ; jamais montré aux juges).
+Le manifest mappe `id → {kind, intended, plan}` (pour la comparaison ; **jamais montré aux juges**).
+Front, pose de repos, à l'échelle de la boîte 120×150 (grandes espèces pré-réduites).
 
-### 2. Audit aveugle (workflow)
+### 2. Audit aveugle (par LOTS de ≤5 agents)
+Dispatcher des subagents qui `Read` un PNG **sans le nom** et répondent : *meilleure hypothèse +
+confiance 1–5 + indices visuels + défauts*. Donner la liste des types WFRP possibles (humain, nain,
+elfe, orc, gobelin, ogre, troll, skaven, mort-vivant, homme-bête, guerrier du Chaos, mutant…).
+> ⚠️ **Lots de ≤5 agents** : au-delà, l'API serveur rate-limit (cf. session 2026-06-08). Plusieurs
+> lots séquentiels plutôt qu'un gros fan-out.
+
+**Critère de succès** : la créature est lue correctement avec **confiance ≥ 3** par la majorité.
+
+### 3. Corriger — éditer la RACE (ou le Gabarit), pas le code central
+- **Carrure fausse** (trop trapu/élancé) → `src/gameIso/rig/gabarits/defs/<id>.ts` (sl/st/legs/arms/
+  head) ou un `gabaritOverride` fin dans la Race.
+- **Peau / cheveux** → `races/defs/<Race>.ts` `palette` (+ `paletteF` pour la variante féminine).
+- **Posture de repos** → `pose` (deltas d'angle, appliqués front+profil).
+- **Tête caractéristique** → `head` (id d'une part de `parts/monster/`) ou `monster:{tete}` (forme
+  simple existante).
+- **Traits de corps** (panse+plastron, barbe, cornes, oreilles, plastron sombre…) → `features:
+  RaceFeature[]`. Une feature `scale:'bone'` **suit l'échelle de l'os** qu'elle habille → elle
+  REMPLIT le corps (ex. le gutplate de l'Ogre, l'os `torse` étant épais en gabarit `brute`).
+  `scale:'fixed'` garde une taille constante (enveloppe d'échelle inverse). `layer<0` = derrière la
+  part de l'os (cornes derrière la tête) ; `view` limite à une vue (crocs de face seulement).
+- **Art SVG** : itérer **à la vue** (rendre → `Read` le PNG → ajuster les chemins) ; valider par un
+  audit aveugle final. Réutiliser les tokens de palette (`@peau/@metal/@cheveux…`) pour rester
+  recoloriable. Pas de `<defs>` inventés (les gradients partagés sont dans `gameIso/sprites.DEFS`).
+
+### 4. Garde-fou iso-rendu : le golden master
+`src/gameIso/rig/golden/biped-golden.test.ts` fige le SVG résolu de chaque bipède (front+profil) +
+des cas héros équipés. Toute refacto de `composeRig`/registres doit le garder **VERT à 0 snapshot
+modifié** (le rig est partagé avec les héros). Un changement **intentionnel** (Ogre, tell de race) :
+```powershell
+npx vitest run src/gameIso/rig/golden -u
+git diff -W -- src/gameIso/rig/golden/__snapshots__/biped-golden.test.ts.snap   # vérifier que SEULS les snapshots ciblés bougent
 ```
-Workflow({ scriptPath: "scripts/qc/qc-recognizability.workflow.js" })
-```
-2 juges/élément lisent le PNG **sans le nom**, devinent + notent 1–5. Sortie : `fails` (avg<3 ou
-hypothèse fausse) + `ranking` complet. *(Nécessite l'opt-in workflow ; voir Workflow tool.)*
+Recouper les lignes des hunks (`git diff -U0 ... | Select-String "^@@"`) avec les bornes des blocs
+`exports[...]` pour confirmer le périmètre exact avant de committer.
 
-### 3. Interpréter — écarter les FAUX problèmes
-Le total brut de « douteux » trompe. Avant de corriger, retirer :
-- **Créatures rendues par le rig** (F1) : Humain, Nain, Halfling, Elfe, Ogre, Bella, Pol, Cultiste,
-  Mutant, Guerrier du Chaos → leur sprite monolithique est **du code mort**, l'audit le note mais
-  le jeu affiche le rig. Ne PAS perdre de temps dessus.
-- **Bonnes lectures ratées par le matcher** (orthographe/synonyme/langue) : ex. hippogriffe vs
-  « hyppogriffe », orque vs orc, homme-bête, fantôme… → lire le `guess` réel, pas le flag `match`.
-- **PNJ nommés** (Bella la Noire, Pol Dankels…) : se lisent comme leur archétype, c'est normal.
-
-### 4. Corriger
-- **Armes** (peu nombreuses, dessinées à la main) → `src/gameIso/rig/parts/equipment.ts`, map
-  `WEAPONS`. Convention : **manche relié à la tête, d'un seul tenant** ; tête/lame vers `-y` (en
-  jeu l'os `arme` est tourné ~165° → l'arme pend, poignée dans la main). Réutiliser les gradients
-  `DEFS` (g_steel, g_axe, g_glow…), pas de `<defs>` inventés. Les familles générées (poudre/fronde/
-  fouet/explosif) sont surchargeables APRÈS `Object.assign(WEAPONS, GENERATED_WEAPONS)`.
-- **Créatures** → workflow `scripts/qc/creatures-redo.workflow.js`. Éditer le tableau `C` :
-  `[label, "lecture erronée actuelle", "cible WFRP fidèle (silhouette-first)"]`. Le workflow
-  redessine front+dos+profil (best-of-2) et un **juge aveugle** valide la reconnaissabilité avant
-  d'accepter. Sort dans `art-ref/directional/creatures-redo/<slug>/chosen.json` (gitignoré).
-
-### 5. Ingérer + re-vérifier
-```bash
-node scripts/_ingest-creatures-redo.mjs     # chosen.json → creatureSprites.json (front) + creatureViews.json (dos/profil)
-npx tsx scripts/_qc-montage-creatures.mts    # → public/qc/creatures-redo-montage.png (relecture à l'œil)
-npx tsx scripts/_qc-montage.mts              # → public/qc/weapons-montage.png (13 armes)
-```
-Puis **re-lancer l'étape 2** sur les éléments corrigés pour confirmer qu'ils passent. Commiter
-`creatureSprites.json` / `creatureViews.json` / `equipment.ts` (l'art `art-ref/` reste gitignoré).
-
-## Scripts
-| Script | Rôle |
-|---|---|
-| `scripts/_qc-render.mts` | rend chaque arme (silhouette seule) + créature (front) en PNG + manifest |
-| `scripts/_qc-montage.mts` | planche des 13 armes |
-| `scripts/_qc-montage-creatures.mts` | planche des créatures redessinées |
-| `scripts/qc/qc-recognizability.workflow.js` | audit aveugle (Workflow) |
-| `scripts/qc/creatures-redo.workflow.js` | régénération créatures + juge aveugle (Workflow) |
-| `scripts/_ingest-creatures-redo.mjs` | ingère front+dos/profil des créatures redessinées |
-| `scripts/_ingest-creature-views.mjs` | ingère les vues dos/profil (F2) |
+### 5. Re-vérifier
+Re-rendre (étape 1), refaire l'audit aveugle (étape 2) sur les créatures corrigées, confirmer ≥3.
 
 ## Conventions & pièges
 - **Le rig est un pantin 2D de face** (rotations dans le plan, pas de profondeur) : voir
   `src/gameIso/rig/PART-CONTRACT.md`. `torse+` bascule LATÉRALEMENT — pas d'accroupi réel.
-- **Anti-blob** : silhouette reconnaissable d'abord ; `g_mut` (vert mutant) réservé orcs/gobs/
-  bestiaux/Chaos, sinon ça lit « blob vert » (cf. Troll). Réutiliser des anchors connus.
-- **Headless QC** : `@resvg/resvg-js` rastérise sans navigateur ; un agent peut `Read` le PNG et
-  juger. Plus fiable que piloter le jeu.
+- **Anti-blob** : silhouette reconnaissable d'abord ; éviter l'aplat vert uniforme (réserver aux
+  peaux-vertes/Chaos). Donner des tells nets (barbe naine ancrée à la mâchoire, oreilles elfes au
+  niveau de la joue, gutplate+heaume de l'ogre, plastron sombre+cornes du Guerrier du Chaos).
+- **« rig » ≠ bonne silhouette** : qu'une créature passe par le rig ne garantit pas qu'elle se lise
+  bien — c'est précisément ce que cet audit mesure.
+- **PowerShell** pour les runners ici (Bash s'auto-met en arrière-plan et traîne).
 
-## Étendre (passes futures)
-- **Têtes / tenues / carrières** : même pipeline — rendre par espèce/carrière, audit aveugle
-  « devine l'espèce / le métier », corriger. Têtes : `_ingest-hero-head-views.mjs` ; tenues :
-  `_ingest-hero-tenue-views.mjs`.
-- Régler le **vernis** des éléments « reconnus mais perfectibles » (Troll trop trapu, Géant ≈ ogre,
-  obscurs Jabberslythe/Squig…) une fois le socle de reconnaissabilité validé.
+## Périmètre fait / à faire
+- **Fait (SP1, bipèdes)** : registres Gabarit + Race ; features échelonnées à l'os ; pilote Ogre
+  (réparé) ; tells Nain/Elfe/Guerrier du Chaos/Mutant. Audits aveugles : Ogre 4/5, Nain 5/5,
+  Elfe 4/5, Chaos 4/5, Mutant 5/5.
+- **À faire (SP2/SP3)** : quadrupèdes (longueur de pattes + corps par espèce + vue profil + tête de
+  loup) ; rollout des sous-espèces (skaven clanrat/stormvermin, hommes-bêtes gor/ungor) ; migrer les
+  ~12 races encore en `monster` vers `head`+`features` quand on veut les enrichir.
+```
