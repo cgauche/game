@@ -179,12 +179,11 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
 /**
  * Cauchemars (trauma psychologique, LDB 21 l.92) : chaque nuit, un Personnage marqué effectue un
  * Test de **Calme Facile (+40)** ; sur un échec, il est en proie à de terribles cauchemars et gagne
- * un État **Exténué**. Le +40 (« Facile ») est passé en modificateur brut (l'enum de Difficulté du
- * jeu plafonne à +20). Pur ; mute `c`, renvoie le journal.
+ * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */
 export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG): string[] {
   const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
-  const res = rollTest(calme, 'intermediaire', rng, 40); // Calme Facile (+40)
+  const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];
   addCondition(c, 'Exténué');
   return [`${c.name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.`];

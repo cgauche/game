@@ -51,6 +51,21 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(c.roundsAtZero).toBe(0);
   });
 
+  it('un héros Hémorragique ne trouve pas le repos (LDB 16 l.105) — pas de récup, pas de mort', () => {
+    const c = hero({ conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'Exténué', value: 1 }], fate: 0 });
+    const log = restRecovery(c, { int: () => 1 });
+    expect(log.join(' ')).toMatch(/ne trouve pas le repos/);
+    expect(hasCondition(c, 'Exténué')).toBe(true); // pas dissipé (repos refusé)
+    expect(c.dead).not.toBe(true); // restRecovery ne tue pas
+  });
+
+  it('un héros À Terre soigné au réveil se relève (≥1 PB)', () => {
+    const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'À Terre', value: 1 }] });
+    restRecovery(c, { int: () => 30 }); // Résistance réussie → soigne, >0 PB
+    expect(c.wounds.current).toBeGreaterThan(0);
+    expect(hasCondition(c, 'À Terre')).toBe(false);
+  });
+
   it('un mort ne se repose pas', () => {
     const c = hero({ dead: true, conditions: [{ name: 'Exténué', value: 1 }] });
     restRecovery(c, { int: () => 1 });
@@ -69,6 +84,15 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
     expect(dayPhase(after.gameTime).key).toBe('aube'); // réveil à l’aube
     expect(hasCondition(after.party[0], 'Exténué')).toBe(false);
     expect(after.journal.some((l) => /dort jusqu|aube/i.test(l))).toBe(true);
+  });
+
+  it('un héros Hémorragique sans Destin SURVIT à la nuit (pas de spirale d’entretien — régression du bloquant)', () => {
+    const c = hero({ id: 'a', wounds: { current: 12, max: 12 }, conditions: [{ name: 'Hémorragique', value: 1 }], fate: 0 });
+    useGame.setState({ party: [c], gameTime: 12 * 60 });
+    useGame.getState().restParty();
+    const after = useGame.getState().party[0];
+    expect(after.dead).not.toBe(true);
+    expect(hasCondition(after, 'Hémorragique')).toBe(true); // toujours à stabiliser (Guérison), pas mort en dormant
   });
 
   it('ne fait rien en plein combat', () => {

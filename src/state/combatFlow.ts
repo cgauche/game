@@ -57,7 +57,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
 import { findSpell } from '../data/index';
-import { Scene, Effect, isWalkable } from './scene';
+import { Scene, Effect, isWalkable, condMet } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf, mountUp, mountableNear } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
@@ -178,15 +178,6 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
   return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 }
 
-/** Condition de flag pour triggers/dialogues. Un flag (`drapeau`) ou sa négation (`!drapeau`). Plusieurs
- *  flags séparés par des virgules sont combinés en ET : « v1,!v2 » = `flags.v1 && !flags.v2`. */
-export function condMet(cond: string, flags: Record<string, boolean>): boolean {
-  return cond
-    .split(',')
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .every((c) => (c.startsWith('!') ? !flags[c.slice(1)] : !!flags[c]));
-}
 
 export function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
   for (const e of effects) {
@@ -1440,8 +1431,15 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
  */
 export function restPartyOvernight(get: () => GameState, set: any): void {
   if (get().battle) return; // pas de repos en plein combat
-  const toDawn = minutesUntilNext(get().gameTime, DAWN_MINUTE);
-  get().advanceTime(toDawn === 0 ? MINUTES_PER_DAY : toDawn); // déjà à l'aube → dormir un cycle entier
+  const before = get().gameTime;
+  const toDawn = minutesUntilNext(before, DAWN_MINUTE);
+  const minutes = toDawn === 0 ? MINUTES_PER_DAY : toDawn; // déjà à l'aube → dormir un cycle entier
+  // Un sommeil N'EST PAS une suite de Rounds de combat : on avance l'horloge SANS rejouer l'entretien
+  // périodique (`advanceTime` ferait ~1 Round/min → des centaines de jets de mort par hémorragie/poison/
+  // feu, qui TUERAIENT le dormeur avant tout soin). RAW 16-États l.105 : le repos suppose des États
+  // stabilisés ; restRecovery refuse d'ailleurs le repos d'un héros encore Hémorragique/En flammes/Empoisonné.
+  set({ gameTime: before + minutes });
+  bus.emit(EVT.TIME_ADVANCED, { minutes });
   const party = get().party;
   const lines: string[] = [];
   for (const h of party) lines.push(...restRecovery(h, battleRng()));
