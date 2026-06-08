@@ -12,6 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
+  finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
@@ -1238,14 +1239,7 @@ export const useGame = create<GameState>((set, get) => ({
     const log = ph.mode === 'wounds'
       ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
       : ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`];
-    if (st.battle) {
-      set({ battle: { ...st.battle, acted: true, action: null, log: [...st.battle.log, ...log] } });
-      bus.emit(EVT.SCENE_DIRTY);
-      checkBattleOver(get, set);
-    } else {
-      set({ party: [...st.party] });
-      for (const l of log) get().log(l);
-    }
+    finishPlayerAction(get, set, log); // sortie commune combat / hors combat
   },
 
   /** Annule avant tout jet (aucun coût). */
@@ -1409,7 +1403,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, ...touchActors(get()) });
   },
   focusConfirm: () => {
-    const { battle, pendingFocus: pf } = get();
+    const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
     const caster = actorIn(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
@@ -1422,12 +1416,7 @@ export const useGame = create<GameState>((set, get) => ({
     const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
     // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
-    if (battle) {
-      set({ battle: { ...get().battle!, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
-      checkBattleOver(get, set);
-    } else {
-      set({ party: [...get().party], journal: [...get().journal.slice(-40), ...logLines] });
-    }
+    finishPlayerAction(get, set, logLines); // sortie commune combat / hors combat
   },
   focusCancel: () => set({ pendingFocus: null }),
   /** Ouvre une Focalisation HORS COMBAT (couture D) : accumule `caster.focus` pour un Sort d'Arcane/Domaine. */

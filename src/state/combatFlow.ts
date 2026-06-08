@@ -1325,6 +1325,25 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
   return lines;
 }
 
+/**
+ * Clôt une action JOUEUR résolue (soin / incantation / Focalisation, et futures actions hors combat) :
+ * EN COMBAT consomme l'Action (`acted`/`action:null`/`selectedSpell:null`), journalise dans `battle.log`
+ * et vérifie la fin de combat ; HORS COMBAT trace le `journal`. C'est la SORTIE commune — `combatOrParty`
+ * fournit la RÉSOLUTION des acteurs (`actorIn`/`touchActors`), ce helper la finalisation.
+ * `selectedSpell:null` est neutre pour une action non-incantation (déjà null).
+ */
+export function finishPlayerAction(get: () => GameState, set: any, lines: string[]): void {
+  const battle = get().battle;
+  if (battle) {
+    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...lines] } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+  } else {
+    set({ party: [...get().party], journal: [...get().journal.slice(-40), ...lines] });
+    bus.emit(EVT.SCENE_DIRTY);
+  }
+}
+
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
 /** Ouvre la modale d'incantation (jet différé, façon attaque) : pose `pendingCast` sans lancer. */
 export function castSpell(
@@ -1435,16 +1454,7 @@ export function applyCast(
 
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
-  if (battle) {
-    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...logLines] } });
-    bus.emit(EVT.SCENE_DIRTY);
-    checkBattleOver(get, set);
-  } else {
-    // Hors combat : aucune file de combat. Le MÊME applyCast a déjà appliqué l'effet (modélisé)
-    // au membre du groupe ; ici on ne fait que tracer le journal (zéro logique d'effet dupliquée).
-    set({ party: [...get().party], journal: [...get().journal.slice(-40), ...logLines] });
-    bus.emit(EVT.SCENE_DIRTY);
-  }
+  finishPlayerAction(get, set, logLines); // sortie commune combat (log+conso Action) / hors combat (journal)
 }
 
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
