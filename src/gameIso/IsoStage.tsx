@@ -43,7 +43,7 @@ import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
-import { summarizeEffects } from './effectIcons';
+import { summarizeEffects, combatantFlags } from './effectIcons';
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
 
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
@@ -401,7 +401,7 @@ export function IsoStage() {
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
       const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
-      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, { frenzied: c.frenzied });
+      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
       const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking, {
         hp: c.wounds,
         icons: fxSum.visible.map((v) => v.icon),

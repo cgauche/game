@@ -1,4 +1,4 @@
-import { summarizeEffects, type EffectChip } from '../gameIso/effectIcons';
+import { summarizeEffects, type EffectChip, type EffectFlags } from '../gameIso/effectIcons';
 import type { ConditionInstance, ActiveEffect } from '../engine/types';
 
 function chipTitle(c: EffectChip): string {
@@ -17,15 +17,15 @@ function chipTitle(c: EffectChip): string {
 export function EffectChips({
   conditions,
   effects,
-  frenzied,
+  flags,
   max = Infinity,
 }: {
   conditions?: ConditionInstance[];
   effects?: ActiveEffect[];
-  frenzied?: boolean;
+  flags?: EffectFlags;
   max?: number;
 }) {
-  const { visible, moreCount } = summarizeEffects(conditions, effects, max, { frenzied });
+  const { visible, moreCount } = summarizeEffects(conditions, effects, max, flags);
   if (visible.length === 0 && moreCount === 0) return null;
   return (
     <div className="fx-chips">

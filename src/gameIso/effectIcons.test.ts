@@ -81,4 +81,12 @@ describe('summarizeEffects — états-drapeaux (Frénésie)', () => {
     const r = summarizeEffects([cond('Sonné')], [buff('Bénédiction', 10, 2)], 5, { frenzied: true });
     expect(r.visible.map((c) => c.kind)).toEqual(['malus', 'state', 'buff']);
   });
+  it('Visée / Sur la défensive / Focalisation (avec DR en compteur)', () => {
+    const r = summarizeEffects([], [], 9, { aiming: true, defensiveStance: true, focusDr: 2 });
+    const labels = r.visible.map((c) => c.label);
+    expect(labels.some((l) => l.startsWith('En joue'))).toBe(true);
+    expect(labels.some((l) => l.startsWith('Sur la défensive'))).toBe(true);
+    const focus = r.visible.find((c) => c.label.startsWith('Focalisation'));
+    expect(focus?.count).toBe(2);
+  });
 });

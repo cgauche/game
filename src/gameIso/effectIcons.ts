@@ -3,7 +3,7 @@
  * (pion sur le terrain, panneau Perso, ordre de bataille, fiche express au survol).
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
-import type { ConditionInstance, ActiveEffect, CharKey } from '../engine/types';
+import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
 
 export interface EffectChip {
   key: string;
@@ -77,11 +77,26 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
   }));
 }
 
-/** États-drapeaux (hors `conditions[]`) : Frénésie (`c.frenzied`), etc. */
-export interface EffectFlags { frenzied?: boolean; }
+/** États-drapeaux (hors `conditions[]`) : postures/actions vivant sur le Combatant. */
+export interface EffectFlags {
+  frenzied?: boolean;
+  defensiveStance?: boolean;
+  aiming?: boolean;
+  /** DR de Focalisation cumulé (undefined = pas de Focalisation en cours). */
+  focusDr?: number;
+}
+
+/** Extrait les états-drapeaux affichables d'un Combatant (source unique pour tous les affichages). */
+export function combatantFlags(c: Combatant): EffectFlags {
+  return { frenzied: c.frenzied, defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr };
+}
+
 function flagChips(flags?: EffectFlags): EffectChip[] {
   const out: EffectChip[] = [];
   if (flags?.frenzied) out.push({ key: 'f-frenzied', icon: '🐗', label: 'Frénésie', kind: 'state', severity: 68 });
+  if (flags?.defensiveStance) out.push({ key: 'f-def', icon: '🛡️', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
+  if (flags?.aiming) out.push({ key: 'f-aim', icon: '🎯', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
+  if (flags?.focusDr != null) out.push({ key: 'f-focus', icon: '🔮', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
   return out;
 }
 
