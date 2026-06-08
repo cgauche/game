@@ -73,3 +73,26 @@ export function makePregens(): Combatant[] {
   }
   return out;
 }
+
+/**
+ * Équipe « showcase » de l'Arène — DÉLIBÉRÉMENT choisie (PAS `slice(0, 4)`, qui donnerait
+ * Soldat/Tueur/Sorcier/Prêtre : aucune arme à distance + deux soigneurs redondants). Les quatre
+ * piliers couvrent un maximum de règles DISTINCTES, au Niveau de Carrière 1 :
+ *  • Soldat (Reiklander) — mêlée Corps à corps (Base), tanke ; achète bouclier (Parade défensive)
+ *    et mailles (PA / Encombrement / pénalité de port) chez le maître d'arène.
+ *  • Tueur (Nain) — Frénésie + Sans peur (immunité Peur Troll/Ogre/mort-vivant) + Guérison en
+ *    combat + Maniement de deux armes ; exerce toute la couche Psychologie + soin + Détermination.
+ *  • Sorcier (Reiklander) — magie arcanique offensive (Fléchette/Choc) + Incident (miscast) ET
+ *    Corps à corps (Armes d'hast) avec le Bâton de combat → PROUVE en jeu la Spécialisation d'arme
+ *    (Jalon 2 : Armes d'hast ≠ Base).
+ *  • Chasseur (Elfe sylvain) — Projectiles (Fronde) + munitions (Pierre ×10) → bandes de portée,
+ *    rechargement, Spécialisation de tir. Seul porteur d'arme à distance du groupe.
+ * Marchandage/Évaluation n'existent sur aucune carrière martiale de Niveau 1 : `partyBest` retombe
+ * sur la Caractéristique brute (Soc/Int) — le marchand reste pleinement jouable (le Sorcier, Int
+ * élevée, évalue le butin magique).
+ */
+const ARENA_SEEDS = [101, 202, 707, 303]; // Soldat · Tueur · Sorcier · Chasseur
+export function makeArenaParty(): Combatant[] {
+  const all = makePregens();
+  return ARENA_SEEDS.map((s) => all.find((h) => h.id === `pregen-${s}`)).filter((h): h is Combatant => !!h);
+}

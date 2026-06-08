@@ -1,4 +1,4 @@
-import { makePregens } from '../../data/pregens';
+import { makeArenaParty } from '../../data/pregens';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
 import type { Effect, EncounterDef } from '../../state/scene';
@@ -100,7 +100,7 @@ export const scenario: TestScenario = {
   icon: '🏟️',
   title: 'Arène',
   tests: '10 vagues croissantes (bestiaire) + maître d’arène (marchand/évaluation) + Repos payant (RAW) + Chance/3 paliers + butin magique non identifié. 100 % données.',
-  partyNote: '4 pré-tirés vs 10 vagues',
-  makeParty: () => makePregens().slice(0, 4),
+  partyNote: 'Quatuor showcase (Soldat · Tueur · Sorcier · Chasseur) vs 10 vagues',
+  makeParty: () => makeArenaParty(),
   scene,
 };
