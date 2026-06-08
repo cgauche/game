@@ -103,19 +103,6 @@ export function canTakeAction(c: Combatant): boolean {
 }
 
 /**
- * Héros à terre à 0 PB SANS Détermination : il ne peut NI se relever (PB>0 requis, LDB 18 l.28)
- * NI agir utilement → son tour est auto-passé pour éviter le « 38 tours à vide » signalé en playtest.
- * Exception (resolve>0) : la Détermination peut retirer un État / rendre +1 PB (LDB 17 l.66) — on lui
- * laisse alors la main. Un soin allié le relève aussi (sur le tour de l'allié). Pur.
- */
-export function heroMustPassTurn(c: Combatant): boolean {
-  if (c.kind !== 'hero' || isOutOfAction(c)) return false;
-  const proneDown = hasCondition(c, 'À Terre') && c.wounds.current <= 0;
-  const hasResolveOption = (c.resolve ?? 0) > 0 && c.conditions.length > 0;
-  return proneDown && !hasResolveOption;
-}
-
-/**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
  * dissipation des États temporaires (LDB ch.16). Retourne un journal.
  */
