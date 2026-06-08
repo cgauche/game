@@ -38,4 +38,10 @@ describe('itemUse — consommables (LDB p.307, sourcé du desc)', () => {
     expect(itemUse(SWORD, user())).toBeNull();
     expect(itemUse(item({ desc: 'Un simple bibelot sans effet.' }), user())).toBeNull();
   });
+  it('un POISON d’arme / une drogue ne soigne PAS (PB en contexte de dégât, pas de récupération, LDB 72)', () => {
+    // Lotus noir : « les victimes subissent 1 Point de Blessure » → dégât infligé, pas un soin.
+    expect(itemUse(item({ name: 'Lotus noir', desc: "Utilisée pour empoisonner les lames. Les victimes qui subissent au moins 1 Point de Blessure d'une lame recouverte de sa sève subissent immédiatement 2 État Empoisonnés." }), user())).toBeNull();
+    // Bonnet de fou : « l'utilisateur perd 1d10 Points de Blessure » → perte, pas un soin.
+    expect(itemUse(item({ name: 'Bonnet de fou', desc: "Ils induisent une rage berserk, ajoutant +10 en Force, +4 Blessures et le Talent Frénésie. Quand l'effet se dissipe, l'utilisateur perd 1d10 Points de Blessure." }), user())).toBeNull();
+  });
 });

@@ -49,8 +49,12 @@ export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
 export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null {
   if (item.kind !== 'misc') return null;
   const desc = item.desc ?? '';
-  // Soin : « Bonus de <Carac> » (valeur dépendante du buveur) ou « N Points de Blessure » littéral.
-  if (/Blessure/i.test(desc)) {
+  // Soin : « Bonus de <Carac> » (valeur dépendante du buveur) ou « N Points de Blessure » littéral —
+  // lu UNIQUEMENT dans un contexte de RÉCUPÉRATION. Sans ce garde-fou, un poison d'arme (Lotus noir :
+  // « les victimes subissent 1 Point de Blessure ») ou une drogue (Bonnet de fou : « l'utilisateur perd
+  // 1d10 Points de Blessure ») serait pris pour un soin (LDB 72) : on ne se soigne pas en s'empoisonnant.
+  const recovers = /(r[ée]cup[ée]r|regagn|soign|r[ée]tabl)/i.test(desc);
+  if (recovers && /Blessure/i.test(desc)) {
     const byBonus = desc.match(/Bonus d[e'’]\s*([A-Za-zÀ-ÿ]+)/i);
     if (byBonus) {
       const key = CHAR_BY_LABEL[byBonus[1]];
