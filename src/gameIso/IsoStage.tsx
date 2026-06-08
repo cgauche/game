@@ -40,6 +40,7 @@ import { walkXY, walkDuration } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { entitySize } from '../state/spawn';
+import { isRider, isMount, riderOf } from '../state/mount';
 
 const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
@@ -369,6 +370,8 @@ export function IsoStage() {
     for (const c of battle.combatants) {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
+      // Combat monté : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE sur sa monture (ci-dessous).
+      if (isRider(c)) { if (isHero) hi++; continue; }
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
@@ -379,6 +382,28 @@ export function IsoStage() {
       const cx = wp.x + off, cy = wp.y + off;
       const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking);
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
+    }
+    // Combat monté (LDB 14) : chaque cavalier est dessiné EN SELLE sur sa monture — même tuile, à l'échelle
+    // du cavalier (pas de la monture), remonté à la hauteur de la selle, SANS ombre/anneau propres (le couple
+    // partage l'ombre au sol de la monture). Profondeur légèrement supérieure → rendu AU-DESSUS de la monture.
+    for (const mount of battle.combatants) {
+      if (!isMount(mount) || !mount.pos) continue;
+      const rider = riderOf(battle, mount);
+      if (!rider) continue;
+      const off = (sizeFootprint(mount.size) - 1) / 2;
+      const wp = walkPosOf(mount.id, mount.pos.x, mount.pos.y); // suit l'animation de marche de la monture
+      const cx = wp.x + off, cy = wp.y + off;
+      const { cx: px, cy: py } = tileCenter(cx, cy, dims);
+      const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
+      const lift = 0.52 * 150 * mountScale; // hauteur de la selle ≈ mi-dos de la monture (px écran)
+      const rr = pickBackend({ kind: 'combatant', combatant: rider });
+      const riderScale = 0.62 * rr.speciesScale * sizeTokenScale(rider.size) * 0.85; // léger tassement « assis »
+      const el = (
+        <g key={`${rider.id}-mtd`} transform={`translate(${px},${py - lift})`}>
+          <g transform={`translate(${-60 * riderScale},${-150 * riderScale}) scale(${riderScale})`}>{rr.body}</g>
+        </g>
+      );
+      objs.push({ d: depth(cx, cy, dims) + 0.51, el });
     }
   } else {
     for (const ent of scene.entities) {

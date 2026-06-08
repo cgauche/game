@@ -12,5 +12,6 @@ import { scenario as e7 } from './08-guerison';
 import { scenario as e8 } from './09-incantation-hors-combat';
 import { scenario as e9 } from './10-marchand';
 import { scenario as e10 } from './11-deux-marchands';
+import { scenario as e11 } from './12-monture';
 
-export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10];
+export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11];
