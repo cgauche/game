@@ -74,6 +74,16 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Races (peau/tête/traits/posture + défauts d'espèce) : 1 race = 1 fichier defs/.
+    // Dissout SPECIES_PALETTES + SPECIES_POSE + l'if-chain baseSpeciesOf + la config biped.
+    dir: 'src/gameIso/rig/races/defs',
+    out: 'src/gameIso/rig/races/_registry.generated.ts',
+    exportName: 'race',
+    arrayName: 'RACE_DEFS',
+    type: 'RaceDef',
+    typeFrom: './types',
+  },
+  {
     // Gabarits corporels AUTO-ENREGISTRÉS : 1 plan = 1 fichier defs/ (ré-exporte son BodyPlan).
     // bodyPlan.ts dérive la table PLANS de cette liste → plus de registre central à éditer.
     dir: 'src/gameIso/rig/plans/defs',
