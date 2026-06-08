@@ -3,6 +3,7 @@ import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
 import { MERCHANTS } from '../../state/merchants/index';
+import type { Settlement } from '../../engine/disponibilite';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { ValidationPanel } from './ValidationPanel';
 import { EntityListPanel } from './EntityListPanel';
@@ -1325,7 +1326,7 @@ export function Editor() {
                     </label>
                     <label className="ed-field">
                       Marchand (archétype)
-                      <select value={sel.merchant?.archetype ?? ''} onChange={(e) => updateSel({ merchant: e.target.value ? { archetype: e.target.value } : undefined })}>
+                      <select value={sel.merchant?.archetype ?? ''} onChange={(e) => updateSel({ merchant: e.target.value ? { ...sel.merchant, archetype: e.target.value } : undefined })}>
                         <option value="">— aucun —</option>
                         {Object.values(MERCHANTS).map((a) => (
                           <option key={a.name} value={a.name}>
@@ -1334,6 +1335,34 @@ export function Editor() {
                         ))}
                       </select>
                     </label>
+                    {sel.merchant && (
+                      <>
+                        <label className="ed-field">
+                          ↳ Bourg (override Disponibilité)
+                          <select
+                            value={sel.merchant.settlement ?? ''}
+                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, settlement: (e.target.value || undefined) as Settlement | undefined } })}
+                          >
+                            <option value="">— défaut (archétype) —</option>
+                            <option value="village">Village</option>
+                            <option value="ville">Ville</option>
+                            <option value="cite">Cité</option>
+                          </select>
+                        </label>
+                        <label className="ed-field">
+                          ↳ Taux de rachat (override, ex. 0.5 = ½)
+                          <input
+                            type="number"
+                            step="0.05"
+                            min="0"
+                            max="1"
+                            placeholder="défaut archétype"
+                            value={sel.merchant.resaleRate ?? ''}
+                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, resaleRate: e.target.value === '' ? undefined : Number(e.target.value) } })}
+                          />
+                        </label>
+                      </>
+                    )}
                   </>
                 )}
                 {sel.kind === 'prop' && (
