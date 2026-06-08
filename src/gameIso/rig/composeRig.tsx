@@ -3,6 +3,7 @@ import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverl
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { gabaritById } from './gabarits';
 import { raceById, racePalette } from './races';
+import type { RaceFeature } from './races';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
@@ -14,6 +15,18 @@ import { tenuePaletteFor } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
+
+/** Convertit une RaceFeature en part d'os.
+ *  'bone' (défaut) = telle quelle : l'os l'échelonne automatiquement via son transform scale.
+ *  'fixed' = enveloppe d'échelle inverse pour annuler l'échelle de l'os (taille constante). */
+export function featureToPart(f: RaceFeature, boneScale: [number, number]): { svg: string; layer: number } {
+  const layer = f.layer ?? 50;
+  if (f.scale === 'fixed' && (Math.abs(boneScale[0] - 1) > 1e-4 || Math.abs(boneScale[1] - 1) > 1e-4)) {
+    const inv = `<g transform="scale(${(1 / boneScale[0]).toFixed(4)},${(1 / boneScale[1]).toFixed(4)})">${f.svg}</g>`;
+    return { svg: inv, layer };
+  }
+  return { svg: f.svg, layer };
+}
 
 export interface ResolvedBone {
   id: string; // BoneId (bipède) OU os d'un autre gabarit (quadrupède…) — forme partagée cross-plan
@@ -107,6 +120,14 @@ export function resolveRig(
   // Calques cosmétiques (mutations…) par-dessus tout, dans le repère de leur os.
   for (const ov of overlays) {
     if (ov.svg) boneParts[ov.bone].push({ svg: ov.svg, layer: 99 });
+  }
+
+  // Traits de corps de RACE (gut-plate Ogre, cornes Elfe, queue Skaven…). Injectés AVANT la
+  // résolution de palette pour que leurs tokens @peau/@metal soient appliqués comme le reste.
+  for (const feat of race.features ?? []) {
+    if (feat.view && feat.view !== view) continue;   // feature limitée à une vue (ex. crocs front)
+    const part = featureToPart(feat, scaleOf[feat.bone]);
+    boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
   }
 
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.
