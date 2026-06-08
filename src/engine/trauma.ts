@@ -103,7 +103,7 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  */
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, note: `LDB 18 l.300 : −5/−10 permanent aux Tests de Langue (compétence, non chiffré ici).` };
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, skillPenalty: { langue: pen }, note: `LDB 18 l.300/309 : ${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
   return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `LDB 18 l.300/309 : ${pen} permanent en Agilité (os mal ressoudé).` };
 }
 
@@ -199,5 +199,21 @@ export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
 export function traumaDodgePenalty(c: Combatant): number {
   if (c.ignoreCritMods) return 0; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
   const pens = (c.traumas ?? []).map((t) => t.dodgePenalty ?? 0).filter((p) => p < 0);
+  return pens.length ? Math.min(...pens) : 0;
+}
+
+/** Pire pénalité permanente à une Compétence nommée due aux traumatismes (séquelle de fracture, LDB 18
+ *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). Non-cumul (l.20) ; ≤ 0. */
+export function traumaSkillPenalty(c: Combatant, skill?: string): number {
+  if (!skill || c.ignoreCritMods) return 0;
+  const low = skill.toLowerCase();
+  const pens = (c.traumas ?? [])
+    .map((t) => {
+      const sp = t.skillPenalty;
+      if (!sp) return 0;
+      const key = Object.keys(sp).find((k) => low === k || low.startsWith(k)); // « langue (reikspiel) » → « langue »
+      return key ? sp[key] : 0;
+    })
+    .filter((p) => p < 0);
   return pens.length ? Math.min(...pens) : 0;
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, treatTrauma, hasTreatableTrauma } from './trauma';
+import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, treatTrauma, hasTreatableTrauma, traumaSkillPenalty } from './trauma';
+import { testValue } from './skills';
 import type { Combatant } from './types';
 import type { RNG } from './dice';
 
@@ -92,6 +93,19 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     const before = majeure.traumas![0].recoveryDays;
     treatTrauma(majeure, 5);
     expect(majeure.traumas![0].recoveryDays).toBe(before); // pas d'accélération
+  });
+
+  it('fracture à la TÊTE mal ressoudée → séquelle de Langue permanente (l.300/309)', () => {
+    const t = traumaFromKind('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
+    const c = C({ traumas: [t], skills: [{ name: 'Langue (Reikspiel)', advances: 20, characteristic: 'Int' } as never] });
+    const fail: RNG = { int: () => 95 };
+    tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
+    const seq = c.traumas![0];
+    expect(seq.skillPenalty?.langue).toBe(-10); // majeure
+    expect(traumaSkillPenalty(c, 'Langue (Reikspiel)')).toBe(-10); // matché par préfixe
+    expect(traumaSkillPenalty(c, 'Charme')).toBe(0);
+    // testValue intègre la séquelle : Int 30 + 20 avances − 10 = 40.
+    expect(testValue(c, 'Langue (Reikspiel)')).toBe(40);
   });
 
   it('hasTreatableTrauma : faux pour une fracture hors fenêtre d’une semaine', () => {

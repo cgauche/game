@@ -17,6 +17,7 @@ const HEAL = item({
   desc: "Si vous avez plus de 0 Blessure, récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance. Dose: 1 par rencontre.",
 });
 const VITAL = item({ name: 'Potion de vitalité', desc: 'Boire cette décoction retire instantanément tout État Exténué.' });
+const BANDAGE = item({ name: 'Bandages', desc: 'Un Test de Guérison ou de Dextérité réussi retire +1 État Hémorragique supplémentaire.' });
 const SWORD = item({ name: 'Épée', kind: 'melee', desc: 'Une lame tranchante.' });
 
 describe('itemUse — consommables (LDB p.307, sourcé du desc)', () => {
@@ -27,8 +28,11 @@ describe('itemUse — consommables (LDB p.307, sourcé du desc)', () => {
   it('soin littéral « N Points de Blessure »', () => {
     expect(itemUse(item({ desc: 'Récupérez 4 Points de Blessure.' }), user())).toEqual({ heal: 4 });
   });
-  it('Potion de vitalité : retire l’État Exténué', () => {
+  it('Potion de vitalité : retire TOUT l’État Exténué (pas de quantité chiffrée)', () => {
     expect(itemUse(VITAL, user())).toEqual({ removeCondition: 'Exténué' });
+  });
+  it('Bandages : retire +1 pion Hémorragique (quantité chiffrée, LDB 74 l.70)', () => {
+    expect(itemUse(BANDAGE, user())).toEqual({ removeCondition: 'Hémorragique', removeStacks: 1 });
   });
   it('objet non consommable (arme, bibelot) → null', () => {
     expect(itemUse(SWORD, user())).toBeNull();

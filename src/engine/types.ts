@@ -134,6 +134,9 @@ export interface Trauma {
   charPenalty?: Partial<Record<CharKey, number>>;
   /** Pénalité (négative) aux Tests de mobilité/Esquive — trauma de jambe (LDB 18 l.298/315/369). */
   dodgePenalty?: number;
+  /** Pénalité (négative) à une Compétence nommée (clé minuscule, ex. « langue ») — séquelle de fracture à la
+   *  Tête (−5/−10 aux Tests de Langue, LDB 18 l.300/309). Lue par `testValue`. */
+  skillPenalty?: Record<string, number>;
   note: string;
   /** Jours de convalescence restants (LDB 18 : déchirure 30−BE, fracture 30+1d10…). Décompté au repos ;
    *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */

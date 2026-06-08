@@ -9,6 +9,7 @@ import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
+import { traumaSkillPenalty } from './trauma';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -31,7 +32,8 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0;
   const armour = skill ? wornArmourPenalty(c, skill) : 0;
   const soc = ck === 'Soc' ? wornSocialMod(c) : 0;
-  return base + (sk?.advances ?? 0) + states + enc + armour + soc;
+  const traumaSkill = traumaSkillPenalty(c, skill); // séquelle permanente de fracture (Langue, LDB 18 l.300)
+  return base + (sk?.advances ?? 0) + states + enc + armour + soc + traumaSkill;
 }
 
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le

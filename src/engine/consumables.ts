@@ -15,6 +15,8 @@ export interface ItemEffect {
   heal?: number;
   /** Nom de l'État retiré. */
   removeCondition?: string;
+  /** Nombre de pions retirés (Bandages : « +1 État Hémorragique », LDB 74 l.70). Absent = tout l'État. */
+  removeStacks?: number;
 }
 
 /** Effet d'usage d'un consommable pour un buveur donné, ou `null` si l'objet n'est pas utilisable. */
@@ -31,8 +33,12 @@ export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null 
     const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
     if (lit) return { heal: parseInt(lit[1], 10) };
   }
-  // Retrait d'État : « retire … tout État <Nom> ».
+  // Retrait d'État : « retire … (tout | +N) État <Nom> ». Une quantité chiffrée (« +1 État Hémorragique »
+  // des Bandages) retire ce nombre de pions ; « tout État <Nom> » (Potion de vitalité) retire tout.
   const cond = desc.match(/retire[^.]*?[ÉEée]tat\s+([A-Za-zÀ-ÿ]+)/i);
-  if (cond) return { removeCondition: cond[1] };
+  if (cond) {
+    const qty = desc.match(/\+?\s*(\d+)\s*[ÉEée]tats?\b/i);
+    return { removeCondition: cond[1], ...(qty ? { removeStacks: parseInt(qty[1], 10) } : {}) };
+  }
   return null;
 }

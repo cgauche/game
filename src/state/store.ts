@@ -1618,8 +1618,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (eff.removeCondition) {
       const cond = active.conditions.find((c) => c.name === eff.removeCondition);
       if (cond) {
-        removeCondition(active, eff.removeCondition, cond.value); // retire toutes les piles de l'État
-        log.push(`${active.name} n'est plus ${eff.removeCondition}.`);
+        const n = eff.removeStacks ?? cond.value; // Bandages : +1 pion ; Potion : tout l'État
+        removeCondition(active, eff.removeCondition, n);
+        log.push(eff.removeStacks
+          ? `${active.name} : ${Math.min(n, cond.value)} pion ${eff.removeCondition} stoppé (${it.name}).`
+          : `${active.name} n'est plus ${eff.removeCondition}.`);
       } else {
         log.push(`${active.name} n'a pas l'État ${eff.removeCondition}.`);
       }
