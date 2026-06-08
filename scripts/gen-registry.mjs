@@ -65,6 +65,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Gabarits (carrures réutilisables) : 1 carrure = 1 fichier defs/. Dissout PROPS.
+    dir: 'src/gameIso/rig/gabarits/defs',
+    out: 'src/gameIso/rig/gabarits/_registry.generated.ts',
+    exportName: 'gabarit',
+    arrayName: 'GABARIT_DEFS',
+    type: 'GabaritDef',
+    typeFrom: './types',
+  },
+  {
     // Gabarits corporels AUTO-ENREGISTRÉS : 1 plan = 1 fichier defs/ (ré-exporte son BodyPlan).
     // bodyPlan.ts dérive la table PLANS de cette liste → plus de registre central à éditer.
     dir: 'src/gameIso/rig/plans/defs',
