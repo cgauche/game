@@ -8,7 +8,7 @@
       "h": 11
     },
     "ambiance": "exterieur",
-    "startMessage": "L’ARÈNE — La Cour. Avancez sur le sable : la première fournée vous attend (couvert : tonneaux, caisses, statue centrale).",
+    "startMessage": "L’ARÈNE — La Cour. Un cavalier vous charge sur le sable ! Un cheval de bataille LIBRE attend près de vous (case ~3,5) : approchez-le et Chevauchez-le pour combattre monté.",
     "tiles": [
       "pave",
       "pave",
@@ -322,31 +322,35 @@
         "id": "enc-z1",
         "enemies": [
           {
-            "ref": "Gobelin",
-            "pos": {
-              "x": 8,
-              "y": 2
-            }
-          },
-          {
-            "ref": "Gobelin",
-            "pos": {
-              "x": 8,
-              "y": 9
-            }
-          },
-          {
-            "ref": "Snotling",
+            "ref": "Cheval",
             "pos": {
               "x": 12,
-              "y": 4
-            }
+              "y": 3
+            },
+            "mount": true
           },
           {
-            "ref": "Snotling",
+            "ref": "Mutant",
             "pos": {
-              "x": 6,
-              "y": 6
+              "x": 12,
+              "y": 3
+            },
+            "rides": 0
+          },
+          {
+            "ref": "Cheval",
+            "pos": {
+              "x": 3,
+              "y": 5
+            },
+            "mount": true,
+            "side": "ally"
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 8,
+              "y": 8
             }
           },
           {

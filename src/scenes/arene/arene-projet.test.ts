@@ -50,6 +50,13 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(bad).toEqual([]);
   });
 
+  it('la Cour met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {
+    const z1 = project.find((s) => s.id === 'arene-zone1')!;
+    const en = z1.encounters[0].enemies;
+    expect(en.some((e) => e.rides != null)).toBe(true); // cavalier pré-monté (rides → index de la monture)
+    expect(en.some((e) => e.mount && e.side === 'ally')).toBe(true); // monture LIBRE côté héros
+  });
+
   it('les ennemis d’une vague sont RÉPARTIS (pas tous dans la même colonne)', () => {
     for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
       const xs = new Set(sc.encounters[0].enemies.map((e) => e.pos.x));
