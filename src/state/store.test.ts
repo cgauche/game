@@ -2396,3 +2396,27 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(rolled1).toBe(t0 + 2 * 24 * 60);
   });
 });
+
+describe('transferItem — donner un objet à un autre héros', () => {
+  const h = (id: string, items: unknown[] = []): Combatant =>
+    ({ id, name: id.toUpperCase(), items, characteristics: {}, wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+
+  it('déplace l’objet (retiré de la source, ajouté NON équipé chez la cible)', () => {
+    const a = h('a', [{ uid: 'x', name: 'Épée bâtarde', kind: 'melee', qualities: [], enc: 2, equipped: true }]);
+    useGame.setState({ party: [a, h('b')] });
+    useGame.getState().transferItem('x', 'a', 'b');
+    const st = useGame.getState();
+    expect(st.party.find((c) => c.id === 'a')!.items!.find((i) => i.uid === 'x')).toBeUndefined();
+    const moved = st.party.find((c) => c.id === 'b')!.items!.find((i) => i.uid === 'x');
+    expect(moved).toBeTruthy();
+    expect(moved!.equipped).toBe(false); // arrive non équipé chez le destinataire
+  });
+  it('no-op si même héros ou objet absent', () => {
+    const a = h('a', [{ uid: 'x', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false }]);
+    useGame.setState({ party: [a, h('b')] });
+    useGame.getState().transferItem('x', 'a', 'a'); // même héros
+    useGame.getState().transferItem('zzz', 'a', 'b'); // objet inexistant
+    expect(useGame.getState().party.find((c) => c.id === 'a')!.items!.length).toBe(1);
+    expect(useGame.getState().party.find((c) => c.id === 'b')!.items!.length).toBe(0);
+  });
+});

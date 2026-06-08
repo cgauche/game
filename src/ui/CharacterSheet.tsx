@@ -164,6 +164,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
 
 function FicheBody({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
+  const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const [skinFor, setSkinFor] = useState<string | null>(null);
   const items = hero.items ?? [];
@@ -322,6 +323,21 @@ function FicheBody({ hero }: { hero: Combatant }) {
                     </button>
                   ) : (
                     <span className="ir-kind">{it.kind}</span>
+                  )}
+                  {party.length > 1 && (
+                    <select
+                      className="give-sel"
+                      value=""
+                      title="Donner cet objet à un autre héros"
+                      onChange={(e) => {
+                        if (e.target.value) transferItem(it.uid, hero.id, e.target.value);
+                      }}
+                    >
+                      <option value="">Donner à…</option>
+                      {party.filter((p) => p.id !== hero.id).map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
                   )}
                 </div>
                 {open && (

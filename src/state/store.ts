@@ -490,6 +490,9 @@ export interface GameState {
   setScreen: (s: Screen) => void;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
+  /** Donne un objet d'un héros à un autre (transfert d'inventaire). Arrive NON équipé chez le
+   *  destinataire ; recalcule les deux loadouts. Permet de confier une arme/armure au bon porteur. */
+  transferItem: (uid: string, fromHeroId: string, toHeroId: string) => void;
   /** Skin cosmétique d'un objet (override de palette token→hex ; clé à `undefined` = reset).
    *  Propagé à l'arme active via recomputeLoadout → le rendu se recolore (objet légendaire). */
   setItemSkin: (heroId: string, uid: string, patch: Record<string, string | undefined>) => void;
@@ -822,6 +825,31 @@ export const useGame = create<GameState>((set, get) => ({
         return clone;
       }),
     })),
+  transferItem: (uid, fromHeroId, toHeroId) => {
+    if (fromHeroId === toHeroId) return;
+    const from = get().party.find((h) => h.id === fromHeroId);
+    const item = from?.items?.find((i) => i.uid === uid);
+    const to = get().party.find((h) => h.id === toHeroId);
+    if (!item || !to) return;
+    set((s) => ({
+      party: s.party.map((h) => {
+        if (h.id === fromHeroId) {
+          const c: Combatant = JSON.parse(JSON.stringify(h));
+          c.items = (c.items ?? []).filter((i) => i.uid !== uid);
+          recomputeLoadout(c);
+          return c;
+        }
+        if (h.id === toHeroId) {
+          const c: Combatant = JSON.parse(JSON.stringify(h));
+          c.items = [...(c.items ?? []), { ...item, equipped: false }]; // arrive NON équipé
+          recomputeLoadout(c);
+          return c;
+        }
+        return h;
+      }),
+    }));
+    get().log(`${from!.name} donne ${item.name} à ${to.name}.`);
+  },
   setItemSkin: (heroId, uid, patch) =>
     set((s) => ({
       party: s.party.map((h) => {
