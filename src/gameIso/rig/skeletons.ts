@@ -76,6 +76,7 @@ export function baseSpeciesOf(species: string): string {
   if (s.startsWith('vampire')) return 'Vampire';
   if (s.startsWith('démon') || s.startsWith('demon')) return 'Démon';
   if (s.startsWith('fimir')) return 'Fimir'; // brute hulking à œil unique — race dédiée (gabarit brute, sans features Ogre)
+  if (s.includes('chaos') && (s.includes('guerrier') || s.includes('elu') || s.includes('chevalier') || s.includes('champion'))) return 'Guerrier du Chaos';
   return 'Humain';
 }
 

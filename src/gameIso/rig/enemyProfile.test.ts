@@ -121,9 +121,11 @@ describe('enemyRigProfile', () => {
     expect(p.equip.armour).toContain(item); // l'inventaire prime sur la synthèse
   });
 
-  it('mutation : Mutant a des calques, Bandit non', () => {
+  it('mutation : Mutant a des calques ; Guerrier du Chaos (race) et Bandit non', () => {
     expect((enemyRigProfile(mkEnemy('Mutant'))!.overlays ?? []).length).toBeGreaterThanOrEqual(1);
-    expect((enemyRigProfile(mkEnemy('Guerrier du Chaos'))!.overlays ?? []).length).toBeGreaterThanOrEqual(1);
+    // Le Guerrier du Chaos tient son identité de sa RACE (cornes + plastron sombre = features),
+    // pas de calques de mutation aléatoires.
+    expect((enemyRigProfile(mkEnemy('Guerrier du Chaos'))!.overlays ?? []).length).toBe(0);
     expect((enemyRigProfile(mkEnemy('Bandit'))!.overlays ?? []).length).toBe(0);
   });
 });

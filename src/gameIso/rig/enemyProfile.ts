@@ -121,33 +121,38 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
 }
 
 // --- Calques de mutation (cosmétiques) ------------------------------------
-const M_HORN = '<path d="M3 -3 q5 -9 2 -16 q-5 5 -5 16 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.6"/>';
-const M_HORN2 = '<path d="M-3 -3 q-5 -9 -2 -16 q5 5 5 16 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.6"/>';
-const M_CLAW = '<path d="M-3 1 l1 8 M0 1 l0 9 M3 1 l-1 8" stroke="#5a3a2a" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
-const M_EYE = '<ellipse cx="0" cy="-8" rx="3" ry="2" fill="#e8e0c0"/><circle cx="0" cy="-8" r="1.1" fill="#5a0a0a"/>';
-const M_TENTACLE = '<path d="M2 -2 q10 4 8 14 q-2 6 -6 4 q3 -6 -1 -10 q-3 -3 -1 -8z" fill="#7a8a5a" stroke="#3a4026" stroke-width="0.6"/>';
+// Cornes charnues fléchies — tell #1 du mutant, toujours présentes (HORN=droite, HORN2=gauche).
+const M_HORN  = '<path d="M4 -2 Q11 -12 7 -26 Q2 -14 -1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/><path d="M3 -5 Q9 -14 6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>';
+const M_HORN2 = '<path d="M-4 -2 Q-11 -12 -7 -26 Q-2 -14 1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/><path d="M-3 -5 Q-9 -14 -6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>';
+// Œil supplémentaire gros et injecté, implanté sur le torse.
+const M_EYE = '<ellipse cx="0" cy="-4" rx="6" ry="4.5" fill="#e0d8b0" stroke="#3a2820" stroke-width="0.9"/><ellipse cx="0" cy="-4" rx="3.5" ry="3" fill="#7a1010"/><circle cx="0" cy="-4" r="1.6" fill="#0a0808"/><circle cx="1.2" cy="-5.2" r="0.7" fill="#ffffff" opacity="0.5"/>';
+// Tentacule sinueux depuis une épaule.
+const M_TENTACLE = '<path d="M3 -4 Q16 2 14 18 Q12 28 6 24 Q10 18 8 10 Q6 2 0 -2 Z" fill="#8a9a6a" stroke="#4a5836" stroke-width="0.8"/><path d="M8 8 Q15 14 12 22" fill="none" stroke="#5a6a3a" stroke-width="0.6" opacity="0.7"/>';
+// Griffes longues et arquées sur une main.
+const M_CLAW = '<path d="M-4 0 L-3 12 Q-2 14 0 13" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M0 0 L0 14" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M4 0 L3 12 Q2 14 0 13" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
 
-const MUTATIONS: RigOverlay[] = [
-  { bone: 'tete', svg: M_HORN },
-  { bone: 'tete', svg: M_HORN2 },
-  { bone: 'mainD', svg: M_CLAW },
-  { bone: 'torse', svg: M_EYE },
+const MUTATION_EXTRAS: RigOverlay[] = [
+  { bone: 'mainD',   svg: M_CLAW },
+  { bone: 'torse',   svg: M_EYE },
   { bone: 'epauleD', svg: M_TENTACLE },
 ];
 
-/** 1 à 3 calques de mutation choisis de façon déterministe depuis le seed. */
+/** Mutations GARANTIES : les deux cornes + 1 ou 2 extras déterministes depuis le seed. */
 function mutationOverlays(seed: number): RigOverlay[] {
-  const count = 1 + (seed % 3); // 1..3
-  const out: RigOverlay[] = [];
-  for (let i = 0; i < count; i++) out.push(MUTATIONS[(seed + i * 5) % MUTATIONS.length]);
-  // déduplique par (bone+svg)
-  const seen = new Set<string>();
-  return out.filter((o) => {
+  // Cornes toujours présentes — tell immédiat du mutant.
+  const out: RigOverlay[] = [
+    { bone: 'tete', svg: M_HORN },
+    { bone: 'tete', svg: M_HORN2 },
+  ];
+  // 1 ou 2 extras choisis par seed (sans doublon os+svg).
+  const extraCount = 1 + (seed % 2); // 1..2
+  const seen = new Set<string>(out.map((o) => o.bone + o.svg));
+  for (let i = 0; i < extraCount; i++) {
+    const o = MUTATION_EXTRAS[(seed + i * 5) % MUTATION_EXTRAS.length];
     const k = o.bone + o.svg;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
+    if (!seen.has(k)) { out.push(o); seen.add(k); }
+  }
+  return out;
 }
 
 /**
@@ -169,7 +174,8 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
   // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
-  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
+  // NOTE : « chaos » seul exclu — « guerrier/élu/champion/chevalier du chaos » ont leur race dédiée.
+  const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
   const isHumanMutant = isMutant || (hasMonster && species === 'Humain');
   const career = c.career ?? (isHumanMutant ? 'Mendiant' : (perso?.career ?? race.career ?? detectCareer(n)));
@@ -210,7 +216,8 @@ export function entityRigProfile(
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
   const hasMonster = !!(monster && Object.keys(monster).length);
-  const isMutant = /mutant|chaos|corrompu|difforme|abomination/.test(n);
+  // NOTE : « chaos » seul exclu — « guerrier/élu/champion/chevalier du chaos » ont leur race dédiée.
+  const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
     career: opts?.career ?? perso?.career ?? race.career ?? detectCareer(n),
