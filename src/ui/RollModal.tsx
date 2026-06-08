@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
+import { firedWeapon } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 
@@ -66,7 +67,7 @@ export function RollModal() {
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
-  const weapon = attacker.weapons[0];
+  const weapon = firedWeapon(attacker, target); // arme RÉELLEMENT tirée (mêlée au contact / distance + munition), pas weapons[0]
   const res = pa.result;
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);

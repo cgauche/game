@@ -460,8 +460,9 @@ textarea:focus {
 }
 .hp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #e74c3c, #2ecc71);
-  transition: width 0.3s;
+  /* couleur posée en inline (hpColor, pilotée par le ratio) ; fallback vert si absente */
+  background: #2ecc71;
+  transition: width 0.3s, background 0.3s;
 }
 .phc-sub {
   font-size: 11px;

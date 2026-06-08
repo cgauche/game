@@ -42,8 +42,7 @@ import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
-
-const HERO_RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
+import { HERO_RING, ENEMY_RING } from './teamColors';
 const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
 
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
@@ -375,7 +374,7 @@ export function IsoStage() {
       if (isRider(c)) { if (isHero) hi++; continue; }
       // Monture MONTÉE : dessinée avec son cavalier en UN corps composite (boucle ci-dessous).
       if (isMount(c)) continue;
-      const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
+      const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : ENEMY_RING;
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
       // l'échelle d'espèce (bipède ou créature) vient du backend.

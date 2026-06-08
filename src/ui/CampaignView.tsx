@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { formatImperial, toDate, dayPhase } from '../engine/clock';
 import { IsoStage } from '../gameIso/IsoStage';
+import { hpColor } from '../gameIso/teamColors';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
@@ -46,7 +47,6 @@ export function CampaignView() {
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
   const gameTime = useGame((s) => s.gameTime);
-  const restParty = useGame((s) => s.restParty);
   const setScreen = useGame((s) => s.setScreen);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
@@ -76,22 +76,8 @@ export function CampaignView() {
         <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
           {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
         </div>
-        {!battle && (
-          <div className="rest-controls">
-            <button
-              className="btn small rest-btn"
-              onClick={() => restParty(1)}
-              title="Dormir jusqu'à l'aube : retire l'Exténué, soigne des Blessures (Résistance +20 → DR+BE, +BE/jour) et déclenche d'éventuels cauchemars (LDB 16/18/21)"
-            >
-              🛌 Dormir jusqu'à l'aube
-            </button>
-            <div className="rest-days" title="Convalescence : chaque journée de repos soigne le Test de Résistance +20 (DR+BE) ET +BE inconditionnel (LDB 18 l.380)">
-              <span className="mini-title">Se reposer</span>
-              <button className="btn xsmall" onClick={() => restParty(3)}>3 j</button>
-              <button className="btn xsmall" onClick={() => restParty(7)}>7 j</button>
-            </div>
-          </div>
-        )}
+        {/* Pas de bouton « Dormir » global : le repos est une OPTION DE CONTENU (choix de dialogue avec
+            coût éventuel, ex. l'auberge — Effet `rest`), jamais une action gratuite imposée par le HUD. */}
         <div className="inventory">
           <div className="mini-title">Inventaire ({inventory.length})</div>
           <div className="inv-list">
@@ -177,7 +163,7 @@ function PartyHudCard({ hero, onOpen }: { hero: Combatant; onOpen?: () => void }
         </span>
       </div>
       <div className="hp-bar">
-        <div className="hp-fill" style={{ width: `${Math.max(0, ratio) * 100}%` }} />
+        <div className="hp-fill" style={{ width: `${Math.max(0, ratio) * 100}%`, background: hpColor(ratio) }} />
       </div>
       <div className="phc-sub">
         {hero.career} {hero.advantage > 0 && <span className="adv">Av +{hero.advantage}</span>}

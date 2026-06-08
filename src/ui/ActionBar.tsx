@@ -9,8 +9,8 @@ import { compatibleAmmo } from '../engine/items';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
+import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 
-const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
 /**
@@ -71,7 +71,7 @@ export function ActionBar() {
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   const heroIdx = party.findIndex((h) => h.id === active.id);
-  const ring = heroIdx >= 0 ? RING[heroIdx % RING.length] : '#c0392b';
+  const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
   const usable = isHero ? (active.items ?? []).filter((it) => itemUse(it, active) != null) : [];
