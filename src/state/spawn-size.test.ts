@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { statblockToCombatant, sizeFromTraits } from './spawn';
+import { statblockToCombatant, sizeFromTraits, entitySize } from './spawn';
 
 describe('sizeFromTraits + dérivation de Taille au spawn (LDB 85)', () => {
   it('parse le trait Taille (insensible accents/casse)', () => {
@@ -27,5 +27,18 @@ describe('sizeFromTraits + dérivation de Taille au spawn (LDB 85)', () => {
     const o = statblockToCombatant({ name: 'Y', char: { F: 30, E: 30, FM: 30, B: 50 } }, 'y', { x: 0, y: 0 });
     expect(o.wounds.max).toBe(50); // surcharge
     expect(o.wounds.base).toBe(50);
+  });
+});
+
+describe('entitySize — Taille d’une entité posée (rendu éditeur/exploration)', () => {
+  it('champ explicite du statbloc prioritaire', () => {
+    expect(entitySize({ statblock: { name: 'X', char: {}, size: 'enorme' } })).toBe('enorme');
+  });
+  it('sinon dérivée des Traits du statbloc', () => {
+    expect(entitySize({ statblock: { name: 'X', char: {}, traits: ['Taille (Grande)'] } })).toBe('grande');
+  });
+  it('aucune info → undefined (⇒ Moyenne au rendu)', () => {
+    expect(entitySize({})).toBeUndefined();
+    expect(entitySize({ statblock: { name: 'X', char: {} } })).toBeUndefined();
   });
 });
