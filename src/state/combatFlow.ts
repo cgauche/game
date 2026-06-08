@@ -115,7 +115,7 @@ export function displaceSmaller(get: () => GameState, mover: Combatant): boolean
   if (!battle || !scene || !mover.pos || sizeFootprint(mover.size) <= 1) return false;
   let moved = false;
   for (const c of battle.combatants) {
-    if (c.id === mover.id || isOutOfAction(c) || !c.pos) continue;
+    if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue; // jamais éjecter SON propre cavalier (il chevauche)
     if (sizeGap(c.size, mover.size) >= 0) continue; // pas strictement plus petit → non dégagé
     if (!occupiesTile(mover.pos, mover.size, c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
     const free = nearestFreeOutside(scene, battle, c, mover);

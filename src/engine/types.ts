@@ -206,6 +206,8 @@ export interface Combatant {
    *  Le couple partage la position et l'empreinte de la MONTURE. */
   mountId?: string;
   riderId?: string;
+  /** Ce combattant est une MONTURE rideable (peut être enfourché par un allié à pied — LDB 14). */
+  mountable?: boolean;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

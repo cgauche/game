@@ -216,6 +216,12 @@ export interface EncounterDef {
     appearance?: EntityAppearance;
     /** Arme équipée (libellé) → affichée par le rig en combat. */
     weapon?: string;
+    /** Combat monté (LDB 14) : cet acteur est une MONTURE rideable (peut être enfourché). */
+    mount?: boolean;
+    /** Index (dans `enemies`) de la monture que cet acteur chevauche au spawn (pré-monté). */
+    rides?: number;
+    /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture libre prêtable au groupe). Défaut 'enemy'. */
+    side?: 'enemy' | 'ally';
   }[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];
