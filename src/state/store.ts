@@ -2402,7 +2402,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !pr || pr.result) return;
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     if (!c) return;
-    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, 'Athlétisme'), effectiveMovement(c), battleRng()) } });
+    // Combat monté (LDB 14 l.215) : à cheval, la Course se teste en Chevaucher (pas Athlétisme) et utilise le Mouvement de la monture.
+    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, c.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(battle, c), battleRng()) } });
   },
   runReroll: () => {
     const { battle, pendingRun: pr } = get();
@@ -2411,7 +2412,7 @@ export const useGame = create<GameState>((set, get) => ({
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     if (!c || (c.fortune ?? 0) <= 0) return;
     c.fortune = (c.fortune ?? 0) - 1;
-    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, 'Athlétisme'), effectiveMovement(c), battleRng()), rerolled: true }, battle: { ...battle } });
+    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, c.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(battle, c), battleRng()), rerolled: true }, battle: { ...battle } });
   },
   runForceSuccess: () => {
     const { battle, pendingRun: pr } = get();
@@ -2419,7 +2420,7 @@ export const useGame = create<GameState>((set, get) => ({
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     if (!c || (c.resilience ?? 0) <= 0) return;
     c.resilience = (c.resilience ?? 0) - 1;
-    const m = effectiveMovement(c);
+    const m = mountMovement(battle, c); // à cheval : Mouvement de la monture (LDB 14 l.215)
     set({ pendingRun: { ...pr, result: { ...pr.result, success: true, dr: Math.max(0, pr.result.dr), bonusCases: Math.max(pr.result.bonusCases, 2 * m) } }, battle: { ...battle } });
   },
   runConfirm: () => {
@@ -2428,10 +2429,13 @@ export const useGame = create<GameState>((set, get) => ({
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     set({ pendingRun: null });
     if (!c) return;
-    const range = effectiveMovement(c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
-    const blocked = occupied(battle, c);
-    const log = [...battle.log, `${c.name} prend sa Course (Athlétisme ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
-    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(c.size)), log } });
+    // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (le couple est solidaire ; le clic de déplacement synchronise la monture).
+    const geom = mountOf(battle, c) ?? c;
+    const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
+    const blocked = occupied(battle, geom);
+    const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
+    const log = [...battle.log, `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
+    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),
