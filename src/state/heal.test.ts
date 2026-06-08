@@ -96,7 +96,7 @@ describe('Guérison — flux hors combat', () => {
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null });
     useGame.getState().healAlly('al', 'wounds');
     const ph = useGame.getState().pendingHeal!;
-    expect(ph.inCombat).toBe(false);
+    expect(useGame.getState().battle).toBeNull(); // contexte hors combat (résolution via party)
     expect(ph.healerId).toBe('doc');
     useGame.getState().healRoll();
     useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });

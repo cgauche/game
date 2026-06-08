@@ -19,7 +19,7 @@ export function HealModal() {
   const confirm = useGame((s) => s.healConfirm);
   const cancel = useGame((s) => s.healCancel);
   if (!ph) return null;
-  const pool = ph.inCombat ? battle?.combatants ?? [] : party;
+  const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const healer = pool.find((c) => c.id === ph.healerId);
   if (!healer) return null;
   const fortune = healer.fortune ?? 0;

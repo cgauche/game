@@ -60,6 +60,7 @@ import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
+import { actorIn, touchActors } from './combatOrParty';
 import {
   PendingEncounterPsych,
   openEncounterPsych,
@@ -305,15 +306,14 @@ export interface PendingCast {
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
- *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). `inCombat` choisit la collection
- *  (battle.combatants vs party) où trouver soigneur/cible. `intBonus` figé à l'ouverture. */
+ *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`
+ *  (combat ⇄ groupe, cf. combatOrParty). `intBonus` figé à l'ouverture. */
 export interface PendingHeal {
   healerId: string;
   healerName: string;
   targetId: string;
   targetName: string;
   mode: HealMode; // 'wounds' | 'bleed'
-  inCombat: boolean;
   intBonus: number; // Bonus d'Intelligence du soigneur
   skillValue: number; // testValue(soigneur, 'Guérison')
   difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)
@@ -605,23 +605,6 @@ export interface GameState {
   gameTime: number;
   /** Avance l'horloge in-game de `minutes` (no-op si ≤ 0) et émet TIME_ADVANCED (#T3 cascade). */
   advanceTime: (minutes: number) => void;
-}
-
-/** Trouve soigneur/cible d'un PendingHeal dans la bonne collection (combat vs groupe). Module-level
- *  (non scanné par le garde-fou « un jet = une modale », qui n'inspecte que les actions du store). */
-function healSubject(state: GameState, ph: PendingHeal, id: string): Combatant | undefined {
-  return ph.inCombat ? state.battle?.combatants.find((c) => c.id === id) : state.party.find((c) => c.id === id);
-}
-
-/** Acteur d'incantation : en combat dans la file (`battle.combatants`), sinon dans le groupe (`party`).
- *  Module-level (hors du scan « un jet = une modale »). Le MÊME flux d'incantation sert les deux
- *  contextes — couture D, zéro duplication de la résolution/des effets. */
-function castActor(state: GameState, id: string): Combatant | undefined {
-  return (state.battle?.combatants ?? state.party).find((c) => c.id === id);
-}
-/** Patch de re-rendu après mutation EN PLACE d'un acteur (Chance/Résilience) : combat → battle, sinon groupe. */
-function castTouch(state: GameState): Partial<GameState> {
-  return state.battle ? { battle: { ...state.battle } } : { party: [...state.party] };
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -1173,7 +1156,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({
       pendingHeal: {
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
-        mode, inCombat: true, intBonus: bonus(effectiveChar(healer, 'Int')),
+        mode, intBonus: bonus(effectiveChar(healer, 'Int')),
         skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
       },
       battle: { ...battle, action: null },
@@ -1190,7 +1173,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({
       pendingHeal: {
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
-        mode, inCombat: false, intBonus: bonus(effectiveChar(healer, 'Int')),
+        mode, intBonus: bonus(effectiveChar(healer, 'Int')),
         skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
       },
     });
@@ -1208,13 +1191,13 @@ export const useGame = create<GameState>((set, get) => ({
   healReroll: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.roll == null || !canReroll(ph.roll > ph.target, !!ph.rerolled)) return;
-    const healer = healSubject(get(), ph, ph.healerId);
+    const healer = actorIn(get(), ph.healerId);
     if (!healer || (healer.fortune ?? 0) <= 0) return;
     healer.fortune = (healer.fortune ?? 0) - 1;
     const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
     set({
       pendingHeal: { ...ph, roll: res.roll, sl: res.sl, success: res.success, rerolled: true },
-      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+      ...touchActors(get()),
     });
   },
 
@@ -1222,12 +1205,12 @@ export const useGame = create<GameState>((set, get) => ({
   healBonusSL: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.roll == null) return;
-    const healer = healSubject(get(), ph, ph.healerId);
+    const healer = actorIn(get(), ph.healerId);
     if (!healer || (healer.fortune ?? 0) <= 0) return;
     healer.fortune = (healer.fortune ?? 0) - 1;
     set({
       pendingHeal: { ...ph, sl: ph.sl + 1, success: ph.roll <= ph.target },
-      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+      ...touchActors(get()),
     });
   },
 
@@ -1235,12 +1218,12 @@ export const useGame = create<GameState>((set, get) => ({
   healForceSuccess: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.roll == null) return;
-    const healer = healSubject(get(), ph, ph.healerId);
+    const healer = actorIn(get(), ph.healerId);
     if (!healer || (healer.resilience ?? 0) <= 0) return;
     healer.resilience = (healer.resilience ?? 0) - 1;
     set({
       pendingHeal: { ...ph, success: true, sl: Math.max(ph.sl, 1) },
-      ...(ph.inCombat ? { battle: { ...get().battle! } } : { party: [...get().party] }),
+      ...touchActors(get()),
     });
   },
 
@@ -1250,12 +1233,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!ph || ph.roll == null) return;
     set({ pendingHeal: null });
     const st = get();
-    const target = healSubject(st, ph, ph.targetId);
+    const target = actorIn(st, ph.targetId);
     if (!target) return;
     const log = ph.mode === 'wounds'
       ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
       : ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`];
-    if (ph.inCombat && st.battle) {
+    if (st.battle) {
       set({ battle: { ...st.battle, acted: true, action: null, log: [...st.battle.log, ...log] } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
@@ -1310,12 +1293,12 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   // Le flux d'incantation est COMMUN au combat et au hors-combat (couture D) : les acteurs sont
-  // résolus dans `battle.combatants` OU `party` via `castActor`. Aucune branche d'effet dupliquée.
+  // résolus dans `battle.combatants` OU `party` via `actorIn` (combatOrParty). Aucune branche d'effet dupliquée.
   castRoll: () => {
     const { pendingCast: pc } = get();
     if (!pc || pc.result) return;
-    const caster = castActor(get(), pc.casterId);
-    const target = castActor(get(), pc.targetId);
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell) return;
     const res = pc.missile
@@ -1328,33 +1311,33 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     // Échec d'incantation = d100 propre > cible (roll > target), 1× max.
     if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
-    const caster = castActor(get(), pc.casterId);
-    const target = castActor(get(), pc.targetId);
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
-    set({ pendingCast: { ...pc, result: res, rerolled: true }, ...castTouch(get()) });
+    set({ pendingCast: { ...pc, result: res, rerolled: true }, ...touchActors(get()) });
   },
   /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
   castBonusSL: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
-    const caster = castActor(get(), pc.casterId);
-    const target = castActor(get(), pc.targetId);
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
     const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
-    set({ pendingCast: { ...pc, result: res }, ...castTouch(get()) });
+    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   castConfirm: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
-    const caster = castActor(get(), pc.casterId);
-    const target = castActor(get(), pc.targetId);
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     set({ pendingCast: null });
     if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused);
@@ -1390,11 +1373,11 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
-  // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `castActor`, sortie journal hors combat.
+  // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
   focusRoll: () => {
     const { pendingFocus: pf } = get();
     if (!pf || pf.result) return;
-    const caster = castActor(get(), pf.casterId);
+    const caster = actorIn(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     if (!caster || !spell) return;
     set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()) } });
@@ -1403,32 +1386,32 @@ export const useGame = create<GameState>((set, get) => ({
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
     if (!canReroll(pf.result.dr === 0, !!pf.rerolled)) return; // aucun DR gagné → rejouable, 1× max
-    const caster = castActor(get(), pf.casterId);
+    const caster = actorIn(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     if (!caster || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, ...castTouch(get()) });
+    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, ...touchActors(get()) });
   },
   focusBonusSL: () => {
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
-    const caster = castActor(get(), pf.casterId);
+    const caster = actorIn(get(), pf.casterId);
     if (!caster || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, ...castTouch(get()) });
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, ...touchActors(get()) });
   },
   focusForceSuccess: () => {
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
-    const caster = castActor(get(), pf.casterId);
+    const caster = actorIn(get(), pf.casterId);
     if (!caster || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, ...castTouch(get()) });
+    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, ...touchActors(get()) });
   },
   focusConfirm: () => {
     const { battle, pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
-    const caster = castActor(get(), pf.casterId);
+    const caster = actorIn(get(), pf.casterId);
     const spell = findSpell(pf.spellLabel);
     set({ pendingFocus: null });
     if (!caster || !spell) return;
@@ -2437,8 +2420,8 @@ export const useGame = create<GameState>((set, get) => ({
   castForceSuccess: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
-    const caster = castActor(get(), pc.casterId);
-    const target = castActor(get(), pc.targetId);
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
@@ -2446,7 +2429,7 @@ export const useGame = create<GameState>((set, get) => ({
     const cur = pc.result;
     const bonusNeeded = Math.max(1, ni - cur.sl); // au moins le NI ; on force aussi un d100 propre réussi
     const res = rederiveCastSL(caster, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, pc.missile, pc.focused, bonusNeeded);
-    set({ pendingCast: { ...pc, result: res }, ...castTouch(get()) });
+    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   disengageForceSuccess: () => {
     const { battle, pendingDisengage: pd } = get();
