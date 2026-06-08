@@ -2,7 +2,6 @@ import type { BoneId } from '../bones';
 import type { View } from '../facing';
 import type { StoredPalette, Palette } from '../palette';
 import type { GabaritDef } from '../gabarits/types';
-import type { MonsterParts } from '../parts/monstrous';
 
 /** Trait de corps d'une race, ancré à un os, éventuellement échelonné à la taille de l'os. */
 export interface RaceFeature {
@@ -31,7 +30,6 @@ export interface RaceDef {
   pose?: Record<string, number>;// posture de repos (ex-SPECIES_POSE), front + profil
   // Défauts d'espèce (ex-BipedConfig des defs créature) :
   career?: string;              // tenue par défaut
-  monster?: MonsterParts;       // parts monstrueuses auto (tête/queue/cornes…) — ex. tête de rat du Skaven
   colors?: Palette;             // surcharges de palette
   sex?: 'M' | 'F';              // sexe forcé
   parts?: { cheveux?: number; visage?: number }; // coiffure/visage épinglés

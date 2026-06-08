@@ -108,25 +108,30 @@ export function resolveRig(
     });
   }
 
-  // Tête de RACE (ex. Ogre) : remplace visage/cheveux par la part de tête de la race.
-  // Priorité inférieure à appearance.monster.tete — si les deux sont définis, le bloc
-  // monster ci-dessous écrase (en pratique une race a SOIT head SOIT monster, pas les deux).
-  if (race.head) {
-    const h = HEADS[race.head];
-    if (h) boneParts['tete'] = [{ svg: pickView(h, view), layer: 5 }];
+  // Parties structurelles de RACE (tête/jambes/bras monstrueux + features) — sautées si
+  // appearance.monster est défini (perso.monster du creature-def = override COMPLET de la
+  // race, ex. Démonette qui hérite du Démon mais a sa propre config sans tête de Khorne).
+  // Symétrie avec l'ancien race.monster : un perso.monster non-vide remplaçait intégralement
+  // le race.monster (opérateur ??), donc les parts de la race n'étaient jamais injectées.
+  const hasPersoMonster = !!appearance.monster && Object.keys(appearance.monster).length > 0;
+  if (!hasPersoMonster) {
+    // Tête de RACE (ex. Orc) : remplace visage/cheveux par la part monstrueuse de la race.
+    if (race.head) {
+      const h = HEADS[race.head];
+      if (h) boneParts['tete'] = [{ svg: pickView(h, view), layer: 5 }];
+    }
+    // Membres monstrueux de RACE (REMPLACENT l'os) : jambes de chèvre (Minotaure)…
+    if (race.legs) {
+      const l = LEGS[race.legs];
+      if (l) { boneParts['cuisseG'] = [{ svg: pickView(l, view), layer: 5 }]; boneParts['cuisseD'] = [{ svg: pickView(l, view), layer: 5 }]; }
+    }
+    if (race.armG) { const a = ARMS[race.armG]; if (a) boneParts['epauleG'] = [{ svg: pickView(a, view), layer: 5 }]; }
+    if (race.armD) { const a = ARMS[race.armD]; if (a) boneParts['epauleD'] = [{ svg: pickView(a, view), layer: 5 }]; }
   }
-  // Membres monstrueux de RACE (REMPLACENT l'os) : jambes de chèvre (Minotaure), bras-griffe
-  // (Démonette)… Même sémantique que monster.jambes/brasG/brasD, mais portée par la Race.
-  if (race.legs) {
-    const l = LEGS[race.legs];
-    if (l) { boneParts['cuisseG'] = [{ svg: pickView(l, view), layer: 5 }]; boneParts['cuisseD'] = [{ svg: pickView(l, view), layer: 5 }]; }
-  }
-  if (race.armG) { const a = ARMS[race.armG]; if (a) boneParts['epauleG'] = [{ svg: pickView(a, view), layer: 5 }]; }
-  if (race.armD) { const a = ARMS[race.armD]; if (a) boneParts['epauleD'] = [{ svg: pickView(a, view), layer: 5 }]; }
 
-  // Parts MONSTRUEUSES (mutant modulaire) : REMPLACENT la part normale de l'os ciblé
-  // (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique). Aucun
-  // miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
+  // Parts MONSTRUEUSES (mutant modulaire / perso créature) : REMPLACENT la part normale de
+  // l'os ciblé (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique).
+  // Aucun miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
   if (appearance.monster) {
     const inj = monsterInjection(appearance.monster, view);
     for (const [bone, part] of Object.entries(inj.replace) as [BoneId, import('./parts/types').PartArt][])
@@ -141,12 +146,15 @@ export function resolveRig(
     if (ov.svg) boneParts[ov.bone].push({ svg: ov.svg, layer: 99 });
   }
 
-  // Traits de corps de RACE (gut-plate Ogre, cornes Elfe, queue Skaven…). Injectés AVANT la
-  // résolution de palette pour que leurs tokens @peau/@metal soient appliqués comme le reste.
-  for (const feat of race.features ?? []) {
-    if (feat.view && feat.view !== view) continue;   // feature limitée à une vue (ex. crocs front)
-    const part = featureToPart(feat, scaleOf[feat.bone]);
-    boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
+  // Traits de corps de RACE (cornes, queue, crocs, verrues…). Injectés AVANT la résolution
+  // de palette pour que leurs tokens @peau/@metal soient appliqués comme le reste.
+  // Sautés si appearance.monster (perso complet) — idem race.head/legs ci-dessus.
+  if (!hasPersoMonster) {
+    for (const feat of race.features ?? []) {
+      if (feat.view && feat.view !== view) continue;   // feature limitée à une vue (ex. crocs front)
+      const part = featureToPart(feat, scaleOf[feat.bone]);
+      boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
+    }
   }
 
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.

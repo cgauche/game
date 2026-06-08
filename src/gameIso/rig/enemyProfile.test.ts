@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
+import { raceById } from './races';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -73,7 +74,9 @@ describe('enemyRigProfile', () => {
     expect(enemyRigProfile(mkEnemy('Ogre brise-fer'))!.appearance.species).toBe('Ogre');
   });
 
-  it('espèces monstrueuses Phase B détectées + tête monstrueuse auto', () => {
+  it('espèces monstrueuses Phase B détectées + tête monstrueuse portée par la Race', () => {
+    // Depuis la migration race.monster → race.head/legs/features (iso-rendu), la tête
+    // monstrueuse est portée par race.head (rendu via composeRig), plus par appearance.monster.
     const cases: [string, string, string | undefined][] = [
       ['Orc noir', 'Orc', 'orc'],
       ['Gobelin de la nuit', 'Gobelin', 'gobelin'],
@@ -91,7 +94,7 @@ describe('enemyRigProfile', () => {
     for (const [name, species, tete] of cases) {
       const p = enemyRigProfile(mkEnemy(name))!;
       expect(p.appearance.species, name).toBe(species);
-      expect(p.appearance.monster?.tete, name).toBe(tete);
+      expect(raceById(p.appearance.species).head, name).toBe(tete);
     }
   });
 

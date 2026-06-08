@@ -169,7 +169,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
   const sex: 'M' | 'F' = perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
-  const autoMon = perso?.monster ?? race.monster;
+  const autoMon = perso?.monster;
   const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit };
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
@@ -207,7 +207,7 @@ export function entityRigProfile(
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
-  const monster = opts?.monster ?? perso?.monster ?? race.monster; // auto skaven/… si non précisé
+  const monster = opts?.monster ?? perso?.monster; // auto skaven/… si non précisé
   const appearance: Appearance = riggedAppearance(name, seed, {
     monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? perso?.parts ?? race.parts,
