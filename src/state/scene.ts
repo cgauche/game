@@ -213,9 +213,20 @@ export interface Trigger {
   id: string;
   rect: { x: number; y: number; w: number; h: number };
   once?: boolean;
-  /** Ne se déclenche que si ce flag est (vrai) ou (faux si « ! »). */
+  /** Condition de flag (cf. `condMet`) : un flag, sa négation `!flag`, ou plusieurs en ET (« v1,!v2 »). */
   condition?: string;
   effects: Effect[];
+}
+
+/** Évalue une condition de flag — SOURCE UNIQUE pour les triggers ET les choix de dialogue. Un flag
+ *  (`drapeau`) ou sa négation (`!drapeau`) ; plusieurs séparés par des virgules = combinés en ET
+ *  (« v1,!v2 » ⇔ `flags.v1 && !flags.v2`). Une condition vide n'est jamais passée ici (toujours vraie). */
+export function condMet(cond: string, flags: Record<string, boolean>): boolean {
+  return cond
+    .split(',')
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .every((c) => (c.startsWith('!') ? !flags[c.slice(1)] : !!flags[c]));
 }
 
 export interface EncounterDef {

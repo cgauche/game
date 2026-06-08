@@ -1429,11 +1429,13 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
  * d'États, puis applique `restRecovery` à chaque héros (retrait Exténué + soin de Blessures + cauchemars).
  * Résolution NON interactive (journal, pas de Chance) — cohérent avec l'entretien hors combat existant.
  */
-export function restPartyOvernight(get: () => GameState, set: any): void {
+export function restPartyOvernight(get: () => GameState, set: any, days = 1): void {
   if (get().battle) return; // pas de repos en plein combat
+  const n = Math.max(1, Math.floor(days));
   const before = get().gameTime;
   const toDawn = minutesUntilNext(before, DAWN_MINUTE);
-  const minutes = toDawn === 0 ? MINUTES_PER_DAY : toDawn; // déjà à l'aube → dormir un cycle entier
+  const firstNight = toDawn === 0 ? MINUTES_PER_DAY : toDawn; // déjà à l'aube → un cycle entier
+  const minutes = firstNight + (n - 1) * MINUTES_PER_DAY; // chaque journée de repos se termine à l'aube
   // Un sommeil N'EST PAS une suite de Rounds de combat : on avance l'horloge SANS rejouer l'entretien
   // périodique (`advanceTime` ferait ~1 Round/min → des centaines de jets de mort par hémorragie/poison/
   // feu, qui TUERAIENT le dormeur avant tout soin). RAW 16-États l.105 : le repos suppose des États
@@ -1442,8 +1444,9 @@ export function restPartyOvernight(get: () => GameState, set: any): void {
   bus.emit(EVT.TIME_ADVANCED, { minutes });
   const party = get().party;
   const lines: string[] = [];
-  for (const h of party) lines.push(...restRecovery(h, battleRng()));
-  set({ party: [...party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...lines] });
+  for (const h of party) lines.push(...restRecovery(h, battleRng(), n));
+  const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
+  set({ party: [...party], journal: [...get().journal.slice(-40), title, ...lines] });
   bus.emit(EVT.SCENE_DIRTY);
 }
 

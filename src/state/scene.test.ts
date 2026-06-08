@@ -1,6 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, tileAt, normalizeEntityKind, normalizeAmbiance, isIndoor } from './scene';
+import { emptyScene, isWalkable, tileAt, normalizeEntityKind, normalizeAmbiance, isIndoor, condMet } from './scene';
 import type { Scene } from './scene';
+
+describe('condMet — conditions de flag (triggers + dialogues, source unique)', () => {
+  it('flag simple + négation', () => {
+    expect(condMet('a', { a: true })).toBe(true);
+    expect(condMet('a', {})).toBe(false);
+    expect(condMet('!a', {})).toBe(true);
+    expect(condMet('!a', { a: true })).toBe(false);
+  });
+  it('flags composés = ET (« v1,!v2 »), pour enchaîner des étapes (ex. vagues d’arène)', () => {
+    expect(condMet('v1,!v2', { v1: true })).toBe(true); // v1 fait, v2 pas encore
+    expect(condMet('v1,!v2', { v1: true, v2: true })).toBe(false); // v2 fait → masqué
+    expect(condMet('v1,!v2', {})).toBe(false); // v1 pas encore
+    expect(condMet(' v1 , !v2 ', { v1: true })).toBe(true); // tolère les espaces
+  });
+});
 
 describe('scene + terrain registre', () => {
   it('isWalkable suit le registre terrain', () => {

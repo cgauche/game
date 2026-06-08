@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { condMet } from '../state/scene';
 
 export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
@@ -27,7 +28,3 @@ export function DialogueBox() {
   );
 }
 
-function condMet(cond: string, flags: Record<string, boolean>): boolean {
-  if (cond.startsWith('!')) return !flags[cond.slice(1)];
-  return !!flags[cond];
-}
