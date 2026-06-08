@@ -14,13 +14,14 @@ export interface RaceFeature {
 }
 
 /** Identité d'une race bipède : carrure par défaut + peau/tête/traits/posture + défauts d'espèce
- *  (tenue/couleurs/sexe/coiffure/échelle). Dissout PROPS-via-baseSpeciesOf, SPECIES_PALETTES,
- *  SPECIES_POSE et la config biped des defs créature. */
+ *  (tenue/couleurs/sexe/coiffure/échelle). Dissout PROPS-via-baseSpeciesOf, palettes et postures
+ *  d'espèce et la config biped des defs créature. */
 export interface RaceDef {
   id: string;                   // 'Humain', 'Ogre', 'Skaven'… (== sortie canonique de baseSpeciesOf)
   gabarit: string;              // id du gabarit par défaut
   gabaritOverride?: Partial<Pick<GabaritDef, 'sl' | 'st' | 'legs' | 'arms' | 'head'>>;
-  palette?: StoredPalette;      // peau/cheveux/yeux par défaut (ex-SPECIES_PALETTES)
+  palette?: StoredPalette;      // peau/cheveux/yeux par défaut (ex-palettes d'espèce)
+  paletteF?: StoredPalette;    // variante féminine (sinon palette sert aux deux sexes)
   head?: string;                // id de part de tête monstrueuse, sinon visage humain cosmétique
   features?: RaceFeature[];     // traits de corps (gut, barbe, queue, cornes…)
   pose?: Record<string, number>;// posture de repos (ex-SPECIES_POSE), front + profil

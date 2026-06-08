@@ -11,7 +11,6 @@ import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
 import { tenuePaletteFor } from './parts/career';
-import { SPECIES_PALETTES } from './parts/generated/speciesPalettes';
 import type { EquipCtx } from './parts/equipment';
 import type { View } from './facing';
 import { VIEW_POSE } from './viewPose';
@@ -24,23 +23,6 @@ export interface ResolvedBone {
   z: number;
   parts: { svg: string; layer: number; mirror?: boolean }[];
 }
-
-/** Posture de repos par espèce (deltas d'angle). Skaven = voûté : torse penché en avant,
- *  nuque/tête basses, épaules rentrées. Sans flexion de jambe (pieds ancrés au sol). */
-const SPECIES_POSE: Record<string, Pose> = {
-  // Voûté : torse penché + nuque/tête basses + LÉGER arrondi d'épaules (pas de swing d'avant-
-  // bras, qui faisait flotter la main libre loin du corps).
-  Skaven: { torse: 15, cou: 11, tete: -9, epauleG: 4, epauleD: 4 },
-  // Peaux-vertes/hommes-bêtes/troll voûtés : dos courbé en avant, nuque rentrée.
-  Orc: { torse: 16, cou: 13, tete: -10, epauleG: 5, epauleD: 5 },
-  Gobelin: { torse: 14, cou: 12, tete: -10, epauleG: 4, epauleD: 4 },
-  'Homme-bête': { torse: 14, cou: 12, tete: -9, epauleG: 5, epauleD: 5 },
-  Troll: { torse: 18, cou: 16, tete: -12, epauleG: 6, epauleD: 6 },
-  // Goule = posture semi-quadrupède (dos très arqué, nuque basse en avant).
-  Goule: { torse: 24, cou: 18, tete: -14, epauleG: 8, epauleD: 8 },
-  // Zombie titubant : léger penché raide.
-  Zombie: { torse: 8, cou: 6, tete: -4 },
-};
 
 /** (apparence, équipement, pose, carrière?) → os résolus, triés z croissant (peintre). PUR. */
 export function resolveRig(
@@ -68,7 +50,7 @@ export function resolveRig(
   // en PROFIL : une rotation du torse en 2D = penché EN AVANT de profil (correct), mais de
   // FACE/DOS elle tilterait tout le corps DE CÔTÉ (« penche à droite »). De face/dos on reste
   // droit (un dos voûté ne se montre pas pile de face en 2D).
-  const speciesPose = view === 'profile' ? SPECIES_POSE[baseSpeciesOf(appearance.species)] ?? {} : {};
+  const speciesPose = view === 'profile' ? race.pose ?? {} : {};
   const world = worldTransforms(sk, addPose(speciesPose, addPose(viewPose, pose)));
   const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
 
@@ -135,17 +117,17 @@ export function resolveRig(
   // un Humain à qui on greffe une tête de lézard) : si l'espèce a sa propre palette de peau
   // (Skaven, Orc, Goule…), celle-ci prime — sinon la peau de la tête écraserait la teinte
   // d'espèce (ex. la Goule grise deviendrait fauve à cause de sa tête « chien »).
+  const speciesPalette = (appearance.sex === 'F' && race.paletteF) ? race.paletteF : race.palette;
   const SKIN_FROM_HEAD: Record<string, string> = {
     lezard: '#5d7a42', chien: '#6e4a2c', rat: '#6e4a2e',
   };
-  const speciesKey = `${baseSpeciesOf(appearance.species)}:${appearance.sex}`;
-  const speciesHasSkin = SPECIES_PALETTES[speciesKey]?.peau != null;
+  const speciesHasSkin = speciesPalette?.peau != null;
   const headSkin = !speciesHasSkin && appearance.monster?.tete ? SKIN_FROM_HEAD[appearance.monster.tete] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
   // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
   // Palette de tenue : carrière dédiée OU archétype de classe en repli (tenuePaletteFor) →
   // les carrières SANS tenue dédiée héritent/recolorent comme les autres (cohérence).
-  const stored = { ...(SPECIES_PALETTES[speciesKey] ?? {}), ...tenuePaletteFor(career) };
+  const stored = { ...(speciesPalette ?? {}), ...tenuePaletteFor(career) };
   const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 
