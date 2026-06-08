@@ -585,6 +585,10 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
+  const canSacrifice = mover.advantage > maxFoeAdv; // Avantage strictement supérieur (l.87)
+  // Après avoir agi, seule l'option A (Sacrifier l'Avantage) reste possible — sans Avantage supérieur
+  // il n'y a RIEN à faire → no-op (pas de menu vide, et pas de relance d'Esquive : anti-boucle l.89).
+  if (battle.acted && !canSacrifice) return;
   // Ouvre le MENU de choix. L'adversaire de référence (Esquive opposée + cible de la Fuite) =
   // le foe Engagé à la meilleure Compétence de Corps à corps (l.89). Son jet de CC est figé d'avance.
   const foe = foes.reduce((a, b) => (combatValue(b, 'melee') > combatValue(a, 'melee') ? b : a));
@@ -593,7 +597,8 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     pendingDisengage: {
       moverId: mover.id,
       foeId: foe.id,
-      canSacrifice: mover.advantage > maxFoeAdv, // Avantage strictement supérieur (l.87)
+      canSacrifice,
+      canEsquive: !battle.acted, // Esquive/Fuite coûtent l'Action — indispo si déjà agi (anti-boucle)
       phase: 'choice',
       atk,
       def: null,

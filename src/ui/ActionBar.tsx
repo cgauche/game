@@ -57,6 +57,10 @@ export function ActionBar() {
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
+  // Désengagement GRATUIT (option A, LDB 15 l.87) : Avantage strictement supérieur à tous les foes
+  // Engagés → possible MÊME après avoir agi (ne coûte pas l'Action) ; rouvre le mouvement.
+  const engagedFoes = engaged ? (active.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c && !isOutOfAction(c)) : [];
+  const canFreeDisengage = engagedFoes.length > 0 && active.advantage > Math.max(0, ...engagedFoes.map((f) => f.advantage));
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
   const mounted = isHero && !!active.mountId;
   const mountCandidate = isHero && !active.mountId && !battle.moved ? mountableNear(battle, active) : undefined; // enfourcher = Mouvement (pas de jet → pas une Action)
@@ -199,7 +203,7 @@ export function ActionBar() {
           )}
           {engaged && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted} onClick={disengage} title="Quitter le corps à corps (Esquive / sacrifice d'Avantage, LDB Désengagement)">🚪 Se désengager</button>
+              <button className="btn btn-sm" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage — LDB 15 l.84-89)">🚪 Se désengager</button>
             </div>
           )}
           {mountCandidate && (
@@ -317,7 +321,7 @@ export function ActionBar() {
             {/* ── Primaires directs ── */}
             <button
               className={`ab-slot ${battle.action === 'move' ? 'on' : ''}`}
-              disabled={battle.moved || (engaged && battle.acted)}
+              disabled={battle.moved || (engaged && battle.acted && !canFreeDisengage)}
               onClick={() => selectAction(battle.action === 'move' ? null : 'move')}
               title={engaged ? 'Engagé : « Déplacer » lance un Désengagement (Esquive ou sacrifice d’Avantage)' : undefined}
             >

@@ -352,6 +352,9 @@ export interface PendingDisengage {
   moverId: string; // héros qui se désengage (actif)
   foeId: string; // adversaire de référence (meilleure CC) pour l'Esquive et la Fuite
   canSacrifice: boolean; // Avantage > tous les foes Engagés → option « Sacrifier l'Avantage » dispo
+  /** Esquive/Fuite disponibles ? Faux si l'Action est déjà dépensée (elles la coûtent) → seule
+   *  l'option A « Sacrifier l'Avantage » reste, ce qui évite la boucle infinie d'Esquive. */
+  canEsquive?: boolean;
   phase: 'choice' | 'esquive'; // 'choice' = menu d'options ; 'esquive' = Test d'Esquive en cours
   atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // Esquive : jet d'Esquive du mover
@@ -1646,9 +1649,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (a === 'move' && !battle.moved) {
       // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
       if (isEngaged(active)) {
-        // Si l'Action est déjà consommée (Esquive de Désengagement ratée/neutre, l.89), on ne
-        // peut pas retenter ce tour → no-op (sinon boucle infinie de Tests d'Esquive).
-        if (battle.acted) return;
+        // Engagé : ouvre le Désengagement MÊME si l'Action est dépensée — seule l'option A
+        // « Sacrifier l'Avantage » (sans coût d'Action) reste dispo (canEsquive=false), ce qui rouvre
+        // le mouvement après une attaque SANS permettre de re-tenter l'Esquive (anti-boucle).
         startDisengage(get, set, active);
         return;
       }
@@ -3067,7 +3070,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
   battleDisengage: () => {
     const battle = get().battle;
-    if (!battle || battle.over || battle.acted) return;
+    if (!battle || battle.over) return; // option A (Sacrifier l'Avantage) reste possible même après avoir agi
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !isEngaged(active)) return;
     startDisengage(get, set, active);

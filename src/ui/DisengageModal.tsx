@@ -49,13 +49,20 @@ export function DisengageModal() {
                     Sacrifier l'Avantage
                   </button>
                 )}
-                <button className="btn small btn-primary" onClick={esquiver} title="Test opposé d'Esquive — coûte ton Action">
-                  🤸 Esquiver
-                </button>
-                <button className="btn small" onClick={flee} title="Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours">
-                  🏃 Fuir (coup dans le dos)
-                </button>
+                {pd.canEsquive !== false && (
+                  <>
+                    <button className="btn small btn-primary" onClick={esquiver} title="Test opposé d'Esquive — coûte ton Action">
+                      🤸 Esquiver
+                    </button>
+                    <button className="btn small" onClick={flee} title="Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours">
+                      🏃 Fuir (coup dans le dos)
+                    </button>
+                  </>
+                )}
               </div>
+              {pd.canEsquive === false && (
+                <p className="rm-log">Action déjà dépensée : seul « Sacrifier l'Avantage » (sans coût d'Action) reste possible.</p>
+              )}
             </div>
             <div className="modal-actions">
               <button className="btn" onClick={cancel}>
