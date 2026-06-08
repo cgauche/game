@@ -41,7 +41,8 @@ export function traumaFromKind(
   const sev = severity === 'mineur' ? 'Mineure' : 'Majeure';
   const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(kind, severity, opts.be, opts.d10 ?? 5);
   // Champs de convalescence à étapes (déchirure majeure mi-durée, fenêtre de pose d'une fracture, Test de fin).
-  const staged = { kind, severity, recoveryDays, recoveryTotal: recoveryDays };
+  // Une fracture MAJEURE « peu probable de guérir sans intervention médicale » (l.305) exige la Chirurgie.
+  const staged = { kind, severity, recoveryDays, recoveryTotal: recoveryDays, ...(kind === 'fracture' && severity === 'majeur' ? { needsSurgery: true } : {}) };
   if (kind === 'dechirure') {
     const onLeg = LEG.includes(location);
     // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
@@ -80,7 +81,7 @@ export function traumaFromKind(
   return {
     label: `Fracture (${sev})`,
     location,
-    recoveryDays,
+    ...staged,
     note: location === 'tete'
       ? 'LDB 18 l.298 (Tête) : −30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours.'
       : 'LDB 18 l.298 (Bras) : membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours.',

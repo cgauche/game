@@ -151,6 +151,9 @@ export interface Trauma {
   healAccelerated?: boolean;
   /** Fracture « réduite » : bandée par un Test de Guérison dans la semaine (l.302) → pas de Test de Résistance de fin. */
   fractureSet?: boolean;
+  /** Trauma exigeant de la CHIRURGIE pour guérir (amputation, fracture majeure « peu probable sans
+   *  intervention médicale », LDB 18 l.305/398) — traité par le Talent Chirurgie, pas par le simple repos. */
+  needsSurgery?: boolean;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
