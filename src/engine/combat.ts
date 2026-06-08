@@ -193,8 +193,10 @@ export function attackModifiers(
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
-    // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60.
-    if (target) {
+    // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
+    // Taille et donne +40 au tir contre elle (LDB 85 l.200).
+    if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40 });
+    else if (target) {
       const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
       if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm });
     }
@@ -202,8 +204,8 @@ export function attackModifiers(
     const vuln = meleeAttackerBonus(target);
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
   }
-  // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303 : « la créature plus petite gagne +10 pour toucher »).
-  if (target && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
+  // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
+  if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) out.push({ label: 'Précise', value: precise });
   if (opts.location) out.push({ label: 'Localisation visée', value: -10 });
@@ -323,7 +325,8 @@ export function finishMelee(
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
   // Pénalité de parade contre plus grand : −2 DR par catégorie de Taille supérieure (LDB 85 l.305-306) — Parade (CC) seulement, pas l'Esquive.
-  const parrySizePenalty = defenseMode === 'parade' ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
+  const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
+  const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
   // Pratique (+1) / Peu Fiable (-1) sur un Test RATÉ utilisant l'arme (LDB 60 l.59/88) : modifie le DR
   // du jet → l'issue du Test opposé ET les Dégâts (via le DR net). L'attaque utilise toujours l'arme ;
   // la parade utilise l'arme du défenseur (pas l'esquive — l'esquive ne « teste » pas l'arme).
@@ -367,7 +370,7 @@ export function finishMelee(
   const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location);
   res.defenderRoll = def.roll;
   res.defenderDetail = defBd;
-  if (res.hit && sizeGap(attacker.size, defender.size) >= 1) res.cleave = true; // Frappe Mortelle (LDB 85 l.299)
+  if (res.hit && (attacker.swarm || sizeGap(attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200)
   return res;
 }
 
@@ -384,7 +387,7 @@ export function resolveMeleePassive(
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
-  if (res.hit && sizeGap(attacker.size, defender.size) >= 1) res.cleave = true; // Frappe Mortelle (LDB 85 l.299)
+  if (res.hit && (attacker.swarm || sizeGap(attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200)
   return res;
 }
 
@@ -511,9 +514,11 @@ function applyHit(
   const effDR = dr + qualitySum(weapon, 'damageDR'); // Atout Pointue : +1 DR sur une touche (l.301)
   // Dévastatrice (max(DR, unités)) / Percutante (+unités), annulés par Inoffensive ; Atouts conférés
   // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
-  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units }, sizeGrantedQualities(attacker.size, defender.size));
+  // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
+  const noSize = !!attacker.swarm || !!defender.swarm;
+  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units }, noSize ? [] : sizeGrantedQualities(attacker.size, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
-  damage *= sizeDamageMultiplier(attacker.size, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
+  if (!noSize) damage *= sizeDamageMultiplier(attacker.size, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
   const woundsLost = woundsFromHit(weapon, defender, loc, damage);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;

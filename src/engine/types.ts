@@ -190,6 +190,9 @@ export interface Combatant {
   /** Traits de créature (libellés canon) → attaques naturelles gratuites & règles dérivées
    *  (Morsure, Attaque caudale, Souffle… cf. engine/creatureAttacks). Conservés au spawn. */
   traits?: string[];
+  /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
+   *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
+  swarm?: boolean;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

@@ -119,11 +119,25 @@ export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): 
   return (traits && sizeFromTraits(traits)) || undefined;
 }
 
+/** La créature est-elle une Nuée (Trait Essaim, LDB 85 l.199-200) ? */
+export function swarmFromTraits(traits: string[]): boolean {
+  return traits.some((t) => /^Nu[eé]e\b/i.test(t));
+}
+
+/** Nuée au spawn (LDB 85 l.200) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur
+ *  les PB/carac. déjà calculés. Le B mono-créature du bestiaire reste, c'est lui qu'on multiplie. */
+function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Characteristics; wounds: number } {
+  chars.CC += 10;
+  return { chars, wounds: wounds * 5 };
+}
+
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }): Combatant {
-  const chars = charsFrom(creature.char);
+  let chars = charsFrom(creature.char);
   const size = sizeFromTraits(creature.traits) ?? 'moyenne';
-  // char.B (bestiaire) = la valeur livre (déjà formule × Taille) → fait office de base/surcharge ; sinon formule.
-  const wounds = typeof creature.char.B === 'number' ? creature.char.B : maxWounds(chars, size);
+  // char.B (bestiaire) = la valeur livre d'UNE créature (≈ formule × Taille) → base/surcharge ; sinon formule.
+  let wounds = typeof creature.char.B === 'number' ? creature.char.B : maxWounds(chars, size);
+  const swarm = swarmFromTraits(creature.traits);
+  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4;
   return {
     id,
@@ -138,6 +152,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     size,
     bodyShape: bodyShapeOf(creature.label), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(creature.traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
+    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
     traits: creature.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
@@ -148,10 +163,12 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
 }
 
 export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
-  const chars = charsFrom(sb.char as any);
+  let chars = charsFrom(sb.char as any);
   const size = sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne';
   // Blessures : surcharge explicite `char.B` si fournie, sinon formule par Taille (vide ⇒ formule, LDB 85).
-  const wounds = typeof sb.char.B === 'number' ? (sb.char.B as number) : maxWounds(chars, size);
+  let wounds = typeof sb.char.B === 'number' ? (sb.char.B as number) : maxWounds(chars, size);
+  const swarm = swarmFromTraits(sb.traits ?? []);
+  if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4;
   return {
     id,
@@ -168,6 +185,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(sb.traits ?? []), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
+    ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
     traits: sb.traits, // conservés → attaques gratuites de créature en combat
     skills: [],

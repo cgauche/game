@@ -436,7 +436,8 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     .filter((c): c is Combatant => !!c && !isOutOfAction(c));
   // Désengagement GRATUIT du plus grand (LDB 85 l.308-309) : une créature plus grande que TOUS ses
   // adversaires Engagés les écarte et se déplace librement, sans Test ni sacrifice d'Avantage.
-  const freeDisengage = foes.length > 0 && foes.every((f) => sizeGap(mover.size, f.size) >= 1);
+  // Plus grand que TOUS ses Engagés (85 l.308-309) OU Nuée (ignore l'Engagement en se déplaçant, l.200) → départ libre.
+  const freeDisengage = foes.length > 0 && (mover.swarm || foes.every((f) => sizeGap(mover.size, f.size) >= 1));
   if (!foes.length || freeDisengage) {
     if (freeDisengage) {
       for (const f of foes) disengageFrom(mover, f); // lève les liens Engagé avec les plus petits écartés
@@ -1572,6 +1573,14 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
     if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
   }
+  // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
+  const swarms = battle.combatants.filter((s) => s.swarm && !isOutOfAction(s));
+  if (swarms.length)
+    for (const c of battle.combatants) {
+      if (c.swarm || isOutOfAction(c) || !(c.engagedWith ?? []).some((id) => swarms.some((s) => s.id === id))) continue;
+      c.wounds.current = Math.max(0, c.wounds.current - 1);
+      if (c.wounds.current <= 0) applyZeroWounds(c);
+    }
   decayEngagement(battle.combatants);
   // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
   if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
