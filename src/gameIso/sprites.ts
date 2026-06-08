@@ -125,6 +125,8 @@ export const DEFS = `
   <linearGradient id="g_cendre" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a3c34"/><stop offset="100%" stop-color="#241c18"/></linearGradient>
   <linearGradient id="g_tourbe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5b4a2c"/><stop offset="100%" stop-color="#332916"/></linearGradient>
   <linearGradient id="g_sang" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e1f1f"/><stop offset="100%" stop-color="#3a1010"/></linearGradient>
+  <linearGradient id="g_lave" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a1a"/><stop offset="45%" stop-color="#c4300a"/><stop offset="100%" stop-color="#4a0e04"/></linearGradient>
+  <linearGradient id="g_boue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a4a32"/><stop offset="100%" stop-color="#332a1a"/></linearGradient>
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
   <linearGradient id="g_steelD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b94a6"/><stop offset="100%" stop-color="#444b5a"/></linearGradient>
   <linearGradient id="g_cloak" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a8323a"/><stop offset="100%" stop-color="#5e1418"/></linearGradient>

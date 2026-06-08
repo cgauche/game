@@ -189,13 +189,22 @@
         "id": "zone1-p0",
         "kind": "prop",
         "pos": {
+          "x": 3,
+          "y": 1
+        },
+        "ref": "mannequin"
+      },
+      {
+        "id": "zone1-p1",
+        "kind": "prop",
+        "pos": {
           "x": 6,
           "y": 1
         },
         "ref": "tonneau"
       },
       {
-        "id": "zone1-p1",
+        "id": "zone1-p2",
         "kind": "prop",
         "pos": {
           "x": 10,
@@ -204,7 +213,16 @@
         "ref": "caisse"
       },
       {
-        "id": "zone1-p2",
+        "id": "zone1-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 1
+        },
+        "ref": "etendard"
+      },
+      {
+        "id": "zone1-p4",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -213,7 +231,7 @@
         "ref": "statue"
       },
       {
-        "id": "zone1-p3",
+        "id": "zone1-p5",
         "kind": "prop",
         "pos": {
           "x": 6,
@@ -222,7 +240,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone1-p4",
+        "id": "zone1-p6",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -231,49 +249,58 @@
         "ref": "feu-camp"
       },
       {
-        "id": "zone1-p5",
+        "id": "zone1-p7",
         "kind": "prop",
         "pos": {
           "x": 6,
           "y": 7
         },
         "ref": "tonneau"
-      },
-      {
-        "id": "zone1-p6",
-        "kind": "prop",
-        "pos": {
-          "x": 10,
-          "y": 7
-        },
-        "ref": "caisse"
-      },
-      {
-        "id": "zone1-p7",
-        "kind": "prop",
-        "pos": {
-          "x": 3,
-          "y": 8
-        },
-        "ref": "statue"
       },
       {
         "id": "zone1-p8",
         "kind": "prop",
         "pos": {
+          "x": 10,
+          "y": 7
+        },
+        "ref": "caisse"
+      },
+      {
+        "id": "zone1-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 8
+        },
+        "ref": "rack-armes"
+      },
+      {
+        "id": "zone1-p10",
+        "kind": "prop",
+        "pos": {
           "x": 6,
           "y": 9
         },
         "ref": "tonneau"
       },
       {
-        "id": "zone1-p9",
+        "id": "zone1-p11",
         "kind": "prop",
         "pos": {
           "x": 10,
           "y": 9
         },
         "ref": "caisse"
+      },
+      {
+        "id": "zone1-p12",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 9
+        },
+        "ref": "etendard"
       }
     ],
     "dialogues": [],
@@ -925,23 +952,8 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
       "mur",
       "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -955,20 +967,79 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
       "mur",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
-      "mur",
-      "mur",
       "dalle",
       "terre",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
       "terre",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
       "terre",
+      "mur",
+      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
       "dalle",
       "dalle",
       "mur",
@@ -978,36 +1049,22 @@
       "dalle",
       "dalle",
       "dalle",
+      "dalle",
       "mur",
       "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "porte",
-      "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "dalle",
       "mur",
-      "mur",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
+      "dalle",
       "dalle",
       "terre",
-      "terre",
-      "terre",
-      "dalle",
-      "dalle",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
       "mur",
       "mur",
       "dalle",
@@ -1015,38 +1072,8 @@
       "dalle",
       "dalle",
       "dalle",
-      "dalle",
       "mur",
       "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
-      "mur",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "dalle",
-      "mur",
       "dalle",
       "dalle",
       "dalle",
@@ -1076,35 +1103,80 @@
         "kind": "heroStart",
         "pos": {
           "x": 1,
-          "y": 2
+          "y": 1
         }
       },
       {
         "id": "zone2-p0",
         "kind": "prop",
         "pos": {
-          "x": 4,
+          "x": 3,
           "y": 2
         },
-        "ref": "tonneau"
+        "ref": "colonne-brisee"
       },
       {
         "id": "zone2-p1",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 7
+          "x": 6,
+          "y": 3
         },
-        "ref": "tonneau"
+        "ref": "gravats"
       },
       {
         "id": "zone2-p2",
         "kind": "prop",
         "pos": {
           "x": 3,
+          "y": 4
+        },
+        "ref": "arche-ruine"
+      },
+      {
+        "id": "zone2-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 5
+        },
+        "ref": "gravats"
+      },
+      {
+        "id": "zone2-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 6
+        },
+        "ref": "colonne-brisee"
+      },
+      {
+        "id": "zone2-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 7
+        },
+        "ref": "gravats"
+      },
+      {
+        "id": "zone2-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
           "y": 8
         },
-        "ref": "statue"
+        "ref": "arche-ruine"
+      },
+      {
+        "id": "zone2-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 9
+        },
+        "ref": "gravats"
       }
     ],
     "dialogues": [],
@@ -1133,22 +1205,36 @@
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 9,
-              "y": 2
+              "x": 13,
+              "y": 1
             }
           },
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 12,
-              "y": 4
+              "x": 13,
+              "y": 3
             }
           },
           {
             "ref": "Orc",
             "pos": {
-              "x": 10,
-              "y": 6
+              "x": 11,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 11,
+              "y": 7
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 13,
+              "y": 9
             }
           }
         ],
@@ -1368,13 +1454,40 @@
         "id": "zone3-p0",
         "kind": "prop",
         "pos": {
+          "x": 3,
+          "y": 1
+        },
+        "ref": "grille"
+      },
+      {
+        "id": "zone3-p1",
+        "kind": "prop",
+        "pos": {
           "x": 6,
           "y": 1
         },
         "ref": "tonneau"
       },
       {
-        "id": "zone3-p1",
+        "id": "zone3-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 1
+        },
+        "ref": "grille"
+      },
+      {
+        "id": "zone3-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 12,
+          "y": 4
+        },
+        "ref": "detritus"
+      },
+      {
+        "id": "zone3-p4",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -1383,7 +1496,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone3-p2",
+        "id": "zone3-p5",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -1392,13 +1505,40 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone3-p3",
+        "id": "zone3-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 6
+        },
+        "ref": "detritus"
+      },
+      {
+        "id": "zone3-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 9
+        },
+        "ref": "grille"
+      },
+      {
+        "id": "zone3-p8",
         "kind": "prop",
         "pos": {
           "x": 6,
           "y": 9
         },
         "ref": "tonneau"
+      },
+      {
+        "id": "zone3-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 9
+        },
+        "ref": "grille"
       }
     ],
     "dialogues": [],
@@ -1425,9 +1565,16 @@
         "id": "enc-zone3",
         "enemies": [
           {
+            "ref": "Rat géant",
+            "pos": {
+              "x": 6,
+              "y": 3
+            }
+          },
+          {
             "ref": "Snotling",
             "pos": {
-              "x": 7,
+              "x": 8,
               "y": 3
             }
           },
@@ -1469,7 +1616,14 @@
               ]
             },
             "pos": {
-              "x": 10,
+              "x": 9,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Rat géant",
+            "pos": {
+              "x": 12,
               "y": 6
             }
           },
@@ -1477,7 +1631,7 @@
             "ref": "Snotling",
             "pos": {
               "x": 6,
-              "y": 7
+              "y": 8
             }
           }
         ],
@@ -1701,31 +1855,85 @@
         "id": "zone4-p0",
         "kind": "prop",
         "pos": {
+          "x": 1,
+          "y": 1
+        },
+        "ref": "sarcophage"
+      },
+      {
+        "id": "zone4-p1",
+        "kind": "prop",
+        "pos": {
           "x": 3,
           "y": 1
         },
         "ref": "cadavre"
       },
       {
-        "id": "zone4-p1",
-        "kind": "prop",
-        "pos": {
-          "x": 7,
-          "y": 2
-        },
-        "ref": "statue"
-      },
-      {
         "id": "zone4-p2",
         "kind": "prop",
         "pos": {
-          "x": 4,
+          "x": 6,
+          "y": 1
+        },
+        "ref": "tombe"
+      },
+      {
+        "id": "zone4-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 2
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone4-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 3
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone4-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
           "y": 4
         },
         "ref": "mare-sang"
       },
       {
-        "id": "zone4-p3",
+        "id": "zone4-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 4
+        },
+        "ref": "tombe"
+      },
+      {
+        "id": "zone4-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 6
+        },
+        "ref": "sarcophage"
+      },
+      {
+        "id": "zone4-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 6
+        },
+        "ref": "tombe"
+      },
+      {
+        "id": "zone4-p9",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -1734,16 +1942,25 @@
         "ref": "cadavre"
       },
       {
-        "id": "zone4-p4",
+        "id": "zone4-p10",
         "kind": "prop",
         "pos": {
-          "x": 7,
+          "x": 6,
           "y": 7
         },
-        "ref": "statue"
+        "ref": "ossements"
       },
       {
-        "id": "zone4-p5",
+        "id": "zone4-p11",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
+          "y": 8
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone4-p12",
         "kind": "prop",
         "pos": {
           "x": 12,
@@ -1752,10 +1969,19 @@
         "ref": "coffre"
       },
       {
-        "id": "zone4-p6",
+        "id": "zone4-p13",
         "kind": "prop",
         "pos": {
-          "x": 7,
+          "x": 1,
+          "y": 9
+        },
+        "ref": "tombe"
+      },
+      {
+        "id": "zone4-p14",
+        "kind": "prop",
+        "pos": {
+          "x": 6,
           "y": 9
         },
         "ref": "tonneau"
@@ -1792,7 +2018,7 @@
             }
           },
           {
-            "ref": "Squelette",
+            "ref": "Zombie",
             "pos": {
               "x": 13,
               "y": 2
@@ -1806,10 +2032,17 @@
             }
           },
           {
-            "ref": "Squelette",
+            "ref": "Zombie",
             "pos": {
               "x": 10,
               "y": 7
+            }
+          },
+          {
+            "ref": "Squelette",
+            "pos": {
+              "x": 13,
+              "y": 9
             }
           }
         ],
@@ -2025,82 +2258,127 @@
         "id": "zone5-p0",
         "kind": "prop",
         "pos": {
-          "x": 6,
+          "x": 4,
           "y": 1
         },
-        "ref": "cloture"
+        "ref": "rack-lances"
       },
       {
         "id": "zone5-p1",
         "kind": "prop",
         "pos": {
-          "x": 8,
+          "x": 6,
           "y": 1
         },
-        "ref": "cloture"
+        "ref": "barriere"
       },
       {
         "id": "zone5-p2",
         "kind": "prop",
         "pos": {
-          "x": 10,
+          "x": 8,
           "y": 1
         },
-        "ref": "cloture"
+        "ref": "barriere"
       },
       {
         "id": "zone5-p3",
         "kind": "prop",
         "pos": {
-          "x": 6,
-          "y": 2
+          "x": 10,
+          "y": 1
         },
-        "ref": "cloture"
+        "ref": "barriere"
       },
       {
         "id": "zone5-p4",
         "kind": "prop",
         "pos": {
-          "x": 8,
-          "y": 2
+          "x": 14,
+          "y": 1
         },
-        "ref": "cloture"
+        "ref": "etendard"
       },
       {
         "id": "zone5-p5",
         "kind": "prop",
         "pos": {
-          "x": 10,
+          "x": 5,
           "y": 2
         },
-        "ref": "cloture"
+        "ref": "tribune"
       },
       {
         "id": "zone5-p6",
         "kind": "prop",
         "pos": {
-          "x": 6,
-          "y": 6
+          "x": 13,
+          "y": 2
         },
-        "ref": "cloture"
+        "ref": "tribune"
       },
       {
         "id": "zone5-p7",
         "kind": "prop",
         "pos": {
-          "x": 8,
+          "x": 1,
           "y": 6
         },
-        "ref": "cloture"
+        "ref": "etendard"
       },
       {
         "id": "zone5-p8",
         "kind": "prop",
         "pos": {
-          "x": 10,
+          "x": 5,
           "y": 6
         },
-        "ref": "cloture"
+        "ref": "barriere"
+      },
+      {
+        "id": "zone5-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 6
+        },
+        "ref": "barriere"
+      },
+      {
+        "id": "zone5-p10",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 6
+        },
+        "ref": "barriere"
+      },
+      {
+        "id": "zone5-p11",
+        "kind": "prop",
+        "pos": {
+          "x": 14,
+          "y": 6
+        },
+        "ref": "tribune"
+      },
+      {
+        "id": "zone5-p12",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 7
+        },
+        "ref": "tribune"
+      },
+      {
+        "id": "zone5-p13",
+        "kind": "prop",
+        "pos": {
+          "x": 15,
+          "y": 7
+        },
+        "ref": "etendard"
       }
     ],
     "dialogues": [],
@@ -2291,8 +2569,8 @@
       "eau",
       "eau",
       "eau",
-      "herbe",
-      "herbe",
+      "boue",
+      "boue",
       "herbe",
       "herbe",
       "herbe",
@@ -2387,19 +2665,55 @@
           "x": 4,
           "y": 1
         },
-        "ref": "arbre"
+        "ref": "souche"
       },
       {
         "id": "zone6-p1",
         "kind": "prop",
         "pos": {
-          "x": 15,
-          "y": 3
+          "x": 6,
+          "y": 1
         },
-        "ref": "arbre"
+        "ref": "roseaux"
       },
       {
         "id": "zone6-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 2
+        },
+        "ref": "menhir"
+      },
+      {
+        "id": "zone6-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 15,
+          "y": 3
+        },
+        "ref": "roseaux"
+      },
+      {
+        "id": "zone6-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 6
+        },
+        "ref": "menhir"
+      },
+      {
+        "id": "zone6-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 7
+        },
+        "ref": "roseaux"
+      },
+      {
+        "id": "zone6-p6",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -2408,13 +2722,13 @@
         "ref": "cheval-mort"
       },
       {
-        "id": "zone6-p3",
+        "id": "zone6-p7",
         "kind": "prop",
         "pos": {
           "x": 15,
           "y": 7
         },
-        "ref": "arbre"
+        "ref": "souche"
       }
     ],
     "dialogues": [],
@@ -2452,6 +2766,13 @@
             "pos": {
               "x": 9,
               "y": 3
+            }
+          },
+          {
+            "ref": "Ungor",
+            "pos": {
+              "x": 4,
+              "y": 5
             }
           },
           {
@@ -2506,7 +2827,7 @@
     "description": "Le Nid",
     "dimensions": {
       "w": 15,
-      "h": 10
+      "h": 11
     },
     "ambiance": "interieur",
     "startMessage": "LE NID. Une Vouivre (VENIN, Énorme — occupe 3×3) niche au fond ; des araignées géantes (Toile → Empêtré) gardent les alcôves, des serpents filent au sol. Le poison ronge — soignez vite.",
@@ -2532,22 +2853,7 @@
       "tourbe",
       "tourbe",
       "tourbe",
-      "mur",
       "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
-      "mur",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
       "tourbe",
       "tourbe",
       "tourbe",
@@ -2562,22 +2868,7 @@
       "tourbe",
       "tourbe",
       "tourbe",
-      "mur",
       "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
-      "mur",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "porte",
       "tourbe",
       "tourbe",
       "tourbe",
@@ -2590,8 +2881,77 @@
       "tourbe",
       "tourbe",
       "tourbe",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
       "tourbe",
       "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "terre",
+      "terre",
+      "tourbe",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
+      "mur",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "terre",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "tourbe",
+      "mur",
       "mur",
       "tourbe",
       "tourbe",
@@ -2600,15 +2960,6 @@
       "tourbe",
       "tourbe",
       "tourbe",
-      "mur",
-      "mur",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
-      "tourbe",
       "tourbe",
       "tourbe",
       "tourbe",
@@ -2622,22 +2973,7 @@
       "tourbe",
       "tourbe",
       "tourbe",
-      "mur",
       "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
-      "mur",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "tourbe",
-      "mur",
       "tourbe",
       "tourbe",
       "tourbe",
@@ -2675,28 +3011,55 @@
         "id": "zone7-p0",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 3
+          "x": 4,
+          "y": 1
         },
-        "ref": "mare-sang"
+        "ref": "champignon"
       },
       {
         "id": "zone7-p1",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 6
+          "x": 9,
+          "y": 1
         },
-        "ref": "tonneau"
+        "ref": "toile"
       },
       {
         "id": "zone7-p2",
         "kind": "prop",
         "pos": {
           "x": 5,
+          "y": 2
+        },
+        "ref": "cocon"
+      },
+      {
+        "id": "zone7-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
           "y": 8
         },
-        "ref": "cadavre"
+        "ref": "toile"
+      },
+      {
+        "id": "zone7-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 8
+        },
+        "ref": "champignon"
+      },
+      {
+        "id": "zone7-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 9
+        },
+        "ref": "tonneau"
       }
     ],
     "dialogues": [],
@@ -2707,7 +3070,7 @@
           "x": 5,
           "y": 0,
           "w": 10,
-          "h": 10
+          "h": 11
         },
         "once": true,
         "effects": [
@@ -2725,50 +3088,43 @@
           {
             "ref": "Araignée géante",
             "pos": {
-              "x": 13,
+              "x": 12,
               "y": 1
-            }
-          },
-          {
-            "ref": "Araignée géante",
-            "pos": {
-              "x": 10,
-              "y": 2
-            }
-          },
-          {
-            "ref": "Serpent",
-            "pos": {
-              "x": 13,
-              "y": 3
             }
           },
           {
             "ref": "Vouivre",
             "pos": {
-              "x": 9,
+              "x": 5,
               "y": 4
             }
           },
           {
             "ref": "Serpent",
             "pos": {
-              "x": 13,
-              "y": 5
+              "x": 12,
+              "y": 4
             }
           },
           {
             "ref": "Araignée géante",
             "pos": {
-              "x": 10,
+              "x": 11,
               "y": 6
             }
           },
           {
+            "ref": "Serpent",
+            "pos": {
+              "x": 12,
+              "y": 8
+            }
+          },
+          {
             "ref": "Araignée géante",
             "pos": {
-              "x": 13,
-              "y": 7
+              "x": 8,
+              "y": 9
             }
           }
         ],
@@ -2996,13 +3352,94 @@
         "id": "zone8-p0",
         "kind": "prop",
         "pos": {
+          "x": 4,
+          "y": 1
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone8-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 7,
+          "y": 2
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone8-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 3
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone8-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 3
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone8-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 5
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone8-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 6
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone8-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 7
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone8-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 8
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone8-p8",
+        "kind": "prop",
+        "pos": {
           "x": 6,
           "y": 8
         },
         "ref": "mare-sang"
       },
       {
-        "id": "zone8-p1",
+        "id": "zone8-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 8
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone8-p10",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -3011,7 +3448,7 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone8-p2",
+        "id": "zone8-p11",
         "kind": "prop",
         "pos": {
           "x": 11,
@@ -3046,7 +3483,7 @@
           {
             "ref": "Gor",
             "pos": {
-              "x": 12,
+              "x": 11,
               "y": 1
             }
           },
@@ -3055,6 +3492,13 @@
             "pos": {
               "x": 9,
               "y": 4
+            }
+          },
+          {
+            "ref": "Ungor",
+            "pos": {
+              "x": 9,
+              "y": 7
             }
           },
           {
@@ -3266,13 +3710,58 @@
         "id": "zone9-p0",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 3
+          "x": 4,
+          "y": 1
         },
-        "ref": "statue"
+        "ref": "stalagmite"
       },
       {
         "id": "zone9-p1",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 2
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone9-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 3
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone9-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 4
+        },
+        "ref": "marmite"
+      },
+      {
+        "id": "zone9-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 5
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone9-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 5
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone9-p6",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -3281,7 +3770,34 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone9-p2",
+        "id": "zone9-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 6
+        },
+        "ref": "rocher"
+      },
+      {
+        "id": "zone9-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 7
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone9-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 1,
+          "y": 8
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone9-p10",
         "kind": "prop",
         "pos": {
           "x": 5,
@@ -3290,7 +3806,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone9-p3",
+        "id": "zone9-p11",
         "kind": "prop",
         "pos": {
           "x": 10,
@@ -3339,7 +3855,14 @@
           {
             "ref": "Gor",
             "pos": {
-              "x": 12,
+              "x": 11,
+              "y": 6
+            }
+          },
+          {
+            "ref": "Squig des cavernes",
+            "pos": {
+              "x": 11,
               "y": 7
             }
           }
@@ -3391,7 +3914,7 @@
     "description": "Le Nid de Vermine",
     "dimensions": {
       "w": 15,
-      "h": 10
+      "h": 11
     },
     "ambiance": "interieur",
     "startMessage": "LE NID DE VERMINE. Une HORDE skaven déferle : un Rat-ogre (Taille Grande, Stupide) lancé en avant, une nuée de Guerriers des clans et une Vermine de choc en surnombre. Tenez les couloirs.",
@@ -3415,10 +3938,40 @@
       "pave",
       "pave",
       "pave",
+      "mur",
       "pave",
       "pave",
       "pave",
       "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "terre",
+      "pave",
+      "terre",
       "pave",
       "pave",
       "pave",
@@ -3446,37 +3999,7 @@
       "pave",
       "pave",
       "pave",
-      "terre",
-      "pave",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
       "mur",
-      "mur",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "terre",
-      "terre",
-      "terre",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "mur",
-      "mur",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
-      "pave",
       "pave",
       "pave",
       "pave",
@@ -3491,6 +4014,21 @@
       "pave",
       "pave",
       "pave",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
+      "mur",
+      "pave",
+      "pave",
+      "pave",
+      "mur",
       "pave",
       "pave",
       "pave",
@@ -3560,26 +4098,80 @@
         "id": "zone10-p0",
         "kind": "prop",
         "pos": {
-          "x": 5,
-          "y": 7
+          "x": 8,
+          "y": 1
         },
-        "ref": "mare-sang"
+        "ref": "terrier"
       },
       {
         "id": "zone10-p1",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 8
+          "x": 12,
+          "y": 4
         },
-        "ref": "tonneau"
+        "ref": "cage"
       },
       {
         "id": "zone10-p2",
         "kind": "prop",
         "pos": {
-          "x": 11,
+          "x": 3,
+          "y": 5
+        },
+        "ref": "roue-dentee"
+      },
+      {
+        "id": "zone10-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 7
+        },
+        "ref": "detritus"
+      },
+      {
+        "id": "zone10-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
           "y": 8
+        },
+        "ref": "terrier"
+      },
+      {
+        "id": "zone10-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 8
+        },
+        "ref": "mare-sang"
+      },
+      {
+        "id": "zone10-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 13,
+          "y": 8
+        },
+        "ref": "terrier"
+      },
+      {
+        "id": "zone10-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 9
+        },
+        "ref": "tonneau"
+      },
+      {
+        "id": "zone10-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 9
         },
         "ref": "tonneau"
       }
@@ -3592,7 +4184,7 @@
           "x": 5,
           "y": 0,
           "w": 10,
-          "h": 10
+          "h": 11
         },
         "once": true,
         "effects": [
@@ -3615,9 +4207,9 @@
             }
           },
           {
-            "ref": "Guerrier des clans",
+            "ref": "Rat géant",
             "pos": {
-              "x": 13,
+              "x": 12,
               "y": 2
             }
           },
@@ -3636,14 +4228,14 @@
             }
           },
           {
-            "ref": "Vermine de choc",
+            "ref": "Guerrier des clans",
             "pos": {
               "x": 13,
               "y": 4
             }
           },
           {
-            "ref": "Guerrier des clans",
+            "ref": "Vermine de choc",
             "pos": {
               "x": 13,
               "y": 5
@@ -3744,7 +4336,7 @@
       "sang",
       "sang",
       "sang",
-      "terre",
+      "sang",
       "sang",
       "sang",
       "sang",
@@ -3777,8 +4369,8 @@
       "terre",
       "terre",
       "terre",
-      "terre",
-      "terre",
+      "sang",
+      "sang",
       "terre",
       "terre",
       "sang",
@@ -3812,7 +4404,7 @@
       "sang",
       "sang",
       "sang",
-      "terre",
+      "sang",
       "sang",
       "sang",
       "sang",
@@ -3885,40 +4477,103 @@
         "id": "zone11-p0",
         "kind": "prop",
         "pos": {
-          "x": 6,
+          "x": 5,
           "y": 1
         },
-        "ref": "statue"
+        "ref": "autel"
       },
       {
         "id": "zone11-p1",
         "kind": "prop",
         "pos": {
-          "x": 8,
+          "x": 11,
           "y": 1
         },
-        "ref": "statue"
+        "ref": "autel"
       },
       {
         "id": "zone11-p2",
         "kind": "prop",
         "pos": {
-          "x": 5,
-          "y": 7
+          "x": 3,
+          "y": 2
         },
-        "ref": "statue"
+        "ref": "pieu"
       },
       {
         "id": "zone11-p3",
         "kind": "prop",
         "pos": {
-          "x": 7,
-          "y": 7
+          "x": 13,
+          "y": 2
         },
-        "ref": "statue"
+        "ref": "pieu"
       },
       {
         "id": "zone11-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 8,
+          "y": 4
+        },
+        "ref": "cercle-runique"
+      },
+      {
+        "id": "zone11-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 4
+        },
+        "ref": "cercle-runique"
+      },
+      {
+        "id": "zone11-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 4,
+          "y": 6
+        },
+        "ref": "crane-monstre"
+      },
+      {
+        "id": "zone11-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 6
+        },
+        "ref": "autel"
+      },
+      {
+        "id": "zone11-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 14,
+          "y": 6
+        },
+        "ref": "pieu"
+      },
+      {
+        "id": "zone11-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 7
+        },
+        "ref": "autel"
+      },
+      {
+        "id": "zone11-p10",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 7
+        },
+        "ref": "autel"
+      },
+      {
+        "id": "zone11-p11",
         "kind": "prop",
         "pos": {
           "x": 7,
@@ -3927,7 +4582,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone11-p5",
+        "id": "zone11-p12",
         "kind": "prop",
         "pos": {
           "x": 8,
@@ -3936,7 +4591,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone11-p6",
+        "id": "zone11-p13",
         "kind": "prop",
         "pos": {
           "x": 9,
@@ -3945,10 +4600,19 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone11-p7",
+        "id": "zone11-p14",
         "kind": "prop",
         "pos": {
           "x": 11,
+          "y": 8
+        },
+        "ref": "crane-monstre"
+      },
+      {
+        "id": "zone11-p15",
+        "kind": "prop",
+        "pos": {
+          "x": 14,
           "y": 8
         },
         "ref": "coffre"
@@ -3980,15 +4644,8 @@
           {
             "ref": "Cultiste",
             "pos": {
-              "x": 13,
+              "x": 15,
               "y": 1
-            }
-          },
-          {
-            "ref": "Sanguinaire de Khorne",
-            "pos": {
-              "x": 3,
-              "y": 2
             }
           },
           {
@@ -3999,21 +4656,35 @@
             }
           },
           {
-            "ref": "Guerrier du Chaos",
+            "ref": "Sanguinaire de Khorne",
             "pos": {
-              "x": 14,
+              "x": 15,
+              "y": 3
+            }
+          },
+          {
+            "ref": "Chamane-Brey",
+            "pos": {
+              "x": 3,
               "y": 4
             }
           },
           {
-            "ref": "Mutant",
+            "ref": "Guerrier du Chaos",
             "pos": {
-              "x": 3,
-              "y": 6
+              "x": 15,
+              "y": 4
             }
           },
           {
             "ref": "Sanguinaire de Khorne",
+            "pos": {
+              "x": 15,
+              "y": 5
+            }
+          },
+          {
+            "ref": "Mutant",
             "pos": {
               "x": 15,
               "y": 6
@@ -4022,7 +4693,7 @@
           {
             "ref": "Cultiste",
             "pos": {
-              "x": 12,
+              "x": 14,
               "y": 7
             }
           }
@@ -4148,6 +4819,21 @@
       "mur",
       "marbre",
       "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
+      "marbre",
+      "mur",
+      "marbre",
+      "marbre",
       "terre",
       "terre",
       "mur",
@@ -4157,23 +4843,8 @@
       "marbre",
       "marbre",
       "mur",
-      "marbre",
-      "marbre",
-      "marbre",
       "mur",
       "marbre",
-      "marbre",
-      "marbre",
-      "terre",
-      "mur",
-      "mur",
-      "marbre",
-      "marbre",
-      "marbre",
-      "marbre",
-      "mur",
-      "mur",
-      "mur",
       "mur",
       "mur",
       "marbre",
@@ -4240,40 +4911,103 @@
         "id": "zone12-p0",
         "kind": "prop",
         "pos": {
-          "x": 4,
+          "x": 3,
           "y": 1
         },
-        "ref": "statue"
+        "ref": "chandelier"
       },
       {
         "id": "zone12-p1",
         "kind": "prop",
         "pos": {
-          "x": 10,
+          "x": 5,
           "y": 1
         },
-        "ref": "statue"
+        "ref": "sarcophage"
       },
       {
         "id": "zone12-p2",
         "kind": "prop",
         "pos": {
-          "x": 4,
-          "y": 7
+          "x": 9,
+          "y": 1
         },
-        "ref": "statue"
+        "ref": "sarcophage"
       },
       {
         "id": "zone12-p3",
         "kind": "prop",
         "pos": {
-          "x": 10,
-          "y": 7
+          "x": 11,
+          "y": 1
         },
-        "ref": "statue"
+        "ref": "chandelier"
       },
       {
         "id": "zone12-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 3
+        },
+        "ref": "urne"
+      },
+      {
+        "id": "zone12-p5",
+        "kind": "prop",
+        "pos": {
+          "x": 12,
+          "y": 3
+        },
+        "ref": "urne"
+      },
+      {
+        "id": "zone12-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 2,
+          "y": 5
+        },
+        "ref": "ossements"
+      },
+      {
+        "id": "zone12-p7",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "ref": "chandelier"
+      },
+      {
+        "id": "zone12-p8",
+        "kind": "prop",
+        "pos": {
+          "x": 5,
+          "y": 7
+        },
+        "ref": "sarcophage"
+      },
+      {
+        "id": "zone12-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 7
+        },
+        "ref": "sarcophage"
+      },
+      {
+        "id": "zone12-p10",
+        "kind": "prop",
+        "pos": {
+          "x": 11,
+          "y": 7
+        },
+        "ref": "chandelier"
+      },
+      {
+        "id": "zone12-p11",
         "kind": "prop",
         "pos": {
           "x": 6,
@@ -4282,7 +5016,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone12-p5",
+        "id": "zone12-p12",
         "kind": "prop",
         "pos": {
           "x": 7,
@@ -4291,7 +5025,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone12-p6",
+        "id": "zone12-p13",
         "kind": "prop",
         "pos": {
           "x": 8,
@@ -4300,7 +5034,7 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone12-p7",
+        "id": "zone12-p14",
         "kind": "prop",
         "pos": {
           "x": 10,
@@ -4340,9 +5074,23 @@
             }
           },
           {
+            "ref": "Fantôme",
+            "pos": {
+              "x": 7,
+              "y": 2
+            }
+          },
+          {
             "ref": "Spectre de cairn",
             "pos": {
               "x": 7,
+              "y": 4
+            }
+          },
+          {
+            "ref": "Banshee",
+            "pos": {
+              "x": 13,
               "y": 4
             }
           },
@@ -4351,6 +5099,13 @@
             "pos": {
               "x": 13,
               "y": 7
+            }
+          },
+          {
+            "ref": "Fantôme",
+            "pos": {
+              "x": 13,
+              "y": 8
             }
           }
         ],
@@ -4442,27 +5197,8 @@
       "mur",
       "mur",
       "cendre",
-      "terre",
-      "terre",
-      "terre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "terre",
-      "cendre",
-      "mur",
-      "mur",
-      "cendre",
-      "terre",
-      "terre",
+      "lave",
+      "lave",
       "terre",
       "cendre",
       "cendre",
@@ -4475,6 +5211,25 @@
       "cendre",
       "cendre",
       "cendre",
+      "cendre",
+      "cendre",
+      "mur",
+      "mur",
+      "cendre",
+      "lave",
+      "lave",
+      "terre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
       "terre",
       "cendre",
       "mur",
@@ -4512,27 +5267,8 @@
       "cendre",
       "cendre",
       "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "mur",
-      "mur",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
-      "cendre",
+      "lave",
+      "lave",
       "cendre",
       "mur",
       "mur",
@@ -4550,8 +5286,27 @@
       "cendre",
       "cendre",
       "cendre",
+      "lave",
+      "lave",
+      "cendre",
+      "mur",
+      "mur",
       "cendre",
       "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "cendre",
+      "lave",
+      "lave",
       "cendre",
       "mur",
       "mur",
@@ -4672,13 +5427,40 @@
         "id": "zone13-p1",
         "kind": "prop",
         "pos": {
-          "x": 3,
-          "y": 5
+          "x": 8,
+          "y": 1
         },
-        "ref": "statue"
+        "ref": "crane-monstre"
       },
       {
         "id": "zone13-p2",
+        "kind": "prop",
+        "pos": {
+          "x": 14,
+          "y": 2
+        },
+        "ref": "tas-or"
+      },
+      {
+        "id": "zone13-p3",
+        "kind": "prop",
+        "pos": {
+          "x": 3,
+          "y": 5
+        },
+        "ref": "stalagmite"
+      },
+      {
+        "id": "zone13-p4",
+        "kind": "prop",
+        "pos": {
+          "x": 10,
+          "y": 8
+        },
+        "ref": "oeuf-dragon"
+      },
+      {
+        "id": "zone13-p5",
         "kind": "prop",
         "pos": {
           "x": 6,
@@ -4687,7 +5469,16 @@
         "ref": "mare-sang"
       },
       {
-        "id": "zone13-p3",
+        "id": "zone13-p6",
+        "kind": "prop",
+        "pos": {
+          "x": 12,
+          "y": 9
+        },
+        "ref": "crane-monstre"
+      },
+      {
+        "id": "zone13-p7",
         "kind": "prop",
         "pos": {
           "x": 14,
@@ -4696,7 +5487,7 @@
         "ref": "cadavre"
       },
       {
-        "id": "zone13-p4",
+        "id": "zone13-p8",
         "kind": "prop",
         "pos": {
           "x": 3,
@@ -4705,13 +5496,31 @@
         "ref": "tonneau"
       },
       {
-        "id": "zone13-p5",
+        "id": "zone13-p9",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 10
+        },
+        "ref": "tas-or"
+      },
+      {
+        "id": "zone13-p10",
         "kind": "prop",
         "pos": {
           "x": 17,
           "y": 10
         },
         "ref": "coffre"
+      },
+      {
+        "id": "zone13-p11",
+        "kind": "prop",
+        "pos": {
+          "x": 9,
+          "y": 11
+        },
+        "ref": "tas-or"
       }
     ],
     "dialogues": [],
@@ -4740,8 +5549,15 @@
           {
             "ref": "Gobelin",
             "pos": {
-              "x": 16,
+              "x": 15,
               "y": 1
+            }
+          },
+          {
+            "ref": "Cultiste",
+            "pos": {
+              "x": 10,
+              "y": 3
             }
           },
           {
@@ -4775,6 +5591,13 @@
             "pos": {
               "x": 7,
               "y": 4
+            }
+          },
+          {
+            "ref": "Gobelin",
+            "pos": {
+              "x": 16,
+              "y": 10
             }
           },
           {
