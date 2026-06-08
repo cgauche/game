@@ -40,7 +40,7 @@ function legParts(far: boolean, foot: QuadFoot, ll: number) {
   return {
     haut: joint(body, 0, 4.8) + cap(30 * ll, 9, body, '@corpsO'), // épaule/hanche → relie au corps
     bas: joint(body, 0, 3.7) + cap(22 * ll, 6.5, body, '@corpsO') + joint(body, 22 * ll, 2.9), // genou + boulet
-    pied: `<g transform="translate(0,${22 * ll})">${hoof(foot, far)}</g>`,
+    pied: hoof(foot, far), // sabot À l'os du pied (bas de la jambe) — PAS 22·ll plus bas (sinon détaché)
   };
 }
 function legPartsFront(far: boolean, foot: QuadFoot, ll: number) {
@@ -48,7 +48,7 @@ function legPartsFront(far: boolean, foot: QuadFoot, ll: number) {
   return {
     haut: joint(body, 0, far ? 4 : 4.5) + cap(30 * ll, far ? 7 : 8, body, '@corpsO'),
     bas: joint(body, 0, far ? 3 : 3.4) + cap(22 * ll, far ? 5.5 : 6, body, '@corpsO') + joint(body, 22 * ll, 2.6),
-    pied: `<g transform="translate(0,${22 * ll})">${footFront(foot, far)}</g>`,
+    pied: footFront(foot, far), // pied à l'os (bas de la jambe), pas 22·ll plus bas
   };
 }
 // Œil CALME d'animal : iris sombre + petit reflet (pas le glow jaune g_eye, qui faisait

@@ -1,82 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { bus, EVT } from '../state/bus';
-import { useGame } from '../state/store';
-import { planById, bodyPlanOf, type BodyPlanId } from './rig/bodyPlan';
-import { creatureMatch } from './rig/creatures';
 import { bonesToSvg } from './rig/renderBones';
-import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
-import { project, type View } from './rig/facing';
+import { usePlanAnim } from './usePlanAnim';
 import type { Dir8 } from '../state/dir8';
 import type { ColorsSel } from '../state/scene';
 
-const STEP_MS = 160; // démarche (aligné déplacement)
-const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
-
-type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack'; start: number; atk?: string };
-
 /**
  * Token ANIMÉ GÉNÉRIQUE pour TOUT gabarit rigué non-bipède (quadrupède, ailé, serpentin,
- * arachnide, aviaire, céphalopode). Pilote l'anim via les poses du PLAN (walk/attack/death +
- * idlePose joué en continu) — un seul token pour tous les plans, plus de token par-gabarit.
- * Facing 8-dir rot-aware, recolor, pose de mort. Hébergé dans la boîte 120×150 par tokenNode.
+ * arachnide, aviaire, céphalopode). L'animation (poses du plan, vue 8-dir, marche/attaque
+ * bus) est déléguée à `usePlanAnim` (partagé avec MountedToken) ; ici on ne fait que rendre.
+ * Hébergé dans la boîte 120×150 par tokenNode.
  */
 export function AnimatedPlanToken({ id, name, colors, dead, facing }: { id: string; name: string; colors?: ColorsSel; dead?: boolean; facing?: Dir8 }) {
-  const camRot = useGame((s) => s.camRot);
-  const worldDir = useGame((s) => s.facing?.[id]) ?? facing;
-  const [, force] = useState(0);
-  const modeRef = useRef<Mode>({ kind: 'rest' });
-  const rafRef = useRef(0);
-
-  const planId = bodyPlanOf(name);
-  const plan = planId === 'monolithic' ? null : planById(planId as BodyPlanId);
-  const hasIdle = !!plan?.idlePose;
-
-  useEffect(() => {
-    if (!plan) return;
-    const loop = () => {
-      const m = modeRef.current;
-      const t = performance.now();
-      if (m.kind === 'walk' && t > m.until) modeRef.current = { kind: 'rest' };
-      else if (m.kind === 'attack' && t - m.start > 360) modeRef.current = { kind: 'rest' };
-      force((n) => n + 1);
-      // tant qu'il y a une anim de repos, la boucle tourne en continu (créature vivante) ;
-      // sinon elle s'arrête au repos (économie) comme l'ancien token quad.
-      rafRef.current = modeRef.current.kind === 'rest' && (!hasIdle || dead) ? 0 : requestAnimationFrame(loop);
-    };
-    const ensureLoop = () => { if (!rafRef.current) rafRef.current = requestAnimationFrame(loop); };
-    if (hasIdle && !dead) ensureLoop();
-    const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
-      if (d.id !== id) return;
-      const p = d.path;
-      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, p?.length ?? 1) * STEP_MS };
-      ensureLoop();
-    });
-    const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string; creatureAttack?: string }) => {
-      if (d.from !== id) return;
-      modeRef.current = { kind: 'attack', start: performance.now(), atk: d.creatureAttack };
-      ensureLoop();
-    });
-    return () => { offMove(); offAttack(); if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [id, plan, hasIdle, dead]);
-
+  const { plan, species, pose, view, mirror } = usePlanAnim(id, name, dead, facing);
   if (!plan) return null;
-  const species = creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '';
-  const m = modeRef.current;
-  const now = performance.now();
-  const pose: Record<string, number> = dead
-    ? plan.deathPose()
-    : m.kind === 'walk'
-      ? plan.walkPose(((now / STEP_MS) % 2) / 2)
-      : m.kind === 'attack'
-        // Pose d'attaque SPÉCIFIQUE (morsure/queue/cornes/griffe) pour le gabarit quad/ailé,
-        // sinon attaque générique du plan (serpent/pieuvre/… ou attaque non typée).
-        ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)
-            ? quadAttackPose(m.atk, Math.min(1, (now - m.start) / 280))
-            : plan.attackPose(Math.min(1, (now - m.start) / 280)))
-        : plan.idlePose
-          ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
-          : plan.restPose();
-  const fv = worldDir ? project(worldDir, camRot) : { view: 'front' as View, mirror: false };
-  const svg = bonesToSvg(plan.resolve(species, fv.view, pose, { colors }));
-  return <g transform={fv.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
+  const svg = bonesToSvg(plan.resolve(species, view, pose, { colors }));
+  return <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
 }

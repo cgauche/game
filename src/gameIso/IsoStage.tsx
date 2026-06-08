@@ -32,6 +32,7 @@ import {
 } from './sprites';
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
+import { MountedToken } from './MountedToken';
 import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
@@ -372,6 +373,8 @@ export function IsoStage() {
       const isHero = c.kind === 'hero';
       // Combat monté : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE sur sa monture (ci-dessous).
       if (isRider(c)) { if (isHero) hi++; continue; }
+      // Monture MONTÉE : dessinée avec son cavalier en UN corps composite (boucle ci-dessous).
+      if (isMount(c)) continue;
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : '#c0392b';
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
@@ -383,9 +386,10 @@ export function IsoStage() {
       const el = tokenNode(r.id, cx, cy, r.body, 0.62 * r.speciesScale * sizeTokenScale(c.size), ring, isOutOfAction(c), wp.walking);
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
-    // Combat monté (LDB 14) : chaque cavalier est dessiné EN SELLE sur sa monture — même tuile, à l'échelle
-    // du cavalier (pas de la monture), remonté à la hauteur de la selle, SANS ombre/anneau propres (le couple
-    // partage l'ombre au sol de la monture). Profondeur légèrement supérieure → rendu AU-DESSUS de la monture.
+    // Combat monté (LDB 14) : le couple CAVALIER+MONTURE est dessiné comme UN corps composite
+    // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
+    // barillet, buste derrière la tête). Un seul BodyToken à la tuile/échelle de la monture
+    // (une ombre partagée). L'empreinte/échelle restent celles de la monture.
     for (const mount of battle.combatants) {
       if (!isMount(mount) || !mount.pos) continue;
       const rider = riderOf(battle, mount);
@@ -393,17 +397,9 @@ export function IsoStage() {
       const off = (sizeFootprint(mount.size) - 1) / 2;
       const wp = walkPosOf(mount.id, mount.pos.x, mount.pos.y); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
-      const { cx: px, cy: py } = tileCenter(cx, cy, dims);
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
-      const lift = 0.52 * 150 * mountScale; // hauteur de la selle ≈ mi-dos de la monture (px écran)
-      const rr = pickBackend({ kind: 'combatant', combatant: rider });
-      const riderScale = 0.62 * rr.speciesScale * sizeTokenScale(rider.size) * 0.85; // léger tassement « assis »
-      const el = (
-        <g key={`${rider.id}-mtd`} transform={`translate(${px},${py - lift})`}>
-          <g transform={`translate(${-60 * riderScale},${-150 * riderScale}) scale(${riderScale})`}>{rr.body}</g>
-        </g>
-      );
-      objs.push({ d: depth(cx, cy, dims) + 0.51, el });
+      const el = tokenNode(`${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking);
+      objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
   } else {
     for (const ent of scene.entities) {
