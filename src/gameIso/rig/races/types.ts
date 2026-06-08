@@ -22,7 +22,11 @@ export interface RaceDef {
   gabaritOverride?: Partial<Pick<GabaritDef, 'sl' | 'st' | 'legs' | 'arms' | 'head'>>;
   palette?: StoredPalette;      // peau/cheveux/yeux par défaut (ex-palettes d'espèce)
   paletteF?: StoredPalette;    // variante féminine (sinon palette sert aux deux sexes)
-  head?: string;                // id de part de tête monstrueuse, sinon visage humain cosmétique
+  head?: string;                // id de part de tête monstrueuse (HEADS), sinon visage humain cosmétique
+  legs?: string;                // id de jambes monstrueuses (LEGS) remplaçant les 2 cuisses (ex. chèvre)
+  armG?: string;                // id de bras monstrueux (ARMS) remplaçant l'épaule gauche
+  armD?: string;                // id de bras monstrueux (ARMS) remplaçant l'épaule droite (ex. griffe)
+  dropHeadgear?: boolean;       // saute le couvre-chef de tenue (ex. vampire : pas de chapeau de cour)
   features?: RaceFeature[];     // traits de corps (gut, barbe, queue, cornes…)
   pose?: Record<string, number>;// posture de repos (ex-SPECIES_POSE), front + profil
   // Défauts d'espèce (ex-BipedConfig des defs créature) :

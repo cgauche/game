@@ -10,7 +10,7 @@ import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
-import { HEADS } from './parts/monster';
+import { HEADS, ARMS, LEGS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
 import { tenuePaletteFor } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
@@ -95,7 +95,7 @@ export function resolveRig(
   // Un vampire (monster.cape) garde la robe de carrière mais PAS le couvre-chef de cour
   // (le chapeau de Noble faisait une « couronne » rouge) : on saute le slot `tete` (le
   // visage + les cheveux lissés restent, via leurs propres slots).
-  const dropHeadgear = !!appearance.monster?.cape;
+  const dropHeadgear = !!appearance.monster?.cape || !!race.dropHeadgear;
   for (const slot of Object.keys(SLOT_BONES) as Slot[]) {
     if (slot === 'tete' && dropHeadgear) continue;
     const part = parts[slot];
@@ -115,6 +115,14 @@ export function resolveRig(
     const h = HEADS[race.head];
     if (h) boneParts['tete'] = [{ svg: pickView(h, view), layer: 5 }];
   }
+  // Membres monstrueux de RACE (REMPLACENT l'os) : jambes de chèvre (Minotaure), bras-griffe
+  // (Démonette)… Même sémantique que monster.jambes/brasG/brasD, mais portée par la Race.
+  if (race.legs) {
+    const l = LEGS[race.legs];
+    if (l) { boneParts['cuisseG'] = [{ svg: pickView(l, view), layer: 5 }]; boneParts['cuisseD'] = [{ svg: pickView(l, view), layer: 5 }]; }
+  }
+  if (race.armG) { const a = ARMS[race.armG]; if (a) boneParts['epauleG'] = [{ svg: pickView(a, view), layer: 5 }]; }
+  if (race.armD) { const a = ARMS[race.armD]; if (a) boneParts['epauleD'] = [{ svg: pickView(a, view), layer: 5 }]; }
 
   // Parts MONSTRUEUSES (mutant modulaire) : REMPLACENT la part normale de l'os ciblé
   // (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique). Aucun
@@ -154,7 +162,8 @@ export function resolveRig(
     lezard: '#5d7a42', chien: '#6e4a2c', rat: '#6e4a2e',
   };
   const speciesHasSkin = speciesPalette?.peau != null;
-  const headSkin = !speciesHasSkin && appearance.monster?.tete ? SKIN_FROM_HEAD[appearance.monster.tete] : undefined;
+  const headKey = appearance.monster?.tete ?? race.head; // greffe de peau depuis la tête (monster OU race)
+  const headSkin = !speciesHasSkin && headKey ? SKIN_FROM_HEAD[headKey] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
   // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
   // Palette de tenue : carrière dédiée OU archétype de classe en repli (tenuePaletteFor) →
