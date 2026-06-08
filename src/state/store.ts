@@ -962,19 +962,24 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   trainProsthesis: (heroId, uid) => {
-    const COST = 200; // Fausse jambe : « pour 200 PX, vous réapprenez à utiliser Esquive » (LDB 73)
+    // Rachat PX d'une prothèse (LDB 73) : Fausse jambe → réapprendre l'Esquive (200 PX) ; Crochet → racheter
+    // la pénalité « deux mains » entière (400 PX) pour manier de nouveau les armes à deux mains.
+    const COSTS: Record<string, number> = { 'Fausse jambe': 200, Crochet: 400 };
     let msg = '';
     set((s) => ({
       party: s.party.map((h) => {
         if (h.id !== heroId) return h;
         const clone: Combatant = JSON.parse(JSON.stringify(h));
         const it = (clone.items ?? []).find((i) => i.uid === uid);
-        if (!it || it.name !== 'Fausse jambe' || !it.equipped) { msg = `${clone.name} : prothèse non portée.`; return h; }
-        if (it.prosthesisTrained) { msg = `${clone.name} : Esquive déjà réapprise.`; return h; }
-        if ((clone.xp ?? 0) < COST) { msg = `${clone.name} : PX insuffisants (${COST}).`; return h; }
-        clone.xp = (clone.xp ?? 0) - COST;
+        const cost = it ? COSTS[it.name] : undefined;
+        if (!it || cost == null || !it.equipped) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
+        if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
+        if ((clone.xp ?? 0) < cost) { msg = `${clone.name} : PX insuffisants (${cost}).`; return h; }
+        clone.xp = (clone.xp ?? 0) - cost;
         it.prosthesisTrained = true;
-        msg = `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${COST} PX).`;
+        msg = it.name === 'Crochet'
+          ? `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${cost} PX).`
+          : `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${cost} PX).`;
         return clone;
       }),
     }));

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { traumaDodgePenalty } from '../engine/trauma';
+import { traumaDodgePenalty, cannotWieldTwoHanded } from '../engine/trauma';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, movementHalved: true, dodgePenalty: -20, prosthesis: [{ name: 'Fausse jambe', cancels: 'movement' as const }], note: '' };
@@ -43,5 +43,16 @@ describe('trainProsthesis — rachat PX de l’Esquive (Fausse jambe, LDB 73)', 
     useGame.setState({ party: [h] });
     useGame.getState().trainProsthesis('a', 'fj');
     expect(useGame.getState().party[0].xp).toBe(300); // inchangé
+  });
+
+  it('Crochet entraîné (400 PX) rétablit le port d’armes à deux mains (LDB 73)', () => {
+    const crochet: ItemInstance = { uid: 'cr', name: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
+    const h = hero({ id: 'a', xp: 500, traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, note: '' }], items: [crochet] });
+    useGame.setState({ party: [h] });
+    expect(cannotWieldTwoHanded(useGame.getState().party[0])).toBe(true); // avant : pas d'arme à 2 mains
+    useGame.getState().trainProsthesis('a', 'cr');
+    const p = useGame.getState().party[0];
+    expect(p.xp).toBe(100); // 500 − 400
+    expect(cannotWieldTwoHanded(p)).toBe(false); // crochet maîtrisé → 2 mains de nouveau possibles
   });
 });

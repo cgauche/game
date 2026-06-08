@@ -178,17 +178,26 @@ export function escalateSensoryLoss(c: Combatant): string[] {
  *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` (armes de mêlée
  *  du Groupe « Deux-mains »). NB : les armes à distance bimanuelles ne sont pas marquées → non couvertes. */
 export function cannotWieldTwoHanded(c: Combatant): boolean {
+  // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
+  if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
   return (c.traumas ?? []).some((t) => t.noTwoHanded && !prosthesisCancels(c, t, 'all'));
 }
 
 /** Retire un trauma chirurgical (opération réussie) ; décrémente `criticalWounds`. Mute `c`, renvoie le journal.
  *  Les DÉGÂTS de l'opération (1d10 + Hémorragique) et le risque d'Infection sont appliqués par l'appelant
  *  (le store) — ils dépendent de `loseWounds`/`addCondition`, hors de ce module pur (cycle d'import évité). */
-export function removeSurgicalTrauma(c: Combatant): string[] {
-  const idx = (c.traumas ?? []).findIndex((t) => t.needsSurgery);
-  if (idx < 0) return [`${c.name} : aucune blessure ne relève de la chirurgie.`];
-  const t = c.traumas![idx];
-  c.traumas = c.traumas!.filter((_, i) => i !== idx);
+/** Les Blessures Critiques d'un personnage qui nécessitent la Chirurgie (amputation, fracture majeure). */
+export function surgeryTraumas(c: Combatant): Trauma[] {
+  return (c.traumas ?? []).filter((t) => t.needsSurgery);
+}
+
+/** Retire le trauma chirurgical d'INDICE `idx` PARMI les blessures chirurgicales (le joueur choisit
+ *  quelle Blessure Critique opérer s'il y en a plusieurs ; défaut = la première). */
+export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
+  const surg = surgeryTraumas(c);
+  const t = surg[idx] ?? surg[0];
+  if (!t) return [`${c.name} : aucune blessure ne relève de la chirurgie.`];
+  c.traumas = (c.traumas ?? []).filter((x) => x !== t);
   if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
   return [`${c.name} : ${t.label} (${t.location}) réparée par chirurgie.`];
 }

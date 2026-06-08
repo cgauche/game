@@ -351,16 +351,19 @@ function FicheBody({ hero }: { hero: Combatant }) {
                       ✨
                     </button>
                   )}
-                  {isProsthesis && it.equipped && it.name === 'Fausse jambe' && !it.prosthesisTrained && (
-                    <button
-                      className="btn small"
-                      title="Réapprendre l’Esquive avec la fausse jambe (200 PX) — LDB 73"
-                      disabled={(hero.xp ?? 0) < 200}
-                      onClick={() => trainProsthesis(hero.id, it.uid)}
-                    >
-                      Esquive (200 PX)
-                    </button>
-                  )}
+                  {isProsthesis && it.equipped && !it.prosthesisTrained && (it.name === 'Fausse jambe' || it.name === 'Crochet') && (() => {
+                    const px = it.name === 'Crochet' ? 400 : 200;
+                    return (
+                      <button
+                        className="btn small"
+                        title={it.name === 'Crochet' ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX) — LDB 73' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX) — LDB 73'}
+                        disabled={(hero.xp ?? 0) < px}
+                        onClick={() => trainProsthesis(hero.id, it.uid)}
+                      >
+                        {it.name === 'Crochet' ? `2 mains (${px} PX)` : `Esquive (${px} PX)`}
+                      </button>
+                    );
+                  })()}
                   {equipable ? (
                     <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} title={isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined} onClick={() => toggleEquip(hero.id, it.uid)}>
                       {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
