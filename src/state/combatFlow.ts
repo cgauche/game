@@ -28,7 +28,7 @@ import {
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
-import { footprintTiles, combatDistance, sizeFootprint } from './footprint';
+import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
@@ -100,6 +100,42 @@ export function findFreeTile(scene: Scene): Pt {
   for (let y = 0; y < scene.dimensions.h; y++)
     for (let x = 0; x < scene.dimensions.w; x++) if (isWalkable(scene, x, y)) return { x, y };
   return { x: 0, y: 0 };
+}
+
+/**
+ * Après qu'un combattant a bougé, « dégage de son chemin » les combattants de Taille STRICTEMENT
+ * inférieure dont la case est désormais SOUS son empreinte (LDB 85 l.308-309 : un plus grand « se
+ * déplace où il veut ») : chacun est poussé vers la case libre la plus proche, hors de l'empreinte.
+ * Mute les `pos` en place ; l'appelant émet SCENE_DIRTY / re-set la bataille. Renvoie true si déplacé.
+ */
+export function displaceSmaller(get: () => GameState, mover: Combatant): boolean {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !mover.pos || sizeFootprint(mover.size) <= 1) return false;
+  let moved = false;
+  for (const c of battle.combatants) {
+    if (c.id === mover.id || isOutOfAction(c) || !c.pos) continue;
+    if (sizeGap(c.size, mover.size) >= 0) continue; // pas strictement plus petit → non dégagé
+    if (!occupiesTile(mover.pos, mover.size, c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
+    const free = nearestFreeOutside(scene, battle, c, mover);
+    if (free) { c.pos = free; moved = true; }
+  }
+  return moved;
+}
+
+/** Case walkable la plus proche de `c`, non occupée (toutes empreintes) et HORS de l'empreinte de
+ *  `mover` — anneaux croissants (rayon ≤ 6). `undefined` si rien (c reste, co-occupation tolérée). */
+function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mover: Combatant): Pt | undefined {
+  const blocked = occupied(battle, c.id); // id (legacy) ⇒ TOUTES les empreintes bloquent (placement)
+  for (let r = 1; r <= 6; r++)
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
+        const x = c.pos!.x + dx, y = c.pos!.y + dy;
+        if (occupiesTile(mover.pos!, mover.size, x, y)) continue; // garder hors empreinte du mover
+        if (isWalkable(scene, x, y) && !blocked.has(`${x},${y}`)) return { x, y };
+      }
+  return undefined;
 }
 
 export function removeEntity(get: () => GameState, set: any, id: string) {
@@ -1772,6 +1808,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
       const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(enemy.size));
       enemy.pos = action.to;
+      displaceSmaller(get, enemy); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(enemy.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
       set({ battle: { ...battle } });

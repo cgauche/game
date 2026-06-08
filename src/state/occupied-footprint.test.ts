@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { occupied } from './combatFlow';
+import { occupied, displaceSmaller } from './combatFlow';
+import { occupiesTile } from './footprint';
 import type { BattleState } from './store';
+import type { Scene } from './scene';
 import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
+
+const flatScene = (w: number, h: number): Scene =>
+  ({ id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour', tiles: new Array(w * h).fill('herbe'), entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 // occupied() = tuiles bloquant le déplacement d'un mover : empreinte (LDB 15 l.55) de chaque autre
 // combattant, SAUF ceux de Taille strictement inférieure (« dégagés du chemin », LDB 85 l.308-309).
@@ -39,3 +44,24 @@ describe('occupied — empreinte + relativité de Taille au déplacement', () =>
     expect(occupied(battle([big, small]), 'big').has('5,5')).toBe(true);
   });
 });
+
+describe('displaceSmaller — un grand dégage les plus petits de son empreinte (LDB 85 l.308-309)', () => {
+  it('pousse une créature plus petite sous l’empreinte vers une case libre hors-empreinte', () => {
+    const big = mk('big', 5, 5, 'grande'); // occupe 5..6 × 5..6
+    const small = mk('small', 6, 6, 'moyenne'); // SOUS l’empreinte du grand
+    const b = battle([big, small]);
+    const get = (() => ({ battle: b, scene: flatScene(12, 12) })) as unknown as () => GameStateLike;
+    expect(displaceSmaller(get as never, big)).toBe(true);
+    expect(occupiesTile(big.pos!, big.size, small.pos!.x, small.pos!.y)).toBe(false); // plus sous le grand
+  });
+  it('ne touche pas une créature de Taille égale/supérieure', () => {
+    const big = mk('big', 5, 5, 'grande');
+    const peer = mk('peer', 6, 6, 'grande');
+    const b = battle([big, peer]);
+    const get = (() => ({ battle: b, scene: flatScene(12, 12) })) as unknown as () => GameStateLike;
+    displaceSmaller(get as never, big);
+    expect(peer.pos).toEqual({ x: 6, y: 6 }); // inchangé
+  });
+});
+
+type GameStateLike = { battle: BattleState; scene: Scene };

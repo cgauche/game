@@ -16,7 +16,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
   aiMaybeTrample, aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
-  maybeOpenHeroPsych,
+  maybeOpenHeroPsych, displaceSmaller,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { rollOups, type OupsResolved } from '../engine/oups';
@@ -1626,6 +1626,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, active);
       const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(active.size));
       active.pos = { ...pt };
+      displaceSmaller(get, active); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       set({ battle: { ...battle, moved: true, action: null, reachable: new Map() } });
@@ -1665,6 +1666,7 @@ export const useGame = create<GameState>((set, get) => ({
       const adv = chargeAdvantage(effectiveMovement(active), distFrom);
       const path = pathTo(scene, active.pos!, dest, blocked, sizeFootprint(active.size));
       active.pos = { ...dest };
+      displaceSmaller(get, active); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
       get().faceFromPath(active.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
