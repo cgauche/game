@@ -70,10 +70,9 @@ export interface ColorsSel {
   accent?: string; // détail vif (crête, marque)
 }
 
-/** Override d'apparence (sinon seed dérivé de l'id). pins : slot → index. */
+/** Override d'apparence (sinon seed dérivé de l'id). */
 export interface EntityAppearance {
   seed?: number;
-  pins?: Record<string, number>;
   /** Mutant modulaire : parts monstrueuses (rendu via le rig). */
   monster?: MonsterPartsSel;
   /** Personnalisation couleur (peau/cheveux/vêtements). */
