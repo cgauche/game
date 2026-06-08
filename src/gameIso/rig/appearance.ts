@@ -7,6 +7,7 @@ import type { Palette } from './palette';
 /** Descripteur d'apparence COSMÉTIQUE (type pur ; l'engine ne le lit jamais). */
 export interface Appearance {
   species: string;
+  gabarit?: string;                                 // id de carrure résolu (sinon dérivé de l'espèce)
   sex: 'M' | 'F';
   build: number;                                   // 0..1
   parts?: Partial<Record<Slot, number>>;           // overrides éditeur

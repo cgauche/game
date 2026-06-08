@@ -1,6 +1,7 @@
 import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
-import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
+import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf, gabaritForSpecies } from './skeletons';
+import { gabaritById } from './gabarits';
 import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
@@ -49,7 +50,7 @@ export function resolveRig(
   view: View = 'front',
   overlays: RigOverlay[] = [],
 ): ResolvedBone[] {
-  let sk = groundSkeleton(applyBuild(baseSkeleton(appearance.species, appearance.sex), appearance.build));
+  let sk = groundSkeleton(applyBuild(baseSkeleton(appearance.gabarit ? gabaritById(appearance.gabarit) : gabaritForSpecies(appearance.species), appearance.sex), appearance.build));
   if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
   // De profil, le swing du bras DROIT (porteur de l'arme) éloigne la main → l'arme barre le
   // torse. Quand une arme de MÊLÉE est tenue, on annule ce swing pour que le bras pende au

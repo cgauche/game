@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { baseSpeciesOf, baseSkeleton, applyBuild } from './skeletons';
+import { baseSpeciesOf, baseSkeleton, applyBuild, gabaritForSpecies } from './skeletons';
 import { worldTransforms, apply } from './kinematics';
 import { BONE_IDS } from './bones';
 
@@ -14,30 +14,30 @@ describe('baseSpeciesOf', () => {
 });
 
 describe('baseSkeleton', () => {
-  it('un Nain a des jambes plus courtes qu’un Humain', () => {
-    const h = baseSkeleton('Humain', 'M');
-    const n = baseSkeleton('Nain', 'M');
+  it("un Nain a des jambes plus courtes qu'un Humain", () => {
+    const h = baseSkeleton(gabaritForSpecies('Humain'), 'M');
+    const n = baseSkeleton(gabaritForSpecies('Nain'), 'M');
     expect(n.cuisseG.length).toBeLessThan(h.cuisseG.length);
   });
-  it('un Haut-Elfe est plus élancé (membres plus longs) qu’un Humain', () => {
-    const h = baseSkeleton('Humain', 'M');
-    const e = baseSkeleton('Haut-Elfe', 'M');
+  it("un Haut-Elfe est plus élancé (membres plus longs) qu'un Humain", () => {
+    const h = baseSkeleton(gabaritForSpecies('Humain'), 'M');
+    const e = baseSkeleton(gabaritForSpecies('Haut-Elfe'), 'M');
     expect(e.cuisseG.length).toBeGreaterThan(h.cuisseG.length);
   });
   it('M et F diffèrent en proportions sans être identiques', () => {
-    const m = baseSkeleton('Humain', 'M');
-    const f = baseSkeleton('Humain', 'F');
+    const m = baseSkeleton(gabaritForSpecies('Humain'), 'M');
+    const f = baseSkeleton(gabaritForSpecies('Humain'), 'F');
     expect(f.epauleG.pivot.x).not.toBe(m.epauleG.pivot.x);
   });
-  it('espèce inconnue retombe sur Humain', () => {
-    const u = baseSkeleton('Inconnu', 'M');
-    const h = baseSkeleton('Humain', 'M');
+  it("espèce inconnue retombe sur Humain", () => {
+    const u = baseSkeleton(gabaritForSpecies('Inconnu'), 'M');
+    const h = baseSkeleton(gabaritForSpecies('Humain'), 'M');
     expect(u.torse.length).toBe(h.torse.length);
   });
 });
 
 describe('géométrie au repos (proxy visuel sans navigateur)', () => {
-  const w = worldTransforms(baseSkeleton('Humain', 'M'), {});
+  const w = worldTransforms(baseSkeleton(gabaritForSpecies('Humain'), 'M'), {});
   const origin = (id: keyof typeof w) => apply(w[id], { x: 0, y: 0 });
 
   it('la figure est debout : tête en haut, bassin au milieu, pieds en bas', () => {
@@ -80,15 +80,15 @@ describe('géométrie au repos (proxy visuel sans navigateur)', () => {
 
 describe('applyBuild', () => {
   it('build élevé épaissit le torse de façon monotone', () => {
-    const sk = baseSkeleton('Humain', 'M');
+    const sk = baseSkeleton(gabaritForSpecies('Humain'), 'M');
     const thin = applyBuild(sk, 0).torse.thickness;
     const mid = applyBuild(sk, 0.5).torse.thickness;
     const fat = applyBuild(sk, 1).torse.thickness;
     expect(thin).toBeLessThan(mid);
     expect(mid).toBeLessThan(fat);
   });
-  it('ne mute pas l’entrée', () => {
-    const sk = baseSkeleton('Humain', 'M');
+  it("ne mute pas l'entrée", () => {
+    const sk = baseSkeleton(gabaritForSpecies('Humain'), 'M');
     const before = sk.torse.thickness;
     applyBuild(sk, 1);
     expect(sk.torse.thickness).toBe(before);
