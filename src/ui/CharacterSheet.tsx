@@ -423,7 +423,6 @@ function FicheBody({ hero }: { hero: Combatant }) {
 }
 
 export function AdvancementPanel({ hero }: { hero: Combatant }) {
-  const grantXp = useGame((s) => s.grantXp);
   const buyCharAdvance = useGame((s) => s.buyCharAdvance);
   const buySkillAdvance = useGame((s) => s.buySkillAdvance);
   const buyTalent = useGame((s) => s.buyTalent);
@@ -440,14 +439,8 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         <div className="adv-xp">
           PX disponibles <b>{v.xp}</b>
         </div>
-        <div className="adv-grant">
-          <span className="muted">Octroyer</span>
-          {[10, 50, 100].map((n) => (
-            <button key={n} className="btn small" onClick={() => grantXp(hero.id, n)}>
-              +{n}
-            </button>
-          ))}
-        </div>
+        {/* Pas de bouton « Octroyer +PX » : les PX viennent du JEU (Effet `giveXp` — victoires, quêtes),
+            jamais d'un don libre dans la fiche (c'était un outil de debug). */}
       </div>
 
       <div className="mini-title">Caractéristiques</div>

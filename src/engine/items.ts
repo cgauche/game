@@ -162,13 +162,22 @@ function damageScore(d?: string): number {
   return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
 }
 
+/** Alias de munitions : certaines carrières listent un libellé de munition différent du trapping
+ *  canonique (artefact de conversion). Ex. le Chasseur reçoit « Pierre (10) », mais la munition de
+ *  Fronde s'appelle « Projectile de pierre » → sans alias, la fronde n'a pas de munition. */
+const TRAPPING_ALIASES: Record<string, string> = { pierre: 'Projectile de pierre' };
+
 /** Construit l'inventaire d'un héros depuis une liste de noms de trappings. */
 export function buildInventory(trappingNames: string[]): ItemInstance[] {
   const items: ItemInstance[] = [];
   for (const raw of trappingNames) {
-    const name = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
-    const it = itemFromTrapping(name);
-    if (it) items.push(it);
+    const qtyM = raw.match(/\((\d+)\)\s*$/); // « Pierre (10) » → 10 munitions
+    const base = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const it = itemFromTrapping(TRAPPING_ALIASES[base.toLowerCase()] ?? base);
+    if (it) {
+      if (it.kind === 'ammo' && qtyM) it.qty = parseInt(qtyM[1], 10); // quantité donnée par la carrière
+      items.push(it);
+    }
   }
   // Équipement par défaut : la MEILLEURE arme de mêlée + la première à distance
   // + toutes les armures. Les doublons restent dans l'inventaire (déséquipés).
