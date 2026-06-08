@@ -96,6 +96,7 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   variante par calque via le **RNG seedable**, concatène. **Auto-variée au seed** (id de l'entité)
   → une foule paraît variée sans réglage ; **override éditeur** par `pins` (slot → variante).
   **Fallback** sur le sprite monolithique (`creatureSprites.json`) pour les créatures non enrichies.
+  *(⚠️ couche calques **et** sprite monolithique retirés depuis — cf. Jalon 0.12 : tout passe par le rig.)*
 - **Apparence découplée du rôle** : `entitySprite(ent)` est la **source unique** de rendu d'entité,
   partagée par le jeu (`IsoStage`) et l'éditeur (fin de la duplication). Un personnage porte
   **n'importe quelle apparence** via `ref` ; le combat reste piloté par les **encounters** et
@@ -171,7 +172,8 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   (réutilisent feline/canine + membrane), **Démonette**→bipède (cornes + griffe + peau mauve), **Fimir**→bipède
   (tête `cyclope` ajoutée à `monstrous.ts`), **Géant**→bipède (token-scale ×2.4, sinon il déborde la boîte
   120×150). Restent monolithiques **seulement** les formes qu'aucun gabarit ne couvre (serpent, araignée,
-  pieuvre, hydre, squig, basilic…).
+  pieuvre, hydre, squig, basilic…). *(⚠️ depuis : ces formes ont reçu leur gabarit ; le monolithique est
+  **entièrement retiré** — cf. Jalon 0.12.)*
 - **« Charognard » supprimé** (espèce inventée, non canon, indistincte du loup ; variante Mutant `mutantCharognard`
   conservée). **`public/qc/` gitignoré** (sorties QC régénérables — git ralentissait sur 1000+ fichiers non suivis).
 - **613 tests verts** (dont registres scénarios/tenues + golden master parts), **typecheck 0** côté registre,
@@ -212,6 +214,32 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauc
   ciblée N=5 anti-ambiguïté) jusqu'à **reconnaissables**. Reste seulement `rocher` (un caillou *est* un caillou).
   Pipeline durci : ingest filtré par slugs explicites (anti `chosen.json` périmés), tokeniseur idempotent.
 - **~731 tests verts**, typecheck propre, poussé sur `feat/wfrp4-rpg-foundation`.
+
+## ✅ Jalon 0.12 — Tout le bestiaire au rig ; retrait des couches de rendu legacy *(fait — 2026-06-08)*
+
+Consolidation : **un seul moteur de rendu d'entité, le rig** (`pickBackend` → rig bipède humanoïde /
+gabarit corporel animé / sprite **de décor**). Les deux couches de rendu legacy, devenues mortes une
+fois les 57 créatures passées au rig, sont **supprimées** — non-régression vérifiée.
+
+- **Vérité-terrain** (classifieur réel `classifyEnemy`+`bodyPlanOf` sur les 57 entrées) : **57/57
+  court-circuitées** — 29 → rig bipède (Humain, Nain, Orc, Gobelin, Goule, Squelette, Zombie, Vampire,
+  Minotaure, Géant, Troll, Ogre…), 28 → gabarit rigué (quadrupède 8, ailé 8, spectral 3, jabberslythe 3,
+  +arachnide/aviaire/céphalopode/serpentin/squig/amorphe) ; **zéro** créature ne résout en `'monolithic'`.
+- **Couche d'apparence PAR CALQUES retirée** (commit `84bef1d`) : `composeAppearance` /
+  `CREATURE_APPEARANCES` / `appearanceLayers` / `creatureAppearances.ts` — mortes dans tous les chemins
+  (humains/mutants modulaires composés par le rig, plus par swap de calques SVG). `appearance.ts` ne garde
+  que `hashSeed` ; l'éditeur remplace les sélecteurs de variantes par le seul bouton de relance de seed.
+- **Sous-système de sprites MONOLITHIQUE retiré** (commit `9bc1b1d`) : `creatureSprites.json` (57 sprites) /
+  `creatureViews.json` / `enemySprite` / `creatureView` / `creatureNames` / `mutantStand` supprimés.
+  **`entitySprite` réduit au décor** (props → `propSprite` ; villageois en filet). Picker d'apparence éditeur
+  re-sourcé sur `creatureSpeciesNames()` (defs rig). Le **dernier chemin vivant** vers `enemySprite` était
+  l'**aperçu de l'inspecteur éditeur** (fonction locale `entitySvg`, qui ne détournait QUE le quadrupède) —
+  re-sourcé sur `pickBackend` (mêmes backends que le canvas). 11 scripts caducs supprimés (QC + ingestion mono).
+- **Vérification** : workflow de cartographie + **vérif d'atteignabilité adversariale** (5 agents) avant toute
+  suppression ; recette **browser-free** via le vrai `pickBackend` (0 créature → backend `sprite` ; décor reste
+  `sprite`) ; **typecheck 0, 1497 tests verts**, poussé. *(Reste : recette navigateur visuelle des pixels
+  d'aperçu — Playwright partagé verrouillé par une session //. ⚠️ « passe par le rig » ≠ bonne silhouette :
+  quelques bipèdes — Minotaure, Fimir, Rat ogre — restent à QC, chantier séparé `game-bestiary-sprite-bar`.)*
 
 ---
 
