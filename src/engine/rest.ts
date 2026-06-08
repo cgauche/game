@@ -39,7 +39,7 @@ function unstable(c: Combatant): boolean {
  * ET volet b +BE inconditionnel), puis les cauchemars (21 l.92) peuvent en regagner un. Réveille un
  * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (l.28). Mute `c`, renvoie un résumé.
  */
-export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): string[] {
+export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, caredFor = false): string[] {
   if (c.dead || c.outOfRencontre) return []; // un mort / éjecté ne se repose pas
   // LDB 16 l.105 : un héros qui saigne, brûle ou est empoisonné ne trouve pas le repos — à stabiliser
   // d'abord (Test de Guérison, Sort). Pas de récupération réparatrice tant que ces États subsistent.
@@ -79,6 +79,14 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
     // Incubation/durée des maladies (LDB 20), un jour ; réconcilie l'Exténué « collant » du malaise
     // (apparition d'une maladie → +1 Exténué ; guérison → −1).
     diseaseLog.push(...tickDisease(c, 1, rng, resVal));
+    // Soins d'un soignant (LDB 09-Compétences) : « Pour chaque journée complète… la durée de la maladie est
+    // réduite de 1, jusqu'à un minimum de 1 ». −1 jour SUPPLÉMENTAIRE par maladie active (résolution au tick
+    // naturel — on ne descend pas sous 1 par les seuls soins).
+    if (caredFor) {
+      for (const dz of c.diseases ?? []) {
+        if (dz.phase === 'active' && dz.daysLeft > 1) dz.daysLeft -= 1;
+      }
+    }
     const malaiseDelta = activeMalaiseCount(c) - malaiseStart;
     if (malaiseDelta > 0) addCondition(c, 'Exténué', malaiseDelta);
     else if (malaiseDelta < 0) removeCondition(c, 'Exténué', -malaiseDelta);

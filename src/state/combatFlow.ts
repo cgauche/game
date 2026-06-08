@@ -50,6 +50,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease } from '../engine/disease';
+import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
@@ -1476,8 +1477,12 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   set({ gameTime: before + minutes });
   bus.emit(EVT.TIME_ADVANCED, { minutes });
   const party = get().party;
+  // Soin des maladies (LDB 09-Compétences) : si un soignant apte (Guérison) veille le groupe, la durée
+  // des maladies des patients est réduite plus vite (−1 j/jour de soins, min 1). Test de Guérison supposé
+  // réussi sur des soins prolongés (abstraction, comme le soin de Blessures hors combat).
+  const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   const lines: string[] = [];
-  for (const h of party) lines.push(...restRecovery(h, battleRng(), n));
+  for (const h of party) lines.push(...restRecovery(h, battleRng(), n, caredFor));
   const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
   set({ party: [...party], journal: [...get().journal.slice(-40), title, ...lines] });
   bus.emit(EVT.SCENE_DIRTY);

@@ -94,6 +94,14 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(stacks(c, 'Exténué')).toBe(1); // le malaise garde 1 Exténué malgré la nuit de sommeil
   });
 
+  it('maladie : les soins d’un soignant raccourcissent la durée (−1 j/jour en plus, LDB 09-Compétences)', () => {
+    const cared = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
+    const alone = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
+    restRecovery(cared, { int: () => 10 }, 1, true);  // soigné : tick naturel −1 + soins −1
+    restRecovery(alone, { int: () => 10 }, 1, false); // seul : tick naturel −1
+    expect(cared.diseases![0].daysLeft).toBe(alone.diseases![0].daysLeft - 1);
+  });
+
   it('maladie : un symptôme « blessé » bloque la guérison d’1 PB (LDB 20 l.110)', () => {
     const base = hero({ wounds: { current: 4, max: 20 } }); // E 40 → BE 4 ; sans maladie
     restRecovery(base, { int: () => 30 });
