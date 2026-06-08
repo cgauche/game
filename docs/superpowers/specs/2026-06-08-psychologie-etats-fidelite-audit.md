@@ -78,7 +78,12 @@ Chaque correctif est **sourcé au LDB FR** (citation chap.+lignes) et **couvert 
   **Empêtré « se libérer »** (Test opposé de Force vs source `sourceId`) + **En flammes « se rouler »**
   (Athlétisme) — Action + modale `pendingStateRecovery` + ActionBar + IA instantanée (`b24b578`).
 - **Lot 5 (Méta/éditeur)** : Effet **`restoreFortune`** (Chance regagnée, max = Destin) exposé éditeur
-  (`8e5129e`) ; **Trauma cauchemars** — `nightmareCheck` (Calme Facile +40 nocturne → Exténué),
-  hook `nightsCrossed` dans `advanceTime`, flag héros `nightmares`, Effet éditeur `inflictNightmares`
-  (l'auteur assigne le trauma — jamais inventé). Helper pur partagé `recoveredStacks` (Empêtré/En
-  flammes/Hémorragie). Suite verte, typecheck propre.
+  (`8e5129e`) ; **Trauma cauchemars** — `nightmareCheck` (Calme Facile +40 → Exténué), flag héros
+  `nightmares`, Effet éditeur `inflictNightmares` (l'auteur assigne le trauma — jamais inventé). Helper
+  pur partagé `recoveredStacks` (Empêtré/En flammes/Hémorragie).
+- **Système de REPOS** (suite retour utilisateur — les cauchemars surviennent pendant le SOMMEIL) :
+  action **« Dormir jusqu'à l'aube »** (HUD exploration, hors combat). `restRecovery` (pur, `engine/rest.ts`) :
+  retrait de TOUT l'Exténué (16-États l.91 ; cadence « nuit complète » figée, l.102 = choix MJ) ; soin de
+  Blessures **Test de Résistance Accessible (+20) → DR + BE PB** (18-Traumatisme l.380) ; puis cauchemars
+  (le trauma fait *re-gagner* un Exténué malgré le repos). Le hook nocturne a quitté `advanceTime`
+  (l'horloge seule ne suffit pas — il faut DORMIR) pour `restPartyOvernight`. Suite verte, typecheck propre.

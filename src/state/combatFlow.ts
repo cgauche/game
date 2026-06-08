@@ -54,7 +54,8 @@ import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
-import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
+import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
+import { restRecovery } from '../engine/rest';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf, mountUp, mountableNear } from './mount';
@@ -177,9 +178,14 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
   return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 }
 
+/** Condition de flag pour triggers/dialogues. Un flag (`drapeau`) ou sa négation (`!drapeau`). Plusieurs
+ *  flags séparés par des virgules sont combinés en ET : « v1,!v2 » = `flags.v1 && !flags.v2`. */
 export function condMet(cond: string, flags: Record<string, boolean>): boolean {
-  if (cond.startsWith('!')) return !flags[cond.slice(1)];
-  return !!flags[cond];
+  return cond
+    .split(',')
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .every((c) => (c.startsWith('!') ? !flags[c.slice(1)] : !!flags[c]));
 }
 
 export function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
@@ -1424,6 +1430,23 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
     set({ party: [...get().party], journal: [...get().journal.slice(-40), ...lines] });
     bus.emit(EVT.SCENE_DIRTY);
   }
+}
+
+/**
+ * « Dormir » — sommeil d'une nuit hors combat (LDB 16 l.91/102, 18 l.380, 21 l.92). Avance l'horloge
+ * jusqu'à la prochaine aube (un cycle complet si on y est déjà), laisse `advanceTime` faire les ticks
+ * d'États, puis applique `restRecovery` à chaque héros (retrait Exténué + soin de Blessures + cauchemars).
+ * Résolution NON interactive (journal, pas de Chance) — cohérent avec l'entretien hors combat existant.
+ */
+export function restPartyOvernight(get: () => GameState, set: any): void {
+  if (get().battle) return; // pas de repos en plein combat
+  const toDawn = minutesUntilNext(get().gameTime, DAWN_MINUTE);
+  get().advanceTime(toDawn === 0 ? MINUTES_PER_DAY : toDawn); // déjà à l'aube → dormir un cycle entier
+  const party = get().party;
+  const lines: string[] = [];
+  for (const h of party) lines.push(...restRecovery(h, battleRng()));
+  set({ party: [...party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...lines] });
+  bus.emit(EVT.SCENE_DIRTY);
 }
 
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */

@@ -163,13 +163,5 @@ export function minutesUntilNext(currentMinutes: number, targetMinuteOfDay: numb
   return (minuteOfDay(targetMinuteOfDay) - minuteOfDay(currentMinutes) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
 }
 
-/** Nombre de débuts de nuit (seuil `NIGHT_WINDOW.start`) franchis dans l'intervalle (before, after].
- *  Sert au déclencheur « chaque nuit » des cauchemars (LDB 21 l.92) : un long repos qui enjambe
- *  plusieurs nuits déclenche un Test par nuit. */
-export function nightsCrossed(before: number, after: number): number {
-  if (after <= before) return 0;
-  const onset = NIGHT_WINDOW.start;
-  const kMin = Math.floor((before - onset) / MINUTES_PER_DAY) + 1; // 1er onset strictement > before
-  const kMax = Math.floor((after - onset) / MINUTES_PER_DAY); // dernier onset ≤ after
-  return Math.max(0, kMax - kMin + 1);
-}
+/** Heure de l'aube (minutes-de-jour) — fin d'une nuit de sommeil ; cible du « Dormir ». */
+export const DAWN_MINUTE = DAY_PHASES[0].start; // 'aube' = 05:00

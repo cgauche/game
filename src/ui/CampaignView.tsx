@@ -46,6 +46,7 @@ export function CampaignView() {
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
   const gameTime = useGame((s) => s.gameTime);
+  const restParty = useGame((s) => s.restParty);
   const setScreen = useGame((s) => s.setScreen);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
@@ -75,6 +76,15 @@ export function CampaignView() {
         <div className="game-clock" title={`${phase.label} — Calendrier Impérial`}>
           {phase.icon} {clockDate.weekday ? `${clockDate.weekday} · ` : ''}{formatImperial(gameTime)}
         </div>
+        {!battle && (
+          <button
+            className="btn small rest-btn"
+            onClick={() => restParty()}
+            title="Dormir jusqu'à l'aube : retire l'Exténué, soigne des Blessures (Résistance +20 → DR+BE) et déclenche d'éventuels cauchemars (LDB 16/18/21)"
+          >
+            🛌 Dormir jusqu'à l'aube
+          </button>
+        )}
         <div className="inventory">
           <div className="mini-title">Inventaire ({inventory.length})</div>
           <div className="inv-list">

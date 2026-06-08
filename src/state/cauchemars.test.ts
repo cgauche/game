@@ -2,8 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { nightmareCheck, hasCondition } from '../engine/conditions';
-import { nightsCrossed, MINUTES_PER_DAY } from '../engine/clock';
-import { seedBattleRng } from './battleRng';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
@@ -15,18 +13,6 @@ const hero = (p: Partial<Combatant>): Combatant =>
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
   } as Combatant);
-
-describe('nightsCrossed (clock)', () => {
-  it('aucune nuit franchie dans la même journée diurne', () => {
-    expect(nightsCrossed(12 * 60, 13 * 60)).toBe(0);
-  });
-  it('une nuit franchie (passe 22:00)', () => {
-    expect(nightsCrossed(12 * 60, 23 * 60)).toBe(1);
-  });
-  it('deux nuits sur un repos de 2 jours', () => {
-    expect(nightsCrossed(12 * 60, 12 * 60 + 2 * MINUTES_PER_DAY)).toBe(2);
-  });
-});
 
 describe('nightmareCheck (LDB 21 l.92)', () => {
   it('Calme Facile +40 raté → Exténué', () => {
@@ -43,34 +29,15 @@ describe('nightmareCheck (LDB 21 l.92)', () => {
   });
 });
 
-describe('Effet inflictNightmares + hook nocturne (advanceTime)', () => {
-  beforeEach(() => { seedBattleRng(1); useGame.setState({ battle: null, mode: 'exploration', journal: [] }); });
+describe('Effet inflictNightmares (éditeur)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, mode: 'exploration', journal: [] }); });
 
-  it('inflictNightmares pose le trauma sur le héros visé', () => {
+  it('pose le trauma « Cauchemars » sur le héros visé (défaut : le premier)', () => {
     const a = hero({ id: 'a' });
     const b = hero({ id: 'b' });
     useGame.setState({ party: [a, b] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictNightmares', heroId: 'b' }]);
     expect(useGame.getState().party.find((h) => h.id === 'b')!.nightmares).toBe(true);
     expect(useGame.getState().party.find((h) => h.id === 'a')!.nightmares).toBeUndefined();
-  });
-
-  it('franchir une nuit déclenche un Test pour le héros marqué (journal)', () => {
-    const noon = 12 * 60; // milieu de journée d’un Jour 0
-    useGame.setState({ party: [hero({ id: 'a', nightmares: true })], gameTime: noon, journal: [] });
-    useGame.getState().advanceTime(12 * 60); // +12 h → passe 22:00
-    expect(useGame.getState().journal.some((l) => /cauchemars|sommeil/i.test(l))).toBe(true);
-  });
-
-  it('un héros NON marqué ne déclenche rien la nuit', () => {
-    useGame.setState({ party: [hero({ id: 'a' })], gameTime: 12 * 60, journal: [] });
-    useGame.getState().advanceTime(12 * 60);
-    expect(useGame.getState().journal.some((l) => /cauchemars|sommeil/i.test(l))).toBe(false);
-  });
-
-  it('rester en journée (aucune nuit franchie) ne déclenche rien', () => {
-    useGame.setState({ party: [hero({ id: 'a', nightmares: true })], gameTime: 12 * 60, journal: [] });
-    useGame.getState().advanceTime(60); // +1 h, reste avant 22:00
-    expect(useGame.getState().journal.some((l) => /cauchemars|sommeil/i.test(l))).toBe(false);
   });
 });
