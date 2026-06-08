@@ -888,7 +888,9 @@ export function maybeOpenDefense(
 export function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
   if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-  const r = resolveAttack(get, attacker, target);
+  // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
+  // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
+  const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);
   if (!r) {
     get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
     return false;
@@ -1911,12 +1913,16 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     const sp = findSpell(label);
     return !!sp && isMagicMissile(sp);
   });
+  // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
+  // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
+  const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);
+  const moveBudget = justMounted ? 0 : effectiveMovement(geom) * (cavalryCharge ? 2 : 1);
   const action = chooseEnemyAction({
     enemy,
     heroes,
     scene,
     blocked,
-    movement: justMounted ? 0 : effectiveMovement(geom), // à cheval : Mouvement de la monture (LDB 14 l.215) ; vient d'enfourcher → plus de déplacement ce tour
+    movement: moveBudget,
     offensiveSpell,
     smoke: smokeOf(battle),
   });
