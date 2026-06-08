@@ -15,6 +15,8 @@ import { Scene } from './scene';
 import { reachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
+import { hasCondition } from '../engine/conditions';
+import { isEngaged } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
 
 export type EnemyAction =
@@ -92,6 +94,19 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0).
   const reach = reachable(scene, pos, movement, blocked, sizeFootprint(enemy.size));
+
+  // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
+  // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
+  if (hasCondition(enemy, 'Brisé') && !isEngaged(enemy)) {
+    let best = pos;
+    let bestDist = Math.min(...heroes.map((h) => chebyshev(pos, h.pos!)));
+    for (const k of reach.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      const d = Math.min(...heroes.map((h) => chebyshev({ x, y }, h.pos!)));
+      if (d > bestDist) { bestDist = d; best = { x, y }; }
+    }
+    return best.x === pos.x && best.y === pos.y ? { kind: 'end' } : { kind: 'move', to: best, thenTargetId: heroes[0].id };
+  }
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
   // case atteignable lui est adjacente.

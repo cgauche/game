@@ -7,6 +7,7 @@ import { isFrenzyCapable } from '../engine/psychology';
 import { itemUse } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
+import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
 
 const RING = ['#4f8fe0', '#37c07a', '#e0b13f', '#b455c9'];
@@ -28,6 +29,8 @@ export function ActionBar() {
   const endTurn = useGame((s) => s.battleEndTurn);
   const defendTotal = useGame((s) => s.battleDefendTotal);
   const disengage = useGame((s) => s.battleDisengage);
+  const mountUp = useGame((s) => s.battleMount);
+  const dismount = useGame((s) => s.battleDismount);
   const useItem = useGame((s) => s.battleUseItem);
   const spendResolve = useGame((s) => s.battleSpendResolve);
   const resolvePsychImmune = useGame((s) => s.battleResolvePsychImmune);
@@ -50,8 +53,12 @@ export function ActionBar() {
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
+  // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
+  const mounted = isHero && !!active.mountId;
+  const mountCandidate = isHero && !active.mountId && !battle.acted && !stunned ? mountableNear(battle, active) : undefined;
   const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
-  const canCharge = isHero && !engaged && !prone && active.weapons[0]?.type === 'melee';
+  const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
+  const canCharge = isHero && !engaged && !prone && !broken && active.weapons[0]?.type === 'melee';
   // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu.
   const canRun = isHero && !engaged && !prone && !battle.moved && !battle.acted && !stunned;
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non dépensé.
@@ -98,7 +105,7 @@ export function ActionBar() {
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
   // Catégories repliables : on n'affiche le bouton conteneur que si ≥1 enfant existe.
-  const hasMvt = canCharge || canRun || canStandUp || engaged;
+  const hasMvt = canCharge || canRun || canStandUp || engaged || mounted || !!mountCandidate;
   const hasTir = !!rangedW;
   const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
 
@@ -181,6 +188,16 @@ export function ActionBar() {
               <button className="btn btn-sm" disabled={battle.acted} onClick={disengage} title="Quitter le corps à corps (Esquive / sacrifice d'Avantage, LDB Désengagement)">🚪 Se désengager</button>
             </div>
           )}
+          {mountCandidate && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte l'Action">🐎 Monter sur {mountCandidate.name}</button>
+            </div>
+          )}
+          {mounted && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte l'Action">🥾 Descendre de monture</button>
+            </div>
+          )}
         </div>
       )}
       {battle.action === 'tir' && (
@@ -192,7 +209,7 @@ export function ActionBar() {
           )}
           {needsReload && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">🔄 Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">🔄 Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</button>
             </div>
           )}
           {ammoChoices.length > 1 && (
@@ -215,12 +232,12 @@ export function ActionBar() {
         <div className="ab-spells">
           {usableGroups.map((g) => (
             <div key={g.name} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned} onClick={() => useItem(g.uids[0])} title={g.desc}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
             </div>
           ))}
           {groundItems.map((g) => (
             <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action) — LDB Combat">✋ {g.label}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action) — LDB Combat">✋ {g.label}</button>
             </div>
           ))}
         </div>
@@ -280,7 +297,7 @@ export function ActionBar() {
             </button>
             <button
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
-              disabled={battle.acted || stunned}
+              disabled={battle.acted || stunned || broken}
               onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
             >
               <span className="ab-ico">⚔️</span>
@@ -289,7 +306,7 @@ export function ActionBar() {
             {hasSpells && (
               <button
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
-                disabled={battle.acted || stunned}
+                disabled={battle.acted || stunned || broken}
                 onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
               >
                 <span className="ab-ico">✨</span>
@@ -299,7 +316,7 @@ export function ActionBar() {
             {canHeal && healTargets.length > 0 && (
               <button
                 className={`ab-slot ${battle.action === 'heal' ? 'on' : ''}`}
-                disabled={battle.acted || stunned}
+                disabled={battle.acted || stunned || broken}
                 onClick={() => selectAction(battle.action === 'heal' ? null : 'heal')}
                 title="Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action (LDB 09-Compétences)"
               >
@@ -309,7 +326,7 @@ export function ActionBar() {
             )}
             <button
               className="ab-slot"
-              disabled={battle.acted || stunned}
+              disabled={battle.acted || stunned || broken}
               onClick={defendTotal}
               title="+20 à tous vos Tests de défense jusqu'à votre prochain tour"
             >

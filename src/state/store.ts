@@ -20,6 +20,7 @@ import {
   maybeOpenHeroPsych, displaceSmaller,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
+import { mountedDodgePenalty, mountMovement, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   initiativeOrder,
@@ -652,6 +653,10 @@ export interface GameState {
   defenseCancel: () => void;
   /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
   deviationApply: (deviate: boolean) => void;
+  /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Le RAW ne
+   *  chiffre pas le coût d'enfourcher en plein combat → modélisé comme l'Action du tour. */
+  battleMount: () => void;
+  battleDismount: () => void;
   /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
   battleDisengage: () => void;
   disengageConfirmA: () => void; // Sacrifier l'Avantage
@@ -1276,6 +1281,19 @@ export const useGame = create<GameState>((set, get) => ({
       return c;
     });
     const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
+    // Combat monté (LDB 14) : marquer les montures rideables, basculer les acteurs « alliés », puis appairer
+    // les couples pré-montés (rides → index de la monture dans `enemies`). Le cavalier monte SUR sa monture.
+    enc.enemies.forEach((e, i) => {
+      if (e.side === 'ally') enemies[i].kind = 'hero';
+      if (e.mount) enemies[i].mountable = true;
+    });
+    enc.enemies.forEach((e, i) => {
+      if (e.rides == null) return;
+      const mount = enemies[e.rides];
+      if (!mount) return;
+      mount.mountable = true;
+      mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
+    });
     const all = [...heroes, ...enemies];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
     for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
@@ -1316,6 +1334,14 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
+    // offensive. Seuls « move » (fuir), « resolve » (Détermination, qui peut retirer le Brisé) et la
+    // fermeture (null) sont permis. (« Se cacher » par Discrétion = pas de système de furtivité en
+    // combat ; approximé par « rester hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
+    if (hasCondition(active, 'Brisé') && a !== 'move' && a !== 'resolve' && a !== null) {
+      get().log(`${active.name} est Brisé : il ne peut que fuir (LDB 16) ou puiser dans sa Détermination.`);
+      return;
+    }
     // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement, Détermination et l'ouverture des
     // conteneurs (Mouvement/Tir/Objets, simples panneaux dont les feuilles portent leur propre `disabled`)
     // restent possibles (la Détermination ne coûte pas l'Action et peut retirer le Sonné, LDB ch.17 l.62-66).
@@ -1331,13 +1357,28 @@ export const useGame = create<GameState>((set, get) => ({
         startDisengage(get, set, active);
         return;
       }
-      const blocked = occupied(battle, active);
-      reach = reachable(scene, active.pos!, effectiveMovement(active), blocked, sizeFootprint(active.size));
+      // Combat monté (LDB 14 l.215) : le cavalier se déplace au Mouvement de sa MONTURE et porte
+      // l'empreinte de la monture (géométrie de plateau = la monture, le cavalier la chevauche).
+      const geom = mountOf(battle, active) ?? active;
+      const blocked = occupied(battle, geom);
+      reach = reachable(scene, active.pos!, mountMovement(battle, active), blocked, sizeFootprint(geom.size));
+      // Brisé (LDB 16 l.55) : on ne peut FUIR que vers une case qui ne RAPPROCHE d'aucun ennemi.
+      if (hasCondition(active, 'Brisé')) {
+        const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
+        if (foes.length) {
+          const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
+          reach = new Map([...reach].filter(([k]) => {
+            const [x, y] = k.split(',').map(Number);
+            return Math.min(...foes.map((e) => chebyshev({ x, y }, e.pos!))) >= distNow;
+          }));
+        }
+      }
     }
     // Charge : seulement si pas déjà Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
     if (a === 'charge' && !battle.moved && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
-      const blocked = occupied(battle, active);
-      reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked, sizeFootprint(active.size));
+      const geom = mountOf(battle, active) ?? active;
+      const blocked = occupied(battle, geom);
+      reach = reachable(scene, active.pos!, mountMovement(battle, active) * 2, blocked, sizeFootprint(geom.size));
     }
     // Quitter le mode incantation oublie le sort sélectionné.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
@@ -1796,12 +1837,17 @@ export const useGame = create<GameState>((set, get) => ({
           return;
         }
       }
-      const blocked = occupied(battle, active);
-      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(active.size));
+      // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
+      const geom = mountOf(battle, active) ?? active;
+      const blocked = occupied(battle, geom);
+      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size));
       active.pos = { ...pt };
-      displaceSmaller(get, active); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+      if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
+      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(active.id, path);
+      if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
+      if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       set({ battle: { ...battle, moved: true, action: null, reachable: new Map() } });
       bus.emit(EVT.SCENE_DIRTY);
     }
@@ -1828,20 +1874,26 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action === 'charge') {
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
       if (!scene || target.kind === 'hero' || isEngaged(active)) return; // pas de Charge si déjà Engagé (l.74)
-      const blocked = occupied(battle, active);
-      const reach = reachable(scene, active.pos!, effectiveMovement(active) * 2, blocked, sizeFootprint(active.size)); // portée de Course
+      // Combat monté : on charge à la portée de Course de la MONTURE, sous son empreinte (couple solidaire).
+      const geom = mountOf(battle, active) ?? active;
+      const blocked = occupied(battle, geom);
+      const charM = mountMovement(battle, active);
+      const reach = reachable(scene, active.pos!, charM * 2, blocked, sizeFootprint(geom.size)); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
         get().log('Cible hors de portée de Charge.');
         return;
       }
       const distFrom = chebyshev(active.pos!, target.pos!); // distance de combat AVANT déplacement (l.77 ; ≤ 2M+1 pour toute charge valide)
-      const adv = chargeAdvantage(effectiveMovement(active), distFrom);
-      const path = pathTo(scene, active.pos!, dest, blocked, sizeFootprint(active.size));
+      const adv = chargeAdvantage(charM, distFrom);
+      const path = pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size));
       active.pos = { ...dest };
-      displaceSmaller(get, active); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
+      if (geom !== active) geom.pos = { ...dest }; // la monture charge sous le cavalier
+      displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
       get().faceFromPath(active.id, path);
+      if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
+      if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
       active.gainedAdvThisRound = true;
       set({ battle: { ...battle, moved: true, action: 'attack', log: [...battle.log, `${active.name} charge ${target.name} (+${adv} Avantage).`] } });
@@ -2411,7 +2463,7 @@ export const useGame = create<GameState>((set, get) => ({
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0; // neige : −20 à l'esquive (LDB 14 l.115-116)
+    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.115-116/225)
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res } });
@@ -2425,7 +2477,7 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const dodgeMod = get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0;
+    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.225)
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
@@ -2517,6 +2569,31 @@ export const useGame = create<GameState>((set, get) => ({
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return; // attaques gratuites de créature (file)
       resumeEnemyTurn(get, set);
     }
+  },
+
+  // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
+  // Le RAW ne chiffre pas le coût d'enfourcher/descendre en plein combat ; on le modélise comme l'Action
+  // du tour (pas d'attaque le même tour) — choix de jeu, le canon étant muet sur ce point.
+  battleMount: () => {
+    const { battle, scene } = get();
+    if (!battle || !scene || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || active.mountId) return;
+    const mount = mountableNear(battle, active);
+    if (!mount) return;
+    mountUp(active, mount);
+    set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} enfourche ${mount.name}.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  battleDismount: () => {
+    const { battle, scene } = get();
+    if (!battle || !scene || battle.over || battle.acted) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !active.mountId) return;
+    const mountName = mountOf(battle, active)?.name ?? 'sa monture';
+    dismount(battle, scene, active);
+    set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} descend de ${mountName}.`] } });
+    bus.emit(EVT.SCENE_DIRTY);
   },
 
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
