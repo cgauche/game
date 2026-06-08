@@ -179,12 +179,14 @@ function FicheBody({ hero }: { hero: Combatant }) {
   const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
 
   const itemStats = (it: ItemInstance): string => {
+    // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat).
+    const quals = it.identified === false ? '' : it.qualities.join(', ');
     if (it.kind === 'melee' || it.kind === 'ranged')
-      return [it.damage && `Dégâts ${it.damage}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, it.qualities.join(', ')]
+      return [it.damage && `Dégâts ${it.damage}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
         .filter(Boolean)
         .join(' · ');
     if (it.kind === 'armor') return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', ')].filter(Boolean).join(' · ');
-    return it.qualities.join(', ');
+    return quals;
   };
 
   return (
@@ -295,7 +297,12 @@ function FicheBody({ hero }: { hero: Combatant }) {
               <div key={it.uid}>
                 <div className={`inv-row kind-${it.kind} ${it.equipped ? 'equipped' : ''}`}>
                   <div className="ir-main">
-                    <span className="ir-name">{it.name}{skinned && ' ✨'}</span>
+                    <span className="ir-name">
+                      {it.name}{skinned && ' ✨'}
+                      {it.identified === false && (
+                        <span className="ir-unid" title="Objet non identifié — faites-le Évaluer chez un marchand pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>🔮 Non identifié</span>
+                      )}
+                    </span>
                     <span className="ir-stats">{itemStats(it)}</span>
                   </div>
                   <span className="ir-enc">Enc {it.enc}</span>

@@ -162,6 +162,9 @@ export interface ItemInstance {
   /** SKIN cosmétique (objet unique/légendaire) : override de palette token→hex, propagé au
    *  `Weapon.skin` actif par `recomputeLoadout` → l'arme se rend recolorée. */
   skin?: Record<string, string>;
+  /** Objet NON identifié (objet magique/légendaire trouvé) : ses qualités sont MASQUÉES à l'affichage
+   *  (elles restent ACTIVES mécaniquement) tant qu'une Évaluation ne l'a pas révélé. Absent/true = identifié. */
+  identified?: boolean;
 }
 
 export interface Combatant {

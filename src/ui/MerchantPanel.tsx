@@ -53,7 +53,7 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onClo
             <div className="mini-title">Vendre (équipement du groupe)</div>
             {party.flatMap((h) => (h.items ?? []).map((it) => (
               <div className="merch-row" key={it.uid}>
-                <span>{h.name} : {it.name}</span>
+                <span>{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>
                 <span className="price">{formatMoney(fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate)))}</span>
                 <button className="btn small" onClick={() => onSell(it.uid, h.id)}>Vendre</button>
               </div>

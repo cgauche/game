@@ -52,6 +52,11 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('itemFromTrapping : trapping inconnu → null', () => {
     expect(itemFromTrapping('Objet Totalement Imaginaire XYZ')).toBeNull();
   });
+  it('itemFromTrapping : objet du catalogue = identifié (qualités connues) (#2)', () => {
+    const it = itemFromTrapping('Hallebarde');
+    expect(it).toBeTruthy();
+    expect(it!.identified).not.toBe(false); // connu (undefined = identifié par défaut)
+  });
 });
 
 describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.56/91)', () => {
