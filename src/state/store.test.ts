@@ -840,6 +840,37 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().pendingAttack).not.toBeNull(); // toujours là (charge)
   });
 
+  it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const enemies = st.battle!.combatants.filter((c) => c.kind === 'enemy');
+    const mount = enemies[0];
+    const rider = enemies[1];
+    H.pos = { x: 6, y: 10 };
+    mount.pos = { x: 7, y: 10 };
+    mount.riderId = rider.id; // #0 = monture
+    rider.pos = { x: 7, y: 10 };
+    rider.mountId = mount.id; // #1 = cavalier (sur #0)
+    for (const c of enemies.slice(2)) c.wounds.current = 0; // neutralise les autres
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: false, acted: false } });
+    // Clic sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
+    useGame.getState().battleClickEntity(mount.id);
+    st = useGame.getState();
+    expect(st.pendingMountTarget).toEqual({ riderId: rider.id, mountId: mount.id });
+    expect(st.pendingAttack).toBeNull();
+    // Choisir la monture → modale fermée + attaque ciblée sur la monture.
+    useGame.getState().mountTargetSelect(mount.id);
+    st = useGame.getState();
+    expect(st.pendingMountTarget).toBeNull();
+    expect(st.pendingAttack?.targetId).toBe(mount.id);
+  });
+
   it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15-Dépl l.87)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
