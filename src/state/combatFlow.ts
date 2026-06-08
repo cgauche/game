@@ -317,6 +317,9 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         get().advanceTime(minutesUntilNext(get().gameTime, target));
         break;
       }
+      case 'openMerchant':
+        get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
+        break;
       case 'endDialogue':
         if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
         set({ dialogue: null });

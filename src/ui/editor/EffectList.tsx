@@ -25,6 +25,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'transition',
   'transitionBack',
   'startDialogue',
+  'openMerchant',
   'test',
   'setTime',
   'endDialogue',
@@ -41,6 +42,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
   startDialogue: 'Ouvrir un dialogue',
+  openMerchant: 'Ouvrir une boutique (marchand)',
   test: 'Test de compétence',
   setTime: 'Régler l’heure (jour/nuit)',
   endDialogue: 'Fermer le dialogue',
@@ -66,6 +68,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'transition', scene: '', entry: '' };
     case 'startDialogue':
       return { type: 'startDialogue', dialogue: '' };
+    case 'openMerchant':
+      return { type: 'openMerchant', entityId: '' };
     case 'test':
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'endDialogue':
@@ -164,6 +168,9 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
               </option>
             ))}
           </select>
+        )}
+        {effect.type === 'openMerchant' && (
+          <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
         )}
         {effect.type === 'test' && (
           <div className="test-fields">

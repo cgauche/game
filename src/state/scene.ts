@@ -113,6 +113,9 @@ export interface SceneEntity {
   /** Empreinte multi-cases (décor statique : charrette 2×1, épave 2×2…). Défaut 1×1.
    *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */
   foot?: { w: number; h: number };
+  /** Marchand (#2) : ce PNJ ouvre un panneau d'achat/vente (référence un archétype de `state/merchants`).
+   *  `settlement`/`resaleRate` surchargent l'archétype pour cette entité. */
+  merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number };
 }
 
 export interface BuildingParams {
@@ -173,6 +176,9 @@ export type Effect =
     }
   | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
   | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
+  /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
+   *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
+  | { type: 'openMerchant'; entityId: string }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

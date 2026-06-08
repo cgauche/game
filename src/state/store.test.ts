@@ -2296,4 +2296,10 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     useGame.getState().resolveAppraise();
     expect(useGame.getState().party[0].items!.find((i) => i.uid === 'm')!.identified).toBe(false);
   });
+
+  it('Effet openMerchant : ouvre la boutique d’une entité depuis un dialogue (#2)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene() });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'openMerchant', entityId: 'pnj' }]);
+    expect(useGame.getState().merchant?.entityId).toBe('pnj');
+  });
 });
