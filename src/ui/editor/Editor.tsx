@@ -12,7 +12,7 @@ import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } fro
 import { DEFS, placeSprite, entitySprite, creatureNames, terrainOverlay } from '../../gameIso/sprites';
 import { bodyPlanOf } from '../../gameIso/rig/bodyPlan';
 import { quadrupedSvg } from '../../gameIso/rig/quadruped/composeQuad';
-import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
+import { hashSeed } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { EntityToken } from '../../gameIso/EntityToken';
@@ -1299,39 +1299,15 @@ export function Editor() {
                         ))}
                       </select>
                     </label>
-                    {appearanceLayers(sel.ref ?? '').length > 0 && (
-                      <div className="ed-field">
-                        <span>Variante d'apparence</span>
-                        {appearanceLayers(sel.ref ?? '').map((layer) => (
-                          <label key={layer.slot} className="ed-subfield">
-                            {layer.slot}
-                            <select
-                              value={sel.appearance?.pins?.[layer.slot] ?? -1}
-                              onChange={(e) => {
-                                const v = Number(e.target.value);
-                                const pins = { ...(sel.appearance?.pins ?? {}) };
-                                if (v < 0) delete pins[layer.slot];
-                                else pins[layer.slot] = v;
-                                updateSel({ appearance: { ...sel.appearance, pins } });
-                              }}
-                            >
-                              <option value={-1}>Aléatoire</option>
-                              {layer.variants.map((_, i) => (
-                                <option key={i} value={i}>
-                                  variante {i + 1}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        ))}
-                        <button
-                          className="btn small"
-                          onClick={() => updateSel({ appearance: { ...sel.appearance, seed: hashSeed(sel.id + ':' + Math.floor(performance.now())) } })}
-                        >
-                          🎲 Relancer
-                        </button>
-                      </div>
-                    )}
+                    <div className="ed-field">
+                      <span>Apparence aléatoire</span>
+                      <button
+                        className="btn small"
+                        onClick={() => updateSel({ appearance: { ...sel.appearance, seed: hashSeed(sel.id + ':' + Math.floor(performance.now())) } })}
+                      >
+                        🎲 Relancer
+                      </button>
+                    </div>
                     <MonsterPartsFields
                       monster={sel.appearance?.monster}
                       weapon={sel.weapon}

@@ -7,7 +7,6 @@ import { TW, TH, tileCenter, depth, Dims } from './iso';
 import creatureSprites from './creatureSprites.json';
 import creatureViews from './creatureViews.json';
 import { propSvg } from './catalog/decor';
-import { composeAppearance, hashSeed, type AppearancePins } from './appearance';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -95,12 +94,10 @@ const CREATURE_SPRITES = creatureSprites as Record<string, string>;
 const CREATURE_BY_NORM: Record<string, string> = {};
 for (const [k, v] of Object.entries(CREATURE_SPRITES)) CREATURE_BY_NORM[k.toLowerCase()] = v;
 
-/** Sprite d'une créature : apparence par calques si enrichie (seed + pins),
- *  sinon sprite monolithique du bestiaire, sinon mutant générique. */
-export function enemySprite(label: string, seed = 0, pins?: AppearancePins): string {
+/** Sprite monolithique d'une créature du bestiaire (par nom, insensible casse), sinon mutant
+ *  générique. Backend SPRITE uniquement (non-rig) : les humains/mutants passent par le rig. */
+export function enemySprite(label: string): string {
   if (!label) return mutantStand();
-  const composed = composeAppearance(label, seed, pins);
-  if (composed != null) return composed;
   return CREATURE_SPRITES[label] ?? CREATURE_BY_NORM[label.toLowerCase()] ?? mutantStand();
 }
 
@@ -115,13 +112,13 @@ for (const [k, v] of Object.entries(CREATURE_VIEWS)) CREATURE_VIEWS_BY_NORM[k.to
  * est tournée à droite ; le miroir gauche/droite est appliqué par le rendu (token).
  * Repli sur le front si la vue directionnelle n'existe pas pour ce bestiaire.
  */
-export function creatureView(label: string, view: 'front' | 'back' | 'profile', seed = 0, pins?: AppearancePins): string {
+export function creatureView(label: string, view: 'front' | 'back' | 'profile'): string {
   if (view !== 'front' && label) {
     const v = CREATURE_VIEWS[label] ?? CREATURE_VIEWS_BY_NORM[label.toLowerCase()];
     const svg = v?.[view];
     if (svg) return svg;
   }
-  return enemySprite(label, seed, pins);
+  return enemySprite(label);
 }
 
 export function pnjSprite(): string {
@@ -148,15 +145,14 @@ export interface EntityViz {
  * Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
  */
 export function entitySprite(ent: EntityViz): string {
-  const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   switch (ent.kind) {
     // 'personnage' = kind unifié ; 'pnj'/'ennemi' = anciennes valeurs (compat).
     case 'personnage':
     case 'pnj':
       if (!ent.ref || ent.ref === 'Villageois') return pnjSprite();
-      return enemySprite(ent.ref, seed, ent.appearance?.pins);
+      return enemySprite(ent.ref);
     case 'ennemi':
-      return enemySprite(ent.ref ?? '', seed, ent.appearance?.pins);
+      return enemySprite(ent.ref ?? '');
     case 'prop':
       return propSprite(ent.ref);
     default:
