@@ -46,7 +46,8 @@ export function BargainModalView({
       <div className="modal test-modal">
         <h3>Marchander {pb.mode === 'buy' ? 'l’achat' : 'la vente'} — {pb.merchantName}</h3>
         <p className="test-actor">
-          <strong>{pb.playerName}</strong> — Marchandage {pb.playerSkill} contre {pb.merchantName} {pb.merchantValue}
+          {/* On NE révèle PAS le Marchandage de l'adversaire (info cachée du marchand). */}
+          <strong>{pb.playerName}</strong> — Marchandage {pb.playerSkill} contre {pb.merchantName}
           {pb.negotiator && ' · Négociateur'}
         </p>
 
@@ -66,7 +67,7 @@ export function BargainModalView({
               <span className="vs">/ {pb.roll!.target}</span>
               <span className="verdict">
                 vous {pb.roll!.sl >= 0 ? '+' : ''}
-                {pb.roll!.sl} DR · marchand {dice(pb.merchantRoll!.roll)}/{pb.merchantRoll!.target} ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
+                {pb.roll!.sl} DR · marchand {dice(pb.merchantRoll!.roll)} ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
                 {pb.merchantRoll!.sl} DR) →{' '}
                 {verdictText}
               </span>

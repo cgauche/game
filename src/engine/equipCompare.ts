@@ -1,0 +1,100 @@
+/**
+ * Comparaison d'équipement (PUR). Compare un objet (acheté au marchand) à l'objet du MÊME
+ * emplacement actuellement équipé par un héros, pour l'accordéon « équiper » du marchand (retour
+ * utilisateur : montrer le gain/la perte avant d'équiper). Aucune règle inventée — ne compare que
+ * des stats déjà portées par les trappings (Dégâts, Allonge, Portée, Qualités, PA d'armure ;
+ * Protection des boucliers via l'Atout « Protectrice N »). Présentation pure → testable hors UI.
+ */
+import type { Combatant, ItemInstance, HitLocation } from './types';
+import { damageScore } from './items';
+
+export type Trend = 'up' | 'down' | 'same';
+export interface CompareRow {
+  label: string;
+  current: string;
+  next: string;
+  trend: Trend;
+}
+export interface EquipComparison {
+  slot: 'melee' | 'ranged' | 'armor' | 'shield' | 'other';
+  /** Nom de l'objet du même emplacement déjà équipé par le héros (null = rien / mains nues). */
+  currentName: string | null;
+  rows: CompareRow[];
+}
+
+/** Rang d'Allonge pour le sens du gain (LDB 62 : Très courte < Courte < Moyenne < Longue < Très longue). */
+const REACH_RANK: Record<string, number> = {
+  'Très courte': 0, Courte: 1, Moyenne: 2, Longue: 3, 'Très longue': 4,
+};
+const ZONES: { label: string; locs: HitLocation[] }[] = [
+  { label: 'Tête', locs: ['tete'] },
+  { label: 'Bras', locs: ['brasG', 'brasD'] },
+  { label: 'Corps', locs: ['corps'] },
+  { label: 'Jambes', locs: ['jambeG', 'jambeD'] },
+];
+
+/** Un bouclier = même prédicat que le rendu (Atout « Bouclier » ou nom « Bouclier… »). Pur (pas d'import rig). */
+export function isShieldItem(i: { name: string; qualities?: string[] }): boolean {
+  return (i.qualities ?? []).some((q) => /bouclier/i.test(q)) || /bouclier/i.test(i.name);
+}
+
+const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');
+/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272). */
+const protectrice = (q: string[]): number => {
+  for (const s of q) {
+    const m = s.match(/protectrice\s*(\d+)/i);
+    if (m) return parseInt(m[1], 10);
+  }
+  return 0;
+};
+
+export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
+  const items = hero.items ?? [];
+
+  if (isShieldItem(item)) {
+    const cur = items.find((i) => i.equipped && isShieldItem(i) && i.uid !== item.uid);
+    const cp = protectrice(cur?.qualities ?? []);
+    const np = protectrice(item.qualities);
+    return {
+      slot: 'shield',
+      currentName: cur?.name ?? null,
+      rows: [{ label: 'Protection', current: cp ? `Protectrice ${cp}` : '—', next: np ? `Protectrice ${np}` : '—', trend: trendOf(np - cp) }],
+    };
+  }
+
+  if (item.kind === 'melee' || item.kind === 'ranged') {
+    const cur = items.find((i) => i.equipped && i.kind === item.kind && !isShieldItem(i) && i.uid !== item.uid);
+    const baseline = item.kind === 'melee' ? '+BF-2' : undefined; // mêlée : mains nues (LDB) ; distance : pas d'arme
+    const curDmg = cur?.damage ?? baseline;
+    const rows: CompareRow[] = [
+      { label: 'Dégâts', current: cur?.damage ?? (item.kind === 'melee' ? '+BF-2 (mains nues)' : '—'), next: item.damage ?? '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
+    ];
+    if (item.kind === 'melee') {
+      const cr = REACH_RANK[cur?.reach ?? ''] ?? -1;
+      const nr = REACH_RANK[item.reach ?? ''] ?? -1;
+      rows.push({ label: 'Allonge', current: cur?.reach ?? '—', next: item.reach ?? '—', trend: trendOf(nr - cr) });
+    } else {
+      rows.push({ label: 'Portée', current: cur?.range != null ? `${cur.range} m` : '—', next: item.range != null ? `${item.range} m` : '—', trend: trendOf((item.range ?? 0) - (cur?.range ?? 0)) });
+    }
+    const cq = (cur?.qualities ?? []).filter(Boolean);
+    const nq = item.qualities.filter(Boolean);
+    rows.push({ label: 'Qualités', current: cq.length ? cq.join(', ') : '—', next: nq.length ? nq.join(', ') : '—', trend: 'same' });
+    return { slot: item.kind, currentName: cur?.name ?? null, rows };
+  }
+
+  if (item.kind === 'armor') {
+    const cur = items.filter((i) => i.equipped && i.kind === 'armor');
+    const newPA = (item.pa ?? 0) - (item.damageTaken ?? 0);
+    const rows: CompareRow[] = [];
+    for (const z of ZONES) {
+      if (!z.locs.some((l) => item.locs?.includes(l))) continue;
+      const covering = cur.filter((i) => z.locs.some((l) => i.locs?.includes(l)));
+      const curPA = covering.length ? Math.max(0, ...covering.map((i) => (i.pa ?? 0) - (i.damageTaken ?? 0))) : 0;
+      // Le modèle prend le MAX par localisation (recomputeLoadout) → gain seulement si la neuve fait mieux.
+      rows.push({ label: `PA ${z.label}`, current: String(curPA), next: String(Math.max(curPA, newPA)), trend: trendOf(newPA - curPA) });
+    }
+    return { slot: 'armor', currentName: cur.map((i) => i.name).join(', ') || null, rows };
+  }
+
+  return { slot: 'other', currentName: null, rows: [] };
+}

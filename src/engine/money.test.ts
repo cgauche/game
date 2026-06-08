@@ -24,9 +24,11 @@ describe('money — monnaie impériale (LDB 57 : 1 CO=20 SC=240 PA, 1 SC=12 PA)'
     expect(priceToMoney({ gold: 2, silver: 0, bronze: 0 })).toEqual({ gold: 2, silver: 0, brass: 0 });
     expect(priceToMoney({ silver: 3 })).toEqual({ gold: 0, silver: 3, brass: 0 });
   });
-  it('formatMoney : noms canon FR (CO / pa / sc), omet les zéros', () => {
-    expect(formatMoney({ gold: 2, silver: 3, brass: 0 })).toBe('2 CO 3 pa'); // couronne d'or, pistole d'argent
-    expect(formatMoney({ gold: 0, silver: 0, brass: 5 })).toBe('5 sc'); // sou de cuivre
+  it('formatMoney : nomenclature canon LDB 57 (CO / pistoles « S/C » / sc), omet les zéros', () => {
+    expect(formatMoney({ gold: 2, silver: 3, brass: 0 })).toBe('2 CO 3/–'); // couronne d'or + 3 pistoles, pas de sou
+    expect(formatMoney({ gold: 0, silver: 3, brass: 3 })).toBe('3/3'); // pistoles + sous mélangés (LDB 57 « 6/8 »)
+    expect(formatMoney({ gold: 0, silver: 20, brass: 0 })).toBe('20/–'); // LDB 57 « 20/– »
+    expect(formatMoney({ gold: 0, silver: 0, brass: 5 })).toBe('5 sc'); // sous seuls
     expect(formatMoney({ gold: 0, silver: 0, brass: 0 })).toBe('0 sc');
   });
 });

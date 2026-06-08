@@ -1,63 +1,113 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MerchantPanelView } from './MerchantPanel';
-import type { Combatant } from '../engine/types';
+import type { Combatant, ItemInstance } from '../engine/types';
 
-describe('MerchantPanel (#2)', () => {
-  it('affiche le stock + la Bourse + boutons Acheter/Vendre', () => {
-    const party = [{ id: 'h', name: 'H', items: [{ uid: 'x', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false }] } as unknown as Combatant];
+const noop = {
+  onAddToCart: () => {}, onDecCart: () => {}, onRemoveCart: () => {}, onClearCart: () => {}, onRefuse: () => {}, onPay: () => {},
+  onAssignDist: () => {}, onConfirmDist: () => {}, onSell: () => {}, onRepair: () => {}, onBargain: () => {},
+  onAppraise: () => {}, onClose: () => {},
+};
+const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] as { label: string; qty: number }[], cart: [] as { label: string; qty: number }[], bargainLocked: false };
+
+describe('MerchantPanel (#2 — panier)', () => {
+  it('Parcourir : tableau par famille + bouton « Ajouter » + barre panier', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
-      <MerchantPanelView
-        merchant={{ entityId: 'p', archetype: 'armurier', settlement: 'ville', resaleRate: 0.1, stock: [{ label: 'Hallebarde', qty: 2 }] }}
-        party={party}
-        money={{ gold: 1, silver: 0, brass: 0 }}
-        onBuy={() => {}}
-        onSell={() => {}}
-        onRepair={() => {}}
-        onBargain={() => {}} onAppraise={() => {}}
-        onClose={() => {}}
-      />,
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 2 }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
+    );
+    expect(html).toContain('Armes de mêlée');
+    expect(html).toContain('Hallebarde');
+    expect(html).toContain('2 CO'); // prix canon
+    expect(html).toMatch(/Ajouter/); // ajoute au panier (plus de « Acheter » direct)
+    expect(html).toContain('Panier vide');
+    expect(html).toContain('Bourse');
+  });
+
+  it('grise « Ajouter » si on ne peut pas payer une seule unité', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const html = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 1 }] }} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} />,
+    );
+    expect(html).toContain('unaffordable');
+    expect(html).toMatch(/disabled/);
+  });
+
+  it('fiche de détail (clic sur le nom) : stats + Atouts/Défauts, sans bouton d’équipement', () => {
+    const party = [{ id: 'h', name: 'Hans', items: [] } as unknown as Combatant];
+    const html = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 1 }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} initialDetails="Hallebarde" />,
+    );
+    expect(html).toContain('merch-compare');
+    expect(html).toContain('Dégâts'); // colonne / comparaison
+    expect(html).toContain('Empaleuse'); // Atout listé
+    expect(html).toMatch(/Critique/); // … avec sa description canon
+    expect(html).toContain('Fermer');
+    expect(html).not.toMatch(/Équiper/); // plus d'équipement depuis le marchand
+  });
+
+  it('Panier : lignes, total marchandable, bouton Payer', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const html = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 3 }], cart: [{ label: 'Hallebarde', qty: 2 }] }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
     );
     expect(html).toContain('Hallebarde');
-    expect(html).toMatch(/Acheter/);
-    expect(html).toMatch(/Vendre/);
-    expect(html).toContain('Dague'); // vendable depuis les items du héros
-    expect(html).toContain('Bourse'); // affiche la bourse (formatMoney)
+    expect(html).toMatch(/Marchander le panier/); // négociation claire sur le panier
+    expect(html).toContain('Total'); // total affiché
+    expect(html).toContain('4 CO'); // 2 × Hallebarde (2 CO)
+    expect(html).toMatch(/Payer/);
   });
 
-  it('liste une armure endommagée dans la section Réparer (#2d)', () => {
-    const party = [{ id: 'h', name: 'H', items: [{ uid: 'a', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true }] } as unknown as Combatant];
+  it('Répartition (après paiement) : un menu héros par objet + Confirmer', () => {
+    const party = [
+      { id: 'h1', name: 'Anna', items: [] } as unknown as Combatant,
+      { id: 'h2', name: 'Bruno', items: [] } as unknown as Combatant,
+    ];
+    const bought = { uid: 'b1', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false } as ItemInstance;
     const html = renderToStaticMarkup(
-      <MerchantPanelView
-        merchant={{ entityId: 'p', archetype: 'armurier', settlement: 'ville', resaleRate: 0.1, stock: [] }}
-        party={party}
-        money={{ gold: 1, silver: 0, brass: 0 }}
-        onBuy={() => {}}
-        onSell={() => {}}
-        onRepair={() => {}}
-        onBargain={() => {}} onAppraise={() => {}}
-        onClose={() => {}}
-      />,
+      <MerchantPanelView merchant={{ ...base, pendingDistribution: [{ item: bought, heroId: 'h1' }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
     );
-    expect(html).toMatch(/Réparer/);
-    expect(html).toContain('Chemise de mailles');
+    expect(html).toContain('Répartition');
+    expect(html).toContain('qui récupère quoi');
+    expect(html).toContain('Anna');
+    expect(html).toContain('Bruno'); // option de l'autre héros
+    expect(html).toMatch(/Confirmer la répartition/);
   });
 
-  it('Marchandage : deux négociations (achat/vente) distinctes + état méfiant (B/C, #2c)', () => {
+  it('panier négocié : retirer OK, plus ajouter/renégocier, « Refuser le marché » remplace Vider, « Continuer » désactivé', () => {
     const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
-    const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] };
-    const props = { party, money: { gold: 1, silver: 0, brass: 0 }, onBuy: () => {}, onSell: () => {}, onRepair: () => {}, onBargain: () => {}, onAppraise: () => {}, onClose: () => {} };
-    const count = (s: string) => (s.match(/Marchander/g) || []).length;
-    // aucune négociation : un bouton Marchander pour l'achat ET un pour la vente
-    const fresh = renderToStaticMarkup(<MerchantPanelView merchant={base} {...props} />);
-    expect(count(fresh)).toBe(2);
-    // achat négocié (gagné) : l'achat affiche son résultat, la vente reste à marchander
-    const buyDone = renderToStaticMarkup(<MerchantPanelView merchant={{ ...base, bargainBuy: { won: true, drNet: 2, negotiator: false } }} {...props} />);
-    expect(buyDone).toContain('Achat marchandé');
-    expect(count(buyDone)).toBe(1); // il ne reste que le bouton de vente
-    // marchand méfiant (botch) : plus aucun marchandage possible
-    const soured = renderToStaticMarkup(<MerchantPanelView merchant={{ ...base, soured: true }} {...props} />);
+    const html = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 3 }], cart: [{ label: 'Hallebarde', qty: 1 }], bargainBuy: { won: true, drNet: 2, negotiator: false } }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
+    );
+    expect(html).toContain('Le prix est arrêté'); // note reformulée
+    expect(html).not.toMatch(/Marchander le panier/); // plus de renégociation
+    expect(html).toContain('Refuser le marché'); // remplace « Vider »
+    expect(html).not.toContain('Vider le panier');
+    expect(html).toContain('Marché négocié : réglez ou refusez le marché'); // titre du « Continuer les achats » désactivé
+  });
+
+  it('Marchandage verrouillé jusqu’au réassort (négocié puis quitté sans payer)', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const html = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 1 }], cart: [{ label: 'Hallebarde', qty: 1 }], bargainLocked: true }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
+    );
+    expect(html).toContain('Marchandage indisponible');
+    expect(html).not.toMatch(/Marchander le panier/);
+  });
+
+  it('onglet Vendre / Réparer + Marchandage par onglet (#2c/#2d)', () => {
+    const party = [{ id: 'h', name: 'H', items: [
+      { uid: 'x', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false },
+      { uid: 'a', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true },
+    ] } as unknown as Combatant];
+    const sell = renderToStaticMarkup(<MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} initialTab="sell" />);
+    expect(sell).toContain('Dague');
+    expect(sell).toMatch(/Marchander la vente/);
+    const repair = renderToStaticMarkup(<MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} initialTab="repair" />);
+    expect(repair).toContain('Chemise de mailles');
+    expect(repair).toMatch(/Réparer/);
+    // marchand méfiant : plus de marchandage dans le panier
+    const soured = renderToStaticMarkup(<MerchantPanelView merchant={{ ...base, soured: true, cart: [{ label: 'Hallebarde', qty: 1 }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />);
     expect(soured).toContain('méfiant');
-    expect(count(soured)).toBe(0);
   });
 });

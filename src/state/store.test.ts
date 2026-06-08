@@ -2205,6 +2205,134 @@ describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
     expect(useGame.getState().party[0].items!.length).toBe(0);
   });
 
+  it('panier : addToCart → payCart débite le total + met en attente de répartition → confirm distribue', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.getState().addToCart(label);
+    expect(useGame.getState().merchant!.cart).toEqual([{ label, qty: 2 }]);
+    const before = toBrass(useGame.getState().money);
+    useGame.getState().payCart();
+    const st = useGame.getState();
+    expect(toBrass(st.money)).toBeLessThan(before); // total débité
+    expect(st.merchant!.cart).toEqual([]); // panier vidé
+    expect(st.merchant!.pendingDistribution).toHaveLength(2); // 2 objets en attente de répartition
+    st.assignDistribution(0, 'h');
+    st.assignDistribution(1, 'h');
+    st.confirmDistribution();
+    const st2 = useGame.getState();
+    expect(st2.merchant!.pendingDistribution).toBeNull();
+    expect(st2.party[0].items!.filter((i) => i.name === label)).toHaveLength(2);
+  });
+
+  it('panier : après Marchandage, AJOUT bloqué mais RETRAIT permis (« j’en prends un de moins »)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty >= 2)!.label;
+    useGame.getState().addToCart(label);
+    useGame.getState().addToCart(label); // qty 2
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainBuy: { won: true, drNet: 2, negotiator: false } } })); // négocié
+    useGame.getState().addToCart(label); // bloqué
+    expect(useGame.getState().merchant!.cart.find((c) => c.label === label)!.qty).toBe(2);
+    useGame.getState().decFromCart(label); // retrait OK
+    expect(useGame.getState().merchant!.cart.find((c) => c.label === label)!.qty).toBe(1);
+  });
+
+  it('Marchandage NON conclu : quitter sans payer → bloqué jusqu’au réassort, PERSISTE à la réouverture', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainBuy: { won: true, drNet: 2, negotiator: false } } })); // négocié
+    useGame.getState().closeMerchant(); // quitte SANS payer
+    useGame.getState().openMerchant('pnj'); // réouverture (même réassort)
+    expect(useGame.getState().merchant!.bargainLocked).toBe(true); // l'info est gardée
+    useGame.getState().startBargain('buy');
+    expect(useGame.getState().pendingBargain).toBeNull(); // le marchand refuse de marchander
+  });
+
+  it('refuseBargain(\'buy\') : vide le panier, annule la remise, VERROU PARTAGÉ (bloque achat ET vente), persiste', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainBuy: { won: true, drNet: 2, negotiator: false } } })); // négocié
+    useGame.getState().refuseBargain('buy');
+    const st = useGame.getState();
+    expect(st.merchant!.cart).toEqual([]);
+    expect(st.merchant!.bargainBuy ?? null).toBeNull(); // remise annulée
+    expect(st.merchant!.bargainLocked).toBe(true);
+    // verrou PARTAGÉ : la VENTE est aussi bloquée
+    useGame.getState().startBargain('sell');
+    expect(useGame.getState().pendingBargain).toBeNull();
+    useGame.getState().closeMerchant();
+    useGame.getState().openMerchant('pnj');
+    expect(useGame.getState().merchant!.bargainLocked).toBe(true); // persiste
+  });
+
+  it('refuseBargain(\'sell\') : annule l’offre + VERROU PARTAGÉ (bloque l’ACHAT aussi)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainSell: { won: true, drNet: 2, negotiator: false } } })); // vente négociée
+    useGame.getState().refuseBargain('sell');
+    const st = useGame.getState();
+    expect(st.merchant!.bargainSell ?? null).toBeNull();
+    expect(st.merchant!.bargainLocked).toBe(true);
+    useGame.getState().startBargain('buy'); // achat aussi bloqué
+    expect(useGame.getState().pendingBargain).toBeNull();
+  });
+
+  it('vente négociée puis quittée SANS rien vendre → bloqué (vente non honorée)', () => {
+    useGame.setState({ party: [{ ...hero(), items: [{ uid: 'd', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false }] } as any], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainSell: { won: true, drNet: 2, negotiator: false } } }));
+    useGame.getState().closeMerchant(); // quitte sans vendre
+    useGame.getState().openMerchant('pnj');
+    expect(useGame.getState().merchant!.bargainLocked).toBe(true);
+  });
+
+  it('Marchandage CONCLU (payé) : pas de blocage à la réouverture', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainBuy: { won: true, drNet: 2, negotiator: false } } }));
+    useGame.getState().payCart(); // scelle le deal (paie)
+    useGame.getState().closeMerchant();
+    useGame.getState().openMerchant('pnj');
+    expect(useGame.getState().merchant!.bargainLocked).toBe(false); // pas de pénalité
+  });
+
+  it('panier : addToCart plafonne à la quantité en stock', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const line = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!;
+    for (let i = 0; i < line.qty + 5; i++) useGame.getState().addToCart(line.label);
+    expect(useGame.getState().merchant!.cart.find((c) => c.label === line.label)!.qty).toBe(line.qty);
+  });
+
+  it('payCart : refuse si Bourse insuffisante (panier intact, rien en répartition)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 1 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.getState().payCart();
+    const st = useGame.getState();
+    expect(st.merchant!.pendingDistribution ?? null).toBeNull();
+    expect(st.merchant!.cart).toHaveLength(1);
+  });
+
+  it('closeMerchant : valide une répartition en attente (objets non perdus, par défaut au 1er héros)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const label = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.label;
+    useGame.getState().addToCart(label);
+    useGame.getState().payCart();
+    useGame.getState().closeMerchant(); // ferme sans confirmer → flush au sac du 1er héros
+    expect(useGame.getState().party[0].items!.some((i) => i.name === label)).toBe(true);
+  });
+
   it('sellItem : crédite resaleRate × prix et retire l’objet du héros', () => {
     const h = hero(); h.items = [{ uid: 'x', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
     useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });

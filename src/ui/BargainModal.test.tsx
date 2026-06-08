@@ -24,7 +24,8 @@ describe('BargainModal (#2c)', () => {
       <BargainModalView pb={base} fortune={0} onRoll={noop} onReroll={noop} onBonusSL={noop} onConfirm={noop} onCancel={noop} />,
     );
     expect(html).toMatch(/Lancer/);
-    expect(html).toContain('Armurier');
+    expect(html).toContain('Armurier'); // le marchand est nommé
+    expect(html).not.toContain('45'); // … mais son Marchandage reste caché à l'ouverture
   });
 
   it('après un jet gagné : verdict « Gagné » + bouton Conclure', () => {

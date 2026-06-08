@@ -4,7 +4,7 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, ItemInstance } from '../engine/types';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
@@ -447,10 +447,11 @@ export interface GameState {
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
-  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; buyMarkup?: number; stock: { label: string; qty: number }[]; bargainBuy?: { won: boolean; drNet: number; negotiator: boolean } | null; bargainSell?: { won: boolean; drNet: number; negotiator: boolean } | null; soured?: boolean } | null;
+  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; buyMarkup?: number; stock: { label: string; qty: number }[]; bargainBuy?: { won: boolean; drNet: number; negotiator: boolean } | null; bargainSell?: { won: boolean; drNet: number; negotiator: boolean } | null; soured?: boolean; cart: { label: string; qty: number }[]; pendingDistribution?: { item: ItemInstance; heroId: string }[] | null; bargainLocked: boolean; bargainPaid?: boolean; bargainSellUsed?: boolean } | null;
   /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
-   *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. Reset en nouvelle partie. */
-  merchantStocks: Record<string, { stock: { label: string; qty: number }[]; rolledAt: number }>;
+   *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. `bargainLocked` = le joueur a négocié
+   *  puis quitté SANS payer → plus de Marchandage avec ce marchand jusqu'au prochain réassort. Reset en nouvelle partie. */
+  merchantStocks: Record<string, { stock: { label: string; qty: number }[]; rolledAt: number; bargainLocked?: boolean }>;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
@@ -531,7 +532,22 @@ export interface GameState {
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
   closeMerchant: () => void;
-  buyItem: (label: string, heroId: string) => void;
+  /** Achat direct (#2, primitif) : débite la Bourse et crée l'objet dans le sac du héros (défaut : 1er). */
+  buyItem: (label: string, heroId?: string) => void;
+  /** Panier (#2) : ajoute / retire / vide. L'achat passe par le panier → `payCart` (UI). */
+  addToCart: (label: string) => void;
+  decFromCart: (label: string) => void;
+  removeFromCart: (label: string) => void;
+  clearCart: () => void;
+  /** Refuse un marché NÉGOCIÉ (achat ou vente) : annule la négociation de ce côté + pose le VERROU PARTAGÉ
+   *  (plus aucune négociation, achat NI vente, jusqu'au réassort). L'achat vide aussi le panier. */
+  refuseBargain: (mode: 'buy' | 'sell') => void;
+  /** Paye le panier : débite le Total (prix listés × Marchandage), retire du stock, et met les objets
+   *  achetés EN ATTENTE DE RÉPARTITION (`pendingDistribution`) — « qui récupère quoi ». */
+  payCart: () => void;
+  /** Répartition : affecte l'objet acheté n°`index` à un héros, puis `confirmDistribution` les range. */
+  assignDistribution: (index: number, heroId: string) => void;
+  confirmDistribution: () => void;
   sellItem: (uid: string, heroId: string) => void;
   /** Réparation d'armure chez le marchand : remet damageTaken à 0 contre 10 %/PA perdu (LDB 63 l.97-98). */
   repairArmour: (uid: string, heroId: string) => void;
@@ -1211,11 +1227,22 @@ export const useGame = create<GameState>((set, get) => ({
       stock = lines.map((l) => ({ label: l.label, qty: l.qty }));
       const tested = lines.filter((l) => l.test);
       if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
-      set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now } } }));
+      set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
     }
-    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock! } });
+    const persisted = get().merchantStocks[entityId];
+    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
   },
-  closeMerchant: () => set({ merchant: null }),
+  closeMerchant: () => {
+    const m = get().merchant;
+    // Négocié mais NON honoré (achat non payé, OU vente sans rien vendre) → verrou partagé jusqu'au réassort.
+    const renege = !!m && ((m.bargainBuy != null && !m.bargainPaid) || (m.bargainSell != null && !m.bargainSellUsed));
+    if (m && renege) {
+      set((s) => ({ merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } } }));
+      get().log('Vous quittez sans conclure le marché : le marchand refuse de re-marchander (achat ni vente) jusqu’à son prochain réassort.');
+    }
+    get().confirmDistribution(); // ne pas perdre les objets payés non répartis
+    set({ merchant: null });
+  },
   buyItem: (label, heroId) => {
     const m = get().merchant; if (!m) return;
     const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
@@ -1224,6 +1251,7 @@ export const useGame = create<GameState>((set, get) => ({
     const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
     if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
     const it = itemFromTrapping(label); if (!it) return;
+    const dest = heroId ?? get().party[0]?.id;
     const decr = (st: { label: string; qty: number }[]) => st.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l));
     set((s) => {
       const newStock = decr(s.merchant!.stock);
@@ -1232,7 +1260,7 @@ export const useGame = create<GameState>((set, get) => ({
       return {
         money: moneySub(s.money, cost)!,
         party: s.party.map((h) => {
-          if (h.id !== heroId) return h;
+          if (h.id !== dest) return h;
           const clone: Combatant = JSON.parse(JSON.stringify(h));
           clone.items = [...(clone.items ?? []), it];
           recomputeLoadout(clone);
@@ -1245,6 +1273,91 @@ export const useGame = create<GameState>((set, get) => ({
     });
     get().log(`Achat : ${label}.`);
   },
+  addToCart: (label) =>
+    set((s) => {
+      const m = s.merchant; if (!m || m.bargainBuy != null) return {}; // marché conclu → panier scellé
+      const stockQty = m.stock.find((l) => l.label === label)?.qty ?? 0;
+      const cart = m.cart ?? [];
+      const cur = cart.find((c) => c.label === label)?.qty ?? 0;
+      if (cur >= stockQty) return {}; // jamais plus que le stock disponible
+      const next = cart.some((c) => c.label === label)
+        ? cart.map((c) => (c.label === label ? { ...c, qty: c.qty + 1 } : c))
+        : [...cart, { label, qty: 1 }];
+      return { merchant: { ...m, cart: next } };
+    }),
+  // Retrait TOUJOURS permis (même après Marchandage : « j'en prends un de moins car je n'ai que 5€ »).
+  decFromCart: (label) =>
+    set((s) => {
+      const m = s.merchant; if (!m) return {};
+      const next = (m.cart ?? []).map((c) => (c.label === label ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0);
+      return { merchant: { ...m, cart: next } };
+    }),
+  removeFromCart: (label) =>
+    set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: (s.merchant.cart ?? []).filter((c) => c.label !== label) } } : {})),
+  clearCart: () => set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: [] } } : {})),
+  refuseBargain: (mode) => {
+    const m = get().merchant; if (!m || (mode === 'buy' ? m.bargainBuy : m.bargainSell) == null) return;
+    // Refuser une négociation → annule ce côté + VERROU PARTAGÉ (plus de marchandage achat NI vente jusqu'au réassort).
+    const patch = mode === 'buy' ? { cart: [], bargainBuy: null } : { bargainSell: null };
+    set((s) => ({
+      merchant: { ...s.merchant!, ...patch, bargainLocked: true },
+      merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } },
+    }));
+    get().log('Vous refusez le marché ; le marchand ne marchandera plus (ni achat ni vente) jusqu’à son prochain réassort.');
+  },
+  payCart: () => {
+    const m = get().merchant; if (!m) return;
+    const cart = m.cart ?? []; if (!cart.length) return;
+    const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
+    const unitBrass = (label: string) => {
+      const t = findTrapping(label); if (!t) return 0;
+      return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
+    };
+    let totalBrass = 0;
+    for (const c of cart) totalBrass += unitBrass(c.label) * c.qty;
+    const total = fromBrass(totalBrass);
+    if (!canAfford(get().money, total)) { get().log('Bourse insuffisante pour payer le panier.'); return; }
+    // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock.
+    const dest = get().party[0]?.id ?? '';
+    const staged: { item: ItemInstance; heroId: string }[] = [];
+    let newStock = m.stock;
+    for (const c of cart) {
+      for (let i = 0; i < c.qty; i++) { const it = itemFromTrapping(c.label); if (it) staged.push({ item: it, heroId: dest }); }
+      newStock = newStock.map((l) => (l.label === c.label ? { ...l, qty: Math.max(0, l.qty - c.qty) } : l));
+    }
+    const count = cart.reduce((a, c) => a + c.qty, 0);
+    set((s) => {
+      const eid = s.merchant!.entityId;
+      const persisted = s.merchantStocks[eid];
+      return {
+        money: moneySub(s.money, total)!,
+        // bargainPaid : le marché est SCELLÉ (payé) → pas de blocage du Marchandage au départ.
+        merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged, bargainPaid: true },
+        merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
+      };
+    });
+    get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
+  },
+  assignDistribution: (index, heroId) =>
+    set((s) => {
+      const m = s.merchant; if (!m?.pendingDistribution) return {};
+      const pd = m.pendingDistribution.map((d, i) => (i === index ? { ...d, heroId } : d));
+      return { merchant: { ...m, pendingDistribution: pd } };
+    }),
+  confirmDistribution: () =>
+    set((s) => {
+      const m = s.merchant; const dist = m?.pendingDistribution; if (!m || !dist || !dist.length) return {};
+      const byHero: Record<string, ItemInstance[]> = {};
+      for (const d of dist) (byHero[d.heroId] ??= []).push(d.item);
+      const party = s.party.map((h) => {
+        const add = byHero[h.id]; if (!add) return h;
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        clone.items = [...(clone.items ?? []), ...add.map((it) => ({ ...it, equipped: false }))];
+        recomputeLoadout(clone);
+        return clone;
+      });
+      return { party, merchant: { ...m, pendingDistribution: null } };
+    }),
   sellItem: (uid, heroId) => {
     const m = get().merchant; if (!m) return;
     const hero = get().party.find((h) => h.id === heroId);
@@ -1257,6 +1370,8 @@ export const useGame = create<GameState>((set, get) => ({
     const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
     set((s) => ({
       money: moneyAdd(s.money, gain),
+      // bargainSellUsed : une vente a eu lieu → la négociation de vente est HONORÉE (pas de verrou au départ).
+      merchant: s.merchant ? { ...s.merchant, bargainSellUsed: true } : s.merchant,
       party: s.party.map((h) => {
         if (h.id !== heroId) return h;
         const clone: Combatant = JSON.parse(JSON.stringify(h));
@@ -1291,6 +1406,7 @@ export const useGame = create<GameState>((set, get) => ({
   startBargain: (mode) => {
     const m = get().merchant; if (!m) return;
     if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
+    if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
     if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
     const arch = MERCHANTS[m.archetype];
     const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;

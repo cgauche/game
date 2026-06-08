@@ -1,19 +1,67 @@
-import { useState } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
 import { findTrapping } from '../data/index';
-import { priceToMoney, fromBrass, toBrass, formatMoney, type Money } from '../engine/money';
+import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
+import { compareEquip, isShieldItem } from '../engine/equipCompare';
+import { itemFromTrapping } from '../engine/items';
+import { describeQuality } from '../engine/qualities/describe';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
-/** Prix d'achat d'un article du catalogue (catalogue × facteur qualité d'artisanat × Marchandage). */
-function buyPrice(label: string, factor = 1): string {
+/** 6 familles de présentation du stock (ne pas mélanger arme/armure/etc.). */
+const FAMILIES: { key: string; label: string }[] = [
+  { key: 'melee', label: 'Armes de mêlée' },
+  { key: 'ranged', label: 'Armes à distance' },
+  { key: 'ammo', label: 'Munitions' },
+  { key: 'boucliers', label: 'Boucliers' },
+  { key: 'armor', label: 'Armures' },
+  { key: 'divers', label: 'Divers' },
+];
+const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, Exotique: 3 };
+
+function familyOf(label: string): string {
   const t = findTrapping(label);
-  if (!t) return '—';
-  return formatMoney(fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor)));
+  if (!t) return 'divers';
+  if (isShieldItem({ name: label, qualities: t.qualities ?? [] })) return 'boucliers';
+  if (t.type === 'melee') return 'melee';
+  if (t.type === 'ranged') return 'ranged';
+  if (t.type === 'ammunition') return 'ammo';
+  if (t.type === 'armor') return 'armor';
+  return 'divers';
+}
+function availRank(label: string): number {
+  return AVAIL_RANK[findTrapping(label)?.availability ?? ''] ?? 4;
+}
+
+/** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
+type TrapRow = { damage?: string | null; reach?: string | null; pa?: number | null; qualities?: string[] };
+const DASH = '—';
+const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
+  melee: [
+    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Allonge', get: (t) => t.reach || DASH },
+  ],
+  ranged: [
+    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Portée', get: (t) => { const r = Number(t.reach); return r ? `${r} m` : DASH; } },
+  ],
+  ammo: [{ label: 'Dégâts', get: (t) => t.damage || DASH, emph: true }],
+  boucliers: [{ label: 'Protection', get: (t) => { const m = (t.qualities ?? []).map((q) => q.match(/protectrice\s*(\d+)/i)).find(Boolean); return m ? `Protectrice ${m[1]}` : DASH; }, emph: true }],
+  armor: [{ label: 'PA', get: (t) => (t.pa != null ? String(t.pa) : DASH), emph: true }],
+  divers: [],
+};
+
+/** Coût d'achat unitaire (catalogue × qualité d'artisanat × Marchandage). null si prix non chiffré (« ND »). */
+function lineCost(label: string, factor: number): Money | null {
+  const t = findTrapping(label);
+  if (!t) return null;
+  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor;
+  if (!Number.isFinite(brass)) return null;
+  return fromBrass(Math.round(brass));
 }
 
 /** Coût de réparation d'une armure endommagée (LDB 63 l.97-98). */
@@ -23,35 +71,298 @@ function repairPrice(item: ItemInstance): string {
   return formatMoney(fromBrass(repairCostBrass(item, base)));
 }
 
-/** Présentationnel (props) — testable hors store. */
-export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRepair, onBargain, onAppraise, onClose }: {
+const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', same: '' };
+const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
+
+/** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
+export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onRepair, onBargain, onAppraise, onClose, initialTab, initialDetails, initialBuyView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
-  onBuy: (label: string, heroId: string) => void;
+  onAddToCart: (label: string) => void;
+  onDecCart: (label: string) => void;
+  onRemoveCart: (label: string) => void;
+  onClearCart: () => void;
+  onRefuse: (mode: 'buy' | 'sell') => void;
+  onPay: () => void;
+  onAssignDist: (index: number, heroId: string) => void;
+  onConfirmDist: () => void;
   onSell: (uid: string, heroId: string) => void;
   onRepair: (uid: string, heroId: string) => void;
   onBargain: (mode: 'buy' | 'sell') => void;
   onAppraise: (uid: string, heroId: string) => void;
   onClose: () => void;
+  initialTab?: 'buy' | 'sell' | 'repair';
+  initialDetails?: string;
+  initialBuyView?: 'browse' | 'cart';
 }) {
-  // Armures endommagées du groupe (réparables chez le marchand).
+  const [tab, setTab] = useState<'buy' | 'sell' | 'repair'>(initialTab ?? 'buy');
+  const [buyCat, setBuyCat] = useState<string | null>(null);
+  const [details, setDetails] = useState<string | null>(initialDetails ?? null);
+  const [buyView, setBuyView] = useState<'browse' | 'cart'>(initialBuyView ?? 'browse');
+  const toggleDetails = (label: string) => setDetails((d) => (d === label ? null : label));
+
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
-  // Marchandage (LDB 60 l.12) : l'achat et la vente sont DEUX négociations distinctes, chacune 1 jet/visite ;
-  // un échec « de beaucoup » rend le marchand méfiant (`soured`) → plus aucun marchandage cette visite.
-  // Achat : prix listé × majoration du marchand (buyMarkup) × facteur de Marchandage. Vente (Option 2) :
-  // ¼ par défaut (lowball, sellFactor 0.5 sur la base resaleRate ½) ; ½ seulement sur un Marchandage GAGNÉ.
+  const sellable = party.flatMap((h) => (h.items ?? []).map((it) => ({ h, it })));
+
+  // Marchandage (LDB 60 l.12) : achat (panier) et vente = négociations distinctes.
   const buyHaggle = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
-  const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle; // prix d'achat affiché (majoration × marchandage)
+  const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle;
+  const buyDiscount = Math.round((1 - buyHaggle) * 100);
   const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 0.5;
-  const haggleLine = (mode: 'buy' | 'sell') => {
-    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie (LDB 60 l.12)">🚫 Marchand méfiant — fini de marchander</span>;
-    const res = mode === 'buy' ? merchant.bargainBuy : merchant.bargainSell;
-    if (res == null) return <button className="btn small" onClick={() => onBargain(mode)} title="Test opposé de Marchandage (LDB 60 l.12)">Marchander {mode === 'buy' ? 'l’achat' : 'la vente'}</button>;
-    if (mode === 'buy') return <span className="bargain-tag">{res.won ? `Achat marchandé ✔ ×${buyHaggle}` : 'Achat : marchandage ✘ (prix plein)'}</span>;
-    return <span className="bargain-tag">{res.won ? 'Vente marchandée ✔ (½)' : 'Vente : marchandage ✘ (¼)'}</span>;
+
+  // Stock groupé par famille puis trié (Disponibilité → nom).
+  const inStock = merchant.stock.filter((l) => l.qty > 0);
+  const byFamily: Record<string, { label: string; qty: number }[]> = {};
+  for (const l of inStock) (byFamily[familyOf(l.label)] ??= []).push(l);
+  for (const k of Object.keys(byFamily)) byFamily[k].sort((a, b) => availRank(a.label) - availRank(b.label) || a.label.localeCompare(b.label));
+
+  const cart = merchant.cart ?? [];
+  const cartCount = cart.reduce((s, c) => s + c.qty, 0);
+  const cartTotalBrass = cart.reduce((s, c) => { const u = lineCost(c.label, buyFactor); return s + (u ? toBrass(u) * c.qty : 0); }, 0);
+  const cartTotal = fromBrass(cartTotalBrass);
+  const affordCart = toBrass(money) >= cartTotalBrass;
+  const sealed = merchant.bargainBuy != null; // a négocié : prix figé, on peut RETIRER mais pas ajouter ni renégocier
+  const cartQtyOf = (label: string) => cart.find((c) => c.label === label)?.qty ?? 0;
+  const dist = merchant.pendingDistribution ?? null;
+
+  const previews = useMemo(() => {
+    const map: Record<string, ItemInstance> = {};
+    for (const l of inStock) { const it = itemFromTrapping(l.label); if (it) map[l.label] = it; }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inStock.map((l) => l.label).join('|')]);
+
+  // Bloc de comparaison d'un héros (info : la neuve vs l'équipement actuel). Pas de bouton d'équipement (cart).
+  const heroCompareBlock = (item: ItemInstance, h: Combatant) => {
+    const cmp = compareEquip(item, h);
+    return (
+      <div className="mc-hero" key={h.id}>
+        <div className="mc-hero-head">
+          <span className="mc-name">{h.name}</span>
+          <span className="mc-cur">{cmp.currentName ? `actuel : ${cmp.currentName}` : 'rien d’équipé'}</span>
+        </div>
+        {cmp.rows.length > 0 && (
+          <table className="mc-table">
+            <tbody>
+              {cmp.rows.map((r) => (
+                <tr key={r.label} className={TREND_CLASS[r.trend]}>
+                  <th>{r.label}</th>
+                  <td className="mc-old">{r.current}</td>
+                  <td className="mc-arrow">→</td>
+                  <td className="mc-new">{r.next} <span className="mc-trend">{TREND_SYM[r.trend]}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    );
   };
-  const [heroId, setHeroId] = useState(party[0]?.id ?? '');
+
+  // Fiche de détail (clic sur le nom) : INFORMATIVE — Atouts/Défauts + description + comparaison.
+  const renderDetailCard = (item: ItemInstance) => {
+    const quals = item.qualities.map((q) => describeQuality(q)).filter((q): q is NonNullable<typeof q> => q != null);
+    const atouts = quals.filter((q) => q.type !== 'Défaut');
+    const defauts = quals.filter((q) => q.type === 'Défaut');
+    const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
+    return (
+      <div className="merch-compare preview" role="region" aria-label={`Détails ${item.name}`}>
+        <div className="mc-head">
+          <strong>{item.name}</strong>
+          <button className="btn small" onClick={() => setDetails(null)}>Fermer</button>
+        </div>
+        {(atouts.length > 0 || defauts.length > 0) && (
+          <div className="mc-quals">
+            {atouts.map((q) => <div className="mc-qual atout" key={`a-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{q.desc}</span>}</div>)}
+            {defauts.map((q) => <div className="mc-qual flaw" key={`d-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{q.desc}</span>}</div>)}
+          </div>
+        )}
+        {item.desc && <p className="mc-desc">{item.desc}</p>}
+        {canCompare && party.map((h) => heroCompareBlock(item, h))}
+      </div>
+    );
+  };
+
+  // Contrôle de Marchandage du panier (clair : ce qu'il fait + son effet).
+  const buyHaggleControl = () => {
+    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie (LDB 60 l.12)">🚫 Marchand méfiant — fini de marchander</span>;
+    if (merchant.bargainLocked) return <span className="bargain-tag locked" title="Vous avez déjà négocié puis quitté sans conclure ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>;
+    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 % (LDB 60 l.12)">💬 Marchander le panier</button>;
+    return merchant.bargainBuy.won
+      ? <span className="bargain-tag won">✔ Prix réduits de {buyDiscount} %</span>
+      : <span className="bargain-tag">✘ Marchandage raté — prix plein</span>;
+  };
+
+  // --- Vue : Répartition (après paiement) ---
+  const renderDistribution = () => (
+    <div className="merch-tab">
+      <div className="dist-head"><strong>Répartition</strong> — qui récupère quoi ?</div>
+      <div className="dist-list">
+        {(dist ?? []).map((d, i) => (
+          <div className="dist-row" key={d.item.uid}>
+            <span className="merch-name">{d.item.name}</span>
+            <select value={d.heroId} onChange={(e) => onAssignDist(i, e.target.value)}>
+              {party.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+      <div className="cart-actions">
+        <button className="btn btn-primary" onClick={() => { onConfirmDist(); setBuyView('browse'); }}>Confirmer la répartition</button>
+      </div>
+    </div>
+  );
+
+  // --- Vue : Panier ---
+  const renderCart = () => (
+    <div className="merch-tab">
+      <div className="cart-head">
+        <button className="btn small" disabled={sealed} title={sealed ? 'Marché négocié : réglez ou refusez le marché' : undefined} onClick={() => setBuyView('browse')}>← Continuer les achats</button>
+        <strong>🛒 Panier</strong>
+      </div>
+      {!cart.length ? (
+        <p className="empty">— panier vide —</p>
+      ) : (
+        <>
+          <table className="cart-table">
+            <tbody>
+              {cart.map((c) => {
+                const u = lineCost(c.label, buyFactor);
+                const sub = u ? fromBrass(toBrass(u) * c.qty) : null;
+                const stockQty = merchant.stock.find((l) => l.label === c.label)?.qty ?? 0;
+                return (
+                  <tr key={c.label}>
+                    <td className="cart-name">{c.label}</td>
+                    <td className="cart-step">
+                      <button className="btn-step" onClick={() => onDecCart(c.label)} aria-label="Un de moins">−</button>
+                      <span className="cart-n">{c.qty}</span>
+                      <button className="btn-step" disabled={sealed || c.qty >= stockQty} title={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined} onClick={() => onAddToCart(c.label)} aria-label="Un de plus">+</button>
+                    </td>
+                    <td className="cart-unit">{u ? formatMoney(u) : '—'}</td>
+                    <td className="cart-sub">{sub ? formatMoney(sub) : '—'}</td>
+                    <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveCart(c.label)} aria-label="Retirer">✕</button></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <div className="cart-haggle">{buyHaggleControl()}</div>
+          {sealed && (
+            <p className="cart-sealed">🤝 Le prix est arrêté. Vous pouvez encore <strong>retirer</strong> des articles pour baisser le total (mais plus en ajouter). À vous de <strong>régler</strong> ou de <strong>refuser le marché</strong> — refuser ou partir sans payer, et il ne marchandera plus avant son réassort.</p>
+          )}
+          <div className="cart-total">Total : <strong>{formatMoney(cartTotal)}</strong>{buyDiscount > 0 && <span className="cart-disc"> (marchandé −{buyDiscount} %)</span>}</div>
+          <div className="cart-actions">
+            {sealed
+              ? <button className="btn small danger" onClick={() => { onRefuse('buy'); setBuyView('browse'); }}>Refuser le marché</button>
+              : <button className="btn small" onClick={onClearCart}>Vider le panier</button>}
+            <button className="btn btn-primary" disabled={!affordCart} title={affordCart ? undefined : 'Bourse insuffisante'} onClick={onPay}>Payer {formatMoney(cartTotal)}</button>
+          </div>
+          {!affordCart && <p className="cart-warn">Bourse insuffisante ({formatMoney(money)}).</p>}
+        </>
+      )}
+    </div>
+  );
+
+  // --- Vue : Parcourir ---
+  const renderBrowse = () => {
+    const cats = FAMILIES.filter((f) => byFamily[f.key]?.length);
+    const activeCat = (buyCat && byFamily[buyCat]?.length ? buyCat : cats[0]?.key) ?? '';
+    const rows = byFamily[activeCat] ?? [];
+    return (
+      <div className="merch-tab">
+        <div className="cart-bar">
+          {cartCount > 0
+            ? <><span className="cart-info">🛒 {cartCount} article{cartCount > 1 ? 's' : ''} · {formatMoney(cartTotal)}</span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
+            : <span className="cart-info empty">🛒 Panier vide</span>}
+        </div>
+        {!cats.length ? (
+          <p className="empty">— rien en stock —</p>
+        ) : (
+          <>
+            <div className="merch-subtabs" role="tablist">
+              {cats.map((fam) => (
+                <button key={fam.key} className={`mtab sub ${activeCat === fam.key ? 'active' : ''}`} onClick={() => setBuyCat(fam.key)}>
+                  {fam.label}<span className="tab-count">{byFamily[fam.key].length}</span>
+                </button>
+              ))}
+            </div>
+            {(() => {
+              const cols = FAMILY_COLS[activeCat] ?? [];
+              const span = cols.length + 4;
+              const groups: { key: string; items: typeof rows }[] = [];
+              for (const l of rows) {
+                const g = findTrapping(l.label)?.subType ?? 'Autres';
+                let bucket = groups.find((x) => x.key === g);
+                if (!bucket) { bucket = { key: g, items: [] }; groups.push(bucket); }
+                bucket.items.push(l);
+              }
+              groups.sort((a, b) => a.key.localeCompare(b.key));
+              const showGroups = groups.length > 1;
+              const itemRow = (l: { label: string; qty: number }) => {
+                const t = findTrapping(l.label);
+                const unit = lineCost(l.label, buyFactor);
+                const canAffordOne = unit ? canAfford(money, unit) : false;
+                const inCart = cartQtyOf(l.label);
+                const open = details === l.label;
+                return (
+                  <Fragment key={l.label}>
+                    <tr className={`merch-trow ${canAffordOne ? '' : 'unaffordable'} ${open ? 'open' : ''}`}>
+                      <td className="col-name">
+                        <button className="merch-name as-link" onClick={() => toggleDetails(l.label)} aria-expanded={open} title="Voir les détails de l’objet">
+                          <span className="caret">{open ? '▾' : '▸'}</span> {l.label}
+                          <span className="merch-qty" title="En stock">×{l.qty}</span>
+                        </button>
+                      </td>
+                      {cols.map((c) => <td key={c.label} className={c.emph ? 'col-emph' : ''}>{t ? c.get(t) : DASH}</td>)}
+                      <td className="col-enc">{t?.enc ?? 0}</td>
+                      <td className="col-price">{unit ? formatMoney(unit) : '—'}</td>
+                      <td className="col-buy">
+                        {inCart > 0 ? (
+                          <span className="cart-step">
+                            <button className="btn-step" onClick={() => onDecCart(l.label)} aria-label="Un de moins">−</button>
+                            <span className="cart-n">{inCart}</span>
+                            <button className="btn-step" disabled={sealed || inCart >= l.qty || !canAffordOne} onClick={() => onAddToCart(l.label)} aria-label="Un de plus">+</button>
+                          </span>
+                        ) : (
+                          <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.label)}>+ Ajouter</button>
+                        )}
+                      </td>
+                    </tr>
+                    {open && previews[l.label] && (
+                      <tr className="detail-row"><td colSpan={span}>{renderDetailCard(previews[l.label])}</td></tr>
+                    )}
+                  </Fragment>
+                );
+              };
+              return (
+                <table className="merch-table">
+                  <thead>
+                    <tr>
+                      <th className="col-name">Objet</th>
+                      {cols.map((c) => <th key={c.label} className={c.emph ? 'col-emph' : ''}>{c.label}</th>)}
+                      <th className="col-enc" title="Encombrement">Enc</th>
+                      <th className="col-price">Prix</th>
+                      <th className="col-buy" aria-label="Panier" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groups.map((g) => (
+                      <Fragment key={g.key}>
+                        {showGroups && <tr className="group-row"><td colSpan={span}>{g.key}</td></tr>}
+                        {g.items.map(itemRow)}
+                      </Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              );
+            })()}
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="merchant-panel modal-overlay">
       <div className="merchant-box">
@@ -60,50 +371,52 @@ export function MerchantPanelView({ merchant, party, money, onBuy, onSell, onRep
           <span className="purse">Bourse : {formatMoney(money)}</span>
           <button className="btn small" onClick={onClose}>Fermer</button>
         </div>
-        <div className="merchant-cols">
-          <div className="merchant-stock">
-            <div className="mini-title">En vente</div>
-            <div className="haggle-bar">{haggleLine('buy')}</div>
-            <label className="hero-sel">Donner à
-              <select value={heroId} onChange={(e) => setHeroId(e.target.value)}>
-                {party.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-              </select>
-            </label>
-            {merchant.stock.filter((l) => l.qty > 0).map((l) => (
-              <div className="merch-row" key={l.label}>
-                <span>{l.label} ×{l.qty}</span>
-                <span className="price">{buyPrice(l.label, buyFactor)}</span>
-                <button className="btn small" onClick={() => onBuy(l.label, heroId)}>Acheter</button>
+        <div className="merchant-tabs" role="tablist">
+          <button className={`mtab ${tab === 'buy' ? 'active' : ''}`} onClick={() => setTab('buy')}>Acheter{cartCount ? <span className="tab-count">{cartCount}</span> : null}</button>
+          <button className={`mtab ${tab === 'sell' ? 'active' : ''}`} onClick={() => setTab('sell')}>Vendre{sellable.length ? <span className="tab-count">{sellable.length}</span> : null}</button>
+          <button className={`mtab ${tab === 'repair' ? 'active' : ''}`} onClick={() => setTab('repair')}>Réparer{damaged.length ? <span className="tab-count">{damaged.length}</span> : null}</button>
+        </div>
+
+        <div className="merchant-body">
+          {tab === 'buy' && (dist ? renderDistribution() : buyView === 'cart' ? renderCart() : renderBrowse())}
+
+          {tab === 'sell' && (
+            <div className="merch-tab">
+              <div className="haggle-bar">
+                {merchant.soured ? <span className="bargain-tag soured">🚫 Marchand méfiant — fini de marchander</span>
+                  : merchant.bargainLocked ? <span className="bargain-tag locked" title="Vous avez refusé/renié un marché ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>
+                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼ (LDB 60 l.12/22)">💬 Marchander la vente</button>
+                  : <>
+                      <span className={`bargain-tag ${merchant.bargainSell.won ? 'won' : ''}`}>{merchant.bargainSell.won ? '✔ Rachat à ½ du prix' : '✘ Rachat à ¼ du prix'}</span>
+                      <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>
+                    </>}
               </div>
-            ))}
-            {merchant.stock.every((l) => l.qty <= 0) && <p className="empty">— rien en stock —</p>}
-          </div>
-          <div className="merchant-sell">
-            <div className="mini-title">Vendre (équipement du groupe)</div>
-            <div className="haggle-bar">{haggleLine('sell')}</div>
-            {party.flatMap((h) => (h.items ?? []).map((it) => (
-              <div className="merch-row" key={it.uid}>
-                <span>{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>
-                <span className="price">{formatMoney(fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor)))}</span>
-                {it.identified === false && (
-                  <button className="btn small" onClick={() => onAppraise(it.uid, h.id)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
-                )}
-                <button className="btn small" onClick={() => onSell(it.uid, h.id)}>Vendre</button>
-              </div>
-            )))}
-            {party.every((h) => !(h.items ?? []).length) && <p className="empty">— rien à vendre —</p>}
-          </div>
-          <div className="merchant-repair">
-            <div className="mini-title">Réparer (armures endommagées)</div>
-            {damaged.map(({ h, it }) => (
-              <div className="merch-row" key={it.uid}>
-                <span>{h.name} : {it.name}</span>
-                <span className="price">{repairPrice(it)}</span>
-                <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
-              </div>
-            ))}
-            {damaged.length === 0 && <p className="empty">— aucune armure à réparer —</p>}
-          </div>
+              {sellable.map(({ h, it }) => (
+                <div className="merch-row sell" key={it.uid}>
+                  <span className="merch-name">{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>
+                  <span className="merch-price">{formatMoney(fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor)))}</span>
+                  {it.identified === false && (
+                    <button className="btn small" onClick={() => onAppraise(it.uid, h.id)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
+                  )}
+                  <button className="btn small" onClick={() => onSell(it.uid, h.id)}>Vendre</button>
+                </div>
+              ))}
+              {!sellable.length && <p className="empty">— rien à vendre —</p>}
+            </div>
+          )}
+
+          {tab === 'repair' && (
+            <div className="merch-tab">
+              {damaged.map(({ h, it }) => (
+                <div className="merch-row repair" key={it.uid}>
+                  <span className="merch-name">{h.name} : {it.name}</span>
+                  <span className="merch-price">{repairPrice(it)}</span>
+                  <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
+                </div>
+              ))}
+              {!damaged.length && <p className="empty">— aucune armure à réparer —</p>}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -115,12 +428,26 @@ export function MerchantPanel() {
   const merchant = useGame((s) => s.merchant);
   const party = useGame((s) => s.party);
   const money = useGame((s) => s.money);
-  const buyItem = useGame((s) => s.buyItem);
+  const addToCart = useGame((s) => s.addToCart);
+  const decFromCart = useGame((s) => s.decFromCart);
+  const removeFromCart = useGame((s) => s.removeFromCart);
+  const clearCart = useGame((s) => s.clearCart);
+  const refuseBargain = useGame((s) => s.refuseBargain);
+  const payCart = useGame((s) => s.payCart);
+  const assignDistribution = useGame((s) => s.assignDistribution);
+  const confirmDistribution = useGame((s) => s.confirmDistribution);
   const sellItem = useGame((s) => s.sellItem);
   const repairArmour = useGame((s) => s.repairArmour);
   const startBargain = useGame((s) => s.startBargain);
   const appraiseItem = useGame((s) => s.appraiseItem);
   const closeMerchant = useGame((s) => s.closeMerchant);
   if (!merchant) return null;
-  return <MerchantPanelView merchant={merchant} party={party} money={money} onBuy={buyItem} onSell={sellItem} onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant} />;
+  return (
+    <MerchantPanelView
+      merchant={merchant} party={party} money={money}
+      onAddToCart={addToCart} onDecCart={decFromCart} onRemoveCart={removeFromCart} onClearCart={clearCart} onRefuse={refuseBargain} onPay={payCart}
+      onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
+      onSell={sellItem} onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
+    />
+  );
 }

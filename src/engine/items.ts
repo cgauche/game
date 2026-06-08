@@ -157,7 +157,7 @@ export function damageArmour(c: Combatant, loc: HitLocation): boolean {
 }
 
 /** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */
-function damageScore(d?: string): number {
+export function damageScore(d?: string): number {
   if (!d) return 0;
   return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
 }
