@@ -40,7 +40,20 @@ npm run dev          # serveur de dev (http://localhost:5173)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
+
+# Déploiement en PRODUCTION (GitHub Pages → https://cgauche.github.io/jeu/)
+node scripts/deploy/deploy.mjs            # build:data + build (Vite) + copie dist/ → cgauche.github.io/jeu/
+node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement (pas de rebuild)
+node scripts/deploy/deploy.mjs --push     # + git add/commit/push du repo prod (publie réellement)
 ```
+
+**Déploiement** : `scripts/deploy/deploy.mjs` est LE script de mise en prod (le jeu jouable en ligne).
+Il build le jeu, copie `dist/` (hors `qc/`) dans le repo voisin `cgauche.github.io/jeu/`, et avec
+`--push` commit + push ce repo → le site se met à jour sur **https://cgauche.github.io/jeu/**.
+Prérequis : `PhpstormProjects/cgauche.github.io` doit exister en sibling de `Foundry/`, avec un remote
+en écriture. **Ne déployer que sur demande explicite de l'utilisateur** (et après suite verte) ;
+`deploy.mjs` lit le **working tree** (pas Git) — si une autre session a du WIP non commité, il
+l'embarquerait → s'assurer que l'arbre est propre/commité avant de pousser en prod.
 
 **Vérification** : après une feature UI, valider dans le navigateur (Playwright MCP) — charger
 `localhost:5173`, dérouler le flux, vérifier `console` (0 erreur) et screenshoter. Le menu
