@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
+import { MERCHANTS } from '../../state/merchants/index';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { ValidationPanel } from './ValidationPanel';
 import { EntityListPanel } from './EntityListPanel';
@@ -27,6 +28,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { BuildingFeature, Trigger, CustomStatblock, EncounterDef } from '../../state/scene';
 import { ParamFields } from './ParamFields';
 import { EffectList } from './EffectList';
+import { propRefPatch } from './propDefaults';
 import { ViewControls } from '../ViewControls';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
@@ -1353,13 +1355,24 @@ export function Editor() {
                         ))}
                       </select>
                     </label>
+                    <label className="ed-field">
+                      Marchand (archétype)
+                      <select value={sel.merchant?.archetype ?? ''} onChange={(e) => updateSel({ merchant: e.target.value ? { archetype: e.target.value } : undefined })}>
+                        <option value="">— aucun —</option>
+                        {Object.values(MERCHANTS).map((a) => (
+                          <option key={a.name} value={a.name}>
+                            {a.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </>
                 )}
                 {sel.kind === 'prop' && (
                   <>
                     <label className="ed-field">
                       Décor
-                      <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel({ ref: e.target.value })}>
+                      <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel(propRefPatch(e.target.value, !!sel.interact))}>
                         {Object.values(PROPS).map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.label}
