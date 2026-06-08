@@ -1,6 +1,6 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-07. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-06-08. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
 les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauche/game`.
 
@@ -292,7 +292,7 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
   - **P2 — Frénésie** (`21` l.31-36) : entrée par **Test de FM** (héros = modale `pendingFrenzy` + bouton « 🐗 Frénésie » ; IA = auto) ; **+1 BF**, **immunité psy**, **attaque CC gratuite/Round** (`aiFrenzyAttack`), **cible imposée la plus proche** (IA), **fin → Exténué**.
   - **P3 — Traits ciblés & Groupes** : **Groupes** mots-clés dérivés (folder→catégorie / espèce→racial / carrière + extras manuels, `engine/groups.ts`) ; **Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie** parsés (`parsePsychTraits`, « un au choix » → inerte) ; Tests de Psy ciblés (LdV/groupe, héros modale / IA) ; **+1 DR** (Animosité/Haine/Amour/Camaraderie) & **immunités Peur** (Haine/Amour) dans `attackModifiers` ; **Soc −20/−10** (`socialPsychMod`) ; **contrainte de cible IA** (vise le groupe haï).
   - **P4 — Éditeur** : `StatblockEditor` expose le champ **Groupes** (extras) + l'aide de syntaxe des Traits psy (Peur/Terreur/Immunité/Animosité/Frénésie, assignation de Cible).
-  - *Limites documentées* : Phobie traitée comme un ciblé binaire (≈ Peur 1) ; afflictions ciblées re-testées tant qu'un membre du groupe est visible (pas d'auto-fin quand le groupe disparaît — effet résiduel nul) ; contrainte d'action **héros** = journal (pas de grisage des cibles dans l'UI) ; Soc `socialPsychMod` = helper prêt **sans consommateur** (aucune interaction sociale ciblée en combat pour l'instant).
+  - *Limites documentées* : Phobie traitée comme un ciblé binaire (≈ Peur 1) ; afflictions ciblées re-testées tant qu'un membre du groupe est visible (pas d'auto-fin quand le groupe disparaît — effet résiduel nul) ; contrainte d'action **héros** = journal (pas de grisage des cibles dans l'UI). *(`socialPsychMod` a depuis reçu son consommateur — Tests de Sociabilité de dialogue/scène — et la Psychologie vaut désormais **hors combat** : cf. **Jalon 1.7**.)*
 
 **Reste (lots à part, prochains jalons Taille — par valeur/effort) :**
 - ✅ **Localisation par forme de corps** (`76 - Point d'Impact des Créatures` + `13` l.144) : `BodyShape` (humanoïde/quadrupède/oiseau/serpent/araignée) dérivée au spawn du gabarit rigué ; `hitLocationByShape` (serpent 01-19 Tête/20-00 Corps ; araignée 01-09 Tête/10-79 Pattes/80-00 Abdomen ; quad/oiseau = tableau humanoïde réétiqueté, mêmes Tableaux de Critiques) + `locationLabel` (membres antérieurs/postérieurs, ailes, patte, abdomen) ; appliqué en mêlée, Projectile magique, Coup Critique et tir fratricide. *(Reste de ce lot : cible 2 cat. plus grande → l'attaquant **choisit** la zone, `76` l.39 — règle d'UI/store à part.)*
@@ -348,6 +348,53 @@ Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand → (#T2 / #T3 en s
 mécanique (RAW muet, juste prix/dispo/affichage) ; **Volumineux / Fatigue ×2** modélisé a minima ;
 **Déviation IA** = dévie toujours (décision utilisateur) ; knobs marchand non-RAW (multiplicateur de
 prix, override de remise, toggle marchandage) **avec défaut = comportement canon**.
+
+## ✅ Jalon 1.7 — Audit « combat-only » → actions hors combat & base partagée *(fait — 2026-06-08)*
+
+**Origine** : câbler **`socialPsychMod`** (le −20/−10 Animosité/Préjugé) à un vrai consommateur — les
+**Tests de Sociabilité de dialogue/scène** (Effet `test` + `vsGroups` envers le groupe d'un interlocuteur),
+comblant la limite « helper sans consommateur » du Jalon 1.5/T5. Ce branchement a révélé que **plusieurs
+systèmes étaient modélisés combat-only à tort** → audit transversal, corrigé « dans l'ordre » (B→A→C→D).
+
+- ✅ **Couture B — parité de `testValue`** : un Test hors combat passe par les **mêmes** caractéristiques
+  effectives et pénalités d'État que le combat — `testValue` route via `effectiveChar` (traumatismes/buffs)
+  + `testStatePenalty` (Empoisonné/Sonné/Exténué/Brisé hors Athlétisme & Discrétion) + `agilityTestPenalty`
+  (encombrement). `socialPsychMod` consommé : un PJ haineux subit −20 sur un Charme vs Elfes ; le store
+  choisit le **meilleur PJ effectif** (malus intégré au choix). `groupMatch` réécrit en jeu de tokens
+  (corrige sur-match `Rat`/`Pirate` et sous-match `Hommes-bêtes`/`Homme-bête`).
+- ✅ **Couture A — entretien hors combat** (`outOfCombatUpkeep.ts`) : quand l'horloge avance hors combat,
+  rejoue `endOfRound` + `bleedDeathRoll` + `tickDeath` par Round → Hémorragie/Poison/Feu tickent même hors
+  combat (héros sauvé par le Destin s'il mourrait). **Pertes de PB centralisées** dans `loseWounds`
+  (−tout Avantage, LDB 15 l.40 ; À Terre à 0) — ~15 sites épars n'effaçaient pas l'Avantage.
+- ✅ **Couture C — Psychologie À LA RENCONTRE** : `engine/encounterPsych.ts` (pur) + flux
+  `encounterPsychFlow.ts` + `EncounterPsychModal`. À l'entrée d'une scène (startScene/transitionTo), chaque
+  héros teste son Calme face aux PNJ présents (Peur/Terreur de Taille ou de statbloc, traits ciblés) — LDB 21
+  « chaque fois que vous rencontrez » (ex. canonique d'Animosité **en taverne**, l.16), pas seulement au
+  combat. Peur résolue en **Test SIMPLE** hors combat (≠ Test étendu du combat) ; auto-chaînée héros par héros.
+- ✅ **Couture D — Incantation & Focalisation hors combat** : on rend le **flux d'incantation EXISTANT**
+  optionnel au combat (**zéro duplication** d'effet, à la demande « évite de dupliquer ») — `applyCast` rendu
+  battle-nullable (sortie `battle.log`+`checkBattleOver` en combat, `journal` sinon), actions `cast*`/`focus*`
+  pool-aware, `oocCastSpell`/`oocFocusSpell`, section **« Sorts »** sur la fiche (🎲 Lancer / ✨ Focaliser,
+  miroir du bouton « Soigner » hors combat). Sorts **non-offensifs** seulement (Projectile magique exige une
+  cible ennemie → reste au combat ; gate = `isMagicMissile`). Effets modélisés (parseHeal/buffs/conditions)
+  appliqués, le reste **journalisé sans rien inventer** ; miscast réutilisé tel quel.
+- ✅ **Base partagée des actions joueur combat ⇄ hors combat** (fin de la duplication) : `src/state/combatOrParty.ts`
+  — **`actorIn(state, id)`** (= `battle?.combatants ?? party`, inféré de `battle != null`) + **`touchActors(state)`**
+  (patch de re-rendu) ; **`finishPlayerAction(get, set, lines)`** (combatFlow) pour la **sortie** (combat → conso
+  de l'Action + `battle.log` + `checkBattleOver` ; hors combat → `journal`). **Soin, incantation, Focalisation**
+  y sont tous câblés ; le flag `PendingHeal.inCombat` supprimé. **Patron d'une nouvelle action hors combat** :
+  `résoudre (actorIn) → appliquer l'effet (propre à l'action) → finaliser (finishPlayerAction)`.
+- ✅ **Correctifs de combat trouvés en chemin** : **0 PB → À Terre toujours** (bug d'overkill : branches
+  mutuellement exclusives) ; **Frénésie héros = attaque CC gratuite/Round** (jusque-là réservée à l'IA) ;
+  **désengagement nettoyé quand la cible meurt** (`clearEngagementOf`) ; action **« Courir »** (Action +
+  Athlétisme **Accessible +20** → Marche + Course+DR, LDB 15 l.79-82, modale `pendingRun`) ; **Fuite = sens
+  opposé aux adversaires** (`fleeReachable`, LDB 15 l.109).
+- ✅ **Scénario de test 🔮 « Magie hors combat »** (`09-incantation-hors-combat.ts`) : Wilhelmina (Sorcier,
+  **+Armure Aethyrique** focalisable, blessée) + Frère Anselm (Prêtre) — comble le manque (aucun pré-tiré
+  n'avait de Sort d'Arcane focalisable) ; vérifie les 3 cas (Focaliser/Lancer arcane, refus Projectile, sort
+  à État). **Vérifié au navigateur** (Playwright).
+- **1445 tests verts**, typecheck propre ; committé sur `feat/wfrp4-rpg-foundation` (branche en avance, non
+  encore poussée). Commits clés : base `0d8b715` + `1b89a0e`, incantation hors combat `8788140`, scénario `f567ef6`.
 
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
