@@ -530,12 +530,14 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
 - **Entre deux aventures** : achats/marchandage ✅ (Marchand, Jalon 1.6), fabrication, activités, soins/maladies.
 - ✅ **Repos & récupération naturelle** (Jalon 1.8) : « Dormir / Se reposer N jours » — Exténué dissipé,
   Blessures soignées (Résistance +20 → DR+BE, +BE/jour, LDB 18 l.380), cauchemars.
-- ✅ **Guérison des Blessures critiques** *(2026-06-08, `c10bcf4`)* : chaque trauma porte `recoveryDays`
+- ✅ **Guérison des Blessures critiques** *(2026-06-08, `c10bcf4` + `a13184a`)* : chaque trauma porte `recoveryDays`
   (LDB 18 : déchirure mineure 30−BE ; majeure 2×(30−BE) l.326 ; fracture 30+1d10 l.300, +10 majeure l.309),
   **décompté au repos** (`tickTraumaRecovery`) → à 0 le trauma disparaît (pénalités levées) + `criticalWounds`-- ;
-  la **Compétence Guérison accélère** une déchirure (mode de soin `trauma` : −1 j −1/DR, une fois, l.317) via le
-  flux de soin existant ; Effet d'éditeur `rest`. **Dette** : déchirure majeure non accélérée (l.326) ; fracture =
-  flux Résistance/Chirurgie distinct (l.300-309).
+  la **Compétence Guérison** accélère une déchirure mineure (−1 j −1/DR, l.317) et **pose/bande une fracture** dans
+  la semaine (l.302) via le mode de soin `trauma`. **Convalescence à étapes** : déchirure majeure en **2 temps**
+  (−20→−10 à la mi-durée, l.326) ; fracture = **Test de Résistance de fin** (l.300/309) → échec ⟹ séquelle
+  permanente −5/−10 Agilité ; « réduite » par Guérison ⟹ pas de Test. Effet d'éditeur `rest`. **Résidus** :
+  Chirurgie (l.399), pénalité de Langue (Tête) non chiffrée, maintien du bandage (l.302).
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
