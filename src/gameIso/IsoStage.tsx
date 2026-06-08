@@ -94,10 +94,8 @@ export function IsoStage() {
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
   const dialogue = useGame((s) => s.dialogue);
-  // Tir/sort à distance (Lot 1 tranche 3) : ligne de tir + réticule + cadrage des deux.
-  const pendingAttack = useGame((s) => s.pendingAttack);
-  const pendingDefense = useGame((s) => s.pendingDefense);
-  const pendingCast = useGame((s) => s.pendingCast);
+  // Réticule = TÉLÉGRAPHE de tir ennemi (« qui l'adversaire vise ») ; rien sur les actions du joueur.
+  const enemyAim = useGame((s) => s.enemyAim);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   const zoom = useGame((s) => s.zoom);
@@ -456,21 +454,13 @@ export function IsoStage() {
   objs.sort((a, b) => a.d - b.d);
 
   // --- Caméra : recadre autour du point focal (groupe / combattant actif) ---
-  // Couple (tireur, cible) d'un tir/sort à distance (≥ 2 cases) : pour la ligne, le réticule et le cadrage.
+  // Tir ENNEMI télégraphié (enemyAim) : ligne de tir + réticule + cadrage des deux. Uniquement
+  // pour les attaques ennemies — sur les actions du joueur, la modale suffit (réticule retiré).
   let targeting: { from: { x: number; y: number }; to: { x: number; y: number } } | null = null;
-  if (mode === 'battle' && battle) {
-    const pair: [string, string] | null = pendingAttack
-      ? [pendingAttack.attackerId, pendingAttack.targetId]
-      : pendingCast
-        ? [pendingCast.casterId, pendingCast.targetId]
-        : pendingDefense
-          ? [pendingDefense.attackerId, pendingDefense.defenderId]
-          : null;
-    if (pair) {
-      const a = battle.combatants.find((c) => c.id === pair[0]);
-      const b = battle.combatants.find((c) => c.id === pair[1]);
-      if (a?.pos && b?.pos && cheb(a.pos, b.pos) >= 2) targeting = { from: a.pos, to: b.pos };
-    }
+  if (mode === 'battle' && battle && enemyAim) {
+    const a = battle.combatants.find((c) => c.id === enemyAim.fromId);
+    const b = battle.combatants.find((c) => c.id === enemyAim.toId);
+    if (a?.pos && b?.pos) targeting = { from: a.pos, to: b.pos };
   }
 
   let focus = partyPos;

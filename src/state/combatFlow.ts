@@ -46,7 +46,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, heroMustPassTurn, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease } from '../engine/disease';
@@ -1831,8 +1831,13 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
   if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
-  setTimeout(() => runEnemyAI(get, set, active.id), 450);
+  if (!active) return;
+  if (active.kind === 'enemy' && !isOutOfAction(active)) { setTimeout(() => runEnemyAI(get, set, active.id), 450); return; }
+  // Héros à terre à 0 PB sans Détermination : AUTO-PASSE son tour (fin du « 38 tours à vide »).
+  if (active.kind === 'hero' && heroMustPassTurn(active)) {
+    get().log(`${active.name} est à terre, hors d'état d'agir — il passe son tour.`);
+    setTimeout(() => advanceTurn(get, set), 450);
+  }
 }
 
 /** LDB 21 l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un Test de Calme
@@ -2115,7 +2120,16 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       castSpell(get, set, enemy, targetOf(action.targetId), action.spell);
       setTimeout(() => advanceTurn(get, set), 500);
       return;
-    case 'shoot':
+    case 'shoot': {
+      if (!canAct) return advanceTurn(get, set);
+      const tgt = targetOf(action.targetId);
+      // Télégraphe de tir : on montre QUI le tireur vise (réticule + cadrage) ~0,7 s AVANT de tirer
+      // (retour playtest « jamais su sur qui il tirait »). doAttack journalise « X tire sur Y ».
+      set({ enemyAim: { fromId: enemy.id, toId: tgt.id } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => { set({ enemyAim: null }); attackThenAdvance(tgt); }, 750);
+      return;
+    }
     case 'melee':
       if (!canAct) return advanceTurn(get, set);
       attackThenAdvance(targetOf(action.targetId));
