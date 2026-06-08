@@ -538,9 +538,22 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
   (−20→−10 à la mi-durée, l.326) ; fracture = **Test de Résistance de fin** (l.300/309) → échec ⟹ séquelle
   permanente −5/−10 **Agilité**, ou **−5/−10 Langue** (fracture à la Tête, `skillPenalty`→`testValue`) ; « réduite »
   par Guérison ⟹ pas de Test. **Talent Chirurgie** (mode de soin `surgery`, hors combat) : opère une fracture majeure
-  (`needsSurgery`) — réussite retire le trauma, mais l'opération coûte **1d10 PB + Hémorragique** puis Résistance +20
-  ou Infection (l.149-154/398). **Bandages** = consommable (itemUse « +1 État Hémorragique »). Effet d'éditeur `rest`.
-  **Résidus** : système de Maladies (Infection, LDB 20) ; maintien/défaisage du bandage (l.302) ; amputations.
+  OU une **amputation** (`needsSurgery`) — réussite retire le trauma, mais l'opération coûte **1d10 PB + Hémorragique**
+  puis Résistance +20 ou **Infection Mineure** réellement contractée (talent Chirurgie, l.365). **Bandages/potions** =
+  consommables utilisables **en combat** (Action) **ET hors combat** (bouton « Utiliser » de la fiche, `usePartyItem`).
+  Effet d'éditeur `rest`.
+- ✅ **Maladies et infections** (LDB 20, `engine/disease.ts`) : cycle incubation→durée→résolution décompté au
+  **repos** ; `DISEASE_DEFS` (Infection Mineure, Blessure Purulente, Infection du Sang). Symptômes câblés : **malaise**
+  (Exténué collant), **blessé** (bloque 1 PB de guérison + Résistance +20/jour → Blessure Purulente), **fièvre** (−10
+  Tests Physiques/Sociaux), **persistant** (Test de fin → +1d10 j / Blessure Purulente / Infection du Sang selon DR).
+  **Contraction** depuis 4 sources : post-critique (Résistance +60, l.72), **Chirurgie** (+20), **Guérison Échec
+  Stupéfiant** (DR ≤ −6, l.09-Compétences), Effet d'éditeur **`inflictDisease`**. **Guérison** : soin de Blessures (BI+DR,
+  dégât si BI+DR<0), arrêt d'Hémorragie, **traiter une maladie** (−1 j/jour de soins, min 1). Persistance hors combat.
+- ✅ **Amputations** (LDB 18 l.328-333) : critique « Amputation (Difficulté) » → Test de Résistance ou À Terre
+  (DR ≤ −2 +Sonné, DR ≤ −4 +Inconscient) ; trauma `needsSurgery` opérable par la Chirurgie.
+  **Résidus** : pénalités PERMANENTES d'amputation par membre (Mouvement÷2 pied, −20 main… journalisées, non
+  mécanisées) ; pansements stériles « empêchent l'Infection » (l.382) ; maintien/défaisage du bandage (l.302) ;
+  panneau Maladies/Traumas sur la fiche.
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
   au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
   voyage (échelle voyage, hors combat).
