@@ -16,6 +16,8 @@ import { hashSeed, appearanceLayers } from '../../gameIso/appearance';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { EntityToken } from '../../gameIso/EntityToken';
+import { footprintTiles } from '../../state/footprint';
+import { entitySize } from '../../state/spawn';
 import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
 import { AmbientRigToken } from '../../gameIso/AmbientRigToken';
 import { groundTile } from '../../gameIso/ground';
@@ -992,7 +994,9 @@ export function Editor() {
               })}
             </g>
             )}
-            {sel && <path d={diamondPath(sel.pos.x, sel.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />}
+            {sel && footprintTiles(sel.pos, entitySize(sel)).map((t) => (
+              <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />
+            ))}
             {selB && (
               <g>
                 {perimeterTiles(selB).map((t) => (
