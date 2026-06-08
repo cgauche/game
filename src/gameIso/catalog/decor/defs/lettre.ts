@@ -1,0 +1,3 @@
+import type { PropViz } from '../../types';
+
+export const prop: PropViz = { id: "lettre", label: "Lettre", searchable: true, render: ()=>`<g><ellipse cx="60" cy="148" rx="28" ry="6" fill="#000" opacity="0.18"/><path d="M30 150 L88 132 Q96 130 95 138 L40 156 Q30 158 30 150 Z" fill="#e8dcae"/><path d="M30 150 L88 132" stroke="#c9b988" stroke-width="2"/><path d="M46 147 h26 M46 151 h22" stroke="#7a6a44" stroke-width="1" opacity="0.6"/><ellipse cx="36" cy="150" rx="8" ry="9" fill="#d8c79a"/><ellipse cx="36" cy="150" rx="3.4" ry="5" fill="#b8a06e"/><circle cx="74" cy="142" r="7" fill="#9e2a22"/><circle cx="74" cy="142" r="7" fill="#000" opacity="0.12"/><path d="M71 142 l3 3 l4 -5" stroke="#5e120e" stroke-width="1.4" fill="none"/></g>` };

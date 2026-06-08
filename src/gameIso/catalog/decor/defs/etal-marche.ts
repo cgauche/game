@@ -1,0 +1,3 @@
+import type { PropViz } from '../../types';
+
+export const prop: PropViz = { id: "etal-marche", label: "Étal de marché", render: ()=>`<g><rect x="30" y="118" width="60" height="26" fill="#7a5a32"/><rect x="30" y="112" width="60" height="8" fill="#8a6a3c"/><rect x="34" y="118" width="6" height="26" fill="#4a3220"/><rect x="80" y="118" width="6" height="26" fill="#4a3220"/><path d="M26 88 L94 88 L88 108 L32 108 Z" fill="#a8423a"/><path d="M26 88 L94 88" stroke="#6a261f" stroke-width="2"/><circle cx="48" cy="114" r="4" fill="#c0392b"/><circle cx="60" cy="114" r="4" fill="#e0a000"/><circle cx="72" cy="114" r="4" fill="#2e8b57"/></g>` };

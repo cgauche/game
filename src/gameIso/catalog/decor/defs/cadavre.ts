@@ -1,0 +1,3 @@
+import type { PropViz } from '../../types';
+
+export const prop: PropViz = { id: "cadavre", label: "Cadavre", render: ()=>`<g><ellipse cx="60" cy="146" rx="32" ry="10" fill="#5e1010" opacity="0.5"/><path d="M60 132 L94 124 M60 134 L90 148" stroke="#54331f" stroke-width="11" stroke-linecap="round"/><path d="M54 130 L30 116 M54 134 L34 150" stroke="#54331f" stroke-width="8" stroke-linecap="round"/><ellipse cx="58" cy="132" rx="20" ry="13" fill="#54331f"/><ellipse cx="58" cy="132" rx="20" ry="13" fill="#000" opacity="0.18"/><circle cx="34" cy="128" r="10" fill="#cdb89a"/><path d="M24 124 q10 -9 20 0z" fill="#2a1d12"/></g>` };

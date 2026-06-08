@@ -83,6 +83,15 @@ export const REGISTRIES = [
     type: 'MerchantArchetypeDef',
     typeFrom: './types',
   },
+  {
+    // Décors / placeables (catalogue) : 1 décor = 1 fichier defs/.
+    dir: 'src/gameIso/catalog/decor/defs',
+    out: 'src/gameIso/catalog/decor/_registry.generated.ts',
+    exportName: 'prop',
+    arrayName: 'PROP_DEFS',
+    type: 'PropViz',
+    typeFrom: '../types',
+  },
 ];
 
 function genOne(r) {
