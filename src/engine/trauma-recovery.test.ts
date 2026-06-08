@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, treatTrauma, hasTreatableTrauma, traumaSkillPenalty } from './trauma';
+import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
 import { testValue } from './skills';
 import type { Combatant } from './types';
 import type { RNG } from './dice';
@@ -106,6 +106,20 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     expect(traumaSkillPenalty(c, 'Charme')).toBe(0);
     // testValue intègre la séquelle : Int 30 + 20 avances − 10 = 40.
     expect(testValue(c, 'Langue (Reikspiel)')).toBe(40);
+  });
+
+  it('Chirurgie : une fracture MAJEURE exige la chirurgie ; removeSurgicalTrauma la retire (criticalWounds--)', () => {
+    const fm = traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 });
+    expect(fm.needsSurgery).toBe(true);
+    const fmin = traumaFromKind('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
+    expect(fmin.needsSurgery).toBeUndefined(); // mineure : pas de chirurgie
+    const c = C({ traumas: [fm], criticalWounds: 1 });
+    expect(hasSurgeryTrauma(c)).toBe(true);
+    const log = removeSurgicalTrauma(c);
+    expect(c.traumas!.length).toBe(0);
+    expect(c.criticalWounds).toBe(0);
+    expect(log.join(' ')).toMatch(/chirurgie/i);
+    expect(hasSurgeryTrauma(c)).toBe(false);
   });
 
   it('hasTreatableTrauma : faux pour une fracture hors fenêtre d’une semaine', () => {

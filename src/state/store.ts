@@ -58,8 +58,8 @@ import { itemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
-import { hasHealSkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
-import { treatTrauma } from '../engine/trauma';
+import { hasHealSkill, hasSurgerySkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
+import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
 import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -1510,7 +1510,9 @@ export const useGame = create<GameState>((set, get) => ({
     const party = get().party;
     const target = party.find((c) => c.id === targetId);
     if (!target || !availableHealModes(target).includes(mode)) return;
-    const best = partyBest(party.filter(hasHealSkill), 'Guérison');
+    // Chirurgie : le soigneur doit AUSSI posséder le Talent Chirurgie (LDB 10) ; sinon n'importe quel soigneur.
+    const pool = mode === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
+    const best = partyBest(pool, 'Guérison');
     if (!best) return;
     const healer = best.actor;
     set({
@@ -1578,11 +1580,24 @@ export const useGame = create<GameState>((set, get) => ({
     const st = get();
     const target = actorIn(st, ph.targetId);
     if (!target) return;
-    const log = ph.mode === 'wounds'
-      ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
-      : ph.mode === 'bleed'
-      ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
-      : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
+    let log: string[];
+    if (ph.mode === 'surgery') {
+      // Chirurgie (LDB 10 l.149-154 / 18 l.398) : opération RISQUÉE. Réussite → retire le trauma chirurgical ;
+      // dans TOUS les cas 1d10 Blessures + 1 Hémorragique ; puis Test de Résistance +20 ou Infection Mineure.
+      log = ph.success ? removeSurgicalTrauma(target) : [`${target.name} : l'opération échoue (blessure non réparée).`];
+      const harm = battleRng().int(1, 10);
+      loseWounds(target, harm);
+      addCondition(target, 'Hémorragique');
+      log.push(`L'opération inflige ${harm} Blessure(s) et ouvre une hémorragie.`);
+      const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+      if (!rollTest(resVal, 'accessible', battleRng()).success) log.push(`${target.name} contracte une Infection Mineure (maladie, LDB 20 — à surveiller).`);
+    } else {
+      log = ph.mode === 'wounds'
+        ? applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success))
+        : ph.mode === 'bleed'
+        ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
+        : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
+    }
     finishPlayerAction(get, set, log); // sortie commune combat / hors combat
   },
 

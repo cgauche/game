@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { maxEncumbrance } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
-import { hasHealSkill, availableHealModes, isHealable } from '../engine/healing';
+import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { careers, findSpell } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -177,6 +177,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
   // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps,
   // pour stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
   const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
+  const hasSurgeon = party.some((c) => hasHealSkill(c) && hasSurgerySkill(c)); // Chirurgie : un opérateur disponible
 
   const itemStats = (it: ItemInstance): string => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat).
@@ -215,7 +216,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
         <div className="sc-meta">
           <span>
             Blessures <b>{hero.wounds.current}/{hero.wounds.max}</b>
-            {canSoigner && availableHealModes(hero).map((m) => (
+            {canSoigner && availableHealModes(hero).filter((m) => m !== 'surgery' || hasSurgeon).map((m) => (
               <button
                 key={m}
                 className="btn small"
@@ -223,7 +224,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
                 onClick={() => healAlly(hero.id, m)}
                 title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)"
               >
-                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : '🦵 Soigner déchirure'}
+                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : m === 'trauma' ? '🦵 Soigner déchirure' : '🔪 Opérer (Chirurgie)'}
               </button>
             ))}
           </span>

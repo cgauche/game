@@ -118,4 +118,19 @@ describe('Guérison — flux hors combat', () => {
     expect(p.traumas![0].recoveryDays).toBe(26 - (1 + 2)); // −1 jour −1/DR
     expect(p.traumas![0].healAccelerated).toBe(true);
   });
+
+  it('mode surgery : un chirurgien retire le trauma chirurgical, mais l’opération blesse (1d10 + Hémorragique)', () => {
+    const surgeon = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }], talents: [{ name: 'Chirurgie' } as never] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 12, max: 12 }, traumas: [traumaFromKind('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null });
+    useGame.getState().healAlly('p', 'surgery');
+    expect(useGame.getState().pendingHeal!.mode).toBe('surgery');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
+    useGame.getState().healConfirm();
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.traumas!.length).toBe(0); // trauma chirurgical réparé
+    expect(p.wounds.current).toBeLessThan(12); // 1d10 dégâts de l'opération
+    expect(p.conditions.some((c) => c.name === 'Hémorragique')).toBe(true);
+  });
 });

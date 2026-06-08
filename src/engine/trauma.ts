@@ -148,6 +148,23 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
   return log;
 }
 
+/** Le personnage porte-t-il un trauma exigeant de la Chirurgie (amputation, fracture majeure, l.305/398) ? */
+export function hasSurgeryTrauma(c: Combatant): boolean {
+  return (c.traumas ?? []).some((t) => t.needsSurgery);
+}
+
+/** Retire un trauma chirurgical (opération réussie) ; décrémente `criticalWounds`. Mute `c`, renvoie le journal.
+ *  Les DÉGÂTS de l'opération (1d10 + Hémorragique) et le risque d'Infection sont appliqués par l'appelant
+ *  (le store) — ils dépendent de `loseWounds`/`addCondition`, hors de ce module pur (cycle d'import évité). */
+export function removeSurgicalTrauma(c: Combatant): string[] {
+  const idx = (c.traumas ?? []).findIndex((t) => t.needsSurgery);
+  if (idx < 0) return [`${c.name} : aucune blessure ne relève de la chirurgie.`];
+  const t = c.traumas![idx];
+  c.traumas = c.traumas!.filter((_, i) => i !== idx);
+  if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+  return [`${c.name} : ${t.label} (${t.location}) réparée par chirurgie.`];
+}
+
 /** Le personnage a-t-il un trauma que la Compétence Guérison peut encore traiter ?
  *  Déchirure non encore accélérée, OU fracture encore dans la fenêtre de pose d'une semaine (l.302). */
 export function hasTreatableTrauma(c: Combatant): boolean {

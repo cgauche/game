@@ -157,7 +157,7 @@ export function ActionBar() {
         <div className="ab-spells">
           {healTargets.length === 0 && <div className="ab-hint">Aucune cible à portée.</div>}
           {healTargets.flatMap((t) =>
-            availableHealModes(t).filter((m) => m !== 'trauma').map((m) => ( // convalescence = hors combat
+            availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
               <div key={`${t.id}:${m}`} className="ab-spell-row">
                 <button className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action (LDB 09-Compétences)">
                   {m === 'wounds'
