@@ -159,3 +159,37 @@ HORS (sous-projets suivants) : **SP2 quadrupèdes** (longueur de pattes + corps 
   « brute » sur ogre/troll/minotaure.
 - **Override fin par la race** autorisé (1-2 facteurs de gabarit) pour les cas uniques, sans créer un
   gabarit par espèce.
+
+## 11. Correspondance « existant → axes » (on RANGE, on n'ajoute pas)
+
+Les mécanismes actuels ne disparaissent pas : ils se rangent dans les axes. Le nombre de concepts ne
+gonfle pas — ce sont les **tables centrales** qui disparaissent (dans les fichiers gabarit/race).
+
+| Existant aujourd'hui | Devient (axe) |
+|---|---|
+| Couleurs (`appearance.colors`) | **Perso** — override de la palette de la race |
+| Tenue / armure (`career`) | **Perso** — tenue (équipement visible) |
+| Membres alternatifs (`monster.jambes`/`bras` : chevre, tentacule, griffe) | **Race-feature** (signature d'espèce) OU **Perso-part** (one-off) — même registre de parts |
+| Tête monstrueuse (`monster.tete`) | **Race** (tête caractéristique) |
+| Overlays figés `ventre/cornes/queue` (`OV_*`, `monstrous.ts`) | **Race-features échelonnées** |
+| Proportions (`PROPS`) | **Gabarit** |
+| `build` (0..1) | reste **Perso** (variation fine sur le gabarit) |
+| Peau (`SPECIES_PALETTES`) | **Race** (palette) |
+| Posture (`SPECIES_POSE`) | **Race** (pose) |
+| sex / seed | restent **Perso** |
+
+Règle : *défaut d'espèce* → Race ; *carrure* → Gabarit ; *tweak de CETTE créature* → Perso (Perso
+**surcharge** Race). Une part (sabot, tentacule, gutplate) est le **MÊME objet**, déclaré soit dans une
+Race (signature) soit en Perso (exception) — jamais deux systèmes.
+
+⚠️ Piège : garder l'ancien chemin (`monster.tete` dans le def créature) ET la Race = deux systèmes. La
+migration tranche — tête/features caractéristiques **quittent** le def créature pour la **Race** ; le
+def créature ne garde que `race + gabarit? + perso`.
+
+## 12. Principe : composition À PLAT (pas d'héritage)
+
+Tout se compose **par référence d'id, à plat** : une Créature cite une Race (id) + un Gabarit (id) ;
+une Race cite son gabarit par défaut (id) + des parts (id). **Aucune hiérarchie de classes, aucun
+héritage profond** — juste des fichiers de registre qui se composent par id. Lire/ajouter un élément =
+ouvrir **un** fichier. C'est la contrainte directrice : si une décision d'implémentation introduit de
+l'imbrication ou un couplage entre fichiers, c'est le signal qu'elle est mauvaise.
