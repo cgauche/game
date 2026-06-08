@@ -138,8 +138,16 @@ export interface Trauma {
   /** Jours de convalescence restants (LDB 18 : déchirure 30−BE, fracture 30+1d10…). Décompté au repos ;
    *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */
   recoveryDays?: number;
+  /** Durée totale de convalescence (à la création) — seuils : mi-durée d'une déchirure majeure (downgrade
+   *  −20→−10, l.326), fenêtre de pose d'une semaine d'une fracture (l.302). */
+  recoveryTotal?: number;
+  /** Type / sévérité, pour la convalescence à étapes (déchirure : Guérison accélère ; fracture : Test de fin). */
+  kind?: 'dechirure' | 'fracture';
+  severity?: 'mineur' | 'majeur';
   /** Accélération par la Compétence Guérison déjà appliquée (l.317 : −1 j −1/DR, une seule fois). */
   healAccelerated?: boolean;
+  /** Fracture « réduite » : bandée par un Test de Guérison dans la semaine (l.302) → pas de Test de Résistance de fin. */
+  fractureSet?: boolean;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

@@ -77,8 +77,9 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
     if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); log.push(`${c.name} reprend connaissance.`); }
     if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
   }
-  // Convalescence des Blessures critiques (LDB 18) : le repos fait avancer la guérison de chaque trauma.
-  log.push(...tickTraumaRecovery(c, Math.max(1, days)));
+  // Convalescence des Blessures critiques (LDB 18) : le repos fait avancer la guérison de chaque trauma
+  // (rémission en deux temps d'une déchirure majeure ; Test de Résistance de fin d'une fracture).
+  log.push(...tickTraumaRecovery(c, Math.max(1, days), rng, resVal));
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);

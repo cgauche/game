@@ -8,7 +8,9 @@
  * Bras/Tête et Amputations : effet de combat journalisé (latéralité non modélisée ; amputation =
  * post-combat/Chirurgie → Jalon 5). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma } from './types';
+import { Combatant, CharKey, HitLocation, Trauma, Difficulty } from './types';
+import { rollTest } from './tests';
+import { RNG, defaultRNG } from './dice';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
@@ -38,6 +40,8 @@ export function traumaFromKind(
 ): Trauma {
   const sev = severity === 'mineur' ? 'Mineure' : 'Majeure';
   const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(kind, severity, opts.be, opts.d10 ?? 5);
+  // Champs de convalescence à étapes (déchirure majeure mi-durée, fenêtre de pose d'une fracture, Test de fin).
+  const staged = { kind, severity, recoveryDays, recoveryTotal: recoveryDays };
   if (kind === 'dechirure') {
     const onLeg = LEG.includes(location);
     // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
@@ -46,7 +50,7 @@ export function traumaFromKind(
       label: `Déchirure musculaire (${sev})`,
       location,
       ...(onLeg ? { movementHalved: true, dodgePenalty: dodge } : {}),
-      recoveryDays,
+      ...staged,
       note: onLeg
         ? `LDB 18 l.315 : Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
         : 'LDB 18 l.315 : −10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours.',
@@ -59,7 +63,7 @@ export function traumaFromKind(
       location,
       movementHalved: true,
       charPenalty: { F: -30, Ag: -30 },
-      recoveryDays,
+      ...staged,
       note: 'LDB 18 l.298 (Torse) : −30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
     };
   }
@@ -69,7 +73,7 @@ export function traumaFromKind(
       location,
       movementHalved: true,
       dodgePenalty: -20, // règle du Pied (l.369) : −20 aux Tests de mobilité, dont l'Esquive
-      recoveryDays,
+      ...staged,
       note: 'LDB 18 l.298 (Jambe) : Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
     };
   }
@@ -83,41 +87,96 @@ export function traumaFromKind(
   };
 }
 
+/** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.326) : après la 1ʳᵉ moitié
+ *  (recoveryTotal/2), la pénalité de mobilité passe de −20 à −10 ; la 2ᵉ moitié achève la guérison. */
+function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
+  if (t.kind !== 'dechirure' || t.severity !== 'majeur' || t.dodgePenalty !== -20 || t.recoveryTotal == null) return null;
+  if (leftDays > t.recoveryTotal / 2) return null; // pas encore à la mi-durée
+  t.dodgePenalty = -10; // rémission partielle (l.326)
+  return `la déchirure (${t.location}) entre en rémission partielle (−10).`;
+}
+
 /**
- * Convalescence : décompte `days` jours sur chaque trauma à durée. À 0, le trauma disparaît (ses
- * pénalités, lues depuis `traumas[]`, tombent avec) et une Blessure critique est résolue (`criticalWounds`
- * décrémenté). Les traumas sans `recoveryDays` (legacy) restent. Pur ; mute `c`, renvoie le journal.
+ * Séquelle PERMANENTE d'une fracture mal ressoudée (LDB 18 l.300/309) : à la fin de la convalescence, un
+ * Test de Résistance raté laisse −5 (mineure) / −10 (majeure) en Agilité (Bras/Jambe/Torse) — la Tête
+ * (−5/−10 Langue, compétence) est journalisée sans pénalité chiffrée (hors modèle charPenalty).
  */
-export function tickTraumaRecovery(c: Combatant, days: number): string[] {
+function fractureSequela(t: Trauma): Trauma | null {
+  const pen = t.severity === 'majeur' ? -10 : -5;
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, note: `LDB 18 l.300 : −5/−10 permanent aux Tests de Langue (compétence, non chiffré ici).` };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `LDB 18 l.300/309 : ${pen} permanent en Agilité (os mal ressoudé).` };
+}
+
+/**
+ * Convalescence : décompte `days` jours sur chaque trauma à durée. Étapes (LDB 18) :
+ *  - déchirure majeure → rémission partielle (−20→−10) au passage de la mi-durée (l.326) ;
+ *  - fracture atteignant 0 → Test de Résistance de fin (Accessible mineure / Intermédiaire majeure, l.300/309)
+ *    SAUF si la fracture a été « réduite » (bandée, `fractureSet`, l.302) ; un échec laisse une séquelle
+ *    permanente (−5/−10 Ag). Sinon le trauma disparaît (pénalités levées) + `criticalWounds`−−.
+ * `resistVal` = valeur de Résistance effective de `c` (passée par l'appelant pour éviter le cycle d'import).
+ * Pur ; mute `c`, renvoie le journal.
+ */
+export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0): string[] {
   if (!c.traumas?.length || days <= 0) return [];
   const log: string[] = [];
   const remaining: Trauma[] = [];
+  const sequelae: Trauma[] = [];
   for (const t of c.traumas) {
     if (t.recoveryDays == null) { remaining.push(t); continue; }
     const left = t.recoveryDays - days;
     if (left <= 0) {
-      log.push(`${c.name} guérit de : ${t.label} (${t.location}).`);
+      if (t.kind === 'fracture' && !t.fractureSet) {
+        const diff: Difficulty = t.severity === 'majeur' ? 'intermediaire' : 'accessible'; // l.300/309
+        const res = rollTest(resistVal, diff, rng);
+        if (!res.success) {
+          const seq = fractureSequela(t);
+          if (seq) { sequelae.push(seq); log.push(`${c.name} : ${t.label} mal ressoudée — séquelle permanente.`); }
+        } else log.push(`${c.name} : ${t.label} ressoudée proprement (Résistance réussie).`);
+      } else {
+        log.push(`${c.name} guérit de : ${t.label} (${t.location}).`);
+      }
       if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
-    } else remaining.push({ ...t, recoveryDays: left });
+    } else {
+      const next = { ...t, recoveryDays: left };
+      const msg = downgradeTornMuscle(next, left);
+      if (msg) log.push(`${c.name} : ${msg}`);
+      remaining.push(next);
+    }
   }
-  c.traumas = remaining;
+  c.traumas = [...remaining, ...sequelae];
   return log;
 }
 
-/**
- * Soin assisté d'une déchirure par la Compétence Guérison (LDB 18 l.317) : réduit sa convalescence de
- * **1 jour + 1 par DR**, une seule fois (`healAccelerated`). RAW : seules les déchirures en profitent
- * (la fracture relève d'un autre flux ; la déchirure majeure n'est pas accélérée — laissé en dette).
- * Renvoie le journal (message d'échec si aucune déchirure éligible).
- */
-/** Le personnage a-t-il une déchirure dont la Guérison peut encore raccourcir la convalescence ? */
+/** Le personnage a-t-il un trauma que la Compétence Guérison peut encore traiter ?
+ *  Déchirure non encore accélérée, OU fracture encore dans la fenêtre de pose d'une semaine (l.302). */
 export function hasTreatableTrauma(c: Combatant): boolean {
-  return (c.traumas ?? []).some((t) => t.recoveryDays != null && !t.healAccelerated && /déchirure/i.test(t.label));
+  return (c.traumas ?? []).some(eligibleForHeal);
 }
 
-export function accelerateTrauma(c: Combatant, dr: number): string[] {
-  const t = (c.traumas ?? []).find((x) => x.recoveryDays != null && !x.healAccelerated && /déchirure/i.test(x.label));
-  if (!t) return [`${c.name} : aucune déchirure dont la Guérison puisse accélérer la convalescence.`];
+function eligibleForHeal(t: Trauma): boolean {
+  if (t.recoveryDays == null) return false;
+  if (t.kind === 'dechirure') return !t.healAccelerated;
+  // fracture : la pose (bandage) doit intervenir dans la SEMAINE suivant la fracture (l.302).
+  return t.kind === 'fracture' && !t.fractureSet && t.recoveryTotal != null && t.recoveryDays > t.recoveryTotal - 7;
+}
+
+/**
+ * Soin assisté d'un trauma par la Compétence Guérison (LDB 18) :
+ *  - déchirure (l.317) → raccourcit la convalescence de **1 jour + 1 par DR**, une seule fois ;
+ *  - fracture dans la semaine (l.302) → « réduite » (bandée) ⟹ pas de Test de Résistance de fin.
+ * La déchirure majeure n'est PAS accélérée (l.326 : la Guérison ne fait qu'informer — laissé en dette).
+ */
+export function treatTrauma(c: Combatant, dr: number): string[] {
+  const t = (c.traumas ?? []).find(eligibleForHeal);
+  if (!t) return [`${c.name} : aucun trauma que la Guérison puisse traiter pour l'instant.`];
+  if (t.kind === 'fracture') {
+    t.fractureSet = true;
+    return [`${c.name} : la fracture (${t.location}) est réduite et bandée — elle ressoudera proprement.`];
+  }
+  if (t.severity === 'majeur') { // déchirure majeure : Guérison sans effet d'accélération (l.326)
+    t.healAccelerated = true;
+    return [`${c.name} : la Guérison ne peut qu'accompagner la déchirure majeure (rémission en deux temps, l.326).`];
+  }
   const cut = 1 + Math.max(0, dr);
   t.recoveryDays = Math.max(0, (t.recoveryDays ?? 0) - cut);
   t.healAccelerated = true;
