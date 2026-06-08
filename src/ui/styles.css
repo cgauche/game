@@ -592,23 +592,46 @@ textarea:focus {
   align-items: center;
   gap: 8px;
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-left-width: 3px;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   padding: 5px 7px;
 }
 .ord-row.ally {
-  border-left-color: var(--ok);
+  border-color: var(--ok);
 }
 .ord-row.enemy {
-  border-left-color: var(--danger);
+  border-color: var(--danger);
 }
 .ord-row.now {
   outline: 2px solid var(--gold);
-  outline-offset: -1px;
+  outline-offset: 1px;
+  box-shadow: 0 0 8px rgba(216, 169, 59, 0.4);
 }
 .ord-row.out {
-  opacity: 0.45;
+  opacity: 0.5;
+}
+/* KO / Inconscient / 0 PB : fond distinct + croix rouge sur le portrait. */
+.ord-row.ko {
+  background: rgba(192, 57, 43, 0.18);
+  border-color: #e0533a;
+}
+.ord-portrait {
+  position: relative;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+.ko-cross {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff4d4d;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: none;
 }
 .ord-info {
   flex: 1;
@@ -639,9 +662,16 @@ textarea:focus {
   height: 100%;
   transition: width 0.3s, background 0.3s;
 }
-.ord-st {
-  font-size: 15px;
+.ord-states {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 14px;
   flex: 0 0 auto;
+}
+.ord-more {
+  font-size: 9px;
+  color: var(--muted);
 }
 
 /* ── Colonne d'action gauche : panneau Perso (héros actif) + actions (Lot 1) ── */

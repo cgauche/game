@@ -1,6 +1,6 @@
 import { useGame, activeCombatant } from '../state/store';
 import { isOutOfAction } from '../engine/conditions';
-import { topImportantCondition } from '../gameIso/effectIcons';
+import { summarizeEffects } from '../gameIso/effectIcons';
 import { campaign } from '../scenes/campaign';
 import { RigPortrait } from './RigPortrait';
 import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
@@ -37,18 +37,29 @@ export function BattlePanel() {
           const heroIdx = party.findIndex((h) => h.id === c.id);
           const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
           const ratio = c.wounds.max > 0 ? c.wounds.current / c.wounds.max : 0;
-          const key = topImportantCondition(c.conditions);
+          const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
+          const fx = summarizeEffects(c.conditions, [], 3); // jusqu'à 3 icônes d'États (malus)
           return (
-            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''}`}>
-              <RigPortrait combatant={c} size={32} ring={ring} />
+            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`}>
+              <span className="ord-portrait">
+                <RigPortrait combatant={c} size={32} ring={ring} />
+                {ko && <span className="ko-cross">✕</span>}
+              </span>
               <div className="ord-info">
                 <div className="ord-top">
                   <b>{c.name}</b>
-                  <span className="ord-pv">{c.wounds.current}/{c.wounds.max}</span>
+                  <span className="ord-pv">{c.dead ? '☠️' : `${c.wounds.current}/${c.wounds.max}`}</span>
                 </div>
                 <div className="ord-bar"><i style={{ width: `${Math.max(0, ratio) * 100}%`, background: hpColor(ratio) }} /></div>
               </div>
-              {key && <span className="ord-st" title={key.count && key.count > 1 ? `${key.label} ×${key.count}` : key.label}>{key.icon}</span>}
+              {fx.visible.length > 0 && (
+                <span className="ord-states">
+                  {fx.visible.map((v) => (
+                    <span key={v.key} title={v.count && v.count > 1 ? `${v.label} ×${v.count}` : v.label}>{v.icon}</span>
+                  ))}
+                  {fx.moreCount > 0 && <span className="ord-more">+{fx.moreCount}</span>}
+                </span>
+              )}
             </div>
           );
         })}

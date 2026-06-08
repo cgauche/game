@@ -118,6 +118,8 @@ export function ActionBar() {
   const hasMvt = canCharge || canRun || canStandUp || engaged || mounted || !!mountCandidate;
   const hasTir = !!rangedW;
   const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
+  // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
+  const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample;
 
   const hint =
     battle.action === 'move'
@@ -178,6 +180,7 @@ export function ActionBar() {
       )}
       {battle.action === 'mvt' && (
         <div className="ab-spells">
+          {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
           {canCharge && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.moved || battle.acted || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
@@ -208,10 +211,6 @@ export function ActionBar() {
               <button className="btn btn-sm" disabled={battle.moved || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
             </div>
           )}
-        </div>
-      )}
-      {battle.action === 'tir' && (
-        <div className="ab-spells">
           {rangedW && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action (LDB Difficultés)">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
@@ -227,19 +226,6 @@ export function ActionBar() {
               <button className="btn btn-sm" onClick={() => selectAction('ammo')} title="Choisir la munition à tirer">🏹 Munition</button>
             </div>
           )}
-        </div>
-      )}
-      {battle.action === 'ammo' && (
-        <div className="ab-spells">
-          {ammoChoices.map((a) => (
-            <div key={a.uid} className="ab-spell-row">
-              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} onClick={() => selectAmmo(a.uid)} title={(a.qualities ?? []).join(', ')}>🏹 {a.name} ×{a.qty}</button>
-            </div>
-          ))}
-        </div>
-      )}
-      {battle.action === 'objets' && (
-        <div className="ab-spells">
           {usableGroups.map((g) => (
             <div key={g.name} className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
@@ -248,6 +234,25 @@ export function ActionBar() {
           {groundItems.map((g) => (
             <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action) — LDB Combat">✋ {g.label}</button>
+            </div>
+          ))}
+          {canFrenzy && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action (LDB 21)">🐗 Frénésie</button>
+            </div>
+          )}
+          {canTrample && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => selectAction('trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage (LDB Taille)">🐾 Piétiner</button>
+            </div>
+          )}
+        </div>
+      )}
+      {battle.action === 'ammo' && (
+        <div className="ab-spells">
+          {ammoChoices.map((a) => (
+            <div key={a.uid} className="ab-spell-row">
+              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} onClick={() => selectAmmo(a.uid)} title={(a.qualities ?? []).join(', ')}>🏹 {a.name} ×{a.qty}</button>
             </div>
           ))}
         </div>
@@ -379,39 +384,19 @@ export function ActionBar() {
               </button>
             )}
 
-            {/* ── Catégories repliables ── */}
-            {hasMvt && (
+            {/* ── Spécial : TOUTES les manœuvres situationnelles regroupées ── */}
+            {hasSpecial && (
               <button
-                className={`ab-slot ${battle.action === 'mvt' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'mvt' ? null : 'mvt')}
-                title="Manœuvres de déplacement (Charger, Courir, Se relever, Se désengager)"
+                className={`ab-slot ${battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' ? 'on' : ''}`}
+                onClick={() => selectAction(battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' ? null : 'mvt')}
+                title="Manœuvres situationnelles : Charger, Courir, Se relever, Se désengager, Viser/Recharger, Objets, Frénésie, Piétiner…"
               >
-                <span className="ab-ico">🏃</span>
-                <span className="ab-lbl">Mouvement ▾</span>
-              </button>
-            )}
-            {hasTir && (
-              <button
-                className={`ab-slot ${battle.action === 'tir' || battle.action === 'ammo' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'tir' || battle.action === 'ammo' ? null : 'tir')}
-                title="Options de tir (Viser, Recharger, Munition)"
-              >
-                <span className="ab-ico">🏹</span>
-                <span className="ab-lbl">Tir ▾</span>
-              </button>
-            )}
-            {hasObjets && (
-              <button
-                className={`ab-slot ${battle.action === 'objets' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'objets' ? null : 'objets')}
-                title="Objets : utiliser une potion, ramasser au sol"
-              >
-                <span className="ab-ico">🧪</span>
-                <span className="ab-lbl">Objets ▾</span>
+                <span className="ab-ico">⭐</span>
+                <span className="ab-lbl">Spécial ▾</span>
               </button>
             )}
 
-            {/* ── Alerte visible (hors catégorie) ── */}
+            {/* ── Alerte visible (Détermination) ── */}
             {removableConditions.length > 0 && (
               <button
                 className={`ab-slot ab-alert ${battle.action === 'resolve' ? 'on' : ''}`}
@@ -420,28 +405,6 @@ export function ActionBar() {
               >
                 <span className="ab-ico">✊</span>
                 <span className="ab-lbl">Détermination ({resolve})</span>
-              </button>
-            )}
-
-            {/* ── Contextuels rares ── */}
-            {canFrenzy && (
-              <button
-                className="ab-slot"
-                onClick={frenzy}
-                title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action (LDB 21)"
-              >
-                <span className="ab-ico">🐗</span>
-                <span className="ab-lbl">Frénésie</span>
-              </button>
-            )}
-            {canTrample && (
-              <button
-                className={`ab-slot ${battle.action === 'trample' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'trample' ? null : 'trample')}
-                title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage (LDB Taille)"
-              >
-                <span className="ab-ico">🐾</span>
-                <span className="ab-lbl">Piétiner</span>
               </button>
             )}
 
