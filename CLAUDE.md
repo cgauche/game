@@ -16,7 +16,8 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 ## Règles strictes (NE PAS déroger)
 
 1. **Aucune invention de règles.** Toute règle/valeur vient des fichiers `Source/` (Livre de
-   base + Archives de l'Empire I & II uniquement). Ne pas utiliser tes connaissances WFRP.
+   base + Archives de l'Empire I & II uniquement — **chemins exacts § Sources VF ci-dessous**).
+   Ne pas utiliser tes connaissances WFRP.
    En cas de doute, lire le `.md` source et **citer** le passage. Un workflow d'audit de
    fidélité existe (cf. plus bas) — l'utiliser pour vérifier le code contre la source.
 2. **Tout le contenu de campagne est éditable** dans l'éditeur (schéma de Scène unique).
@@ -24,6 +25,35 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 3. **Le moteur de règles (`src/engine`) reste pur et testé.** Le store, l'UI et le rendu en
    dépendent, jamais l'inverse.
 4. **UI en français**, et qui **scale** : dès qu'un panneau dépasse ~2 sections → onglets.
+
+## Sources VF (NE PAS chercher — c'est ici)
+
+Tout est en **français** sous `Source/`, dossiers préfixés **`Warhammer v4 - …`**. Les dossiers
+SANS ce préfixe (Enemy Within…, Altdorf…, Archives of the Empire…) sont la **VO** (base de
+connaissance MJ du dépôt parent) — **ne jamais les lire/citer** ici (la donnée du jeu est FR :
+CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne>` / `ADE…`.
+
+**RÈGLES & STATS** (règle 1 — seules sources autorisées) :
+- **LDB** = `Source/Warhammer v4 - Livre de base version corrigée/` — chapitres `NN - Titre.md` ;
+  les commentaires de code `LDB <n> l.<ligne>` pointent ces fichiers. Chapitres clés :
+  06 Classes · 07 Carrières · 08 Statut · 09 Compétences · 10 Talents · 12 Tests · **13 Combat** ·
+  15 Déplacement · **16 États** · **17 Destin et Résistance** (« Résilience/Détermination ») ·
+  **18 Traumatisme** (critiques) · 19 Corruption · 20 Maladies · **21 Psychologie** ·
+  40-43 Prières/Bénédictions/Miracles · 46-51 Règles magiques/Sorts/Magie des Couleurs/Sorcellerie ·
+  57 Monnaie · 59 Faire son marché · 60 Fabrication · 61 Encombrement · **62 Les armes** ·
+  **63 Armures** · 71 Drogues et poisons · **76 Point d'Impact des Créatures** · 77-83 bestiaire ·
+  **85 Traits de créature**. Index : `00 - Index.md`.
+- **ADE I** = `Source/Warhammer v4 - Les archives de l'Empire volume 1/`.
+- **ADE II** = `Source/Warhammer v4 - Les archives de l'Empire volume 2/`.
+- `Source/all-data.json` = extraction filtrée LDB/ADE (source de `npm run build:data`).
+
+**SCÉNARIOS / CONTENU de campagne** (PAS pour les règles) :
+- Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `… L'ennemi dans l'Ombre Compagnon/`.
+- Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `… Mort sur le Reik Compagnon/`.
+- Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (pas de Compagnon VF).
+- Suppléments VF dispo : `Aldorf la Couronne de l'Empire`, `Aventures a Ubersreik`,
+  `Middenheim la cité du Loup Blanc`, `Nuits agitees & dures journées`,
+  `Boîte d'Initiation WFRP 4e Edition VF` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
 
 ## Pile technique
 
