@@ -59,21 +59,50 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
   return BODY_SHAPE_LOC_LABELS[shape][loc] ?? HIT_LOCATION_LABELS[loc];
 }
 
-/** Valeur de Compétence de combat (Caractéristique + avances pertinentes). */
-export function combatValue(c: Combatant, kind: 'melee' | 'ranged'): number {
+/**
+ * Spécialisations de Corps à corps / Projectiles qui autorisent l'usage d'une arme d'un Groupe
+ * donné, en minuscules. RAW : Corps à corps (LDB 09 l.141) et Projectiles (l.409) sont des
+ * Compétences *Groupées* — chaque Spécialisation est une classe d'armes. Le Groupe d'arme
+ * « Deux-mains » correspond à la Spé « À deux mains » (l.144). En distance, Projectiles
+ * (Ingénierie) couvre aussi les armes à Poudre noire et les Explosifs (LDB 62 l.234) ; la donnée
+ * fusionne parfois les deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
+ */
+function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
+  const g = (weapon.subType ?? '').toLowerCase();
+  if (!g) return [];
+  if (kind === 'melee') return g === 'deux-mains' ? ['à deux mains'] : [g];
+  if (g.includes('poudre noire')) return ['poudre noire', 'ingénierie']; // dont « Poudre noire et ingénierie »
+  if (g === 'explosifs') return ['explosifs', 'ingénierie'];
+  return [g];
+}
+
+/**
+ * Valeur de Compétence de combat (Caractéristique + avances de la *bonne* Spécialisation).
+ *
+ * RAW : Corps à corps et Projectiles étant Groupées, les Augmentations ne comptent QUE pour la
+ * Spécialisation correspondant au Groupe de l'arme tenue (exemple Sigrid, LDB 09 l.44 : sans la
+ * Spé adéquate on teste sur la Caractéristique brute). `weapon` omis (créatures, Piétinement,
+ * affichage générique) → comportement historique : meilleure Spé disponible.
+ */
+export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
   const charKey = kind === 'melee' ? 'CC' : 'CT';
   const base = effectiveChar(c, charKey);
   const skillName = kind === 'melee' ? 'corps à corps' : 'projectiles';
-  const sk = c.skills.find((s) => s.name.toLowerCase().includes(skillName));
+  const matching = c.skills.filter((s) => s.name.toLowerCase().includes(skillName));
+  if (matching.length === 0) return base;
+  if (!weapon || !weapon.subType) return base + Math.max(0, ...matching.map((s) => s.advances));
+  const wanted = acceptableSpecs(weapon, kind);
+  const sk = matching.find((s) => wanted.includes((s.spec ?? '').toLowerCase()));
   return base + (sk?.advances ?? 0);
 }
 
 /**
- * Valeur de défense (Parade = Corps à corps ; Esquive = Agilité + avances).
- * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295).
+ * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances).
+ * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295). `weapon` (arme du
+ * défenseur) n'est utilisé qu'en Parade, pour aligner la Spé de Corps à corps sur l'arme tenue.
  */
-export function defenseValue(c: Combatant, mode: 'parade' | 'esquive'): number {
-  if (mode === 'parade') return combatValue(c, 'melee');
+export function defenseValue(c: Combatant, mode: 'parade' | 'esquive', weapon?: Weapon): number {
+  if (mode === 'parade') return combatValue(c, 'melee', weapon ?? c.weapons[0]);
   const sk = c.skills.find((s) => s.name.toLowerCase().includes('esquive'));
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
   // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
@@ -285,7 +314,7 @@ export function rollMeleeAttacker(
   location?: HitLocation,
   env: ModLine[] = [],
 ): TestResult {
-  const atkVal = combatValue(attacker, 'melee');
+  const atkVal = combatValue(attacker, 'melee', weapon);
   return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
 }
 
@@ -297,7 +326,7 @@ export function rollMeleeDefender(
   rng: RNG = defaultRNG,
   dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
 ): TestResult {
-  const defVal = defenseValue(defender, mode);
+  const defVal = defenseValue(defender, mode, defender.weapons[0]);
   const snow = mode === 'esquive' ? dodgeMod : 0;
   return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow);
 }
@@ -306,13 +335,13 @@ export function rollMeleeDefender(
  *  (LDB 15-Dépl l.89 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
  *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
 export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(combatValue(foe, 'melee'), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe));
+  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe));
 }
 
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const atk = rollTest(combatValue(foe, 'melee'), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe) + 20);
+  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe) + 20);
   return resolveMeleePassive(foe, target, foe.weapons[0], atk);
 }
 
@@ -343,8 +372,8 @@ export function finishMelee(
   const defSL = def.sl - parrySizePenalty
     + (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) + craftTestDRAdjust(defender.weapons[0], def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode), def, defenseModifiers(defender, defenseMode, dodgeMod));
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, defender.weapons[0]), def, defenseModifiers(defender, defenseMode, dodgeMod));
 
   if (opp.winner === 'defender') {
     return {
@@ -407,7 +436,7 @@ export function resolveMeleePassive(
   env: ModLine[] = [],
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
 ): AttackResult {
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee'), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location, dmgProxy);
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
@@ -469,7 +498,7 @@ export function resolveRanged(
   location?: HitLocation,
   env: ModLine[] = [],
 ): AttackResult {
-  const atkVal = combatValue(attacker, 'ranged');
+  const atkVal = combatValue(attacker, 'ranged', weapon);
   if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
@@ -505,7 +534,7 @@ export function resolveStrayRangedHit(
   effTarget: number,
 ): AttackResult {
   const atk = evaluateTest(roll, effTarget);
-  const atkBd = bd('Projectiles (dévié)', combatValue(attacker, 'ranged'), atk, []);
+  const atkBd = bd('Projectiles (dévié)', combatValue(attacker, 'ranged', weapon), atk, []);
   const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
   res.log = `Le tir dévie dans la mêlée et touche ${victim.name} !`;
   return res;
@@ -618,7 +647,7 @@ export function rederivePassiveAttack(
 ): AttackResult {
   // Sans la distance ici, le détail des modificateurs d'un tir omet la bande de portée → la somme
   // ne reconcilie pas et l'UI retombe sur l'affichage groupé (garde côté RollLine). En mêlée c'est complet.
-  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
+  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind, weapon), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
   if (!atk.success) {
     return {
       hit: false,
