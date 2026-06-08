@@ -14,6 +14,7 @@ import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
+import { toBrass } from '../engine/money';
 
 function reset() {
   useGame.setState({
@@ -2109,5 +2110,75 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     expect((st.party as unknown[])).toHaveLength(1);
     expect((st.scene as { id: string }).id).toBe('neuve');
     expect(st.flags).toEqual({}); // flags de l’ancienne partie effacés
+  });
+});
+
+describe('Effet setTime — forcer l’heure du jour (jour/nuit via trigger, #T1c)', () => {
+  beforeEach(() => reset());
+  const dayAt = (h: number) => CAMPAIGN_START - (CAMPAIGN_START % MINUTES_PER_DAY) + h * 60; // un jour donné, à h:00
+
+  it('setTime phase nuit depuis 14:00 → avance à la prochaine 22:00 (8 h)', () => {
+    useGame.setState({ gameTime: dayAt(14) });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', phase: 'nuit' }]);
+    expect(useGame.getState().gameTime).toBe(dayAt(14) + 8 * 60);
+  });
+  it('setTime heure précise 02:00 depuis 23:00 → saute en avant (3 h, lendemain)', () => {
+    useGame.setState({ gameTime: dayAt(23) });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', hour: 2 }]);
+    expect(useGame.getState().gameTime).toBe(dayAt(23) + 3 * 60);
+  });
+  it('setTime sur la phase déjà courante → no-op (temps ne recule jamais)', () => {
+    useGame.setState({ gameTime: dayAt(22) }); // déjà au début de 'nuit'
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setTime', phase: 'nuit' }]);
+    expect(useGame.getState().gameTime).toBe(dayAt(22));
+  });
+});
+
+describe('Marchand — openMerchant / buyItem / sellItem (#2)', () => {
+  beforeEach(() => reset());
+  const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: {}, wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+  const merchantScene = () => {
+    const sc = emptyScene(4, 4); sc.id = 'm';
+    sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
+    return sc;
+  };
+
+  it('openMerchant : crée un stock (Commune toujours présente) + état merchant', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    const m = useGame.getState().merchant!;
+    expect(m.entityId).toBe('pnj');
+    expect(m.stock.length).toBeGreaterThan(0); // au moins les Communes de la catégorie
+    expect(m.resaleRate).toBe(0.10);
+  });
+
+  it('buyItem : débite la Bourse, donne l’objet à stats au héros, décrémente la qty', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const line = useGame.getState().merchant!.stock[0];
+    const before = toBrass(useGame.getState().money);
+    useGame.getState().buyItem(line.label, 'h');
+    const st = useGame.getState();
+    expect(st.party[0].items!.some((i) => i.name === line.label)).toBe(true);
+    expect(toBrass(st.money)).toBeLessThan(before);
+    expect(st.merchant!.stock.find((l) => l.label === line.label)?.qty ?? 0).toBe(line.qty - 1);
+  });
+
+  it('buyItem refuse si Bourse insuffisante (objet inchangé)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    const line = useGame.getState().merchant!.stock[0];
+    useGame.getState().buyItem(line.label, 'h');
+    expect(useGame.getState().party[0].items!.length).toBe(0);
+  });
+
+  it('sellItem : crédite resaleRate × prix et retire l’objet du héros', () => {
+    const h = hero(); h.items = [{ uid: 'x', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
+    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().sellItem('x', 'h');
+    const st = useGame.getState();
+    expect(st.party[0].items!.find((i) => i.uid === 'x')).toBeUndefined();
+    expect(toBrass(st.money)).toBeGreaterThan(0); // Hallebarde 2 CO × 10 %
   });
 });
