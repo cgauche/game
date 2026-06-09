@@ -719,42 +719,36 @@ export function IsoStage() {
             </g>
           );
         })}
-        {/* Infobulle de portée au survol (mode tir) : « N m · Courte portée (+40) ». */}
-        {aimWeapon &&
-          activeC?.pos &&
-          hover &&
-          (() => {
-            const dist = cheb(activeC.pos!, hover);
-            if (dist === 0) return null;
-            const m = rangeBandModifier(dist, aimWeapon.range!);
-            const name = rangeBandName(dist, aimWeapon.range!);
-            const { cx, cy } = tileCenter(hover.x, hover.y, dims);
-            const label = m == null || !name ? `${dist * 2} m · hors de portée` : `${dist * 2} m · ${name} (${m >= 0 ? '+' : ''}${m})`;
-            const col = m == null ? '#888' : bandColor(m);
-            const w = label.length * 6.2 + 14;
-            return (
-              <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
-                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke={col} strokeWidth={1} />
-                <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
-                  {label}
-                </text>
-              </g>
-            );
-          })()}
-        {/* Aperçu de toucher au survol d'un ennemi en MÊLÉE (R4 : la mêlée n'avait aucun feedback de ciblage,
-            contrairement au tir). « 🎯 N% · ≈M+ Bl. » — mêmes calculs que le jet (previewAttack). */}
-        {!aimWeapon && battle?.action === 'attack' && activeC?.kind === 'hero' && hover && !pendingAttack &&
+        {/* Infobulle de ciblage au survol (mode attaque, R4) — UNIFIÉE mêlée + tir :
+            • sur un ENNEMI → toucher % + dégâts probables (previewAttack), avec états « hors de portée » /
+              « pas de ligne de vue » ;
+            • sur une case VIDE avec une arme à distance → bande de portée (aide au positionnement). */}
+        {battle?.action === 'attack' && activeC?.kind === 'hero' && activeC.pos && hover && !pendingAttack &&
           (() => {
             const enemy = battle.combatants.find((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, c.size, hover.x, hover.y));
-            if (!enemy) return null;
-            const p = previewAttack(useGame.getState, activeC, enemy);
-            if (p.blocked || !p.inRange) return null;
-            const { cx, cy } = tileCenter(enemy.pos!.x, enemy.pos!.y, dims);
-            const label = `🎯 ${Math.max(0, Math.min(100, p.target))}% · ≈${Math.max(1, p.dmg - p.soak)}+ Bl.`;
+            let label: string;
+            let col: string;
+            let at: { x: number; y: number };
+            if (enemy) {
+              const p = previewAttack(useGame.getState, activeC, enemy);
+              at = enemy.pos!;
+              if (p.blocked) { label = '⛔ pas de ligne de vue'; col = '#888'; }
+              else if (!p.inRange) { label = '⛔ hors de portée'; col = '#888'; }
+              else { label = `🎯 ${Math.max(0, Math.min(100, p.target))}% · ≈${Math.max(1, p.dmg - p.soak)}+ Bl.`; col = '#ff5a4d'; }
+            } else if (aimWeapon) {
+              const dist = cheb(activeC.pos!, hover);
+              if (dist === 0) return null;
+              const m = rangeBandModifier(dist, aimWeapon.range!);
+              const name = rangeBandName(dist, aimWeapon.range!);
+              at = hover;
+              label = m == null || !name ? `${dist * 2} m · hors de portée` : `${dist * 2} m · ${name} (${m >= 0 ? '+' : ''}${m})`;
+              col = m == null ? '#888' : bandColor(m);
+            } else return null;
+            const { cx, cy } = tileCenter(at.x, at.y, dims);
             const w = label.length * 6.4 + 14;
             return (
               <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
-                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke="#ff5a4d" strokeWidth={1} />
+                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke={col} strokeWidth={1} />
                 <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
                   {label}
                 </text>
