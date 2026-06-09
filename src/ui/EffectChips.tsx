@@ -1,4 +1,4 @@
-import { summarizeEffects, type EffectChip, type EffectFlags } from '../gameIso/effectIcons';
+import { summarizeEffects, conditionEffect, type EffectChip, type EffectFlags } from '../gameIso/effectIcons';
 import type { ConditionInstance, ActiveEffect } from '../engine/types';
 
 function chipTitle(c: EffectChip): string {
@@ -7,7 +7,9 @@ function chipTitle(c: EffectChip): string {
     const sign = c.bonus != null && c.bonus >= 0 ? '+' : '';
     return `${c.label}${stat} ${sign}${c.bonus ?? ''} — ${c.rounds ?? 0} Round(s) restant(s)`;
   }
-  return c.count && c.count > 1 ? `${c.label} ×${c.count}` : c.label;
+  const base = c.count && c.count > 1 ? `${c.label} ×${c.count}` : c.label;
+  const eff = conditionEffect(c.label); // effet canonique (etats.json) au survol (R9)
+  return eff ? `${base} — ${eff}` : base;
 }
 
 /**

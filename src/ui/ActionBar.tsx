@@ -362,7 +362,7 @@ export function ActionBar() {
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
               disabled={(battle.acted && !freeFrenzy) || stunned || broken}
               onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
-              title={freeFrenzy && battle.acted ? 'Attaque GRATUITE de Frénésie (ne consomme pas l’Action)' : undefined}
+              title={freeFrenzy && battle.acted ? 'Attaque GRATUITE de Frénésie (ne consomme pas l’Action)' : 'Attaquer une cible : mêlée à portée d’Allonge, ou tir selon la distance — coûte l’Action'}
             >
               <span className="ab-ico">⚔️</span>
               <span className="ab-lbl">Attaquer{freeFrenzy && battle.acted ? ' 🐗 libre' : battle.acted ? ' ✓' : ''}</span>
@@ -372,6 +372,7 @@ export function ActionBar() {
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
                 disabled={battle.acted || stunned || broken}
                 onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
+                title="Incanter un sort (Test de Langage mystique) — coûte l'Action (LDB Magie)"
               >
                 <span className="ab-ico">✨</span>
                 <span className="ab-lbl">Incanter{battle.acted && ' ✓'}</span>
