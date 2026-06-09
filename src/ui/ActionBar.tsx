@@ -343,7 +343,7 @@ export function ActionBar() {
         <div className="ab-actor">
           {/* Tuile-portrait partagée (même système que le dock/la frise) : portrait + jauge de PV
               verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
-          <PortraitTile c={active} ring={ring} size={52} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
+          <PortraitTile c={active} ring={ring} size={64} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
           <div className="ab-actor-side">
             <div className="ab-actor-top">
               {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}

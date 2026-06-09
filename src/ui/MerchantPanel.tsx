@@ -9,6 +9,7 @@ import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrapping } from '../engine/items';
 import { describeQuality } from '../engine/qualities/describe';
 import type { Combatant, ItemInstance } from '../engine/types';
+import { Coins } from './Coins';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -100,6 +101,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   const [buyCat, setBuyCat] = useState<string | null>(null);
   const [details, setDetails] = useState<string | null>(initialDetails ?? null);
   const [buyView, setBuyView] = useState<'browse' | 'cart'>(initialBuyView ?? 'browse');
+  const [sellHero, setSellHero] = useState<string | null>(null); // onglet PJ actif côté Vente
   const toggleDetails = (label: string) => setDetails((d) => (d === label ? null : label));
 
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => it.kind === 'armor' && (it.damageTaken ?? 0) > 0).map((it) => ({ h, it })));
@@ -110,6 +112,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle;
   const buyDiscount = Math.round((1 - buyHaggle) * 100);
   const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 0.5;
+  const sellPriceMoney = (it: ItemInstance): Money => fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor));
 
   // Stock groupé par famille puis trié (Disponibilité → nom).
   const inStock = merchant.stock.filter((l) => l.qty > 0);
@@ -238,8 +241,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                       <span className="cart-n">{c.qty}</span>
                       <button className="btn-step" disabled={sealed || c.qty >= stockQty} title={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined} onClick={() => onAddToCart(c.label)} aria-label="Un de plus">+</button>
                     </td>
-                    <td className="cart-unit">{u ? formatMoney(u) : '—'}</td>
-                    <td className="cart-sub">{sub ? formatMoney(sub) : '—'}</td>
+                    <td className="cart-unit">{u ? <Coins money={u} /> : '—'}</td>
+                    <td className="cart-sub">{sub ? <Coins money={sub} /> : '—'}</td>
                     <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveCart(c.label)} aria-label="Retirer">✕</button></td>
                   </tr>
                 );
@@ -250,12 +253,12 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           {sealed && (
             <p className="cart-sealed">🤝 Le prix est arrêté. Vous pouvez encore <strong>retirer</strong> des articles pour baisser le total (mais plus en ajouter). À vous de <strong>régler</strong> ou de <strong>refuser le marché</strong> — refuser ou partir sans payer, et il ne marchandera plus avant son réassort.</p>
           )}
-          <div className="cart-total">Total : <strong>{formatMoney(cartTotal)}</strong>{buyDiscount > 0 && <span className="cart-disc"> (marchandé −{buyDiscount} %)</span>}</div>
+          <div className="cart-total">Total : <strong><Coins money={cartTotal} /></strong>{buyDiscount > 0 && <span className="cart-disc"> (marchandé −{buyDiscount} %)</span>}</div>
           <div className="cart-actions">
             {sealed
               ? <button className="btn small danger" onClick={() => { onRefuse('buy'); setBuyView('browse'); }}>Refuser le marché</button>
               : <button className="btn small" onClick={onClearCart}>Vider le panier</button>}
-            <button className="btn btn-primary" disabled={!affordCart} title={affordCart ? undefined : 'Bourse insuffisante'} onClick={onPay}>Payer {formatMoney(cartTotal)}</button>
+            <button className="btn btn-primary" disabled={!affordCart} title={affordCart ? undefined : 'Bourse insuffisante'} onClick={onPay}>Payer <Coins money={cartTotal} /></button>
           </div>
           {!affordCart && <p className="cart-warn">Bourse insuffisante ({formatMoney(money)}).</p>}
         </>
@@ -315,7 +318,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                       </td>
                       {cols.map((c) => <td key={c.label} className={c.emph ? 'col-emph' : ''}>{t ? c.get(t) : DASH}</td>)}
                       <td className="col-enc">{t?.enc ?? 0}</td>
-                      <td className="col-price">{unit ? formatMoney(unit) : '—'}</td>
+                      <td className="col-price">{unit ? <Coins money={unit} /> : '—'}</td>
                       <td className="col-buy">
                         {inCart > 0 ? (
                           <span className="cart-step">
@@ -367,7 +370,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       <div className="merchant-box">
         <div className="merchant-head">
           <strong>Marchand</strong>
-          <span className="purse">Bourse : {formatMoney(money)}</span>
+          <span className="purse">Bourse : <Coins money={money} /></span>
           <button className="btn small" onClick={onClose}>Fermer</button>
         </div>
         <div className="merchant-tabs" role="tablist">
@@ -390,17 +393,39 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                       <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>
                     </>}
               </div>
-              {sellable.map(({ h, it }) => (
-                <div className="merch-row sell" key={it.uid}>
-                  <span className="merch-name">{h.name} : {it.name}{it.identified === false ? ' (non identifié)' : ''}</span>
-                  <span className="merch-price">{formatMoney(fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor)))}</span>
-                  {it.identified === false && (
-                    <button className="btn small" onClick={() => onAppraise(it.uid, h.id)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
-                  )}
-                  <button className="btn small" onClick={() => onSell(it.uid, h.id)}>Vendre</button>
-                </div>
-              ))}
-              {!sellable.length && <p className="empty">— rien à vendre —</p>}
+              {(() => {
+                // #18/#19 : un onglet par PJ qui a des objets (au lieu d'une liste à plat « PJ : objet ») ; tag « équipé ».
+                const sellHeroes = party.filter((h) => (h.items ?? []).length > 0);
+                const activeSellId = (sellHero && sellHeroes.some((h) => h.id === sellHero) ? sellHero : sellHeroes[0]?.id) ?? '';
+                const heroItems = party.find((h) => h.id === activeSellId)?.items ?? [];
+                if (!sellHeroes.length) return <p className="empty">— rien à vendre —</p>;
+                return (
+                  <>
+                    <div className="merch-subtabs" role="tablist">
+                      {sellHeroes.map((h) => (
+                        <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)}>
+                          {h.name}<span className="tab-count">{(h.items ?? []).length}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {heroItems.map((it) => (
+                      <div className="merch-row sell" key={it.uid}>
+                        <span className="merch-name">
+                          {it.name}
+                          {it.equipped && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
+                          {it.identified === false ? ' (non identifié)' : ''}
+                        </span>
+                        <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
+                        {it.identified === false && (
+                          <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
+                        )}
+                        <button className="btn small" onClick={() => onSell(it.uid, activeSellId)}>Vendre</button>
+                      </div>
+                    ))}
+                    {!heroItems.length && <p className="empty">— rien à vendre pour ce personnage —</p>}
+                  </>
+                );
+              })()}
             </div>
           )}
 

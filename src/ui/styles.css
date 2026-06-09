@@ -727,7 +727,8 @@ textarea:focus {
   flex-wrap: wrap;
   gap: 6px;
   align-content: center;
-  max-width: 560px;
+  justify-content: center; /* rangée(s) centrée(s) → pas de gros vide à droite quand ça déborde */
+  max-width: min(94vw, 760px); /* assez large pour tenir les actions courantes sur UNE rangée */
 }
 .ab-slot {
   display: flex;
@@ -735,7 +736,7 @@ textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-width: 66px;
+  min-width: 58px;
   padding: 7px 9px;
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -2772,4 +2773,31 @@ textarea:focus {
 }
 .modal-subject strong {
   font-size: 14px;
+}
+
+/* ── Monnaie colorée par dénomination (LDB 57) : or / argent / cuivre ── */
+.coin-gold { color: #e8c14a; font-weight: 600; }
+.coin-silver { color: #cdd6df; font-weight: 600; }
+.coin-copper { color: #c9905a; font-weight: 600; }
+.coin-sep { color: var(--muted); margin: 0 1px; }
+
+/* Étiquette « équipé » dans la liste de vente. */
+.equipped-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  color: #5fcf92;
+  border: 1px solid rgba(95, 207, 146, 0.5);
+  border-radius: 4px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* Barre de panier (achat) toujours visible au défilement (sticky). */
+.merch-tab .cart-bar {
+  position: sticky;
+  top: -2px;
+  z-index: 3;
+  background: var(--bg2);
+  padding: 6px 2px;
+  margin: -2px 0 6px;
 }
