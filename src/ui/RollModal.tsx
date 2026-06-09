@@ -2,7 +2,7 @@ import { useGame, movementRemaining } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
-import { firedWeapon, crowdEligible } from '../state/combatFlow';
+import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 
@@ -81,6 +81,9 @@ export function RollModal() {
   const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
+  // Aperçu AVANT le jet (R4) : valeur de toucher + décomposition des modificateurs (plus de « validation à
+  // l'aveugle »). Recalculé à chaque changement d'option (localisation / Tirer dans le tas / immobile).
+  const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround }) : null;
 
   return (
     <div className="modal-overlay">
@@ -132,6 +135,24 @@ export function RollModal() {
                   : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
               </div>
             )}
+            {preview && (preview.blocked ? (
+              <div className="rm-preview bad">⛔ Pas de ligne de vue</div>
+            ) : !preview.inRange ? (
+              <div className="rm-preview bad">⛔ Hors de portée</div>
+            ) : (
+              <div className="rm-preview">
+                <div className="rm-preview-hit">🎯 Toucher : <b>{Math.max(0, Math.min(100, preview.target))}%</b></div>
+                {preview.mods.length > 0 && (
+                  <div className="rm-roll-mods">
+                    {preview.mods.map((m, i) => (
+                      <span key={i} className={`rm-mod ${m.value >= 0 ? 'pos' : 'neg'}`}>
+                        {m.value >= 0 ? '+' : '−'}{Math.abs(m.value)} {m.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
             <div className="modal-actions">
               <button className="btn" onClick={cancel}>
                 Annuler

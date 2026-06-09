@@ -2232,6 +2232,27 @@ textarea:focus {
   gap: 5px;
   padding: 0 10px 2px;
 }
+/* Aperçu pré-jet (R4) : valeur de toucher + modificateurs visibles AVANT « Lancer ». */
+.rm-preview {
+  margin: 10px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg2);
+}
+.rm-preview-hit {
+  text-align: center;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.rm-preview-hit b {
+  color: #ffe066;
+}
+.rm-preview.bad {
+  text-align: center;
+  color: #e07a63;
+  font-weight: 600;
+}
 .rm-mod {
   font-size: 11px;
   padding: 1px 7px;
