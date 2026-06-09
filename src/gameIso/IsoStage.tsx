@@ -322,6 +322,25 @@ export function IsoStage() {
             <path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, dims)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />,
           );
     }
+    // État ENGAGÉ (R7) : tether de mêlée entre paires Engagées (zone de contrôle) — auparavant invisible
+    // alors qu'il conditionne déplacement libre / Charge / Désengagement. Dédupliqué (id < otherId).
+    for (const c of battle.combatants) {
+      if (!c.pos || isOutOfAction(c)) continue;
+      for (const oid of c.engagedWith ?? []) {
+        if (c.id >= oid) continue; // une seule ligne par paire
+        const o = battle.combatants.find((x) => x.id === oid);
+        if (!o?.pos || isOutOfAction(o)) continue;
+        const pa = walkPosOf(c.id, c.pos.x, c.pos.y);
+        const pb = walkPosOf(o.id, o.pos.x, o.pos.y);
+        const ca = tileCenter(pa.x, pa.y, dims);
+        const cb = tileCenter(pb.x, pb.y, dims);
+        highlights.push(<line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="#d98a3a" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" />);
+      }
+    }
+    // Fumée (R7) : les nuages bloquent la Ligne de Vue mais étaient INVISIBLES → on les peint en gris.
+    for (const s of battle.smoke ?? []) {
+      highlights.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, dims)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
+    }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » sur les ennemis à portée
     // (mêlée à l'Allonge / tir dans une bande AVEC Ligne de Vue) — mêmes prédicats que la résolution.
     if (battle.action === 'attack' && activeC?.kind === 'hero' && !pendingAttack) {
