@@ -89,6 +89,16 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const r = resolveAttack(mkGet(s, [a, b]), a, b, undefined, undefined, undefined, true); // heldGround = true
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
   });
+
+  it('héros qui NE PEUT PAS bouger (Empêtré, Mouvement 0) → pas de -10 même sans s’immobiliser', () => {
+    // S'il ne peut pas se déplacer (effectiveMovement 0), il tire forcément immobile → pas de pénalité.
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter({ conditions: [{ name: 'Empêtré', value: 1 }] });
+    const b = target({ pos: { x: 6, y: 0 } });
+    const r = resolveAttack(mkGet(s, [a, b]), a, b); // pas de heldGround, mais Mouvement nul
+    expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
+  });
 });
 
 describe('strayShotVictim — tir dévié vers un allié (LDB 14 l.136)', () => {

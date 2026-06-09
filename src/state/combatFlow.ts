@@ -542,9 +542,12 @@ export function resolveAttack(
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
     // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
     // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
-    // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm).
+    // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
+    // — ou s'il NE PEUT PAS bouger (Mouvement effectif 0 : Empêtré/Surpris…), il est immobile d'office.
     // L'IA/ennemi (pas d'option) : −10 seulement s'il a effectivement bougé ce Tour.
-    const mobileShot = attacker.kind === 'hero' ? !heldGround : battle.movementUsed > 0;
+    const mobileShot = attacker.kind === 'hero'
+      ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !heldGround))
+      : battle.movementUsed > 0;
     if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
     const inMelee = (target.engagedWith ?? []).some((id) => {

@@ -1,4 +1,4 @@
-import { useGame } from '../state/store';
+import { useGame, movementRemaining } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
@@ -74,9 +74,10 @@ export function RollModal() {
   // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
-  // Tir IMMOBILE (LDB 14 l.101) : proposé au TIR d'un héros qui n'a pas encore bougé — annule le −10 « Tir en
-  // bougeant » au prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
-  const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0;
+  // Tir IMMOBILE (LDB 14 l.101) : proposé au TIR d'un héros qui n'a pas encore bougé ET qui PEUT encore se
+  // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
+  // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
+  const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
 
