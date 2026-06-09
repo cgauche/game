@@ -516,7 +516,7 @@ describe('Boucle de jeu (store)', () => {
     // L'action est consommée, l'incantation journalisée, et la modale fermée.
     expect(st.battle!.acted).toBe(true);
     expect(st.battle!.action).toBeNull();
-    expect(st.battle!.log.some((l) => l.includes('Fléchette'))).toBe(true);
+    expect(st.battle!.log.some((l) => l.text.includes('Fléchette'))).toBe(true);
     expect(st.pendingCast).toBeNull();
   });
 
@@ -536,7 +536,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().castConfirm(); // « Appliquer »
     st = useGame.getState();
     const after = st.battle!.combatants.find((c) => c.id === heroC.id)!;
-    const failed = st.battle!.log.some((l) => l.includes('échoue'));
+    const failed = st.battle!.log.some((l) => l.text.includes('échoue'));
     if (!failed) {
       expect(after.activeEffects?.some((e) => e.char === 'CC' && e.bonus === 10)).toBe(true);
     }

@@ -6,6 +6,7 @@
 import type { GameState, BattleState, RevealEntry } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
+import { ev, evLines, type CombatEventKind } from './combatLog';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
@@ -577,7 +578,7 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
   if (!foes.length || freeDisengage) {
     if (freeDisengage) {
       for (const f of foes) disengageFrom(mover, f); // lève les liens Engagé avec les plus petits écartés
-      battle.log.push(`${mover.name} écarte les plus petits et se déplace librement.`);
+      battle.log.push(ev('move', `${mover.name} écarte les plus petits et se déplace librement.`, mover.id));
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover);
@@ -815,10 +816,11 @@ export function applyAttackResult(
     set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
   }
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, creatureAttack: creatureAttackKind(weapon.name) });
-  const log = [...battle.log, res.log];
-  log.push(...critLog);
-  if (assommanteLog) log.push(assommanteLog);
-  if (isOutOfAction(target)) log.push(`${target.name} est mis hors de combat !`);
+  const evKind: CombatEventKind = weapon.type === 'ranged' ? 'shoot' : 'attack';
+  const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
+  log.push(...evLines(critLog, 'crit', attacker.id, target.id));
+  if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
+  if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
@@ -940,7 +942,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
       break;
     }
   }
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'info', c.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -1280,7 +1282,7 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
     smoke = [...(smoke ?? []), ...zone.map((t) => ({ x: t.x, y: t.y, rounds: dur }))];
     lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
   }
-  set({ battle: { ...get().battle!, smoke, log: [...get().battle!.log, ...lines] } });
+  set({ battle: { ...get().battle!, smoke, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -1306,7 +1308,7 @@ export function applyTongue(get: () => GameState, set: any, attacker: Combatant,
     lines.push(`${tgt.name} est Empêtré (Langue préhensile).`);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   } else lines.push(`${tgt.name} esquive la langue.`);
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -1334,7 +1336,7 @@ export function applyWail(get: () => GameState, set: any, attacker: Combatant): 
     for (let i = 0; i < 3; i++) addCondition(tgt, 'Assourdi'); // 3 États Assourdi
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   }
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...lines] } });
+  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   return true;
@@ -1362,7 +1364,7 @@ export function applyGaze(get: () => GameState, set: any, attacker: Combatant): 
     if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
     else { const n = Math.floor(margin / 2); for (let i = 0; i < n; i++) addCondition(tgt, 'Sonné'); lines.push(`${tgt.name} reçoit ${n} État(s) Sonné.`); }
   } else lines.push(`${tgt.name} soutient le regard.`);
-  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...lines] } });
+  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   return true;
@@ -1386,7 +1388,7 @@ export function applyChillGrasp(get: () => GameState, set: any, attacker: Combat
     lines.push(`${tgt.name} perd ${wl} Blessure(s) (ignore Endurance et PA).`);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   } else lines.push(`${tgt.name} résiste à l'étreinte.`);
-  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...lines] } });
+  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   return true;
@@ -1498,10 +1500,10 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
  * fournit la RÉSOLUTION des acteurs (`actorIn`/`touchActors`), ce helper la finalisation.
  * `selectedSpell:null` est neutre pour une action non-incantation (déjà null).
  */
-export function finishPlayerAction(get: () => GameState, set: any, lines: string[]): void {
+export function finishPlayerAction(get: () => GameState, set: any, lines: string[], kind: CombatEventKind = 'info'): void {
   const battle = get().battle;
   if (battle) {
-    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...lines] } });
+    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...evLines(lines, kind)] } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
@@ -1651,7 +1653,7 @@ export function applyCast(
 
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
-  finishPlayerAction(get, set, logLines); // sortie commune combat (log+conso Action) / hors combat (journal)
+  finishPlayerAction(get, set, logLines, 'cast'); // sortie commune combat (log+conso Action) / hors combat (journal)
 }
 
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
@@ -1693,7 +1695,7 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   if (scene) {
     const dismounted = sweepDismountDeaths(battle, scene);
     if (dismounted.length) {
-      set({ battle: { ...battle, log: [...battle.log, ...dismounted] } });
+      set({ battle: { ...battle, log: [...battle.log, ...evLines(dismounted, 'detail')] } });
       bus.emit(EVT.SCENE_DIRTY);
     }
   }
@@ -1701,13 +1703,13 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   if (!enemiesAlive) {
     finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
-    set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, 'Victoire !'] } });
+    set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, ev('info', 'Victoire !')] } });
     if (battle.onVictory) applyEffects(get, set, battle.onVictory);
     return true;
   }
   if (!heroesAlive) {
     finalizeBattle(get, set);
-    set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, 'Défaite…'] } });
+    set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, ev('info', 'Défaite…')] } });
     return true;
   }
   return false;
@@ -1733,21 +1735,21 @@ export function advanceTurn(get: () => GameState, set: any) {
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
       get().advanceTime(TIME_COST.combatRound); // « tout est horodaté » : 1 Round franchi = +combatRound min
-      battle.log.push(`— Round ${round} —`);
+      battle.log.push(ev('round', `— Round ${round} —`));
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
       const base = battle.baseOrder ?? battle.order;
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
-      for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(`${c.name} agira en dernier ce Round (Maladresse).`); }
+      for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', `${c.name} agira en dernier ce Round (Maladresse).`, c.id)); }
       const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
-      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); });
+      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); });
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
       brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
-      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(l); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       set({ battle: { ...battle, turn: 0, round } });
@@ -1764,8 +1766,8 @@ export function advanceTurn(get: () => GameState, set: any) {
   if (newActive) {
     newActive.defensiveStance = false;
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
-    if (newActive.loseNextMovement) { moved = true; newActive.loseNextMovement = false; battle.log.push(`${newActive.name} perd son Mouvement (Maladresse).`); }
-    if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(`${newActive.name} perd son Action (Maladresse).`); }
+    if (newActive.loseNextMovement) { moved = true; newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
+    if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }
   }
   set({ battle: { ...battle, turn, action: null, moved, acted, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
@@ -1855,7 +1857,7 @@ export function approachFearTrigger(get: () => GameState, set: any, mover: Comba
     const t = rollTest(calmeValue(c), 'intermediaire', battleRng());
     const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
     if (!t.success) addCondition(c, 'Brisé', 1);
-    battle.log.push(line);
+    battle.log.push(ev('fear', line, c.id, mover.id));
     if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line] });
   }
 }
@@ -1945,7 +1947,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
     enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
     if (!r.success) log.push(`${enemy.name} est en proie à son ${tt.type} (${tt.cible}).`);
   }
-  if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+  if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', enemy.id)] } });
 }
 
 /** Premier Test de Psychologie DÛ pour un combattant (héros) ce Round : nouvelle source de Peur/Terreur
@@ -2003,7 +2005,7 @@ export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): v
   if (stunned || !foeInLoS) {
     c.frenzied = false;
     addCondition(c, 'Exténué');
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, `${c.name} sort de Frénésie (Exténué).`] } });
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${c.name} sort de Frénésie (Exténué).`, c.id)] } });
   }
 }
 
@@ -2021,7 +2023,7 @@ export function aiMaybeFrenzy(get: () => GameState, set: any, enemy: Combatant):
   if (!foeInLoS) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
     enemy.frenzied = true;
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, `${enemy.name} entre en Frénésie !`] } });
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${enemy.name} entre en Frénésie !`, enemy.id)] } });
   }
 }
 
@@ -2048,7 +2050,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     if (freeMount) {
       mountUp(enemy, freeMount);
       justMounted = true;
-      battle.log.push(`${enemy.name} enfourche ${freeMount.name}.`);
+      battle.log.push(ev('move', `${enemy.name} enfourche ${freeMount.name}.`, enemy.id));
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
     }
@@ -2152,7 +2154,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       const line = removed > 0
         ? (action.state === 'Empêtré' ? `${enemy.name} se libère (${removed} État Empêtré retiré).` : `${enemy.name} étouffe les flammes (${removed} État En flammes retiré).`)
         : (action.state === 'Empêtré' ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
-      set({ battle: { ...battle, log: [...battle.log, line] } });
+      set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), 350);
       return;

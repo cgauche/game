@@ -1,7 +1,7 @@
 import { useGame, activeCombatant } from '../state/store';
 import { isOutOfAction } from '../engine/conditions';
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
-import { narrateLine } from '../gameIso/combatNarration';
+import { narrateEvent } from '../gameIso/combatNarration';
 import { campaign } from '../scenes/campaign';
 import { RigPortrait } from './RigPortrait';
 import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
@@ -69,7 +69,7 @@ export function BattlePanel() {
       <div className="mini-title">Journal de combat</div>
       <div className="battle-log">
         {battle.log.slice(-9).map((l, i) => {
-          const n = narrateLine(l, battle.combatants);
+          const n = narrateEvent(l, battle.combatants);
           return (
             <p key={i} className="jr-line">
               <span className="jr-ic">{n.icon}</span>

@@ -21,6 +21,7 @@ import {
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { mountedDodgePenalty, mountMovement, mountUp, dismount, mountOf, mountableNear } from './mount';
+import { ev, evLines, type CombatEvent } from './combatLog';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   initiativeOrder,
@@ -422,7 +423,7 @@ export interface BattleState {
   reachable: Map<string, number>;
   moved: boolean;
   acted: boolean;
-  log: string[];
+  log: CombatEvent[];
   over: null | 'victory' | 'defeat';
   onVictory?: Effect[];
   /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
@@ -1598,7 +1599,7 @@ export const useGame = create<GameState>((set, get) => ({
       reachable: new Map(),
       moved: false,
       acted: false,
-      log: [`Le combat commence ! (Round 1)`, ...surpriseLines],
+      log: [ev('round', `Le combat commence ! (Round 1)`), ...evLines(surpriseLines, 'info')],
       over: null,
       onVictory: onVictory ?? enc.onVictory,
     };
@@ -1798,7 +1799,7 @@ export const useGame = create<GameState>((set, get) => ({
         ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
         : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
     }
-    finishPlayerAction(get, set, log); // sortie commune combat / hors combat
+    finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
   },
 
   /** Annule avant tout jet (aucun coût). */
@@ -1837,7 +1838,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (target.wounds.current <= 0) { // trop risqué de continuer : on interrompt
       log.push(`${target.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
       set({ pendingHeal: null });
-      finishPlayerAction(get, set, log);
+      finishPlayerAction(get, set, log, 'heal');
       return;
     }
     if (cum >= cible) { // cible atteinte : la Blessure Critique est réparée
@@ -1845,7 +1846,7 @@ export const useGame = create<GameState>((set, get) => ({
       const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
       log.push(...rollContraction(target, 'Infection Mineure', resVal, 'accessible', battleRng())); // LDB 10 l.365
       set({ pendingHeal: null });
-      finishPlayerAction(get, set, log);
+      finishPlayerAction(get, set, log, 'heal');
       return;
     }
     set({ pendingHeal: { ...ph, surgeryCumDR: cum, roll: res.roll, sl: res.sl, success: res.success }, ...touchActors(get()) });
@@ -1877,7 +1878,7 @@ export const useGame = create<GameState>((set, get) => ({
     const log = [`${active.name} utilise : ${it.name}.`, ...applyItemUse(active, eff)];
     active.items = (active.items ?? []).filter((i) => i.uid !== uid); // consommé
     active.aiming = false; // une autre action que le tir gâche la visée
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...log] } });
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...evLines(log, 'item', active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2027,7 +2028,7 @@ export const useGame = create<GameState>((set, get) => ({
     const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
     // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
-    finishPlayerAction(get, set, logLines); // sortie commune combat / hors combat
+    finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
   },
   focusCancel: () => set({ pendingFocus: null }),
   /** Ouvre une Focalisation HORS COMBAT (couture D) : accumule `caster.focus` pour un Sort d'Arcane/Domaine. */
@@ -2129,7 +2130,7 @@ export const useGame = create<GameState>((set, get) => ({
         e.lastTestRound = battle.round;
         log.push(r.vaincue ? `${c.name} surmonte sa peur.` : `${c.name} reste sous l'emprise de la Peur (${e.calmeDR}/${pp.indice} DR).`);
       }
-      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...log] } });
+      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', c.id)] } });
     }
     maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
   },
@@ -2184,7 +2185,7 @@ export const useGame = create<GameState>((set, get) => ({
       ? [`${c.name} entre en Frénésie : +1 Bonus de Force, immunité psychologique, doit attaquer (LDB 21).`]
       : [`${c.name} ne parvient pas à entrer en Frénésie (Test de Force Mentale échoué).`];
     if (pf.result.success) c.frenzied = true;
-    set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...log] } });
+    set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
     checkBattleOver(get, set);
   },
   frenzyCancel: () => set({ pendingFrenzy: null }),
@@ -2277,7 +2278,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
       active.gainedAdvThisRound = true;
-      set({ battle: { ...battle, moved: true, action: 'attack', log: [...battle.log, `${active.name} charge ${target.name} (+${adv} Avantage).`] } });
+      set({ battle: { ...battle, moved: true, action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name} (+${adv} Avantage).`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
     }
@@ -2318,7 +2319,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.order[0] === heroId) return; // déjà en tête
     hero.fortune = (hero.fortune ?? 0) - 1;
     const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
-    set({ battle: { ...battle, order, log: [...battle.log, `${hero.name} choisit d'agir en premier (Chance).`] } });
+    set({ battle: { ...battle, order, log: [...battle.log, ev('info', `${hero.name} choisit d'agir en premier (Chance).`, hero.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   confirmRoundStart: () => {
@@ -2352,7 +2353,7 @@ export const useGame = create<GameState>((set, get) => ({
     hero.fate = (hero.fate ?? 0) - 1;
     if (p.restoreWounds != null) hero.wounds.current = p.restoreWounds; // annule tout le coup (restaure les PB)
     hero.criticalWounds = Math.max(0, (hero.criticalWounds ?? 0) - 1);
-    set({ battle: { ...battle, log: [...battle.log, `${hero.name} : « Comment ça a pu rater ? » — le coup fatal est évité (Destin −1).`] } });
+    set({ battle: { ...battle, log: [...battle.log, ev('info', `${hero.name} : « Comment ça a pu rater ? » — le coup fatal est évité (Destin −1).`, hero.id)] } });
     resumeEnemyTurn(get, set);
   },
   fateSurvive: () => {
@@ -2365,7 +2366,7 @@ export const useGame = create<GameState>((set, get) => ({
     hero.fate = (hero.fate ?? 0) - 1;
     hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
     if (!hero.conditions.some((c) => c.name === 'Inconscient')) addCondition(hero, 'Inconscient');
-    set({ battle: { ...battle, log: [...battle.log, `${hero.name} : « Meurs un autre jour » — survit mais quitte le combat (Destin −1).`] } });
+    set({ battle: { ...battle, log: [...battle.log, ev('info', `${hero.name} : « Meurs un autre jour » — survit mais quitte le combat (Destin −1).`, hero.id)] } });
     if (source === 'slow') resolveRoundBoundary(get, set);
     else resumeEnemyTurn(get, set);
   },
@@ -2377,7 +2378,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFateSave: null });
     if (hero) {
       hero.dead = true;
-      set({ battle: { ...battle, log: [...battle.log, `${hero.name} succombe.`] } });
+      set({ battle: { ...battle, log: [...battle.log, ev('death', `${hero.name} succombe.`, hero.id)] } });
     }
     if (source === 'slow') resolveRoundBoundary(get, set);
     else resumeEnemyTurn(get, set);
@@ -2391,7 +2392,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
     active.defensiveStance = true;
     active.aiming = false; // une autre action que le tir gâche la visée
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} se met sur la défensive (+20 en défense).`] } });
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('defensive', `${active.name} se met sur la défensive (+20 en défense).`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2403,7 +2404,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
     if (!active.weapons.some((w) => w.type === 'ranged')) return; // viser = pour le tir
     active.aiming = true;
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} vise soigneusement (+20 au prochain tir).`] } });
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('aim', `${active.name} vise soigneusement (+20 au prochain tir).`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2473,7 +2474,7 @@ export const useGame = create<GameState>((set, get) => ({
       a.reloadProgress = progress;
       log = `${a.name} recharge ${pr.weaponName} (${progress}/${pr.reload} DR).`;
     }
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, log] } });
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', log, a.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
@@ -2551,7 +2552,7 @@ export const useGame = create<GameState>((set, get) => ({
         ? `${a.name} se libère (${removed} État${removed > 1 ? 's' : ''} Empêtré retiré${removed > 1 ? 's' : ''}).`
         : `${a.name} étouffe les flammes (${removed} État${removed > 1 ? 's' : ''} En flammes retiré${removed > 1 ? 's' : ''}).`);
     } else lines.push(sr.state === 'Empêtré' ? `${a.name} ne parvient pas à se libérer.` : `${a.name} ne parvient pas à éteindre les flammes.`);
-    finishPlayerAction(get, set, lines); // consomme l'Action
+    finishPlayerAction(get, set, lines, 'condition'); // consomme l'Action
   },
   recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
   battleSelectAmmo: (uid) => {
@@ -2578,7 +2579,7 @@ export const useGame = create<GameState>((set, get) => ({
       active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }
-    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`] } });
+    set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', `${active.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la fin du PROCHAIN Round. */
@@ -2589,7 +2590,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
     active.resolve = (active.resolve ?? 0) - 1;
     active.psychImmuneRoundsLeft = 2; // ce Round + le prochain (décompté au passage de Round) — ne fait que RETARDER
-    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round.`] } });
+    set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */
@@ -2600,7 +2601,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
     active.resolve = (active.resolve ?? 0) - 1;
     active.ignoreCritMods = true; // effacé au début du prochain Round (passage de Round)
-    set({ battle: { ...battle, action: null, log: [...battle.log, `${active.name} puise dans sa Détermination : ignore les modificateurs de Blessure critique ce Round.`] } });
+    set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', `${active.name} puise dans sa Détermination : ignore les modificateurs de Blessure critique ce Round.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -2650,9 +2651,9 @@ export const useGame = create<GameState>((set, get) => ({
     // — journal/document — restent fouillables en exploration ; pas de sens à les grappiller en combat).
     if (entityPickables(ent).length === 0 && ent.interact.consume) {
       removeEntity(get, set, entityId);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
+      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('item', `${active.name} ramasse : ${label}.`, active.id)] } });
     } else {
-      set({ scene: { ...scene }, battle: { ...battle, acted: true, action: null, log: [...battle.log, `${active.name} ramasse : ${label}.`] } });
+      set({ scene: { ...scene }, battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('item', `${active.name} ramasse : ${label}.`, active.id)] } });
     }
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -2735,7 +2736,7 @@ export const useGame = create<GameState>((set, get) => ({
       // héros frénétique ne consomme PAS l'Action (il pourra réattaquer normalement ensuite).
       if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain) {
         attacker.frenzyFreeUsed = true;
-        set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, `${attacker.name} : attaque libre de Frénésie (Action préservée).`] } });
+        set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, ev('frenzy', `${attacker.name} : attaque libre de Frénésie (Action préservée).`, attacker.id)] } });
       }
     }
   },
@@ -2879,7 +2880,7 @@ export const useGame = create<GameState>((set, get) => ({
     const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
     const blocked = occupied(battle, geom);
     const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
-    const log = [...battle.log, `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`];
+    const log = [...battle.log, ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`, c.id)];
     set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -2893,7 +2894,7 @@ export const useGame = create<GameState>((set, get) => ({
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !hasCondition(active, 'À Terre') || active.wounds.current <= 0) return;
     removeCondition(active, 'À Terre');
-    set({ battle: { ...battle, moved: true, action: null, log: [...battle.log, `${active.name} se relève.`] } });
+    set({ battle: { ...battle, moved: true, action: null, log: [...battle.log, ev('move', `${active.name} se relève.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -3045,7 +3046,7 @@ export const useGame = create<GameState>((set, get) => ({
     const mount = mountableNear(battle, active);
     if (!mount) return;
     mountUp(active, mount);
-    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} enfourche ${mount.name}.`] } });
+    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} enfourche ${mount.name}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   battleDismount: () => {
@@ -3055,7 +3056,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || !active.mountId) return;
     const mountName = mountOf(battle, active)?.name ?? 'sa monture';
     dismount(battle, scene, active);
-    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, `${active.name} descend de ${mountName}.`] } });
+    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} descend de ${mountName}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   // Combat monté (LDB 14 l.219) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
@@ -3093,7 +3094,7 @@ export const useGame = create<GameState>((set, get) => ({
         ...battle,
         action: 'move', // mouvement libre rouvert, sans pénalité (l.87) ; Action préservée
         reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
-        log: [...battle.log, `${mover.name} se désengage en sacrifiant son Avantage.`],
+        log: [...battle.log, ev('flee', `${mover.name} se désengage en sacrifiant son Avantage.`, mover.id)],
       },
     });
     bus.emit(EVT.SCENE_DIRTY);
@@ -3219,19 +3220,19 @@ export const useGame = create<GameState>((set, get) => ({
         .filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
       const blocked = occupied(battle, mover);
-      log.push(`${mover.name} se désengage (Esquive réussie, +1 Avantage).`);
+      log.push(ev('flee', `${mover.name} se désengage (Esquive réussie, +1 Avantage).`, mover.id, foe.id));
       set({
         battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
       });
     } else if (pd.result === 'tie') {
       // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
       // l'adversaire non plus (LDB Tests). L'Action est consommée par la tentative d'Esquive.
-      log.push(`${mover.name} : échange neutre, le désengagement échoue (personne ne prend l'avantage).`);
+      log.push(ev('flee', `${mover.name} : échange neutre, le désengagement échoue (personne ne prend l'avantage).`, mover.id, foe.id));
       set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
     } else {
       foe.advantage += 1; // l'adversaire gagne +1, la fuite échoue (l.89)
       foe.gainedAdvThisRound = true;
-      log.push(`${mover.name} échoue à se désengager ; ${foe.name} gagne +1 Avantage.`);
+      log.push(ev('flee', `${mover.name} échoue à se désengager ; ${foe.name} gagne +1 Avantage.`, mover.id, foe.id));
       set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
     }
     bus.emit(EVT.SCENE_DIRTY);
@@ -3250,7 +3251,7 @@ export const useGame = create<GameState>((set, get) => ({
     foe.advantage += 1; // l'adversaire gagne immédiatement +1 Avantage (l.101)
     foe.gainedAdvThisRound = true;
     const res = resolveBackstabAttack(foe, mover, battleRng());
-    log.push(`${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`);
+    log.push(ev('flee', `${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`, mover.id, foe.id));
     // « Un jet = une modale » : le héros voit le dé du coup dans le dos (jet subi).
     if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log] });
     if (res.hit && res.woundsLost) {
@@ -3262,7 +3263,7 @@ export const useGame = create<GameState>((set, get) => ({
       const broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
       if (broken) {
         addCondition(mover, 'Brisé', broken);
-        log.push(`${mover.name} panique : ${broken} État(s) Brisé.`);
+        log.push(ev('fear', `${mover.name} panique : ${broken} État(s) Brisé.`, mover.id));
       }
       if (mover.kind === 'hero')
         pushReveal(set, { kind: 'calme', title: 'Test de Calme', dice: ct.roll, lines: [ct.success ? 'Sang-froid gardé.' : `Panique : ${broken} État(s) Brisé.`] });
