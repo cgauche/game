@@ -38,4 +38,12 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   it('la Maladresse passe avant la Déviation et la Frappe Mortelle', () => {
     expect(pickActiveModalKey({ pendingFumble: {}, pendingDeviation: {}, pendingCleave: {} })).toBe('fumble');
   });
+
+  it('Frappe Mortelle seule → modale de balayage', () => {
+    expect(pickActiveModalKey({ pendingCleave: {} })).toBe('cleave');
+  });
+
+  it('Frappe Mortelle + jet d’enchaînement en cours → le jet prend la main', () => {
+    expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {} })).toBe('attack');
+  });
 });

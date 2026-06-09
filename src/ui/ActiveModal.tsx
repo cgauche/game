@@ -53,7 +53,8 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingFateSave, 'fateSave'],
     [!!s.pendingFumble, 'fumble'],
     [!!s.pendingDeviation, 'deviation'],
-    [!!s.pendingCleave, 'cleave'],
+    // Frappe Mortelle : le jet d'enchaînement (pendingAttack) prend la main — sinon CleaveModal rend `null`.
+    [!!s.pendingCleave && !s.pendingAttack, 'cleave'],
     [!!s.pendingTrample, 'trample'],
     [(s.pendingReveals?.length ?? 0) > 0, 'reveal'],
     [!!s.pendingDefense, 'defense'],
