@@ -9,29 +9,9 @@ import { formatMoney } from '../engine/money';
 import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
 import { CombatBanner } from './CombatBanner';
-import { TestModal } from './TestModal';
-import { RollModal } from './RollModal';
-import { ReloadModal } from './ReloadModal';
-import { StateRecoveryModal } from './StateRecoveryModal';
+import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { BargainModal } from './BargainModal';
 import { AppraiseModal } from './AppraiseModal';
-import { DefenseModal } from './DefenseModal';
-import { DeviationModal } from './DeviationModal';
-import { MountTargetModal } from './MountTargetModal';
-import { RoundStartModal } from './RoundStartModal';
-import { FateSaveModal } from './FateSaveModal';
-import { DisengageModal } from './DisengageModal';
-import { CleaveModal } from './CleaveModal';
-import { TrampleModal } from './TrampleModal';
-import { RunModal } from './RunModal';
-import { FocusModal } from './FocusModal';
-import { PsychModal } from './PsychModal';
-import { EncounterPsychModal } from './EncounterPsychModal';
-import { FrenzyModal } from './FrenzyModal';
-import { HealModal } from './HealModal';
-import { CastModal } from './CastModal';
-import { FumbleModal } from './FumbleModal';
-import { RevealModal } from './RevealModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { GroupPanel } from './GroupPanel';
@@ -123,29 +103,11 @@ export function CampaignView() {
       </main>
 
       {mode === 'battle' && battle && <BattlePanel onInspect={setInspectId} />}
-      <TestModal />
-      <RollModal />
-      <ReloadModal />
-      <StateRecoveryModal />
+      {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}
+      <ActiveModal />
+      {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment. */}
       <BargainModal />
       <AppraiseModal />
-      <DefenseModal />
-      <DeviationModal />
-      <MountTargetModal />
-      <DisengageModal />
-      <CleaveModal />
-      <TrampleModal />
-      <RunModal />
-      <FocusModal />
-      <PsychModal />
-      <EncounterPsychModal />
-      <FrenzyModal />
-      <HealModal />
-      <CastModal />
-      <FumbleModal />
-      <RevealModal />
-      <RoundStartModal />
-      <FateSaveModal />
       <DocumentModal />
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
       {inspected && <InspectPanel combatant={inspected} onClose={() => setInspectId(null)} />}
