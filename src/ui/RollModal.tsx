@@ -5,6 +5,7 @@ import { canReroll } from '../engine/fortune';
 import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { CombatantBadge } from './CombatantBadge';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -89,10 +90,11 @@ export function RollModal() {
     <div className="modal-overlay">
       <div className="modal roll-modal">
         <h3>Attaque</h3>
-        <p className="rm-vs">
-          <strong>{attacker.name}</strong> <span className="rm-weapon">({weapon?.name ?? 'Mains nues'})</span> →{' '}
-          <strong>{target.name}</strong>
-        </p>
+        <div className="rm-vs">
+          <CombatantBadge combatant={attacker} />
+          <span className="rm-vs-arrow"><span className="rm-weapon">{weapon?.name ?? 'Mains nues'}</span><br />→</span>
+          <CombatantBadge combatant={target} />
+        </div>
 
         {!res ? (
           <>

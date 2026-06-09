@@ -5,6 +5,7 @@ import { RollLine } from './RollModal';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { CombatantBadge } from './CombatantBadge';
 
 /**
  * Modale de défense réactive : quand un ennemi (IA) attaque un héros en mêlée, le
@@ -37,10 +38,11 @@ export function DefenseModal() {
     <div className="modal-overlay">
       <div className="modal roll-modal">
         <h3>Défense</h3>
-        <p className="rm-vs">
-          <strong>{attacker.name}</strong> <span className="rm-weapon">({pd.weapon?.name ?? 'Mains nues'})</span> attaque →{' '}
-          <strong>{defender.name}</strong>
-        </p>
+        <div className="rm-vs">
+          <CombatantBadge combatant={attacker} />
+          <span className="rm-vs-arrow"><span className="rm-weapon">{pd.weapon?.name ?? 'Mains nues'}</span><br />attaque →</span>
+          <CombatantBadge combatant={defender} />
+        </div>
 
         {!res ? (
           <>
