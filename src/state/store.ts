@@ -2421,6 +2421,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() } });
     if (checkBattleOver(get, set)) return;
     bus.emit(EVT.SCENE_DIRTY);
+    maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
     maybeRunEnemyTurn(get, set);
   },
 

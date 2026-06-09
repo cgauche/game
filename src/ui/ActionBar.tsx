@@ -53,6 +53,8 @@ export function ActionBar() {
   const flags = useGame((s) => s.flags);
   const establishing = useGame((s) => s.establishing);
   const beginCombat = useGame((s) => s.beginCombat);
+  const pendingRoundStart = useGame((s) => s.pendingRoundStart);
+  const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -64,6 +66,16 @@ export function ActionBar() {
     return (
       <div className="action-bar establishing-bar">
         <button className="btn btn-primary commencer-btn" onClick={beginCombat}>⚔️ Commencer le combat</button>
+      </div>
+    );
+  }
+  // Début de Round (LDB ch.17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
+  // « Commencer le round ». On voit l'ordre (frise BattlePanel) et on peut y dépenser sa Chance pour agir en
+  // premier (cf. canActFirst) avant de lancer le Round (confirmRoundStart). Le champ reste visible.
+  if (pendingRoundStart) {
+    return (
+      <div className="action-bar establishing-bar">
+        <button className="btn btn-primary commencer-btn" onClick={confirmRoundStart}>▶️ Commencer le round {pendingRoundStart.round}</button>
       </div>
     );
   }

@@ -912,6 +912,34 @@ textarea:focus {
   font-size: 9px;
   color: var(--muted);
 }
+/* Début de Round (LDB ch.17 l.27) : bandeau d'initiative + bouton « Agir en premier » (Chance) dans la frise. */
+.round-start-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  background: rgba(216, 169, 59, 0.12);
+  border: 1px solid rgba(216, 169, 59, 0.4);
+  border-radius: 6px;
+  padding: 4px 7px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+.ord-first {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold);
+  background: rgba(216, 169, 59, 0.14);
+  border: 1px solid rgba(216, 169, 59, 0.5);
+  border-radius: 5px;
+  padding: 3px 5px;
+  cursor: pointer;
+}
+.ord-first:hover {
+  background: rgba(216, 169, 59, 0.28);
+}
 
 /* ── Barre d'action EN BAS : panneau Perso (héros actif) + actions (Lot 1) ── */
 .action-bar {

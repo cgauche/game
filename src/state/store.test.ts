@@ -1653,7 +1653,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     return { H, E };
   }
 
-  it('fin du dernier tour du Round : si un héros a de la Chance, on suspend (pendingRoundStart)', () => {
+  it('fin du dernier tour du Round : on suspend (fenêtre d’initiative, pendingRoundStart)', () => {
     endOfRoundBattle(1);
     useGame.getState().battleEndTurn(); // H (dernier de l'ordre) finit → bascule au Round 2
     const st = useGame.getState();
@@ -1662,9 +1662,20 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     expect(st.battle!.round).toBe(2);
   });
 
-  it('aucune Chance : pas de suspension', () => {
+  it('même sans Chance : on suspend quand même en début de Round (la fenêtre d’initiative est systématique)', () => {
     endOfRoundBattle(0);
     useGame.getState().battleEndTurn();
+    const st = useGame.getState();
+    expect(st.pendingRoundStart).not.toBeNull();
+    expect(st.pendingRoundStart!.round).toBe(2);
+  });
+
+  it('la pause de début de Round GÈLE l’IA ennemie jusqu’à « Commencer le round »', () => {
+    endOfRoundBattle(0); // ordre [E, H] : l'ennemi est en tête du Round 2
+    useGame.getState().battleEndTurn();
+    vi.runOnlyPendingTimers(); // aucun timer d'IA ne doit être en attente pendant la pause
+    expect(useGame.getState().pendingRoundStart).not.toBeNull(); // l'ennemi n'a pas joué : on attend la confirmation
+    useGame.getState().confirmRoundStart();
     expect(useGame.getState().pendingRoundStart).toBeNull();
   });
 

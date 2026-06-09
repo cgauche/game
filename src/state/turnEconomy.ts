@@ -31,3 +31,18 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
   if ((active.resolve ?? 0) > 0 && active.conditions.length > 0) return true;
   return false;
 }
+
+/**
+ * Ce combattant peut-il choisir d'AGIR EN PREMIER ce Round (pré-emption d'initiative, LDB ch.17 l.27 :
+ * « Au début du Round, choisissez le moment où vous allez agir, sans tenir compte de l'Ordre
+ * d'Initiative ») ? Affiché dans la frise d'ordre (BattlePanel) pendant la pause de début de Round.
+ *
+ * Aujourd'hui : un héros avec ≥1 point de Chance, pas déjà en tête de l'ordre, et toujours en état d'agir.
+ * Point d'extension UNIQUE pour de futurs Atouts/talents d'initiative (« Rapide », « Tir rapide »…) — toute
+ * nouvelle condition d'agir-en-premier s'ajoute ICI plutôt que d'être dispersée dans l'UI. Pur.
+ */
+export function canActFirst(c: Combatant, battle: BattleState): boolean {
+  if (c.kind !== 'hero' || isOutOfAction(c)) return false;
+  if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
+  return (c.fortune ?? 0) > 0;
+}

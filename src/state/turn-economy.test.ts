@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hasMeaningfulOption } from './turnEconomy';
+import { hasMeaningfulOption, canActFirst } from './turnEconomy';
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 
@@ -47,5 +47,44 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
   it('un ennemi n’a jamais d’« option de joueur » → false', () => {
     const e = hero({ id: 'E', kind: 'enemy' });
     expect(hasMeaningfulOption(e, battle(e))).toBe(false);
+  });
+});
+
+describe('canActFirst — pré-emption d’initiative en début de Round (LDB ch.17 l.27)', () => {
+  // Ordre par défaut [E, H] : l'ennemi est en tête, donc le héros peut se placer devant lui.
+  const duel = (h: Combatant, e: Combatant, over: Partial<BattleState> = {}): BattleState =>
+    ({
+      combatants: [h, e], order: [e.id, h.id], turn: 0, round: 2, action: null, selectedSpell: null,
+      reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
+    }) as unknown as BattleState;
+
+  it('héros avec ≥1 Chance, pas déjà en tête → true', () => {
+    const h = hero({ id: 'H', fortune: 1 });
+    const e = hero({ id: 'E', kind: 'enemy' });
+    expect(canActFirst(h, duel(h, e))).toBe(true);
+  });
+
+  it('héros sans Chance → false', () => {
+    const h = hero({ id: 'H', fortune: 0 });
+    const e = hero({ id: 'E', kind: 'enemy' });
+    expect(canActFirst(h, duel(h, e))).toBe(false);
+  });
+
+  it('héros déjà en tête de l’ordre → false', () => {
+    const h = hero({ id: 'H', fortune: 1 });
+    const e = hero({ id: 'E', kind: 'enemy' });
+    expect(canActFirst(h, duel(h, e, { order: ['H', 'E'] }))).toBe(false);
+  });
+
+  it('un ennemi (même avec de la Chance) → false', () => {
+    const h = hero({ id: 'H' });
+    const e = hero({ id: 'E', kind: 'enemy', fortune: 5 });
+    expect(canActFirst(e, duel(h, e))).toBe(false);
+  });
+
+  it('héros hors de combat (Inconscient) → false', () => {
+    const h = hero({ id: 'H', fortune: 2, conditions: [{ name: 'Inconscient', value: 1 }] });
+    const e = hero({ id: 'E', kind: 'enemy' });
+    expect(canActFirst(h, duel(h, e))).toBe(false);
   });
 });

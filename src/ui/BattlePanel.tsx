@@ -1,5 +1,6 @@
 import { useGame, activeCombatant } from '../state/store';
 import { isOutOfAction } from '../engine/conditions';
+import { canActFirst } from '../state/turnEconomy';
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
 import { narrateEvent } from '../gameIso/combatNarration';
 import { campaign } from '../scenes/campaign';
@@ -16,6 +17,8 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const startScene = useGame((s) => s.startScene);
+  const pendingRoundStart = useGame((s) => s.pendingRoundStart);
+  const roundStartPromote = useGame((s) => s.roundStartPromote);
   if (!battle) return null;
 
   const active = activeCombatant(battle);
@@ -30,6 +33,9 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
       )}
 
       <div className="mini-title">Ordre de bataille</div>
+      {/* Début de Round (LDB ch.17 l.27) : pendant la pause d'initiative, on peut placer un héros disposant de
+          Chance en tête de l'ordre (bouton « Agir en premier » sur sa ligne). La barre du bas lance le Round. */}
+      {pendingRoundStart && <div className="round-start-hint">⏳ Début du Round {pendingRoundStart.round} — choisis ton initiative</div>}
       <div className="order-list">
         {battle.order.map((id, i) => {
           const c = battle.combatants.find((x) => x.id === id)!;
@@ -40,6 +46,7 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
           const ratio = c.wounds.max > 0 ? c.wounds.current / c.wounds.max : 0;
           const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
           const fx = summarizeEffects(c.conditions, [], 3, combatantFlags(c)); // jusqu'à 3 icônes (États + postures/Frénésie)
+          const canFirst = !!pendingRoundStart && canActFirst(c, battle); // pré-emption possible pour CE combattant
           return (
             <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`} onClick={() => onInspect?.(id)} title="Inspecter ce combattant">
               <span className="ord-portrait">
@@ -52,6 +59,15 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
                   <span className="ord-pv">{c.dead ? '☠️' : `${c.wounds.current}/${c.wounds.max}`}</span>
                 </div>
                 <div className="ord-bar"><i style={{ width: `${Math.max(0, ratio) * 100}%`, background: hpColor(ratio) }} /></div>
+                {canFirst && (
+                  <button
+                    className="ord-first"
+                    onClick={(e) => { e.stopPropagation(); roundStartPromote(c.id); }}
+                    title={`Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round (LDB Destin)`}
+                  >
+                    ⏫ Agir en premier ({c.fortune ?? 0} 🍀)
+                  </button>
+                )}
               </div>
               {fx.visible.length > 0 && (
                 <span className="ord-states">

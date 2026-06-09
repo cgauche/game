@@ -1978,34 +1978,20 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   decayEngagement(battle.combatants);
   // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
   if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
-  // (4) Pré-emption d'initiative (Chance, 3e usage, LDB ch.17 l.27) sinon sélection de l'acteur.
-  const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
-  const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
-  if (enemiesAlive && heroCanPreempt) {
-    set({ battle: { ...battle, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: battle.round } });
-    return;
-  }
-  let turn = 0;
-  for (let i = 0; i < battle.order.length; i++) {
-    const c = battle.combatants.find((x) => x.id === battle.order[i]);
-    if (c && !isOutOfAction(c)) {
-      turn = i;
-      break;
-    }
-  }
-  const active = battle.combatants.find((c) => c.id === battle.order[turn]);
-  if (active) active.defensiveStance = false;
-  set({ battle: { ...battle, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() } });
+  // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
+  //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;
-  bus.emit(EVT.SCENE_DIRTY);
-  maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
-  maybeRunEnemyTurn(get, set);
+  // (5) Pause de DÉBUT DE ROUND (LDB ch.17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
+  //     l'initiative (frise BattlePanel) et permettre la pré-emption (Chance, 3e usage ; futurs Atouts/talents).
+  //     L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf. garde de maybeRunEnemyTurn.
+  const b = get().battle!;
+  set({ battle: { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: b.round } });
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().establishing || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().establishing || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

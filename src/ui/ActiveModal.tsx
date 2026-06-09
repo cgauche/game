@@ -7,7 +7,6 @@ import { StateRecoveryModal } from './StateRecoveryModal';
 import { DefenseModal } from './DefenseModal';
 import { DeviationModal } from './DeviationModal';
 import { MountTargetModal } from './MountTargetModal';
-import { RoundStartModal } from './RoundStartModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
 import { CleaveModal } from './CleaveModal';
@@ -25,7 +24,7 @@ import { RevealModal } from './RevealModal';
 /** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire (R2 du diagnostic). */
 export type ModalKey =
   | 'fateSave' | 'fumble' | 'deviation' | 'cleave' | 'trample' | 'reveal' | 'defense'
-  | 'psych' | 'encounterPsych' | 'roundStart' | 'disengage' | 'mountTarget' | 'frenzy'
+  | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
   | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test';
 
 /** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
@@ -33,7 +32,7 @@ export interface ModalPendings {
   pendingFateSave?: unknown; pendingFumble?: unknown; pendingDeviation?: unknown;
   pendingCleave?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
   pendingDefense?: unknown; pendingPsych?: unknown; pendingEncounterPsych?: unknown;
-  pendingRoundStart?: unknown; pendingDisengage?: unknown; pendingMountTarget?: unknown;
+  pendingDisengage?: unknown; pendingMountTarget?: unknown;
   pendingFrenzy?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
   pendingCast?: unknown; pendingReload?: unknown; pendingStateRecovery?: unknown;
   pendingAttack?: unknown; pendingTest?: unknown;
@@ -45,7 +44,9 @@ export interface ModalPendings {
  * dans le store et reprennent la main quand les plus prioritaires se ferment (file naturelle). `null` = aucune.
  *
  * Ordre : sauvetage par Destin > Maladresse > Déviation critique > Frappe Mortelle/Piétinement > révélations
- * témoins > défense réactive > psychologie > début de Round > manœuvres/actions du joueur > jet.
+ * témoins > défense réactive > psychologie > manœuvres/actions du joueur > jet.
+ * (Le DÉBUT DE ROUND n'est plus une modale : c'est une pause in-situ — frise d'ordre BattlePanel +
+ *  bouton « Commencer le round » dans l'ActionBar — pour ne pas doubler l'ordre déjà affiché à droite.)
  */
 export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
   const order: [boolean, ModalKey][] = [
@@ -58,7 +59,6 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingDefense, 'defense'],
     [!!s.pendingPsych, 'psych'],
     [!!s.pendingEncounterPsych, 'encounterPsych'],
-    [!!s.pendingRoundStart, 'roundStart'],
     [!!s.pendingDisengage, 'disengage'],
     [!!s.pendingMountTarget, 'mountTarget'],
     [!!s.pendingFrenzy, 'frenzy'],
@@ -77,7 +77,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, cleave: CleaveModal,
   trample: TrampleModal, reveal: RevealModal, defense: DefenseModal, psych: PsychModal,
-  encounterPsych: EncounterPsychModal, roundStart: RoundStartModal, disengage: DisengageModal,
+  encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   attack: RollModal, test: TestModal,
