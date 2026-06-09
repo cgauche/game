@@ -483,6 +483,10 @@ export interface GameState {
   faceAtCombatStart: () => void;
   zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
   setZoom: (z: number) => void;
+  /** Option de jeu : INSPECTION des combattants (statbloc au clic sur la frise d'ordre). OFF par défaut
+   *  (préférence du joueur — l'inspection casse un peu l'immersion) ; préférence persistante (comme la vue). */
+  inspectEnabled: boolean;
+  toggleInspectEnabled: () => void;
   partyPos: Pt;
   flags: Record<string, boolean>;
   journal: string[];
@@ -871,6 +875,8 @@ export const useGame = create<GameState>((set, get) => ({
   },
   zoom: 1,
   setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(1, z)) }),
+  inspectEnabled: false,
+  toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
   partyPos: { x: 0, y: 0 },
   flags: {},
   journal: [],
@@ -1109,10 +1115,10 @@ export const useGame = create<GameState>((set, get) => ({
     // qu'on ait à le câbler. `JSON` retire les fonctions (seules les données sont remises à
     // plat) ; `set()` (fusion superficielle) préserve les actions. On ne conserve QUE la
     // navigation/vue (screen, caméra, zoom) et le groupe (posé par `setParty`).
-    const { screen, party, camRot, zoom } = get();
+    const { screen, party, camRot, zoom, inspectEnabled } = get();
     set({
       ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
-      screen, party, camRot, zoom,
+      screen, party, camRot, zoom, inspectEnabled,
       scene: migrateScene(JSON.parse(JSON.stringify(scene))), // dissout objet→prop + loot/search→interact au chargement
       mode: 'exploration',
       partyPos: pos,

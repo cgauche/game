@@ -821,10 +821,35 @@ textarea:focus {
   font-size: 11px;
   color: var(--muted);
 }
+.order-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+/* Option de jeu : bascule d'inspection (OFF par défaut). */
+.inspect-toggle {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.inspect-toggle.on {
+  color: #ffe066;
+  border-color: rgba(255, 224, 102, 0.5);
+  background: rgba(255, 224, 102, 0.12);
+}
 .order-list {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+.ord-row.inspectable {
+  cursor: pointer;
 }
 .ord-row {
   display: flex;

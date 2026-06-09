@@ -19,6 +19,8 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
   const startScene = useGame((s) => s.startScene);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
+  const inspectEnabled = useGame((s) => s.inspectEnabled);
+  const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   if (!battle) return null;
 
   const active = activeCombatant(battle);
@@ -32,7 +34,17 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
         </div>
       )}
 
-      <div className="mini-title">Ordre de bataille</div>
+      <div className="mini-title order-title">
+        Ordre de bataille
+        {/* Option de jeu (demande utilisateur) : l'inspection des combattants est OFF par défaut. */}
+        <button
+          className={`inspect-toggle ${inspectEnabled ? 'on' : ''}`}
+          onClick={toggleInspect}
+          title={inspectEnabled ? 'Inspection activée — clique un combattant pour voir son statbloc. Cliquer pour désactiver.' : 'Activer l’inspection des combattants (statbloc au clic)'}
+        >
+          🔍 {inspectEnabled ? 'On' : 'Off'}
+        </button>
+      </div>
       {/* Début de Round (LDB ch.17 l.27) : pendant la pause d'initiative, on peut placer un héros disposant de
           Chance en tête de l'ordre (bouton « Agir en premier » sur sa ligne). La barre du bas lance le Round. */}
       {pendingRoundStart && <div className="round-start-hint">⏳ Début du Round {pendingRoundStart.round} — choisis ton initiative</div>}
@@ -48,7 +60,7 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
           const fx = summarizeEffects(c.conditions, [], 3, combatantFlags(c)); // jusqu'à 3 icônes (États + postures/Frénésie)
           const canFirst = !!pendingRoundStart && canActFirst(c, battle); // pré-emption possible pour CE combattant
           return (
-            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`} onClick={() => onInspect?.(id)} title="Inspecter ce combattant">
+            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''} ${onInspect ? 'inspectable' : ''}`} onClick={onInspect ? () => onInspect(id) : undefined} title={onInspect ? 'Inspecter ce combattant' : undefined}>
               <span className="ord-portrait">
                 <RigPortrait combatant={c} size={32} ring={ring} />
                 {ko && <span className="ko-cross">✕</span>}

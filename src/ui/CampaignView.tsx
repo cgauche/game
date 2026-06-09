@@ -29,6 +29,7 @@ export function CampaignView() {
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
   const establishing = useGame((s) => s.establishing); // plan d'ensemble d'ouverture (R2)
+  const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
   const gameTime = useGame((s) => s.gameTime);
   const setScreen = useGame((s) => s.setScreen);
   const zoom = useGame((s) => s.zoom);
@@ -38,7 +39,7 @@ export function CampaignView() {
   const [inspectId, setInspectId] = useState<string | null>(null);
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
-  const inspected = inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
+  const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
 
   return (
     <div className="screen campaign-view">
@@ -107,7 +108,7 @@ export function CampaignView() {
         {mode === 'battle' && battle && <ActionBar />}
       </main>
 
-      {mode === 'battle' && battle && <BattlePanel onInspect={setInspectId} />}
+      {mode === 'battle' && battle && <BattlePanel onInspect={inspectEnabled ? setInspectId : undefined} />}
       {mode === 'battle' && battle && <LegendPanel />}
       <VictoryScreen />{/* écran de fin de combat plein écran (se gate sur battle.over==='victory') */}
       {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}

@@ -2155,7 +2155,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
   // Champs DÉLIBÉRÉMENT conservés (navigation/vue/groupe) ou dérivés de la scène de départ.
   // Tout le RESTE doit revenir à son défaut de création, automatiquement, sans liste à maintenir.
   const PRESERVED_OR_DERIVED = new Set([
-    'screen', 'party', 'camRot', 'zoom',                          // navigation / vue / groupe
+    'screen', 'party', 'camRot', 'zoom', 'inspectEnabled',        // navigation / vue / groupe / préférences
     'scene', 'partyPos', 'flags', 'campaignSceneId', 'journal', 'mode', 'money', 'inventory', // dérivés
   ]);
 
@@ -2207,6 +2207,18 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     expect((st.party as unknown[])).toHaveLength(1);
     expect((st.scene as { id: string }).id).toBe('neuve');
     expect(st.flags).toEqual({}); // flags de l’ancienne partie effacés
+  });
+
+  it('l’option d’inspection est OFF par défaut, se bascule, et SURVIT à une nouvelle partie (préférence)', () => {
+    expect(useGame.getState().inspectEnabled).toBe(false); // défaut : immersion préservée
+    useGame.getState().toggleInspectEnabled();
+    expect(useGame.getState().inspectEnabled).toBe(true);
+    const scene = emptyScene(6, 6);
+    scene.id = 'neuve2';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    useGame.getState().setParty([{ id: 'h', name: 'H', xp: 0 } as unknown as Combatant]);
+    useGame.getState().startScene(scene);
+    expect(useGame.getState().inspectEnabled).toBe(true); // préférence conservée comme la vue (zoom/caméra)
   });
 });
 
