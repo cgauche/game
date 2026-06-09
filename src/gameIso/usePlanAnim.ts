@@ -6,8 +6,8 @@ import { creatureMatch } from './rig/creatures';
 import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
+import { STEP_MS, walkMs } from './walkPath';
 
-const STEP_MS = 160; // démarche (aligné déplacement)
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
 
 type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack'; start: number; atk?: string };
@@ -50,7 +50,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
     const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
       if (d.id !== id) return;
       const p = d.path;
-      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, p?.length ?? 1) * STEP_MS };
+      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, walkMs(p ?? [])) }; // s'arrête à l'arrivée réelle (plus d'off-by-one)
       ensureLoop();
     });
     const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string; creatureAttack?: string }) => {

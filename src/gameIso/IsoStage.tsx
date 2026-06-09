@@ -240,6 +240,20 @@ export function IsoStage() {
   const dims: Dims = { ...scene.dimensions, rot: shownRot };
   const size = stageSize(dims);
 
+  // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en cours
+  // (anti-téléportation), sinon la position logique. Défini TÔT pour que les surbrillances (halo
+  // d'actif) ET la caméra suivent le token qui GLISSE — et non sa destination logique déjà écrite.
+  const wnow = performance.now();
+  const walkPosOf = (id: string, x: number, y: number) => {
+    const w = walksRef.current[id];
+    if (!w) return { x, y, walking: false };
+    const p = walkXY(w.path, wnow - w.start, STEP_MS);
+    return { x: p.x, y: p.y, walking: true };
+  };
+  // Une marche est-elle en cours ? Si oui, la caméra suit le token image par image : on COUPE la
+  // transition CSS du transform (sinon elle « chasse » une cible mobile et traîne ~0,3 s derrière).
+  const anyWalking = Object.keys(walksRef.current).length > 0;
+
   // Tir en cours de visée : le combattant actif est un héros en mode « attaque » avec une arme à
   // distance → on peint les bandes de portée + une infobulle au survol (lisibilité du tir).
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
@@ -297,10 +311,12 @@ export function IsoStage() {
           );
         }
     }
-    if (activeC?.pos)
+    if (activeC?.pos) {
+      const ap = walkPosOf(activeC.id, activeC.pos.x, activeC.pos.y); // le halo SUIT le token qui glisse
       highlights.push(
-        <path key="active" d={diamondPath(activeC.pos.x, activeC.pos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
+        <path key="active" d={diamondPath(ap.x, ap.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
       );
+    }
   }
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
@@ -364,16 +380,6 @@ export function IsoStage() {
       {child}
     </BodyToken>
   );
-
-  // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en
-  // cours (anti-téléportation), sinon la position logique.
-  const wnow = performance.now();
-  const walkPosOf = (id: string, x: number, y: number) => {
-    const w = walksRef.current[id];
-    if (!w) return { x, y, walking: false };
-    const p = walkXY(w.path, wnow - w.start, STEP_MS);
-    return { x: p.x, y: p.y, walking: true };
-  };
 
   // Décors (props : épave, cadavres, sang…) rendus dans LES DEUX modes → restent
   // visibles pendant le combat. L'anim d'ambiance CSS (ent.anim) passe par le calque fx.
@@ -482,7 +488,7 @@ export function IsoStage() {
     focus = { x: Math.round((targeting.from.x + targeting.to.x) / 2), y: Math.round((targeting.from.y + targeting.to.y) / 2) };
   } else if (mode === 'battle' && battle) {
     const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
-    if (active?.pos) focus = active.pos;
+    if (active?.pos) focus = walkPosOf(active.id, active.pos.x, active.pos.y); // la caméra SUIT le token qui glisse (n'arrive plus avant lui)
     else {
       const alive = battle.combatants.filter((c) => c.pos && !isOutOfAction(c));
       if (alive.length)
@@ -604,7 +610,7 @@ export function IsoStage() {
       onPointerLeave={onPointerLeave}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
-      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
+      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
         <g>{floor}</g>
         <g>{highlights}</g>
         {mode === 'exploration' && !dialogue && (

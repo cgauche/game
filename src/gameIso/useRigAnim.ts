@@ -9,8 +9,7 @@ import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
 import type { Clip } from './rig/anim/clips';
 import type { Pose } from './rig/poses';
-
-const STEP_MS = 160;
+import { walkMs } from './walkPath';
 
 /**
  * Pilote l'ANIMATION d'un rig bipède (clips de repos/marche/attaque/parade/esquive/touché via
@@ -64,7 +63,7 @@ export function useRigAnim({ id, equip, restClip, facing }: {
       const p = d.path;
       play('walk');
       window.clearTimeout(walkTimer.current);
-      const dur = Math.max(1, (p?.length ?? 1)) * STEP_MS;
+      const dur = Math.max(1, walkMs(p ?? [])); // = (cases-1)×STEP_MS : la marche s'arrête à l'arrivée réelle (plus d'off-by-one)
       walkTimer.current = window.setTimeout(() => {
         if (restRef.current) holdClip(restRef.current);
         else play('idle');
