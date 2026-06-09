@@ -29,6 +29,8 @@ import {
   resolveTrample,
   AttackResult,
   ModLine,
+  outnumberMod,
+  crowdMod,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
@@ -533,6 +535,9 @@ export function resolveAttack(
     });
     if (inMelee) env.push({ label: 'Tir dans la mêlée', value: -20 });
     env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
+    // « Tirer dans le tas » (LDB 14 l.81/86/89) : cible noyée dans un groupe serré d'ennemis (3-6 +20, 7-12 +40, 13+ +60).
+    const crowd = crowdMod(battle.combatants.filter((c) => c.kind === target.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
+    if (crowd) env.push(crowd);
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
@@ -549,6 +554,9 @@ export function resolveAttack(
   const tFacing = get().facing[target.id];
   if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
     env.push({ label: 'Flanc/dos', value: 20 });
+  // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
+  const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
+  if (onm) env.push(onm);
   env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → s'ajoute au dodgeMod météo.
   // Charge montée (LDB 14 l.223) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.

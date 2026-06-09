@@ -249,6 +249,25 @@ export function attackModifiers(
   return out;
 }
 
+/** Surnombre en mêlée (LDB « Difficulté de Combat », 14 - _GoBack.md l.85/92) : 2 attaquants au
+ *  contact d'une même cible → +20 (Accessible) ; 3 ou plus → +40 (Facile). `attackers` inclut
+ *  l'attaquant courant. Renvoyé en `ModLine` pour injection via `env`. */
+export function outnumberMod(attackers: number): ModLine | null {
+  if (attackers >= 3) return { label: 'Surnombre (3+ c.1)', value: 40 };
+  if (attackers === 2) return { label: 'Surnombre (2 c.1)', value: 20 };
+  return null;
+}
+
+/** « Tirer dans le tas » (LDB « Difficulté de Combat », 14 - _GoBack.md l.81/86/89) : tirer sur une
+ *  cible noyée dans un groupe serré d'ennemis → 3-6 cibles +20, 7-12 → +40, 13+ → +60. `group` inclut
+ *  la cible elle-même. */
+export function crowdMod(group: number): ModLine | null {
+  if (group >= 13) return { label: 'Tirer dans le tas (13+)', value: 60 };
+  if (group >= 7) return { label: 'Tirer dans le tas (7-12)', value: 40 };
+  if (group >= 3) return { label: 'Tirer dans le tas (3-6)', value: 20 };
+  return null;
+}
+
 /** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). `dodgeMod` = pénalité météo
  *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). */
 export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0): ModLine[] {
