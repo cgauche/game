@@ -4,6 +4,8 @@
  * les valeurs sont injectées dans `attackModifiers`/`defenseModifiers` via `env` (cf. combatFlow).
  */
 import type { Scene, SceneEntity } from './scene';
+import { isIndoor } from './scene';
+import { isNight } from '../engine/clock';
 
 export interface SceneCombatMods {
   /** Cible dissimulée (obscurité de nuit ou brouillard) → −20 au tir (LDB 14 l.107). */
@@ -16,9 +18,15 @@ export interface SceneCombatMods {
   label: string;
 }
 
-/** Modificateurs de combat de la scène (obscurité de nuit + météo). Pluie/clair = aucun (+0, l.94-98). */
-export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>): SceneCombatMods {
-  const night = scene.ambiance === 'nuit';
+/** Obscurité de la scène (combat + rendu) : extérieur de nuit uniquement (l'intérieur reste éclairé).
+ *  Source de l'obscurité = l'HORLOGE (`gameTime`), plus l'ambiance authored (#T1c). Unique dérivation partagée. */
+export function sceneIsDark(scene: Pick<Scene, 'ambiance'>, gameTime: number): boolean {
+  return !isIndoor(scene) && isNight(gameTime);
+}
+
+/** Modificateurs de combat de la scène (obscurité de nuit pilotée par l'horloge + météo). Pluie/clair = aucun (+0, l.94-98). */
+export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>, gameTime: number): SceneCombatMods {
+  const night = sceneIsDark(scene, gameTime);
   const weather = scene.weather ?? 'clair';
   const concealed = night || weather === 'brouillard'; // cible dissimulée −20 au tir (l.107)
   let attackMod = 0;
