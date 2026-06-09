@@ -6,7 +6,26 @@
  * pendant un Round complet, vous n'êtes plus Engagé. » → relationnel, symétrique, purgé en
  * fin de Round si aucune attaque échangée. Tout vient de la Source (aucune invention).
  */
-import { Combatant } from './types';
+import { Combatant, Weapon } from './types';
+
+/**
+ * Portée d'ENGAGEMENT / d'attaque d'une arme de MÊLÉE, en CASES. RAW : LDB 62 l.211 (Allonge
+ * « Très longue » → Engage jusqu'à 4 m) et l.213 (« Considérable » → 6 m), avec 1 case = 2 m
+ * (LDB 15 l.55) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) = contact = 1.
+ * NE PAS implémenter l'Option « Longueur d'Arme / Combat au Contact » (LDB 62 l.215-222, optionnelle). Pure.
+ */
+export function reachTiles(weapon: Weapon | null | undefined): number {
+  if (!weapon || weapon.type !== 'melee') return 1;
+  if (weapon.reach === 'Très longue') return 2;
+  if (weapon.reach === 'Considérable') return 3;
+  return 1;
+}
+
+/** Portée de mêlée d'un combattant = Allonge de son arme de mêlée employée (la 1ʳᵉ, comme `attackWeapon`).
+ *  Source UNIQUE de l'éligibilité d'attaque de mêlée (héros, résolution, IA) → symétrie garantie. Pure. */
+export function meleeReachTiles(weapons: Weapon[]): number {
+  return reachTiles(weapons.find((w) => w.type === 'melee'));
+}
 
 export function isEngaged(c: Combatant): boolean {
   return (c.engagedWith?.length ?? 0) > 0;

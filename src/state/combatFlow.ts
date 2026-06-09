@@ -32,7 +32,7 @@ import {
   outnumberMod,
   crowdMod,
 } from '../engine/combat';
-import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf } from '../engine/engagement';
+import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
@@ -448,7 +448,7 @@ export function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance 
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
 export function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
-  const adj = combatDistance(attacker, target) <= 1;
+  const adj = combatDistance(attacker, target) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
   const w = attackWeapon(attacker.weapons, adj);
   if (w.type === 'ranged' && attacker.kind === 'hero') {
     const ammo = selectedAmmo(attacker, w);
@@ -525,7 +525,7 @@ export function resolveAttack(
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
-  if (dist > 1 && weapon.type === 'melee') return null; // arme de mêlée hors de portée
+  if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const scene = get().scene!;
   const battle = get().battle!;
@@ -888,7 +888,7 @@ export function defenderFumbled(res: AttackResult): boolean {
 }
 
 /** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à
- *  distance »). Tir → dans la bande de portée ; mêlée/sans portée → adjacent (Allonge ~1 case).
+ *  distance »). Tir → dans la bande de portée ; mêlée → portée d'Allonge de l'arme (`reachTiles`).
  *  Sans position connue (tests), on ne filtre pas. */
 function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Combatant[] {
   const allies = battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x));
@@ -897,7 +897,7 @@ function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Comba
     if (!a.pos) return true;
     const d = combatDistance(c, a);
     if (weapon.type === 'ranged' && weapon.range) return rangeBandModifier(d, weapon.range) != null;
-    return d <= 1;
+    return d <= reachTiles(weapon);
   });
 }
 
@@ -1010,7 +1010,7 @@ export function maybeOpenDefense(
 ): boolean {
   if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
   if (weapon?.type !== 'melee') return false;
-  if (combatDistance(attacker, target) > 1) return false;
+  if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   const atk = rollMeleeAttacker(attacker, target, weapon, battleRng()); // jet d'attaque figé
@@ -2160,7 +2160,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   if (enemy.riderId) {
     const nerveux = (enemy.traits ?? []).some((t) => /nerveux/i.test(t));
     const foe = nerveux || !canAct ? undefined
-      : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= 1);
+      : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= meleeReachTiles(enemy.weapons));
     if (foe) { attackThenAdvance(foe); return; }
     return advanceTurn(get, set);
   }
@@ -2234,7 +2234,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
       const tgt = targetOf(action.thenTargetId);
-      if (canAct && combatDistance(enemy, tgt) <= 1) {
+      if (canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
         // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
         if (!wasEngaged) {
           const adv = chargeAdvantage(effectiveMovement(geom), distBefore);

@@ -70,6 +70,19 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
     expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'melee', targetId: 'h' });
   });
 
+  it('Allonge « Très longue » : frappe une cible à 2 cases sans se déplacer (RAW-3, LDB 62 l.211)', () => {
+    const PIKE: Weapon = { name: 'Pique', type: 'melee', damage: '+BF+2', reach: 'Très longue', qualities: [] };
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [PIKE] });
+    const h = mk('h', 'hero', { x: 5, y: 7 }); // 2 cases
+    expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'melee', targetId: 'h' });
+  });
+
+  it('arme de contact : une cible à 2 cases impose de se rapprocher (move, pas d’Allonge)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE] });
+    const h = mk('h', 'hero', { x: 5, y: 7 });
+    expect(chooseEnemyAction(input(e, [h])).kind).toBe('move');
+  });
+
   it('cible éloignée en mêlée → se rapproche (move) vers elle', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 3 });
     const h = mk('h', 'hero', { x: 5, y: 10 });

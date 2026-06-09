@@ -36,7 +36,7 @@ import {
   resolveTrample,
   AttackResult,
 } from '../engine/combat';
-import { disengageFrom, isEngaged, chargeAdvantage } from '../engine/engagement';
+import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
 import { rollTest, TestResult, OpposedResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
@@ -90,7 +90,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
-import { sizeFootprint } from './footprint';
+import { sizeFootprint, combatDistance } from './footprint';
 import { bus, EVT } from './bus';
 import { campaign } from '../scenes/campaign';
 
@@ -2327,9 +2327,10 @@ export const useGame = create<GameState>((set, get) => ({
     }
     if (battle.action !== 'attack') return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
-    // Arme effectivement employée selon la distance (mêlée au contact, distance sinon) — PAS weapons[0],
-    // sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB Armes l.297-298).
-    const adj = chebyshev(active.pos!, target.pos!) <= 1;
+    // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
+    // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
+    // Armes l.297-298). Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213), footprint inclus.
+    const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons);
     const w = attackWeapon(active.weapons, adj);
     if (!adj && w.type === 'melee') {
       get().log('Cible hors de portée de mêlée.'); // aucune arme à distance dispo → mêlée hors de portée

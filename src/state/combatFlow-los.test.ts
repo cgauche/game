@@ -33,7 +33,7 @@ function scene(w: number, tiles?: Record<string, string>): Scene {
 }
 
 const mkGet = (sc: Scene, combatants: Combatant[]): (() => GameState) =>
-  (() => ({ scene: sc, battle: { combatants }, log: () => {} })) as unknown as () => GameState;
+  (() => ({ scene: sc, battle: { combatants }, facing: {}, log: () => {} })) as unknown as () => GameState;
 
 describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', () => {
   it('mur intercalé à distance de la cible → pas de Ligne de Vue → null (pas de tir)', () => {
@@ -98,6 +98,27 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const b = target({ pos: { x: 6, y: 0 } });
     const r = resolveAttack(mkGet(s, [a, b]), a, b); // pas de heldGround, mais Mouvement nul
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
+  });
+});
+
+describe('resolveAttack — Allonge en mêlée (RAW-3, LDB 62 l.211/213)', () => {
+  const lance = { name: 'Pique', type: 'melee', damage: '+BF+2', reach: 'Très longue', qualities: [] };
+  const dague = { name: 'Dague', type: 'melee', damage: '+BF', reach: 'Très courte', qualities: [] };
+
+  it('arme « Très longue » engage et touche à 2 cases', () => {
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter({ weapons: [lance] as never, pos: { x: 0, y: 0 } });
+    const b = target({ pos: { x: 2, y: 0 } });
+    expect(resolveAttack(mkGet(s, [a, b]), a, b)).not.toBeNull(); // 2 cases ≤ Allonge 2
+  });
+
+  it('arme de contact (Très courte) ne touche PAS à 2 cases', () => {
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter({ weapons: [dague] as never, pos: { x: 0, y: 0 } });
+    const b = target({ pos: { x: 2, y: 0 } });
+    expect(resolveAttack(mkGet(s, [a, b]), a, b)).toBeNull(); // hors de portée de mêlée
   });
 });
 

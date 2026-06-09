@@ -16,7 +16,7 @@ import { reachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
 import { hasCondition } from '../engine/conditions';
-import { isEngaged } from '../engine/engagement';
+import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
 
 export type EnemyAction =
@@ -42,8 +42,6 @@ export interface EnemyTurnInput {
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
   smoke?: Pt[];
 }
-
-const adjacent = (a: Pt, b: Pt) => chebyshev(a, b) <= 1; // portée de mêlée = Chebyshev (diagonale incluse)
 
 /**
  * Cible préférée : on sécurise les éliminations en visant les Blessures les plus
@@ -75,8 +73,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
   if (hasCondition(enemy, 'En flammes') && !enemy.frenzied) return { kind: 'recover', state: 'En flammes' };
   const pos = enemy.pos!;
+  // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
+  // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
+  const mr = meleeReachTiles(enemy.weapons);
+  const withinMelee = (a: Pt, b: Pt) => chebyshev(a, b) <= mr;
   // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
-  const inMelee = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size) <= 1;
+  const inMelee = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size) <= mr;
 
   const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
@@ -116,10 +118,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
   // case atteignable lui est adjacente.
   const meleeReachableNow = (h: Combatant): boolean => {
-    if (adjacent(pos, h.pos!)) return true;
+    if (withinMelee(pos, h.pos!)) return true;
     for (const k of reach.keys()) {
       const [x, y] = k.split(',').map(Number);
-      if (adjacent({ x, y }, h.pos!)) return true;
+      if (withinMelee({ x, y }, h.pos!)) return true;
     }
     return false;
   };
@@ -170,7 +172,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const [x, y] = k.split(',').map(Number);
     if (x === pos.x && y === pos.y) continue; // ne pas « bouger » sur place
     const tile = { x, y };
-    const score: [number, number] = [adjacent(tile, target.pos!) ? 0 : 1, manhattan(tile, target.pos!)];
+    const score: [number, number] = [withinMelee(tile, target.pos!) ? 0 : 1, manhattan(tile, target.pos!)];
     if (!bestScore || score[0] < bestScore[0] || (score[0] === bestScore[0] && score[1] < bestScore[1])) {
       best = tile;
       bestScore = score;
