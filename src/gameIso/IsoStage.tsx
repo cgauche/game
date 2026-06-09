@@ -40,7 +40,7 @@ import { roofHidden } from '../state/buildings';
 import { walkXY, walkDuration, STEP_MS } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
@@ -298,6 +298,17 @@ export function IsoStage() {
           highlights.push(
             <path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, dims)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />,
           );
+    }
+    // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » sur les ennemis à portée
+    // (mêlée à l'Allonge / tir dans une bande AVEC Ligne de Vue) — mêmes prédicats que la résolution.
+    if (battle.action === 'attack' && activeC?.kind === 'hero' && !pendingAttack) {
+      const eligible = eligibleAttackTargetIds(useGame.getState);
+      for (const c of battle.combatants) {
+        if (!c.pos || !eligible.has(c.id)) continue;
+        highlights.push(
+          <path key={`tgt-${c.id}`} d={diamondPath(c.pos.x, c.pos.y, dims)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" />,
+        );
+      }
     }
     // « Tirer dans le tas » : surligne les cibles ÉLIGIBLES (les deux camps au contact de la cible)
     // qui peuvent être touchées au hasard — base du futur surlignage des zones d'effet (Explosion/sorts).

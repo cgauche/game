@@ -648,6 +648,23 @@ export function previewAttack(
   return { weapon, kind, inRange, blocked: false, target: target0, mods };
 }
 
+/** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir
+ *  dans une bande de portée AVEC Ligne de Vue) — MÊMES prédicats que la résolution (via `previewAttack`),
+ *  pour surligner les cibles cliquables et griser les inéligibles. Pur. Vide hors tour de héros. */
+export function eligibleAttackTargetIds(get: () => GameState): Set<string> {
+  const battle = get().battle;
+  const ids = new Set<string>();
+  if (!battle) return ids;
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  for (const c of battle.combatants) {
+    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    const p = previewAttack(get, active, c);
+    if (p.inRange && !p.blocked) ids.add(c.id);
+  }
+  return ids;
+}
+
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
  *  Avantage, animation, journal, fin de combat. */
 /** Issue du Test opposé d'Esquive du Désengagement : le mover est l'« attaquant » du test ;

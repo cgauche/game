@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { previewAttack, resolveAttack } from './combatFlow';
+import { previewAttack, resolveAttack, eligibleAttackTargetIds } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
@@ -52,6 +52,18 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     const solo = previewAttack(mkGet([a, b]), a, b).target;
     const duo = previewAttack(mkGet([a, ally, b]), a, b).target;
     expect(duo - solo).toBe(20);
+  });
+
+  it('eligibleAttackTargetIds : seuls les ennemis vivants à portée sont éligibles', () => {
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 } }); // épée, Allonge Moyenne = 1 case
+    const near = combatant({ id: 'E1', kind: 'enemy', pos: { x: 1, y: 0 } }); // adjacent → éligible
+    const far = combatant({ id: 'E2', kind: 'enemy', pos: { x: 5, y: 0 } }); // hors de portée → non
+    const dead = combatant({ id: 'E3', kind: 'enemy', pos: { x: 1, y: 1 }, wounds: { current: 0, max: 10 } as never }); // mort → non
+    const get = (() => ({ scene: scene(), battle: { combatants: [a, near, far, dead], order: ['A', 'E1', 'E2', 'E3'], turn: 0, movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+    const ids = eligibleAttackTargetIds(get);
+    expect(ids.has('E1')).toBe(true);
+    expect(ids.has('E2')).toBe(false);
+    expect(ids.has('E3')).toBe(false);
   });
 
   it('tir sans Ligne de Vue → blocked', () => {
