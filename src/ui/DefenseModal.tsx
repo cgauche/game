@@ -7,6 +7,12 @@ import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge } from './CombatantBadge';
 
+/** Libellé FR de la nature d'une attaque gratuite de créature (freeKind) pour le contexte de défense. */
+const FREE_LABEL: Record<string, string> = {
+  morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes (charge)', pietinement: 'Piétinement',
+  langue: 'Langue', hurlement: 'Hurlement',
+};
+
 /**
  * Modale de défense réactive : quand un ennemi (IA) attaque un héros en mêlée, le
  * joueur choisit Parade ou Esquive, clique « Défendre » (le jet de défense se fait
@@ -46,6 +52,12 @@ export function DefenseModal() {
 
         {!res ? (
           <>
+            {/* Contexte de l'attaque entrante (R10) : on défendait sans savoir ce qui arrivait. On montre
+                la NATURE (attaque gratuite de créature) et la FORCE (DR de l'attaquant figé) → à battre. */}
+            <div className="rm-threat">
+              ⚔️ Attaque entrante{pd.freeKind ? ` · ${FREE_LABEL[pd.freeKind] ?? 'gratuite'}` : ''} : a obtenu <b>+{pd.atk.sl} DR</b>
+              {' '}— il faut faire mieux en {pd.mode === 'parade' ? 'Parade' : 'Esquive'}.
+            </div>
             <div className="rm-loc">
               <span className="mini-title">Réaction</span>
               <div className="rm-loc-grid">

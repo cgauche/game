@@ -1035,6 +1035,20 @@ textarea:focus {
   color: var(--muted);
   font-weight: normal;
 }
+/* Contexte de l'attaque entrante dans la modale de défense (R10). */
+.rm-threat {
+  text-align: center;
+  font-size: 12px;
+  color: #e0b0a0;
+  background: rgba(120, 40, 30, 0.22);
+  border: 1px solid rgba(200, 90, 70, 0.4);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 0 0 10px;
+}
+.rm-threat b {
+  color: #ff9b80;
+}
 /* Badge d'identité d'un combattant dans les modales (R10) : portrait + couleur d'équipe + PV. */
 .cb-badge {
   display: flex;
