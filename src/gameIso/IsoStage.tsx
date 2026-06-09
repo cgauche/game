@@ -95,6 +95,7 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   // Réticule = TÉLÉGRAPHE de tir ennemi (« qui l'adversaire vise ») ; rien sur les actions du joueur.
   const enemyAim = useGame((s) => s.enemyAim);
+  const establishing = useGame((s) => s.establishing); // plan d'ensemble d'ouverture (R2) : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
@@ -487,16 +488,19 @@ export function IsoStage() {
     // Cadrer les DEUX : on centre sur le milieu tireur ↔ cible (« centré sur lui » corrigé).
     focus = { x: Math.round((targeting.from.x + targeting.to.x) / 2), y: Math.round((targeting.from.y + targeting.to.y) / 2) };
   } else if (mode === 'battle' && battle) {
-    const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
-    if (active?.pos) focus = walkPosOf(active.id, active.pos.x, active.pos.y); // la caméra SUIT le token qui glisse (n'arrive plus avant lui)
-    else {
-      const alive = battle.combatants.filter((c) => c.pos && !isOutOfAction(c));
-      if (alive.length)
-        focus = {
+    const alive = battle.combatants.filter((c) => c.pos && !isOutOfAction(c));
+    const centroid = alive.length
+      ? {
           x: Math.round(alive.reduce((s, c) => s + c.pos!.x, 0) / alive.length),
           y: Math.round(alive.reduce((s, c) => s + c.pos!.y, 0) / alive.length),
-        };
-    }
+        }
+      : focus;
+    const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
+    // Plan d'ensemble (R2) : pendant l'établissement, on cadre le CENTRE du champ (vue des forces) ;
+    // sinon la caméra SUIT le token actif qui glisse (n'arrive plus avant lui).
+    if (establishing) focus = centroid;
+    else if (active?.pos) focus = walkPosOf(active.id, active.pos.x, active.pos.y);
+    else focus = centroid;
   }
   const fc = tileCenter(focus.x, focus.y, dims);
   const cam = { x: VW / 2 - fc.cx, y: VH / 2 - fc.cy };

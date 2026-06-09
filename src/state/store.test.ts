@@ -706,6 +706,7 @@ describe('Boucle de jeu (store)', () => {
       battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDefense: null,
       pendingReveals: [],
+      establishing: false, // on pilote le combat → la phase « plan d'ensemble » est terminée (sinon l'IA est gelée)
     });
     useGame.getState().battleEndTurn(); // H finit son tour → advanceTurn → E actif → IA
     vi.advanceTimersByTime(2000); // laisse tourner les setTimeout de l'IA (450 + 350)

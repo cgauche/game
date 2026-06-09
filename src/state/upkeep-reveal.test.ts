@@ -16,16 +16,16 @@ describe('Entretien de Round en révélation (store)', () => {
     vi.useRealTimers();
   });
 
-  it('le début de combat révèle l’ordre d’Initiative', () => {
+  it('le début de combat MONTRE le champ (plan d’ensemble) — pas de modale d’Initiative (R2)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().startScene(tome1Intro);
     useGame.getState().startCombat('enc-mutants');
-    vi.clearAllTimers();
-    const init = useGame.getState().pendingReveals.find((r) => r.title === 'Initiative');
-    expect(init).toBeTruthy();
-    expect(init!.kind).toBe('round');
-    expect(init!.lines.length).toBeGreaterThan(1);
+    vi.clearAllTimers(); // gèle l'établissement (le timeout qui lèverait `establishing` est annulé)
+    const st = useGame.getState();
+    expect(st.establishing).toBe(true); // phase « plan d'ensemble » : champ visible, IA gelée
+    expect(st.pendingReveals.find((r) => r.title === 'Initiative')).toBeUndefined(); // plus de modale d'Initiative
+    expect(st.battle!.order.length).toBeGreaterThan(1); // l'ordre est posé (frise BattlePanel)
   });
 
   it('un franchissement de Round avec hémorragie pousse UNE révélation « Fin du Round » groupée', () => {

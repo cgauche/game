@@ -23,7 +23,8 @@ const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 // `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
 // Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
 // le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
-// `startCombat` tire l'Initiative (I+1d10) en début de combat puis la RÉVÈLE (entretien, sans Chance).
+// `startCombat` tire l'Initiative (I+1d10) en début de combat (l'ordre est lu dans la frise BattlePanel,
+// plus de modale d'Initiative depuis R2) — un jet d'entretien, sans Chance.
 // `surgeryPass` est le résolveur de la modale de Chirurgie (Test ÉTENDU, LDB 10 l.154) : le bouton
 // « Opérer (une passe) » de HealModal le déclenche ; il tire UNE passe (jet de Guérison) et garde la
 // modale ouverte jusqu'à la cible de DR — c'est un jet DE la modale, comme healRoll.

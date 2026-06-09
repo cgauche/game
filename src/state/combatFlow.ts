@@ -586,7 +586,7 @@ export function resolveAttack(
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
-  const tFacing = get().facing[target.id];
+  const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
   if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
     env.push({ label: 'Flanc/dos', value: 20 });
   // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
@@ -1893,7 +1893,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().establishing || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

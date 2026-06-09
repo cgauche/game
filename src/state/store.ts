@@ -23,6 +23,7 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines, type CombatEvent } from './combatLog';
+import { TEMPO } from './tempo';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   initiativeOrder,
@@ -457,6 +458,9 @@ export interface GameState {
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
+  /** « Plan d'ensemble » d'ouverture de combat (R2) : champ montré ~1 s SANS modale, IA gelée ;
+   *  l'ordre d'Initiative est lu dans `battle.order` (frise BattlePanel), pas dans une modale. */
+  establishing: boolean;
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   rotateCam: (dir: 1 | -1) => void;
   /** Orientation MONDE vivante par entité/combattant (Dir8) — projetée au rendu (camRot). */
@@ -808,6 +812,7 @@ export const useGame = create<GameState>((set, get) => ({
   party: [],
   scene: null,
   mode: 'exploration',
+  establishing: false,
   camRot: 0,
   rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
   facing: {},
@@ -1632,22 +1637,18 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', establishing: true, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
-    // « Un jet = une modale » : l'ordre d'Initiative (I + 1d10) est révélé au joueur (après le reset des modales).
-    pushReveal(set, {
-      kind: 'round',
-      title: 'Initiative',
-      lines: [
-        ...surpriseLines,
-        ...order.map((id, i) => {
-          const c = all.find((x) => x.id === id)!;
-          return `${i + 1}. ${c.name} (${c.initiative})`;
-        }),
-      ],
-    });
     bus.emit(EVT.SCENE_DIRTY);
-    maybeRunEnemyTurn(get, set);
+    // « Plan d'ensemble » (R2) : on MONTRE le champ ~1 s sans aucune modale (l'ordre d'Initiative est lu
+    // dans la frise BattlePanel ; la surprise est journalisée), IA gelée par `establishing`. Puis on libère
+    // la phase et on lance le 1er tour. (Plus de modale « Initiative » sur un champ jamais montré.)
+    setTimeout(() => {
+      // No-op si le combat a changé/terminé pendant l'établissement (anti-pollution inter-tests + correct en jeu).
+      if (get().battle !== battle || battle.over) return;
+      set({ establishing: false });
+      maybeRunEnemyTurn(get, set);
+    }, TEMPO.establish);
   },
 
   battleSelectAction: (a) => {

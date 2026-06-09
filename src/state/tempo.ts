@@ -7,6 +7,8 @@
  * (la modale de défense ne s'ouvre qu'une fois l'ennemi arrivé).
  */
 export const TEMPO = {
+  /** « Plan d'ensemble » d'ouverture (R2) : champ visible, AUCUNE modale, avant le 1er tour d'IA. */
+  establish: 1000,
   /** Réticule de tir ennemi affiché AVANT le tir (télégraphe d'intention). */
   aimTelegraph: 750,
   /** Beat avant de résoudre une attaque (laisse voir l'amorce). */
