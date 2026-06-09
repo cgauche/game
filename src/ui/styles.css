@@ -3017,3 +3017,89 @@ textarea:focus {
 @media (max-width: 700px) {
   .log-drawer { right: 8px; bottom: 88px; }
 }
+
+/* ── Menu ☰ (haut-gauche, les deux modes) ── */
+.game-menu {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 60;
+}
+.gm-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: #1c2230;
+  border: 1.5px solid #3a4660;
+  color: #cfe6ff;
+  font-size: 19px;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.game-menu.open .gm-btn {
+  border-color: #ffe066;
+}
+.gm-panel {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  width: min(300px, 88vw);
+  max-height: 72vh;
+  overflow: auto;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.gm-scene {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gold);
+}
+.gm-date {
+  font-size: 12px;
+  color: var(--muted);
+}
+.gm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gm-quit {
+  align-self: flex-start;
+}
+
+/* ── Chip date (haut-droite, exploration) ── */
+.date-chip {
+  position: absolute;
+  top: 16px;
+  right: 118px; /* à gauche des ViewControls (top:16 right:16, ~92px de large) */
+  z-index: 45;
+  background: rgba(10, 14, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 6px 11px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .date-chip { top: 64px; right: 8px; } /* sous les ViewControls sur petit écran */
+}
+
+/* ── Overlay Défaite (centre du champ) ── */
+.defeat-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 70;
+}
+.defeat-overlay .battle-result {
+  min-width: 240px;
+}
