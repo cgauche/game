@@ -1085,6 +1085,92 @@ textarea:focus {
   font-weight: 700;
 }
 
+/* Panneau d'inspection (clic sur l'ordre de bataille) — lecture seule. */
+.ord-row {
+  cursor: pointer;
+}
+.inspect-panel {
+  max-width: 380px;
+}
+.insp-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.insp-id {
+  flex: 1;
+}
+.insp-id h3 {
+  margin: 0 0 4px;
+}
+.insp-pv {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.insp-pv i {
+  display: block;
+  height: 100%;
+}
+.insp-pv-num {
+  font-size: 11px;
+  color: var(--muted);
+}
+.insp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.insp-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.insp-badge.foe {
+  background: rgba(192, 57, 43, 0.18);
+  border-color: #c0392b;
+  color: #e8705f;
+}
+.insp-chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.insp-char {
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+.insp-char b {
+  color: var(--muted);
+  font-size: 11px;
+}
+.insp-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  margin: 5px 0;
+}
+.insp-lbl {
+  flex: 0 0 64px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding-top: 2px;
+}
+.insp-traits {
+  opacity: 0.85;
+  font-size: 12px;
+}
+
 /* Bandeau haut « fil d'événements » (au-dessus du champ). */
 .combat-banner {
   position: absolute;

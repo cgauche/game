@@ -12,7 +12,7 @@ import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
  * L'ordre remplace l'ancien « init-track » texte ET la colonne Groupe (cf. Lot 1).
  * Les ACTIONS du combattant actif sont dans le panneau Perso à gauche (cf. ActionBar).
  */
-export function BattlePanel() {
+export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } = {}) {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const startScene = useGame((s) => s.startScene);
@@ -41,7 +41,7 @@ export function BattlePanel() {
           const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
           const fx = summarizeEffects(c.conditions, [], 3, combatantFlags(c)); // jusqu'à 3 icônes (États + postures/Frénésie)
           return (
-            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`}>
+            <div key={id} className={`ord-row ${isHero ? 'ally' : 'enemy'} ${i === battle.turn ? 'now' : ''} ${out ? 'out' : ''} ${ko ? 'ko' : ''}`} onClick={() => onInspect?.(id)} title="Inspecter ce combattant">
               <span className="ord-portrait">
                 <RigPortrait combatant={c} size={32} ring={ring} />
                 {ko && <span className="ko-cross">✕</span>}

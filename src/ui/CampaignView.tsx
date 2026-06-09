@@ -35,6 +35,7 @@ import { RevealModal } from './RevealModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { GroupPanel } from './GroupPanel';
+import { InspectPanel } from './InspectPanel';
 
 export function CampaignView() {
   const scene = useGame((s) => s.scene);
@@ -51,8 +52,10 @@ export function CampaignView() {
   const setZoom = useGame((s) => s.setZoom);
   const rotateCam = useGame((s) => s.rotateCam);
   const [sheetId, setSheetId] = useState<string | null>(null);
+  const [inspectId, setInspectId] = useState<string | null>(null);
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
+  const inspected = inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
 
   return (
     <div className="screen campaign-view">
@@ -119,7 +122,7 @@ export function CampaignView() {
         {mode === 'battle' && battle && <ActionBar />}
       </main>
 
-      {mode === 'battle' && battle && <BattlePanel />}
+      {mode === 'battle' && battle && <BattlePanel onInspect={setInspectId} />}
       <TestModal />
       <RollModal />
       <ReloadModal />
@@ -145,6 +148,7 @@ export function CampaignView() {
       <FateSaveModal />
       <DocumentModal />
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
+      {inspected && <InspectPanel combatant={inspected} onClose={() => setInspectId(null)} />}
     </div>
   );
 }
