@@ -1506,10 +1506,10 @@ textarea:focus {
   opacity: 0.65;
 }
 
-/* Bandeau haut « fil d'événements » (au-dessus du champ). */
+/* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3. */
 .combat-feed {
   position: absolute;
-  top: 12px;
+  top: 68px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -2963,6 +2963,7 @@ textarea:focus {
   .initiative-strip { top: 6px; max-width: 96vw; }
   .is-tiles { gap: 5px; padding: 4px 6px 3px; }
   .ptile-states { font-size: 10px; }
+  .combat-feed { top: 60px; }
 }
 
 /* ── Dock d'équipe (gauche) ── */
