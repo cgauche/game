@@ -6,7 +6,7 @@ import { canReroll } from '../engine/fortune';
 import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
-import { CombatantBadge } from './CombatantBadge';
+import { CombatantBadge, TeamPortrait } from './CombatantBadge';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -185,9 +185,12 @@ export function RollModal() {
           </>
         ) : (
           <>
+            {/* Jet opposé : portrait à côté de chaque ligne pour savoir QUI a fait quel jet (R10). */}
             <div className="rm-rolls">
-              {res.attackerDetail && <RollLine d={res.attackerDetail} />}
-              {res.defenderDetail && <RollLine d={res.defenderDetail} />}
+              {res.attackerDetail && (res.defenderDetail
+                ? <div className="rm-roll-row"><TeamPortrait combatant={attacker} size={28} /><RollLine d={res.attackerDetail} /></div>
+                : <RollLine d={res.attackerDetail} />)}
+              {res.defenderDetail && <div className="rm-roll-row"><TeamPortrait combatant={target} size={28} /><RollLine d={res.defenderDetail} /></div>}
             </div>
             <div className={`rm-verdict ${res.hit ? 'ok' : 'fail'}`}>
               {res.hit ? (

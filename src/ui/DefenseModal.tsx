@@ -6,7 +6,7 @@ import { RollLine } from './RollModal';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
-import { CombatantBadge } from './CombatantBadge';
+import { CombatantBadge, TeamPortrait } from './CombatantBadge';
 
 /** Libellé FR de la nature d'une attaque gratuite de créature (freeKind) pour le contexte de défense. */
 const FREE_LABEL: Record<string, string> = {
@@ -94,10 +94,10 @@ export function DefenseModal() {
           </>
         ) : (
           <>
-            {/* Test opposé : on montre le jet de l'attaquant ET celui du défenseur. */}
+            {/* Test opposé : portrait à côté de chaque jet (attaquant ET défenseur) pour savoir qui est qui (R10). */}
             <div className="rm-rolls">
-              {res.attackerDetail && <RollLine d={res.attackerDetail} />}
-              {res.defenderDetail && <RollLine d={res.defenderDetail} />}
+              {res.attackerDetail && <div className="rm-roll-row"><TeamPortrait combatant={attacker} size={28} /><RollLine d={res.attackerDetail} /></div>}
+              {res.defenderDetail && <div className="rm-roll-row"><TeamPortrait combatant={defender} size={28} /><RollLine d={res.defenderDetail} /></div>}
             </div>
             {/* Défense réussie (res.hit === false) = succès du héros → classe « ok ». */}
             <div className={`rm-verdict ${res.hit ? 'fail' : 'ok'}`}>
