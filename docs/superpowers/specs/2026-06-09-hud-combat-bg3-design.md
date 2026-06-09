@@ -22,7 +22,7 @@ Affichage seul — moteur et store de règles intacts. UI 100 % française.
 ```
 COMBAT                                          EXPLORATION
 ┌─────────────────────────────────────────┐    ┌─────────────────────────────────────────┐
-│      [👤][👹][👤][👹][👤] Round 2 🔍    │    │ ☰                              🌙 32 Jah.│
+│ ☰    [👤][👹][👤][👹][👤] Round 2 🔍    │    │ ☰                              🌙 32 Jah.│
 │       ⚔️ Le Mutant charge Grunni…       │    │ ┌──┐                                    │
 │ ┌──┐💫                                  │    │ │👤│                                    │
 │ │👤│🩸                                  │    │ └──┘                                    │
@@ -86,18 +86,24 @@ Tuile-portrait compacte, remplace les lignes « Portrait — 11/11 » :
   noms colorés par camp). En exploration : le **journal du groupe** (`journal`, lignes texte).
   Un seul composant, deux contenus. Aucune perte de la couche narration.
 
-### 6. Hors combat (exploration) — menu ☰, date, mêmes tuiles
+### 6. `GameMenu` — menu ☰ (haut-gauche, COMBAT et EXPLORATION)
 
-- **`GameMenu`** (nouveau) : bouton **☰** en haut à gauche → tiroir : **nom de la scène** (en
-  titre), **Bourse** (`formatMoney`), **Inventaire du groupe** (handouts/butin), **« Quitter la
-  partie »** (l'actuel retour à l'écran de groupe). Le bouton « ← Quitter », la bourse et
-  l'inventaire toujours visibles disparaissent de l'écran.
+- Bouton **☰** en haut à gauche, **disponible dans les DEUX modes** → tiroir : **nom de la scène**
+  (en titre), **Bourse** (`formatMoney`), **Inventaire du groupe** (handouts/butin), **date
+  complète** (jour de semaine + Calendrier Impérial), **« Quitter la partie »** (l'actuel retour
+  à l'écran de groupe — déjà accessible en plein combat aujourd'hui, parité conservée).
+- Le bouton « ← Quitter », la bourse et l'inventaire toujours visibles disparaissent de l'écran.
+- En combat, la frise reste centrée : le ☰ occupe le coin haut-gauche sans la chevaucher (sur
+  écran étroit, la frise se compacte/décale — cf. calibrations).
+
+### 7. Exploration — date + mêmes tuiles
+
 - **Date** : chip discret en **haut à droite** — icône de phase + date courte (ex. « 🌙 32
-  Jahrdrung ») ; la ligne complète (jour de semaine + Calendrier Impérial) se lit dans le menu ☰.
-  Le chip n'apparaît qu'en exploration (en combat, le haut appartient à la frise).
+  Jahrdrung ») ; exploration seulement (en combat, le haut appartient à la frise ; la date
+  complète reste lisible via le menu ☰).
 - **Dialogues, marchand, hint de déplacement** : inchangés (déjà des overlays).
 
-### 7. Ce qui disparaît ou migre
+### 8. Ce qui disparaît ou migre
 
 - **Colonne gauche** (`hud-left`) : **supprimée dans les DEUX modes** — Quitter/bourse/inventaire
   → menu ☰ ; horloge → chip date ; groupe → PartyDock ; journal → tiroir 📜.
@@ -138,8 +144,8 @@ Tuile-portrait compacte, remplace les lignes « Portrait — 11/11 » :
   pendant la pause si `canActFirst`, clic tuile → `onInspect`.
 - `LogDrawer` : replié par défaut, s'ouvre au clic ; contenu combat (narré) vs exploration
   (journal du groupe).
-- `GameMenu` : fermé par défaut ; ouvert, contient nom de scène, bourse formatée, inventaire,
-  date complète, bouton Quitter (déclenche le retour à l'écran de groupe).
+- `GameMenu` : fermé par défaut ; rendu dans les DEUX modes ; ouvert, contient nom de scène,
+  bourse formatée, inventaire, date complète, bouton Quitter (retour à l'écran de groupe).
 - Suite existante : aucun test ne monte `BattlePanel`/`CombatBanner`/`GroupPanel`/`LegendPanel`
   (vérifié) ; seuls deux commentaires de tests les citent (mise à jour cosmétique).
 
@@ -147,8 +153,9 @@ Tuile-portrait compacte, remplace les lignes « Portrait — 11/11 » :
 
 Scénario 🧪 adapté ; vérifier : frise (ordre, actif, états, KO), fil d'événements SOUS la frise
 (aucun chevauchement), dock (jauge, chiffres, clic fiche), pause de début de Round (⏫ sur la
-frise), tiroir journal (2 contenus), défaite en overlay ; en exploration : menu ☰ (bourse,
-inventaire, quitter), chip date, dialogue/marchand intacts ; console 0 erreur.
+frise), tiroir journal (2 contenus), défaite en overlay, menu ☰ accessible aussi en combat ;
+en exploration : menu ☰ (bourse, inventaire, quitter), chip date, dialogue/marchand intacts ;
+console 0 erreur.
 **Passe mobile** : viewport étroit (~390×844), combat ET exploration — frise + fil + dock + barre
 + menu tiennent sans chevauchement, tout se pilote au tap.
 
