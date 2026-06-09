@@ -65,6 +65,7 @@ export function RollModal() {
   const cancel = useGame((s) => s.attackCancel);
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
+  const setCritLocation = useGame((s) => s.attackSetCritLocation);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
@@ -163,6 +164,19 @@ export function RollModal() {
               )}
             </div>
             <p className="rm-log">{res.log}</p>
+            {res.critical && pa.forced && (
+              <div className="rm-loc">
+                {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}
+                <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
+                <div className="rm-loc-grid">
+                  {LOCS.map((l) => (
+                    <button key={l} className={`btn small ${res.critLocation === l ? 'btn-primary' : ''}`} onClick={() => setCritLocation(l)}>
+                      {HIT_LOCATION_LABELS[l]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <ResilienceButton resilience={attacker.resilience ?? 0} show={!!res && !res.hit} onForce={forceSuccess} />

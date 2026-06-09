@@ -142,6 +142,9 @@ export interface AttackResult {
   defenderRoll?: number;
   netSL: number;
   location?: HitLocation;
+  /** RAW-2 (LDB 17 l.73) : localisation du Coup Critique CHOISIE par le joueur via « Je ne faillirai pas ! »
+   *  — court-circuite le tirage aléatoire dans `applyCriticalToTarget`. Absente = localisation au hasard. */
+  critLocation?: HitLocation;
   damage?: number; // dégâts bruts (avant mitigation)
   woundsLost?: number; // Blessures réellement perdues
   critical: boolean;

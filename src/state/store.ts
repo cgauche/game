@@ -258,6 +258,9 @@ export interface PendingAttack {
    *  en bougeant » (LDB 14 l.101) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
    *  n'a pas déjà bougé. */
   heldGround?: boolean;
+  /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
+   *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
+  forced?: boolean;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
@@ -691,6 +694,8 @@ export interface GameState {
   attackSetIntoCrowd: (v: boolean) => void;
   /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
   attackSetHeldGround: (v: boolean) => void;
+  /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
+  attackSetCritLocation: (loc: HitLocation) => void;
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
@@ -777,7 +782,7 @@ export interface GameState {
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   disengageReroll: () => void;
   disengageBonusSL: () => void;
-  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (opposé : DR +1).
+  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1).
   testForceSuccess: () => void;
   attackForceSuccess: () => void;
   defenseForceSuccess: () => void;
@@ -1791,7 +1796,7 @@ export const useGame = create<GameState>((set, get) => ({
     });
   },
 
-  /** Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (DR ≥ 1). */
+  /** Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (DR ≥ 1). */
   healForceSuccess: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.success || ph.mode === 'surgery') return;
@@ -2717,6 +2722,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pa || pa.result) return; // choix avant le jet seulement
     set({ pendingAttack: { ...pa, heldGround: v } });
   },
+  attackSetCritLocation: (loc) => {
+    const pa = get().pendingAttack;
+    // RAW-2 (LDB 17 l.73) : réservé à un Coup Critique issu d'un succès FORCÉ (« Je ne faillirai pas ! »).
+    if (!pa || !pa.forced || !pa.result?.critical) return;
+    set({ pendingAttack: { ...pa, result: { ...pa.result, critLocation: loc } } });
+  },
   attackRoll: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || pa.result) return;
@@ -3195,7 +3206,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingDisengage: { ...pd, def: def2, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
   },
 
-  // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (opposé : DR +1) ──
+  // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1) ──
   testForceSuccess: () => {
     const pt = get().pendingTest;
     if (!pt || pt.success) return; // rien à forcer si déjà réussi
@@ -3228,7 +3239,8 @@ export const useGame = create<GameState>((set, get) => ({
     } else {
       res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
     }
-    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
+    // `forced` : sur un Coup Critique, le joueur pourra CHOISIR la localisation (RAW-2, LDB 17 l.73).
+    set({ pendingAttack: { ...pa, result: res, forced: true }, battle: { ...battle } });
   },
   defenseForceSuccess: () => {
     const { battle, pendingDefense: pd } = get();
@@ -3262,7 +3274,7 @@ export const useGame = create<GameState>((set, get) => ({
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     if (!mover || (mover.resilience ?? 0) <= 0) return;
     mover.resilience = (mover.resilience ?? 0) - 1;
-    set({ pendingDisengage: { ...pd, result: 'success' }, battle: { ...battle } }); // l'emporte (LDB ch.17 l.72)
+    set({ pendingDisengage: { ...pd, result: 'success' }, battle: { ...battle } }); // l'emporte (LDB ch.17 l.73)
   },
 
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).

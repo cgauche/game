@@ -689,6 +689,7 @@ export function applyCriticalToTarget(
   overkill: number,
   log: string[],
   set: any,
+  chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
 ): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
@@ -697,7 +698,9 @@ export function applyCriticalToTarget(
     log.push(`${target.name} s'effondre, hors de combat.`);
     return false;
   }
-  const loc = isCoupCritique ? critLocationRoll(battleRng(), target.bodyShape) : location; // Coup Critique = localisation fraîche (l.62)
+  // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
+  // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
+  const loc = isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
   const crit = rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
@@ -793,7 +796,7 @@ export function applyAttackResult(
     if (res.critical && (autoDeviate || deviated === true)) {
       deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
     } else if (res.critical || overkill > 0) {
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation);
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
