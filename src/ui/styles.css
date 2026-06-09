@@ -925,6 +925,25 @@ textarea:focus {
 .rm-loc {
   margin-bottom: 12px;
 }
+/* Localisation visée compacte (choix rare) : libellé + menu déroulant sur une seule ligne. */
+.rm-loc-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.rm-loc-select {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel2, #20202a);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
 .rm-loc-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1109,6 +1128,31 @@ textarea:focus {
 .ab-budget .spent {
   color: var(--muted);
   opacity: 0.65;
+}
+/* Mouvement à CRANS (un par case) : pleins = restants, vides = déjà parcourus. */
+.ab-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ab-move-track {
+  display: inline-flex;
+  gap: 2px;
+}
+.ab-move-track .mp {
+  width: 5px;
+  height: 11px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.ab-move-track .mp.on {
+  background: #5fcf92;
+  border-color: #5fcf92;
+}
+/* Rangée Av/assailli masquée quand vide (le nom du héros est passé en title sur le portrait). */
+.ab-actor-top:empty {
+  display: none;
 }
 
 /* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3.
@@ -2430,6 +2474,9 @@ textarea:focus {
   display: block;
   width: 100%;
   height: 100%;
+  /* Cadre plus épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9)
+     doivent se lire d'un coup d'œil même sur les petites tuiles de la frise. */
+  border-width: 3px;
 }
 .ptile.active {
   outline: 2px solid #ffe066;

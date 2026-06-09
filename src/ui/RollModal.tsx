@@ -108,18 +108,21 @@ export function RollModal() {
 
         {!res ? (
           <>
-            <div className="rm-loc">
-              <span className="mini-title">Localisation visée {pa.location && <em className="rm-pen">(-10)</em>}</span>
-              <div className="rm-loc-grid">
-                <button className={`btn small ${pa.location == null ? 'btn-primary' : ''}`} onClick={() => setLocation(null)}>
-                  Au hasard
-                </button>
+            {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact
+                plutôt qu'une grille de 7 boutons. Viser une localisation rend le Test Complexe (-10). */}
+            <div className="rm-loc-inline">
+              <span className="mini-title">Localisation</span>
+              <select
+                className="rm-loc-select"
+                value={pa.location ?? ''}
+                onChange={(e) => setLocation((e.target.value as HitLocation) || null)}
+                title="Où frapper ? « Au hasard » par défaut ; viser une localisation précise rend le Test Complexe (-10)."
+              >
+                <option value="">🎯 Au hasard</option>
                 {LOCS.map((l) => (
-                  <button key={l} className={`btn small ${pa.location === l ? 'btn-primary' : ''}`} onClick={() => setLocation(l)}>
-                    {HIT_LOCATION_LABELS[l]}
-                  </button>
+                  <option key={l} value={l}>{HIT_LOCATION_LABELS[l]} (-10)</option>
                 ))}
-              </div>
+              </select>
             </div>
             {cm && (
               <div className="rm-crowd">

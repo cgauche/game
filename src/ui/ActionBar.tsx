@@ -87,6 +87,7 @@ export function ActionBar() {
   // Les manœuvres « plein Mouvement » (Charge/Course/Monter/Descendre/Se relever) exigent `movementUsed === 0`.
   const moveLeft = isHero ? movementRemaining(battle, active) : 0;
   const moveStarted = battle.movementUsed > 0; // au moins un segment de Mouvement déjà parcouru
+  const moveMax = isHero ? moveLeft + battle.movementUsed : 0; // budget total de cases ce Tour (barre à crans)
   const canMoveNow = isHero && canMove(battle, active); // respecte aussi la règle M-A-M
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
@@ -342,10 +343,9 @@ export function ActionBar() {
         <div className="ab-actor">
           {/* Tuile-portrait partagée (même système que le dock/la frise) : portrait + jauge de PV
               verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
-          <PortraitTile c={active} ring={ring} size={52} showPv />
+          <PortraitTile c={active} ring={ring} size={52} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
           <div className="ab-actor-side">
             <div className="ab-actor-top">
-              <strong className="ab-name" title={active.career ?? (isHero ? active.name : 'Ennemi')}>{active.name}</strong>
               {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
               {assailliN >= 2 && (
                 <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
@@ -359,7 +359,14 @@ export function ActionBar() {
           {isHero && (
             <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + Mouvement, décomposable)">
               <span className={battle.acted ? 'spent' : 'avail'}>⚔️ Action {battle.acted ? '✓' : 'dispo'}</span>
-              <span className={moveLeft > 0 ? 'avail' : 'spent'}>🦶 Mouvement {moveLeft > 0 ? `${moveLeft}\u00A0case${moveLeft > 1 ? 's' : ''}` : '✓'}</span>
+              <span className="ab-move" title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''} restante${moveLeft > 1 ? 's' : ''}`}>
+                  🦶
+                  <span className="ab-move-track">
+                    {Array.from({ length: moveMax }, (_, i) => (
+                      <i key={i} className={`mp ${i < moveLeft ? 'on' : 'off'}`} />
+                    ))}
+                  </span>
+                </span>
             </div>
           )}
           </div>
