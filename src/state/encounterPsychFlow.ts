@@ -85,11 +85,13 @@ export function encounterPsychReroll(get: () => GameState, set: (s: Partial<Game
 
 export function encounterPsychForceSuccess(get: () => GameState, set: (s: Partial<GameState>) => void): void {
   const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || !pe.result || pe.result.success) return;
+  if (!pe || pe.result?.success) return;
   const hero = party.find((h) => h.id === pe.heroId);
   if (!hero || (hero.resilience ?? 0) <= 0) return;
   hero.resilience = (hero.resilience ?? 0) - 1;
-  set({ pendingEncounterPsych: { ...pe, result: { ...pe.result, success: true, brise: 0 } }, party: [...party] });
+  // RAW LDB 17 l.73 : avant le jet (result==null → base 01) OU après un échec.
+  const base = pe.result ?? { roll: 1, success: false };
+  set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
 }
 
 export function encounterPsychConfirm(get: () => GameState, set: (s: Partial<GameState>) => void): void {

@@ -37,6 +37,8 @@ export function TrampleModal() {
             <button className="btn btn-primary" onClick={roll}>
               🎲 Lancer
             </button>
+            {/* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */}
+            <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); force(); }} />
             <button className="btn" onClick={cancel}>
               Annuler
             </button>

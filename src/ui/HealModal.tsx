@@ -110,6 +110,8 @@ export function HealModal() {
           <div className="modal-actions">
             <button className="btn" onClick={cancel}>Annuler</button>
             <button className="btn btn-primary" onClick={roll}>🎲 Lancer</button>
+            {/* Résilience AVANT le jet (LDB 17 l.73). */}
+            <ResilienceButton resilience={healer?.resilience ?? 0} show={(healer?.resilience ?? 0) > 0} onForce={force} />
           </div>
         ) : (
           <>

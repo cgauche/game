@@ -34,6 +34,8 @@ export function RunModal() {
             <button className="btn btn-primary" onClick={roll}>
               🎲 Lancer
             </button>
+            {/* Résilience AVANT le jet (LDB 17 l.73). */}
+            <ResilienceButton resilience={c.resilience ?? 0} show={(c.resilience ?? 0) > 0} onForce={force} />
             <button className="btn" onClick={cancel}>
               Annuler
             </button>

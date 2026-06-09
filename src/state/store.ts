@@ -1765,12 +1765,13 @@ export const useGame = create<GameState>((set, get) => ({
   /** Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (DR ≥ 1). */
   healForceSuccess: () => {
     const ph = get().pendingHeal;
-    if (!ph || ph.roll == null) return;
+    if (!ph || ph.success || ph.mode === 'surgery') return;
     const healer = actorIn(get(), ph.healerId);
     if (!healer || (healer.resilience ?? 0) <= 0) return;
     healer.resilience = (healer.resilience ?? 0) - 1;
+    // RAW LDB 17 l.73 : AVANT le jet (roll==null → on choisit 01) OU après un échec (roll conservé).
     set({
-      pendingHeal: { ...ph, success: true, sl: Math.max(ph.sl, 1) },
+      pendingHeal: { ...ph, roll: ph.roll ?? 1, success: true, sl: Math.max(ph.sl, 1) },
       ...touchActors(get()),
     });
   },
@@ -2010,11 +2011,13 @@ export const useGame = create<GameState>((set, get) => ({
   },
   focusForceSuccess: () => {
     const { pendingFocus: pf } = get();
-    if (!pf || !pf.result) return;
+    if (!pf) return;
     const caster = actorIn(get(), pf.casterId);
     if (!caster || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: Math.max(pf.result.dr, 1), isFumble: false, log: `${caster.name} force la focalisation (Résilience).` } }, ...touchActors(get()) });
+    const base = pf.result;
+    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
+    set({ pendingFocus: { ...pf, result: { dr: Math.max(base?.dr ?? 0, 1), isCritical: base?.isCritical ?? false, isFumble: false, roll: base?.roll ?? 1, log: `${caster.name} force la focalisation (Résilience).` } }, ...touchActors(get()) });
   },
   focusConfirm: () => {
     const { pendingFocus: pf } = get();
@@ -2088,11 +2091,12 @@ export const useGame = create<GameState>((set, get) => ({
   },
   psychForceSuccess: () => {
     const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || !pp.result) return;
+    if (!battle || !pp) return;
     const c = battle.combatants.find((x) => x.id === pp.combatantId);
     if (!c || (c.resilience ?? 0) <= 0) return;
     c.resilience = (c.resilience ?? 0) - 1;
-    const r = pp.result;
+    // RAW LDB 17 l.73 : avant le jet (result==null → base 01) OU après un échec.
+    const r = pp.result ?? { roll: 1 };
     const result =
       CIBLE_TYPES.has(pp.kind)
         ? { ...r, success: true }
@@ -2171,11 +2175,12 @@ export const useGame = create<GameState>((set, get) => ({
   },
   frenzyForceSuccess: () => {
     const { battle, pendingFrenzy: pf } = get();
-    if (!battle || !pf || !pf.result || pf.result.success) return;
+    if (!battle || !pf || pf.result?.success) return;
     const c = battle.combatants.find((x) => x.id === pf.combatantId);
     if (!c || (c.resilience ?? 0) <= 0) return;
     c.resilience = (c.resilience ?? 0) - 1;
-    set({ pendingFrenzy: { ...pf, result: { ...pf.result, success: true } }, battle: { ...battle } });
+    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
+    set({ pendingFrenzy: { ...pf, result: { success: true, roll: pf.result?.roll ?? 1 } }, battle: { ...battle } });
   },
   frenzyConfirm: () => {
     const { battle, pendingFrenzy: pf } = get();
@@ -2864,12 +2869,14 @@ export const useGame = create<GameState>((set, get) => ({
   },
   runForceSuccess: () => {
     const { battle, pendingRun: pr } = get();
-    if (!battle || !pr || !pr.result || pr.result.success) return;
+    if (!battle || !pr || pr.result?.success) return;
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     if (!c || (c.resilience ?? 0) <= 0) return;
     c.resilience = (c.resilience ?? 0) - 1;
     const m = mountMovement(battle, c); // à cheval : Mouvement de la monture (LDB 14 l.215)
-    set({ pendingRun: { ...pr, result: { ...pr.result, success: true, dr: Math.max(0, pr.result.dr), bonusCases: Math.max(pr.result.bonusCases, 2 * m) } }, battle: { ...battle } });
+    const base = pr.result;
+    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
+    set({ pendingRun: { ...pr, result: { success: true, roll: base?.roll ?? 1, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } }, battle: { ...battle } });
   },
   runConfirm: () => {
     const { battle, scene, pendingRun: pr } = get();

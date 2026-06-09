@@ -62,6 +62,8 @@ export function DefenseModal() {
               <button className="btn btn-primary" onClick={roll}>
                 🛡️ Défendre
               </button>
+              {/* Résilience AVANT le jet (LDB 17 l.73) : on défend puis on force la réussite. */}
+              <ResilienceButton resilience={defender.resilience ?? 0} show={(defender.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
             </div>
           </>
         ) : (

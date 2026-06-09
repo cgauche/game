@@ -50,6 +50,8 @@ export function EncounterPsychModal() {
             <button className="btn btn-primary" onClick={roll}>
               🎲 Test de Calme
             </button>
+            {/* Résilience AVANT le jet (LDB 17 l.73). */}
+            <ResilienceButton resilience={hero.resilience ?? 0} show={(hero.resilience ?? 0) > 0} onForce={force} />
           </div>
         ) : (
           <>

@@ -59,6 +59,8 @@ export function PsychModal() {
             <button className="btn btn-primary" onClick={roll}>
               🎲 Test de Calme
             </button>
+            {/* Résilience AVANT le jet (LDB 17 l.73). */}
+            <ResilienceButton resilience={c.resilience ?? 0} show={(c.resilience ?? 0) > 0} onForce={force} />
           </div>
         ) : (
           <>

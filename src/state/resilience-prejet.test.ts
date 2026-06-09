@@ -57,3 +57,28 @@ describe('testForceSuccess — Résilience AVANT le jet', () => {
     expect(useGame.getState().pendingTest!.success).toBe(false);
   });
 });
+
+describe('Résilience pré-jet — autres modales (synthèse de succès)', () => {
+  it('soin : avant le jet → réussite garantie (01), 1 Résilience dépensée', () => {
+    useGame.setState({
+      party: [{ id: 'h1', name: 'Soigneur', resilience: 1 } as any],
+      battle: null,
+      pendingHeal: { healerId: 'h1', healerName: 'Soigneur', targetId: 'h1', targetName: 'Soigneur', mode: 'wounds', intBonus: 3, sl: 0, success: false, roll: null, target: 50 } as any,
+    });
+    useGame.getState().healForceSuccess();
+    const ph = useGame.getState().pendingHeal!;
+    expect(ph.success).toBe(true);
+    expect(ph.roll).toBe(1);
+    expect(useGame.getState().party[0].resilience).toBe(0);
+  });
+
+  it('frénésie : avant le jet → entrée garantie, 1 Résilience dépensée', () => {
+    useGame.setState({
+      battle: { combatants: [{ id: 'e1', name: 'Brute', resilience: 1 } as any] } as any,
+      pendingFrenzy: { combatantId: 'e1', result: null } as any,
+    });
+    useGame.getState().frenzyForceSuccess();
+    expect(useGame.getState().pendingFrenzy!.result!.success).toBe(true);
+    expect(useGame.getState().battle!.combatants[0].resilience).toBe(0);
+  });
+});

@@ -57,6 +57,8 @@ export function DisengageModal() {
                     <button className="btn small" onClick={flee} title="Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours">
                       🏃 Fuir (coup dans le dos)
                     </button>
+                    {/* Résilience AVANT le jet (LDB 17 l.73) : Esquive forcée en réussite. */}
+                    <ResilienceButton resilience={mover.resilience ?? 0} show={(mover.resilience ?? 0) > 0} onForce={() => { esquiver(); forceSuccess(); }} />
                   </>
                 )}
               </div>

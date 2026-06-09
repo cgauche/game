@@ -103,6 +103,8 @@ export function RollModal() {
               <button className="btn btn-primary" onClick={roll}>
                 🎲 Lancer
               </button>
+              {/* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite (résultat correct garanti). */}
+              <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
             </div>
           </>
         ) : (
