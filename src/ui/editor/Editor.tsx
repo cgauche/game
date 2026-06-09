@@ -1,103 +1,36 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, Terrain, SceneEntity, EntityKind, emptyScene, tileAt } from '../../state/scene';
+import { Scene, Terrain, SceneEntity, emptyScene, tileAt } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
-import { MERCHANTS } from '../../state/merchants/index';
-import type { Settlement } from '../../engine/disponibilite';
 import { validateScene, type Warning } from '../../state/validateScene';
-import { ValidationPanel } from './ValidationPanel';
-import { EntityListPanel } from './EntityListPanel';
 import { tome1Intro } from '../../scenes/tome1-intro';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
-import { DEFS, placeSprite, terrainOverlay } from '../../gameIso/sprites';
-import { hashSeed } from '../../gameIso/appearance';
-import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
-import { MonsterPartsFields } from './MonsterPartsFields';
+import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
-import { pickBackend } from '../../gameIso/pickBackend';
-import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
 import { groundTile } from '../../gameIso/ground';
-import { BUILDINGS, BUILDINGS_META } from '../../gameIso/catalog/buildings';
+import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { buildingObj } from '../../gameIso/BuildingSprite';
-import { TERRAINS as TERRAIN_META } from '../../state/terrain';
-import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { perimeterTiles, defaultDoor } from '../../state/buildings';
-import { PROPS } from '../../gameIso/catalog/decor';
-import { BuildingFeature, Trigger, CustomStatblock, EncounterDef } from '../../state/scene';
-import { ParamFields } from './ParamFields';
-import { EffectList } from './EffectList';
-import { propRefPatch } from './propDefaults';
+import { BuildingFeature, Trigger, EncounterDef } from '../../state/scene';
 import { ViewControls } from '../ViewControls';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
-import { StatblockEditor, emptyStatblock } from './StatblockEditor';
-const TERRAIN_IDS = Object.keys(TERRAIN_META);
-const KINDS: EntityKind[] = ['heroStart', 'personnage', 'prop'];
-const KIND_LABEL: Record<EntityKind, string> = {
-  heroStart: 'Départ héros',
-  personnage: 'Personnage',
-  prop: 'Décor',
-};
-
-type Tool =
-  | { mode: 'select' }
-  | { mode: 'tile'; terrain: Terrain }
-  | { mode: 'entity'; kind: EntityKind }
-  | { mode: 'building'; type: string }
-  | { mode: 'erase' }
-  | { mode: 'trigger' }
-  | { mode: 'encounter' };
-type Rect = { x: number; y: number; w: number; h: number };
+import { useSceneHistory } from './useSceneHistory';
+import { useEditorView } from './useEditorView';
+import { Palette } from './Palette';
+import { Inspector } from './Inspector';
+import { Tool, Rect, Layers, KIND_LABEL, rectFrom } from './tools';
 
 /**
- * Historique d'édition (annuler/rétablir) : chaque `setScene` empile un instantané
- * de la scène ; `resetScene` (Nouveau / Charger / Importer) vide l'historique.
- * Les instantanés sont des objets `Scene` complets (les éditions clonent déjà).
+ * Éditeur de niveau iso WYSIWYG. Ce composant ORCHESTRE : l'historique d'édition vit dans
+ * `useSceneHistory`, la caméra (zoom/pan/rotation) dans `useEditorView`, le volet gauche dans
+ * `Palette`, le volet droit dans `Inspector` — ici restent l'état de sélection, les outils
+ * (pointeur → scène) et le canvas SVG.
  */
-function useSceneHistory(initial: Scene | (() => Scene)) {
-  const [scene, setSceneState] = useState<Scene>(initial);
-  const sceneRef = useRef(scene);
-  sceneRef.current = scene; // toujours synchronisé, pour des callbacks stables
-  const past = useRef<Scene[]>([]);
-  const future = useRef<Scene[]>([]);
-
-  const setScene = useCallback((next: Scene) => {
-    past.current.push(sceneRef.current);
-    if (past.current.length > 200) past.current.shift(); // borne mémoire
-    future.current = [];
-    setSceneState(next);
-  }, []);
-  /** Push manuel de l'état COURANT (avant un geste coalescé : peinture / glisser). */
-  const pushSnapshot = useCallback(() => {
-    past.current.push(sceneRef.current);
-    if (past.current.length > 200) past.current.shift();
-    future.current = [];
-  }, []);
-  /** Mutation SANS snapshot (pendant un geste) → 1 seul cran d'undo pour tout le geste. */
-  const setSceneNoHistory = useCallback((next: Scene) => setSceneState(next), []);
-  const undo = useCallback(() => {
-    if (!past.current.length) return;
-    future.current.push(sceneRef.current);
-    setSceneState(past.current.pop()!);
-  }, []);
-  const redo = useCallback(() => {
-    if (!future.current.length) return;
-    past.current.push(sceneRef.current);
-    setSceneState(future.current.pop()!);
-  }, []);
-  const resetScene = useCallback((s: Scene) => {
-    past.current = [];
-    future.current = [];
-    setSceneState(s);
-  }, []);
-
-  return { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo: past.current.length > 0, canRedo: future.current.length > 0 };
-}
-
 export function Editor() {
   const setScreen = useGame((s) => s.setScreen);
   const loadProject = useGame((s) => s.loadProject);
@@ -118,32 +51,21 @@ export function Editor() {
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [creatureFilter, setCreatureFilter] = useState(''); // recherche dans la palette créatures
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle (drag → remplir)
-  const [layers, setLayers] = useState({ triggers: true, spawns: true, buildings: true }); // calques masquables
+  const [layers, setLayers] = useState<Layers>({ triggers: true, spawns: true, buildings: true }); // calques masquables
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [trigOpen, setTrigOpen] = useState(false);
   const [dlgOpen, setDlgOpen] = useState(false);
   const [encOpen, setEncOpen] = useState(false);
   const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
-  const [rot, setRot] = useState<0 | 1 | 2 | 3>(0); // rotation caméra éditeur (snap, local)
-  // Zoom/pan ÉDITEUR via viewBox : `getScreenCTM` en tient compte → picking inchangé.
-  const [view, setView] = useState({ zoom: 1, x: 0, y: 0 }); // x,y = origine viewBox (coords contenu)
-  const spaceRef = useRef(false); // barre Espace maintenue → pan au glisser
-  const panRef = useRef<{ sx: number; sy: number; vx: number; vy: number } | null>(null);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const ae = document.activeElement as HTMLElement | null;
-      if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
-      const k = e.key.toLowerCase(); // la LETTRE → Q/E étiquetées (AZERTY comme QWERTY)
-      if (k === 'e') setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3));
-      else if (k === 'q') setRot((r) => (((r + 3) % 4) as 0 | 1 | 2 | 3));
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+
+  const { rot, setRot, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = useEditorView();
+  const dims: Dims = { ...scene.dimensions, rot };
+  const stage = stageSize(dims);
+  stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
+
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
-  const canvasRef = useRef<SVGSVGElement>(null);
 
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
 
@@ -197,58 +119,6 @@ export function Editor() {
       setOtherScenes(otherScenes.filter((s) => s.id !== id));
     }
   }
-
-  const dims: Dims = { ...scene.dimensions, rot };
-  const stage = stageSize(dims);
-  const stageRef = useRef(stage);
-  stageRef.current = stage;
-  const ZE_MIN = 1,
-    ZE_MAX = 6;
-  // Zoom centré sur un point contenu (curseur pour la molette, centre pour les boutons).
-  const zoomAt = (factor: number, ax?: number, ay?: number) =>
-    setView((v) => {
-      const nz = Math.min(ZE_MAX, Math.max(ZE_MIN, v.zoom * factor));
-      const s = stageRef.current;
-      const ovw = s.w / v.zoom,
-        ovh = s.h / v.zoom;
-      const nvw = s.w / nz,
-        nvh = s.h / nz;
-      const cx = ax ?? v.x + ovw / 2,
-        cy = ay ?? v.y + ovh / 2;
-      const fx = (cx - v.x) / ovw,
-        fy = (cy - v.y) / ovh;
-      return { zoom: nz, x: cx - fx * nvw, y: cy - fy * nvh };
-    });
-  // Molette = zoom ancré sur le curseur (listener non-passif pour preventDefault).
-  useEffect(() => {
-    const svg = canvasRef.current;
-    if (!svg) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const pt = svg.createSVGPoint();
-      pt.x = e.clientX;
-      pt.y = e.clientY;
-      const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-      zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, loc.x, loc.y);
-    };
-    svg.addEventListener('wheel', onWheel, { passive: false });
-    return () => svg.removeEventListener('wheel', onWheel);
-  }, []);
-  // Barre Espace maintenue → mode pan (au glisser).
-  useEffect(() => {
-    const d = (e: KeyboardEvent) => {
-      if (e.code === 'Space') spaceRef.current = true;
-    };
-    const u = (e: KeyboardEvent) => {
-      if (e.code === 'Space') spaceRef.current = false;
-    };
-    window.addEventListener('keydown', d);
-    window.addEventListener('keyup', u);
-    return () => {
-      window.removeEventListener('keydown', d);
-      window.removeEventListener('keyup', u);
-    };
-  }, []);
 
   /** Point écran → tuile (projection iso, comme le jeu). */
   function isoTile(ev: React.PointerEvent): { x: number; y: number } {
@@ -316,9 +186,6 @@ export function Editor() {
         if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = tool.terrain;
       }
     setScene({ ...scene, tiles });
-  }
-  function rectFrom(a: { x: number; y: number }, b: { x: number; y: number }): Rect {
-    return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x) + 1, h: Math.abs(a.y - b.y) + 1 };
   }
   function addTrigger(rect: Rect) {
     setScene({ ...scene, triggers: [...scene.triggers, { id: nextEntityId('trig', scene.triggers.map((t) => t.id)), rect, once: true, effects: [] }] });
@@ -586,215 +453,38 @@ export function Editor() {
       </header>
 
       <div className="editor-body">
-        <aside className="editor-palette">
-          <div className="pal-tabs">
-            <button className={palTab === 'carte' ? 'active' : ''} onClick={() => setPalTab('carte')}>
-              🗺️ Carte
-            </button>
-            <button className={palTab === 'logique' ? 'active' : ''} onClick={() => setPalTab('logique')}>
-              ⚙️ Logique
-            </button>
-            <button className={palTab === 'scene' ? 'active' : ''} onClick={() => setPalTab('scene')}>
-              📄 Scène
-            </button>
-          </div>
-
-          {palTab === 'carte' && (
-            <div className="pal-tab">
-              <div className="mini-title">Calques</div>
-              <div className="layer-toggles">
-                {(['triggers', 'spawns', 'buildings'] as const).map((L) => (
-                  <label key={L} className="ed-toggle">
-                    <input type="checkbox" checked={layers[L]} onChange={(e) => setLayers((l) => ({ ...l, [L]: e.target.checked }))} /> {L === 'triggers' ? 'Zones' : L === 'spawns' ? 'Ennemis' : 'Bâtiments'}
-                  </label>
-                ))}
-              </div>
-              <div className="mini-title">Terrains</div>
-              <div className="brush-sizes">
-                Pinceau :{' '}
-                {[1, 3, 5].map((n) => (
-                  <button key={n} className={`btn small ${brush === n ? 'btn-primary' : ''}`} onClick={() => setBrush(n)}>
-                    {n}×{n}
-                  </button>
-                ))}
-                <label className="ed-toggle"> <input type="checkbox" checked={terrainRect} onChange={(e) => setTerrainRect(e.target.checked)} /> Rectangle</label>
-              </div>
-              <div className="terrain-palette">
-                {TERRAIN_IDS.map((t) => (
-                  <button
-                    key={t}
-                    className={`terrain-swatch ${tool.mode === 'tile' && tool.terrain === t ? 'active' : ''}`}
-                    style={{ background: TERRAIN_VIZ[t]?.swatch ?? '#888' }}
-                    onClick={() => setTool({ mode: 'tile', terrain: t })}
-                    title={TERRAIN_META[t].label}
-                  >
-                    {TERRAIN_META[t].label}
-                  </button>
-                ))}
-              </div>
-
-              <button className={`btn small ${tool.mode === 'select' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'select' })}>
-                ↖ Sélection / Déplacer
-              </button>
-              <div className="mini-title">Entités</div>
-              <div className="entity-tools">
-                {KINDS.map((k) => (
-                  <button
-                    key={k}
-                    className={`btn small ${tool.mode === 'entity' && tool.kind === k ? 'btn-primary' : ''}`}
-                    onClick={() => setTool({ mode: 'entity', kind: k })}
-                  >
-                    {KIND_LABEL[k]}
-                  </button>
-                ))}
-                <button className={`btn small danger ${tool.mode === 'erase' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'erase' })}>
-                  Gomme
-                </button>
-              </div>
-
-              <div className="mini-title">Bâtiments</div>
-              <div className="entity-tools">
-                {Object.values(BUILDINGS_META).map((b) => (
-                  <button
-                    key={b.id}
-                    className={`btn small ${tool.mode === 'building' && tool.type === b.id ? 'btn-primary' : ''}`}
-                    onClick={() => setTool({ mode: 'building', type: b.id })}
-                    title={`${b.label} (${b.category}) — glisser pour définir l'empreinte`}
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mini-title">Zones</div>
-              <button
-                className={`btn small ${tool.mode === 'trigger' ? 'btn-primary' : ''}`}
-                onClick={() => setTool({ mode: 'trigger' })}
-                title="Glisser sur la carte pour dessiner une zone de trigger"
-              >
-                🟦 Dessiner une zone (trigger)
-              </button>
-
-              <div className="mini-title">Rencontres (ennemis)</div>
-              <div className="entity-tools">
-                <select value={encTarget} onChange={(e) => setEncTarget(e.target.value)} title="Rencontre cible">
-                  <option value="">Nouvelle rencontre…</option>
-                  {scene.encounters.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.id} ({e.enemies.length})
-                    </option>
-                  ))}
-                </select>
-                <input className="ed-search" placeholder="🔎 filtrer créature…" value={creatureFilter} onChange={(e) => setCreatureFilter(e.target.value)} />
-                <select value={encRef} onChange={(e) => setEncRef(e.target.value)} title="Créature à placer">
-                  <option value="">{enemyCreatures[0]?.label ?? 'créature'}…</option>
-                  {enemyCreatures
-                    .filter((c) => c.label.toLowerCase().includes(creatureFilter.toLowerCase()))
-                    .map((c) => (
-                      <option key={c.label} value={c.label}>
-                        {c.label}
-                      </option>
-                    ))}
-                </select>
-                <button
-                  className={`btn small ${tool.mode === 'encounter' ? 'btn-primary' : ''}`}
-                  onClick={() => setTool({ mode: 'encounter' })}
-                  title="Cliquer sur la carte pour ajouter des ennemis à la rencontre cible"
-                >
-                  ⚔️ Placer des ennemis
-                </button>
-              </div>
-            </div>
-          )}
-
-          {palTab === 'logique' && (
-            <div className="pal-tab logic-buttons">
-              <button className="btn btn-primary" onClick={() => setTrigOpen(true)}>
-                🎯 Triggers &amp; effets ({scene.triggers.length})
-              </button>
-              <button className="btn btn-primary" onClick={() => setDlgOpen(true)}>
-                💬 Dialogues ({scene.dialogues.length})
-              </button>
-              <button className="btn btn-primary" onClick={() => setEncOpen(true)}>
-                ⚔️ Rencontres ({scene.encounters.length})
-              </button>
-              <button className="btn small" onClick={openAdvanced}>
-                Avancé (JSON)
-              </button>
-              <div className="mini-title">Validation{warnings.length ? ` (${warnings.length})` : ''}</div>
-              <ValidationPanel warnings={warnings} onSelect={selectWarning} />
-            </div>
-          )}
-
-          {palTab === 'scene' && (
-            <div className="pal-tab">
-              <div className="mini-title">Scènes du projet</div>
-              <div className="entity-tools">
-                {[scene, ...otherScenes].map((s) => (
-                  <div key={s.id} className="proj-scene-row">
-                    <button
-                      className={`btn small ${s.id === scene.id ? 'btn-primary' : ''}`}
-                      onClick={() => switchScene(s.id)}
-                      title={s.id}
-                    >
-                      {s.nom || s.id}
-                    </button>
-                    <button
-                      className="btn small danger"
-                      title="Retirer cette scène du projet"
-                      onClick={() => deleteScene(s.id)}
-                      disabled={s.id === scene.id && otherScenes.length === 0}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-                <button className="btn small" onClick={addScene}>
-                  + Nouvelle scène
-                </button>
-              </div>
-              <label className="ed-field">
-                Identifiant (référencé par les portes d'intérieur)
-                <input value={scene.id} onChange={(e) => setScene({ ...scene, id: e.target.value })} />
-              </label>
-              <label className="ed-field">
-                Nom
-                <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
-              </label>
-              <div className="ed-dim">
-                <label>
-                  L
-                  <input type="number" value={scene.dimensions.w} min={5} max={40} onChange={(e) => resize(Number(e.target.value) || 5, scene.dimensions.h)} />
-                </label>
-                <label>
-                  H
-                  <input type="number" value={scene.dimensions.h} min={5} max={40} onChange={(e) => resize(scene.dimensions.w, Number(e.target.value) || 5)} />
-                </label>
-              </div>
-              <label className="ed-field">
-                Ambiance
-                <select value={scene.ambiance === 'interieur' ? 'interieur' : 'exterieur'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
-                  <option value="exterieur">Extérieur (jour/nuit = horloge)</option>
-                  <option value="interieur">Intérieur (éclairé)</option>
-                </select>
-              </label>
-              <label className="ed-field">
-                Météo
-                <select value={scene.weather ?? 'clair'} onChange={(e) => setScene({ ...scene, weather: e.target.value as Scene['weather'] })}>
-                  <option value="clair">Clair</option>
-                  <option value="pluie">Pluie</option>
-                  <option value="brouillard">Brouillard (−20 tir)</option>
-                  <option value="neige">Neige épaisse (−20 attaque/esquive)</option>
-                  <option value="tempete">Tempête (−20 attaque)</option>
-                </select>
-              </label>
-              <label className="ed-field">
-                Message d'introduction
-                <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
-              </label>
-            </div>
-          )}
-        </aside>
+        <Palette
+          scene={scene}
+          otherScenes={otherScenes}
+          setScene={setScene}
+          tool={tool}
+          setTool={setTool}
+          layers={layers}
+          setLayers={setLayers}
+          brush={brush}
+          setBrush={setBrush}
+          terrainRect={terrainRect}
+          setTerrainRect={setTerrainRect}
+          palTab={palTab}
+          setPalTab={setPalTab}
+          encTarget={encTarget}
+          setEncTarget={setEncTarget}
+          encRef={encRef}
+          setEncRef={setEncRef}
+          creatureFilter={creatureFilter}
+          setCreatureFilter={setCreatureFilter}
+          enemyCreatures={enemyCreatures}
+          warnings={warnings}
+          onSelectWarning={selectWarning}
+          openTriggers={() => setTrigOpen(true)}
+          openDialogues={() => setDlgOpen(true)}
+          openEncounters={() => setEncOpen(true)}
+          openAdvanced={openAdvanced}
+          switchScene={switchScene}
+          addScene={addScene}
+          deleteScene={deleteScene}
+          resize={resize}
+        />
 
         <main className="editor-canvas-wrap">
           <div style={{ position: 'relative', maxWidth: '100%', lineHeight: 0 }}>
@@ -1020,479 +710,32 @@ export function Editor() {
           </p>
         </main>
 
-        <aside className="editor-inspector">
-          {selT ? (
-            <>
-              <div className="mini-title">Zone trigger sélectionnée</div>
-              <div className="inspector">
-                <p>
-                  <b>{selT.id}</b> @ ({selT.rect.x}, {selT.rect.y}) {selT.rect.w}×{selT.rect.h}
-                </p>
-                <label className="ed-field">
-                  X (colonne)
-                  <input type="number" value={selT.rect.x} onChange={(e) => updateSelTRect({ x: Number(e.target.value) })} />
-                </label>
-                <label className="ed-field">
-                  Y (ligne)
-                  <input type="number" value={selT.rect.y} onChange={(e) => updateSelTRect({ y: Number(e.target.value) })} />
-                </label>
-                <label className="ed-field">
-                  Largeur
-                  <input type="number" min={1} value={selT.rect.w} onChange={(e) => updateSelTRect({ w: Math.max(1, Number(e.target.value)) })} />
-                </label>
-                <label className="ed-field">
-                  Hauteur
-                  <input type="number" min={1} value={selT.rect.h} onChange={(e) => updateSelTRect({ h: Math.max(1, Number(e.target.value)) })} />
-                </label>
-                <label className="ed-field">
-                  Condition (flag ; « ! » pour nié)
-                  <input value={selT.condition ?? ''} onChange={(e) => updateSelT({ condition: e.target.value || undefined })} />
-                </label>
-                <label className="ed-field">
-                  <input type="checkbox" checked={selT.once ?? false} onChange={(e) => updateSelT({ once: e.target.checked })} /> Une
-                  seule fois
-                </label>
-                <button className="btn small" onClick={() => setTrigOpen(true)}>
-                  Éditer les effets ({selT.effects.length})
-                </button>
-                <button
-                  className="btn small danger"
-                  onClick={() => {
-                    setScene({ ...scene, triggers: scene.triggers.filter((x) => x.id !== selT.id) });
-                    setSelectedTrigger(null);
-                  }}
-                >
-                  Supprimer
-                </button>
-                <button className="btn small" onClick={() => setSelectedTrigger(null)}>
-                  Désélectionner
-                </button>
-              </div>
-            </>
-          ) : spawn ? (
-            <>
-              <div className="mini-title">Ennemi de rencontre</div>
-              <div className="inspector">
-                <p>
-                  <b>{scene.encounters[selectedSpawn!.enc].id}</b> · ennemi @ ({spawn.pos.x}, {spawn.pos.y})
-                </p>
-                {spawn.statblock ? (
-                  <>
-                    <StatblockEditor stat={spawn.statblock} onChange={(sb) => updateSpawn({ statblock: sb })} />
-                    <button className="btn small" onClick={() => updateSpawn({ statblock: undefined })}>
-                      ↩ Utiliser une créature du bestiaire
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <label className="ed-field">
-                      Créature
-                      <select value={spawn.ref ?? ''} onChange={(e) => updateSpawn({ ref: e.target.value })}>
-                        <option value="">— créature —</option>
-                        {enemyCreatures.map((c) => (
-                          <option key={c.label} value={c.label}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <button
-                      className="btn small"
-                      onClick={() => updateSpawn({ ref: undefined, statblock: emptyStatblock(spawn.ref || 'Ennemi') })}
-                    >
-                      ⚙️ Profil personnalisé…
-                    </button>
-                  </>
-                )}
-                <MonsterPartsFields
-                  monster={spawn.appearance?.monster}
-                  weapon={spawn.weapon}
-                  colors={spawn.appearance?.colors}
-                  sex={spawn.appearance?.sex}
-                  build={spawn.appearance?.build}
-                  parts={spawn.appearance?.parts}
-                  career={spawn.appearance?.career}
-                  onMonster={(patch) => updateSpawn({ appearance: { ...spawn.appearance, monster: { ...(spawn.appearance?.monster ?? {}), ...patch } } })}
-                  onWeapon={(w) => updateSpawn({ weapon: w })}
-                  onColors={(patch) => updateSpawn({ appearance: { ...spawn.appearance, colors: { ...(spawn.appearance?.colors ?? {}), ...patch } } })}
-                  onSex={(s) => updateSpawn({ appearance: { ...spawn.appearance, sex: s } })}
-                  onBuild={(b) => updateSpawn({ appearance: { ...spawn.appearance, build: b } })}
-                  onParts={(patch) => updateSpawn({ appearance: { ...spawn.appearance, parts: { ...(spawn.appearance?.parts ?? {}), ...patch } } })}
-                  onCareer={(c) => updateSpawn({ appearance: { ...spawn.appearance, career: c } })}
-                />
-                <label className="ed-field">
-                  X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
-                </label>
-                <label className="ed-field">
-                  Y<input type="number" value={spawn.pos.y} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, y: Number(e.target.value) } })} />
-                </label>
-                <button className="btn small danger" onClick={deleteSpawn}>
-                  Supprimer
-                </button>
-                <button className="btn small" onClick={() => setSelectedSpawn(null)}>
-                  Désélectionner
-                </button>
-              </div>
-            </>
-          ) : selB ? (
-            <>
-              <div className="mini-title">Bâtiment sélectionné</div>
-              <div className="inspector">
-                <p>
-                  <b>{BUILDINGS_META[selB.type]?.label ?? selB.type}</b> @ ({selB.foot.x}, {selB.foot.y}) {selB.foot.w}×{selB.foot.h}
-                </p>
-                <label className="ed-field">
-                  Libellé
-                  <input value={selB.label ?? ''} onChange={(e) => updateSelB({ label: e.target.value })} />
-                </label>
-                <label className="ed-field">
-                  Orientation (place la porte)
-                  <select
-                    value={selB.facing ?? 'S'}
-                    onChange={(e) => {
-                      const f = e.target.value as BuildingFeature['facing'];
-                      updateSelB({ facing: f, door: defaultDoor(selB.foot, f) });
-                    }}
-                  >
-                    <option value="N">Nord</option>
-                    <option value="E">Est</option>
-                    <option value="S">Sud</option>
-                    <option value="O">Ouest</option>
-                  </select>
-                </label>
-                <label className="ed-field">
-                  Révélation
-                  <select value={selB.reveal} onChange={(e) => updateSelB({ reveal: e.target.value as BuildingFeature['reveal'] })}>
-                    <option value="cutaway">Toit qui se lève (intérieur in-scene)</option>
-                    <option value="door">Façade pleine + porte → intérieur</option>
-                  </select>
-                </label>
-                <label className="ed-field">
-                  Tuile-porte
-                  <select
-                    value={selB.door ? `${selB.door.x},${selB.door.y}` : ''}
-                    onChange={(e) => {
-                      const [x, y] = e.target.value.split(',').map(Number);
-                      updateSelB({ door: { x, y } });
-                    }}
-                  >
-                    {perimeterTiles(selB).map((t) => (
-                      <option key={`${t.x},${t.y}`} value={`${t.x},${t.y}`}>
-                        ({t.x}, {t.y})
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {selB.reveal === 'door' && (
-                  <>
-                    <label className="ed-field">
-                      Scène d'intérieur
-                      <select value={selB.interiorScene ?? ''} onChange={(e) => updateSelB({ interiorScene: e.target.value || undefined })}>
-                        <option value="">— aucune —</option>
-                        {[scene, ...otherScenes].map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.nom || s.id} ({s.id})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Point d'arrivée (entry)
-                      <input value={selB.entry ?? ''} onChange={(e) => updateSelB({ entry: e.target.value || undefined })} />
-                    </label>
-                  </>
-                )}
-                <ParamFields
-                  schema={BUILDINGS[selB.type]?.paramsSchema ?? []}
-                  values={(selB.params ?? {}) as Record<string, unknown>}
-                  onChange={updateSelBParam}
-                />
-                <button
-                  className="btn small danger"
-                  onClick={() => {
-                    setScene({ ...scene, buildings: (scene.buildings ?? []).filter((x) => x.id !== selB.id) });
-                    setSelectedBuilding(null);
-                  }}
-                >
-                  Supprimer
-                </button>
-                <button className="btn small" onClick={() => setSelectedBuilding(null)}>
-                  Désélectionner
-                </button>
-              </div>
-            </>
-          ) : sel ? (
-            <>
-              <div className="mini-title">Entité sélectionnée</div>
-              <div className="inspector">
-                <div className="ent-preview">
-                  <svg viewBox="0 0 120 150" width="84" height="105">
-                    <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
-                    {sel.kind === 'heroStart' ? (
-                      <text x="60" y="92" textAnchor="middle" fontSize="44" fill="#2ecc71">
-                        ★
-                      </text>
-                    ) : (
-                      // Aperçu unifié via le MÊME classifieur que le canvas (pickBackend) :
-                      // rig humanoïde / gabarit animé / sprite décor — plus aucun recours au monolithique.
-                      pickBackend({ kind: 'sceneEntity', ent: sel }).body
-                    )}
-                  </svg>
-                </div>
-                <p>
-                  <b>{KIND_LABEL[sel.kind]}</b> @ ({sel.pos.x}, {sel.pos.y})
-                </p>
-                <label className="ed-field">
-                  Libellé
-                  <input value={sel.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
-                </label>
-                <label className="ed-field">
-                  Orientation
-                  <select
-                    value={sel.facing ?? 'S'}
-                    onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}
-                  >
-                    <option value="N">Nord</option>
-                    <option value="NE">Nord-Est</option>
-                    <option value="E">Est</option>
-                    <option value="SE">Sud-Est</option>
-                    <option value="S">Sud</option>
-                    <option value="SO">Sud-Ouest</option>
-                    <option value="O">Ouest</option>
-                    <option value="NO">Nord-Ouest</option>
-                  </select>
-                </label>
-                {sel.kind === 'personnage' && (
-                  <>
-                    <label className="ed-field">
-                      Apparence
-                      <select
-                        value={sel.ref ?? 'Villageois'}
-                        onChange={(e) => updateSel({ ref: e.target.value })}
-                      >
-                        <option value="Villageois">Villageois</option>
-                        {creatureSpeciesNames().map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Animation d'ambiance
-                      <select value={sel.anim ?? ''} onChange={(e) => updateSel({ anim: e.target.value || undefined })}>
-                        {SCENE_ANIMS.map((a) => (
-                          <option key={a.key} value={a.key}>
-                            {a.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <div className="ed-field">
-                      <span>Apparence aléatoire</span>
-                      <button
-                        className="btn small"
-                        onClick={() => updateSel({ appearance: { ...sel.appearance, seed: hashSeed(sel.id + ':' + Math.floor(performance.now())) } })}
-                      >
-                        🎲 Relancer
-                      </button>
-                    </div>
-                    <MonsterPartsFields
-                      monster={sel.appearance?.monster}
-                      weapon={sel.weapon}
-                      colors={sel.appearance?.colors}
-                      sex={sel.appearance?.sex}
-                      build={sel.appearance?.build}
-                      parts={sel.appearance?.parts}
-                      career={sel.appearance?.career}
-                      onMonster={(patch) => updateSel({ appearance: { ...sel.appearance, monster: { ...(sel.appearance?.monster ?? {}), ...patch } } })}
-                      onWeapon={(w) => updateSel({ weapon: w })}
-                      onColors={(patch) => updateSel({ appearance: { ...sel.appearance, colors: { ...(sel.appearance?.colors ?? {}), ...patch } } })}
-                      onSex={(s) => updateSel({ appearance: { ...sel.appearance, sex: s } })}
-                      onBuild={(b) => updateSel({ appearance: { ...sel.appearance, build: b } })}
-                      onParts={(patch) => updateSel({ appearance: { ...sel.appearance, parts: { ...(sel.appearance?.parts ?? {}), ...patch } } })}
-                      onCareer={(c) => updateSel({ appearance: { ...sel.appearance, career: c } })}
-                    />
-                    <label className="ed-field">
-                      Dialogue / quête
-                      <select value={sel.dialogueId ?? ''} onChange={(e) => updateSel({ dialogueId: e.target.value || undefined })}>
-                        <option value="">— aucun —</option>
-                        {scene.dialogues.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.id}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Marchand (archétype)
-                      <select value={sel.merchant?.archetype ?? ''} onChange={(e) => updateSel({ merchant: e.target.value ? { ...sel.merchant, archetype: e.target.value } : undefined })}>
-                        <option value="">— aucun —</option>
-                        {Object.values(MERCHANTS).map((a) => (
-                          <option key={a.name} value={a.name}>
-                            {a.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    {sel.merchant && (
-                      <>
-                        <label className="ed-field">
-                          ↳ Bourg (override Disponibilité)
-                          <select
-                            value={sel.merchant.settlement ?? ''}
-                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, settlement: (e.target.value || undefined) as Settlement | undefined } })}
-                          >
-                            <option value="">— défaut (archétype) —</option>
-                            <option value="village">Village</option>
-                            <option value="ville">Ville</option>
-                            <option value="cite">Cité</option>
-                          </select>
-                        </label>
-                        <label className="ed-field">
-                          ↳ Taux de rachat à la vente (override, ex. 0.5 = ½ si marchandé, ¼ sinon)
-                          <input
-                            type="number"
-                            step="0.05"
-                            min="0"
-                            max="1"
-                            placeholder="défaut archétype"
-                            value={sel.merchant.resaleRate ?? ''}
-                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, resaleRate: e.target.value === '' ? undefined : Number(e.target.value) } })}
-                          />
-                        </label>
-                        <label className="ed-field">
-                          ↳ Majoration d'achat (override, 1 = prix listé ; 1.25 = +25 %)
-                          <input
-                            type="number"
-                            step="0.05"
-                            min="0"
-                            placeholder="défaut archétype (1)"
-                            value={sel.merchant.buyMarkup ?? ''}
-                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, buyMarkup: e.target.value === '' ? undefined : Number(e.target.value) } })}
-                          />
-                        </label>
-                        <label className="ed-field">
-                          ↳ Réassort (jours, override — défaut 1)
-                          <input
-                            type="number"
-                            step="1"
-                            min="0"
-                            placeholder="défaut archétype (1 j)"
-                            value={sel.merchant.restockDays ?? ''}
-                            onChange={(e) => updateSel({ merchant: { ...sel.merchant!, restockDays: e.target.value === '' ? undefined : Number(e.target.value) } })}
-                          />
-                        </label>
-                      </>
-                    )}
-                  </>
-                )}
-                {sel.kind === 'prop' && (
-                  <>
-                    <label className="ed-field">
-                      Décor
-                      <select value={sel.ref ?? 'tonneau'} onChange={(e) => updateSel(propRefPatch(e.target.value, !!sel.interact))}>
-                        {Object.values(PROPS).map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Empreinte (cases L×H) — couvre/bloque toutes ses cases (1×1 = aucune)
-                      <span style={{ display: 'flex', gap: 4 }}>
-                        <input
-                          type="number"
-                          min={1}
-                          value={sel.foot?.w ?? 1}
-                          onChange={(e) => {
-                            const w = Math.max(1, Number(e.target.value));
-                            const h = sel.foot?.h ?? 1;
-                            updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
-                          }}
-                        />
-                        <input
-                          type="number"
-                          min={1}
-                          value={sel.foot?.h ?? 1}
-                          onChange={(e) => {
-                            const h = Math.max(1, Number(e.target.value));
-                            const w = sel.foot?.w ?? 1;
-                            updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
-                          }}
-                        />
-                      </span>
-                    </label>
-                    <label className="ed-field">
-                      <input
-                        type="checkbox"
-                        checked={!!sel.interact}
-                        onChange={(e) => updateSel({ interact: e.target.checked ? (sel.interact ?? { effects: [] }) : undefined })}
-                      />{' '}
-                      Interactif (fouille / ramassage)
-                    </label>
-                    {sel.interact && (
-                      <>
-                        <label className="ed-field">
-                          <input
-                            type="checkbox"
-                            checked={!!sel.interact.consume}
-                            onChange={(e) => updateSel({ interact: { ...sel.interact!, consume: e.target.checked } })}
-                          />{' '}
-                          Disparaît quand pris (butin) — sinon reste, fouillé une fois
-                        </label>
-                        <div className="ed-field">
-                          <span className="mini-title">Effets de la fouille / du ramassage</span>
-                          <EffectList
-                            effects={sel.interact.effects}
-                            onChange={(eff) => updateSel({ interact: { ...sel.interact!, effects: eff } })}
-                            ctx={{ encounters: scene.encounters, dialogues: scene.dialogues }}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-                <button className="btn small" onClick={duplicateSel}>Dupliquer</button>
-                <button className="btn small danger" onClick={() => setScene({ ...scene, entities: scene.entities.filter((x) => x.id !== sel.id) })}>
-                  Supprimer
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="mini-title">Inspecteur</div>
-              <p className="hint">
-                Sélectionnez une entité sur la carte pour l'éditer (créature, dialogue, butin…).
-                <br />
-                <br />
-                Onglet <b>Carte</b> : peindre tuiles, placer entités, <b>glisser</b> pour poser un bâtiment ou une zone.
-                <br />
-                Onglet <b>Logique</b> : triggers, dialogues, rencontres.
-                <br />
-                Onglet <b>Scène</b> : nom, taille, ambiance.
-              </p>
-              {(scene.buildings ?? []).length > 0 && (
-                <>
-                  <div className="mini-title">Bâtiments posés</div>
-                  <div className="entity-tools">
-                    {(scene.buildings ?? []).map((b) => (
-                      <button key={b.id} className="btn small" onClick={() => setSelectedBuilding(b.id)}>
-                        {b.label ?? BUILDINGS_META[b.type]?.label ?? b.type} ({b.foot.x},{b.foot.y})
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-              <EntityListPanel
-                entities={scene.entities}
-                selectedId={selected}
-                onSelect={(id) => { setSelected(id); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }}
-              />
-            </>
-          )}
-        </aside>
+        <Inspector
+          scene={scene}
+          otherScenes={otherScenes}
+          setScene={setScene}
+          enemyCreatures={enemyCreatures}
+          sel={sel}
+          selected={selected}
+          updateSel={updateSel}
+          duplicateSel={duplicateSel}
+          onSelectEntity={(id) => { setSelected(id); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }}
+          selT={selT}
+          updateSelT={updateSelT}
+          updateSelTRect={updateSelTRect}
+          onDeselectTrigger={() => setSelectedTrigger(null)}
+          openTriggers={() => setTrigOpen(true)}
+          spawn={spawn}
+          selectedSpawn={selectedSpawn}
+          updateSpawn={updateSpawn}
+          deleteSpawn={deleteSpawn}
+          onDeselectSpawn={() => setSelectedSpawn(null)}
+          selB={selB}
+          updateSelB={updateSelB}
+          updateSelBParam={updateSelBParam}
+          onDeselectBuilding={() => setSelectedBuilding(null)}
+          onSelectBuilding={(id) => setSelectedBuilding(id)}
+        />
       </div>
 
       {trigOpen && (
@@ -1544,4 +787,3 @@ export function Editor() {
     </div>
   );
 }
-
