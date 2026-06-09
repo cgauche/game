@@ -49,6 +49,7 @@ export function ActionBar() {
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
   const heal = useGame((s) => s.battleHeal);
+  const cancelMove = useGame((s) => s.cancelMove);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
   const establishing = useGame((s) => s.establishing);
@@ -381,6 +382,17 @@ export function ActionBar() {
               <span className="ab-ico">🦶</span>
               <span className="ab-lbl">Déplacer{moveStarted ? (moveLeft > 0 ? ` (${moveLeft})` : ' ✓') : ''}</span>
             </button>
+            {/* Annuler le déplacement (R6/LOT 6) : tant qu'aucune Action n'est prise, revenir au point de départ. */}
+            {moveStarted && !battle.acted && (
+              <button
+                className="ab-slot ab-undo"
+                onClick={cancelMove}
+                title="Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)"
+              >
+                <span className="ab-ico">↩️</span>
+                <span className="ab-lbl">Annuler dépl.</span>
+              </button>
+            )}
             <button
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
               disabled={(battle.acted && !freeFrenzy) || stunned || broken}

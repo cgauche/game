@@ -458,6 +458,11 @@ export interface BattleState {
   /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
    *  Vue ; `rounds` = Rounds restants (décrémenté à chaque frontière de Round, retiré à 0). */
   smoke?: { x: number; y: number; rounds: number }[];
+  /** Instantané positionnel pris au PREMIER segment de Mouvement du Tour (R6/LOT 6) : permet
+   *  d'ANNULER tout le déplacement tant qu'aucune Action n'a été prise (`cancelMove`). Restaure
+   *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
+   *  `movedPreAction`. Effacé à l'annulation ou écrasé au 1ᵉʳ segment du Tour suivant. */
+  moveSnapshot?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean } | null;
 }
 
 export interface GameState {
@@ -692,6 +697,9 @@ export interface GameState {
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
+  /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
+   *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
+  cancelMove: () => void;
   battleEndTurn: () => void;
   /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
@@ -2283,6 +2291,16 @@ export const useGame = create<GameState>((set, get) => ({
             return;
           }
         }
+      // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
+      // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
+      const snapshot =
+        (battle.movementUsed ?? 0) === 0
+          ? {
+              pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+              facing: { ...get().facing },
+              movedPreAction: battle.movedPreAction,
+            }
+          : battle.moveSnapshot ?? null;
       // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
@@ -2297,9 +2315,28 @@ export const useGame = create<GameState>((set, get) => ({
       // Mouvement décomposable : cumule le coût du segment ; on retombe en mode neutre (action: null) →
       // le joueur peut re-cliquer « Déplacer » (s'il reste du Mouvement) OU enchaîner une Action. Si ce
       // segment précède l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
-      set({ battle: { ...battle, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map() } });
+      set({ battle: { ...battle, moveSnapshot: snapshot, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map() } });
       bus.emit(EVT.SCENE_DIRTY);
     }
+  },
+
+  cancelMove: () => {
+    const { battle } = get();
+    if (!battle || battle.over) return;
+    const snap = battle.moveSnapshot;
+    const active = activeCombatant(battle);
+    // Aide PRÉ-Action uniquement : on n'annule que tant qu'aucune Action n'a été prise ce Tour (sinon
+    // l'Action aurait été résolue depuis une position désormais effacée). Rien à annuler sans segment.
+    if (!snap || !active || active.kind !== 'hero' || battle.acted || (battle.movementUsed ?? 0) === 0) return;
+    for (const c of battle.combatants) {
+      const p = snap.pos[c.id];
+      if (p) c.pos = { ...p }; // restaure TOUS (un grand a pu en déplacer d'autres sous son empreinte)
+    }
+    set({
+      facing: { ...snap.facing },
+      battle: { ...battle, movementUsed: 0, movedPreAction: snap.movedPreAction, moveSnapshot: null, action: null, reachable: new Map() },
+    });
+    bus.emit(EVT.SCENE_DIRTY);
   },
 
   battleClickEntity: (id, skipMountChoice) => {

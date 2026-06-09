@@ -1699,6 +1699,58 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
   });
 });
 
+describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Action (R6/LOT 6)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function moveSetup() {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const turn = st.battle!.order.indexOf(H.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
+    return H;
+  }
+
+  function firstMoveTarget(fromX: number, fromY: number) {
+    const reach = [...useGame.getState().battle!.reachable.keys()].map((k) => {
+      const [x, y] = k.split(',').map(Number);
+      return { x, y };
+    });
+    return reach.find((p) => p.x !== fromX || p.y !== fromY)!;
+  }
+
+  it('restaure la position et remet le Mouvement à zéro après un segment', () => {
+    const H = moveSetup();
+    const from = { ...H.pos! };
+    useGame.getState().battleSelectAction('move');
+    const target = firstMoveTarget(from.x, from.y);
+    useGame.getState().battleClickTile(target);
+    let st = useGame.getState();
+    expect(st.battle!.movementUsed).toBeGreaterThan(0);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(target);
+    useGame.getState().cancelMove();
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(from);
+    expect(st.battle!.movementUsed).toBe(0);
+    expect(st.battle!.moveSnapshot ?? null).toBeNull();
+  });
+
+  it('ne fait RIEN une fois l’Action prise (l’annulation est une aide PRÉ-Action)', () => {
+    const H = moveSetup();
+    const from = { ...H.pos! };
+    useGame.getState().battleSelectAction('move');
+    const target = firstMoveTarget(from.x, from.y);
+    useGame.getState().battleClickTile(target);
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } }); // une Action a été prise
+    useGame.getState().cancelMove();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(target);
+  });
+});
+
 describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
