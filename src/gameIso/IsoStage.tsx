@@ -37,15 +37,13 @@ import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
-import { walkXY, walkDuration } from './walkPath';
+import { walkXY, walkDuration, STEP_MS } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
 import { summarizeEffects, combatantFlags } from './effectIcons';
-const STEP_MS = 160; // durée d'un pas (aligné sur AnimatedRigToken/clip walk)
-
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 /** Teinte d'une bande de portée selon son modificateur. Palette froide→chaude qui CONTRASTE avec

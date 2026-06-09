@@ -7,6 +7,8 @@ import type { GameState, BattleState, RevealEntry } from './store';
 import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
+import { TEMPO } from './tempo';
+import { walkMs } from '../gameIso/walkPath';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
@@ -1720,7 +1722,7 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
 export function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
   if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
-  setTimeout(() => advanceTurn(get, set), 500);
+  setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
 export function advanceTurn(get: () => GameState, set: any) {
@@ -1839,7 +1841,7 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
-  setTimeout(() => runEnemyAI(get, set, active.id), 450);
+  setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
 }
 
 /** LDB 21 l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un Test de Calme
@@ -2082,7 +2084,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
-  const attackThenAdvance = (target: Combatant) => {
+  const attackThenAdvance = (target: Combatant, delay: number = TEMPO.preAttack) => {
     setTimeout(() => {
       const b = get().battle;
       if (!b || b.over) return;
@@ -2095,9 +2097,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
         aiFrenzyAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
-        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), 500);
+        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), TEMPO.postAttack);
       }
-    }, 350);
+    }, delay);
   };
 
   // Combat monté (LDB 14 l.221) : une monture MONTÉE est dirigée par son cavalier — elle ne se déplace
@@ -2120,7 +2122,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     case 'cast':
       if (!canAct) return advanceTurn(get, set);
       castSpell(get, set, enemy, targetOf(action.targetId), action.spell);
-      setTimeout(() => advanceTurn(get, set), 500);
+      setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
       return;
     case 'shoot': {
       if (!canAct) return advanceTurn(get, set);
@@ -2129,7 +2131,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       // (retour playtest « jamais su sur qui il tirait »). doAttack journalise « X tire sur Y ».
       set({ enemyAim: { fromId: enemy.id, toId: tgt.id } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => { set({ enemyAim: null }); attackThenAdvance(tgt); }, 750);
+      setTimeout(() => { set({ enemyAim: null }); attackThenAdvance(tgt); }, TEMPO.aimTelegraph);
       return;
     }
     case 'melee':
@@ -2156,7 +2158,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
         : (action.state === 'Empêtré' ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
       set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => advanceTurn(get, set), 350);
+      setTimeout(() => advanceTurn(get, set), TEMPO.afterMove);
       return;
     }
     case 'move': {
@@ -2190,8 +2192,8 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
             enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
           }
         }
-        attackThenAdvance(tgt);
-      } else setTimeout(() => advanceTurn(get, set), 350);
+        attackThenAdvance(tgt, Math.max(TEMPO.preAttack, walkMs(path ?? []) + TEMPO.afterMove));
+      } else setTimeout(() => advanceTurn(get, set), walkMs(path ?? []) + TEMPO.afterMove);
       return;
     }
   }

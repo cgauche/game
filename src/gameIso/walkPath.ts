@@ -21,3 +21,12 @@ export function walkXY(path: Pt[], elapsed: number, stepMs: number): Pt {
 export function walkDuration(path: Pt[], stepMs: number): number {
   return Math.max(0, (path.length - 1) * stepMs);
 }
+
+/** Durée d'un pas de marche (ms) — SOURCE UNIQUE partagée par le rendu (IsoStage) ET le
+ *  séquencement du combat (combatFlow), pour que la résolution attende la fin réelle du déplacement. */
+export const STEP_MS = 160;
+
+/** Durée totale d'un déplacement avec le pas standard. */
+export function walkMs(path: Pt[]): number {
+  return walkDuration(path, STEP_MS);
+}
