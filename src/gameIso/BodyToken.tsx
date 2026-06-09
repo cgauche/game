@@ -23,6 +23,7 @@ export function BodyToken({
   scale,
   children,
   ring,
+  ringDash,
   dim = false,
   walking = false,
   fx,
@@ -39,6 +40,8 @@ export function BodyToken({
   scale: number;
   children: ReactNode;
   ring?: string;
+  /** Pointillé SVG de l'anneau (canal d'appartenance daltonien-safe, R9) ; absent = trait plein. */
+  ringDash?: string;
   dim?: boolean;
   walking?: boolean;
   fx?: string;
@@ -63,7 +66,7 @@ export function BodyToken({
     <g style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? 0.82 : 1 }}>
       <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
       {active && <ellipse cx={0} cy={0} rx={20 * scale} ry={10 * scale} fill="#ffe066" opacity={0.2} />}
-      {ring && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ring} strokeWidth={2.5} />}
+      {ring && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ring} strokeWidth={2.5} strokeDasharray={ringDash} />}
       <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
         <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>{children}</g>
       </g>

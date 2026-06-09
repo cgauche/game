@@ -43,7 +43,7 @@ import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, previewAttack } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
-import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
+import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
 import { summarizeEffects, combatantFlags } from './effectIcons';
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -451,9 +451,9 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
-    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} bakedDeath
+    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}>
       {child}
     </BodyToken>
@@ -503,6 +503,7 @@ export function IsoStage() {
         iconsMore: fxSum.moreCount,
         veil: veilTint(isHero),
         active: c.id === activeC?.id,
+        ringDash: teamShape(isHero), // R9 : ennemi = anneau pointillé (indice d'équipe non-coloré)
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }

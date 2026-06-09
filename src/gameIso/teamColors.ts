@@ -31,6 +31,16 @@ export function tileTint(isHero: boolean, active: boolean): string {
   return active ? ACTIVE_TINT : isHero ? ALLY_TINT : ENEMY_TINT;
 }
 
+/**
+ * Canal d'appartenance INDÉPENDANT de la teinte (R9 — daltonisme ~8 % des hommes) : la FORME de l'anneau
+ * encode l'équipe en plus de sa couleur. Héros = anneau PLEIN (undefined) ; ennemi = anneau POINTILLÉ.
+ * Renvoie un `strokeDasharray` SVG (ou undefined pour un trait plein). Source unique consommée par les
+ * pions de terrain (BodyToken) et les portraits HUD (RigPortrait).
+ */
+export function teamShape(isHero: boolean): string | undefined {
+  return isHero ? undefined : '5 3';
+}
+
 /** Couleur du VOILE d'équipe sur le modèle (encode l'équipe ; l'« actif » est porté par le halo/la case). */
 export function veilTint(isHero: boolean): string {
   return isHero ? ALLY_TINT : ENEMY_TINT;

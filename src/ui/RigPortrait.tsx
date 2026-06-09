@@ -40,8 +40,10 @@ export function RigPortrait({ combatant, size = 42, ring }: { combatant: Combata
     viewBox = r.portraitBox;
   }
 
+  // R9 (daltonisme) : la FORME du contour encode l'équipe en plus de la couleur — héros = plein, ennemi = tirets.
+  const borderStyle = combatant.kind === 'hero' ? 'solid' : 'dashed';
   return (
-    <span className="rig-portrait" style={{ width: size, height: size, borderColor: ring }}>
+    <span className="rig-portrait" style={{ width: size, height: size, borderColor: ring, borderStyle }}>
       <svg viewBox={viewBox} width={size} height={size} preserveAspectRatio="xMidYMid slice">
         {body}
       </svg>

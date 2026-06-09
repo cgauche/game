@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HERO_RING, ENEMY_RING, ACTIVE_RING, hpColor } from './teamColors';
+import { HERO_RING, ENEMY_RING, ACTIVE_RING, hpColor, teamShape } from './teamColors';
 
 const rgb = (hex: string) => {
   const h = hex.replace('#', '');
@@ -34,5 +34,16 @@ describe('couleurs d’équipe — un allié ne doit pas ressembler à un ennemi
       // le rouge ne doit pas être le canal nettement dominant (ce qui le ferait lire « chaud/ennemi »)
       expect(r - Math.max(g, b)).toBeLessThanOrEqual(0);
     }
+  });
+});
+
+describe('teamShape — canal d’appartenance INDÉPENDANT de la couleur (daltonisme, R9)', () => {
+  it('héros = anneau PLEIN (aucun pointillé)', () => {
+    expect(teamShape(true)).toBeUndefined();
+  });
+  it('ennemi = anneau POINTILLÉ (forme distincte de la couleur)', () => {
+    const dash = teamShape(false);
+    expect(typeof dash).toBe('string');
+    expect(dash!.length).toBeGreaterThan(0);
   });
 });
