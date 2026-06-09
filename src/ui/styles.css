@@ -623,17 +623,37 @@ textarea:focus {
 /* Panneau Perso (rappel du héros actif), bloc gauche de la barre */
 .ab-actor {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 224px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   flex: 0 0 auto;
   padding-right: 12px;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
-.ab-actor-head {
+.ab-actor-side {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.ab-actor-top {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 6px;
+}
+.ab-name {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+.ab-actor-top .adv {
+  font-size: 11px;
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 0 5px;
+  flex: 0 0 auto;
 }
 .rig-portrait {
   display: inline-block;
@@ -647,20 +667,6 @@ textarea:focus {
 .rig-portrait svg {
   display: block;
 }
-.ab-actor-info {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  flex: 1;
-  min-width: 0;
-}
-.ab-actor-info strong {
-  font-size: 14px;
-}
-.ab-meta {
-  font-size: 11px;
-  color: var(--muted);
-}
 .ab-assailli {
   font-size: 11px;
   background: rgba(192, 57, 43, 0.2);
@@ -668,34 +674,6 @@ textarea:focus {
   color: #ff9a8f;
   border-radius: 5px;
   padding: 1px 5px;
-}
-.ab-pb {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.ab-pb-bar {
-  flex: 1;
-  height: 9px;
-  border-radius: 5px;
-  background: #000;
-  overflow: hidden;
-}
-.ab-pb-bar > i {
-  display: block;
-  height: 100%;
-  transition: width 0.3s, background 0.3s;
-}
-.ab-pb-val {
-  font-size: 12px;
-  font-weight: 600;
-}
-.ab-pb .adv {
-  color: var(--gold);
-  font-size: 11px;
-  border: 1px solid var(--gold);
-  border-radius: 4px;
-  padding: 0 5px;
 }
 .ab-pools {
   font-size: 11px;
@@ -1133,10 +1111,11 @@ textarea:focus {
   opacity: 0.65;
 }
 
-/* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3. */
+/* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3.
+   top calé sous le bas mesuré de la frise (~73px) + marge d'air, pour ne JAMAIS la chevaucher. */
 .combat-feed {
   position: absolute;
-  top: 68px;
+  top: 84px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -2584,7 +2563,8 @@ textarea:focus {
   .initiative-strip { top: 6px; max-width: 96vw; }
   .is-tiles { gap: 5px; padding: 4px 6px 3px; }
   .ptile-states { font-size: 10px; }
-  .combat-feed { top: 60px; }
+  .combat-feed { top: 78px; max-width: 94vw; }
+  .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
 }
 
 /* ── Dock d'équipe (gauche) ── */
@@ -2631,10 +2611,18 @@ textarea:focus {
   width: min(330px, 86vw);
   max-height: 38vh;
   overflow: auto;
-  background: rgba(16, 16, 22, 0.93);
-  border: 1px solid var(--border);
+  background: transparent; /* fond transparent par défaut — seul le texte (ombré) flotte sur le champ */
+  border: 1px solid transparent;
   border-radius: 10px;
   padding: 8px 10px;
+  text-shadow: 0 1px 3px #000, 0 0 5px #000; /* lisibilité sur le champ quand le fond est transparent */
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+/* Au survol du tiroir (panneau ou bouton 📜), on révèle le fond opaque ; sinon il reste transparent. */
+.log-drawer:hover .ld-panel {
+  background: rgba(14, 16, 22, 0.94);
+  border-color: var(--border);
+  text-shadow: none;
 }
 @media (max-width: 700px) {
   .log-drawer { right: 8px; bottom: 88px; }

@@ -11,10 +11,8 @@ import { compatibleAmmo } from '../engine/items';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
-import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
-import { RigPortrait } from './RigPortrait';
-import { EffectChips } from './EffectChips';
-import { combatantFlags } from '../gameIso/effectIcons';
+import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
+import { PortraitTile } from './PortraitTile';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -117,7 +115,6 @@ export function ActionBar() {
   const freeFrenzy = isHero && !!active.frenzied && !active.frenzyFreeUsed;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
-  const pbRatio = active.wounds.max > 0 ? active.wounds.current / active.wounds.max : 0;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
   const assailliN = isHero && active.pos
     ? battle.combatants.filter((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && Math.max(Math.abs(c.pos.x - active.pos!.x), Math.abs(c.pos.y - active.pos!.y)) <= 1).length
@@ -343,24 +340,17 @@ export function ActionBar() {
 
       <div className="ab-bar">
         <div className="ab-actor">
-          <div className="ab-actor-head">
-            <RigPortrait combatant={active} size={46} ring={ring} />
-            <div className="ab-actor-info">
-              <strong>{active.name}</strong>
-              <span className="ab-meta">{active.career ?? (isHero ? '' : 'Ennemi')}</span>
+          {/* Tuile-portrait partagée (même système que le dock/la frise) : portrait + jauge de PV
+              verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
+          <PortraitTile c={active} ring={ring} size={52} showPv />
+          <div className="ab-actor-side">
+            <div className="ab-actor-top">
+              <strong className="ab-name" title={active.career ?? (isHero ? active.name : 'Ennemi')}>{active.name}</strong>
+              {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
+              {assailliN >= 2 && (
+                <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
+              )}
             </div>
-            {assailliN >= 2 && (
-              <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
-            )}
-          </div>
-          <div className="ab-pb">
-            <div className="ab-pb-bar">
-              <i style={{ width: `${Math.max(0, pbRatio) * 100}%`, background: hpColor(pbRatio) }} />
-            </div>
-            <span className="ab-pb-val">{active.wounds.current}/{active.wounds.max} PB</span>
-            {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
-          </div>
-          <EffectChips conditions={active.conditions} effects={active.activeEffects} flags={combatantFlags(active)} max={8} />
           {isHero && (
             <div className="ab-pools" title="Chance · Résilience · Détermination · Destin">
               🍀 {active.fortune ?? 0} · 🔥 {active.resilience ?? 0} · ✊ {active.resolve ?? 0} · ✨ {active.fate ?? 0}
@@ -372,6 +362,7 @@ export function ActionBar() {
               <span className={moveLeft > 0 ? 'avail' : 'spent'}>🦶 Mouvement {moveLeft > 0 ? `${moveLeft}\u00A0case${moveLeft > 1 ? 's' : ''}` : '✓'}</span>
             </div>
           )}
+          </div>
         </div>
 
         {isHero ? (
