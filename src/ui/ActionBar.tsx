@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useGame, activeCombatant, entityPickables, trampleTarget, movementRemaining, canMove } from '../state/store';
+import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
@@ -49,6 +51,10 @@ export function ActionBar() {
   const heal = useGame((s) => s.battleHeal);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
+  // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
+  // Réinitialisé à chaque changement de tour/Round.
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
   const active = activeCombatant(battle);
   if (!active) return null;
@@ -105,6 +111,15 @@ export function ActionBar() {
   // Détermination (Resolve) : États retirables de l'actif (LDB ch.17 l.62-66).
   const resolve = isHero ? active.resolve ?? 0 : 0;
   const removableConditions = isHero && resolve > 0 ? active.conditions : [];
+  // Économie du tour (R6) : reste-t-il une option utile ? sinon « Fin du tour » pulse (nudge). Finir avec
+  // l'Action non dépensée = gros gâchis → confirmation à 2 clics.
+  const meaningfulLeft = isHero && hasMeaningfulOption(active, battle);
+  const wastingAction = isHero && !battle.acted && canTakeAction(active);
+  const onEndTurn = () => {
+    if (wastingAction && !confirmEnd) { setConfirmEnd(true); return; }
+    setConfirmEnd(false);
+    endTurn();
+  };
   // Objets au sol ramassables sur/adjacents à la case du combattant actif (décor `prop` interactif).
   const groundItems =
     isHero && active.pos
@@ -429,9 +444,13 @@ export function ActionBar() {
               </button>
             )}
 
-            <button className="ab-slot ab-end" onClick={endTurn}>
-              <span className="ab-ico">⏭️</span>
-              <span className="ab-lbl">Fin du tour</span>
+            <button
+              className={`ab-slot ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`}
+              onClick={onEndTurn}
+              title={confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour'}
+            >
+              <span className="ab-ico">{confirmEnd ? '⚠️' : '⏭️'}</span>
+              <span className="ab-lbl">{confirmEnd ? 'Finir quand même ?' : 'Fin du tour'}</span>
             </button>
           </div>
         ) : (
