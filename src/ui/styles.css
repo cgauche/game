@@ -1181,6 +1181,21 @@ textarea:focus {
   font-size: 11px;
   color: var(--muted);
 }
+/* Compteur d'économie d'action (panneau du héros actif). */
+.ab-budget {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.ab-budget .avail {
+  color: #5fcf92;
+  font-weight: 700;
+}
+.ab-budget .spent {
+  color: var(--muted);
+  opacity: 0.65;
+}
 
 /* Bandeau haut « fil d'événements » (au-dessus du champ). */
 .combat-banner {

@@ -314,6 +314,12 @@ export function ActionBar() {
               🍀 {active.fortune ?? 0} · 🔥 {active.resilience ?? 0} · ✊ {active.resolve ?? 0} · ✨ {active.fate ?? 0}
             </div>
           )}
+          {isHero && (
+            <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + 1 Mouvement)">
+              <span className={battle.acted ? 'spent' : 'avail'}>⚔️ Action {battle.acted ? '✓' : 'dispo'}</span>
+              <span className={battle.moved ? 'spent' : 'avail'}>🦶 Mouvement {battle.moved ? '✓' : 'dispo'}</span>
+            </div>
+          )}
         </div>
 
         {isHero ? (
