@@ -71,12 +71,22 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant' && m.value === -10)).toBe(true);
   });
 
-  it('tir sans Mouvement → pas de pénalité « Tir en bougeant »', () => {
+  it('héros qui garde sa mobilité (n’a pas tiré « immobile ») → -10 même sans avoir encore bougé', () => {
+    // Mouvement décomposable : on peut bouger APRÈS le tir → un tir mobile coûte -10 par défaut (LDB 14 l.101).
     seedBattleRng(1);
     const s = scene(7);
     const a = shooter();
     const b = target({ pos: { x: 6, y: 0 } });
-    const r = resolveAttack(mkGet(s, [a, b]), a, b); // mkGet : moved absent
+    const r = resolveAttack(mkGet(s, [a, b]), a, b); // pas d'immobilisation → tir mobile
+    expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant' && m.value === -10)).toBe(true);
+  });
+
+  it('héros qui tire IMMOBILE (heldGround) → pas de pénalité « Tir en bougeant »', () => {
+    seedBattleRng(1);
+    const s = scene(7);
+    const a = shooter();
+    const b = target({ pos: { x: 6, y: 0 } });
+    const r = resolveAttack(mkGet(s, [a, b]), a, b, undefined, undefined, undefined, true); // heldGround = true
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);
   });
 });

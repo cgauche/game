@@ -521,6 +521,7 @@ export function resolveAttack(
   location?: HitLocation,
   fromCharge?: boolean,
   intoCrowd?: boolean,
+  heldGround?: boolean,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
@@ -539,7 +540,12 @@ export function resolveAttack(
     if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
     if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
-    if (battle.movementUsed > 0) env.push({ label: 'Tir en bougeant', value: -10 }); // Mouvement + tir au même Round (LDB 14 l.101)
+    // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
+    // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
+    // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm).
+    // L'IA/ennemi (pas d'option) : −10 seulement s'il a effectivement bougé ce Tour.
+    const mobileShot = attacker.kind === 'hero' ? !heldGround : battle.movementUsed > 0;
+    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
     const inMelee = (target.engagedWith ?? []).some((id) => {
       const ally = battle.combatants.find((c) => c.id === id);

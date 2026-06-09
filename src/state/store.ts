@@ -254,6 +254,10 @@ export interface PendingAttack {
    *  un combattant au contact de la cible (les DEUX camps, tir fratricide possible) est touché au hasard ;
    *  0 DR si le succès est dû au seul bonus. */
   intoCrowd?: boolean;
+  /** Tir IMMOBILE (option de tir) : le héros décide de ne pas bouger ce Tour → annule la pénalité −10 « Tir
+   *  en bougeant » (LDB 14 l.101) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
+   *  n'a pas déjà bougé. */
+  heldGround?: boolean;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
@@ -685,6 +689,8 @@ export interface GameState {
   attackSetLocation: (loc: HitLocation | null) => void;
   /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
   attackSetIntoCrowd: (v: boolean) => void;
+  /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
+  attackSetHeldGround: (v: boolean) => void;
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
@@ -2705,6 +2711,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pa || pa.result) return; // choix avant le jet seulement
     set({ pendingAttack: { ...pa, intoCrowd: v } });
   },
+  attackSetHeldGround: (v) => {
+    const pa = get().pendingAttack;
+    if (!pa || pa.result) return; // choix avant le jet seulement
+    set({ pendingAttack: { ...pa, heldGround: v } });
+  },
   attackRoll: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || pa.result) return;
@@ -2712,7 +2723,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target) return;
     applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
     if (!r) {
       get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
       set({ pendingAttack: null });
@@ -2729,7 +2740,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
     attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround);
     if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */
@@ -2779,6 +2790,12 @@ export const useGame = create<GameState>((set, get) => ({
       if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain) {
         attacker.frenzyFreeUsed = true;
         set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, ev('frenzy', `${attacker.name} : attaque libre de Frénésie (Action préservée).`, attacker.id)] } });
+      }
+      // Tir IMMOBILE (LDB 14 l.101) : le héros a renoncé à bouger pour annuler le −10 → on consomme son
+      // Mouvement du Tour (il ne pourra plus se déplacer après ce tir).
+      if (pa.heldGround && weapon.type === 'ranged') {
+        const b2 = get().battle;
+        if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker) } });
       }
     }
   },

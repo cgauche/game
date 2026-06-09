@@ -64,6 +64,7 @@ export function RollModal() {
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
+  const setHeldGround = useGame((s) => s.attackSetHeldGround);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
@@ -73,6 +74,9 @@ export function RollModal() {
   // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
+  // Tir IMMOBILE (LDB 14 l.101) : proposé au TIR d'un héros qui n'a pas encore bougé — annule le −10 « Tir en
+  // bougeant » au prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
+  const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0;
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
 
@@ -110,6 +114,20 @@ export function RollModal() {
                   🎯 Tirer dans le tas (+{cm.value})
                 </button>
                 {pa.intoCrowd && <span className="rm-crowd-note">{crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.</span>}
+              </div>
+            )}
+            {canHoldGround && (
+              <div className="rm-crowd">
+                <button
+                  className={`btn small ${pa.heldGround ? 'btn-primary' : ''}`}
+                  onClick={() => setHeldGround(!pa.heldGround)}
+                  title="Tire sans bouger : annule la pénalité -10 « Tir en bougeant », mais consomme ton Mouvement du Tour (tu ne pourras plus te déplacer)."
+                >
+                  🦿 Je ne bouge pas (annule le -10)
+                </button>
+                {pa.heldGround
+                  ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
+                  : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
               </div>
             )}
             <div className="modal-actions">
