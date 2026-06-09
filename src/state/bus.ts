@@ -34,6 +34,9 @@ export const EVT = {
   ANIM_IMPACT: 'anim_impact',
   /** store → rendu : déplacement animé d'un token {id,path}. */
   ANIM_MOVE: 'anim_move',
+  /** store → rendu : zone d'effet déclenchée (souffle/vomi/cri/sort de zone) — flash des cases touchées
+   *  AU MOMENT de la résolution {tiles:[{x,y}], kind, type} → on voit QUI est pris et pourquoi. */
+  ANIM_AOE: 'anim_aoe',
   /** store → * : le temps de jeu a avancé {minutes}. #T3 (cascade) branchera guérison/Fatigue/re-stock sur les franchissements. */
   TIME_ADVANCED: 'time:advanced',
 } as const;

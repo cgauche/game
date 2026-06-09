@@ -51,6 +51,15 @@ const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
  *  l'herbe (cyan/bleu = proche/facile → orange/rouge = loin/difficile ; le vert se noierait au sol). */
 const bandColor = (mod: number): string =>
   mod >= 60 ? '#46e0c0' : mod >= 40 ? '#5aa6ff' : mod >= 0 ? '#e6d24a' : mod >= -10 ? '#e8973f' : '#e0533a';
+/** Couleur du flash de zone d'effet selon l'élément (feu/froid/poison/foudre), défaut rouge. */
+const aoeColor = (type?: string): string => {
+  const t = (type ?? '').toLowerCase();
+  if (/feu/.test(t)) return '#ff7a3c';
+  if (/froid|glace/.test(t)) return '#7fd0ff';
+  if (/poison|corros/.test(t)) return '#8fce5a';
+  if (/électric|electric|foudre/.test(t)) return '#ffe066';
+  return '#ff5a4d';
+};
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.6;
 
@@ -204,6 +213,20 @@ export function IsoStage() {
   type Aura = { key: number; x: number; y: number; gradient: string; core: string; channel?: boolean };
   const [auras, setAuras] = useState<Aura[]>([]);
   const auraId = useRef(0);
+  // Flash de zone d'effet (R7) : on peint les cases touchées ~1,1 s à la résolution (souffle/cri/sort de
+  // zone), ennemi comme joueur → on voit l'empreinte et pourquoi plusieurs combattants sont affectés.
+  type AoeFlash = { key: number; tiles: { x: number; y: number }[]; color: string };
+  const [aoes, setAoes] = useState<AoeFlash[]>([]);
+  const aoeId = useRef(0);
+  useEffect(() => {
+    const off = bus.on(EVT.ANIM_AOE, (d: { tiles?: { x: number; y: number }[]; type?: string }) => {
+      if (!d?.tiles?.length) return;
+      const key = ++aoeId.current;
+      setAoes((a) => [...a, { key, tiles: d.tiles!, color: aoeColor(d.type) }]);
+      setTimeout(() => setAoes((a) => a.filter((x) => x.key !== key)), 1150);
+    });
+    return off;
+  }, []);
   useEffect(() => {
     const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
       if (d.kind !== 'ranged' && d.kind !== 'spell') return;
@@ -703,6 +726,14 @@ export function IsoStage() {
             </g>
           );
         })}
+        {/* Flash de zone d'effet (R7) : cases touchées qui s'estompent (souffle/cri/sort de zone). */}
+        {aoes.flatMap((ao) =>
+          ao.tiles.map((t, i) => (
+            <path key={`aoe${ao.key}-${i}`} d={diamondPath(t.x, t.y, dims)} fill={ao.color} opacity={0.5} stroke={ao.color} strokeWidth={1} pointerEvents="none">
+              <animate attributeName="opacity" from="0.6" to="0" dur="1.1s" fill="freeze" />
+            </path>
+          )),
+        )}
         {auras.map((au) => {
           const { cx, cy } = tileCenter(au.x, au.y, dims);
           // Canalisation (lanceur) : pulsation serrée et brève. Bénédiction (cible) : expansion soutenue.

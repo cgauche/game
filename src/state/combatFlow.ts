@@ -1380,6 +1380,16 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
   const damage = isVomi ? be + 4 : a.bonus; // Vomi = BE+4 ; Souffle = Indice
   const lines: string[] = [`${attacker.name} déclenche ${ATTACK_LABEL[a.kind]}${a.type ? ` (${a.type})` : ''} !`];
   emitCreatureAttackAnim(attacker, a.kind);
+  // Flash de la ZONE touchée à l'exécution (R7) : on montre l'empreinte (centre ± blast, clippée à la scène)
+  // → on comprend pourquoi plusieurs combattants sont affectés. Émis pour TOUTE attaque de zone (ennemi/joueur).
+  const sc2 = get().scene;
+  const zone: Pt[] = [];
+  for (let dx = -blast; dx <= blast; dx++)
+    for (let dy = -blast; dy <= blast; dy++) {
+      const x = center.pos!.x + dx, y = center.pos!.y + dy;
+      if (sc2 && x >= 0 && y >= 0 && x < sc2.dimensions.w && y < sc2.dimensions.h) zone.push({ x, y });
+    }
+  bus.emit(EVT.ANIM_AOE, { tiles: zone, kind: a.kind, type: a.type });
   for (const tgt of affected) {
     // Test opposé CT/Esquive (Vomi : Facile +40 pour l'attaquant à courte distance).
     const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng(), isVomi ? 'facile' : 'intermediaire', 'intermediaire');
@@ -1451,6 +1461,15 @@ export function applyWail(get: () => GameState, set: any, attacker: Combatant): 
   );
   const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
   emitCreatureAttackAnim(attacker, 'hurlement');
+  // Flash de la zone du Hurlement (R7) : rayon autour du crieur, clippé à la scène.
+  const scW = get().scene;
+  const zoneW: Pt[] = [];
+  for (let dx = -radius; dx <= radius; dx++)
+    for (let dy = -radius; dy <= radius; dy++) {
+      const x = attacker.pos!.x + dx, y = attacker.pos!.y + dy;
+      if (scW && x >= 0 && y >= 0 && x < scW.dimensions.w && y < scW.dimensions.h) zoneW.push({ x, y });
+    }
+  bus.emit(EVT.ANIM_AOE, { tiles: zoneW, kind: 'hurlement', type: '' });
   for (const tgt of living) {
     const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
     loseWounds(tgt, wl);
