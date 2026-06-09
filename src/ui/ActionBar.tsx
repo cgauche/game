@@ -199,10 +199,14 @@ export function ActionBar() {
             const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
             const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
             const focusDr = active.focus?.spell === label ? active.focus.dr : null;
+            // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter (données SpellData).
+            const tgtLabel = typeof spell.target === 'number' ? (spell.target === 1 ? '1 cible' : `${spell.target} cibles`) : spell.target;
+            const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
             return (
               <div key={label} className="ab-spell-row">
-                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)} title={spell.desc}>
+                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)} title={`${spell.desc}\n\n${meta}`}>
                   {spell.label} <span className="bp-spell-ni">({ni})</span>
+                  <span className="ab-spell-meta">{meta}</span>
                 </button>
                 {canFocus && (
                   <button className="btn btn-sm" onClick={() => focusSpell(label)} title="Test étendu de Focalisation">

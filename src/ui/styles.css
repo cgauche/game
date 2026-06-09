@@ -1375,6 +1375,14 @@ textarea:focus {
   color: var(--muted);
   font-size: 11px;
 }
+/* Découvrabilité d'un sort (R4) : portée / durée / cibles sous le nom, dans le sélecteur. */
+.ab-spell-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
 .battle-log {
   background: var(--panel);
   border: 1px solid var(--border);
