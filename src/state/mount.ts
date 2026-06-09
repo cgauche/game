@@ -117,6 +117,20 @@ export function mountMovement(battle: BattleState, c: Combatant): number {
   return effectiveMovement(mount ?? c);
 }
 
+/** Cases de Mouvement encore disponibles ce Tour : budget de Marche (de la monture si cavalier) moins le
+ *  Mouvement déjà parcouru (le déplacement est DÉCOMPOSABLE — règle maison, cf. `BattleState.movementUsed`). */
+export function movementRemaining(battle: BattleState, c: Combatant): number {
+  return Math.max(0, mountMovement(battle, c) - (battle.movementUsed ?? 0));
+}
+
+/** Ce combattant peut-il (encore) se déplacer librement ce Tour ? Mouvement décomposable, mais NON entrelacé
+ *  avec l'Action (règle maison) : interdit une fois l'Action prise SI du Mouvement a déjà été parcouru avant
+ *  elle (pas de « Mouvement → Action → Mouvement »). Faire « Action puis Mouvement » reste permis. */
+export function canMove(battle: BattleState, c: Combatant): boolean {
+  if (battle.acted && battle.movedPreAction) return false;
+  return movementRemaining(battle, c) > 0;
+}
+
 /** Modificateurs d'attaque liés au Combat monté, injectés dans `env` (combat.ts reste pur, ignorant des
  *  montures) :
  *  - +20 si l'attaquant est un CAVALIER frappant une cible plus petite que SA monture (l.217, « toute attaque ») ;

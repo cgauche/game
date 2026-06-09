@@ -65,7 +65,7 @@ import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../e
 import { restRecovery } from '../engine/rest';
 import { findSpell } from '../data/index';
 import { Scene, Effect, isWalkable, condMet } from './scene';
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountOf, mountUp, mountableNear } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -539,7 +539,7 @@ export function resolveAttack(
     if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
     if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
-    if (battle.moved) env.push({ label: 'Tir en bougeant', value: -10 }); // Mouvement + tir au même Round (LDB 14 l.101)
+    if (battle.movementUsed > 0) env.push({ label: 'Tir en bougeant', value: -10 }); // Mouvement + tir au même Round (LDB 14 l.101)
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
     const inMelee = (target.engagedWith ?? []).some((id) => {
       const ally = battle.combatants.find((c) => c.id === id);
@@ -1806,15 +1806,15 @@ export function advanceTurn(get: () => GameState, set: any) {
   }
   // Tour suivant dans le MÊME Round. La posture « Sur la défensive » expire (LDB Combat l.118).
   const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
-  let moved = false;
+  let movementUsed = 0;
   let acted = false;
   if (newActive) {
     newActive.defensiveStance = false;
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
-    if (newActive.loseNextMovement) { moved = true; newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
+    if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
     if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }
   }
-  set({ battle: { ...battle, turn, action: null, moved, acted, reachable: new Map() } });
+  set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
@@ -1858,7 +1858,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   const heroCanPreempt = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c) && (c.fortune ?? 0) > 0);
   if (enemiesAlive && heroCanPreempt) {
-    set({ battle: { ...battle, action: null, moved: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: battle.round } });
+    set({ battle: { ...battle, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: battle.round } });
     return;
   }
   let turn = 0;
@@ -1871,7 +1871,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   }
   const active = battle.combatants.find((c) => c.id === battle.order[turn]);
   if (active) active.defensiveStance = false;
-  set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
+  set({ battle: { ...battle, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse

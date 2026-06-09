@@ -36,7 +36,7 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
 
   it('battleSelectAction : un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
     const hero = C({ id: 'h', kind: 'hero', conditions: [{ name: 'Surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never, resolve: 1 });
-    useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, moved: false, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
+    useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
     useGame.getState().battleSelectAction('move');
     expect(useGame.getState().battle!.action).toBeNull(); // Mouvement bloqué
     useGame.getState().battleSelectAction('attack');

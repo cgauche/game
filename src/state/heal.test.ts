@@ -21,7 +21,7 @@ function setBattle(combatants: Combatant[], activeId: string) {
     mode: 'battle',
     battle: {
       combatants, order, baseOrder: order, turn: order.indexOf(activeId), round: 1,
-      action: null, selectedSpell: null, reachable: new Map(), moved: false, acted: false,
+      action: null, selectedSpell: null, reachable: new Map(), movementUsed: 0, acted: false,
       log: [], over: null,
     } as any,
     pendingHeal: null,

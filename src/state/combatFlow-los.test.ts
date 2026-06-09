@@ -66,7 +66,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const s = scene(7);
     const a = shooter();
     const b = target({ pos: { x: 6, y: 0 } });
-    const get = (() => ({ scene: s, battle: { combatants: [a, b], moved: true }, log: () => {} })) as unknown as () => GameState;
+    const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 99 }, log: () => {} })) as unknown as () => GameState;
     const r = resolveAttack(get, a, b);
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant' && m.value === -10)).toBe(true);
   });

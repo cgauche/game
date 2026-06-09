@@ -175,7 +175,7 @@ describe('Boucle de jeu (store)', () => {
     const battle: BattleState = {
       combatants: [enemy, hero], order: [enemy.id, hero.id], baseOrder: [enemy.id, hero.id],
       turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
-      moved: false, acted: false, log: [], over: null,
+      movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ battle, mode: 'battle' });
     const weapon: Weapon = { name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] };
@@ -584,7 +584,7 @@ describe('Boucle de jeu (store)', () => {
     heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y };
     const order = st.battle!.order;
     const turn = order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
     const before = enemy.wounds.current;
     useGame.getState().battleClickEntity(enemy.id); // ouvre la modale d'attaque
     useGame.getState().attackRoll(); // lance le jet
@@ -645,7 +645,7 @@ describe('Boucle de jeu (store)', () => {
     heroC.advantage = 0;
     heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y }; // adjacent
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
     useGame.getState().battleClickEntity(enemy.id); // ouvre la modale
     useGame.getState().attackRoll(); // le +1 Sonné s'applique AVANT le jet
     st = useGame.getState();
@@ -703,7 +703,7 @@ describe('Boucle de jeu (store)', () => {
     E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent au héros
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0; // un seul ennemi vivant
     useGame.setState({
-      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDefense: null,
       pendingReveals: [],
     });
@@ -725,7 +725,7 @@ describe('Boucle de jeu (store)', () => {
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     H.conditions.push({ name: 'Sonné', value: 1 });
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     useGame.getState().battleSelectAction('attack');
     expect(useGame.getState().battle!.action).toBeNull(); // Action refusée (Sonné)
     useGame.getState().battleSelectAction('move'); // le déplacement reste permis
@@ -747,7 +747,7 @@ describe('Boucle de jeu (store)', () => {
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
     const woundsBefore = H.wounds.current;
     useGame.setState({
-      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDefense: null,
       pendingReveals: [],
     });
@@ -773,7 +773,7 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y };
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
     useGame.getState().battleClickEntity(E.id);
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();
@@ -797,7 +797,7 @@ describe('Boucle de jeu (store)', () => {
     E.pos = { x: 8, y: 10 }; // 2 cases à l'est, couloir libre
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     useGame.getState().battleSelectAction('charge');
     useGame.getState().battleClickEntity(E.id);
     st = useGame.getState();
@@ -821,7 +821,7 @@ describe('Boucle de jeu (store)', () => {
     H.engagedWith = [E.id];
     E.pos = { x: 8, y: 10 };
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     useGame.getState().battleSelectAction('charge');
     useGame.getState().battleClickEntity(E.id);
     st = useGame.getState();
@@ -860,7 +860,7 @@ describe('Boucle de jeu (store)', () => {
     rider.mountId = mount.id; // #1 = cavalier (sur #0)
     for (const c of enemies.slice(2)) c.wounds.current = 0; // neutralise les autres
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 0, movedPreAction: false, acted: false } });
     // Clic sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
     useGame.getState().battleClickEntity(mount.id);
     st = useGame.getState();
@@ -887,7 +887,7 @@ describe('Boucle de jeu (store)', () => {
     H.advantage = 2;
     E.advantage = 0;
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     useGame.getState().battleDisengage(); // ouvre le menu de choix
     expect(useGame.getState().pendingDisengage!.phase).toBe('choice');
     expect(useGame.getState().pendingDisengage!.canSacrifice).toBe(true); // Avantage supérieur → option dispo
@@ -913,7 +913,7 @@ describe('Boucle de jeu (store)', () => {
     E.engagedWith = [H.id];
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
@@ -946,7 +946,7 @@ describe('Boucle de jeu (store)', () => {
     H.advantage = 0;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
@@ -1007,7 +1007,7 @@ describe('Boucle de jeu (store)', () => {
     H.advantage = 0;
     E.advantage = 1; // force l'option B (Avantage non supérieur)
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     useGame.getState().battleSelectAction('move');
     st = useGame.getState();
     expect(st.pendingDisengage).not.toBeNull(); // routé vers le Désengagement
@@ -1026,7 +1026,7 @@ describe('Boucle de jeu (store)', () => {
     E.engagedWith = [H.id];
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDisengage: {
         moverId: H.id,
         foeId: E.id,
@@ -1059,7 +1059,7 @@ describe('Boucle de jeu (store)', () => {
     E2.engagedWith = [H.id];
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDisengage: {
         moverId: H.id,
         foeId: E1.id, // testé contre E1
@@ -1087,7 +1087,7 @@ describe('Boucle de jeu (store)', () => {
     E.engagedWith = [H.id];
     const turn = st.battle!.order.indexOf(H.id);
     // État après une tentative d'Esquive RATÉE : Action consommée (acted), héros toujours Engagé.
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: true }, pendingDisengage: null });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: true }, pendingDisengage: null });
     useGame.getState().battleSelectAction('move'); // re-clic « Déplacer »
     st = useGame.getState();
     expect(st.pendingDisengage).toBeNull(); // pas de NOUVELLE Esquive (l'Action est déjà dépensée)
@@ -1108,7 +1108,7 @@ describe('Boucle de jeu (store)', () => {
     const eAdvBefore = E.advantage;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...st.battle!, turn, action: null, moved: false, acted: false },
+      battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDisengage: { moverId: H.id, foeId: E.id, canSacrifice: false, phase: 'choice', atk: null, def: null, result: null },
     });
     useGame.getState().disengageFlee();
@@ -1133,7 +1133,7 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y - 1 }; // DIAGONALE : Chebyshev 1, mais manhattan 2
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', moved: true, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
     useGame.getState().battleClickEntity(E.id); // doit ouvrir la modale (avant : « hors de portée »)
     st = useGame.getState();
     expect(st.pendingAttack).not.toBeNull(); // attaque en diagonale autorisée
@@ -1427,7 +1427,7 @@ describe('Utiliser un consommable en combat (store)', () => {
     action: 'use',
     selectedSpell: null,
     reachable: new Map(),
-    moved: false,
+    movementUsed: 0, movedPreAction: false,
     acted: false,
     log: [],
     over: null,
@@ -1534,7 +1534,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
 
   const mkBattle = (h: Combatant, over = {}): BattleState => ({
     combatants: [h], order: [h.id], turn: 0, round: 1, action: null, selectedSpell: null,
-    reachable: new Map(), moved: false, acted: false, log: [], over: null, ...over,
+    reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
   });
 
   it('retire un État, ne consomme pas l’Action, décrémente la Détermination', () => {
@@ -1594,7 +1594,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
     const battle: BattleState = {
       combatants: [bh], order: [bh.id], turn: 0, round: 1, action: 'pickup', selectedSpell: null,
-      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+      reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {}, inventory: [] });
     return bh;
@@ -1646,7 +1646,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     E.pos = { x: 5, y: 5 };
     const battle: BattleState = {
       combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
-      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+      reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
     return { H, E };
@@ -1699,7 +1699,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
     E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; Object.assign(E, enemyOver);
     const battle: BattleState = {
       combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpell: null,
-      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+      reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
     return { H, E };
@@ -1741,7 +1741,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
     E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; E.fate = 0;
     const battle: BattleState = {
       combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
-      reachable: new Map(), moved: false, acted: false, log: [], over: null,
+      reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
     return { H, E };
@@ -1830,7 +1830,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     E.weapons = [{ name: 'Mains nues', type: 'melee', damage: '+BF', qualities: [] }];
     const battle: BattleState = {
       combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: 'attack', selectedSpell: null,
-      reachable: new Map(), moved: true, acted: false, log: [], over: null,
+      reachable: new Map(), movementUsed: 99, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8), pendingReload: null, pendingAttack: null });
     return { H, E };

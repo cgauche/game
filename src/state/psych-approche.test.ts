@@ -30,7 +30,7 @@ describe('Approche sous Peur (store)', () => {
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 2, calmeDR: 0 }];
     const turn = b.order.indexOf(H.id);
     useGame.setState({
-      battle: { ...b, turn, action: 'move', moved: false, reachable: new Map([['11,10', 1], ['9,10', 1]]) },
+      battle: { ...b, turn, action: 'move', movementUsed: 0, reachable: new Map([['11,10', 1], ['9,10', 1]]) },
       pendingReveals: [],
     });
 

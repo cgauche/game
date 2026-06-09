@@ -26,7 +26,7 @@ describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)',
     H.pos = { x: 10, y: 10 };
     H.engagedWith = []; // pas Engagé → Course autorisée
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, acted: false, moved: false }, pendingRun: null });
+    useGame.setState({ battle: { ...b, turn, acted: false, movementUsed: 0 }, pendingRun: null });
     return { H };
   }
 

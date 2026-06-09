@@ -26,7 +26,7 @@ describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () =
     H.advantage = 2; E.advantage = 0;
     const turn = st.battle!.order.indexOf(H.id);
     // L'Action est DÉJÀ dépensée (le héros vient d'attaquer) :
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, moved: false, acted: true } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, acted: true } });
 
     useGame.getState().battleDisengage(); // doit ouvrir le menu malgré l'Action dépensée
     const pd = useGame.getState().pendingDisengage;

@@ -119,7 +119,7 @@ describe('Balayage en combat (store)', () => {
       e.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     }
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, action: 'attack', moved: true, acted: false } });
+    useGame.setState({ battle: { ...b, turn, action: 'attack', movementUsed: 99, acted: false } });
 
     // Touche primaire sur E1 → balayage déclenché (héros plus grand).
     useGame.getState().battleClickEntity(E1.id);

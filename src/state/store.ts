@@ -20,7 +20,8 @@ import {
   maybeOpenHeroPsych, displaceSmaller, applySurprise,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
-import { mountedDodgePenalty, mountMovement, mountUp, dismount, mountOf, mountableNear } from './mount';
+export { movementRemaining, canMove } from './mount';
+import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines, type CombatEvent } from './combatLog';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
@@ -427,7 +428,14 @@ export interface BattleState {
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
-  moved: boolean;
+  /** Cases de Mouvement déjà parcourues ce Tour. Le Mouvement est DÉCOMPOSABLE (règle maison : on peut
+   *  fractionner son déplacement tant que le total ≤ Marche) MAIS non entrelacé avec l'Action : séquences
+   *  permises = `Mouvement* puis Action` OU `Action puis Mouvement*` ; INTERDIT = Mouvement → Action →
+   *  Mouvement. 0 en début de tour. « Mouvement restant » = `movementRemaining(battle, c)`. */
+  movementUsed: number;
+  /** Du Mouvement a-t-il été parcouru AVANT l'Action ce Tour ? Si oui, une fois l'Action prise, plus aucun
+   *  Mouvement (pas de « Mouvement → Action → Mouvement », règle maison). Cf. `canMove`. */
+  movedPreAction: boolean;
   acted: boolean;
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
@@ -1605,7 +1613,8 @@ export const useGame = create<GameState>((set, get) => ({
       action: null,
       selectedSpell: null,
       reachable: new Map(),
-      moved: false,
+      movementUsed: 0,
+      movedPreAction: false,
       acted: false,
       log: [ev('round', `Le combat commence ! (Round 1)`), ...evLines(surpriseLines, 'info')],
       over: null,
@@ -1655,7 +1664,7 @@ export const useGame = create<GameState>((set, get) => ({
     const containerMode = a === 'mvt' || a === 'tir' || a === 'objets';
     if (a !== 'move' && a !== 'resolve' && !containerMode && a !== null && !canTakeAction(active)) return;
     let reach = new Map<string, number>();
-    if (a === 'move' && !battle.moved) {
+    if (a === 'move' && movementRemaining(battle, active) > 0) {
       // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
       if (isEngaged(active)) {
         // Engagé : ouvre le Désengagement MÊME si l'Action est dépensée — seule l'option A
@@ -1664,11 +1673,18 @@ export const useGame = create<GameState>((set, get) => ({
         startDisengage(get, set, active);
         return;
       }
+      // M-A-M interdit (règle maison) : pas de Mouvement libre une fois l'Action prise si on avait DÉJÀ bougé
+      // avant elle. Reach reste vide → aucun déplacement (« Action puis Mouvement » reste, lui, permis).
+      if (battle.acted && battle.movedPreAction) {
+        set({ battle: { ...battle, action: a, reachable: new Map(), selectedSpell: null } });
+        return;
+      }
       // Combat monté (LDB 14 l.215) : le cavalier se déplace au Mouvement de sa MONTURE et porte
       // l'empreinte de la monture (géométrie de plateau = la monture, le cavalier la chevauche).
+      // Déplacement DÉCOMPOSABLE : la portée du segment courant = Mouvement RESTANT (Marche − déjà parcouru).
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
-      reach = reachable(scene, active.pos!, mountMovement(battle, active), blocked, sizeFootprint(geom.size));
+      reach = reachable(scene, active.pos!, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
       // Brisé (LDB 16 l.55) : on ne peut FUIR que vers une case qui ne RAPPROCHE d'aucun ennemi.
       if (hasCondition(active, 'Brisé')) {
         const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
@@ -1681,8 +1697,9 @@ export const useGame = create<GameState>((set, get) => ({
         }
       }
     }
-    // Charge : seulement si pas déjà Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
-    if (a === 'charge' && !battle.moved && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
+    // Charge : action COMBINÉE non décomposable → exige le PLEIN Mouvement (movementUsed === 0), pas déjà
+    // Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
+    if (a === 'charge' && battle.movementUsed === 0 && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
       reach = reachable(scene, active.pos!, mountMovement(battle, active) * 2, blocked, sizeFootprint(geom.size));
@@ -2208,9 +2225,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
-    if (battle.action === 'move' && !battle.moved) {
+    if (battle.action === 'move' && canMove(battle, active)) {
       const k = `${pt.x},${pt.y}`;
       if (!battle.reachable.has(k)) return;
+      const stepCost = battle.reachable.get(k) ?? 0; // coût (cases) du segment, à imputer au Mouvement du Tour
       // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
       // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
       if (!isPsychImmune(active))
@@ -2233,7 +2251,10 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      set({ battle: { ...battle, moved: true, action: null, reachable: new Map() } });
+      // Mouvement décomposable : cumule le coût du segment ; on retombe en mode neutre (action: null) →
+      // le joueur peut re-cliquer « Déplacer » (s'il reste du Mouvement) OU enchaîner une Action. Si ce
+      // segment précède l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
+      set({ battle: { ...battle, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map() } });
       bus.emit(EVT.SCENE_DIRTY);
     }
   },
@@ -2294,7 +2315,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
       active.gainedAdvThisRound = true;
-      set({ battle: { ...battle, moved: true, action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name} (+${adv} Avantage).`, active.id, target.id)] } });
+      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name} (+${adv} Avantage).`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
     }
@@ -2353,7 +2374,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     const active = battle.combatants.find((c) => c.id === battle.order[turn]);
     if (active) active.defensiveStance = false;
-    set({ battle: { ...battle, turn, action: null, moved: false, acted: false, reachable: new Map() } });
+    set({ battle: { ...battle, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() } });
     if (checkBattleOver(get, set)) return;
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
@@ -2859,7 +2880,7 @@ export const useGame = create<GameState>((set, get) => ({
   //    étendu (Marche + Course + DR). « Un jet = une modale » : le Test passe par pendingRun. ──
   battleRun: () => {
     const battle = get().battle;
-    if (!battle || battle.over || battle.acted || battle.moved) return; // Course = Marche + Action
+    if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
@@ -2913,11 +2934,11 @@ export const useGame = create<GameState>((set, get) => ({
   //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
   battleStandUp: () => {
     const battle = get().battle;
-    if (!battle || battle.over || battle.moved) return;
+    if (!battle || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !hasCondition(active, 'À Terre') || active.wounds.current <= 0) return;
     removeCondition(active, 'À Terre');
-    set({ battle: { ...battle, moved: true, action: null, log: [...battle.log, ev('move', `${active.name} se relève.`, active.id)] } });
+    set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', `${active.name} se relève.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -3063,23 +3084,23 @@ export const useGame = create<GameState>((set, get) => ({
   // sur/hors la monture). On consomme donc le Mouvement du tour, pas l'Action — on peut enfourcher PUIS attaquer.
   battleMount: () => {
     const { battle, scene } = get();
-    if (!battle || !scene || battle.over || battle.moved) return;
+    if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || active.mountId) return;
     const mount = mountableNear(battle, active);
     if (!mount) return;
     mountUp(active, mount);
-    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} enfourche ${mount.name}.`, active.id)] } });
+    set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} enfourche ${mount.name}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   battleDismount: () => {
     const { battle, scene } = get();
-    if (!battle || !scene || battle.over || battle.moved) return;
+    if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || !active.mountId) return;
     const mountName = mountOf(battle, active)?.name ?? 'sa monture';
     dismount(battle, scene, active);
-    set({ battle: { ...battle, moved: true, action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} descend de ${mountName}.`, active.id)] } });
+    set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', `${active.name} descend de ${mountName}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   // Combat monté (LDB 14 l.219) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge

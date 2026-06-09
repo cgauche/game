@@ -26,7 +26,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.28)', () =>
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     H.engagedWith = [];
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, moved: false, acted: false } });
+    useGame.setState({ battle: { ...b, turn, movementUsed: 0, acted: false } });
     return { H };
   }
 
@@ -39,7 +39,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.28)', () =>
     const st = useGame.getState();
     const h = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(hasCondition(h, 'À Terre')).toBe(false);
-    expect(st.battle!.moved).toBe(true);
+    expect(st.battle!.movementUsed).toBeGreaterThan(0); // se relever consomme le (plein) Mouvement
     expect(st.battle!.acted).toBe(false); // l'Action reste disponible
   });
 

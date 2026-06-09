@@ -1,4 +1,4 @@
-import { useGame, activeCombatant, entityPickables, trampleTarget } from '../state/store';
+import { useGame, activeCombatant, entityPickables, trampleTarget, movementRemaining, canMove } from '../state/store';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
@@ -54,6 +54,12 @@ export function ActionBar() {
   if (!active) return null;
 
   const isHero = active.kind === 'hero';
+  // Mouvement DÉCOMPOSABLE (mais non entrelacé avec l'Action) : cases encore disponibles ce Tour (0 = épuisé).
+  // `canMoveNow` applique aussi la règle M-A-M (pas de Mouvement après une Action déjà précédée de Mouvement).
+  // Les manœuvres « plein Mouvement » (Charge/Course/Monter/Descendre/Se relever) exigent `movementUsed === 0`.
+  const moveLeft = isHero ? movementRemaining(battle, active) : 0;
+  const moveStarted = battle.movementUsed > 0; // au moins un segment de Mouvement déjà parcouru
+  const canMoveNow = isHero && canMove(battle, active); // respecte aussi la règle M-A-M
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
@@ -63,16 +69,16 @@ export function ActionBar() {
   const canFreeDisengage = engagedFoes.length > 0 && active.advantage > Math.max(0, ...engagedFoes.map((f) => f.advantage));
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
   const mounted = isHero && !!active.mountId;
-  const mountCandidate = isHero && !active.mountId && !battle.moved ? mountableNear(battle, active) : undefined; // enfourcher = Mouvement (pas de jet → pas une Action)
+  const mountCandidate = isHero && !active.mountId && !moveStarted ? mountableNear(battle, active) : undefined; // enfourcher = plein Mouvement (pas de jet → pas une Action)
   const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
   const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
   const entangled = isHero && hasCondition(active, 'Empêtré'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'En flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
   const canCharge = isHero && !engaged && !prone && !broken && active.weapons[0]?.type === 'melee';
   // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu.
-  const canRun = isHero && !engaged && !prone && !battle.moved && !battle.acted && !stunned;
-  // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non dépensé.
-  const canStandUp = prone && active.wounds.current > 0 && !battle.moved;
+  const canRun = isHero && !engaged && !prone && !moveStarted && !battle.acted && !stunned;
+  // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
+  const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
@@ -190,7 +196,7 @@ export function ActionBar() {
           {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
           {canCharge && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.moved || battle.acted || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
+              <button className="btn btn-sm" disabled={moveStarted || battle.acted || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
             </div>
           )}
           {canRun && (
@@ -210,12 +216,12 @@ export function ActionBar() {
           )}
           {mountCandidate && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.moved || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
+              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
             </div>
           )}
           {mounted && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.moved || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
+              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
             </div>
           )}
           {rangedW && (
@@ -318,9 +324,9 @@ export function ActionBar() {
             </div>
           )}
           {isHero && (
-            <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + 1 Mouvement)">
+            <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + Mouvement, décomposable)">
               <span className={battle.acted ? 'spent' : 'avail'}>⚔️ Action {battle.acted ? '✓' : 'dispo'}</span>
-              <span className={battle.moved ? 'spent' : 'avail'}>🦶 Mouvement {battle.moved ? '✓' : 'dispo'}</span>
+              <span className={moveLeft > 0 ? 'avail' : 'spent'}>🦶 Mouvement {moveLeft > 0 ? `${moveLeft} case${moveLeft > 1 ? 's' : ''}` : '✓'}</span>
             </div>
           )}
         </div>
@@ -330,12 +336,12 @@ export function ActionBar() {
             {/* ── Primaires directs ── */}
             <button
               className={`ab-slot ${battle.action === 'move' ? 'on' : ''}`}
-              disabled={battle.moved || (engaged && battle.acted && !canFreeDisengage)}
+              disabled={engaged ? (battle.acted && !canFreeDisengage) : !canMoveNow}
               onClick={() => selectAction(battle.action === 'move' ? null : 'move')}
-              title={engaged ? 'Engagé : « Déplacer » lance un Désengagement (Esquive ou sacrifice d’Avantage)' : undefined}
+              title={engaged ? 'Engagé : « Déplacer » lance un Désengagement (Esquive ou sacrifice d’Avantage)' : (battle.acted && battle.movedPreAction) ? 'Mouvement déjà fait avant l’Action : pas de Mouvement → Action → Mouvement' : moveStarted ? `Mouvement décomposable : ${moveLeft} case${moveLeft > 1 ? 's' : ''} restante${moveLeft > 1 ? 's' : ''}` : undefined}
             >
               <span className="ab-ico">🦶</span>
-              <span className="ab-lbl">Déplacer{battle.moved && ' ✓'}</span>
+              <span className="ab-lbl">Déplacer{moveStarted ? (moveLeft > 0 ? ` (${moveLeft})` : ' ✓') : ''}</span>
             </button>
             <button
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}

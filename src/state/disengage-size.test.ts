@@ -38,7 +38,7 @@ describe('Désengagement & Taille (store)', () => {
     for (const f of foes) f.engagedWith = [H.id];
     const b = useGame.getState().battle!;
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, action: null, moved: false, acted: false } });
+    useGame.setState({ battle: { ...b, turn, action: null, movementUsed: 0, acted: false } });
   }
 
   it('plus grand que TOUS ses Engagés → déplacement libre, sans pendingDisengage, liens levés', () => {
