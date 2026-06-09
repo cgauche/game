@@ -130,7 +130,6 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     const map: Record<string, ItemInstance> = {};
     for (const l of inStock) { const it = itemFromTrapping(l.label); if (it) map[l.label] = it; }
     return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inStock.map((l) => l.label).join('|')]);
 
   // Bloc de comparaison d'un héros (info : la neuve vs l'équipement actuel). Pas de bouton d'équipement (cart).

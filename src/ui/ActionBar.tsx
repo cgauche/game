@@ -369,7 +369,7 @@ export function ActionBar() {
           {isHero && (
             <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + Mouvement, décomposable)">
               <span className={battle.acted ? 'spent' : 'avail'}>⚔️ Action {battle.acted ? '✓' : 'dispo'}</span>
-              <span className={moveLeft > 0 ? 'avail' : 'spent'}>🦶 Mouvement {moveLeft > 0 ? `${moveLeft} case${moveLeft > 1 ? 's' : ''}` : '✓'}</span>
+              <span className={moveLeft > 0 ? 'avail' : 'spent'}>🦶 Mouvement {moveLeft > 0 ? `${moveLeft}\u00A0case${moveLeft > 1 ? 's' : ''}` : '✓'}</span>
             </div>
           )}
         </div>

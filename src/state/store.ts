@@ -16,7 +16,7 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets,
-  aiMaybeTrample, aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -33,15 +33,14 @@ import {
   resolveMeleePassive,
   attackWeapon,
   rederivePassiveAttack,
-  resolveTrample,
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, resolveFocus, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
 import { rollTest, TestResult, OpposedResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import { resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, resolveFrenzyEntry, resolveCalmeSimple, CIBLE_TYPES, type PsychType } from '../engine/psychology';
+import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, type PsychType } from '../engine/psychology';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -63,12 +62,12 @@ import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
 import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
 import { rollContraction, contractDisease } from '../engine/disease';
-import { resolveRun } from '../engine/movement';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
+import { FLOWS } from './rollFlows';
 import {
   PendingEncounterPsych,
   openEncounterPsych,
@@ -1482,34 +1481,9 @@ export const useGame = create<GameState>((set, get) => ({
       playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
     } });
   },
-  bargainRoll: () => {
-    const pb = get().pendingBargain;
-    if (!pb || pb.roll != null) return; // déjà lancé
-    const player = rollTest(pb.playerSkill, 'intermediaire');
-    const merchant = rollTest(pb.merchantValue, 'intermediaire');
-    set({ pendingBargain: { ...pb, roll: player, merchantRoll: merchant, result: resolveOpposed(player, merchant) } });
-  },
-  bargainReroll: () => {
-    const pb = get().pendingBargain;
-    if (!pb || pb.roll == null || pb.merchantRoll == null) return;
-    if (!canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)) return; // 1 relance, d100 raté propre
-    const party = get().party;
-    const actor = party.find((c) => c.id === pb.playerId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const player = rollTest(pb.playerSkill, 'intermediaire');
-    set({ pendingBargain: { ...pb, roll: player, result: resolveOpposed(player, pb.merchantRoll), rerolled: true }, party: [...party] });
-  },
-  bargainBonusSL: () => {
-    const pb = get().pendingBargain;
-    if (!pb || pb.roll == null || pb.merchantRoll == null) return;
-    const party = get().party;
-    const actor = party.find((c) => c.id === pb.playerId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const boosted: TestResult = { ...pb.roll, sl: pb.roll.sl + 1 };
-    set({ pendingBargain: { ...pb, roll: boosted, result: resolveOpposed(boosted, pb.merchantRoll) }, party: [...party] });
-  },
+  bargainRoll: () => FLOWS.bargain.roll(get, set),
+  bargainReroll: () => FLOWS.bargain.reroll(get, set),
+  bargainBonusSL: () => FLOWS.bargain.bonusSL(get, set),
   bargainConfirm: () => {
     const pb = get().pendingBargain;
     if (!pb || !pb.result) return; // pas d'acquittement avant le jet
@@ -1542,33 +1516,9 @@ export const useGame = create<GameState>((set, get) => ({
       skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
     } });
   },
-  appraiseRoll: () => {
-    const pa = get().pendingAppraise;
-    if (!pa || pa.roll != null) return; // déjà lancé
-    const res: TestResult = rollTest(pa.skillValue, pa.difficulty);
-    set({ pendingAppraise: { ...pa, roll: res.roll, sl: res.sl, success: res.success } });
-  },
-  appraiseReroll: () => {
-    const pa = get().pendingAppraise;
-    if (!pa || pa.roll == null) return;
-    if (!canReroll(pa.roll > pa.target, !!pa.rerolled)) return; // 1 relance, d100 raté propre
-    const party = get().party;
-    const actor = party.find((c) => c.id === pa.actorId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const res: TestResult = rollTest(pa.skillValue, pa.difficulty);
-    set({ pendingAppraise: { ...pa, roll: res.roll, sl: res.sl, success: res.success, rerolled: true }, party: [...party] });
-  },
-  appraiseBonusSL: () => {
-    const pa = get().pendingAppraise;
-    if (!pa || pa.roll == null) return;
-    const party = get().party;
-    const actor = party.find((c) => c.id === pa.actorId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const sl = pa.sl + 1;
-    set({ pendingAppraise: { ...pa, sl, success: pa.roll <= pa.target && sl >= 0 }, party: [...party] });
-  },
+  appraiseRoll: () => FLOWS.appraise.roll(get, set),
+  appraiseReroll: () => FLOWS.appraise.reroll(get, set),
+  appraiseBonusSL: () => FLOWS.appraise.bonusSL(get, set),
   resolveAppraise: () => {
     const pa = get().pendingAppraise;
     if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
@@ -1806,53 +1756,11 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** « Lancer » : effectue le jet de Guérison (Intermédiaire +0). */
-  healRoll: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.roll != null) return;
-    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
-    set({ pendingHeal: { ...ph, roll: res.roll, sl: res.sl, success: res.success } });
-  },
-
-  /** Chance : relance le jet (1×, d100 propre raté seulement). */
-  healReroll: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.roll == null || !canReroll(ph.roll > ph.target, !!ph.rerolled)) return;
-    const healer = actorIn(get(), ph.healerId);
-    if (!healer || (healer.fortune ?? 0) <= 0) return;
-    healer.fortune = (healer.fortune ?? 0) - 1;
-    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
-    set({
-      pendingHeal: { ...ph, roll: res.roll, sl: res.sl, success: res.success, rerolled: true },
-      ...touchActors(get()),
-    });
-  },
-
-  /** Chance « +1 DR » (LDB ch.17 l.26) : le soin scale avec le DR. */
-  healBonusSL: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.roll == null) return;
-    const healer = actorIn(get(), ph.healerId);
-    if (!healer || (healer.fortune ?? 0) <= 0) return;
-    healer.fortune = (healer.fortune ?? 0) - 1;
-    set({
-      pendingHeal: { ...ph, sl: ph.sl + 1, success: ph.roll <= ph.target },
-      ...touchActors(get()),
-    });
-  },
-
-  /** Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (DR ≥ 1). */
-  healForceSuccess: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.success || ph.mode === 'surgery') return;
-    const healer = actorIn(get(), ph.healerId);
-    if (!healer || (healer.resilience ?? 0) <= 0) return;
-    healer.resilience = (healer.resilience ?? 0) - 1;
-    // RAW LDB 17 l.73 : AVANT le jet (roll==null → on choisit 01) OU après un échec (roll conservé).
-    set({
-      pendingHeal: { ...ph, roll: ph.roll ?? 1, success: true, sl: Math.max(ph.sl, 1) },
-      ...touchActors(get()),
-    });
-  },
+  healRoll: () => FLOWS.heal.roll(get, set),
+  /** Chance (relance / +1 DR) et Résilience : cf. spec `heal` de rollFlows. */
+  healReroll: () => FLOWS.heal.reroll(get, set),
+  healBonusSL: () => FLOWS.heal.bonusSL(get, set),
+  healForceSuccess: () => FLOWS.heal.forceSuccess(get, set),
 
   /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. */
   healConfirm: () => {
@@ -2063,42 +1971,10 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
   // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
-  focusRoll: () => {
-    const { pendingFocus: pf } = get();
-    if (!pf || pf.result) return;
-    const caster = actorIn(get(), pf.casterId);
-    const spell = findSpell(pf.spellLabel);
-    if (!caster || !spell) return;
-    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()) } });
-  },
-  focusReroll: () => {
-    const { pendingFocus: pf } = get();
-    if (!pf || !pf.result) return;
-    if (!canReroll(pf.result.dr === 0, !!pf.rerolled)) return; // aucun DR gagné → rejouable, 1× max
-    const caster = actorIn(get(), pf.casterId);
-    const spell = findSpell(pf.spellLabel);
-    if (!caster || !spell || (caster.fortune ?? 0) <= 0) return;
-    caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: resolveFocus(caster, spell, battleRng()), rerolled: true }, ...touchActors(get()) });
-  },
-  focusBonusSL: () => {
-    const { pendingFocus: pf } = get();
-    if (!pf || !pf.result) return;
-    const caster = actorIn(get(), pf.casterId);
-    if (!caster || (caster.fortune ?? 0) <= 0) return;
-    caster.fortune = (caster.fortune ?? 0) - 1;
-    set({ pendingFocus: { ...pf, result: { ...pf.result, dr: pf.result.dr + 1, log: `${pf.result.log} (+1 DR)` } }, ...touchActors(get()) });
-  },
-  focusForceSuccess: () => {
-    const { pendingFocus: pf } = get();
-    if (!pf) return;
-    const caster = actorIn(get(), pf.casterId);
-    if (!caster || (caster.resilience ?? 0) <= 0) return;
-    caster.resilience = (caster.resilience ?? 0) - 1;
-    const base = pf.result;
-    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-    set({ pendingFocus: { ...pf, result: { dr: Math.max(base?.dr ?? 0, 1), isCritical: base?.isCritical ?? false, isFumble: false, roll: base?.roll ?? 1, log: `${caster.name} force la focalisation (Résilience).` } }, ...touchActors(get()) });
-  },
+  focusRoll: () => FLOWS.focus.roll(get, set),
+  focusReroll: () => FLOWS.focus.reroll(get, set),
+  focusBonusSL: () => FLOWS.focus.bonusSL(get, set),
+  focusForceSuccess: () => FLOWS.focus.forceSuccess(get, set),
   focusConfirm: () => {
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
@@ -2130,61 +2006,10 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
   },
   // ── Test de Psychologie héros (Peur/Terreur, LDB 21) ── (pas d'« Annuler » : le Test est obligatoire)
-  psychRoll: () => {
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || pp.result) return;
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    if (!c) return;
-    let result;
-    if (CIBLE_TYPES.has(pp.kind)) { const t = resolveCalmeSimple(calmeValue(c), battleRng()); result = { roll: t.roll, success: t.success }; }
-    else if (pp.kind === 'terreur') result = resolveTerreurTest(calmeValue(c), pp.indice, battleRng());
-    else result = resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
-    set({ pendingPsych: { ...pp, result } });
-  },
-  psychReroll: () => {
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || !pp.result) return;
-    const isCible = CIBLE_TYPES.has(pp.kind);
-    const failed = isCible || pp.kind === 'terreur' ? !pp.result.success : (pp.result.dr ?? 0) === 0;
-    if (!canReroll(failed, !!pp.rerolled)) return;
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    if (!c || (c.fortune ?? 0) <= 0) return;
-    c.fortune = (c.fortune ?? 0) - 1;
-    let result;
-    if (isCible) { const t = resolveCalmeSimple(calmeValue(c), battleRng()); result = { roll: t.roll, success: t.success }; }
-    else if (pp.kind === 'terreur') result = resolveTerreurTest(calmeValue(c), pp.indice, battleRng());
-    else result = resolvePeurTest(calmeValue(c), pp.indice, pp.prevDR, battleRng());
-    set({ pendingPsych: { ...pp, result, rerolled: true }, battle: { ...battle } });
-  },
-  psychBonusSL: () => {
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || !pp.result || CIBLE_TYPES.has(pp.kind)) return; // ciblé = Test binaire (pas de « +1 DR »)
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    if (!c || (c.fortune ?? 0) <= 0) return;
-    c.fortune = (c.fortune ?? 0) - 1;
-    const r = pp.result;
-    const result =
-      pp.kind === 'terreur'
-        ? { ...r, brise: Math.max(pp.indice, (r.brise ?? 0) - 1) } // +1 DR réduit le Brisé (plancher = Indice)
-        : { ...r, calmeDR: (r.calmeDR ?? 0) + 1, vaincue: (r.calmeDR ?? 0) + 1 >= pp.indice };
-    set({ pendingPsych: { ...pp, result }, battle: { ...battle } });
-  },
-  psychForceSuccess: () => {
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp) return;
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    if (!c || (c.resilience ?? 0) <= 0) return;
-    c.resilience = (c.resilience ?? 0) - 1;
-    // RAW LDB 17 l.73 : avant le jet (result==null → base 01) OU après un échec.
-    const r = pp.result ?? { roll: 1 };
-    const result =
-      CIBLE_TYPES.has(pp.kind)
-        ? { ...r, success: true }
-        : pp.kind === 'terreur'
-          ? { ...r, success: true, brise: 0 }
-          : { ...r, calmeDR: pp.indice, vaincue: true };
-    set({ pendingPsych: { ...pp, result }, battle: { ...battle } });
-  },
+  psychRoll: () => FLOWS.psych.roll(get, set),
+  psychReroll: () => FLOWS.psych.reroll(get, set),
+  psychBonusSL: () => FLOWS.psych.bonusSL(get, set),
+  psychForceSuccess: () => FLOWS.psych.forceSuccess(get, set),
   psychConfirm: () => {
     const { battle, pendingPsych: pp } = get();
     if (!battle || !pp || !pp.result) return;
@@ -2237,31 +2062,9 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale — le Test de FM se fait au clic « Lancer » (« un jet = une modale »).
     set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
   },
-  frenzyRoll: () => {
-    const { battle, pendingFrenzy: pf } = get();
-    if (!battle || !pf || pf.result) return;
-    const c = battle.combatants.find((x) => x.id === pf.combatantId);
-    if (!c) return;
-    set({ pendingFrenzy: { ...pf, result: resolveFrenzyEntry(effectiveChar(c, 'FM'), battleRng()) } });
-  },
-  frenzyReroll: () => {
-    const { battle, pendingFrenzy: pf } = get();
-    if (!battle || !pf || !pf.result) return;
-    if (!canReroll(!pf.result.success, !!pf.rerolled)) return; // Test raté, 1× max
-    const c = battle.combatants.find((x) => x.id === pf.combatantId);
-    if (!c || (c.fortune ?? 0) <= 0) return;
-    c.fortune = (c.fortune ?? 0) - 1;
-    set({ pendingFrenzy: { ...pf, result: resolveFrenzyEntry(effectiveChar(c, 'FM'), battleRng()), rerolled: true }, battle: { ...battle } });
-  },
-  frenzyForceSuccess: () => {
-    const { battle, pendingFrenzy: pf } = get();
-    if (!battle || !pf || pf.result?.success) return;
-    const c = battle.combatants.find((x) => x.id === pf.combatantId);
-    if (!c || (c.resilience ?? 0) <= 0) return;
-    c.resilience = (c.resilience ?? 0) - 1;
-    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-    set({ pendingFrenzy: { ...pf, result: { success: true, roll: pf.result?.roll ?? 1 } }, battle: { ...battle } });
-  },
+  frenzyRoll: () => FLOWS.frenzy.roll(get, set),
+  frenzyReroll: () => FLOWS.frenzy.reroll(get, set),
+  frenzyForceSuccess: () => FLOWS.frenzy.forceSuccess(get, set),
   frenzyConfirm: () => {
     const { battle, pendingFrenzy: pf } = get();
     if (!battle || !pf || !pf.result) return;
@@ -2558,30 +2361,9 @@ export const useGame = create<GameState>((set, get) => ({
       },
     });
   },
-  reloadRoll: () => {
-    const pr = get().pendingReload;
-    if (!pr || pr.roll != null) return; // déjà lancé
-    const res = rollTest(pr.skillValue, pr.difficulty, battleRng());
-    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success } });
-  },
-  reloadReroll: () => {
-    const { battle, pendingReload: pr } = get();
-    if (!battle || !pr || pr.roll == null) return;
-    if (!canReroll(pr.roll > pr.target, !!pr.rerolled)) return; // jet raté, 1× max
-    const a = battle.combatants.find((c) => c.id === pr.actorId);
-    if (!a || (a.fortune ?? 0) <= 0) return;
-    a.fortune = (a.fortune ?? 0) - 1;
-    const res = rollTest(pr.skillValue, pr.difficulty, battleRng());
-    set({ pendingReload: { ...pr, roll: res.roll, target: res.target, sl: res.sl, success: res.success, rerolled: true }, battle: { ...battle } });
-  },
-  reloadBonusSL: () => {
-    const { battle, pendingReload: pr } = get();
-    if (!battle || !pr || pr.roll == null) return;
-    const a = battle.combatants.find((c) => c.id === pr.actorId);
-    if (!a || (a.fortune ?? 0) <= 0) return;
-    a.fortune = (a.fortune ?? 0) - 1;
-    set({ pendingReload: { ...pr, sl: pr.sl + 1 }, battle: { ...battle } });
-  },
+  reloadRoll: () => FLOWS.reload.roll(get, set),
+  reloadReroll: () => FLOWS.reload.reroll(get, set),
+  reloadBonusSL: () => FLOWS.reload.bonusSL(get, set),
   reloadConfirm: () => {
     const { battle, pendingReload: pr } = get();
     if (!battle || !pr || pr.roll == null) return;
@@ -2628,41 +2410,9 @@ export const useGame = create<GameState>((set, get) => ({
       },
     });
   },
-  recoverRoll: () => {
-    const sr = get().pendingStateRecovery;
-    if (!sr || sr.roll != null) return; // déjà lancé
-    const actorT = rollTest(sr.skillValue, sr.difficulty, battleRng());
-    if (sr.opposed && sr.opponentValue != null) {
-      const oppT = rollTest(sr.opponentValue, 'intermediaire', battleRng());
-      const opp = resolveOpposed(actorT, oppT);
-      set({ pendingStateRecovery: { ...sr, roll: actorT, opponentRoll: oppT, netSL: opp.netSL, success: opp.attackerWins } });
-    } else {
-      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success } });
-    }
-  },
-  recoverReroll: () => {
-    const { battle, pendingStateRecovery: sr } = get();
-    if (!battle || !sr || sr.roll == null) return;
-    if (!canReroll(!sr.success, !!sr.rerolled)) return; // jet raté, 1× max
-    const a = battle.combatants.find((c) => c.id === sr.actorId);
-    if (!a || (a.fortune ?? 0) <= 0) return;
-    a.fortune = (a.fortune ?? 0) - 1;
-    const actorT = rollTest(sr.skillValue, sr.difficulty, battleRng());
-    if (sr.opposed && sr.opponentRoll) {
-      const opp = resolveOpposed(actorT, sr.opponentRoll); // la source garde son jet figé
-      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: opp.netSL, success: opp.attackerWins, rerolled: true }, battle: { ...battle } });
-    } else {
-      set({ pendingStateRecovery: { ...sr, roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success, rerolled: true }, battle: { ...battle } });
-    }
-  },
-  recoverBonusSL: () => {
-    const { battle, pendingStateRecovery: sr } = get();
-    if (!battle || !sr || sr.roll == null) return;
-    const a = battle.combatants.find((c) => c.id === sr.actorId);
-    if (!a || (a.fortune ?? 0) <= 0) return;
-    a.fortune = (a.fortune ?? 0) - 1;
-    set({ pendingStateRecovery: { ...sr, netSL: sr.netSL + 1 }, battle: { ...battle } });
-  },
+  recoverRoll: () => FLOWS.recover.roll(get, set),
+  recoverReroll: () => FLOWS.recover.reroll(get, set),
+  recoverBonusSL: () => FLOWS.recover.bonusSL(get, set),
   recoverConfirm: () => {
     const { battle, pendingStateRecovery: sr } = get();
     if (!battle || !sr || sr.roll == null) return;
@@ -2927,46 +2677,10 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale (le jet se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
   },
-  trampleRoll: () => {
-    const { battle, pendingTrample: pt } = get();
-    if (!battle || !pt || pt.result) return;
-    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
-    const target = battle.combatants.find((c) => c.id === pt.targetId);
-    if (!attacker || !target) return;
-    set({ pendingTrample: { ...pt, result: resolveTrample(attacker, target, battleRng()) } });
-  },
-  trampleReroll: () => {
-    const { battle, pendingTrample: pt } = get();
-    if (!battle || !pt || !pt.result) return;
-    if (!canReroll(!pt.result.attackerDetail?.success, !!pt.rerolled)) return; // jet propre raté, 1× max
-    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
-    const target = battle.combatants.find((c) => c.id === pt.targetId);
-    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
-    attacker.fortune = (attacker.fortune ?? 0) - 1;
-    set({ pendingTrample: { ...pt, result: resolveTrample(attacker, target, battleRng()), rerolled: true }, battle: { ...battle } });
-  },
-  trampleBonusSL: () => {
-    const { battle, pendingTrample: pt } = get();
-    if (!battle || !pt || !pt.result || !pt.result.attackerDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
-    const target = battle.combatants.find((c) => c.id === pt.targetId);
-    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
-    attacker.fortune = (attacker.fortune ?? 0) - 1;
-    const ad = pt.result.attackerDetail;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-    set({ pendingTrample: { ...pt, result: rederivePassiveAttack(attacker, target, TRAMPLE_WEAPON, atk2, 'melee') }, battle: { ...battle } });
-  },
-  trampleForceSuccess: () => {
-    const { battle, pendingTrample: pt } = get();
-    if (!battle || !pt || !pt.result || !pt.result.attackerDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
-    const target = battle.combatants.find((c) => c.id === pt.targetId);
-    if (!attacker || !target || (attacker.resilience ?? 0) <= 0) return;
-    attacker.resilience = (attacker.resilience ?? 0) - 1;
-    const ad = pt.result.attackerDetail;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, 1), isDouble: isDoubleRoll(ad.roll) };
-    set({ pendingTrample: { ...pt, result: rederivePassiveAttack(attacker, target, TRAMPLE_WEAPON, atk2, 'melee') }, battle: { ...battle } });
-  },
+  trampleRoll: () => FLOWS.trample.roll(get, set),
+  trampleReroll: () => FLOWS.trample.reroll(get, set),
+  trampleBonusSL: () => FLOWS.trample.bonusSL(get, set),
+  trampleForceSuccess: () => FLOWS.trample.forceSuccess(get, set),
   trampleConfirm: () => {
     const { battle, pendingTrample: pt } = get();
     if (!battle || !pt || !pt.result) return;
@@ -2990,34 +2704,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
   },
-  runRoll: () => {
-    const { battle, pendingRun: pr } = get();
-    if (!battle || !pr || pr.result) return;
-    const c = battle.combatants.find((x) => x.id === pr.combatantId);
-    if (!c) return;
-    // Combat monté (LDB 14 l.215) : à cheval, la Course se teste en Chevaucher (pas Athlétisme) et utilise le Mouvement de la monture.
-    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, c.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(battle, c), battleRng()) } });
-  },
-  runReroll: () => {
-    const { battle, pendingRun: pr } = get();
-    if (!battle || !pr || !pr.result) return;
-    if (!canReroll(!pr.result.success, !!pr.rerolled)) return; // Test raté, 1× max
-    const c = battle.combatants.find((x) => x.id === pr.combatantId);
-    if (!c || (c.fortune ?? 0) <= 0) return;
-    c.fortune = (c.fortune ?? 0) - 1;
-    set({ pendingRun: { ...pr, result: resolveRun(testValue(c, c.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(battle, c), battleRng()), rerolled: true }, battle: { ...battle } });
-  },
-  runForceSuccess: () => {
-    const { battle, pendingRun: pr } = get();
-    if (!battle || !pr || pr.result?.success) return;
-    const c = battle.combatants.find((x) => x.id === pr.combatantId);
-    if (!c || (c.resilience ?? 0) <= 0) return;
-    c.resilience = (c.resilience ?? 0) - 1;
-    const m = mountMovement(battle, c); // à cheval : Mouvement de la monture (LDB 14 l.215)
-    const base = pr.result;
-    // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-    set({ pendingRun: { ...pr, result: { success: true, roll: base?.roll ?? 1, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } }, battle: { ...battle } });
-  },
+  runRoll: () => FLOWS.run.roll(get, set),
+  runReroll: () => FLOWS.run.reroll(get, set),
+  runForceSuccess: () => FLOWS.run.forceSuccess(get, set),
   runConfirm: () => {
     const { battle, scene, pendingRun: pr } = get();
     if (!battle || !scene || !pr || !pr.result) return;
@@ -3283,18 +2972,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1) ──
-  testForceSuccess: () => {
-    const pt = get().pendingTest;
-    if (!pt || pt.success) return; // rien à forcer si déjà réussi
-    const party = get().party;
-    const actor = party.find((c) => c.id === pt.actorId);
-    if (!actor || (actor.resilience ?? 0) <= 0) return;
-    actor.resilience = (actor.resilience ?? 0) - 1;
-    const sl = Math.max(pt.sl, pt.requireSL, 1);
-    // RAW LDB 17 l.73 : AVANT le jet (« au lieu de lancer les dés » → on choisit 01) OU après un échec (roll conservé).
-    const roll = pt.roll ?? 1;
-    set({ pendingTest: { ...pt, roll, success: true, sl, forced: true }, party: [...party] });
-  },
+  testForceSuccess: () => FLOWS.test.forceSuccess(get, set),
   attackForceSuccess: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result || !pa.result.attackerDetail) return;
@@ -3432,41 +3110,10 @@ export const useGame = create<GameState>((set, get) => ({
   disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
 
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
-  testRoll: () => {
-    const pt = get().pendingTest;
-    if (!pt || pt.roll != null) return; // déjà lancé
-    const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
-    set({ pendingTest: { ...pt, roll: res.roll, sl: res.sl, isDouble: res.isDouble, success: res.success && res.sl >= pt.requireSL } });
-  },
-
-  /** Dépense un point de Chance du testeur pour relancer le jet (LDB Destin). */
-  testReroll: () => {
-    const pt = get().pendingTest;
-    if (!pt || pt.roll == null) return;
-    // Relance réservée à un d100 propre RATÉ (roll > cible), une seule fois (LDB ch.12 l.56 + l.29-31).
-    if (!canReroll(pt.roll > pt.target, !!pt.rerolled)) return;
-    const party = get().party;
-    const actor = party.find((c) => c.id === pt.actorId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const res: TestResult = rollTest(pt.skillValue, pt.difficulty);
-    set({
-      pendingTest: { ...pt, roll: res.roll, sl: res.sl, isDouble: res.isDouble, success: res.success && res.sl >= pt.requireSL, rerolled: true },
-      party: [...party],
-    });
-  },
-
-  /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
-  testBonusSL: () => {
-    const pt = get().pendingTest;
-    if (!pt || pt.roll == null) return;
-    const party = get().party;
-    const actor = party.find((c) => c.id === pt.actorId);
-    if (!actor || (actor.fortune ?? 0) <= 0) return;
-    actor.fortune = (actor.fortune ?? 0) - 1;
-    const sl = pt.sl + 1;
-    set({ pendingTest: { ...pt, sl, success: pt.roll <= pt.target && sl >= pt.requireSL }, party: [...party] });
-  },
+  testRoll: () => FLOWS.test.roll(get, set),
+  /** Chance : relance (LDB Destin) / « +1 DR » (LDB ch.17 l.26), cf. spec `test` de rollFlows. */
+  testReroll: () => FLOWS.test.reroll(get, set),
+  testBonusSL: () => FLOWS.test.bonusSL(get, set),
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {

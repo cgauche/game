@@ -22,8 +22,8 @@ const ids = onlyNew ? all.filter((id) => NEW.has(id)) : all;
 const W = onlyNew ? 168 : 120, H = onlyNew ? 210 : 150;
 const cells = ids.map((id) => {
   const p = PROPS[id];
-  let svg = '';
-  try { svg = p.render({}, { dims: { w: 0, h: 0 } } as any); } catch (e) { svg = `<text x="10" y="80" fill="red">ERR</text>`; }
+  let svg: string;
+  try { svg = p.render({}, { dims: { w: 0, h: 0 } } as any); } catch { svg = `<text x="10" y="80" fill="red">ERR</text>`; }
   return `<figure class="${NEW.has(id) ? 'neuf' : ''}"><svg viewBox="0 0 120 150" width="${W}" height="${H}"><defs>${DEFS}</defs>${svg}</svg><figcaption>${id}${NEW.has(id) ? ' ✦' : ''}</figcaption></figure>`;
 }).join('\n');
 

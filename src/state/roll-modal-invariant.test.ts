@@ -18,6 +18,10 @@ const PRIMITIVES = [
   'resolveTrample(', 'resolveFocus(', 'resolveBackstabAttack(', 'resolveMelee(',
   'resolveRanged(', 'resolveCasting(', 'resolveMagicMissile(', 'opposedTest(',
   'applyAttackResult(', 'applyTrample(', 'applyMiscast(', 'focusSpell(',
+  // Handlers de flux générés (rollFlow/rollFlows) : ils RÉSOLVENT un jet → seuls les résolveurs
+  // de modale (*Roll/*Reroll/…) ont le droit de les invoquer. Les primitives ci-dessus, déplacées
+  // dans les specs `rollFlows.ts`, ne sont atteignables QUE par ces handlers (garantie structurelle).
+  'FLOWS.',
 ];
 const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 // `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
@@ -34,7 +38,7 @@ const TODO = new Set<string>([]);
 
 function storeActions(src: string): { name: string; body: string }[] {
   const out: { name: string; body: string }[] = [];
-  const re = /^  (\w+):\s*\([^)]*\)\s*=>\s*(\{)?/gm;
+  const re = /^ {2}(\w+):\s*\([^)]*\)\s*=>\s*(\{)?/gm;
   let m: RegExpExecArray | null;
   while ((m = re.exec(src))) {
     const name = m[1];

@@ -65,7 +65,6 @@ describe('Traits psy ciblés — déclenchement & résolution (LDB 21, P3)', () 
     useGame.getState().psychConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect((h.psychState ?? []).some((p) => p.type === 'animosite' && p.active)).toBe(false);
-    useGame.getState().psychConfirm; // no-op
     maybeOpenHeroPsych(useGame.getState, useGame.setState);
     expect(useGame.getState().pendingPsych).toBeNull(); // déjà testé → pas de re-déclenchement
   });
