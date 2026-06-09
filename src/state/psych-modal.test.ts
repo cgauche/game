@@ -41,7 +41,7 @@ describe('Test de Psychologie héros en modale (Peur/Terreur)', () => {
     const { H, E } = setup('enorme'); // gap 2 → Terreur 2
     H.characteristics.FM = 10; // Test de Calme raté → Brisé
     maybeOpenHeroPsych(useGame.getState, useGame.setState);
-    let pp = useGame.getState().pendingPsych;
+    const pp = useGame.getState().pendingPsych;
     expect(pp).toBeTruthy();
     expect(pp!.kind).toBe('terreur');
     expect(pp!.sourceId).toBe(E.id);

@@ -1,0 +1,334 @@
+/**
+ * Actions MARCHAND (#2, LDB 59/60) extraites de store.ts pour le garder navigable — même patron
+ * `(get, set)` que combatFlow : ouverture/réassort, panier, achat/vente/réparation, Marchandage
+ * (Test opposé), Évaluation. Refacto pure — comportement préservé.
+ */
+import type { GameState } from './store';
+import { Combatant, ItemInstance } from '../engine/types';
+import { recomputeLoadout, itemFromTrapping, addItemToHero } from '../engine/items';
+import { repairCostBrass } from '../engine/repair';
+import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
+import { craftPriceFactor } from '../engine/qualities/craftEconomy';
+import { partyBest } from '../engine/skills';
+import { appraiseEstimate } from '../engine/appraisal';
+import { makeRNG } from '../engine/dice';
+import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
+import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
+import { MINUTES_PER_DAY } from '../engine/clock';
+import { findTrapping, trappings } from '../data/index';
+import { MERCHANTS } from './merchants/index';
+
+type Get = () => GameState;
+type Set = (s: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+
+/** Issue d'un Marchandage conclu (achat OU vente) — module les prix de la visite. */
+export interface BargainOutcome {
+  won: boolean;
+  drNet: number;
+  negotiator: boolean;
+}
+
+/** Boutique OUVERTE (état de la visite en cours). Le stock persistant vit dans `merchantStocks`. */
+export interface MerchantState {
+  entityId: string;
+  archetype: string;
+  settlement: Settlement;
+  resaleRate: number;
+  buyMarkup?: number;
+  stock: { label: string; qty: number }[];
+  bargainBuy?: BargainOutcome | null;
+  bargainSell?: BargainOutcome | null;
+  /** Botch (« rater de beaucoup », LDB 60 l.12) : le marchand se méfie — plus de marchandage cette visite. */
+  soured?: boolean;
+  cart: { label: string; qty: number }[];
+  pendingDistribution?: { item: ItemInstance; heroId: string }[] | null;
+  bargainLocked: boolean;
+  bargainPaid?: boolean;
+  bargainSellUsed?: boolean;
+}
+
+/** Stock PERSISTANT par marchand (la déplétion survit aux visites ; réassort par l'horloge, #T3). */
+export type MerchantStocks = Record<string, { stock: { label: string; qty: number }[]; rolledAt: number; bargainLocked?: boolean }>;
+
+export function openMerchant(get: Get, set: Set, entityId: string): void {
+  const ent = get().scene?.entities.find((e) => e.id === entityId);
+  if (!ent?.merchant) return;
+  const arch = MERCHANTS[ent.merchant.archetype];
+  if (!arch) { get().log(`Archétype marchand inconnu : « ${ent.merchant.archetype} ».`); return; }
+  const settlement: Settlement = ent.merchant.settlement ?? arch.settlement;
+  const resaleRate = ent.merchant.resaleRate ?? arch.resaleRate;
+  const buyMarkup = ent.merchant.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
+  const restockPeriod = (ent.merchant.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY; // réassort (#T3)
+  const now = get().gameTime;
+  const prev = get().merchantStocks[entityId];
+  // Re-stock dans le temps (#T3) : on conserve le stock DÉPLÉTÉ entre visites ; on ne re-tire un stock
+  // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
+  let stock = prev?.stock;
+  if (!prev || now - prev.rolledAt >= restockPeriod) {
+    const cat: CatalogItem[] = trappings
+      .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
+      .map((t) => ({ label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
+    // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
+    const period = Math.floor(now / restockPeriod);
+    const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+    const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
+    stock = lines.map((l) => ({ label: l.label, qty: l.qty }));
+    const tested = lines.filter((l) => l.test);
+    if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
+    set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
+  }
+  const persisted = get().merchantStocks[entityId];
+  set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
+}
+
+export function closeMerchant(get: Get, set: Set): void {
+  const m = get().merchant;
+  // Négocié mais NON honoré (achat non payé, OU vente sans rien vendre) → verrou partagé jusqu'au réassort.
+  const renege = !!m && ((m.bargainBuy != null && !m.bargainPaid) || (m.bargainSell != null && !m.bargainSellUsed));
+  if (m && renege) {
+    set((s) => ({ merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } } }));
+    get().log('Vous quittez sans conclure le marché : le marchand refuse de re-marchander (achat ni vente) jusqu’à son prochain réassort.');
+  }
+  get().confirmDistribution(); // ne pas perdre les objets payés non répartis
+  set({ merchant: null });
+}
+
+export function buyItem(get: Get, set: Set, label: string, heroId?: string): void {
+  const m = get().merchant; if (!m) return;
+  const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
+  const t = findTrapping(label); if (!t) return;
+  const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
+  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
+  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
+  const it = itemFromTrapping(label); if (!it) return;
+  const dest = heroId ?? get().party[0]?.id;
+  const decr = (st: { label: string; qty: number }[]) => st.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l));
+  set((s) => {
+    const newStock = decr(s.merchant!.stock);
+    const eid = s.merchant!.entityId;
+    const persisted = s.merchantStocks[eid];
+    return {
+      money: moneySub(s.money, cost)!,
+      party: s.party.map((h) => (h.id === dest ? addItemToHero(h, label) : h)), // flux objet→héros mutualisé
+
+      merchant: { ...s.merchant!, stock: newStock },
+      // Déplétion PERSISTANTE (#T3) : la quantité reste réduite entre visites (rolledAt inchangé).
+      merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
+    };
+  });
+  get().log(`Achat : ${label}.`);
+}
+
+export function addToCart(_get: Get, set: Set, label: string): void {
+  set((s) => {
+    const m = s.merchant; if (!m || m.bargainBuy != null) return {}; // marché conclu → panier scellé
+    const stockQty = m.stock.find((l) => l.label === label)?.qty ?? 0;
+    const cart = m.cart ?? [];
+    const cur = cart.find((c) => c.label === label)?.qty ?? 0;
+    if (cur >= stockQty) return {}; // jamais plus que le stock disponible
+    const next = cart.some((c) => c.label === label)
+      ? cart.map((c) => (c.label === label ? { ...c, qty: c.qty + 1 } : c))
+      : [...cart, { label, qty: 1 }];
+    return { merchant: { ...m, cart: next } };
+  });
+}
+
+// Retrait TOUJOURS permis (même après Marchandage : « j'en prends un de moins car je n'ai que 5€ »).
+export function decFromCart(_get: Get, set: Set, label: string): void {
+  set((s) => {
+    const m = s.merchant; if (!m) return {};
+    const next = (m.cart ?? []).map((c) => (c.label === label ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0);
+    return { merchant: { ...m, cart: next } };
+  });
+}
+
+export function removeFromCart(_get: Get, set: Set, label: string): void {
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: (s.merchant.cart ?? []).filter((c) => c.label !== label) } } : {}));
+}
+
+export function clearCart(_get: Get, set: Set): void {
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: [] } } : {}));
+}
+
+export function refuseBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
+  const m = get().merchant; if (!m || (mode === 'buy' ? m.bargainBuy : m.bargainSell) == null) return;
+  // Refuser une négociation → annule ce côté + VERROU PARTAGÉ (plus de marchandage achat NI vente jusqu'au réassort).
+  const patch = mode === 'buy' ? { cart: [], bargainBuy: null } : { bargainSell: null };
+  set((s) => ({
+    merchant: { ...s.merchant!, ...patch, bargainLocked: true },
+    merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } },
+  }));
+  get().log('Vous refusez le marché ; le marchand ne marchandera plus (ni achat ni vente) jusqu’à son prochain réassort.');
+}
+
+export function payCart(get: Get, set: Set): void {
+  const m = get().merchant; if (!m) return;
+  const cart = m.cart ?? []; if (!cart.length) return;
+  const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
+  const unitBrass = (label: string) => {
+    const t = findTrapping(label); if (!t) return 0;
+    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
+  };
+  let totalBrass = 0;
+  for (const c of cart) totalBrass += unitBrass(c.label) * c.qty;
+  const total = fromBrass(totalBrass);
+  if (!canAfford(get().money, total)) { get().log('Bourse insuffisante pour payer le panier.'); return; }
+  // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock.
+  const dest = get().party[0]?.id ?? '';
+  const staged: { item: ItemInstance; heroId: string }[] = [];
+  let newStock = m.stock;
+  for (const c of cart) {
+    for (let i = 0; i < c.qty; i++) { const it = itemFromTrapping(c.label); if (it) staged.push({ item: it, heroId: dest }); }
+    newStock = newStock.map((l) => (l.label === c.label ? { ...l, qty: Math.max(0, l.qty - c.qty) } : l));
+  }
+  const count = cart.reduce((a, c) => a + c.qty, 0);
+  set((s) => {
+    const eid = s.merchant!.entityId;
+    const persisted = s.merchantStocks[eid];
+    return {
+      money: moneySub(s.money, total)!,
+      // bargainPaid : le marché est SCELLÉ (payé) → pas de blocage du Marchandage au départ.
+      merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged, bargainPaid: true },
+      merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
+    };
+  });
+  get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
+}
+
+export function assignDistribution(_get: Get, set: Set, index: number, heroId: string): void {
+  set((s) => {
+    const m = s.merchant; if (!m?.pendingDistribution) return {};
+    const pd = m.pendingDistribution.map((d, i) => (i === index ? { ...d, heroId } : d));
+    return { merchant: { ...m, pendingDistribution: pd } };
+  });
+}
+
+export function confirmDistribution(_get: Get, set: Set): void {
+  set((s) => {
+    const m = s.merchant; const dist = m?.pendingDistribution; if (!m || !dist || !dist.length) return {};
+    const byHero: Record<string, ItemInstance[]> = {};
+    for (const d of dist) (byHero[d.heroId] ??= []).push(d.item);
+    const party = s.party.map((h) => {
+      const add = byHero[h.id]; if (!add) return h;
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      clone.items = [...(clone.items ?? []), ...add.map((it) => ({ ...it, equipped: false }))];
+      recomputeLoadout(clone);
+      return clone;
+    });
+    return { party, merchant: { ...m, pendingDistribution: null } };
+  });
+}
+
+export function sellItem(get: Get, set: Set, uid: string, heroId: string): void {
+  const m = get().merchant; if (!m) return;
+  const hero = get().party.find((h) => h.id === heroId);
+  const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
+  const t = findTrapping(item.name);
+  const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
+  // Option 2 (LDB 60 l.22, lecture « miroir ») : par défaut le marchand lowballe (¼ = resaleRate/2) ;
+  // il faut GAGNER le Marchandage de vente pour tenir le ½ (resaleRate). Perdre/ne pas négocier = ¼.
+  const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
+  const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
+  set((s) => ({
+    money: moneyAdd(s.money, gain),
+    // bargainSellUsed : une vente a eu lieu → la négociation de vente est HONORÉE (pas de verrou au départ).
+    merchant: s.merchant ? { ...s.merchant, bargainSellUsed: true } : s.merchant,
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      clone.items = (clone.items ?? []).filter((i) => i.uid !== uid);
+      recomputeLoadout(clone);
+      return clone;
+    }),
+  }));
+  get().log(`Vente : ${item.name}.`);
+}
+
+export function repairArmour(get: Get, set: Set, uid: string, heroId: string): void {
+  const m = get().merchant; if (!m) return;
+  const hero = get().party.find((h) => h.id === heroId);
+  const item = hero?.items?.find((i) => i.uid === uid);
+  if (!item || item.kind !== 'armor' || (item.damageTaken ?? 0) <= 0) return;
+  const t = findTrapping(item.name);
+  const base = t ? toBrass(priceToMoney(t.price)) : 0;
+  const cost = fromBrass(repairCostBrass(item, base));
+  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.name}.`); return; }
+  set((s) => ({
+    money: moneySub(s.money, cost)!,
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const it = clone.items?.find((i) => i.uid === uid); if (it) it.damageTaken = 0;
+      recomputeLoadout(clone);
+      return clone;
+    }),
+  }));
+  get().log(`Réparation : ${item.name}.`);
+}
+
+export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
+  const m = get().merchant; if (!m) return;
+  if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
+  if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
+  if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
+  const arch = MERCHANTS[m.archetype];
+  const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;
+  const negotiator = (best.actor.talents ?? []).some((t) => t.name === 'Négociateur' && t.times > 0);
+  set({ pendingBargain: {
+    playerId: best.actor.id, playerName: best.actor.name,
+    merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
+    playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
+  } });
+}
+
+/** « Conclure » le Marchandage : fige l'issue sur la visite (prix modulés) — LDB 60 l.12. */
+export function bargainConfirm(get: Get, set: Set): void {
+  const pb = get().pendingBargain;
+  if (!pb || !pb.result) return; // pas d'acquittement avant le jet
+  const won = pb.result.attackerWins; // le joueur est l'attaquant
+  const drNet = pb.result.netSL;
+  // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
+  // +6 qui donne −20 %) → le marchand se méfie de votre monnaie : plus aucun marchandage cette visite.
+  const botch = !won && drNet >= 6;
+  const outcome = { won, drNet, negotiator: pb.negotiator };
+  const patch = pb.mode === 'buy' ? { bargainBuy: outcome } : { bargainSell: outcome };
+  set((s) => ({
+    pendingBargain: null,
+    merchant: s.merchant ? { ...s.merchant, ...patch, soured: s.merchant.soured || botch } : s.merchant,
+  }));
+  if (botch) get().log('Marchandage raté de beaucoup : le marchand se méfie de votre monnaie (fini de marchander cette visite).');
+  else if (pb.mode === 'buy') get().log(won ? `Marchandage d’achat réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'}).` : 'Marchandage d’achat échoué (prix plein).');
+  else get().log(won ? 'Marchandage de vente réussi (½ du prix listé).' : 'Marchandage de vente échoué (¼ du prix listé).');
+}
+
+export function appraiseItem(get: Get, set: Set, uid: string, heroId: string): void {
+  const hero = get().party.find((h) => h.id === heroId);
+  const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
+  const best = partyBest(get().party, 'Évaluation', 'Int'); if (!best) return;
+  const t = findTrapping(item.name);
+  set({ pendingAppraise: {
+    actorId: best.actor.id, actorName: best.actor.name, itemUid: uid, itemName: item.name,
+    truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
+    availability: (t?.availability as string | undefined) ?? null,
+    skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
+  } });
+}
+
+/** Acquitte l'Évaluation : révèle l'objet (`identified`) + journalise l'estimation (LDB 60 l.10). */
+export function resolveAppraise(get: Get, set: Set): void {
+  const pa = get().pendingAppraise;
+  if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
+  set({ pendingAppraise: null });
+  if (!pa.success) { get().log(`Évaluation ratée : ${pa.itemName} reste non identifié.`); return; }
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const it = clone.items?.find((i) => i.uid === pa.itemUid); if (it) it.identified = true;
+      return clone;
+    }),
+  }));
+  const est = appraiseEstimate(pa.availability as Parameters<typeof appraiseEstimate>[0], pa.truePriceBrass);
+  const range = est.min === est.max ? formatMoney(fromBrass(est.min)) : `${formatMoney(fromBrass(est.min))} – ${formatMoney(fromBrass(est.max))}`;
+  get().log(`Évaluation : ${pa.itemName} révélé (valeur estimée ${range}).`);
+}

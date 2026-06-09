@@ -125,7 +125,7 @@ describe('Balayage en combat (store)', () => {
     useGame.getState().battleClickEntity(E1.id);
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();
-    let pc = useGame.getState().pendingCleave;
+    const pc = useGame.getState().pendingCleave;
     expect(pc).toBeTruthy();
     expect(pc!.hitIds).toEqual([E1.id]);
     expect(pc!.count).toBe(0);

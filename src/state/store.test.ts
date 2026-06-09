@@ -398,7 +398,7 @@ describe('Boucle de jeu (store)', () => {
       attackerDetail: { label: 'CC', base: 40, modifier: 0, target: 40, roll: 50, success: false, sl: -1 },
       defenderDetail: { label: 'Parade', base: 40, modifier: 0, target: 40, roll: 33, success: false, sl: 0 },
       log: 'x',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     } as any;
     useGame.setState({
       battle: { ...b },

@@ -4,7 +4,7 @@
  * combat tactique au tour par tour (règles via src/engine).
  */
 import { create } from 'zustand';
-import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, ItemInstance } from '../engine/types';
+import { Combatant, CharKey, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
@@ -23,7 +23,7 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines, type CombatEvent } from './combatLog';
-import { rollOups, type OupsResolved } from '../engine/oups';
+import { rollOups } from '../engine/oups';
 import {
   initiativeOrder,
   combatValue,
@@ -36,24 +36,12 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, type CastResult, type MissileResult, type FocusResult } from '../engine/magic';
-import { rollTest, TestResult, OpposedResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile } from '../engine/magic';
+import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
-import { effectiveChar, maxWounds, bonus } from '../engine/characteristics';
-import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, type PsychType } from '../engine/psychology';
-import {
-  buyCharAdvance as engineBuyCharAdvance,
-  buySkillAdvance as engineBuySkillAdvance,
-  buyTalent as engineBuyTalent,
-  changeCareer as engineChangeCareer,
-  isCareerLevelComplete,
-  inCareerChar,
-  inCareerSkill,
-  inCareerTalent,
-} from '../engine/advancement';
-import { recomputeLoadout, itemFromTrapping, addItemToHero, compatibleAmmo } from '../engine/items';
-import { repairCostBrass } from '../engine/repair';
-import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
+import { effectiveChar, bonus } from '../engine/characteristics';
+import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES } from '../engine/psychology';
+import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -63,11 +51,20 @@ import { hasHealSkill, hasSurgerySkill, availableHealModes, healWoundsDelta, app
 import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
 import { rollContraction, contractDisease } from '../engine/disease';
 import { persistentConditions } from '../engine/persistence';
-import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
+import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
+import * as partyFlow from './partyFlow';
+import * as merchantFlow from './merchantFlow';
+import type { MerchantState, MerchantStocks } from './merchantFlow';
+import type {
+  Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
+  PendingAppraise, PendingAttack, PendingCleave, PendingTrample, PendingRun, PendingFocus,
+  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingDefense,
+  PendingDisengage, PendingCast, PendingHeal,
+} from './pendings';
 import {
   PendingEncounterPsych,
   openEncounterPsych,
@@ -76,13 +73,8 @@ import {
   encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
   encounterPsychConfirm as encounterPsychConfirmFlow,
 } from './encounterPsychFlow';
-import { findSpell, levelsForCareer, findSkill, findTrapping, trappings } from '../data/index';
-import { makeRNG } from '../engine/dice';
-import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
-import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, toMoney } from '../engine/money';
-import { appraiseEstimate } from '../engine/appraisal';
-import { craftPriceFactor } from '../engine/qualities/craftEconomy';
-import { MERCHANTS } from './merchants/index';
+import { findSpell } from '../data/index';
+import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
@@ -102,333 +94,10 @@ function registerScene(s: Scene) {
   sceneRegistry[s.id] = s;
 }
 
-/** Données du Niveau de Carrière COURANT d'un héros (depuis careerLevels.json), pour la
- *  détection in-carrière et la complétion. `undefined` si la carrière est hors base. */
-function currentCareerLevel(hero: Combatant) {
-  return levelsForCareer(hero.career ?? '').find((l) => l.level === (hero.careerLevel ?? 1));
-}
+// Types des flux différés (Pending*, Money, RevealEntry…) — extraits dans ./pendings, ré-exportés
+// pour la compat des imports existants (`from '../state/store'`).
+export * from './pendings';
 
-/** Recalcule les Blessures max (BF + 2·BE + BFM, LDB Attributs) après une Augmentation de
- *  Caractéristique ; un gain de max augmente aussi le courant d'autant (mute le héros). */
-function recomputeWounds(hero: Combatant) {
-  // Augmentation permanente de Caractéristique → recalcul de la BASE (formule × Taille de l'espèce).
-  const newMax = maxWounds(hero.characteristics, hero.size ?? 'moyenne');
-  const delta = newMax - hero.wounds.max;
-  hero.wounds.base = newMax;
-  hero.wounds.max = newMax;
-  if (delta > 0) hero.wounds.current += delta;
-  if (hero.wounds.current > newMax) hero.wounds.current = newMax;
-}
-
-export interface Money {
-  gold: number;
-  silver: number;
-  brass: number;
-}
-/** Récompenses capturées à la victoire (pour l'écran de fin de combat) : XP de groupe gagnée, or récupéré,
- *  butin (noms d'objets, dans l'inventaire de groupe, assignables à un héros), ennemis vaincus (groupés). */
-export interface PendingVictory {
-  xp: number;
-  gold: Money;
-  loot: string[];
-  defeated: { name: string; count: number }[];
-}
-/** Test de compétence interactif en attente d'acquittement par le joueur. */
-export interface PendingTest {
-  actorId: string;
-  actorName: string;
-  label: string;
-  skillValue: number;
-  difficulty: Difficulty;
-  requireSL: number;
-  target: number;
-  /** Malus psy de Sociabilité de l'acteur (Animosité −20 / Préjugé −10 envers l'interlocuteur, LDB 21) —
-   *  déjà intégré à `skillValue`/`target` ; conservé pour l'affichage en modale. */
-  psychMod?: number;
-  /** Libellé lisible du malus psy social (« Animosité −20 envers Elfe ») pour la modale de Test. */
-  psychDetail?: string;
-  /** Outil utilisé (uid résolu sur l'acteur) : sa qualité d'artisanat module l'issue / casse l'objet (Phase C2a). */
-  itemUid?: string;
-  /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */
-  isDouble?: boolean;
-  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
-  roll: number | null;
-  success: boolean;
-  sl: number;
-  /** Réussite forcée par Résilience AVANT le jet (LDB 17 l.73) : affichage « garanti », sans dé. */
-  forced?: boolean;
-  /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
-  rerolled?: boolean;
-  onSuccess?: Effect[];
-  onFailure?: Effect[];
-}
-/** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
- *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
-export interface PendingReload {
-  actorId: string;
-  actorName: string;
-  weaponName: string;
-  reload: number; // Indice DR cible
-  progressBefore: number; // DR déjà cumulés (Test étendu)
-  skillValue: number; // combatValue(active, 'ranged')
-  difficulty: Difficulty; // 'intermediaire' (le canon ne spécifie pas → défaut)
-  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
-  roll: number | null;
-  target: number; // cible effective après difficulté
-  sl: number; // DR du jet
-  success: boolean;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-}
-/** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.61 Empêtré / l.77 En flammes) :
- *  une Action pour retirer l'État via un Test ; succès ⇒ 1 + DR pions retirés. Empêtré = Test OPPOSÉ
- *  de Force contre la source ; En flammes = Test d'Athlétisme simple. Modale Lancer → DR → Chance. */
-export interface PendingStateRecovery {
-  actorId: string;
-  actorName: string;
-  state: 'Empêtré' | 'En flammes';
-  skillLabel: string; // 'Force' | 'Athlétisme'
-  skillValue: number;
-  difficulty: Difficulty;
-  /** Empêtré avec une source vivante → Test opposé ; sinon Test simple. */
-  opposed: boolean;
-  opponentValue?: number; // Force de la source (Empêtré opposé)
-  opponentName?: string;
-  stacks: number; // pions présents (max retirables)
-  /** Jet de l'acteur ; null tant que pas lancé (Chance possible ensuite). */
-  roll: TestResult | null;
-  /** Jet de la source, figé au 1ᵉʳ lancer (les relances Chance ne re-roulent que l'acteur). */
-  opponentRoll: TestResult | null;
-  netSL: number; // DR net (après opposition le cas échéant)
-  success: boolean;
-  rerolled?: boolean;
-}
-/** Marchandage en attente (LDB 60 l.12) : Test OPPOSÉ Marchandage (joueur) vs Marchandage (marchand).
- *  La modale affiche « Lancer » (2 jets), puis le verdict + Chance ; gagner réduit le prix de 10 %
- *  (20 % avec Succès Stupéfiant DR≥6 ou le talent Négociateur). 1 jet verrouillé par visite. */
-export interface PendingBargain {
-  playerId: string;
-  playerName: string;
-  merchantName: string;
-  merchantValue: number; // valeur Marchandage du marchand (opposant)
-  playerSkill: number; // valeur Marchandage du meilleur négociateur du groupe
-  mode: 'buy' | 'sell';
-  /** Le négociateur possède-t-il le talent Négociateur (−20 % même sans Succès Stupéfiant) ? */
-  negotiator: boolean;
-  /** Jet du joueur ; null tant que pas lancé (Chance possible ensuite). */
-  roll: TestResult | null;
-  /** Jet du marchand, figé au 1ᵉʳ lancer (les relances Chance ne re-roulent que le joueur). */
-  merchantRoll: TestResult | null;
-  /** Résultat opposé (joueur = attaquant). */
-  result: OpposedResult | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-}
-/** Évaluation en attente (LDB 60 l.10 : « estimer les prix … à ±10 % »). Test d'Évaluation (Int) ;
- *  un succès RÉVÈLE l'objet (`identified = true`, ses qualités cachées deviennent visibles) et donne
- *  une fourchette de prix. La modale affiche « Lancer », le résultat puis Chance avant d'acquitter. */
-export interface PendingAppraise {
-  actorId: string;
-  actorName: string;
-  itemUid: string;
-  itemName: string;
-  truePriceBrass: number; // valeur réelle de base (catalogue) en sous de cuivre
-  availability: string | null; // Disponibilité (Rare/Exotique → estimation ±10 %)
-  skillValue: number;
-  difficulty: Difficulty;
-  target: number;
-  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
-  roll: number | null;
-  success: boolean;
-  sl: number;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-}
-/** Attaque en attente : la modale affiche « Lancer », puis le résultat + Chance. */
-export interface PendingAttack {
-  attackerId: string;
-  targetId: string;
-  location: HitLocation | null;
-  result: AttackResult | null; // null = pas encore lancé
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-  fromCharge?: boolean; // issue d'une Charge → l'attaque est OBLIGATOIRE (LDB 15-Dépl l.75), Annuler interdit
-  /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.136) — sinon = targetId. */
-  victimId?: string;
-  /** Attaque d'enchaînement d'un balayage (Frappe Mortelle) : son acquittement fait avancer le `pendingCleave`. */
-  cleave?: boolean;
-  /** « Tirer dans le tas » (LDB 14 l.136/146) : option de tir — bonus selon la taille du groupe, mais
-   *  un combattant au contact de la cible (les DEUX camps, tir fratricide possible) est touché au hasard ;
-   *  0 DR si le succès est dû au seul bonus. */
-  intoCrowd?: boolean;
-  /** Tir IMMOBILE (option de tir) : le héros décide de ne pas bouger ce Tour → annule la pénalité −10 « Tir
-   *  en bougeant » (LDB 14 l.101) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
-   *  n'a pas déjà bougé. */
-  heldGround?: boolean;
-  /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
-   *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
-  forced?: boolean;
-}
-/** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
- *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
- *  `pendingAttack` standard. `count` = enchaînements déjà résolus ; `hitIds` = cibles déjà frappées ce balayage. */
-export interface PendingCleave {
-  attackerId: string;
-  hitIds: string[];
-  count: number;
-}
-/** Piétinement en attente (LDB 85 l.320-321) : modale interactive — Lancer (resolveTrample) →
- *  Chance → Appliquer (dépense 1 Avantage, action gratuite). */
-export interface PendingTrample {
-  attackerId: string;
-  targetId: string;
-  result: AttackResult | null; // null = pas encore lancé
-  rerolled?: boolean;
-}
-/** Course en attente (LDB 15-Déplacement l.79-82) : Test d'Athlétisme (+20) ; succès → déplacement
- *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
-export interface PendingRun {
-  combatantId: string;
-  result: { success: boolean; roll: number; dr: number; bonusCases: number } | null;
-  rerolled?: boolean;
-}
-/** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
-export interface PendingFocus {
-  casterId: string;
-  spellLabel: string;
-  result: FocusResult | null;
-  rerolled?: boolean;
-}
-/** Test de Psychologie (Calme) en attente d'un HÉROS (LDB 21) : Peur (Test étendu) ou Terreur (1ʳᵉ
- *  rencontre). Lancer → Chance → Appliquer. */
-export interface PendingPsych {
-  combatantId: string;
-  kind: PsychType;
-  sourceId: string;
-  indice: number;
-  prevDR: number;
-  /** Trait CIBLÉ : groupe-Cible visé (Animosité (Elfes)…). Absent pour Peur/Terreur. */
-  cible?: string;
-  result: { roll: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
-  rerolled?: boolean;
-}
-/** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
-export interface PendingFrenzy {
-  combatantId: string;
-  result: { success: boolean; roll: number } | null;
-  rerolled?: boolean;
-}
-/** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
- *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
-export interface RevealEntry {
-  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round';
-  title: string;
-  dice?: number; // d100/d10 à afficher (le jet), si pertinent
-  lines: string[]; // détail (résultat, effets)
-}
-/** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
- *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
-export interface PendingFumble {
-  combatantId: string;
-  weapon: Weapon; // arme utilisée (pour Dégâts d'arme / Incident de Tir)
-  result: OupsResolved | null; // null = pas encore lancé sur le Tableau des Oups !
-  /** Vrai si la Maladresse survient pendant une défense réactive : reprendre le tour de l'IA après Appliquer. */
-  resumeAfter?: boolean;
-}
-/** Déviation Critique en attente (LDB 63 l.63-66) : un HÉROS a subi un Coup Critique à une
- *  localisation où il porte de la PA ; il choisit Dévier (sacrifie 1 PA, ignore le Critique mais
- *  subit les Blessures recalculées PA−1) ou Subir (prend le Critique). `res`/`weapon` sont figés
- *  pour rejouer `applyAttackResult` avec la décision (une seule application, cf. combatFlow). */
-export interface PendingDeviation {
-  attackerId: string;
-  targetId: string; // héros qui subit le Critique (= la cible réelle, victime d'un tir dévié comprise)
-  weapon: Weapon;
-  res: AttackResult;
-  /** Reprendre le tour de l'IA après application (toujours vrai ici : la déviation survient pendant le tour ennemi). */
-  resumeAfter: boolean;
-}
-/** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
- *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
- *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
- *  suspendu tant que `pendingDefense` est non-null. */
-export interface PendingDefense {
-  attackerId: string; // ennemi
-  defenderId: string; // héros
-  weapon: Weapon; // arme active de l'attaquant, figée
-  location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
-  atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
-  mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
-  def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
-  result: AttackResult | null; // calculé par finishMelee après « Défendre »
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-  /** Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : ne consomme pas l'Action, applique
-   *  ses effets RAW et enchaîne la file au resolve (cf. aiCreatureFreeAttacks). */
-  free?: boolean;
-  freeKind?: string;
-  prevActed?: boolean;
-}
-/** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
- *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
-export interface PendingDisengage {
-  moverId: string; // héros qui se désengage (actif)
-  foeId: string; // adversaire de référence (meilleure CC) pour l'Esquive et la Fuite
-  canSacrifice: boolean; // Avantage > tous les foes Engagés → option « Sacrifier l'Avantage » dispo
-  /** Esquive/Fuite disponibles ? Faux si l'Action est déjà dépensée (elles la coûtent) → seule
-   *  l'option A « Sacrifier l'Avantage » reste, ce qui évite la boucle infinie d'Esquive. */
-  canEsquive?: boolean;
-  phase: 'choice' | 'esquive'; // 'choice' = menu d'options ; 'esquive' = Test d'Esquive en cours
-  atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
-  def: TestResult | null; // Esquive : jet d'Esquive du mover
-  result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
-  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-}
-
-/** Incantation en attente : flux par modale (sélection → « Lancer » jet figé → Chance → appliquer),
- *  comme l'attaque. Tous les jets méritent leur modale. */
-export interface PendingCast {
-  casterId: string;
-  targetId: string;
-  spellLabel: string;
-  /** Projectile magique (résolution façon attaque) vs autre sort / prière. */
-  missile: boolean;
-  /** Sort focalisé à NI 0 (consommé à l'application). */
-  focused: boolean;
-  /** Résultat figé du jet d'incantation (null = pas encore lancé). */
-  result: (CastResult & Partial<MissileResult>) | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
-  rerolled?: boolean;
-}
-
-/** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
- *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`
- *  (combat ⇄ groupe, cf. combatOrParty). `intBonus` figé à l'ouverture. */
-export interface PendingHeal {
-  healerId: string;
-  healerName: string;
-  targetId: string;
-  targetName: string;
-  mode: HealMode; // 'wounds' | 'bleed'
-  intBonus: number; // Bonus d'Intelligence du soigneur
-  skillValue: number; // testValue(soigneur, 'Guérison')
-  difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)
-  target: number; // cible effective (affichage)
-  roll: number | null; // null tant que pas lancé (Chance possible ensuite)
-  success: boolean;
-  sl: number; // DR
-  rerolled?: boolean;
-  /** Soin par un PNJ (médecin payant) : héros éligibles parmi lesquels le JOUEUR choisit la cible
-   *  (>1 → sélecteur dans la modale). Absent = cible déjà fixée (auto-soin du groupe via la fiche). */
-  candidateIds?: string[];
-  /** CHIRURGIE = Test ÉTENDU de Guérison (LDB 10 l.154 / 12 l.200) : on cumule le DR de passe en passe
-   *  jusqu'à `surgeryTargetDR` (cible 5-10, MJ) ; `surgeryCumDR` = total courant (repart à 0 s'il passe
-   *  sous 0, LDB 12 l.200). CHAQUE passe inflige 1d10 PB + 1 Hémorragie. `surgeryTraumaIdx` = quelle
-   *  Blessure Critique opérer (choix du joueur). Présents seulement en mode 'surgery'. */
-  surgeryTargetDR?: number;
-  surgeryCumDR?: number;
-  surgeryTraumaIdx?: number;
-}
 
 export interface BattleState {
   combatants: Combatant[];
@@ -491,11 +160,11 @@ export interface GameState {
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
-  merchant: { entityId: string; archetype: string; settlement: Settlement; resaleRate: number; buyMarkup?: number; stock: { label: string; qty: number }[]; bargainBuy?: { won: boolean; drNet: number; negotiator: boolean } | null; bargainSell?: { won: boolean; drNet: number; negotiator: boolean } | null; soured?: boolean; cart: { label: string; qty: number }[]; pendingDistribution?: { item: ItemInstance; heroId: string }[] | null; bargainLocked: boolean; bargainPaid?: boolean; bargainSellUsed?: boolean } | null;
+  merchant: MerchantState | null;
   /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
    *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. `bargainLocked` = le joueur a négocié
    *  puis quitté SANS payer → plus de Marchandage avec ce marchand jusqu'au prochain réassort. Reset en nouvelle partie. */
-  merchantStocks: Record<string, { stock: { label: string; qty: number }[]; rolledAt: number; bargainLocked?: boolean }>;
+  merchantStocks: MerchantStocks;
   battle: BattleState | null;
   campaignSceneId: string | null;
   inventory: string[];
@@ -917,190 +586,16 @@ export const useGame = create<GameState>((set, get) => ({
 
   setScreen: (s) => set({ screen: s }),
 
-  /** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. */
-  toggleEquip: (heroId, uid) =>
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const it = (clone.items ?? []).find((i) => i.uid === uid);
-        if (it) {
-          it.equipped = !it.equipped;
-          recomputeLoadout(clone);
-        }
-        return clone;
-      }),
-    })),
-  transferItem: (uid, fromHeroId, toHeroId) => {
-    if (fromHeroId === toHeroId) return;
-    const from = get().party.find((h) => h.id === fromHeroId);
-    const item = from?.items?.find((i) => i.uid === uid);
-    const to = get().party.find((h) => h.id === toHeroId);
-    if (!item || !to) return;
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id === fromHeroId) {
-          const c: Combatant = JSON.parse(JSON.stringify(h));
-          c.items = (c.items ?? []).filter((i) => i.uid !== uid);
-          recomputeLoadout(c);
-          return c;
-        }
-        if (h.id === toHeroId) {
-          const c: Combatant = JSON.parse(JSON.stringify(h));
-          c.items = [...(c.items ?? []), { ...item, equipped: false }]; // arrive NON équipé
-          recomputeLoadout(c);
-          return c;
-        }
-        return h;
-      }),
-    }));
-    get().log(`${from!.name} donne ${item.name} à ${to.name}.`);
-  },
-  setItemSkin: (heroId, uid, patch) =>
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const it = (clone.items ?? []).find((i) => i.uid === uid);
-        if (it) {
-          const next: Record<string, string> = { ...(it.skin ?? {}) };
-          for (const [k, v] of Object.entries(patch)) { if (v == null) delete next[k]; else next[k] = v; }
-          it.skin = Object.keys(next).length ? next : undefined;
-          recomputeLoadout(clone); // propage skin → Weapon.skin actif
-        }
-        return clone;
-      }),
-    })),
-  grantXp: (heroId, amount) => {
-    let name = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        name = h.name;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        clone.xp = (clone.xp ?? 0) + amount;
-        return clone;
-      }),
-    }));
-    if (name) get().log(`${name} : ${amount >= 0 ? '+' : ''}${amount} PX.`);
-  },
-
-  buyCharAdvance: (heroId, char) => {
-    let msg = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const inC = inCareerChar(currentCareerLevel(clone)?.characteristics ?? [], char);
-        const r = engineBuyCharAdvance(clone, char, inC);
-        if (!r.ok) {
-          msg = `${clone.name} : ${CHAR_LABELS[char]} — ${r.reason}.`;
-          return h;
-        }
-        recomputeWounds(clone);
-        msg = `${clone.name} : ${CHAR_LABELS[char]} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
-        return clone;
-      }),
-    }));
-    if (msg) get().log(msg);
-  },
-
-  buySkillAdvance: (heroId, skillName) => {
-    let msg = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const known = clone.skills.some((sk) => sk.name === skillName);
-        const inC = inCareerSkill(currentCareerLevel(clone)?.skills ?? [], skillName);
-        if (!known) {
-          if (!inC) {
-            msg = `${clone.name} : « ${skillName} » hors carrière, non acquérable.`;
-            return h;
-          }
-          // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
-          const characteristic = CHAR_BY_LABEL[findSkill(skillName)?.characteristic ?? ''] ?? 'Int';
-          clone.skills.push({ name: skillName, characteristic, advances: 0 });
-        }
-        const r = engineBuySkillAdvance(clone, skillName, inC);
-        if (!r.ok) {
-          msg = `${clone.name} : ${skillName} — ${r.reason}.`;
-          return h;
-        }
-        msg = `${clone.name} : ${skillName} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
-        return clone;
-      }),
-    }));
-    if (msg) get().log(msg);
-  },
-
-  buyTalent: (heroId, talentName) => {
-    let msg = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const inC = inCareerTalent(currentCareerLevel(clone)?.talents ?? [], talentName);
-        if (!inC) {
-          msg = `${clone.name} : Talent « ${talentName} » hors carrière (LDB l.97).`;
-          return h;
-        }
-        const r = engineBuyTalent(clone, talentName);
-        if (!r.ok) {
-          msg = `${clone.name} : ${talentName} — ${r.reason}.`;
-          return h;
-        }
-        msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
-        return clone;
-      }),
-    }));
-    if (msg) get().log(msg);
-  },
-
-  trainProsthesis: (heroId, uid) => {
-    // Rachat PX d'une prothèse (LDB 73) : Fausse jambe → réapprendre l'Esquive (200 PX) ; Crochet → racheter
-    // la pénalité « deux mains » entière (400 PX) pour manier de nouveau les armes à deux mains.
-    const COSTS: Record<string, number> = { 'Fausse jambe': 200, Crochet: 400 };
-    let msg = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const it = (clone.items ?? []).find((i) => i.uid === uid);
-        const cost = it ? COSTS[it.name] : undefined;
-        if (!it || cost == null || !it.equipped) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
-        if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
-        if ((clone.xp ?? 0) < cost) { msg = `${clone.name} : PX insuffisants (${cost}).`; return h; }
-        clone.xp = (clone.xp ?? 0) - cost;
-        it.prosthesisTrained = true;
-        msg = it.name === 'Crochet'
-          ? `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${cost} PX).`
-          : `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${cost} PX).`;
-        return clone;
-      }),
-    }));
-    if (msg) get().log(msg);
-  },
-
-  changeCareer: (heroId, newCareer, newLevel) => {
-    let msg = '';
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const lvl = currentCareerLevel(clone);
-        const completed = lvl ? isCareerLevelComplete(clone, clone.careerLevel ?? 1, lvl.skills, lvl.talents) : false;
-        const r = engineChangeCareer(clone, newCareer, newLevel, completed);
-        if (!r.ok) {
-          msg = `${clone.name} : changement de carrière refusé (${r.reason}).`;
-          return h;
-        }
-        msg = `${clone.name} : carrière → ${newCareer} (niv. ${newLevel}, −${r.cost} PX).`;
-        return clone;
-      }),
-    }));
-    if (msg) get().log(msg);
-  },
+  // ── Actions GROUPE (équipement / avancement) : déléguées à partyFlow ──
+  toggleEquip: (heroId, uid) => partyFlow.toggleEquip(get, set, heroId, uid),
+  transferItem: (uid, fromHeroId, toHeroId) => partyFlow.transferItem(get, set, uid, fromHeroId, toHeroId),
+  setItemSkin: (heroId, uid, patch) => partyFlow.setItemSkin(get, set, heroId, uid, patch),
+  grantXp: (heroId, amount) => partyFlow.grantXp(get, set, heroId, amount),
+  buyCharAdvance: (heroId, char) => partyFlow.buyCharAdvance(get, set, heroId, char),
+  buySkillAdvance: (heroId, skillName) => partyFlow.buySkillAdvance(get, set, heroId, skillName),
+  buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
+  trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
+  changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
 
   setParty: (p) => set({ party: p }),
 
@@ -1270,272 +765,32 @@ export const useGame = create<GameState>((set, get) => ({
     set({ dialogue: null });
   },
 
-  // ─── Marchand (#2) ───
-  openMerchant: (entityId) => {
-    const ent = get().scene?.entities.find((e) => e.id === entityId);
-    if (!ent?.merchant) return;
-    const arch = MERCHANTS[ent.merchant.archetype];
-    if (!arch) { get().log(`Archétype marchand inconnu : « ${ent.merchant.archetype} ».`); return; }
-    const settlement: Settlement = ent.merchant.settlement ?? arch.settlement;
-    const resaleRate = ent.merchant.resaleRate ?? arch.resaleRate;
-    const buyMarkup = ent.merchant.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
-    const restockPeriod = (ent.merchant.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY; // réassort (#T3)
-    const now = get().gameTime;
-    const prev = get().merchantStocks[entityId];
-    // Re-stock dans le temps (#T3) : on conserve le stock DÉPLÉTÉ entre visites ; on ne re-tire un stock
-    // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
-    let stock = prev?.stock;
-    if (!prev || now - prev.rolledAt >= restockPeriod) {
-      const cat: CatalogItem[] = trappings
-        .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
-        .map((t) => ({ label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
-      // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
-      const period = Math.floor(now / restockPeriod);
-      const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
-      const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
-      stock = lines.map((l) => ({ label: l.label, qty: l.qty }));
-      const tested = lines.filter((l) => l.test);
-      if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
-      set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock: stock!, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
-    }
-    const persisted = get().merchantStocks[entityId];
-    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
-  },
-  closeMerchant: () => {
-    const m = get().merchant;
-    // Négocié mais NON honoré (achat non payé, OU vente sans rien vendre) → verrou partagé jusqu'au réassort.
-    const renege = !!m && ((m.bargainBuy != null && !m.bargainPaid) || (m.bargainSell != null && !m.bargainSellUsed));
-    if (m && renege) {
-      set((s) => ({ merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } } }));
-      get().log('Vous quittez sans conclure le marché : le marchand refuse de re-marchander (achat ni vente) jusqu’à son prochain réassort.');
-    }
-    get().confirmDistribution(); // ne pas perdre les objets payés non répartis
-    set({ merchant: null });
-  },
-  buyItem: (label, heroId) => {
-    const m = get().merchant; if (!m) return;
-    const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
-    const t = findTrapping(label); if (!t) return;
-    const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
-    const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
-    if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
-    const it = itemFromTrapping(label); if (!it) return;
-    const dest = heroId ?? get().party[0]?.id;
-    const decr = (st: { label: string; qty: number }[]) => st.map((l) => (l.label === label ? { ...l, qty: l.qty - 1 } : l));
-    set((s) => {
-      const newStock = decr(s.merchant!.stock);
-      const eid = s.merchant!.entityId;
-      const persisted = s.merchantStocks[eid];
-      return {
-        money: moneySub(s.money, cost)!,
-        party: s.party.map((h) => (h.id === dest ? addItemToHero(h, label) : h)), // flux objet→héros mutualisé
-
-        merchant: { ...s.merchant!, stock: newStock },
-        // Déplétion PERSISTANTE (#T3) : la quantité reste réduite entre visites (rolledAt inchangé).
-        merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
-      };
-    });
-    get().log(`Achat : ${label}.`);
-  },
-  addToCart: (label) =>
-    set((s) => {
-      const m = s.merchant; if (!m || m.bargainBuy != null) return {}; // marché conclu → panier scellé
-      const stockQty = m.stock.find((l) => l.label === label)?.qty ?? 0;
-      const cart = m.cart ?? [];
-      const cur = cart.find((c) => c.label === label)?.qty ?? 0;
-      if (cur >= stockQty) return {}; // jamais plus que le stock disponible
-      const next = cart.some((c) => c.label === label)
-        ? cart.map((c) => (c.label === label ? { ...c, qty: c.qty + 1 } : c))
-        : [...cart, { label, qty: 1 }];
-      return { merchant: { ...m, cart: next } };
-    }),
-  // Retrait TOUJOURS permis (même après Marchandage : « j'en prends un de moins car je n'ai que 5€ »).
-  decFromCart: (label) =>
-    set((s) => {
-      const m = s.merchant; if (!m) return {};
-      const next = (m.cart ?? []).map((c) => (c.label === label ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0);
-      return { merchant: { ...m, cart: next } };
-    }),
-  removeFromCart: (label) =>
-    set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: (s.merchant.cart ?? []).filter((c) => c.label !== label) } } : {})),
-  clearCart: () => set((s) => (s.merchant ? { merchant: { ...s.merchant, cart: [] } } : {})),
-  refuseBargain: (mode) => {
-    const m = get().merchant; if (!m || (mode === 'buy' ? m.bargainBuy : m.bargainSell) == null) return;
-    // Refuser une négociation → annule ce côté + VERROU PARTAGÉ (plus de marchandage achat NI vente jusqu'au réassort).
-    const patch = mode === 'buy' ? { cart: [], bargainBuy: null } : { bargainSell: null };
-    set((s) => ({
-      merchant: { ...s.merchant!, ...patch, bargainLocked: true },
-      merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } },
-    }));
-    get().log('Vous refusez le marché ; le marchand ne marchandera plus (ni achat ni vente) jusqu’à son prochain réassort.');
-  },
-  payCart: () => {
-    const m = get().merchant; if (!m) return;
-    const cart = m.cart ?? []; if (!cart.length) return;
-    const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
-    const unitBrass = (label: string) => {
-      const t = findTrapping(label); if (!t) return 0;
-      return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
-    };
-    let totalBrass = 0;
-    for (const c of cart) totalBrass += unitBrass(c.label) * c.qty;
-    const total = fromBrass(totalBrass);
-    if (!canAfford(get().money, total)) { get().log('Bourse insuffisante pour payer le panier.'); return; }
-    // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock.
-    const dest = get().party[0]?.id ?? '';
-    const staged: { item: ItemInstance; heroId: string }[] = [];
-    let newStock = m.stock;
-    for (const c of cart) {
-      for (let i = 0; i < c.qty; i++) { const it = itemFromTrapping(c.label); if (it) staged.push({ item: it, heroId: dest }); }
-      newStock = newStock.map((l) => (l.label === c.label ? { ...l, qty: Math.max(0, l.qty - c.qty) } : l));
-    }
-    const count = cart.reduce((a, c) => a + c.qty, 0);
-    set((s) => {
-      const eid = s.merchant!.entityId;
-      const persisted = s.merchantStocks[eid];
-      return {
-        money: moneySub(s.money, total)!,
-        // bargainPaid : le marché est SCELLÉ (payé) → pas de blocage du Marchandage au départ.
-        merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged, bargainPaid: true },
-        merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
-      };
-    });
-    get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
-  },
-  assignDistribution: (index, heroId) =>
-    set((s) => {
-      const m = s.merchant; if (!m?.pendingDistribution) return {};
-      const pd = m.pendingDistribution.map((d, i) => (i === index ? { ...d, heroId } : d));
-      return { merchant: { ...m, pendingDistribution: pd } };
-    }),
-  confirmDistribution: () =>
-    set((s) => {
-      const m = s.merchant; const dist = m?.pendingDistribution; if (!m || !dist || !dist.length) return {};
-      const byHero: Record<string, ItemInstance[]> = {};
-      for (const d of dist) (byHero[d.heroId] ??= []).push(d.item);
-      const party = s.party.map((h) => {
-        const add = byHero[h.id]; if (!add) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        clone.items = [...(clone.items ?? []), ...add.map((it) => ({ ...it, equipped: false }))];
-        recomputeLoadout(clone);
-        return clone;
-      });
-      return { party, merchant: { ...m, pendingDistribution: null } };
-    }),
-  sellItem: (uid, heroId) => {
-    const m = get().merchant; if (!m) return;
-    const hero = get().party.find((h) => h.id === heroId);
-    const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-    const t = findTrapping(item.name);
-    const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-    // Option 2 (LDB 60 l.22, lecture « miroir ») : par défaut le marchand lowballe (¼ = resaleRate/2) ;
-    // il faut GAGNER le Marchandage de vente pour tenir le ½ (resaleRate). Perdre/ne pas négocier = ¼.
-    const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
-    const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
-    set((s) => ({
-      money: moneyAdd(s.money, gain),
-      // bargainSellUsed : une vente a eu lieu → la négociation de vente est HONORÉE (pas de verrou au départ).
-      merchant: s.merchant ? { ...s.merchant, bargainSellUsed: true } : s.merchant,
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        clone.items = (clone.items ?? []).filter((i) => i.uid !== uid);
-        recomputeLoadout(clone);
-        return clone;
-      }),
-    }));
-    get().log(`Vente : ${item.name}.`);
-  },
-  repairArmour: (uid, heroId) => {
-    const m = get().merchant; if (!m) return;
-    const hero = get().party.find((h) => h.id === heroId);
-    const item = hero?.items?.find((i) => i.uid === uid);
-    if (!item || item.kind !== 'armor' || (item.damageTaken ?? 0) <= 0) return;
-    const t = findTrapping(item.name);
-    const base = t ? toBrass(priceToMoney(t.price)) : 0;
-    const cost = fromBrass(repairCostBrass(item, base));
-    if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.name}.`); return; }
-    set((s) => ({
-      money: moneySub(s.money, cost)!,
-      party: s.party.map((h) => {
-        if (h.id !== heroId) return h;
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const it = clone.items?.find((i) => i.uid === uid); if (it) it.damageTaken = 0;
-        recomputeLoadout(clone);
-        return clone;
-      }),
-    }));
-    get().log(`Réparation : ${item.name}.`);
-  },
-  startBargain: (mode) => {
-    const m = get().merchant; if (!m) return;
-    if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
-    if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
-    if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
-    const arch = MERCHANTS[m.archetype];
-    const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;
-    const negotiator = (best.actor.talents ?? []).some((t) => t.name === 'Négociateur' && t.times > 0);
-    set({ pendingBargain: {
-      playerId: best.actor.id, playerName: best.actor.name,
-      merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
-      playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
-    } });
-  },
+  // ─── Marchand (#2) : délégué à merchantFlow ───
+  openMerchant: (entityId) => merchantFlow.openMerchant(get, set, entityId),
+  closeMerchant: () => merchantFlow.closeMerchant(get, set),
+  buyItem: (label, heroId) => merchantFlow.buyItem(get, set, label, heroId),
+  addToCart: (label) => merchantFlow.addToCart(get, set, label),
+  decFromCart: (label) => merchantFlow.decFromCart(get, set, label),
+  removeFromCart: (label) => merchantFlow.removeFromCart(get, set, label),
+  clearCart: () => merchantFlow.clearCart(get, set),
+  refuseBargain: (mode) => merchantFlow.refuseBargain(get, set, mode),
+  payCart: () => merchantFlow.payCart(get, set),
+  assignDistribution: (index, heroId) => merchantFlow.assignDistribution(get, set, index, heroId),
+  confirmDistribution: () => merchantFlow.confirmDistribution(get, set),
+  sellItem: (uid, heroId) => merchantFlow.sellItem(get, set, uid, heroId),
+  repairArmour: (uid, heroId) => merchantFlow.repairArmour(get, set, uid, heroId),
+  startBargain: (mode) => merchantFlow.startBargain(get, set, mode),
   bargainRoll: () => FLOWS.bargain.roll(get, set),
   bargainReroll: () => FLOWS.bargain.reroll(get, set),
   bargainBonusSL: () => FLOWS.bargain.bonusSL(get, set),
-  bargainConfirm: () => {
-    const pb = get().pendingBargain;
-    if (!pb || !pb.result) return; // pas d'acquittement avant le jet
-    const won = pb.result.attackerWins; // le joueur est l'attaquant
-    const drNet = pb.result.netSL;
-    // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
-    // +6 qui donne −20 %) → le marchand se méfie de votre monnaie : plus aucun marchandage cette visite.
-    const botch = !won && drNet >= 6;
-    const outcome = { won, drNet, negotiator: pb.negotiator };
-    const patch = pb.mode === 'buy' ? { bargainBuy: outcome } : { bargainSell: outcome };
-    set((s) => ({
-      pendingBargain: null,
-      merchant: s.merchant ? { ...s.merchant, ...patch, soured: s.merchant.soured || botch } : s.merchant,
-    }));
-    if (botch) get().log('Marchandage raté de beaucoup : le marchand se méfie de votre monnaie (fini de marchander cette visite).');
-    else if (pb.mode === 'buy') get().log(won ? `Marchandage d’achat réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'}).` : 'Marchandage d’achat échoué (prix plein).');
-    else get().log(won ? 'Marchandage de vente réussi (½ du prix listé).' : 'Marchandage de vente échoué (¼ du prix listé).');
-  },
+  bargainConfirm: () => merchantFlow.bargainConfirm(get, set),
   bargainCancel: () => set({ pendingBargain: null }),
 
-  appraiseItem: (uid, heroId) => {
-    const hero = get().party.find((h) => h.id === heroId);
-    const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-    const best = partyBest(get().party, 'Évaluation', 'Int'); if (!best) return;
-    const t = findTrapping(item.name);
-    set({ pendingAppraise: {
-      actorId: best.actor.id, actorName: best.actor.name, itemUid: uid, itemName: item.name,
-      truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
-      availability: (t?.availability as string | undefined) ?? null,
-      skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
-    } });
-  },
+  appraiseItem: (uid, heroId) => merchantFlow.appraiseItem(get, set, uid, heroId),
   appraiseRoll: () => FLOWS.appraise.roll(get, set),
   appraiseReroll: () => FLOWS.appraise.reroll(get, set),
   appraiseBonusSL: () => FLOWS.appraise.bonusSL(get, set),
-  resolveAppraise: () => {
-    const pa = get().pendingAppraise;
-    if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
-    set({ pendingAppraise: null });
-    if (!pa.success) { get().log(`Évaluation ratée : ${pa.itemName} reste non identifié.`); return; }
-    set((s) => ({
-      party: s.party.map((h) => {
-        if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
-        const it = clone.items?.find((i) => i.uid === pa.itemUid); if (it) it.identified = true;
-        return clone;
-      }),
-    }));
-    const est = appraiseEstimate(pa.availability as Parameters<typeof appraiseEstimate>[0], pa.truePriceBrass);
-    const range = est.min === est.max ? formatMoney(fromBrass(est.min)) : `${formatMoney(fromBrass(est.min))} – ${formatMoney(fromBrass(est.max))}`;
-    get().log(`Évaluation : ${pa.itemName} révélé (valeur estimée ${range}).`);
-  },
+  resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
 
   seedRng: (seed) => {
@@ -1631,17 +886,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
-  giveItemToHero: (label, heroId) =>
-    set((s) => {
-      const idx = s.inventory.indexOf(label);
-      if (idx < 0) return {}; // déjà assigné / absent du stock de groupe
-      const inventory = [...s.inventory.slice(0, idx), ...s.inventory.slice(idx + 1)];
-      const party = s.party.map((h) => (h.id === heroId ? addItemToHero(h, label) : h));
-      const pv = s.pendingVictory;
-      const li = pv ? pv.loot.indexOf(label) : -1;
-      const pendingVictory = pv && li >= 0 ? { ...pv, loot: [...pv.loot.slice(0, li), ...pv.loot.slice(li + 1)] } : pv;
-      return { inventory, party, pendingVictory };
-    }),
+  giveItemToHero: (label, heroId) => partyFlow.giveItemToHero(get, set, label, heroId),
   dismissVictory: () => set({ pendingVictory: null, battle: null, mode: 'exploration' }),
 
   battleSelectAction: (a) => {
@@ -1873,21 +1118,7 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
 
-  /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
-   *  qu'en combat (`applyItemUse`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
-  usePartyItem: (heroId, uid) => {
-    if (get().battle) return; // en combat → battleUseItem
-    const party = get().party;
-    const hero = party.find((h) => h.id === heroId);
-    const it = hero?.items?.find((i) => i.uid === uid);
-    if (!hero || !it) return;
-    const eff = itemUse(it, hero);
-    if (!eff) return;
-    const log = [`${hero.name} utilise : ${it.name}.`, ...applyItemUse(hero, eff)];
-    hero.items = (hero.items ?? []).filter((i) => i.uid !== uid);
-    set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
-    bus.emit(EVT.SCENE_DIRTY);
-  },
+  usePartyItem: (heroId, uid) => partyFlow.usePartyItem(get, set, heroId, uid),
 
   // Le flux d'incantation est COMMUN au combat et au hors-combat (couture D) : les acteurs sont
   // résolus dans `battle.combatants` OU `party` via `actorIn` (combatOrParty). Aucune branche d'effet dupliquée.

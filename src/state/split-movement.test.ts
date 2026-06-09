@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame, movementRemaining, canMove } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
