@@ -561,10 +561,20 @@ export function IsoStage() {
     if (a?.pos && b?.pos) targeting = { from: a.pos, to: b.pos };
   }
 
+  // Cadrage CAMÉRA (découplé du réticule, R8) : on cadre la paire attaquant↔cible aussi pour une attaque
+  // DU JOUEUR en cours de résolution (pendingAttack), pas seulement pour le télégraphe ennemi — sinon on
+  // voit mieux ce que fait l'IA que soi-même. Le RÉTICULE dessiné (`targeting`) reste, lui, ennemi-only.
+  let camPair = targeting;
+  if (!camPair && mode === 'battle' && battle && pendingAttack) {
+    const a = battle.combatants.find((c) => c.id === pendingAttack.attackerId);
+    const b = battle.combatants.find((c) => c.id === pendingAttack.targetId);
+    if (a?.pos && b?.pos) camPair = { from: a.pos, to: b.pos };
+  }
+
   let focus = partyPos;
-  if (targeting) {
-    // Cadrer les DEUX : on centre sur le milieu tireur ↔ cible (« centré sur lui » corrigé).
-    focus = { x: Math.round((targeting.from.x + targeting.to.x) / 2), y: Math.round((targeting.from.y + targeting.to.y) / 2) };
+  if (camPair) {
+    // Cadrer les DEUX : on centre sur le milieu attaquant ↔ cible (« centré sur lui » corrigé).
+    focus = { x: Math.round((camPair.from.x + camPair.to.x) / 2), y: Math.round((camPair.from.y + camPair.to.y) / 2) };
   } else if (mode === 'battle' && battle) {
     const alive = battle.combatants.filter((c) => c.pos && !isOutOfAction(c));
     const centroid = alive.length
