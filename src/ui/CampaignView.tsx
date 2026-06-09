@@ -8,6 +8,7 @@ import { MerchantPanel } from './MerchantPanel';
 import { formatMoney } from '../engine/money';
 import { BattlePanel } from './BattlePanel';
 import { ActionBar } from './ActionBar';
+import { CombatBanner } from './CombatBanner';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
@@ -100,6 +101,7 @@ export function CampaignView() {
 
       <main className="stage">
         <IsoStage />
+        {mode === 'battle' && battle && <CombatBanner />}
         <ViewControls
           zoom={zoom}
           onZoomIn={() => setZoom(zoom + 0.3)}

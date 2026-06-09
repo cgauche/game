@@ -1061,6 +1061,77 @@ textarea:focus {
   margin: 4px 0;
   line-height: 1.4;
 }
+/* Journal en couleur (narration partagée : icône unifiée + noms par camp). */
+.jr-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.jr-ic {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+}
+.jr-tx {
+  flex: 1;
+}
+/* Couleurs de camp, partagées journal + bandeau. */
+.nm-ally {
+  color: #5fcf92;
+  font-weight: 700;
+}
+.nm-foe {
+  color: #e8705f;
+  font-weight: 700;
+}
+
+/* Bandeau haut « fil d'événements » (au-dessus du champ). */
+.combat-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 40;
+  pointer-events: none;
+  max-width: 80%;
+}
+.cb-ev {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  background: rgba(10, 14, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  backdrop-filter: blur(3px);
+}
+.cb-ev .cb-ic {
+  font-size: 15px;
+}
+.cb-now {
+  animation: cb-in 0.18s ease-out;
+}
+.cb-old {
+  opacity: 0.45;
+  font-size: 12px;
+  padding: 3px 12px;
+}
+@keyframes cb-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .battle-result {
   text-align: center;
   padding: 14px;
