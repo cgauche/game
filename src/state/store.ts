@@ -249,6 +249,10 @@ export interface PendingAttack {
   victimId?: string;
   /** Attaque d'enchaînement d'un balayage (Frappe Mortelle) : son acquittement fait avancer le `pendingCleave`. */
   cleave?: boolean;
+  /** « Tirer dans le tas » (LDB 14 l.136/146) : option de tir — bonus selon la taille du groupe, mais
+   *  un combattant au contact de la cible (les DEUX camps, tir fratricide possible) est touché au hasard ;
+   *  0 DR si le succès est dû au seul bonus. */
+  intoCrowd?: boolean;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
@@ -671,6 +675,8 @@ export interface GameState {
   battleAim: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;
+  /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
+  attackSetIntoCrowd: (v: boolean) => void;
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
@@ -2670,6 +2676,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pa || pa.result) return; // la visée ne change plus après le jet
     set({ pendingAttack: { ...pa, location: loc } });
   },
+  attackSetIntoCrowd: (v) => {
+    const pa = get().pendingAttack;
+    if (!pa || pa.result) return; // choix avant le jet seulement
+    set({ pendingAttack: { ...pa, intoCrowd: v } });
+  },
   attackRoll: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || pa.result) return;
@@ -2677,7 +2688,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target) return;
     applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
     if (!r) {
       get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
       set({ pendingAttack: null });
@@ -2694,7 +2705,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
     attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd);
     if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */

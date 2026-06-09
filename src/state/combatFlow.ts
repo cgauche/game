@@ -471,6 +471,17 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
   return allies[0] ?? null;
 }
 
+/** Cibles éligibles d'un « Tir dans le tas » (LDB 14 l.136/146) : TOUT le monde serré autour de la
+ *  cible (au contact, Chebyshev — diagonale incluse), vivant et positionné, LE TIREUR EXCLU — les
+ *  DEUX camps : « vous touchez l'un des adversaires de la cible au hasard » → ça peut être un de vos
+ *  PROPRES alliés engagés dans la mêlée (tir fratricide), pas forcément un ennemi. Un tir réussi en
+ *  touche UNE au hasard. Base partagée avec le futur surlignage des zones d'effet (Explosion / sorts). */
+export function crowdEligible(battle: BattleState, attacker: Combatant, target: Combatant): Combatant[] {
+  return battle.combatants.filter(
+    (c) => c.id !== attacker.id && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1,
+  );
+}
+
 /** Cases enfumées actives de la bataille (Souffle (Fumée)) → bloquent la Ligne de Vue. */
 export const smokeOf = (battle: BattleState): Pt[] => (battle.smoke ?? []).map((s) => ({ x: s.x, y: s.y }));
 
@@ -509,6 +520,7 @@ export function resolveAttack(
   target: Combatant,
   location?: HitLocation,
   fromCharge?: boolean,
+  intoCrowd?: boolean,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
@@ -533,11 +545,25 @@ export function resolveAttack(
       const ally = battle.combatants.find((c) => c.id === id);
       return !!ally && ally.kind === attacker.kind;
     });
-    if (inMelee) env.push({ label: 'Tir dans la mêlée', value: -20 });
+    if (inMelee && !intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20 }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
     env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
-    // « Tirer dans le tas » (LDB 14 l.81/86/89) : cible noyée dans un groupe serré d'ennemis (3-6 +20, 7-12 +40, 13+ +60).
-    const crowd = crowdMod(battle.combatants.filter((c) => c.kind === target.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
-    if (crowd) env.push(crowd);
+    // « Tirer dans le tas » (LDB 14 l.136/146) : OPTION choisie par le joueur — bonus +20/+40/+60 selon
+    // la taille du groupe, MAIS un ennemi AU HASARD est touché ; un succès dû au seul bonus est à 0 DR.
+    if (intoCrowd) {
+      const crowd = crowdEligible(battle, attacker, target);
+      const cm = crowdMod(crowd.length);
+      if (cm) env.push(cm);
+      const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
+      if (res.hit && crowd.length) {
+        const victim = crowd[battleRng().int(0, crowd.length - 1)]; // « appliqué au hasard parmi les cibles éligibles »
+        const ad = res.attackerDetail!;
+        const rescued = res.attackerRoll > ad.target - (cm?.value ?? 0); // aurait échoué sans le bonus → 0 DR (l.146)
+        const stray = resolveStrayRangedHit(attacker, victim, weapon, res.attackerRoll, rescued ? res.attackerRoll : ad.target);
+        stray.log = `Tir dans le tas : ${victim.name} est touché au hasard${rescued ? ' (succès dû au bonus → 0 DR)' : ''}.`;
+        return { res: stray, weapon, victim };
+      }
+      return { res, weapon };
+    }
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).

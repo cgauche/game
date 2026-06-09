@@ -1170,6 +1170,17 @@ textarea:focus {
   opacity: 0.85;
   font-size: 12px;
 }
+.rm-crowd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.rm-crowd-note {
+  font-size: 11px;
+  color: var(--muted);
+}
 
 /* Bandeau haut « fil d'événements » (au-dessus du champ). */
 .combat-banner {

@@ -1,8 +1,8 @@
 import { useGame } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
-import { RollBreakdown } from '../engine/combat';
+import { RollBreakdown, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
-import { firedWeapon } from '../state/combatFlow';
+import { firedWeapon, crowdEligible } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 
@@ -63,12 +63,16 @@ export function RollModal() {
   const forceSuccess = useGame((s) => s.attackForceSuccess);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
+  const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
   const weapon = firedWeapon(attacker, target); // arme RÉELLEMENT tirée (mêlée au contact / distance + munition), pas weapons[0]
   const res = pa.result;
+  // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
+  const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
+  const cm = crowdMod(crowd.length);
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
 
@@ -96,6 +100,18 @@ export function RollModal() {
                 ))}
               </div>
             </div>
+            {cm && (
+              <div className="rm-crowd">
+                <button
+                  className={`btn small ${pa.intoCrowd ? 'btn-primary' : ''}`}
+                  onClick={() => setIntoCrowd(!pa.intoCrowd)}
+                  title="Tu ne choisis pas ta cible : un combattant au contact de la cible (les DEUX camps — tir fratricide possible) est touché au hasard, mais tu gagnes le bonus, et un succès dû au seul bonus est à 0 DR."
+                >
+                  🎯 Tirer dans le tas (+{cm.value})
+                </button>
+                {pa.intoCrowd && <span className="rm-crowd-note">{crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.</span>}
+              </div>
+            )}
             <div className="modal-actions">
               <button className="btn" onClick={cancel}>
                 Annuler
