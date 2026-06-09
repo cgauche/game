@@ -17,6 +17,8 @@ import {
   resolveRanged,
   defenseValue,
   combatValue,
+  attackModifiers,
+  combineMods,
   rollMeleeAttacker,
   rollDisengageAttack,
   attackWeapon,
@@ -514,6 +516,68 @@ export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean 
   return Math.min(Math.abs(a - b), 8 - Math.abs(a - b)) >= 2;
 }
 
+/** Environnement d'attaque (LdV/couvert/météo/mouvement/tir-mêlée/surnombre/monture) — SOURCE UNIQUE
+ *  des modificateurs positionnels/scéniques, partagée par la RÉSOLUTION (`resolveAttack`) ET l'APERÇU
+ *  (`previewAttack`), pour que l'aperçu affiche EXACTEMENT ce que le jet appliquera (R4). Pur (lit l'état).
+ *  `blocked` = tir sans Ligne de Vue ; `inMelee`/`crowd`/`cm`/`sc` servent à la résolution (tir dévié,
+ *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
+export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; }
+export function attackEnv(
+  get: () => GameState,
+  attacker: Combatant,
+  target: Combatant,
+  weapon: Weapon,
+  opts?: { intoCrowd?: boolean; heldGround?: boolean },
+): AttackEnv {
+  const scene = get().scene!;
+  const battle = get().battle!;
+  const sc = sceneCombatModifiers(scene, get().gameTime);
+  const env: ModLine[] = [];
+  if (weapon.type === 'ranged') {
+    const occupants = battle.combatants
+      .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
+      .map((c) => c.pos!);
+    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
+    if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
+    if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
+    if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
+    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
+    // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
+    // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
+    // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
+    // — ou s'il NE PEUT PAS bouger (Mouvement effectif 0 : Empêtré/Surpris…), il est immobile d'office.
+    // L'IA/ennemi (pas d'option) : −10 seulement s'il a effectivement bougé ce Tour.
+    const mobileShot = attacker.kind === 'hero'
+      ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !opts?.heldGround))
+      : battle.movementUsed > 0;
+    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
+    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
+    const inMelee = (target.engagedWith ?? []).some((id) => {
+      const ally = battle.combatants.find((c) => c.id === id);
+      return !!ally && ally.kind === attacker.kind;
+    });
+    if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20 }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
+    env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
+    // « Tirer dans le tas » (LDB 14 l.136/146) : bonus +20/+40/+60 selon la taille du groupe serré.
+    const crowd = opts?.intoCrowd ? crowdEligible(battle, attacker, target) : [];
+    const cm = opts?.intoCrowd ? crowdMod(crowd.length) : null;
+    if (cm) env.push(cm);
+    return { env, blocked: false, inMelee, crowd, cm, sc };
+  }
+  // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
+  if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
+  // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
+  // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
+  const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
+  if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
+    env.push({ label: 'Flanc/dos', value: 20 });
+  // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
+  const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
+  if (onm) env.push(onm);
+  env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
+  return { env, blocked: false, inMelee: false, crowd: [], cm: null, sc };
+}
+
 export function resolveAttack(
   get: () => GameState,
   attacker: Combatant,
@@ -527,41 +591,12 @@ export function resolveAttack(
   const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
-  const scene = get().scene!;
   const battle = get().battle!;
-  const sc = sceneCombatModifiers(scene, get().gameTime);
-  const env: ModLine[] = [];
+  const { env, blocked, inMelee, crowd, cm, sc } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
+  if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
   if (weapon.type === 'ranged') {
-    const occupants = battle.combatants
-      .filter((c) => c.id !== attacker.id && c.id !== target.id && !isOutOfAction(c) && c.pos)
-      .map((c) => c.pos!);
-    const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
-    if (los.blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
-    if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
-    if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
-    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
-    // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
-    // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
-    // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
-    // — ou s'il NE PEUT PAS bouger (Mouvement effectif 0 : Empêtré/Surpris…), il est immobile d'office.
-    // L'IA/ennemi (pas d'option) : −10 seulement s'il a effectivement bougé ce Tour.
-    const mobileShot = attacker.kind === 'hero'
-      ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !heldGround))
-      : battle.movementUsed > 0;
-    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
-    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
-    const inMelee = (target.engagedWith ?? []).some((id) => {
-      const ally = battle.combatants.find((c) => c.id === id);
-      return !!ally && ally.kind === attacker.kind;
-    });
-    if (inMelee && !intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20 }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
-    env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
-    // « Tirer dans le tas » (LDB 14 l.136/146) : OPTION choisie par le joueur — bonus +20/+40/+60 selon
-    // la taille du groupe, MAIS un ennemi AU HASARD est touché ; un succès dû au seul bonus est à 0 DR.
+    // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
     if (intoCrowd) {
-      const crowd = crowdEligible(battle, attacker, target);
-      const cm = crowdMod(crowd.length);
-      if (cm) env.push(cm);
       const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
       if (res.hit && crowd.length) {
         const victim = crowd[battleRng().int(0, crowd.length - 1)]; // « appliqué au hasard parmi les cibles éligibles »
@@ -582,22 +617,35 @@ export function resolveAttack(
     }
     return { res, weapon };
   }
-  // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
-  if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
-  // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
-  const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
-  if (tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)))
-    env.push({ label: 'Flanc/dos', value: 20 });
-  // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
-  const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
-  if (onm) env.push(onm);
-  env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
-  // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → s'ajoute au dodgeMod météo.
   // Charge montée (LDB 14 l.223) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.
+  // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy }), weapon };
+}
+
+/** Aperçu d'attaque (R4) : la valeur de toucher (cible du d100) et sa décomposition de modificateurs, SANS
+ *  tirer le dé. Rejoue le MÊME `attackEnv` + `attackModifiers` que la résolution → l'aperçu ne ment jamais.
+ *  `inRange` = cible atteignable (mêlée : Allonge ; tir : dans une bande de portée) ; `blocked` = tir sans LdV. */
+export interface AttackPreview { weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[]; }
+export function previewAttack(
+  get: () => GameState,
+  attacker: Combatant,
+  target: Combatant,
+  location?: HitLocation,
+  opts?: { intoCrowd?: boolean; heldGround?: boolean },
+): AttackPreview {
+  const dist = combatDistance(attacker, target);
+  const weapon = firedWeapon(attacker, target);
+  const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
+  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, mods: [] };
+  const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
+  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, mods: [] };
+  const distanceTiles = kind === 'ranged' ? dist : undefined;
+  const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
+  const target0 = combatValue(attacker, kind, weapon) + combineMods(mods);
+  const inRange = kind === 'ranged' ? rangeBandModifier(dist, weapon.range ?? 0) != null : dist <= reachTiles(weapon);
+  return { weapon, kind, inRange, blocked: false, target: target0, mods };
 }
 
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,

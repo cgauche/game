@@ -1,0 +1,65 @@
+import { describe, it, expect } from 'vitest';
+import { previewAttack, resolveAttack } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import type { Combatant } from '../engine/types';
+import type { GameState } from './store';
+import type { Scene } from './scene';
+
+/**
+ * LOT 3 (R4) — `previewAttack` rejoue le MÊME env + modificateurs que la résolution, sans tirer le dé :
+ * l'aperçu affiché AVANT « Lancer » ne doit jamais mentir (parité aperçu↔jet).
+ */
+const combatant = (over: Partial<Combatant>): Combatant =>
+  ({
+    id: 'A', name: 'A', kind: 'hero',
+    characteristics: { CC: 50, CT: 50, F: 35, E: 35, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 14, max: 14 }, advantage: 0, conditions: [],
+    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF+4', reach: 'Moyenne', qualities: [] }],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
+    ...over,
+  }) as unknown as Combatant;
+
+const scene = (): Scene =>
+  ({ id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', tiles: new Array(64).fill('herbe'), entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
+
+const mkGet = (combatants: Combatant[]): (() => GameState) =>
+  (() => ({ scene: scene(), battle: { combatants, movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+
+describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
+  it('la valeur de toucher prévue == la cible du jet réellement résolu', () => {
+    const a = combatant({ id: 'A', advantage: 1 });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const get = mkGet([a, b]);
+    const preview = previewAttack(get, a, b);
+    expect(preview.inRange).toBe(true);
+    seedBattleRng(1);
+    const r = resolveAttack(get, a, b);
+    expect(r).not.toBeNull();
+    expect(preview.target).toBe(r!.res.attackerDetail!.target); // l'aperçu ne ment pas
+  });
+
+  it('mêlée hors de portée (au-delà de l’Allonge) → inRange false', () => {
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 } });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 5, y: 0 } });
+    expect(previewAttack(mkGet([a, b]), a, b).inRange).toBe(false);
+  });
+
+  it('le surnombre (2 contre 1) augmente la valeur de toucher prévue de +20 (LDB 14 l.92)', () => {
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 } });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const ally = combatant({ id: 'A2', pos: { x: 1, y: 1 } }); // 2e attaquant au contact de B
+    const solo = previewAttack(mkGet([a, b]), a, b).target;
+    const duo = previewAttack(mkGet([a, ally, b]), a, b).target;
+    expect(duo - solo).toBe(20);
+  });
+
+  it('tir sans Ligne de Vue → blocked', () => {
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] }] as never });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
+    const s = scene();
+    (s.tiles as string[])[3] = 'mur'; // mur intercalé sur la ligne (x=3,y=0)
+    const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+    expect(previewAttack(get, a, b).blocked).toBe(true);
+  });
+});
