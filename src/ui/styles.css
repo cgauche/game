@@ -725,33 +725,6 @@ textarea:focus {
   padding: 10px 36px;
 }
 
-/* Plan d'ensemble d'ouverture de combat (R2) : bandeau central éphémère, AUCUNE modale. */
-.combat-banner {
-  position: absolute;
-  top: 38%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(20, 10, 8, 0.78);
-  border: 1px solid rgba(255, 120, 60, 0.55);
-  padding: 12px 30px;
-  border-radius: 8px;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #ffd9a0;
-  pointer-events: none;
-  animation: combat-banner-in 0.9s ease-out both;
-}
-@keyframes combat-banner-in {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.86); }
-  18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
-  100% { opacity: 0.85; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .combat-banner { animation: none; }
-}
-
 /* Dialogue */
 .dialogue-box {
   position: absolute;
@@ -1534,7 +1507,7 @@ textarea:focus {
 }
 
 /* Bandeau haut « fil d'événements » (au-dessus du champ). */
-.combat-banner {
+.combat-feed {
   position: absolute;
   top: 12px;
   left: 50%;

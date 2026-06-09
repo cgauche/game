@@ -2,20 +2,17 @@ import { useGame } from '../state/store';
 import { combatFeed } from '../gameIso/combatNarration';
 
 /**
- * Bandeau haut « fil d'événements » (style B validé) : les derniers événements IMPORTANTS du
- * combat, le plus récent en tête, les précédents estompés. Lit `battle.log` via `combatFeed`
- * (couche narration partagée : même icône + couleur de camp que le journal et les pastilles).
- * Affichage seul — aucune règle, aucun état propre.
+ * Bandeau haut : le dernier événement IMPORTANT du combat. Lit `battle.log` via `combatFeed`
+ * (couche narration partagée : même icône + couleur de camp que le journal). Affichage seul.
  */
 export function CombatBanner() {
   const battle = useGame((s) => s.battle);
   if (!battle || battle.over) return null;
-  const feed = combatFeed(battle.log, battle.combatants, 3);
-  if (!feed.length) return null;
-  const shown = [...feed].reverse(); // le plus récent en haut
+  const shown = combatFeed(battle.log, battle.combatants, 1);
+  if (!shown.length) return null;
 
   return (
-    <div className="combat-banner">
+    <div className="combat-feed">
       {shown.map((n, i) => (
         <div key={`${n.raw}-${i}`} className={`cb-ev ${i === 0 ? 'cb-now' : 'cb-old'}`}>
           <span className="cb-ic">{n.icon}</span>

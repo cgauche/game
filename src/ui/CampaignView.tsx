@@ -28,7 +28,6 @@ export function CampaignView() {
   const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
-  const establishing = useGame((s) => s.establishing); // plan d'ensemble d'ouverture (R2)
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
   const gameTime = useGame((s) => s.gameTime);
   const setScreen = useGame((s) => s.setScreen);
@@ -101,8 +100,6 @@ export function CampaignView() {
           <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
         )}
         {dialogue && <DialogueBox />}
-        {/* Plan d'ensemble (R2) : bandeau d'ouverture pendant que le champ est montré, avant toute modale. */}
-        {establishing && <div className="combat-banner">⚔️ Le combat commence !</div>}
         {merchant && <MerchantPanel />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
