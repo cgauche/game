@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame, movementRemaining } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { RollBreakdown, crowdMod } from '../engine/combat';
@@ -67,6 +68,9 @@ export function RollModal() {
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
+  // « Frisson » du lancer (R3) : beat de roulement PUREMENT cosmétique (état UI-local, RNG seedé intact —
+  // le jet réel n'a lieu qu'à la fin du beat). Honore prefers-reduced-motion.
+  const [rolling, setRolling] = useState(false);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
@@ -85,6 +89,12 @@ export function RollModal() {
   // Aperçu AVANT le jet (R4) : valeur de toucher + décomposition des modificateurs (plus de « validation à
   // l'aveugle »). Recalculé à chaque changement d'option (localisation / Tirer dans le tas / immobile).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround }) : null;
+  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const doRoll = () => {
+    if (reduceMotion) return roll();
+    setRolling(true);
+    window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson
+  };
 
   return (
     <div className="modal-overlay">
@@ -158,16 +168,20 @@ export function RollModal() {
                 </div>
               </div>
             ))}
-            <div className="modal-actions">
-              <button className="btn" onClick={cancel}>
-                Annuler
-              </button>
-              <button className="btn btn-primary" onClick={roll}>
-                🎲 Lancer
-              </button>
-              {/* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite (résultat correct garanti). */}
-              <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
-            </div>
+            {rolling ? (
+              <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+            ) : (
+              <div className="modal-actions">
+                <button className="btn" onClick={cancel}>
+                  Annuler
+                </button>
+                <button className="btn btn-primary" onClick={doRoll}>
+                  🎲 Lancer
+                </button>
+                {/* Résilience AVANT le jet (LDB 17 l.73) : force la réussite (résultat garanti, sans frisson). */}
+                <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
+              </div>
+            )}
           </>
         ) : (
           <>

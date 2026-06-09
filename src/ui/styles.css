@@ -1049,6 +1049,29 @@ textarea:focus {
 .rm-threat b {
   color: #ff9b80;
 }
+/* Frisson du dé (R3) : beat de roulement cosmétique avant la révélation du jet. */
+.rm-rolling {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px;
+}
+.rm-die {
+  font-size: 30px;
+  display: inline-block;
+  animation: rm-die-roll 0.46s ease-in-out infinite;
+}
+@keyframes rm-die-roll {
+  0% { transform: rotate(-22deg) scale(0.82); }
+  25% { transform: rotate(18deg) scale(1.14); }
+  50% { transform: rotate(-14deg) scale(0.96); }
+  75% { transform: rotate(10deg) scale(1.1); }
+  100% { transform: rotate(-22deg) scale(0.82); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-die { animation: none; }
+}
 /* Badge d'identité d'un combattant dans les modales (R10) : portrait + couleur d'équipe + PV. */
 .cb-badge {
   display: flex;

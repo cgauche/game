@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { defenseValue } from '../engine/combat';
@@ -30,6 +31,7 @@ export function DefenseModal() {
   const forceSuccess = useGame((s) => s.defenseForceSuccess);
   const confirm = useGame((s) => s.defenseConfirm);
   const subir = useGame((s) => s.defenseCancel);
+  const [rolling, setRolling] = useState(false); // frisson du dé (R3), cosmétique
   if (!pd || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
   const defender = battle.combatants.find((c) => c.id === pd.defenderId);
@@ -39,6 +41,12 @@ export function DefenseModal() {
   const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
   const paradeVal = defenseValue(defender, 'parade');
   const esquiveVal = defenseValue(defender, 'esquive');
+  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const doRoll = () => {
+    if (reduceMotion) return roll();
+    setRolling(true);
+    window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson
+  };
 
   return (
     <div className="modal-overlay">
@@ -69,16 +77,20 @@ export function DefenseModal() {
                 </button>
               </div>
             </div>
-            <div className="modal-actions">
-              <button className="btn" onClick={subir} title="Subir l'attaque sans te défendre">
-                Subir
-              </button>
-              <button className="btn btn-primary" onClick={roll}>
-                🛡️ Défendre
-              </button>
-              {/* Résilience AVANT le jet (LDB 17 l.73) : on défend puis on force la réussite. */}
-              <ResilienceButton resilience={defender.resilience ?? 0} show={(defender.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
-            </div>
+            {rolling ? (
+              <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+            ) : (
+              <div className="modal-actions">
+                <button className="btn" onClick={subir} title="Subir l'attaque sans te défendre">
+                  Subir
+                </button>
+                <button className="btn btn-primary" onClick={doRoll}>
+                  🛡️ Défendre
+                </button>
+                {/* Résilience AVANT le jet (LDB 17 l.73) : force la réussite (sans frisson). */}
+                <ResilienceButton resilience={defender.resilience ?? 0} show={(defender.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
+              </div>
+            )}
           </>
         ) : (
           <>
