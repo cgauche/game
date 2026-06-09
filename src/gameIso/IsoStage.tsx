@@ -40,7 +40,7 @@ import { roofHidden } from '../state/buildings';
 import { walkXY, walkDuration, STEP_MS } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, previewAttack } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
@@ -735,6 +735,26 @@ export function IsoStage() {
             return (
               <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
                 <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke={col} strokeWidth={1} />
+                <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
+                  {label}
+                </text>
+              </g>
+            );
+          })()}
+        {/* Aperçu de toucher au survol d'un ennemi en MÊLÉE (R4 : la mêlée n'avait aucun feedback de ciblage,
+            contrairement au tir). « 🎯 N% · ≈M+ Bl. » — mêmes calculs que le jet (previewAttack). */}
+        {!aimWeapon && battle?.action === 'attack' && activeC?.kind === 'hero' && hover && !pendingAttack &&
+          (() => {
+            const enemy = battle.combatants.find((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, c.size, hover.x, hover.y));
+            if (!enemy) return null;
+            const p = previewAttack(useGame.getState, activeC, enemy);
+            if (p.blocked || !p.inRange) return null;
+            const { cx, cy } = tileCenter(enemy.pos!.x, enemy.pos!.y, dims);
+            const label = `🎯 ${Math.max(0, Math.min(100, p.target))}% · ≈${Math.max(1, p.dmg - p.soak)}+ Bl.`;
+            const w = label.length * 6.4 + 14;
+            return (
+              <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
+                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke="#ff5a4d" strokeWidth={1} />
                 <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
                   {label}
                 </text>
