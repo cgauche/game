@@ -287,6 +287,7 @@ export function ActionBar() {
       )}
 
       {stunned && isHero && <div className="ab-hint">Sonné : aucune Action ce tour (déplacement à demi-Mouvement).</div>}
+      {isHero && active.frenzied && <div className="ab-hint">🐗 Frénésie : charge/attaque l'ennemi le plus proche — 1 attaque au corps à corps GRATUITE ce Round (ton Action reste disponible après, LDB 21).</div>}
       {hint && <div className="ab-hint">{hint}</div>}
 
       <div className="ab-bar">
