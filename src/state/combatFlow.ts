@@ -66,6 +66,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
 import { findSpell } from '../data/index';
+import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable, condMet } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
@@ -1847,7 +1848,23 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   if (!enemiesAlive) {
     finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
     set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, ev('info', 'Victoire !')] } });
+    // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
+    // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
+    const xpBefore = get().party[0]?.xp ?? 0;
+    const brassBefore = toBrass(get().money);
+    const invBefore = get().inventory.length;
     if (battle.onVictory) applyEffects(get, set, battle.onVictory);
+    const after = get();
+    const counts = new Map<string, number>();
+    for (const c of battle.combatants) if (c.kind === 'enemy') counts.set(c.name, (counts.get(c.name) ?? 0) + 1);
+    set({
+      pendingVictory: {
+        xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
+        gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
+        loot: after.inventory.slice(invBefore),
+        defeated: [...counts].map(([name, count]) => ({ name, count })),
+      },
+    });
     return true;
   }
   if (!heroesAlive) {

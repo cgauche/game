@@ -126,6 +126,14 @@ export interface Money {
   silver: number;
   brass: number;
 }
+/** Récompenses capturées à la victoire (pour l'écran de fin de combat) : XP de groupe gagnée, or récupéré,
+ *  butin (noms d'objets, dans l'inventaire de groupe, assignables à un héros), ennemis vaincus (groupés). */
+export interface PendingVictory {
+  xp: number;
+  gold: Money;
+  loot: string[];
+  defeated: { name: string; count: number }[];
+}
 /** Test de compétence interactif en attente d'acquittement par le joueur. */
 export interface PendingTest {
   actorId: string;
@@ -525,6 +533,13 @@ export interface GameState {
   pendingRoundStart: { round: number } | null;
   /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
   pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number } | null;
+  /** Récompenses de victoire capturées (écran de fin de combat) ; null hors victoire. */
+  pendingVictory: PendingVictory | null;
+  /** Écran de victoire : assigne un objet de butin à l'inventaire PERSONNEL d'un héros (retire du
+   *  stock de groupe). Réutilise `addItemToHero` (même flux que le marchand). */
+  giveItemToHero: (label: string, heroId: string) => void;
+  /** Ferme l'écran de victoire et revient à l'exploration. */
+  dismissVictory: () => void;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -883,6 +898,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
+  pendingVictory: null,
   document: null,
   previousScene: null,
 
@@ -1633,7 +1649,7 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', establishing: true, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', establishing: true, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
     // « Plan d'ensemble » (R2) : on MONTRE le champ AVANT le 1er tour (l'ordre d'Initiative est lu dans la
@@ -1649,6 +1665,20 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
     maybeRunEnemyTurn(get, set);
   },
+
+  // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
+  giveItemToHero: (label, heroId) =>
+    set((s) => {
+      const idx = s.inventory.indexOf(label);
+      if (idx < 0) return {}; // déjà assigné / absent du stock de groupe
+      const inventory = [...s.inventory.slice(0, idx), ...s.inventory.slice(idx + 1)];
+      const party = s.party.map((h) => (h.id === heroId ? addItemToHero(h, label) : h));
+      const pv = s.pendingVictory;
+      const li = pv ? pv.loot.indexOf(label) : -1;
+      const pendingVictory = pv && li >= 0 ? { ...pv, loot: [...pv.loot.slice(0, li), ...pv.loot.slice(li + 1)] } : pv;
+      return { inventory, party, pendingVictory };
+    }),
+  dismissVictory: () => set({ pendingVictory: null, battle: null, mode: 'exploration' }),
 
   battleSelectAction: (a) => {
     const { battle, scene } = get();
