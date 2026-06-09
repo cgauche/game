@@ -35,7 +35,7 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
 /**
  * Ce combattant peut-il choisir d'AGIR EN PREMIER ce Round (pré-emption d'initiative, LDB ch.17 l.27 :
  * « Au début du Round, choisissez le moment où vous allez agir, sans tenir compte de l'Ordre
- * d'Initiative ») ? Affiché dans la frise d'ordre (BattlePanel) pendant la pause de début de Round.
+ * d'Initiative ») ? Affiché dans la frise d'initiative (InitiativeStrip) pendant la pause de début de Round.
  *
  * Aujourd'hui : un héros avec ≥1 point de Chance, pas déjà en tête de l'ordre, et toujours en état d'agir.
  * Point d'extension UNIQUE pour de futurs Atouts/talents d'initiative (« Rapide », « Tir rapide »…) — toute

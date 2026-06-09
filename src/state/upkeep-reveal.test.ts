@@ -25,7 +25,7 @@ describe('Entretien de Round en révélation (store)', () => {
     const st = useGame.getState();
     expect(st.establishing).toBe(true); // phase « plan d'ensemble » : champ visible, IA gelée
     expect(st.pendingReveals.find((r) => r.title === 'Initiative')).toBeUndefined(); // plus de modale d'Initiative
-    expect(st.battle!.order.length).toBeGreaterThan(1); // l'ordre est posé (frise BattlePanel)
+    expect(st.battle!.order.length).toBeGreaterThan(1); // l'ordre est posé (frise d'initiative (InitiativeStrip))
   });
 
   it('un franchissement de Round avec hémorragie pousse UNE révélation « Fin du Round » groupée', () => {

@@ -45,7 +45,7 @@ export interface ModalPendings {
  *
  * Ordre : sauvetage par Destin > Maladresse > Déviation critique > Frappe Mortelle/Piétinement > révélations
  * témoins > défense réactive > psychologie > manœuvres/actions du joueur > jet.
- * (Le DÉBUT DE ROUND n'est plus une modale : c'est une pause in-situ — frise d'ordre BattlePanel +
+ * (Le DÉBUT DE ROUND n'est plus une modale : c'est une pause in-situ — frise d'initiative (InitiativeStrip) +
  *  bouton « Commencer le round » dans l'ActionBar — pour ne pas doubler l'ordre déjà affiché à droite.)
  */
 export function pickActiveModalKey(s: ModalPendings): ModalKey | null {

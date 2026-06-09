@@ -139,7 +139,7 @@ export interface GameState {
   scene: Scene | null;
   mode: 'exploration' | 'battle';
   /** « Plan d'ensemble » d'ouverture de combat (R2) : champ montré ~1 s SANS modale, IA gelée ;
-   *  l'ordre d'Initiative est lu dans `battle.order` (frise BattlePanel), pas dans une modale. */
+   *  l'ordre d'Initiative est lu dans `battle.order` (frise d'initiative (InitiativeStrip)), pas dans une modale. */
   establishing: boolean;
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   rotateCam: (dir: 1 | -1) => void;
@@ -872,7 +872,7 @@ export const useGame = create<GameState>((set, get) => ({
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
     // « Plan d'ensemble » (R2) : on MONTRE le champ AVANT le 1er tour (l'ordre d'Initiative est lu dans la
-    // frise BattlePanel ; la surprise est journalisée), IA gelée par `establishing`. Le joueur valide quand
+    // frise d'initiative (InitiativeStrip) ; la surprise est journalisée), IA gelée par `establishing`. Le joueur valide quand
     // il a vu les forces via le bouton « Commencer le combat » (cf. beginCombat) — champ visible, pas de modale.
   },
 

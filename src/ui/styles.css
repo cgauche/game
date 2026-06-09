@@ -423,136 +423,6 @@ textarea:focus {
   flex-direction: row;
   position: relative;
 }
-.hud-left {
-  width: 280px;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: auto;
-}
-.hud-left h3 {
-  margin: 4px 0;
-  font-size: 15px;
-  color: var(--gold);
-}
-.party-hud {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.party-hud-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-}
-.party-hud-card.down {
-  opacity: 0.5;
-  border-color: var(--danger);
-}
-/* ── Groupe détaillé (gauche, combat + exploration) ── */
-.group-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.grp-card {
-  display: flex;
-  gap: 9px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 8px;
-  cursor: pointer;
-  transition: border-color 0.12s, background 0.12s;
-}
-.grp-card:hover {
-  border-color: var(--accent2);
-}
-.grp-card.active {
-  outline: 2px solid var(--gold);
-  outline-offset: -1px;
-  background: #2a2138;
-}
-.grp-card.ko {
-  background: rgba(192, 57, 43, 0.16);
-  border-color: #e0533a;
-}
-.grp-portrait {
-  position: relative;
-  flex: 0 0 auto;
-  line-height: 0;
-}
-.grp-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.grp-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  align-items: baseline;
-}
-.grp-top b {
-  font-size: 13px;
-}
-.grp-pv {
-  font-size: 11px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.grp-bar {
-  height: 7px;
-  border-radius: 4px;
-  background: #000;
-  overflow: hidden;
-}
-.grp-bar > i {
-  display: block;
-  height: 100%;
-  transition: width 0.3s, background 0.3s;
-}
-.grp-meta {
-  font-size: 11px;
-  color: var(--muted);
-}
-.grp-meta .adv {
-  color: var(--gold);
-}
-.grp-wpn {
-  color: #c9bfe0;
-}
-.phc-top {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.hp-bar {
-  height: 6px;
-  background: #000;
-  border-radius: 4px;
-  margin: 5px 0;
-  overflow: hidden;
-}
-.hp-fill {
-  height: 100%;
-  /* couleur posée en inline (hpColor, pilotée par le ratio) ; fallback vert si absente */
-  background: #2ecc71;
-  transition: width 0.3s, background 0.3s;
-}
-.phc-sub {
-  font-size: 11px;
-  color: var(--muted);
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
 .adv {
   color: var(--gold);
 }
@@ -561,23 +431,6 @@ textarea:focus {
   border-radius: 4px;
   padding: 0 4px;
   color: #fff;
-}
-.journal {
-  margin-top: auto;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px;
-}
-.journal-lines {
-  font-size: 12px;
-  color: var(--muted);
-  max-height: 200px;
-  overflow: auto;
-}
-.journal-lines p {
-  margin: 4px 0;
-  line-height: 1.4;
 }
 .stage {
   flex: 1;
@@ -594,62 +447,6 @@ textarea:focus {
   font-size: 12px;
   color: var(--muted);
 }
-/* Légende du combat (R9) : clé de lecture couleurs d'équipe + icônes d'État présentes. */
-.legend-panel {
-  position: fixed;
-  left: 12px;
-  bottom: 120px;
-  background: rgba(16, 16, 22, 0.85);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 9px;
-  font-size: 11px;
-  max-width: 210px;
-  z-index: 40;
-}
-.legend-title {
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 4px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.legend-team {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.legend-team span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.legend-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.legend-dot.hero { background: #37c07a; }
-.legend-dot.enemy { background: #c0392b; }
-.legend-dot.active { background: #ffe066; }
-.legend-states {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px solid var(--border);
-}
-.legend-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: default;
-}
-.legend-ico { width: 16px; text-align: center; }
-.legend-name { color: var(--muted); }
 
 /* Écran de victoire plein écran (fin de combat) — XP/or/butin assignable/vaincus. */
 .victory-overlay {
@@ -756,50 +553,6 @@ textarea:focus {
   text-align: left;
 }
 
-/* Battle panel */
-.battle-panel {
-  /* Dans le flux : la carte (responsive) remplit l'espace restant, le panneau
-     ne masque plus rien. */
-  width: 320px;
-  flex: 0 0 320px;
-  background: var(--bg2);
-  border-left: 1px solid var(--border);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: auto;
-}
-.turn-banner {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--panel2);
-  border: 1px solid var(--border);
-}
-.turn-banner.hero {
-  border-color: var(--accent2);
-  color: #cfe8ff;
-}
-.turn-banner.enemy {
-  border-color: var(--danger);
-  color: #ffd0c8;
-}
-.turn-round {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--muted);
-}
-.order-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
 /* Option de jeu : bascule d'inspection (OFF par défaut). */
 .inspect-toggle {
   font-size: 10px;
@@ -816,47 +569,6 @@ textarea:focus {
   border-color: rgba(255, 224, 102, 0.5);
   background: rgba(255, 224, 102, 0.12);
 }
-.order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.ord-row.inspectable {
-  cursor: pointer;
-}
-.ord-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--panel);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 7px;
-}
-.ord-row.ally {
-  border-color: var(--ok);
-}
-.ord-row.enemy {
-  border-color: var(--danger);
-}
-.ord-row.now {
-  outline: 2px solid var(--gold);
-  outline-offset: 1px;
-  box-shadow: 0 0 8px rgba(216, 169, 59, 0.4);
-}
-.ord-row.out {
-  opacity: 0.5;
-}
-/* KO / Inconscient / 0 PB : fond distinct + croix rouge sur le portrait. */
-.ord-row.ko {
-  background: rgba(192, 57, 43, 0.18);
-  border-color: #e0533a;
-}
-.ord-portrait {
-  position: relative;
-  flex: 0 0 auto;
-  line-height: 0;
-}
 .ko-cross {
   position: absolute;
   inset: 0;
@@ -869,74 +581,6 @@ textarea:focus {
   line-height: 1;
   text-shadow: 0 0 3px #000, 0 0 3px #000;
   pointer-events: none;
-}
-.ord-info {
-  flex: 1;
-  min-width: 0;
-}
-.ord-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-}
-.ord-top b {
-  font-size: 12px;
-}
-.ord-pv {
-  font-size: 11px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.ord-bar {
-  height: 4px;
-  border-radius: 2px;
-  background: #000;
-  overflow: hidden;
-  margin-top: 3px;
-}
-.ord-bar > i {
-  display: block;
-  height: 100%;
-  transition: width 0.3s, background 0.3s;
-}
-.ord-states {
-  display: flex;
-  align-items: center;
-  gap: 1px;
-  font-size: 14px;
-  flex: 0 0 auto;
-}
-.ord-more {
-  font-size: 9px;
-  color: var(--muted);
-}
-/* Début de Round (LDB ch.17 l.27) : bandeau d'initiative + bouton « Agir en premier » (Chance) dans la frise. */
-.round-start-hint {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gold);
-  background: rgba(216, 169, 59, 0.12);
-  border: 1px solid rgba(216, 169, 59, 0.4);
-  border-radius: 6px;
-  padding: 4px 7px;
-  margin-bottom: 5px;
-  text-align: center;
-}
-.ord-first {
-  display: block;
-  width: 100%;
-  margin-top: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--gold);
-  background: rgba(216, 169, 59, 0.14);
-  border: 1px solid rgba(216, 169, 59, 0.5);
-  border-radius: 5px;
-  padding: 3px 5px;
-  cursor: pointer;
-}
-.ord-first:hover {
-  background: rgba(216, 169, 59, 0.28);
 }
 
 /* ── Barre d'action EN BAS : panneau Perso (héros actif) + actions (Lot 1) ── */
@@ -1356,20 +1000,6 @@ textarea:focus {
   font-size: 10px;
   font-weight: 400;
 }
-.battle-log {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 12px;
-  color: var(--muted);
-  flex: 1;
-  overflow: auto;
-}
-.battle-log p {
-  margin: 4px 0;
-  line-height: 1.4;
-}
 /* Journal en couleur (narration partagée : icône unifiée + noms par camp). */
 .jr-line {
   display: flex;
@@ -1395,9 +1025,6 @@ textarea:focus {
 }
 
 /* Panneau d'inspection (clic sur l'ordre de bataille) — lecture seule. */
-.ord-row {
-  cursor: pointer;
-}
 .inspect-panel {
   max-width: 380px;
 }
@@ -1987,12 +1614,6 @@ textarea:focus {
 }
 
 /* Fiche de personnage / équipement */
-.party-hud-card.clickable {
-  cursor: pointer;
-}
-.party-hud-card.clickable:hover {
-  border-color: var(--accent2);
-}
 .sheet-modal {
   width: 620px;
   max-width: 94vw;
@@ -2175,7 +1796,7 @@ textarea:focus {
 .purse .pa {
   color: #c9905a;
 }
-.inventory .inv-list {
+.inv-list {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -2187,7 +1808,7 @@ textarea:focus {
   padding: 2px 7px;
   font-size: 11px;
 }
-.inv-list .empty {
+.empty {
   color: #6f6685;
   font-size: 12px;
   margin: 2px 0;

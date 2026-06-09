@@ -71,7 +71,7 @@ export function ActionBar() {
     );
   }
   // Début de Round (LDB ch.17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
-  // « Commencer le round ». On voit l'ordre (frise BattlePanel) et on peut y dépenser sa Chance pour agir en
+  // « Commencer le round ». On voit l'ordre (frise d'initiative (InitiativeStrip)) et on peut y dépenser sa Chance pour agir en
   // premier (cf. canActFirst) avant de lancer le Round (confirmRoundStart). Le champ reste visible.
   if (pendingRoundStart) {
     return (

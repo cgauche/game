@@ -1982,7 +1982,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;
   // (5) Pause de DÉBUT DE ROUND (LDB ch.17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
-  //     l'initiative (frise BattlePanel) et permettre la pré-emption (Chance, 3e usage ; futurs Atouts/talents).
+  //     l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ; futurs Atouts/talents).
   //     L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf. garde de maybeRunEnemyTurn.
   const b = get().battle!;
   set({ battle: { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() }, pendingRoundStart: { round: b.round } });
