@@ -53,7 +53,7 @@ import {
   inCareerSkill,
   inCareerTalent,
 } from '../engine/advancement';
-import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, addItemToHero, compatibleAmmo } from '../engine/items';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
@@ -1298,13 +1298,8 @@ export const useGame = create<GameState>((set, get) => ({
       const persisted = s.merchantStocks[eid];
       return {
         money: moneySub(s.money, cost)!,
-        party: s.party.map((h) => {
-          if (h.id !== dest) return h;
-          const clone: Combatant = JSON.parse(JSON.stringify(h));
-          clone.items = [...(clone.items ?? []), it];
-          recomputeLoadout(clone);
-          return clone;
-        }),
+        party: s.party.map((h) => (h.id === dest ? addItemToHero(h, label) : h)), // flux objet→héros mutualisé
+
         merchant: { ...s.merchant!, stock: newStock },
         // Déplétion PERSISTANTE (#T3) : la quantité reste réduite entre visites (rolledAt inchangé).
         merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },

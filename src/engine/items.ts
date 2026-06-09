@@ -136,6 +136,20 @@ export function recomputeLoadout(c: Combatant): void {
   c.encumbrance = totalEncumbrance(c);
 }
 
+/**
+ * Ajoute l'objet `label` à l'inventaire PERSONNEL d'un héros et re-dérive son équipement actif. Retourne
+ * un NOUVEAU combattant (cloné). SOURCE UNIQUE du « donner un objet à un héros » : utilisée par l'achat
+ * marchand (`buyItem`) ET l'assignation de butin de victoire — pas de logique dupliquée. Objet inconnu → inchangé.
+ */
+export function addItemToHero(hero: Combatant, label: string): Combatant {
+  const it = itemFromTrapping(label);
+  if (!it) return hero;
+  const clone: Combatant = JSON.parse(JSON.stringify(hero));
+  clone.items = [...(clone.items ?? []), it];
+  recomputeLoadout(clone);
+  return clone;
+}
+
 /** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.52-55). Héros : endommage la
  *  pièce la plus solide (damageTaken+1) puis re-dérive ; ennemi/figurant (armure plate du statblock,
  *  sans items) : décrément direct. RETOURNE true si une PA a été retirée. */
