@@ -1,10 +1,6 @@
 import { useGame, type PendingBargain } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { ChanceButtons } from './ChanceButtons';
-
-function dice(r: number): string {
-  return r === 100 ? '00' : String(r).padStart(2, '0');
-}
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /** Vue pure de la modale de Marchandage (Test opposé, testable sans store). */
 export function BargainModalView({
@@ -25,7 +21,6 @@ export function BargainModalView({
   onCancel: () => void;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  const rerollable = rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled);
   const won = pb.result?.attackerWins ?? false;
   const drNet = pb.result?.netSL ?? 0;
   const discount = won ? (drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %') : '—';
@@ -42,46 +37,42 @@ export function BargainModalView({
         : 'Perdu (¼ du prix listé)';
 
   return (
-    <div className="modal-overlay">
-      <div className="modal test-modal">
-        <h3>Marchander {pb.mode === 'buy' ? 'l’achat' : 'la vente'} — {pb.merchantName}</h3>
-        <p className="test-actor">
+    <RollFlowShell
+      variant="test"
+      title={`Marchander ${pb.mode === 'buy' ? 'l’achat' : 'la vente'} — ${pb.merchantName}`}
+      subtitle={
+        <>
           {/* On NE révèle PAS le Marchandage de l'adversaire (info cachée du marchand). */}
           <strong>{pb.playerName}</strong> — Marchandage {pb.playerSkill} contre {pb.merchantName}
           {pb.negotiator && ' · Négociateur'}
-        </p>
-
-        {!rolled ? (
-          <div className="modal-actions">
-            <button className="btn" onClick={onCancel}>
-              Annuler
-            </button>
-            <button className="btn btn-primary" onClick={onRoll}>
-              🎲 Lancer
-            </button>
-          </div>
-        ) : (
+        </>
+      }
+      rolled={rolled}
+      onRoll={onRoll}
+      onCancel={onCancel}
+      resultOk={won}
+      result={
+        rolled && (
           <>
-            <div className={`test-result ${won ? 'ok' : 'fail'}`}>
-              <span className="dice">{dice(pb.roll!.roll)}</span>
-              <span className="vs">/ {pb.roll!.target}</span>
-              <span className="verdict">
-                vous {pb.roll!.sl >= 0 ? '+' : ''}
-                {pb.roll!.sl} DR · marchand {dice(pb.merchantRoll!.roll)} ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
-                {pb.merchantRoll!.sl} DR) →{' '}
-                {verdictText}
-              </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />
-              <button className="btn btn-primary" onClick={onConfirm}>
-                Conclure
-              </button>
-            </div>
+            <span className="dice">
+              <Dice roll={pb.roll!.roll} />
+            </span>
+            <span className="vs">/ {pb.roll!.target}</span>
+            <span className="verdict">
+              vous {pb.roll!.sl >= 0 ? '+' : ''}
+              {pb.roll!.sl} DR · marchand <Dice roll={pb.merchantRoll!.roll} /> ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
+              {pb.merchantRoll!.sl} DR) → {verdictText}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={fortune}
+      rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
+      onReroll={onReroll}
+      onBonusSL={onBonusSL}
+      confirmLabel="Conclure"
+      onConfirm={onConfirm}
+    />
   );
 }
 

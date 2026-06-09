@@ -1,6 +1,6 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { ChanceButtons } from './ChanceButtons';
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /** Vue pure de la modale « se libérer » (Empêtré) / « se rouler » (En flammes). Testable sans store. */
 export function StateRecoveryModalView({
@@ -21,46 +21,48 @@ export function StateRecoveryModalView({
   onCancel: () => void;
 }) {
   const rolled = sr.roll != null;
-  const rerollable = rolled && canReroll(!sr.success, !!sr.rerolled);
-  const title = sr.state === 'Empêtré' ? 'Se libérer' : 'Se rouler au sol';
   const removed = sr.success ? Math.min(sr.stacks, 1 + Math.max(0, sr.netSL)) : 0;
   const sub = sr.opposed
     ? `${sr.skillLabel} (opposé) contre ${sr.opponentName}`
     : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal test-modal">
-        <h3>{title} — {sr.state}</h3>
-        <p className="test-actor">
+    <RollFlowShell
+      variant="test"
+      title={`${sr.state === 'Empêtré' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
+      subtitle={
+        <>
           <strong>{sr.actorName}</strong> — {sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}
-        </p>
-
-        {!rolled ? (
-          <div className="modal-actions">
-            <button className="btn" onClick={onCancel}>Annuler</button>
-            <button className="btn btn-primary" onClick={onRoll}>🎲 Lancer</button>
-          </div>
-        ) : (
+        </>
+      }
+      rolled={rolled}
+      onRoll={onRoll}
+      onCancel={onCancel}
+      resultOk={sr.success}
+      result={
+        rolled && (
           <>
-            <div className={`test-result ${sr.success ? 'ok' : 'fail'}`}>
-              <span className="dice">{sr.roll!.roll === 100 ? '00' : String(sr.roll!.roll).padStart(2, '0')}</span>
-              {sr.opposed && sr.opponentRoll && (
-                <span className="vs">vs {sr.opponentRoll.roll === 100 ? '00' : String(sr.opponentRoll.roll).padStart(2, '0')}</span>
-              )}
-              <span className="verdict">
-                {sr.success ? 'Réussite' : 'Échec'} ({sr.netSL >= 0 ? '+' : ''}{sr.netSL} DR)
-                {' '}→ {removed > 0 ? `${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'aucun'}
+            <span className="dice">
+              <Dice roll={sr.roll!.roll} />
+            </span>
+            {sr.opposed && sr.opponentRoll && (
+              <span className="vs">
+                vs <Dice roll={sr.opponentRoll.roll} />
               </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />
-              <button className="btn btn-primary" onClick={onConfirm}>Appliquer</button>
-            </div>
+            )}
+            <span className="verdict">
+              {sr.success ? 'Réussite' : 'Échec'} ({sr.netSL >= 0 ? '+' : ''}
+              {sr.netSL} DR) → {removed > 0 ? `${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'aucun'}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={fortune}
+      rerollable={rolled && canReroll(!sr.success, !!sr.rerolled)}
+      onReroll={onReroll}
+      onBonusSL={onBonusSL}
+      onConfirm={onConfirm}
+    />
   );
 }
 

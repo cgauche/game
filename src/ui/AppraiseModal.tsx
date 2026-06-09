@@ -1,6 +1,6 @@
 import { useGame, type PendingAppraise } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { ChanceButtons } from './ChanceButtons';
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /** Vue pure de la modale d'Évaluation (testable sans store). */
 export function AppraiseModalView({
@@ -21,45 +21,39 @@ export function AppraiseModalView({
   onCancel: () => void;
 }) {
   const rolled = pa.roll != null;
-  const rerollable = rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled);
-
   return (
-    <div className="modal-overlay">
-      <div className="modal test-modal">
-        <h3>Évaluer — {pa.itemName}</h3>
-        <p className="test-actor">
+    <RollFlowShell
+      variant="test"
+      title={`Évaluer — ${pa.itemName}`}
+      subtitle={
+        <>
           <strong>{pa.actorName}</strong> — Évaluation, cible {pa.target}
-        </p>
-
-        {!rolled ? (
-          <div className="modal-actions">
-            <button className="btn" onClick={onCancel}>
-              Annuler
-            </button>
-            <button className="btn btn-primary" onClick={onRoll}>
-              🎲 Lancer
-            </button>
-          </div>
-        ) : (
+        </>
+      }
+      rolled={rolled}
+      onRoll={onRoll}
+      onCancel={onCancel}
+      resultOk={pa.success}
+      result={
+        rolled && (
           <>
-            <div className={`test-result ${pa.success ? 'ok' : 'fail'}`}>
-              <span className="dice">{pa.roll === 100 ? '00' : String(pa.roll).padStart(2, '0')}</span>
-              <span className="vs">/ {pa.target}</span>
-              <span className="verdict">
-                {pa.success ? 'Réussite' : 'Échec'} ({pa.sl >= 0 ? '+' : ''}
-                {pa.sl} DR) → {pa.success ? 'révélé ✓' : 'inchangé'}
-              </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />
-              <button className="btn btn-primary" onClick={onConfirm}>
-                Appliquer
-              </button>
-            </div>
+            <span className="dice">
+              <Dice roll={pa.roll!} />
+            </span>
+            <span className="vs">/ {pa.target}</span>
+            <span className="verdict">
+              {pa.success ? 'Réussite' : 'Échec'} ({pa.sl >= 0 ? '+' : ''}
+              {pa.sl} DR) → {pa.success ? 'révélé ✓' : 'inchangé'}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={fortune}
+      rerollable={rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled)}
+      onReroll={onReroll}
+      onBonusSL={onBonusSL}
+      onConfirm={onConfirm}
+    />
   );
 }
 

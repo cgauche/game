@@ -2,8 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
-import { ChanceButtons } from './ChanceButtons';
-import { ResilienceButton } from './ResilienceButton';
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /**
  * Modale de soin (Guérison, LDB 09-Compétences) : « Lancer » jette le Test (Intermédiaire +0),
@@ -47,7 +46,7 @@ export function HealModal() {
     </div>
   );
 
-  // ── CHIRURGIE : Test ÉTENDU (cumul de DR, passe par passe) ──
+  // ── CHIRURGIE : Test ÉTENDU (cumul de DR, passe par passe) — flux dédié, hors coquille standard ──
   if (ph.mode === 'surgery') {
     const target = pool.find((c) => c.id === ph.targetId);
     const cible = ph.surgeryTargetDR ?? 7;
@@ -92,51 +91,53 @@ export function HealModal() {
     );
   }
 
-  // ── Soin de Blessures / Hémorragie / Déchirure : un jet → Appliquer ──
-  const rerollable = rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0;
+  // ── Soin de Blessures / Hémorragie / Déchirure : un jet → Appliquer (coquille standard) ──
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
   const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : null;
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>{wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}</h3>
-        <p className="rm-vs">
+    <RollFlowShell
+      title={wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}
+      subtitle={
+        <>
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
           <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
-        </p>
-        {targetPicker}
-        {!rolled ? (
-          <div className="modal-actions">
-            <button className="btn" onClick={cancel}>Annuler</button>
-            <button className="btn btn-primary" onClick={roll}>🎲 Lancer</button>
-            {/* Résilience AVANT le jet (LDB 17 l.73). */}
-            <ResilienceButton resilience={healer?.resilience ?? 0} show={(healer?.resilience ?? 0) > 0} onForce={force} />
-          </div>
-        ) : (
+        </>
+      }
+      extra={targetPicker}
+      rolled={rolled}
+      onRoll={roll}
+      onCancel={cancel}
+      cancelFirst
+      resultOk={ph.success}
+      result={
+        rolled && (
           <>
-            <div className={`test-result ${ph.success ? 'ok' : 'fail'}`}>
-              <span className="dice">{ph.roll === 100 ? '00' : String(ph.roll).padStart(2, '0')}</span>
-              <span className="verdict">
-                {ph.success
-                  ? wounds
-                    ? `Réussi (+${ph.sl} DR) — +${preview} PB`
-                    : trauma
-                      ? `Réussi (+${ph.sl} DR) — convalescence raccourcie de ${1 + Math.max(0, ph.sl)} jour(s)`
-                      : `Réussi (+${ph.sl} DR) — ${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s)`
-                  : wounds && ph.intBonus + ph.sl < 0
-                    ? `Échec — le soin blesse (${ph.intBonus + ph.sl} PB)`
-                    : 'Échec — sans effet'}
-              </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
-              <ResilienceButton resilience={healer?.resilience ?? 0} show={!ph.success} onForce={force} />
-              <button className="btn btn-primary" onClick={confirm}>Appliquer</button>
-            </div>
+            <span className="dice">
+              <Dice roll={ph.roll!} />
+            </span>
+            <span className="verdict">
+              {ph.success
+                ? wounds
+                  ? `Réussi (+${ph.sl} DR) — +${preview} PB`
+                  : trauma
+                    ? `Réussi (+${ph.sl} DR) — convalescence raccourcie de ${1 + Math.max(0, ph.sl)} jour(s)`
+                    : `Réussi (+${ph.sl} DR) — ${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s)`
+                : wounds && ph.intBonus + ph.sl < 0
+                  ? `Échec — le soin blesse (${ph.intBonus + ph.sl} PB)`
+                  : 'Échec — sans effet'}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={fortune}
+      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0}
+      onReroll={reroll}
+      onBonusSL={bonusSL}
+      resilience={healer?.resilience ?? 0}
+      onForce={force}
+      forceShow={!ph.success}
+      onConfirm={confirm}
+    />
   );
 }

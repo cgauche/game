@@ -1,8 +1,7 @@
 import { useGame } from '../state/store';
 import { findSpell } from '../data/index';
 import { canReroll } from '../engine/fortune';
-import { ChanceButtons } from './ChanceButtons';
-import { ResilienceButton } from './ResilienceButton';
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /**
  * Modale de Focalisation (LDB — Test étendu de Focalisation) : « Lancer » accumule du DR vers le NI,
@@ -25,48 +24,40 @@ export function FocusModal() {
   const ni = spell?.cn ?? 0;
   const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
   const r = pf.result;
-  const fortune = caster.fortune ?? 0;
-  const rerollable = !!r && canReroll(r.dr === 0, !!pf.rerolled);
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>✨ Focalisation</h3>
-        <p className="rm-vs">
+    <RollFlowShell
+      title="✨ Focalisation"
+      subtitle={
+        <>
           <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellLabel}</strong> ({prev}/{ni} DR)
-        </p>
-        {!r ? (
-          <div className="modal-actions">
-            <button className="btn btn-primary" onClick={roll}>
-              🎲 Lancer
-            </button>
-            {/* Résilience AVANT le jet (LDB 17 l.73). */}
-            <ResilienceButton resilience={caster.resilience ?? 0} show={(caster.resilience ?? 0) > 0} onForce={force} />
-            <button className="btn" onClick={cancel}>
-              Annuler
-            </button>
-          </div>
-        ) : (
+        </>
+      }
+      rolled={!!r}
+      onRoll={roll}
+      onCancel={cancel}
+      cancelAfterRoll
+      resultOk={!!r && r.dr > 0}
+      result={
+        r && (
           <>
-            <div className={`test-result ${r.dr > 0 ? 'ok' : 'fail'}`}>
-              <span className="dice">{r.roll === 100 ? '00' : String(r.roll).padStart(2, '0')}</span>
-              <span className="verdict">
-                {r.log} → {prev + r.dr}/{ni} DR{prev + r.dr >= ni ? ' (NI 0 atteint !)' : ''}
-              </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
-              <ResilienceButton resilience={caster.resilience ?? 0} show={r.dr === 0} onForce={force} />
-              <button className="btn btn-primary" onClick={confirm}>
-                Appliquer
-              </button>
-              <button className="btn" onClick={cancel}>
-                Annuler
-              </button>
-            </div>
+            <span className="dice">
+              <Dice roll={r.roll} />
+            </span>
+            <span className="verdict">
+              {r.log} → {prev + r.dr}/{ni} DR{prev + r.dr >= ni ? ' (NI 0 atteint !)' : ''}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={caster.fortune ?? 0}
+      rerollable={!!r && canReroll(r.dr === 0, !!pf.rerolled)}
+      onReroll={reroll}
+      onBonusSL={bonusSL}
+      resilience={caster.resilience ?? 0}
+      onForce={force}
+      forceShow={r?.dr === 0}
+      onConfirm={confirm}
+    />
   );
 }

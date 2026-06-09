@@ -1,6 +1,6 @@
 import { useGame, type PendingReload } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { ChanceButtons } from './ChanceButtons';
+import { RollFlowShell, Dice } from './RollFlowShell';
 
 /** Vue pure de la modale de rechargement (testable sans store). */
 export function ReloadModalView({
@@ -21,47 +21,42 @@ export function ReloadModalView({
   onCancel: () => void;
 }) {
   const rolled = pr.roll != null;
-  const rerollable = rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled);
   const after = Math.max(0, pr.progressBefore + pr.sl);
   const done = after >= pr.reload;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal test-modal">
-        <h3>Recharger — {pr.weaponName}</h3>
-        <p className="test-actor">
+    <RollFlowShell
+      variant="test"
+      title={`Recharger — ${pr.weaponName}`}
+      subtitle={
+        <>
           <strong>{pr.actorName}</strong> — Projectiles, cible {pr.target} · {pr.progressBefore}/{pr.reload} DR
-        </p>
-
-        {!rolled ? (
-          <div className="modal-actions">
-            <button className="btn" onClick={onCancel}>
-              Annuler
-            </button>
-            <button className="btn btn-primary" onClick={onRoll}>
-              🎲 Lancer
-            </button>
-          </div>
-        ) : (
+        </>
+      }
+      rolled={rolled}
+      onRoll={onRoll}
+      onCancel={onCancel}
+      resultOk={pr.success}
+      result={
+        rolled && (
           <>
-            <div className={`test-result ${pr.success ? 'ok' : 'fail'}`}>
-              <span className="dice">{pr.roll === 100 ? '00' : String(pr.roll).padStart(2, '0')}</span>
-              <span className="vs">/ {pr.target}</span>
-              <span className="verdict">
-                {pr.success ? 'Réussite' : 'Échec'} ({pr.sl >= 0 ? '+' : ''}
-                {pr.sl} DR) → {done ? 'rechargé ✓' : `${after}/${pr.reload} DR`}
-              </span>
-            </div>
-            <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />
-              <button className="btn btn-primary" onClick={onConfirm}>
-                Appliquer
-              </button>
-            </div>
+            <span className="dice">
+              <Dice roll={pr.roll!} />
+            </span>
+            <span className="vs">/ {pr.target}</span>
+            <span className="verdict">
+              {pr.success ? 'Réussite' : 'Échec'} ({pr.sl >= 0 ? '+' : ''}
+              {pr.sl} DR) → {done ? 'rechargé ✓' : `${after}/${pr.reload} DR`}
+            </span>
           </>
-        )}
-      </div>
-    </div>
+        )
+      }
+      fortune={fortune}
+      rerollable={rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled)}
+      onReroll={onReroll}
+      onBonusSL={onBonusSL}
+      onConfirm={onConfirm}
+    />
   );
 }
 
