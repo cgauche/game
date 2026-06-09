@@ -1,11 +1,11 @@
-/** Cohérence garde / attaque / parade par arme (toutes composées sur carryPose). → public/qc/attack-parry.png */
+/** Cohérence garde / attaque / parade par arme (toutes composées sur weaponRest). → public/qc/attack-parry.png */
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { carryPose, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
+import { weaponRest, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
 import { addPose } from '../src/gameIso/rig/poses';
 import type { Weapon } from '../src/engine/types';
 
@@ -17,7 +17,7 @@ const CW = 118, CH = 168;
 const cells: string[] = [];
 WEAPONS.forEach((name, r) => {
   const w = wpn(name);
-  const carry = carryPose(w);
+  const carry = weaponRest(w);
   const cols = [
     { l: 'garde', pose: carry },
     { l: 'attaque (pic)', pose: addPose(carry, peak(weaponAttackClip(w).steps)) },

@@ -280,6 +280,33 @@ une créature = **Plan × Gabarit (carrure) × Race (peau/tête/traits/posture +
   typecheck 0**, poussé sur `feat/wfrp4-rpg-foundation`. *(Reste hors humanoïdes : **SP2 quadrupèdes**
   — longueur de pattes + corps par espèce + vue profil + tête de loup ; **SP3 sous-espèces**.)*
 
+## ✅ Jalon 0.14 — Refacto maintenabilité : dé-duplication des flux de jet, découpe des monolithes *(fait — 2026-06-09)*
+
+Refacto **iso-comportement** (suite complète = harnais, zéro assertion modifiée) ciblant la dette
+structurelle accumulée par l'empilement des jalons. Tout est committé par phase, suite verte entre chaque.
+
+- **Fabrique des flux de jet différé** (`state/rollFlow.ts` + specs `state/rollFlows.ts`) : le cycle
+  Lancer → Chance (relance 1× sur jet propre raté / +1 DR) → Résilience → Appliquer était copié-collé
+  par flux (~60 actions quasi identiques). **11 flux migrés** (trample, run, focus, psych, frenzy,
+  reload, recover, test, appraise, bargain, heal) — un nouveau jet = **1 spec + 1 `xConfirm`** (le
+  métier reste manuscrit). Les flux multi-phases (attack/defense/cast/disengage/fumble) restent
+  dédiés (sur-abstraction refusée). Garde-fou `roll-modal-invariant` étendu (`FLOWS.*` = primitive).
+- **Coquille de modale partagée** (`ui/RollFlowShell.tsx` + `<Dice>`) : les 11 modales de jet ne
+  portent plus que leur contenu (titre/sous-titre/verdict) — DOM rendu inchangé ; la Chirurgie
+  (Test étendu multi-passes) garde son flux dédié.
+- **Store découpé en modules `(get,set)`** (patron combatFlow) : `pendings.ts` (types Pending*,
+  ré-exportés), `partyFlow.ts` (équipement/avancement/consommables/butin), `merchantFlow.ts`
+  (réassort/panier/transactions/Marchandage/Évaluation + types `MerchantState`/`MerchantStocks`).
+  **store.ts : 3512 → ~2380 l.**, API d'actions inchangée (tests intacts).
+- **Editor.tsx découpé** (1547 → ~790 l.) : `useSceneHistory` (undo/redo), `useEditorView` (caméra
+  Q/E/molette/pan via viewBox), `tools.ts` (Tool/Rect/Layers), `Palette.tsx` (volet gauche),
+  `Inspector.tsx` (volet droit) — + **test de fumée du rendu** (`Editor.test.tsx`, l'éditeur n'en avait aucun).
+- **IsoStage.tsx allégé** (858 → ~670 l.) : FX de combat extraits dans `gameIso/fx/`
+  (`useCombatFx` flottants/projectiles/halos/zones + `FxLayer` + `useWalkAnim`).
+- **Nettoyage** : lint projet à **0 erreur** (5 erreurs préexistantes corrigées), imports morts purgés,
+  alias `@deprecated carryPose` retiré (scripts QC migrés sur `weaponRest`), warnings de `src/state` purgés.
+- **1962 tests verts, typecheck 0, lint 0 erreur.** Carte d'architecture de `CLAUDE.md` mise à jour.
+
 ---
 
 ## ✅ Jalon 1 — Profondeur des règles de combat *(complet — 2026-06-07)*

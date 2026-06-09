@@ -108,17 +108,31 @@ src/engine/                 Règles WFRP4, PUR + testé :
   conditions.ts               États
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
-  store.ts                  store Zustand : exploration, dialogues, COMBAT, transitions, tests, inventaire
+  store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
+                            effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
+  combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat)
+  rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« un jet = une modale ») +
+                              specs des 11 flux (trample/run/focus/psych/frenzy/reload/recover/test/
+                              appraise/bargain/heal) — un nouveau jet = 1 spec + 1 xConfirm
+  pendings.ts                 types Pending* (ré-exportés par store.ts)
+  partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
+  merchantFlow.ts             marchand : réassort, panier, achat/vente/réparation, Marchandage, Évaluation
   spawn.ts / path.ts / bus.ts
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)
   sprites.ts                  décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
   rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
   pickBackend.tsx             classifieur unique : rig humanoïde / gabarit animé / sprite décor
-  IsoStage.tsx                composant de rendu (caméra, clics, dégâts flottants)
+  IsoStage.tsx                composant de rendu (caméra, clics, tokens, surbrillances)
+  fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
+                              zones) + FxLayer (rendu) + useWalkAnim (marche animée)
 src/ui/                     React : menus, créateur, CampaignView (HUD), CharacterSheet, modales
-  editor/                     Éditeur : Editor.tsx (iso WYSIWYG, onglets), TriggersEditor, DialogueEditor,
-                              EncountersEditor, EffectList (constructeur d'effets partagé)
+  RollFlowShell.tsx           coquille PARTAGÉE des modales de jet (Lancer→Chance→Résilience→Appliquer)
+                              + <Dice> — pendant UI de state/rollFlow
+  editor/                     Éditeur : Editor.tsx (sélection + outils + canvas), Palette.tsx (volet
+                              gauche à onglets), Inspector.tsx (volet droit), useSceneHistory (undo/redo),
+                              useEditorView (caméra), TriggersEditor, DialogueEditor, EncountersEditor,
+                              EffectList (constructeur d'effets partagé)
 src/scenes/                 Documents de scène (tome1-intro, tome1-route) + campaign.ts + tome1-dossiers.json
 art-ref/                    Illustrations extraites des PDFs + mapping.json (GITIGNORÉ — droits Cubicle 7)
 ```

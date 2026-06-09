@@ -48,9 +48,6 @@ export function weaponRest(w?: Weapon): Pose {
   return w ? RESTS[handlingClass(w)] : {};
 }
 
-/** @deprecated Alias de compat pour les scripts QC/galerie — `weaponRest` est le nom courant. */
-export const carryPose = weaponRest;
-
 // --- ATTAQUE par classe (deltas AU-DESSUS du repos) ------------------------
 const ATTACK: Record<Handling, Clip> = {
   // Lame 1 main : taille latérale.

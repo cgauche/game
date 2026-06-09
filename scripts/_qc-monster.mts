@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { carryPose } from '../src/gameIso/rig/anim/weaponClips';
+import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { MonsterParts } from '../src/gameIso/rig/parts/monstrous';
 import type { Weapon } from '../src/engine/types';
@@ -25,7 +25,7 @@ const cells = CASES.map((cse, i) => {
   const app: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4, monster: cse.monster };
   const w = cse.weapon ? ({ name: cse.weapon[0], type: cse.weapon[1], damage: '+4', qualities: [] } as Weapon) : undefined;
   const svg = renderToStaticMarkup(
-    React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: 'Mendiant', pose: w ? carryPose(w) : {} }),
+    React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: 'Mendiant', pose: w ? weaponRest(w) : {} }),
   );
   const col = i % 4, row = Math.floor(i / 4);
   return `<g transform="translate(${col * 128},${row * 176})"><rect width="120" height="150" fill="#241d22"/>${svg}<text x="60" y="166" text-anchor="middle" font-size="10" fill="#e9c">${cse.label}</text></g>`;

@@ -33,11 +33,13 @@ import {
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
-import { isSupportiveCast, spellFxForLabel } from './rig/anim/spellClips';
 import { groundTile } from './ground';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
-import { walkXY, walkDuration, STEP_MS } from './walkPath';
+import { walkXY, STEP_MS } from './walkPath';
+import { useCombatFx } from './fx/useCombatFx';
+import { useWalkAnim } from './fx/useWalkAnim';
+import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, previewAttack } from '../state/combatFlow';
@@ -51,15 +53,6 @@ const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
  *  l'herbe (cyan/bleu = proche/facile → orange/rouge = loin/difficile ; le vert se noierait au sol). */
 const bandColor = (mod: number): string =>
   mod >= 60 ? '#46e0c0' : mod >= 40 ? '#5aa6ff' : mod >= 0 ? '#e6d24a' : mod >= -10 ? '#e8973f' : '#e0533a';
-/** Couleur du flash de zone d'effet selon l'élément (feu/froid/poison/foudre), défaut rouge. */
-const aoeColor = (type?: string): string => {
-  const t = (type ?? '').toLowerCase();
-  if (/feu/.test(t)) return '#ff7a3c';
-  if (/froid|glace/.test(t)) return '#7fd0ff';
-  if (/poison|corros/.test(t)) return '#8fce5a';
-  if (/électric|electric|foudre/.test(t)) return '#ffe066';
-  return '#ff5a4d';
-};
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.6;
 
@@ -148,30 +141,8 @@ export function IsoStage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [rotateCam]);
 
-  // Marche visuelle : le token GLISSE le long du chemin (ANIM_MOVE) au lieu de se
-  // téléporter à la destination. walksRef = id → {path, start} ; rAF tant qu'actif.
-  const [, setWalkTick] = useState(0);
-  const walksRef = useRef<Record<string, { path: { x: number; y: number }[]; start: number }>>({});
-  const walkRaf = useRef(0);
-  useEffect(() => {
-    const tick = () => {
-      const now = performance.now();
-      let any = false;
-      for (const id of Object.keys(walksRef.current)) {
-        const w = walksRef.current[id];
-        if (now - w.start >= walkDuration(w.path, STEP_MS)) delete walksRef.current[id];
-        else any = true;
-      }
-      setWalkTick((t) => t + 1);
-      walkRaf.current = any ? requestAnimationFrame(tick) : 0;
-    };
-    const off = bus.on(EVT.ANIM_MOVE, (d: any) => {
-      if (!d?.path || d.path.length < 2) return;
-      walksRef.current[d.id] = { path: d.path, start: performance.now() };
-      if (!walkRaf.current) walkRaf.current = requestAnimationFrame(tick);
-    });
-    return () => { off(); if (walkRaf.current) cancelAnimationFrame(walkRaf.current); };
-  }, []);
+  // Marche visuelle (token qui GLISSE le long du chemin) — extraite dans fx/useWalkAnim.
+  const walksRef = useWalkAnim();
 
   // Zoom molette (listener non-passif pour pouvoir preventDefault le scroll de page).
   useEffect(() => {
@@ -185,104 +156,8 @@ export function IsoStage() {
     return () => svg.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Flottants TYPÉS (R8) — chaque échange se lit d'un coup d'œil : touche/raté/parade/soin/mort, pas
-  // seulement les Blessures. Déclenchés sur ANIM_IMPACT (timing du clip) + canal ANIM_FLOAT (soin/État).
-  type FloatKind = 'damage' | 'soak' | 'miss' | 'defend' | 'death' | 'heal' | 'condition';
-  type Float = { key: number; x: number; y: number; text: string; kind: FloatKind; crit?: boolean };
-  const [floats, setFloats] = useState<Float[]>([]);
-  const floatId = useRef(0);
-  useEffect(() => {
-    const push = (x: number, y: number, text: string, kind: FloatKind, crit = false) => {
-      const key = ++floatId.current;
-      setFloats((f) => [...f, { key, x, y, text, kind, crit }]);
-      setTimeout(() => setFloats((f) => f.filter((z) => z.key !== key)), kind === 'death' ? 1300 : 900);
-    };
-    const offImpact = bus.on(EVT.ANIM_IMPACT, (d: any) => {
-      const b = useGame.getState().battle;
-      const r = d?.result;
-      if (!b || !r) return;
-      const target = b.combatants.find((c) => c.id === d.to);
-      if (!target?.pos) return;
-      const { x, y } = target.pos;
-      if (r.hit) {
-        if (r.woundsLost > 0) push(x, y, `-${r.woundsLost}`, 'damage', !!r.critical);
-        else push(x, y, 'Encaissé', 'soak');
-        if (r.defenderDefeated) push(x, y, '✦ hors de combat', 'death');
-      } else if (r.defenderDetail) {
-        push(x, y, 'Paré / Esquivé', 'defend');
-      } else {
-        push(x, y, 'Raté', 'miss');
-      }
-    });
-    const offFloat = bus.on(EVT.ANIM_FLOAT, (d: any) => {
-      const b = useGame.getState().battle;
-      const pos = b?.combatants.find((c) => c.id === d?.to)?.pos ?? d?.pos;
-      if (!pos || !d?.text) return;
-      push(pos.x, pos.y, d.text, (d.kind as FloatKind) ?? 'condition');
-    });
-    return () => { offImpact(); offFloat(); };
-  }, []);
-  const FLOAT_COLOR: Record<FloatKind, string> = {
-    damage: '#ff5a5a', soak: '#b8b8c0', miss: '#b8b8c0', defend: '#6fb6ff', death: '#ff3030', heal: '#6fce8e', condition: '#e0b050',
-  };
-
-  // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
-  // `gradient` = tintage à l'école pour un sort (cf. spellFxForLabel) ; absent pour une flèche.
-  type Proj = { key: number; from: { x: number; y: number }; to: { x: number; y: number }; kind: string; gradient?: string };
-  const [projs, setProjs] = useState<Proj[]>([]);
-  const projId = useRef(0);
-  // Halos d'incantation, tintés à l'école (arcane/divin). Deux usages :
-  //  - `channel` : canalisation sur le LANCEUR (toute incantation, brève pulsation serrée) ;
-  //  - sinon (bloom) : bénédiction/miracle reçu sur la CIBLE (expansion soutenue).
-  type Aura = { key: number; x: number; y: number; gradient: string; core: string; channel?: boolean };
-  const [auras, setAuras] = useState<Aura[]>([]);
-  const auraId = useRef(0);
-  // Flash de zone d'effet (R7) : on peint les cases touchées ~1,1 s à la résolution (souffle/cri/sort de
-  // zone), ennemi comme joueur → on voit l'empreinte et pourquoi plusieurs combattants sont affectés.
-  type AoeFlash = { key: number; tiles: { x: number; y: number }[]; color: string };
-  const [aoes, setAoes] = useState<AoeFlash[]>([]);
-  const aoeId = useRef(0);
-  useEffect(() => {
-    const off = bus.on(EVT.ANIM_AOE, (d: { tiles?: { x: number; y: number }[]; type?: string }) => {
-      if (!d?.tiles?.length) return;
-      const key = ++aoeId.current;
-      setAoes((a) => [...a, { key, tiles: d.tiles!, color: aoeColor(d.type) }]);
-      setTimeout(() => setAoes((a) => a.filter((x) => x.key !== key)), 1150);
-    });
-    return off;
-  }, []);
-  useEffect(() => {
-    const off = bus.on(EVT.ANIM_ATTACK, (d: any) => {
-      if (d.kind !== 'ranged' && d.kind !== 'spell') return;
-      const b = useGame.getState().battle;
-      const from = b?.combatants.find((c) => c.id === d.from)?.pos;
-      const to = b?.combatants.find((c) => c.id === d.to)?.pos;
-      if (!from || !to) return;
-      if (d.kind === 'spell') {
-        const fx = spellFxForLabel(d.spell);
-        // Canalisation à l'école sur le lanceur (toute incantation : offensive ou soutien).
-        const ck = ++auraId.current;
-        setAuras((a) => [...a, { key: ck, x: from.x, y: from.y, gradient: fx.gradient, core: fx.core, channel: true }]);
-        setTimeout(() => setAuras((a) => a.filter((x) => x.key !== ck)), 480);
-        const caster = b?.combatants.find((c) => c.id === d.from);
-        const tgt = b?.combatants.find((c) => c.id === d.to);
-        if (isSupportiveCast(caster?.kind, tgt?.kind, d.from === d.to)) {
-          const key = ++auraId.current; // soutien : halo sur la cible, pas de projectile
-          setAuras((a) => [...a, { key, x: to.x, y: to.y, gradient: fx.gradient, core: fx.core }]);
-          setTimeout(() => setAuras((a) => a.filter((x) => x.key !== key)), 620);
-          return;
-        }
-        const key = ++projId.current; // offensif : projectile magique tinté
-        setProjs((p) => [...p, { key, from, to, kind: d.kind, gradient: fx.gradient }]);
-        setTimeout(() => setProjs((p) => p.filter((x) => x.key !== key)), 340);
-        return;
-      }
-      const key = ++projId.current;
-      setProjs((p) => [...p, { key, from, to, kind: d.kind }]);
-      setTimeout(() => setProjs((p) => p.filter((x) => x.key !== key)), 340);
-    });
-    return off;
-  }, []);
+  // FX de combat pilotés par le bus (flottants/projectiles/halos/zones) — extraits dans fx/useCombatFx.
+  const { floats, projs, auras, aoes } = useCombatFx();
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot };
@@ -741,69 +616,7 @@ export function IsoStage() {
               </g>
             );
           })}
-        {floats.map((f) => {
-          const { cx, cy } = tileCenter(f.x, f.y, dims);
-          return (
-            <text
-              key={f.key}
-              className="dmg-float"
-              x={cx}
-              y={cy - 28}
-              textAnchor="middle"
-              fill={f.crit ? '#ffd166' : FLOAT_COLOR[f.kind]}
-              stroke="#1a0606"
-              strokeWidth={0.6}
-            >
-              {f.text}
-              {f.crit ? ' ✸' : ''}
-            </text>
-          );
-        })}
-        {projs.map((p) => {
-          const a = tileCenter(p.from.x, p.from.y, dims);
-          const b = tileCenter(p.to.x, p.to.y, dims);
-          const ang = (Math.atan2(b.cy - a.cy, b.cx - a.cx) * 180) / Math.PI;
-          return (
-            <g
-              key={`p${p.key}`}
-              className="proj"
-              style={{ ['--ax' as never]: `${a.cx}px`, ['--ay' as never]: `${a.cy - 18}px`, ['--bx' as never]: `${b.cx}px`, ['--by' as never]: `${b.cy - 18}px` }}
-            >
-              {p.kind === 'spell' ? (
-                <circle r={5} fill={`url(#${p.gradient ?? 'g_glow'})`} />
-              ) : (
-                <g transform={`rotate(${ang})`}>
-                  <rect x={-8} y={-1} width={16} height={2} rx={1} fill="#caa882" />
-                  <path d="M8 0 l-4 -2 v4 z" fill="#caa882" />
-                </g>
-              )}
-            </g>
-          );
-        })}
-        {/* Flash de zone d'effet (R7) : cases touchées qui s'estompent (souffle/cri/sort de zone). */}
-        {aoes.flatMap((ao) =>
-          ao.tiles.map((t, i) => (
-            <path key={`aoe${ao.key}-${i}`} d={diamondPath(t.x, t.y, dims)} fill={ao.color} opacity={0.5} stroke={ao.color} strokeWidth={1} pointerEvents="none">
-              <animate attributeName="opacity" from="0.6" to="0" dur="1.1s" fill="freeze" />
-            </path>
-          )),
-        )}
-        {auras.map((au) => {
-          const { cx, cy } = tileCenter(au.x, au.y, dims);
-          // Canalisation (lanceur) : pulsation serrée et brève. Bénédiction (cible) : expansion soutenue.
-          const r0 = au.channel ? 4 : 6, r1 = au.channel ? 18 : 30, dur = au.channel ? '0.45s' : '0.6s';
-          return (
-            <g key={`au${au.key}`} transform={`translate(${cx},${cy - 18})`} pointerEvents="none">
-              <circle r={r0} fill={`url(#${au.gradient})`} opacity={0.85}>
-                <animate attributeName="r" from={r0} to={r1} dur={dur} fill="freeze" />
-                <animate attributeName="opacity" from="0.85" to="0" dur={dur} fill="freeze" />
-              </circle>
-              <circle r={3} fill={au.core} opacity={0.9}>
-                <animate attributeName="opacity" from="0.9" to="0" dur={dur} fill="freeze" />
-              </circle>
-            </g>
-          );
-        })}
+        <FxLayer dims={dims} floats={floats} projs={projs} auras={auras} aoes={aoes} />
         {/* Infobulle de ciblage au survol (mode attaque, R4) — UNIFIÉE mêlée + tir :
             • sur un ENNEMI → toucher % + dégâts probables (previewAttack), avec états « hors de portée » /
               « pas de ligne de vue » ;
