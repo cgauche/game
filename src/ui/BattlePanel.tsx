@@ -87,9 +87,10 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
         })}
       </div>
 
-      {battle.over && (
-        <div className={`battle-result ${battle.over}`}>
-          <h2>{battle.over === 'victory' ? 'Victoire !' : 'Défaite…'}</h2>
+      {/* La VICTOIRE a son propre écran plein (VictoryScreen) ; ici, seule la DÉFAITE. */}
+      {battle.over === 'defeat' && (
+        <div className="battle-result defeat">
+          <h2>Défaite…</h2>
           <button
             className="btn btn-primary"
             onClick={() => {
@@ -101,7 +102,7 @@ export function BattlePanel({ onInspect }: { onInspect?: (id: string) => void } 
               }
             }}
           >
-            {battle.over === 'victory' ? 'Continuer' : 'Reprendre'}
+            Reprendre
           </button>
         </div>
       )}

@@ -11,6 +11,7 @@ import { ActionBar } from './ActionBar';
 import { CombatBanner } from './CombatBanner';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { LegendPanel } from './LegendPanel';
+import { VictoryScreen } from './VictoryScreen';
 import { BargainModal } from './BargainModal';
 import { AppraiseModal } from './AppraiseModal';
 import { DocumentModal } from './DocumentModal';
@@ -108,6 +109,7 @@ export function CampaignView() {
 
       {mode === 'battle' && battle && <BattlePanel onInspect={setInspectId} />}
       {mode === 'battle' && battle && <LegendPanel />}
+      <VictoryScreen />{/* écran de fin de combat plein écran (se gate sur battle.over==='victory') */}
       {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}
       <ActiveModal />
       {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment. */}
