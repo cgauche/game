@@ -147,6 +147,8 @@ export interface PendingTest {
   roll: number | null;
   success: boolean;
   sl: number;
+  /** Réussite forcée par Résilience AVANT le jet (LDB 17 l.73) : affichage « garanti », sans dé. */
+  forced?: boolean;
   /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
   onSuccess?: Effect[];
@@ -3136,13 +3138,15 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.72) : réussite garantie (opposé : DR +1) ──
   testForceSuccess: () => {
     const pt = get().pendingTest;
-    if (!pt || pt.roll == null) return;
+    if (!pt || pt.success) return; // rien à forcer si déjà réussi
     const party = get().party;
     const actor = party.find((c) => c.id === pt.actorId);
     if (!actor || (actor.resilience ?? 0) <= 0) return;
     actor.resilience = (actor.resilience ?? 0) - 1;
     const sl = Math.max(pt.sl, pt.requireSL, 1);
-    set({ pendingTest: { ...pt, success: true, sl }, party: [...party] });
+    // RAW LDB 17 l.73 : AVANT le jet (« au lieu de lancer les dés » → on choisit 01) OU après un échec (roll conservé).
+    const roll = pt.roll ?? 1;
+    set({ pendingTest: { ...pt, roll, success: true, sl, forced: true }, party: [...party] });
   },
   attackForceSuccess: () => {
     const { battle, pendingAttack: pa } = get();

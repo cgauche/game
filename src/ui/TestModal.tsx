@@ -36,6 +36,8 @@ export function TestModal() {
             <button className="btn btn-primary" onClick={roll}>
               🎲 Lancer
             </button>
+            {/* Résilience AVANT le jet : « au lieu de lancer les dés » (LDB 17 l.73). */}
+            <ResilienceButton resilience={resilience} show={resilience > 0} onForce={forceSuccess} />
           </div>
         ) : (
           <>
