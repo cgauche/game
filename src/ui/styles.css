@@ -254,10 +254,17 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.42); /* voile allégé : on garde le CHAMP visible derrière la modale (R2/R10) */
   display: grid;
   place-items: center;
   z-index: 100;
+}
+/* Modales de COMBAT : ancrées plus bas et voile encore plus léger → on voit l'action au-dessus
+   (le bandeau du haut reste dégagé). Le `:has()` cible les overlays contenant une modale de jet. */
+.modal-overlay:has(.roll-modal) {
+  align-items: end;
+  padding-bottom: 96px;
+  background: rgba(0, 0, 0, 0.28);
 }
 .modal {
   background: var(--panel);
