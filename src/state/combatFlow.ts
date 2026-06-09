@@ -1781,6 +1781,15 @@ export function advanceTurn(get: () => GameState, set: any) {
       const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); });
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
+      // Surnombre (LDB 14 l.149) : un combattant surpassé en nombre (≥2 ennemis Engagés avec lui) perd 1 Avantage en fin de Round.
+      for (const c of battle.combatants) {
+        if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
+        const foes = (c.engagedWith ?? []).filter((id) => {
+          const e = battle.combatants.find((x) => x.id === id);
+          return !!e && e.kind !== c.kind && !isOutOfAction(e);
+        }).length;
+        if (foes >= 2) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+      }
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)

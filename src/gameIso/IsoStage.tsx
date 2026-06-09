@@ -40,6 +40,7 @@ import { roofHidden } from '../state/buildings';
 import { walkXY, walkDuration, STEP_MS } from './walkPath';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
+import { crowdEligible } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint } from './teamColors';
@@ -94,6 +95,7 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   // Réticule = TÉLÉGRAPHE de tir ennemi (« qui l'adversaire vise ») ; rien sur les actions du joueur.
   const enemyAim = useGame((s) => s.enemyAim);
+  const pendingAttack = useGame((s) => s.pendingAttack);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   const zoom = useGame((s) => s.zoom);
@@ -281,6 +283,19 @@ export function IsoStage() {
           highlights.push(
             <path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, dims)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />,
           );
+    }
+    // « Tirer dans le tas » : surligne les cibles ÉLIGIBLES (les deux camps au contact de la cible)
+    // qui peuvent être touchées au hasard — base du futur surlignage des zones d'effet (Explosion/sorts).
+    if (pendingAttack?.intoCrowd) {
+      const atk = battle.combatants.find((c) => c.id === pendingAttack.attackerId);
+      const tgt = battle.combatants.find((c) => c.id === pendingAttack.targetId);
+      if (atk && tgt)
+        for (const v of crowdEligible(battle, atk, tgt)) {
+          if (!v.pos) continue;
+          highlights.push(
+            <path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, dims)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />,
+          );
+        }
     }
     if (activeC?.pos)
       highlights.push(
