@@ -32,6 +32,9 @@ export const EVT = {
   ANIM_ATTACK: 'anim_attack',
   /** rendu → rendu : l'attaque atteint sa cible (timing du recul + dégât flottant) {to, result}. */
   ANIM_IMPACT: 'anim_impact',
+  /** store → rendu : flottant TYPÉ au-dessus d'un combattant {to?|pos?, text, kind} pour les retours
+   *  hors-touche (soin, État appliqué…) — la touche/raté/parade/mort passent déjà par ANIM_IMPACT. */
+  ANIM_FLOAT: 'anim_float',
   /** store → rendu : déplacement animé d'un token {id,path}. */
   ANIM_MOVE: 'anim_move',
   /** store → rendu : zone d'effet déclenchée (souffle/vomi/cri/sort de zone) — flash des cases touchées

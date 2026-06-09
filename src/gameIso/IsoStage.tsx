@@ -185,22 +185,46 @@ export function IsoStage() {
     return () => svg.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Dégâts flottants — déclenchés sur ANIM_IMPACT (timing de l'impact du clip), pas à l'émission.
-  type Float = { key: number; x: number; y: number; text: string; crit: boolean };
+  // Flottants TYPÉS (R8) — chaque échange se lit d'un coup d'œil : touche/raté/parade/soin/mort, pas
+  // seulement les Blessures. Déclenchés sur ANIM_IMPACT (timing du clip) + canal ANIM_FLOAT (soin/État).
+  type FloatKind = 'damage' | 'soak' | 'miss' | 'defend' | 'death' | 'heal' | 'condition';
+  type Float = { key: number; x: number; y: number; text: string; kind: FloatKind; crit?: boolean };
   const [floats, setFloats] = useState<Float[]>([]);
   const floatId = useRef(0);
   useEffect(() => {
-    const off = bus.on(EVT.ANIM_IMPACT, (d: any) => {
+    const push = (x: number, y: number, text: string, kind: FloatKind, crit = false) => {
+      const key = ++floatId.current;
+      setFloats((f) => [...f, { key, x, y, text, kind, crit }]);
+      setTimeout(() => setFloats((f) => f.filter((z) => z.key !== key)), kind === 'death' ? 1300 : 900);
+    };
+    const offImpact = bus.on(EVT.ANIM_IMPACT, (d: any) => {
       const b = useGame.getState().battle;
-      if (!b || !d?.result?.hit) return;
+      const r = d?.result;
+      if (!b || !r) return;
       const target = b.combatants.find((c) => c.id === d.to);
       if (!target?.pos) return;
-      const key = ++floatId.current;
-      setFloats((f) => [...f, { key, x: target.pos!.x, y: target.pos!.y, text: `-${d.result.woundsLost}`, crit: !!d.result.critical }]);
-      setTimeout(() => setFloats((f) => f.filter((x) => x.key !== key)), 850);
+      const { x, y } = target.pos;
+      if (r.hit) {
+        if (r.woundsLost > 0) push(x, y, `-${r.woundsLost}`, 'damage', !!r.critical);
+        else push(x, y, 'Encaissé', 'soak');
+        if (r.defenderDefeated) push(x, y, '✦ hors de combat', 'death');
+      } else if (r.defenderDetail) {
+        push(x, y, 'Paré / Esquivé', 'defend');
+      } else {
+        push(x, y, 'Raté', 'miss');
+      }
     });
-    return off;
+    const offFloat = bus.on(EVT.ANIM_FLOAT, (d: any) => {
+      const b = useGame.getState().battle;
+      const pos = b?.combatants.find((c) => c.id === d?.to)?.pos ?? d?.pos;
+      if (!pos || !d?.text) return;
+      push(pos.x, pos.y, d.text, (d.kind as FloatKind) ?? 'condition');
+    });
+    return () => { offImpact(); offFloat(); };
   }, []);
+  const FLOAT_COLOR: Record<FloatKind, string> = {
+    damage: '#ff5a5a', soak: '#b8b8c0', miss: '#b8b8c0', defend: '#6fb6ff', death: '#ff3030', heal: '#6fce8e', condition: '#e0b050',
+  };
 
   // Projectiles volants (distance + sort-missile) : vol from→to synchronisé à l'impact.
   // `gradient` = tintage à l'école pour un sort (cf. spellFxForLabel) ; absent pour une flèche.
@@ -715,7 +739,7 @@ export function IsoStage() {
               x={cx}
               y={cy - 28}
               textAnchor="middle"
-              fill={f.crit ? '#ffd166' : '#ff5a5a'}
+              fill={f.crit ? '#ffd166' : FLOAT_COLOR[f.kind]}
               stroke="#1a0606"
               strokeWidth={0.6}
             >

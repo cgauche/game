@@ -1822,7 +1822,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!target) return;
     let log: string[];
     if (ph.mode === 'wounds') {
-      log = applyHealWounds(target, healWoundsDelta(ph.intBonus, ph.sl, ph.success));
+      const healed = healWoundsDelta(ph.intBonus, ph.sl, ph.success);
+      log = applyHealWounds(target, healed);
+      if (healed > 0) bus.emit(EVT.ANIM_FLOAT, { to: target.id, text: `+${healed}`, kind: 'heal' }); // flottant de soin (R8)
       // LDB 09-Compétences (Guérison) : « Sur un Échec Stupéfiant, votre patient contractera également une
       // Infection mineure ». Échec Stupéfiant = DR ≤ −6 ; contraction automatique (pas de Test de Résistance).
       if (!ph.success && ph.sl <= -6) {
