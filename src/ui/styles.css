@@ -2760,3 +2760,16 @@ textarea:focus {
 .defeat-overlay .battle-result {
   min-width: 240px;
 }
+
+/* Bandeau « sujet » des modales (R10 généralisé) : portrait + nom du combattant concerné,
+   pour qu'on sache TOUJOURS à qui une modale (Critique/Maladresse/Colère/Déviation…) s'applique. */
+.modal-subject {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.modal-subject strong {
+  font-size: 14px;
+}

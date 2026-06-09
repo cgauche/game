@@ -2314,7 +2314,7 @@ export const useGame = create<GameState>((set, get) => ({
     const res = resolveBackstabAttack(foe, mover, battleRng());
     log.push(ev('flee', `${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`, mover.id, foe.id));
     // « Un jet = une modale » : le héros voit le dé du coup dans le dos (jet subi).
-    if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log] });
+    if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log], subjectId: mover.id });
     if (res.hit && res.woundsLost) {
       loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
       foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
@@ -2327,7 +2327,7 @@ export const useGame = create<GameState>((set, get) => ({
         log.push(ev('fear', `${mover.name} panique : ${broken} État(s) Brisé.`, mover.id));
       }
       if (mover.kind === 'hero')
-        pushReveal(set, { kind: 'calme', title: 'Test de Calme', dice: ct.roll, lines: [ct.success ? 'Sang-froid gardé.' : `Panique : ${broken} État(s) Brisé.`] });
+        pushReveal(set, { kind: 'calme', title: 'Test de Calme', dice: ct.roll, lines: [ct.success ? 'Sang-froid gardé.' : `Panique : ${broken} État(s) Brisé.`], subjectId: mover.id });
     }
     const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     for (const f of foes) disengageFrom(mover, f);

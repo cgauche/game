@@ -807,7 +807,7 @@ export function applyCriticalToTarget(
     }
   }
   // « Un jet = une modale » : le joueur voit le dé du Coup Critique (infligé ou subi).
-  pushReveal(set, { kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines });
+  pushReveal(set, { kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id });
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
 }
 
@@ -917,7 +917,7 @@ export function applyAttackResult(
       if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
         addCondition(target, oh.condition);
         assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
-        pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog] }); // « un jet = une modale » (Test opposé)
+        pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id }); // « un jet = une modale » (Test opposé)
       }
     }
   }
@@ -1633,7 +1633,7 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
   }
   // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
   if (caster.kind === 'hero')
-    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines });
+    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id });
   return lines;
 }
 
@@ -2013,7 +2013,7 @@ export function approachFearTrigger(get: () => GameState, set: any, mover: Comba
     const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
     if (!t.success) addCondition(c, 'Brisé', 1);
     battle.log.push(ev('fear', line, c.id, mover.id));
-    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line] });
+    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line], subjectId: c.id });
   }
 }
 

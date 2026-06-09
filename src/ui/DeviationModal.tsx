@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
+import { TeamPortrait } from './CombatantBadge';
 
 /**
  * Déviation Critique (Livre de base p.63 l.63-66) : quand un HÉROS encaisse un Coup Critique à une
@@ -21,6 +22,10 @@ export function DeviationModal() {
     <div className="modal-overlay">
       <div className="modal roll-modal">
         <h3>Coup Critique — {HIT_LOCATION_LABELS[loc]}</h3>
+        <div className="modal-subject">
+          <TeamPortrait combatant={target} size={38} />
+          <strong>{target.name}</strong>
+        </div>
         <p className="rm-log">
           {target.name} encaisse un Coup Critique ({HIT_LOCATION_LABELS[loc]}). Sacrifier 1 PA
           d'armure (PA {pa} → {Math.max(0, pa - 1)}) pour l'ignorer ? Le coup inflige alors ses

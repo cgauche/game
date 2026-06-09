@@ -217,6 +217,9 @@ export interface RevealEntry {
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
+  /** Combattant CONCERNÉ par la révélation (victime du critique, lanceur de la Colère…) → portrait
+   *  + nom dans la modale (« on sait toujours à qui ça s'applique »). Absent pour les entretiens de Round. */
+  subjectId?: string;
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
