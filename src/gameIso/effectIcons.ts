@@ -4,6 +4,7 @@
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
 import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
+import { etats } from '../data/index';
 
 export interface EffectChip {
   key: string;
@@ -46,6 +47,12 @@ export function conditionMeta(name: string): CondMeta {
   const t = CONDITION_TABLE[name];
   if (!t) return UNKNOWN;
   return { icon: t.icon, severity: t.severity, important: t.severity >= 50 };
+}
+
+/** Effet CANONIQUE d'un État (LDB ch.16) lu depuis `etats.json` — source unique pour la légende et les
+ *  infobulles (R9 : etats.json était typé/exporté mais sans consommateur côté UI). '' si inconnu. */
+export function conditionEffect(name: string): string {
+  return etats.find((e) => e.label.toLowerCase() === name.toLowerCase())?.desc ?? '';
 }
 
 const BUFF_CHAR_ICON: Partial<Record<CharKey, string>> = {

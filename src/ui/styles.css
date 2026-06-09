@@ -587,6 +587,62 @@ textarea:focus {
   font-size: 12px;
   color: var(--muted);
 }
+/* Légende du combat (R9) : clé de lecture couleurs d'équipe + icônes d'État présentes. */
+.legend-panel {
+  position: fixed;
+  left: 12px;
+  bottom: 120px;
+  background: rgba(16, 16, 22, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 11px;
+  max-width: 210px;
+  z-index: 40;
+}
+.legend-title {
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.legend-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.legend-team span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot.hero { background: #37c07a; }
+.legend-dot.enemy { background: #c0392b; }
+.legend-dot.active { background: #ffe066; }
+.legend-states {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+.legend-ico { width: 16px; text-align: center; }
+.legend-name { color: var(--muted); }
 
 /* Plan d'ensemble d'ouverture de combat (R2) : bandeau central éphémère, AUCUNE modale. */
 .combat-banner {
