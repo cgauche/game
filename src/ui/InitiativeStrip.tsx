@@ -58,7 +58,6 @@ export function InitiativeStrip(p: InitiativeStripProps) {
             </div>
           );
         })}
-        <span className="is-round">Round {p.round}</span>
         <button
           type="button"
           className={`inspect-toggle ${p.inspectEnabled ? 'on' : ''}`}
@@ -68,7 +67,6 @@ export function InitiativeStrip(p: InitiativeStripProps) {
           🔍 {p.inspectEnabled ? 'On' : 'Off'}
         </button>
       </div>
-      {p.pendingRound != null && <div className="is-pause">⏳ Round {p.pendingRound} — choisis qui agit en premier</div>}
     </div>
   );
 }

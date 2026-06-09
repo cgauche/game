@@ -22,7 +22,6 @@ describe('InitiativeStrip', () => {
     );
     expect(html.indexOf('Brigand')).toBeGreaterThan(-1);
     expect(html.indexOf('Brigand')).toBeLessThan(html.indexOf('Gunnar')); // ordre = order[]
-    expect(html).toContain('Round 2');
     expect(html.match(/▼/g)?.length).toBe(1); // un seul actif (turn=1)
   });
 
@@ -33,8 +32,7 @@ describe('InitiativeStrip', () => {
       <InitiativeStrip order={['e1', 'h1']} turn={0} round={3} combatants={[h, foe]} over={false}
         pendingRound={3} canFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onPromote={noop} />,
     );
-    expect(html).toContain('⏫');
-    expect(html).toContain('Round 3'); // chip + hint de pause
+    expect(html).toContain('⏫'); // badge de pré-emption sur le héros éligible
   });
 
   it('toggle 🔍 présent (On si inspection activée)', () => {
