@@ -77,6 +77,8 @@ export function ActionBar() {
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
+  // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
+  const freeFrenzy = isHero && !!active.frenzied && !active.frenzyFreeUsed;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   const pbRatio = active.wounds.max > 0 ? active.wounds.current / active.wounds.max : 0;
@@ -337,11 +339,12 @@ export function ActionBar() {
             </button>
             <button
               className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
-              disabled={battle.acted || stunned || broken}
+              disabled={(battle.acted && !freeFrenzy) || stunned || broken}
               onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
+              title={freeFrenzy && battle.acted ? 'Attaque GRATUITE de Frénésie (ne consomme pas l’Action)' : undefined}
             >
               <span className="ab-ico">⚔️</span>
-              <span className="ab-lbl">Attaquer{battle.acted && ' ✓'}</span>
+              <span className="ab-lbl">Attaquer{freeFrenzy && battle.acted ? ' 🐗 libre' : battle.acted ? ' ✓' : ''}</span>
             </button>
             {hasSpells && (
               <button

@@ -62,4 +62,15 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
     useGame.getState().attackConfirm();
     expect(useGame.getState().battle!.acted).toBe(true);
   });
+
+  it('attaque libre de Frénésie INITIABLE même Action dépensée (entrée en Frénésie ce tour)', () => {
+    const { H, E } = setup();
+    H.frenzied = true;
+    H.frenzyFreeUsed = false;
+    const b = useGame.getState().battle!;
+    const turn = b.order.indexOf(H.id);
+    useGame.setState({ battle: { ...b, turn, action: 'attack', acted: true } }); // Action déjà dépensée (Test de FM d'entrée)
+    useGame.getState().battleClickEntity(E.id);
+    expect(useGame.getState().pendingAttack).not.toBeNull(); // l'attaque libre s'ouvre malgré `acted`
+  });
 });

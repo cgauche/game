@@ -2248,7 +2248,10 @@ export const useGame = create<GameState>((set, get) => ({
       get().battleTrample(id);
       return;
     }
-    if (battle.acted) return;
+    // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
+    // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
+    const freeFrenzyAttack = battle.action === 'attack' && active.frenzied && !active.frenzyFreeUsed;
+    if (battle.acted && !freeFrenzyAttack) return;
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
     if (battle.action === 'cast' && battle.selectedSpell) {
