@@ -151,6 +151,9 @@ export function RollModal() {
                     ))}
                   </div>
                 )}
+                <div className="rm-preview-dmg" title="Blessures = Dégâts d'arme + DR du jet − (Bonus d'Endurance + PA). Plancher 1.">
+                  ⚔️ Dégâts : <b>{preview.dmg}</b> + DR − <b>{preview.soak}</b> encaissé · ≈ <b>{Math.max(1, preview.dmg - preview.soak)}+</b> Blessures
+                </div>
               </div>
             ))}
             <div className="modal-actions">

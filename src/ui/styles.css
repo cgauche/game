@@ -2248,6 +2248,15 @@ textarea:focus {
 .rm-preview-hit b {
   color: #ffe066;
 }
+.rm-preview-dmg {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.rm-preview-dmg b {
+  color: #e7c8a0;
+}
 .rm-preview.bad {
   text-align: center;
   color: #e07a63;

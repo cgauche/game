@@ -627,7 +627,13 @@ export function resolveAttack(
 /** Aperçu d'attaque (R4) : la valeur de toucher (cible du d100) et sa décomposition de modificateurs, SANS
  *  tirer le dé. Rejoue le MÊME `attackEnv` + `attackModifiers` que la résolution → l'aperçu ne ment jamais.
  *  `inRange` = cible atteignable (mêlée : Allonge ; tir : dans une bande de portée) ; `blocked` = tir sans LdV. */
-export interface AttackPreview { weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[]; }
+export interface AttackPreview {
+  weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[];
+  /** Dégâts d'arme (Force incluse) AVANT le DR du jet. La Blessure réelle = `dmg` + DR − `soak` (plancher 1). */
+  dmg: number;
+  /** Encaissé par la cible à la localisation visée (Bonus d'Endurance + PA, réduction d'armure des Atouts déduite). */
+  soak: number;
+}
 export function previewAttack(
   get: () => GameState,
   attacker: Combatant,
@@ -638,14 +644,19 @@ export function previewAttack(
   const dist = combatDistance(attacker, target);
   const weapon = firedWeapon(attacker, target);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
-  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, mods: [] };
+  // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
+  // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
+  const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'F')));
+  const loc = location ?? 'corps';
+  const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20);
+  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, mods: [], dmg, soak };
   const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
-  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, mods: [] };
+  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, mods: [], dmg, soak };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
   const target0 = combatValue(attacker, kind, weapon) + combineMods(mods);
   const inRange = kind === 'ranged' ? rangeBandModifier(dist, weapon.range ?? 0) != null : dist <= reachTiles(weapon);
-  return { weapon, kind, inRange, blocked: false, target: target0, mods };
+  return { weapon, kind, inRange, blocked: false, target: target0, mods, dmg, soak };
 }
 
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir
