@@ -2979,3 +2979,41 @@ textarea:focus {
 @media (max-width: 700px) {
   .party-dock { left: 6px; gap: 8px; }
 }
+
+/* ── Tiroir journal (bas-droite) ── */
+.log-drawer {
+  position: absolute;
+  right: 12px;
+  bottom: 92px; /* au-dessus de la barre d'action — calibrer en recette */
+  z-index: 46;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.ld-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: #1c2230;
+  border: 1.5px solid #3a4660;
+  color: #cfe6ff;
+  font-size: 19px;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.log-drawer.open .ld-btn {
+  border-color: #ffe066;
+}
+.ld-panel {
+  width: min(330px, 86vw);
+  max-height: 38vh;
+  overflow: auto;
+  background: rgba(16, 16, 22, 0.93);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+@media (max-width: 700px) {
+  .log-drawer { right: 8px; bottom: 88px; }
+}
