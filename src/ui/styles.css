@@ -856,6 +856,14 @@ textarea:focus {
 .action-bar > * {
   pointer-events: auto;
 }
+/* Début de combat : bouton « Commencer » à la place de la barre (le champ reste visible). */
+.commencer-btn {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 12px 30px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 0 14px rgba(255, 140, 60, 0.35);
+}
 .ab-bar {
   display: flex;
   align-items: stretch;

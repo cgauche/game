@@ -23,7 +23,6 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines, type CombatEvent } from './combatLog';
-import { TEMPO } from './tempo';
 import { rollOups, type OupsResolved } from '../engine/oups';
 import {
   initiativeOrder,
@@ -606,6 +605,8 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
+  /** Valide la phase d'établissement (« Commencer le combat ») et lance le 1er tour. */
+  beginCombat: () => void;
   battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
@@ -1635,15 +1636,18 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle, mode: 'battle', establishing: true, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
-    // « Plan d'ensemble » (R2) : on MONTRE le champ ~1 s sans aucune modale (l'ordre d'Initiative est lu
-    // dans la frise BattlePanel ; la surprise est journalisée), IA gelée par `establishing`. Puis on libère
-    // la phase et on lance le 1er tour. (Plus de modale « Initiative » sur un champ jamais montré.)
-    setTimeout(() => {
-      // No-op si le combat a changé/terminé pendant l'établissement (anti-pollution inter-tests + correct en jeu).
-      if (get().battle !== battle || battle.over) return;
-      set({ establishing: false });
-      maybeRunEnemyTurn(get, set);
-    }, TEMPO.establish);
+    // « Plan d'ensemble » (R2) : on MONTRE le champ AVANT le 1er tour (l'ordre d'Initiative est lu dans la
+    // frise BattlePanel ; la surprise est journalisée), IA gelée par `establishing`. Le joueur valide quand
+    // il a vu les forces via le bouton « Commencer le combat » (cf. beginCombat) — champ visible, pas de modale.
+  },
+
+  /** Démarre réellement le combat après la phase d'établissement (clic « Commencer le combat ») : lève
+   *  `establishing` et lance le 1er tour (IA si l'ordre commence par un ennemi). */
+  beginCombat: () => {
+    if (!get().battle || !get().establishing) return;
+    set({ establishing: false });
+    bus.emit(EVT.SCENE_DIRTY);
+    maybeRunEnemyTurn(get, set);
   },
 
   battleSelectAction: (a) => {

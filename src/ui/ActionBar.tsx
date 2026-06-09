@@ -51,11 +51,22 @@ export function ActionBar() {
   const heal = useGame((s) => s.battleHeal);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
+  const establishing = useGame((s) => s.establishing);
+  const beginCombat = useGame((s) => s.beginCombat);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
   useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
+  // Début de combat (R2) : tant qu'on n'a pas validé, la barre d'action est REMPLACÉE par un bouton
+  // « Commencer le combat » — on voit les forces en présence sur le champ, puis on lance (cf. beginCombat).
+  if (establishing) {
+    return (
+      <div className="action-bar establishing-bar">
+        <button className="btn btn-primary commencer-btn" onClick={beginCombat}>⚔️ Commencer le combat</button>
+      </div>
+    );
+  }
   const active = activeCombatant(battle);
   if (!active) return null;
 
