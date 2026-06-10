@@ -1024,6 +1024,23 @@ export function aiApproachPlan(
   return none;
 }
 
+/** Cible IMPOSÉE d'un combattant en Frénésie (LDB 21 l.34) : l'ennemi le plus proche dans sa Ligne
+ *  de Vue (à distance égale, le plus blessé — même critère que l'IA). Null si pas frénétique ou
+ *  aucun ennemi visible (alors pas de contrainte). */
+export function frenzyTarget(get: () => GameState, c: Combatant): Combatant | null {
+  const { battle, scene } = get();
+  if (!battle || !scene || !c.frenzied || !c.pos) return null;
+  const visible = battle.combatants.filter(
+    (e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos && !lineOfSightCover(scene, c.pos!, e.pos!, [], smokeOf(battle)).blocked,
+  );
+  if (!visible.length) return null;
+  return visible.sort((a, b) => {
+    const da = combatDistance(c, a), db = combatDistance(c, b);
+    if (da !== db) return da - db;
+    return a.wounds.current - b.wounds.current;
+  })[0];
+}
+
 /** Source de PEUR active dont `dest` RAPPROCHE l'acteur (LDB 21 l.29) — null si aucune, ou si
  *  immunisé à la Psychologie. « Sous l'emprise » ⟺ Test étendu de Calme pas encore au niveau
  *  de l'Indice (calmeDR < indice). Pure. */

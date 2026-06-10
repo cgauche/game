@@ -111,6 +111,11 @@ export function ActionBar() {
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
   const freeFrenzy = isHero && !!active.frenzied && !active.frenzyFreeUsed;
+  // Frénésie (LDB 21 l.34) : « La seule Action possible est un Test de Capacité de Combat ou un Test
+  // d'Athlétisme » + « sous aucun prétexte vous ne fuirez, ni ne battrez en retraite » → en Frénésie,
+  // la hotbar masque Incanter/Soigner/Défensive/Tir/Objets/Se désengager (restent : attaque au clic,
+  // Course vers la cible, Se relever, Piétiner, Détermination — qui ne coûte pas l'Action).
+  const frenzied = isHero && !!active.frenzied;
   // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
   const actMax = 1 + (active.frenzied ? 1 : 0);
   const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
@@ -163,13 +168,13 @@ export function ActionBar() {
   const canPush = isHero && active.weapons.some((w) => w.type === 'melee' && canPushback(w));
 
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
-  const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned;
+  const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
   // Catégories repliables : on n'affiche le bouton conteneur que si ≥1 enfant existe.
-  const hasMvt = canStandUp || engaged || mounted || !!mountCandidate;
-  const hasTir = !!rangedW;
-  const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
+  const hasMvt = canStandUp || (engaged && !frenzied) || mounted || !!mountCandidate;
+  const hasTir = !!rangedW && !frenzied;
+  const hasObjets = !frenzied && (usableGroups.length > 0 || groundItems.length > 0);
   // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
   const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample;
 
@@ -228,7 +233,7 @@ export function ActionBar() {
               <button className="btn btn-sm" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement (LDB 16)">🧍 Se relever</button>
             </div>
           )}
-          {engaged && (
+          {engaged && !frenzied && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage — LDB 15 l.84-89)">🚪 Se désengager</button>
             </div>
@@ -243,7 +248,7 @@ export function ActionBar() {
               <button className="btn btn-sm" disabled={moveStarted || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
             </div>
           )}
-          {rangedW && (
+          {rangedW && !frenzied && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action (LDB Difficultés)">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
             </div>
@@ -253,22 +258,22 @@ export function ActionBar() {
               <button className="btn btn-sm" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts (LDB 62)">↩️ {active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</button>
             </div>
           )}
-          {needsReload && (
+          {needsReload && !frenzied && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">🔄 Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</button>
             </div>
           )}
-          {ammoChoices.length > 1 && (
+          {ammoChoices.length > 1 && !frenzied && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" onClick={() => selectAction('ammo')} title="Choisir la munition à tirer">🏹 Munition</button>
             </div>
           )}
-          {usableGroups.map((g) => (
+          {!frenzied && usableGroups.map((g) => (
             <div key={g.name} className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
             </div>
           ))}
-          {groundItems.map((g) => (
+          {!frenzied && groundItems.map((g) => (
             <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action) — LDB Combat">✋ {g.label}</button>
             </div>
@@ -369,7 +374,7 @@ export function ActionBar() {
                 <span className="ab-lbl">Annuler dépl.</span>
               </button>
             )}
-            {hasSpells && (
+            {hasSpells && !frenzied && (
               <button
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
                 disabled={battle.acted || stunned || broken}
@@ -391,15 +396,17 @@ export function ActionBar() {
                 <span className="ab-lbl">Soigner</span>
               </button>
             )}
-            <button
-              className="ab-slot"
-              disabled={battle.acted || stunned || broken}
-              onClick={defendTotal}
-              title="+20 à tous vos Tests de défense jusqu'à votre prochain tour"
-            >
-              <span className="ab-ico">🛡️</span>
-              <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
-            </button>
+            {!frenzied && (
+              <button
+                className="ab-slot"
+                disabled={battle.acted || stunned || broken}
+                onClick={defendTotal}
+                title="+20 à tous vos Tests de défense jusqu'à votre prochain tour"
+              >
+                <span className="ab-ico">🛡️</span>
+                <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
+              </button>
+            )}
             {onFire && (
               <button
                 className="ab-slot"

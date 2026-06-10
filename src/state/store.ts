@@ -18,7 +18,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
-  displayedReach, computeRunReach, attackPlan, fearedSourceTowards,
+  displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -1636,6 +1636,15 @@ export const useGame = create<GameState>((set, get) => ({
       bus.emit(EVT.SCENE_DIRTY);
       return true;
     };
+    // Frénésie (LDB 21 l.34) : « vous devez vous déplacer à votre maximum en direction de l'ennemi
+    // le plus proche dans votre Ligne de Vue » → seules les cases qui RAPPROCHENT de cette cible.
+    const frenzyBlocks = (): boolean => {
+      if (!active.frenzied) return false;
+      const ft = frenzyTarget(get, active);
+      if (!ft?.pos || chebyshev(pt, ft.pos) < chebyshev(active.pos!, ft.pos)) return false;
+      get().log(`${active.name} est en Frénésie : il doit foncer sur ${ft.name}.`);
+      return true;
+    };
     // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
     const geom = mountOf(battle, active) ?? active;
     const blocked = occupied(battle, geom);
@@ -1648,7 +1657,7 @@ export const useGame = create<GameState>((set, get) => ({
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
-      if (fearGateBlocks()) return;
+      if (fearGateBlocks() || frenzyBlocks()) return;
       get().battleRun({ ...pt }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
       return;
     }
@@ -1660,7 +1669,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // Tap 2 : COMMIT.
-    if (fearGateBlocks()) return;
+    if (fearGateBlocks() || frenzyBlocks()) return;
     // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
     // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
     const snapshot =
@@ -1730,6 +1739,15 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.action !== null || !scene) return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
     if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
+    // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
+    if (active.frenzied) {
+      const ft = frenzyTarget(get, active);
+      if (ft && ft.id !== id) {
+        get().log(`${active.name} est en Frénésie : il doit attaquer ${ft.name} (le plus proche).`);
+        if (battle.preview) set({ battle: { ...battle, preview: null } });
+        return;
+      }
+    }
     const plan = attackPlan(get, active, target);
     // Frénésie libre post-Action : attaque DIRECTE seulement (pas de déplacement combiné).
     if (battle.acted && plan.kind !== 'attack') return;
