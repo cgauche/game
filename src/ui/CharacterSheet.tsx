@@ -9,6 +9,7 @@ import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { careers, findSpell } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
+import { LoadoutSection } from './LoadoutSection';
 import { pickView } from '../gameIso/rig/parts/types';
 import { DEFS } from '../gameIso/sprites';
 import type { Palette } from '../gameIso/rig/palette';
@@ -165,6 +166,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
 
 function FicheBody({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
+  const createLoadout = useGame((s) => s.createLoadout);
+  const renameLoadout = useGame((s) => s.renameLoadout);
+  const deleteLoadout = useGame((s) => s.deleteLoadout);
+  const setActiveLoadout = useGame((s) => s.setActiveLoadout);
+  const setLoadoutSlot = useGame((s) => s.setLoadoutSlot);
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
@@ -255,6 +261,17 @@ function FicheBody({ hero }: { hero: Combatant }) {
         </div>
       </div>
 
+      {!inBattle && (
+        <LoadoutSection
+          hero={hero}
+          onCreate={(name) => createLoadout(hero.id, name)}
+          onRename={(id, name) => renameLoadout(hero.id, id, name)}
+          onDelete={(id) => deleteLoadout(hero.id, id)}
+          onSetActive={(id) => setActiveLoadout(hero.id, id)}
+          onSetSlot={(id, slot, uid) => setLoadoutSlot(hero.id, id, slot, uid)}
+        />
+      )}
+
       {!inBattle && <SpellbookSection hero={hero} />}
 
       <div className="sheet-skills">
@@ -324,7 +341,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
           {items.map((it) => {
             const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
-            const equipable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor' || isProsthesis;
+            const equipable = it.kind === 'armor' || isProsthesis; // armes = via les loadouts (cf. LoadoutSection)
+            const inLoadout = (it.kind === 'melee' || it.kind === 'ranged') && (hero.loadouts ?? []).some((l) => l.main === it.uid || l.off === it.uid);
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
             const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
@@ -364,6 +382,11 @@ function FicheBody({ hero }: { hero: Combatant }) {
                       </button>
                     );
                   })()}
+                  {(it.kind === 'melee' || it.kind === 'ranged') && (
+                    <span className={`ir-loadout ${inLoadout ? 'on' : ''}`} title="Géré via les sets d'armes (loadouts)">
+                      {inLoadout ? '🗡 en set' : '—'}
+                    </span>
+                  )}
                   {equipable ? (
                     <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} title={isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined} onClick={() => toggleEquip(hero.id, it.uid)}>
                       {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
