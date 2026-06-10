@@ -87,6 +87,31 @@ export function moveReachFor(
   return (hasTrait(mover.traits, 'Vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
 }
 
+/**
+ * POUSSÉE en ligne (Jalon 2.6 — Poussée, LDB 47 : « repoussées de BFM mètres ») : la cible
+ * recule de `tiles` cases dans la direction OPPOSÉE à `from` (pas de Tchebychev — signe de
+ * dx/dy), en s'arrêtant devant la première case non franchissable/occupée. Renvoie la case
+ * d'arrivée, le nombre de cases parcourues et s'il y a eu COLLISION (cases restantes > 0).
+ */
+export function pushAway(
+  scene: Scene, from: Pt, target: Pt, tiles: number, blocked: Set<string>,
+): { dest: Pt; pushed: number; collided: boolean } {
+  const sx = Math.sign(target.x - from.x);
+  const sy = Math.sign(target.y - from.y);
+  if ((!sx && !sy) || tiles <= 0) return { dest: { ...target }, pushed: 0, collided: false };
+  let cur = { ...target };
+  let pushed = 0;
+  for (let i = 0; i < tiles; i++) {
+    const next = { x: cur.x + sx, y: cur.y + sy };
+    if (!isWalkable(scene, next.x, next.y) || blocked.has(key(next.x, next.y))) {
+      return { dest: cur, pushed, collided: true };
+    }
+    cur = next;
+    pushed++;
+  }
+  return { dest: cur, pushed, collided: false };
+}
+
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
  *  votre adversaire ») : la portée de Course (`range`) restreinte aux cases qui n'APPROCHENT PAS `foe` —
  *  leur distance de Tchebychev à l'adversaire doit être ≥ à celle de la case de départ. Pur. */

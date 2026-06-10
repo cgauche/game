@@ -119,7 +119,7 @@ export interface BattleState {
   baseOrder?: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null;
+  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -1584,6 +1584,22 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // TÉLÉPORTATION (Jalon 2.6 — sort « Téléportation », LDB 47) : après l'Appliquer, le lanceur
+    // choisit sa case d'arrivée parmi les cases en surbrillance (survol des obstacles).
+    if (battle.action === 'teleport') {
+      const k = `${pt.x},${pt.y}`;
+      if (!battle.reachable.has(k)) return;
+      const from = { ...active.pos! };
+      const mount = mountOf(battle, active);
+      active.pos = { ...pt };
+      if (mount) mount.pos = { ...pt }; // couple cavalier↔monture solidaire (comme le déplacement)
+      get().faceFromPath(active.id, [from, pt]);
+      bus.emit(EVT.ANIM_MOVE, { id: active.id, path: [{ ...pt }] });
+      if (mount) bus.emit(EVT.ANIM_MOVE, { id: mount.id, path: [{ ...pt }] });
+      set({ battle: { ...battle, action: null, reachable: new Map(), preview: null, log: [...battle.log, ev('move', `${active.name} se téléporte.`, active.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
     // Sort à ZONE D'EFFET (LDB 47 l.44) : en mode incantation, un clic-CASE cible la zone —
     // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
     if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {

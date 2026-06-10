@@ -92,7 +92,7 @@ import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, moveReachFor, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 
@@ -2266,6 +2266,7 @@ export function applyCast(
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
+  let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
   // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
@@ -2402,6 +2403,39 @@ export function applyCast(
           }),
         );
       }
+      // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
+      // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
+      // l'obstacle ; la collision est journalisée (Dégâts = distance restante, MJ).
+      if (spec.pushMeters != null && battle && caster.pos) {
+        const pushTiles = Math.max(1, Math.floor(resolveFormula(spec.pushMeters, caster, battleRng()) / 2));
+        for (const t of [target, ...extraTargets]) {
+          if (t.id === caster.id || !t.pos || isOutOfAction(t)) continue;
+          const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, occupied(battle, t));
+          if (r.pushed > 0) {
+            t.pos = { ...r.dest };
+            bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
+            logLines.push(`${t.name} est repoussé de ${r.pushed * 2} m.`);
+          }
+          if (r.collided) logLines.push(`${t.name} percute un obstacle (Dégâts = distance restante — arbitrage MJ).`);
+        }
+      }
+      // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
+      // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
+      // cases = survol des obstacles, atterrissage libre — battleClickTile).
+      if (spec.teleportMeters != null && res.cast) {
+        let meters = Math.max(0, resolveFormula(spec.teleportMeters, caster, battleRng()));
+        if (spec.teleportPerSL) {
+          meters += Math.floor(Math.max(0, res.sl) / Math.max(1, spec.teleportPerSL.every))
+            * Math.max(0, resolveFormula(spec.teleportPerSL.metersFormula, caster, battleRng()));
+        }
+        if (battle && caster.pos) {
+          const tpTiles = Math.max(1, Math.floor(meters / 2));
+          teleportReach = flyReachable(get().scene!, caster.pos, tpTiles, occupied(battle, caster), sizeFootprint(caster.size));
+          logLines.push(`${caster.name} peut se téléporter (${meters} m) — choisir la case d'arrivée.`);
+        } else {
+          logLines.push(`${caster.name} se téléporte (${meters} m) — repositionnement libre hors combat.`);
+        }
+      }
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
       logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
@@ -2430,6 +2464,11 @@ export function applyCast(
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
   finishPlayerAction(get, set, logLines, 'cast'); // sortie commune combat (log+conso Action) / hors combat (journal)
+  // Téléportation (Jalon 2.6) : le choix de case suit la clôture du cast (qui remet action: null).
+  if (teleportReach && get().battle) {
+    set({ battle: { ...get().battle!, action: 'teleport', reachable: teleportReach } });
+    bus.emit(EVT.SCENE_DIRTY);
+  }
 }
 
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */

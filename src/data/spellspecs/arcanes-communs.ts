@@ -118,12 +118,10 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Poussée',
     // « Toutes les créatures à BFM mètres sont repoussées de BFM mètres et gagnent À Terre » —
-    // zone AUTOUR DU LANCEUR : rayon porté par la spec ; le recul reste narratif (déplacement forcé
-    // non modélisé), l'État À Terre s'applique à chaque cible de la zone.
-    ops: [
-      { op: 'condition', name: 'À Terre' },
-      { op: 'narrative', text: 'Poussée : repoussé de BFM mètres (collision avec un obstacle : Dégâts = distance restante — arbitrage MJ).' },
-    ],
+    // zone AUTOUR DU LANCEUR (rayon de la spec) ; le RECUL est mécanique (pushAway : ligne
+    // lanceur→cible jusqu'à l'obstacle) ; la collision (Dégâts = distance restante) reste MJ.
+    ops: [{ op: 'condition', name: 'À Terre' }],
+    pushMeters: { bonusOf: 'FM' },
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'FM' },
     curated: true,
@@ -152,7 +150,18 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     curated: true,
     source: 'LDB 47 p.244 « Souffle »',
   },
-  N('Téléportation', 'Téléportation : vous vous téléportez de BFM mètres (+BFM par +2 DR) — déplacement hors grille, arbitrage MJ.', null),
+  {
+    label: 'Téléportation',
+    // « Vous pouvez vous téléporter jusqu'à une distance en mètres égale à votre BFM »
+    //   (+BFM par +2 DR). En combat : choix de la case d'arrivée après l'Appliquer (survol
+    //   des obstacles, atterrissage libre) ; hors combat : repositionnement libre journalisé.
+    ops: [],
+    teleportMeters: { bonusOf: 'FM' },
+    teleportPerSL: { every: 2, metersFormula: { bonusOf: 'FM' } },
+    durationRounds: null,
+    curated: true,
+    source: 'LDB 47 p.245 « Téléportation »',
+  },
   {
     label: 'Terrifiant',
     // « Vous gagnez le Trait de créature Terreur 1. »
