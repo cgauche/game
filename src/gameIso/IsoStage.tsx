@@ -292,6 +292,47 @@ export function IsoStage() {
     return hl;
   }, [scene, shownRot, viewMode, mode, battle, pendingAttack]);
 
+  // Tokens des ENTITÉS de scène (exploration) memoïsés : ils ne BOUGENT pas pendant que le groupe
+  // marche (seul le leader glisse, rendu à part). Sans ça, le rAF de marche (setWalkTick) re-rendait
+  // les ~180 modèles de la galerie à chaque frame EN PLUS de leur propre anim → saccade. Réfs d'éléments
+  // stables → React saute ces sous-arbres ; chaque créature continue de s'auto-animer via SON rAF
+  // (usePlanAnim/useRigClip), indépendamment du re-rendu d'IsoStage.
+  const entityObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+    if (!scene || mode === 'battle') return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const isTop = viewMode === 'top';
+    const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
+    const out: { d: number; el: JSX.Element }[] = [];
+    for (const ent of scene.entities) {
+      if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
+      const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
+      if (r.backend === 'sprite') {
+        out.push({
+          d: depth(ent.pos.x, ent.pos.y, d),
+          el: (
+            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} dims={d} scale={0.55} fx={ent.anim}>
+              <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
+            </BodyToken>
+          ),
+        });
+      } else {
+        const base = r.backend === 'rig' ? 0.58 : 0.55;
+        const dBoost = r.backend === 'rig' ? 0.1 : 0;
+        const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
+        const ex = ent.pos.x + off, ey = ent.pos.y + off;
+        out.push({
+          d: depth(ex, ey, d) + dBoost,
+          el: (
+            <BodyToken key={r.id} x={ex} y={ey} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
+              {r.body}
+            </BodyToken>
+          ),
+        });
+      }
+    }
+    return out;
+  }, [scene, shownRot, viewMode, mode]);
+
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
   const size = stageSize(dims);
@@ -441,22 +482,9 @@ export function IsoStage() {
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
   } else {
-    for (const ent of scene.entities) {
-      if (ent.kind === 'heroStart' || ent.kind === 'prop') continue; // props déjà rendus (au-dessus)
-      // Backend par le classifieur unique : rig humanoïde (0.58, +0.1 de profondeur) /
-      // plan non-bipède animé (0.55) / sprite statique (objet, 0.55 + anim CSS d'ambiance).
-      const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
-      if (r.backend === 'sprite') {
-        objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(r.id, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
-      } else {
-        const base = r.backend === 'rig' ? 0.58 : 0.55;
-        const dBoost = r.backend === 'rig' ? 0.1 : 0;
-        // Créature posée : centrée et mise à l'échelle de son empreinte par Taille (comme en combat).
-        const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
-        const ex = ent.pos.x + off, ey = ent.pos.y + off;
-        objs.push({ d: depth(ex, ey, dims) + dBoost, el: tokenNode(r.id, ex, ey, r.body, base * r.speciesScale * sizeTokenScale(entitySize(ent)), undefined, false, false, { flat: top, portraitBox: r.portraitBox, discR: discR(entitySize(ent)) }) });
-      }
-    }
+    // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
+    // dans le tri de profondeur, réfs stables → React saute leur re-rendu pendant la marche.
+    objs.push(...entityObjs);
     // groupe (token = 1er héros VIVANT et conscient — #27b : si le principal est mort/à terre, on
     // affiche le suivant encore debout) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];

@@ -58,7 +58,11 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
       modeRef.current = { kind: 'attack', start: performance.now(), atk: d.creatureAttack };
       ensureLoop();
     });
-    return () => { offMove(); offAttack(); if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    // IMPORTANT : remettre rafRef à 0 au cleanup. Sinon, après le démontage/remontage de
+    // StrictMode (dev), `ensureLoop` voit l'ancien id (truthy) et NE relance JAMAIS la boucle
+    // → l'anim de repos (battement d'ailes…) reste figée tant qu'un re-rendu externe (la marche)
+    // ne pousse pas de nouvelles poses. cf. useRigClip qui relance inconditionnellement (humanoïdes OK).
+    return () => { offMove(); offAttack(); if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; } };
   }, [id, plan, hasIdle, dead]);
 
   const species = plan ? (creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '') : '';
