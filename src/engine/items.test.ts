@@ -251,6 +251,65 @@ describe('items — recomputeLoadout / encombrement', () => {
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).toContain('Arbalète de poing'); // 1 main → utilisable
   });
+  it('amputation de la main SECONDAIRE (brasG) : le bouclier (slot off) tombe ; l’arme directrice reste (LDB 18)', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [{ label: 'Main', location: 'brasG', noTwoHanded: true, note: '' }],
+      items: [
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
+        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: '+BF', qualities: ['Bouclier', 'Défensive'], equipped: true }),
+      ],
+      loadouts: [{ id: 'l1', name: 'Épée+Bouclier', main: 'ep', off: 'bo' }],
+      activeLoadoutId: 'l1',
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toContain('Épée');
+    expect(c.weapons.map((w) => w.name)).not.toContain('Bouclier'); // main secondaire amputée → impossible de tenir le bouclier
+  });
+  it('amputation de la main DIRECTRICE (brasD) : arme directrice conservée (−20, adaptation) ; la 2e arme (slot off) tombe', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, note: '' }],
+      items: [
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
+        item({ uid: 'da', name: 'Dague', kind: 'melee', damage: '+BF', equipped: true }),
+      ],
+      loadouts: [{ id: 'l1', name: 'Deux armes', main: 'ep', off: 'da' }],
+      activeLoadoutId: 'l1',
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toContain('Épée'); // conservée (il reste une main)
+    expect(c.weapons.map((w) => w.name)).not.toContain('Dague'); // une seule main fonctionnelle → la 2e arme tombe
+  });
+  it('amputation des DEUX mains : Mains nues seulement', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [
+        { label: 'Main', location: 'brasD', noTwoHanded: true, note: '' },
+        { label: 'Main', location: 'brasG', noTwoHanded: true, note: '' },
+      ],
+      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true })],
+      loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
+      activeLoadoutId: 'l1',
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']);
+  });
+  it('Merveille d’ingénierie (cancels all) sur la main secondaire amputée : le bouclier reste utilisable (LDB 73)', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      traumas: [{ label: 'Main', location: 'brasG', noTwoHanded: true, prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }], note: '' }],
+      items: [
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
+        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: '+BF', qualities: ['Bouclier'], equipped: true }),
+        item({ name: "Merveille d'ingénierie", subType: 'Prothèses', equipped: true }),
+      ],
+      loadouts: [{ id: 'l1', name: 'X', main: 'ep', off: 'bo' }],
+      activeLoadoutId: 'l1',
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toContain('Bouclier'); // prothèse « tout » → main rétablie, bouclier de nouveau tenu
+  });
   it('prothèse PORTÉE = Enc 0 ; possédée mais non portée = son Enc (LDB 73)', () => {
     const worn = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: true })] } as unknown as Combatant;
     expect(totalEncumbrance(worn)).toBe(0);

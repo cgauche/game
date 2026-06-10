@@ -6,7 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
 import { bonus } from './characteristics';
-import { cannotWieldTwoHanded } from './trauma';
+import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { findTrapping } from '../data';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
@@ -161,11 +161,17 @@ export function recomputeLoadout(c: Combatant): void {
   const weapons: Weapon[] = [];
   const lo = activeLoadout(c);
   if (lo) {
-    const mainIt = lo.main ? items.find((i) => i.uid === lo.main && (i.kind === 'melee' || i.kind === 'ranged')) : undefined;
+    // Mains amputées (LDB 18) : une main perdue ne tient rien. L'arme DIRECTRICE est conservée tant qu'il reste
+    // une main (adaptation — le −20 CC/CT de l'amputation s'applique déjà via la séquelle) ; l'objet de main
+    // SECONDAIRE (bouclier / 2e arme) tombe dès qu'une main manque (la main restante tient l'arme directrice).
+    // Les DEUX mains perdues → Mains nues.
+    const mainLost = handAmputated(c, 'main');
+    const offLost = handAmputated(c, 'off');
+    const mainIt = !(mainLost && offLost) && lo.main ? items.find((i) => i.uid === lo.main && (i.kind === 'melee' || i.kind === 'ranged')) : undefined;
     const mainW = mainIt ? toWeapon(mainIt, 'main') : null;
     if (mainW) weapons.push(mainW);
     const mainTwoHanded = mainW?.hands === 2;
-    if (!mainTwoHanded && lo.off) {
+    if (!mainTwoHanded && !mainLost && !offLost && lo.off) {
       const offIt = items.find((i) => i.uid === lo.off && (i.kind === 'melee' || i.kind === 'ranged'));
       const offW = offIt ? toWeapon(offIt, 'off') : null;
       if (offW) weapons.push(offW);

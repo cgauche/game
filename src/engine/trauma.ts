@@ -225,6 +225,15 @@ export function cannotWieldTwoHanded(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.noTwoHanded && !prosthesisCancels(c, t, 'all'));
 }
 
+/** La main `hand` est-elle PERDUE (amputation non compensée par une prothèse « tout », Merveille, LDB 73) ?
+ *  Convention droitier : main directrice = brasD, secondaire = brasG. Une main perdue ne peut tenir ni arme ni
+ *  bouclier → `recomputeLoadout` vide le slot de loadout correspondant. (Un Crochet fournit sa PROPRE arme à
+ *  part, dérivée séparément.) */
+export function handAmputated(c: Combatant, hand: 'main' | 'off'): boolean {
+  const loc = hand === 'main' ? 'brasD' : 'brasG';
+  return (c.traumas ?? []).some((t) => t.noTwoHanded && t.location === loc && !prosthesisCancels(c, t, 'all'));
+}
+
 /** Retire un trauma chirurgical (opération réussie) ; décrémente `criticalWounds`. Mute `c`, renvoie le journal.
  *  Les DÉGÂTS de l'opération (1d10 + Hémorragique) et le risque d'Infection sont appliqués par l'appelant
  *  (le store) — ils dépendent de `loseWounds`/`addCondition`, hors de ce module pur (cycle d'import évité). */
