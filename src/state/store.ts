@@ -1383,6 +1383,9 @@ export const useGame = create<GameState>((set, get) => ({
         extraTargets: extras,
       });
     }
+    // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une
+    // autre interaction bloquante s'est ouverte (Destin, révélations) — elle reprendra elle-même.
+    if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
   },
   /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
   castSetCritChoice: (choice) => {
@@ -1414,7 +1417,13 @@ export const useGame = create<GameState>((set, get) => ({
         : cur;
     set({ pendingCast: { ...pc, extraTargetIds: next } });
   },
-  castCancel: () => set({ pendingCast: null }),
+  castCancel: () => {
+    const pc = get().pendingCast;
+    const caster = pc && actorIn(get(), pc.casterId);
+    set({ pendingCast: null });
+    // Modale d'un lanceur ENNEMI fermée sans appliquer : reprendre le tour suspendu (anti soft-lock).
+    if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
+  },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
   oocCastSpell: (casterId, label, targetId, fromGrimoire) => {

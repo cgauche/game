@@ -69,9 +69,12 @@ export function CastModal() {
 
         {!res ? (
           <div className="modal-actions">
-            <button className="btn" onClick={cancel}>
-              Annuler
-            </button>
+            {/* Lanceur ennemi : le témoin ne peut pas annuler l'action de l'IA (tour suspendu). */}
+            {caster.kind !== 'enemy' && (
+              <button className="btn" onClick={cancel}>
+                Annuler
+              </button>
+            )}
             <button className="btn btn-primary" onClick={roll}>
               🎲 Lancer
             </button>

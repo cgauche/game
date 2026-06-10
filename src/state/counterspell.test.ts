@@ -91,6 +91,30 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     expect(useGame.getState().pendingCast!.result).toBe(frozen);
   });
 
+  it('IA : la modale d’incantation ennemie SUSPEND le tour — reprise à l’Appliquer', () => {
+    useGame.getState().seedRng(3);
+    const { H, E } = setup();
+    H.wounds = { ...H.wounds, max: 99, current: 99 }; // survit au Carreau : le sujet est la suspension
+    useGame.setState({
+      battle: { ...useGame.getState().battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
+      pendingRoundStart: null, pendingReveals: [],
+    });
+    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau jouable → modale témoin
+    vi.advanceTimersByTime(5000);
+    let st = useGame.getState();
+    expect(st.pendingCast?.casterId).toBe(E.id); // la modale d'incantation ennemie est ouverte
+    expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur le lanceur (non avancé)
+    expect(st.battle!.round).toBe(1);
+    // Le témoin déroule : Lancer → Appliquer → le tour de l'IA reprend (et seulement là).
+    st.castRoll();
+    useGame.getState().castConfirm();
+    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
+    vi.advanceTimersByTime(2000);
+    st = useGame.getState();
+    expect(st.pendingCast).toBeNull();
+    expect(st.battle!.round).toBe(2); // frontière franchie : la main est bien passée
+  });
+
   it('frontière de Round : l’essai de Contre-sort se réarme (LDB 46 : « chaque Round »)', () => {
     const { E } = setup();
     E.dispelledThisRound = true;
