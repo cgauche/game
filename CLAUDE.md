@@ -102,7 +102,14 @@ src/engine/                 Règles WFRP4, PUR + testé :
   tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
   combat.ts                   touche/localisation inversée/dégâts/critique/initiative
   characteristics.ts          bonus, Blessures (BF+2×BE+BFM)
-  character.ts                création de personnage (espèce+2d10, 40 augmentations…)
+  character.ts                création de personnage (espèce+2d10, 40 augmentations, talents…)
+  creation.ts                 tables de création LDB 04/05 : d100 espèce/carrière, bonus PX,
+                              100 Points, Richesse initiale, âge/taille/yeux/cheveux
+  careerSlots.ts              spécialisations & emplacements « (Au choix) » des carrières :
+                              parsing, désignations par carrière, Maxi des talents
+  talentEffects.ts            talents à effet création/attributs (+5 carac de départ, addSkill,
+                              Dur à cuire/Chanceux/Obstiné/Véloce)
+  advancement.ts              coûts PX, complétion de Niveau, changement de carrière (validé)
   items.ts                    inventaire/équipement : itemFromTrapping, recomputeLoadout, encombrement
   skills.ts                   valeur d'un test de compétence (partyBest) hors combat
   conditions.ts               États
@@ -126,7 +133,9 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   IsoStage.tsx                composant de rendu (caméra, clics, tokens, surbrillances)
   fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
                               zones) + FxLayer (rendu) + useWalkAnim (marche animée)
-src/ui/                     React : menus, créateur, CampaignView (HUD), CharacterSheet, modales
+src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
+  creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
+                              (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
   RollFlowShell.tsx           coquille PARTAGÉE des modales de jet (Lancer→Chance→Résilience→Appliquer)
                               + <Dice> — pendant UI de state/rollFlow
   editor/                     Éditeur : Editor.tsx (sélection + outils + canvas), Palette.tsx (volet

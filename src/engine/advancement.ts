@@ -5,24 +5,19 @@
  * acheté pour cette Caractéristique / Compétence (l.69, l.80). Toutes les valeurs sont copiées
  * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
  */
-import { Combatant, CharKey, CHAR_KEYS, CHAR_LABELS } from './types';
+import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
+import { CareerSlot, slotCovers, concreteLabel, splitLabel } from './careerSlots';
 
 /**
  * Détection « in-carrière » (07-Carrières l.95) : une Augmentation est au coût standard si la
- * Caractéristique / Compétence / Talent figure dans le Niveau de Carrière COURANT du héros ;
- * sinon le coût est doublé (Caractéristiques/Compétences) ou interdit (Talents, l.97).
- * Ces helpers sont PURS : l'appelant fournit les listes du Niveau (depuis `careerLevels.json`),
- * le moteur ne dépend pas de `src/data`. Les Caractéristiques sont listées en libellé long
- * (« Capacité de Combat »), d'où la conversion via CHAR_LABELS.
+ * Caractéristique / Compétence / Talent est DISPONIBLE pour le héros — Caractéristiques et
+ * Compétences des niveaux ≤ courant (l.67/78), Talents du niveau courant seul (l.100) ; sinon
+ * le coût est doublé (Caractéristiques/Compétences) ou interdit (Talents, l.97).
+ * Les Compétences/Talents passent par les EMPLACEMENTS de `careerSlots.ts` (spécialisations) ;
+ * les Caractéristiques, sans spec, par `inCareerChar`. Libellés longs → clé via CHAR_LABELS.
  */
 export function inCareerChar(careerChars: string[], char: CharKey): boolean {
   return careerChars.includes(CHAR_LABELS[char]);
-}
-export function inCareerSkill(careerSkills: string[], name: string): boolean {
-  return careerSkills.includes(name);
-}
-export function inCareerTalent(careerTalents: string[], name: string): boolean {
-  return careerTalents.includes(name);
 }
 
 /**
@@ -48,11 +43,13 @@ const ADVANCE_COST_TABLE: { max: number; char: number; skill: number }[] = [
 ];
 
 /** Coût en PX de la PROCHAINE Augmentation (la N+1ᵉ), `advancesAlready` = N déjà achetées.
- *  Hors carrière, le coût est DOUBLÉ (07-Carrières l.95). */
-export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true): number {
+ *  Hors carrière, le coût est DOUBLÉ (07-Carrières l.95). `discount` : « 5 PX de moins par
+ *  Augmentation » des talents Maître artisan / Oreille absolue / etc. (LDB 10) quand la
+ *  Compétence ajoutée est déjà incluse dans la Carrière — appliqué in-carrière seulement. */
+export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true, discount = 0): number {
   const band = ADVANCE_COST_TABLE.find((b) => advancesAlready <= b.max)!;
   const base = kind === 'characteristic' ? band.char : band.skill;
-  return inCareer ? base : base * 2;
+  return inCareer ? Math.max(1, base - discount) : base * 2;
 }
 
 /** Coût en PX de la prochaine Augmentation de Talent : 100 + 100 × (Augmentations déjà achetées)
@@ -79,11 +76,12 @@ export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true):
   return { ok: true, cost };
 }
 
-/** Achète UNE Augmentation pour une Compétence DÉJÀ connue (+1 à ses avances) si les PX suffisent. */
-export function buySkillAdvance(hero: Combatant, skillName: string, inCareer = true): AdvanceResult {
-  const skill = hero.skills.find((s) => s.name === skillName);
+/** Achète UNE Augmentation pour une Compétence DÉJÀ connue — identité (name, spec) : chaque
+ *  Spécialisation est une Compétence distincte (LDB 09 l.42). */
+export function buySkillAdvance(hero: Combatant, skillName: string, spec: string | undefined, inCareer = true, discount = 0): AdvanceResult {
+  const skill = hero.skills.find((s) => s.name === skillName && (s.spec ?? '') === (spec ?? ''));
   if (!skill) return { ok: false, cost: 0, reason: 'Compétence inconnue' };
-  const cost = advanceCost(skill.advances, 'skill', inCareer);
+  const cost = advanceCost(skill.advances, 'skill', inCareer, discount);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - cost;
   skill.advances += 1; // chaque Augmentation ajoute +1 au niveau de Compétence (l.82)
@@ -91,8 +89,9 @@ export function buySkillAdvance(hero: Combatant, skillName: string, inCareer = t
 }
 
 /** Achète UNE Augmentation de Talent (le crée à `times` 1 s'il est absent, sinon +1) si les PX
- *  suffisent. Les Talents hors carrière ne sont normalement pas achetables (l.97) — c'est à
- *  l'appelant de filtrer ; ici on applique le coût standard. */
+ *  suffisent. `talentName` = libellé CONCRET (spec résolue). Les Talents hors carrière ne sont
+ *  pas achetables (l.97) et le Maxi doit être respecté (LDB 10) — vérifiés par l'appelant
+ *  (`talentMaxReached`) ; ici on applique le coût standard. */
 export function buyTalent(hero: Combatant, talentName: string): AdvanceResult {
   const existing = hero.talents.find((t) => t.name === talentName);
   const already = existing?.times ?? 0;
@@ -112,16 +111,54 @@ export function careerCompletionAdvances(level: number): number {
   return 5 * level;
 }
 
-/** Un Niveau de Carrière est complété si (l.125) : TOUTES les Caractéristiques ont ≥ req
- *  Augmentations, AU MOINS 8 des Compétences du Niveau ont ≥ req Augmentations, et le héros
- *  possède au moins 1 Talent du Niveau. `careerSkills` / `careerTalents` = listes du Niveau. */
-export function isCareerLevelComplete(hero: Combatant, level: number, careerSkills: string[], careerTalents: string[]): boolean {
+/** La valeur concrète d'un slot SANS choix (entrée explicite), sinon null. */
+function explicitLabel(slot: CareerSlot): string | null {
+  if (slot.needsChoice) return null;
+  const o = slot.options[0];
+  return concreteLabel(o.name, o.spec);
+}
+
+/**
+ * Un Niveau de Carrière est complété si (l.125) : toutes les CARACTÉRISTIQUES DE LA CARRIÈRE
+ * disponibles (cumul des niveaux ≤ courant, l.67) ont ≥ req Augmentations, AU MOINS 8 des
+ * Compétences disponibles (cumul, l.78) ont ≥ req Augmentations, et le héros possède au moins
+ * 1 Talent du Niveau COURANT. Un emplacement « (Au choix) » compte via sa spec DÉSIGNÉE
+ * (un slot non désigné n'est pas tenu) — chaque libellé concret ne valide qu'un slot, garanti
+ * par l'unicité des désignations (cf. careerSlots.designateSlot).
+ */
+export function isCareerLevelComplete(
+  hero: Combatant,
+  level: number,
+  opts: {
+    /** Slots de Compétences des niveaux ≤ courant (careerSlots.skillSlots). */
+    skillSlots: CareerSlot[];
+    /** Slots de Talents du niveau courant (careerSlots.talentSlots). */
+    talentSlots: CareerSlot[];
+    /** Caractéristiques de carrière disponibles, libellés longs (careerSlots.availableChars). */
+    careerChars: string[];
+    /** Désignations du héros pour SA carrière (careerSlots.designationsFor). */
+    designations: Record<string, string>;
+  },
+): boolean {
   const req = careerCompletionAdvances(level);
-  const allChars = CHAR_KEYS.every((k) => (hero.charAdvances?.[k] ?? 0) >= req);
-  if (!allChars) return false;
-  const skilled = careerSkills.filter((name) => (hero.skills.find((s) => s.name === name)?.advances ?? 0) >= req).length;
-  if (skilled < 8) return false;
-  return careerTalents.some((name) => hero.talents.some((t) => t.name === name && t.times > 0));
+  const charKeys = opts.careerChars.map((label) => CHAR_BY_LABEL[label]).filter(Boolean);
+  if (!charKeys.length || !charKeys.every((k) => (hero.charAdvances?.[k] ?? 0) >= req)) return false;
+
+  const skillAdv = (label: string): number => {
+    const { name, spec } = splitLabel(label);
+    return hero.skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''))?.advances ?? 0;
+  };
+  let held = 0;
+  for (const slot of opts.skillSlots) {
+    const label = explicitLabel(slot) ?? opts.designations[slot.key];
+    if (label && skillAdv(label) >= req) held += 1;
+  }
+  if (held < 8) return false;
+
+  return opts.talentSlots.some((slot) => {
+    const label = explicitLabel(slot) ?? opts.designations[slot.key];
+    return label != null && hero.talents.some((t) => t.name === label && t.times > 0);
+  });
 }
 
 /** Coût en PX d'un changement de Carrière : 100 si le Niveau actuel est COMPLÉTÉ, 200 sinon (l.120). */
@@ -129,14 +166,53 @@ export function careerChangeCost(completed: boolean): number {
   return completed ? 100 : 200;
 }
 
-/** Change de Carrière/Niveau si les PX suffisent (mute le héros). `completed` = le Niveau actuel
- *  est-il complété (cf. isCareerLevelComplete) → conditionne le coût 100/200. L'appelant valide la
- *  cible autorisée (Niveau suivant ou inférieur de la même Carrière, ou Carrière différente, l.136). */
-export function changeCareer(hero: Combatant, newCareer: string, newLevel: number, completed: boolean): AdvanceResult {
-  const cost = careerChangeCost(completed);
-  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
-  hero.xp = (hero.xp ?? 0) - cost;
+export interface CareerChangeContext {
+  /** Le Niveau de Carrière COURANT est-il complété (cf. isCareerLevelComplete) ? */
+  completed: boolean;
+  /** La Carrière cible est-elle de la MÊME Classe que l'actuelle (LDB 08 l.9 : sinon +100 PX) ? */
+  sameClass: boolean;
+  /** Le Niveau cible existe-t-il dans les données de la Carrière cible ? */
+  targetLevelExists: boolean;
+}
+
+/**
+ * Valide et chiffre un changement de Carrière (LDB 07 l.137 + LDB 08 l.7-11) :
+ *  - même Carrière : Niveau SUIVANT (exige la complétion) ou n'importe quel Niveau INFÉRIEUR ;
+ *    pas de saut de Niveau (réservé au MJ) ;
+ *  - autre Carrière : 1er Niveau uniquement ; +100 PX si la Classe diffère.
+ *  Coût de base : 100 PX si complété, 200 sinon (l.120).
+ */
+export function validateCareerChange(
+  hero: Combatant,
+  newCareer: string,
+  newLevel: number,
+  ctx: CareerChangeContext,
+): { ok: boolean; cost: number; reason?: string } {
+  const base = careerChangeCost(ctx.completed);
+  if (!ctx.targetLevelExists) return { ok: false, cost: base, reason: 'niveau de carrière inconnu' };
+  if (newCareer === (hero.career ?? '')) {
+    const cur = hero.careerLevel ?? 1;
+    if (newLevel === cur) return { ok: false, cost: base, reason: 'déjà à ce niveau' };
+    if (newLevel === cur + 1) {
+      if (!ctx.completed) return { ok: false, cost: base, reason: 'niveau actuel non complété (LDB 07 l.137)' };
+      return { ok: true, cost: base };
+    }
+    if (newLevel < cur) return { ok: true, cost: base };
+    return { ok: false, cost: base, reason: 'saut de niveau impossible (LDB 07 l.137)' };
+  }
+  if (newLevel !== 1) return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement (LDB 08 l.9)' };
+  return { ok: true, cost: base + (ctx.sameClass ? 0 : 100) };
+}
+
+/** Change de Carrière/Niveau si la cible est valide et les PX suffisent (mute le héros).
+ *  Validation + coût par `validateCareerChange` ; les désignations d'emplacements de l'ANCIENNE
+ *  carrière sont conservées (elles sont par carrière — un retour les retrouve). */
+export function changeCareer(hero: Combatant, newCareer: string, newLevel: number, ctx: CareerChangeContext): AdvanceResult {
+  const v = validateCareerChange(hero, newCareer, newLevel, ctx);
+  if (!v.ok) return { ok: false, cost: v.cost, reason: v.reason };
+  if ((hero.xp ?? 0) < v.cost) return { ok: false, cost: v.cost, reason: 'PX insuffisants' };
+  hero.xp = (hero.xp ?? 0) - v.cost;
   hero.career = newCareer;
   hero.careerLevel = newLevel;
-  return { ok: true, cost };
+  return { ok: true, cost: v.cost };
 }

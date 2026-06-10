@@ -80,4 +80,98 @@ describe('createHero — applique compétences et talents raciaux', () => {
     // 5 talents raciaux + l'éventuel talent de carrière
     expect(hero.talents.length).toBeGreaterThanOrEqual(5);
   });
+
+  it('aucun libellé « (Au choix) » résiduel sur le héros (specs résolues)', () => {
+    for (const seed of [1, 5, 9]) {
+      const hero = createHero({ speciesLabel: 'Nains', careerLabel: 'Artisan', name: 'T', rng: makeRNG(seed) });
+      for (const s of hero.skills) expect(s.spec ?? '').not.toMatch(/au choix|\sou\s/i);
+      for (const t of hero.talents) expect(t.name).not.toMatch(/\(.*au choix.*\)/i);
+    }
+  });
+
+  it('5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488)', () => {
+    const hero = createHero({ speciesLabel: REIK, careerLabel: 'Soldat', name: 'T', rng: makeRNG(3) });
+    const total = Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0);
+    expect(total).toBe(5);
+    // La répartition explicite s'ajoute aux valeurs initiales.
+    const manual = createHero({
+      speciesLabel: REIK,
+      careerLabel: 'Soldat', // Caractéristiques de carrière : CC, F, E (Recrue)
+      name: 'T',
+      rng: makeRNG(3),
+      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      charAdvancesAlloc: { CC: 5 },
+      careerTalent: 'Infatigable', // PAS Guerrier né (+5 CC), pour isoler les Augmentations
+      speciesTalentsResolved: ['Affable', 'Destinée'], // pas de tirages → déterministe
+    });
+    expect(manual.charAdvances?.CC).toBe(5);
+    expect(manual.characteristics.CC).toBe(35);
+  });
+
+  it('« +5 Caractéristique de départ » appliqué (Affable → Soc +5), sans Augmentation comptée', () => {
+    const hero = createHero({
+      speciesLabel: REIK,
+      careerLabel: 'Soldat',
+      name: 'T',
+      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      charAdvancesAlloc: { CC: 5 },
+      speciesTalentsResolved: ['Affable', 'Destinée'],
+      rng: makeRNG(3),
+    });
+    expect(hero.characteristics.Soc).toBe(35);
+    expect(hero.charAdvances?.Soc ?? 0).toBe(0);
+  });
+
+  it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.502) ; Blessures avec Dur à cuire', () => {
+    const hero = createHero({
+      speciesLabel: REIK,
+      careerLabel: 'Soldat', // Recrue propose « Dur à cuire »
+      name: 'T',
+      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      charAdvancesAlloc: { CC: 5 },
+      careerTalent: 'Dur à cuire',
+      speciesTalentsResolved: ['Affable', 'Destinée', 'Dur à cuire'],
+      rng: makeRNG(3),
+    });
+    expect(hero.talents.find((t) => t.name === 'Dur à cuire')!.times).toBe(2);
+    // Blessures = BF+2BE+BFM (3+6+3=12) + 2 × BE (Dur à cuire ×2) = 18.
+    expect(hero.wounds.max).toBe(18);
+  });
+
+  it('PX bonus de la création conservés ; détails portés', () => {
+    const hero = createHero({
+      speciesLabel: REIK,
+      careerLabel: 'Soldat',
+      name: 'T',
+      rng: makeRNG(3),
+      xpBonus: 95,
+      details: { age: 22, height: 178, eyes: 'Bleu', hair: 'Brun clair', ambitionShort: 'X', ambitionLong: 'Y' },
+    });
+    expect(hero.xp).toBe(95);
+    expect(hero.details?.age).toBe(22);
+    expect(hero.details?.ambitionLong).toBe('Y');
+  });
+
+  it('Halfling Herboriste : Sens aiguisé (Goût) d\'espèce reprenable en talent de carrière (times 2)', () => {
+    const hero = createHero({
+      speciesLabel: 'Halflings',
+      careerLabel: 'Herboriste',
+      name: 'T',
+      careerTalent: 'Sens aiguisé (Goût)',
+      speciesTalentsResolved: ['Petit', 'Résistance (Corruption)', 'Sens aiguisé (Goût)', 'Vision nocturne'],
+      rng: makeRNG(3),
+    });
+    expect(hero.talents.find((t) => t.name === 'Sens aiguisé (Goût)')!.times).toBe(2);
+  });
+
+  it('entrée d\'espèce mixte « Destinée ou Talent aléatoire » : la branche aléatoire tire un talent', () => {
+    const middenland = findSpecies('Humains (Middenland)');
+    if (!middenland) return; // espèce ADE absente → rien à tester
+    const out = resolveSpeciesTalents(middenland, {
+      rng: makeRNG(11),
+      choices: { 'Destinée ou Talent aléatoire': 'Talent aléatoire' },
+    });
+    expect(out).not.toContain('Destinée');
+    expect(out.length).toBeGreaterThanOrEqual(2);
+  });
 });

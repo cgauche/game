@@ -454,16 +454,59 @@ function FicheBody({ hero }: { hero: Combatant }) {
   );
 }
 
+/** Ligne d'un emplacement à choix (compétence ou talent) : sélecteur d'option + Désigner/Acquérir.
+ *  Une option DÉJÀ possédée (via l'espèce…) se DÉSIGNE gratuitement — elle devient le choix de
+ *  carrière de l'emplacement et donc montable en PX ; une nouvelle option s'achète. */
+function SlotChoiceRow({
+  entry,
+  options,
+  acquireCost,
+  afford,
+  onPick,
+}: {
+  entry: string;
+  options: { label: string; owned: boolean; hint?: string }[];
+  acquireCost: number;
+  afford: (c: number) => boolean;
+  onPick: (label: string, owned: boolean) => void;
+}) {
+  const [choice, setChoice] = useState('');
+  const opt = options.find((o) => o.label === choice);
+  const cost = opt?.owned ? 0 : acquireCost;
+  return (
+    <div className="adv-row acquire">
+      <span className="adv-name">
+        {entry} <span className="acquire-tag">au choix</span>
+      </span>
+      <select value={choice} onChange={(e) => setChoice(e.target.value)}>
+        <option value="">— choisir —</option>
+        {options.map((o) => (
+          <option key={o.label} value={o.label}>
+            {o.label}
+            {o.hint ? ` ${o.hint}` : ''}
+            {o.owned ? ' (possédé)' : ''}
+          </option>
+        ))}
+      </select>
+      <button className="btn small" disabled={!opt || !afford(cost)} onClick={() => opt && onPick(opt.label, opt.owned)}>
+        {opt?.owned ? 'Désigner · 0 PX' : `Acquérir · ${acquireCost} PX`}
+      </button>
+    </div>
+  );
+}
+
 export function AdvancementPanel({ hero }: { hero: Combatant }) {
   const buyCharAdvance = useGame((s) => s.buyCharAdvance);
   const buySkillAdvance = useGame((s) => s.buySkillAdvance);
   const buyTalent = useGame((s) => s.buyTalent);
+  const designateCareerSlot = useGame((s) => s.designateCareerSlot);
   const changeCareer = useGame((s) => s.changeCareer);
   const [target, setTarget] = useState('');
 
   const v = buildAdvancementView(hero);
   const afford = (c: number) => v.xp >= c;
   const pill = (inC: boolean) => <span className={`career-pill ${inC ? 'in' : 'out'}`}>{inC ? 'carrière' : '×2'}</span>;
+  const skillLabel = (name: string, spec?: string) => (spec ? `${name} (${spec})` : name);
 
   return (
     <div className="adv-panel">
@@ -493,34 +536,70 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
       <div className="mini-title">Compétences</div>
       <div className="adv-grid">
         {v.skills.map((s) => (
-          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={s.name}>
+          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={skillLabel(s.name, s.spec)}>
             <span className="adv-name">
-              {s.name} <em>{(hero.characteristics[s.characteristic] ?? 0) + s.advances}</em> {pill(s.inCareer)}
+              {skillLabel(s.name, s.spec)} <em>{(hero.characteristics[s.characteristic] ?? 0) + s.advances}</em> {pill(s.inCareer)}
               {s.known ? '' : <span className="acquire-tag">à apprendre</span>}
             </span>
             <span className="adv-meta">+{s.advances}</span>
-            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.name)}>
+            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.name, s.spec)}>
               {s.known ? '+1' : 'Apprendre'} · {s.nextCost} PX
             </button>
           </div>
         ))}
+        {/* Emplacements de Compétence « (Au choix) » non désignés (LDB 09 l.38) */}
+        {v.skillSlotsOpen.map((slot) => (
+          <SlotChoiceRow
+            key={slot.slotKey}
+            entry={slot.entry}
+            acquireCost={slot.nextCost}
+            afford={afford}
+            options={slot.options.map((o) => ({
+              label: `${slot.group} (${o.spec})`,
+              owned: o.ownedAdvances > 0,
+              hint: o.ownedAdvances > 0 ? `+${o.ownedAdvances}` : undefined,
+            }))}
+            onPick={(label, owned) => {
+              if (owned) designateCareerSlot(hero.id, slot.slotKey, label);
+              else {
+                // Acheter la 1re Augmentation désigne l'emplacement (LDB 09 l.38).
+                const spec = label.slice(slot.group.length).replace(/^\s*\(/, '').replace(/\)\s*$/, '');
+                buySkillAdvance(hero.id, slot.group, spec);
+              }
+            }}
+          />
+        ))}
       </div>
 
-      <div className="mini-title">Talents</div>
+      <div className="mini-title">Talents du niveau {v.careerLevel}</div>
       <div className="adv-grid">
         {v.talents.length === 0 && <span className="muted">Aucun Talent de carrière disponible.</span>}
-        {v.talents.map((t) => (
-          <div className={`adv-row ${t.times > 0 ? '' : 'acquire'}`} key={t.name}>
-            <span className="adv-name">
-              {t.name}
-              {t.times > 0 ? ` ×${t.times}` : ''} {pill(t.inCareer)}
-            </span>
-            <span className="adv-meta" />
-            <button className="btn small" disabled={!afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.name)}>
-              {t.times > 0 ? '+1' : 'Acquérir'} · {t.nextCost} PX
-            </button>
-          </div>
-        ))}
+        {v.talents.map((t) =>
+          t.label ? (
+            <div className={`adv-row ${t.times > 0 ? '' : 'acquire'}`} key={t.slotKey}>
+              <span className="adv-name">
+                {t.label}
+                {t.times > 0 ? ` ×${t.times}` : ''} {pill(true)}
+              </span>
+              <span className="adv-meta">{t.maxReached ? 'Maxi atteint' : ''}</span>
+              <button className="btn small" disabled={t.maxReached || !afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.label!)}>
+                {t.times > 0 ? '+1' : 'Acquérir'} · {t.nextCost} PX
+              </button>
+            </div>
+          ) : (
+            <SlotChoiceRow
+              key={t.slotKey}
+              entry={t.entry}
+              acquireCost={t.nextCost}
+              afford={afford}
+              options={t.options ?? []}
+              onPick={(label, owned) => {
+                if (owned) designateCareerSlot(hero.id, t.slotKey, label);
+                else buyTalent(hero.id, label);
+              }}
+            />
+          ),
+        )}
       </div>
 
       <div className="mini-title">Carrière</div>
@@ -530,28 +609,37 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <span className={`career-status ${v.completed ? 'done' : ''}`}>{v.completed ? '✓ niveau complété' : 'niveau en cours'}</span>
         </div>
         {v.targets.map((t) => (
-          <button key={t.level} className="btn small" disabled={!afford(t.cost)} onClick={() => changeCareer(hero.id, t.career, t.level)}>
-            Monter : {t.label} (niv. {t.level}) · {t.cost} PX
+          <button
+            key={t.level}
+            className="btn small"
+            disabled={!t.ok || !afford(t.cost)}
+            title={t.reason}
+            onClick={() => changeCareer(hero.id, t.career, t.level)}
+          >
+            {t.level > v.careerLevel ? 'Monter' : 'Redescendre'} : {t.label} (niv. {t.level}) · {t.cost} PX
+            {!t.ok && t.reason ? ` — ${t.reason}` : ''}
           </button>
         ))}
         <div className="adv-change">
           <select value={target} onChange={(e) => setTarget(e.target.value)}>
-            <option value="">— changer de carrière —</option>
-            {careers.map((c) => (
-              <option key={c.label} value={c.label}>
-                {c.label}
-              </option>
-            ))}
+            <option value="">— changer de carrière (niv. 1) —</option>
+            {careers
+              .filter((c) => c.label !== v.career)
+              .map((c) => (
+                <option key={c.label} value={c.label}>
+                  {c.label} ({c.class}) · {v.changeCostFor(c.label)} PX
+                </option>
+              ))}
           </select>
           <button
             className="btn small"
-            disabled={!target || !afford(v.changeCost)}
+            disabled={!target || !afford(target ? v.changeCostFor(target) : v.changeCost)}
             onClick={() => {
               if (target) changeCareer(hero.id, target, 1);
               setTarget('');
             }}
           >
-            Changer · {v.changeCost} PX
+            Changer{target ? ` · ${v.changeCostFor(target)} PX` : ''}
           </button>
         </div>
       </div>

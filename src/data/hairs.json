@@ -1,0 +1,132 @@
+[
+  {
+    "label": "Blond blanc",
+    "rand": 2,
+    "color": {
+      "Humain": "Blond blanc",
+      "Halfling": "Gris",
+      "Nain": "Blanc",
+      "Haut Elfe": "Argent",
+      "Elfe Sylvain": "Bouleau argenté",
+      "Gnome": "Noir",
+      "Ogre": "Marron"
+    }
+  },
+  {
+    "label": "Blond doré",
+    "rand": 3,
+    "color": {
+      "Humain": "Blond doré",
+      "Halfling": "Paille",
+      "Nain": "Gris",
+      "Haut Elfe": "Blanc",
+      "Elfe Sylvain": "Blond cendré",
+      "Gnome": "Brun foncé",
+      "Ogre": "Acajou"
+    }
+  },
+  {
+    "label": "Blond roux",
+    "rand": 4,
+    "color": {
+      "Humain": "Blond roux",
+      "Halfling": "Roussâtre",
+      "Nain": "Blond pâle",
+      "Haut Elfe": "Blond pâle",
+      "Elfe Sylvain": "Or rose",
+      "Gnome": "Brun",
+      "Ogre": "Blond cendré"
+    }
+  },
+  {
+    "label": "Brun doré",
+    "rand": 7,
+    "color": {
+      "Humain": "Brun doré",
+      "Halfling": "Miel",
+      "Nain": "Doré",
+      "Haut Elfe": "Blond",
+      "Elfe Sylvain": "Blond miel",
+      "Gnome": "Brun pâle",
+      "Ogre": "Marron clair"
+    }
+  },
+  {
+    "label": "Brun clair",
+    "rand": 11,
+    "color": {
+      "Humain": "Brun clair",
+      "Halfling": "Châtaigne",
+      "Nain": "Cuivre",
+      "Haut Elfe": "Blond intense",
+      "Elfe Sylvain": "Brun",
+      "Gnome": "Auburn",
+      "Ogre": "Lie de vin"
+    }
+  },
+  {
+    "label": "Brun foncé",
+    "rand": 14,
+    "color": {
+      "Humain": "Brun foncé",
+      "Halfling": "Gingembre",
+      "Nain": "Bronze",
+      "Haut Elfe": "Blond cuivré",
+      "Elfe Sylvain": "Brun acajou",
+      "Gnome": "Roux",
+      "Ogre": "Marron foncé"
+    }
+  },
+  {
+    "label": "Noir",
+    "rand": 17,
+    "color": {
+      "Humain": "Noir",
+      "Halfling": "Moutarde",
+      "Nain": "Brun",
+      "Haut Elfe": "Blond ambré",
+      "Elfe Sylvain": "Brun foncé",
+      "Gnome": "Blond roux",
+      "Ogre": "Noir"
+    }
+  },
+  {
+    "label": "Auburn",
+    "rand": 18,
+    "color": {
+      "Humain": "Auburn",
+      "Halfling": "Amande",
+      "Nain": "Brun foncé",
+      "Haut Elfe": "Auburn",
+      "Elfe Sylvain": "Brun clair",
+      "Gnome": "Bond doré",
+      "Ogre": "Charbon"
+    }
+  },
+  {
+    "label": "Roux",
+    "rand": 19,
+    "color": {
+      "Humain": "Roux",
+      "Halfling": "Chocolat",
+      "Nain": "Brun roux",
+      "Haut Elfe": "Roux",
+      "Elfe Sylvain": "Ebène",
+      "Gnome": "Blond platine",
+      "Ogre": "Noir de jais"
+    }
+  },
+  {
+    "label": "Gris",
+    "rand": 20,
+    "color": {
+      "Humain": "Gris",
+      "Halfling": "Réglisse",
+      "Nain": "Noir",
+      "Haut Elfe": "Noir",
+      "Elfe Sylvain": "Noir bleuté",
+      "Gnome": "Blanc",
+      "Ogre": "Bleu nuit"
+    }
+  }
+]

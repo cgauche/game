@@ -146,12 +146,20 @@ function main() {
   write('classes.json', classes, classes.length);
 
   // --- Carrières ------------------------------------------------------------
-  const careers = keep(raw.career).map((c: Any) => ({
-    label: c.label,
-    class: c.class,
-    desc: c.desc,
-    source: { book: c.book, page: c.page },
-  }));
+  // `rand` : borne haute d100 par colonne d'espèce (refCareer) du Tableau des Classes et
+  // Carrières aléatoires (LDB 05 l.197+). '' = carrière INDISPONIBLE pour cette espèce
+  // (restriction de Race, l.360) → null.
+  const careers = keep(raw.career).map((c: Any) => {
+    const rand: Record<string, number | null> = {};
+    for (const [k, v] of Object.entries(c.rand ?? {})) rand[k] = typeof v === 'number' ? v : null;
+    return {
+      label: c.label,
+      class: c.class,
+      rand,
+      desc: c.desc,
+      source: { book: c.book, page: c.page },
+    };
+  });
   write('careers.json', careers, careers.length);
 
   // --- Niveaux de carrière --------------------------------------------------
@@ -267,6 +275,15 @@ function main() {
   });
   write('creatures.json', creatures, creatures.length);
 
+  // --- Yeux / Cheveux (Détails supplémentaires, LDB 05 l.698-744) -----------
+  // `rand` = borne haute 2d10 ; `color` = libellé par colonne d'espèce (refChar).
+  const detailTable = (arr: Any[]) =>
+    arr.map((e: Any) => ({ label: e.label, rand: e.rand, color: e.color ?? {} }));
+  const eyes = detailTable(raw.eye ?? []);
+  write('eyes.json', eyes, eyes.length);
+  const hairs = detailTable(raw.hair ?? []);
+  write('hairs.json', hairs, hairs.length);
+
   // --- Sorts ----------------------------------------------------------------
   const spells = keep(raw.spell).map((s: Any) => ({
     label: s.label,
@@ -300,6 +317,8 @@ function main() {
       trappings: trappings.length,
       creatures: creatures.length,
       spells: spells.length,
+      eyes: eyes.length,
+      hairs: hairs.length,
     },
   };
   write('_index.json', index, 1);

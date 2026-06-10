@@ -1,8 +1,12 @@
 /**
  * Vue d'avancement (couche store/UI) — agrège le héros + `careerLevels.json` en une structure
  * prête à rendre. PURE et testée : pas d'état, pas d'effet de bord. Les coûts et la détection
- * in-carrière viennent du moteur (`engine/advancement.ts`, verbatim LDB 07-Carrières) ; ici on
- * ne fait que router les listes du Niveau de Carrière courant.
+ * in-carrière viennent du moteur (`engine/advancement.ts` + `engine/careerSlots.ts`, verbatim
+ * LDB 07/09/10) ; ici on ne fait que router les listes des Niveaux de Carrière.
+ *
+ * Disponibilité (LDB 07) : Caractéristiques et Compétences CUMULATIVES sur les niveaux ≤
+ * courant (l.67/78), Talents du niveau courant uniquement (l.100). Les emplacements
+ * « (Au choix) » suivent le modèle de désignation de careerSlots (identité (name, spec)).
  */
 import { Combatant, CharKey, CHAR_KEYS, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
 import {
@@ -11,10 +15,22 @@ import {
   isCareerLevelComplete,
   careerChangeCost,
   inCareerChar,
-  inCareerSkill,
-  inCareerTalent,
+  validateCareerChange,
 } from '../engine/advancement';
-import { levelsForCareer, findSkill } from '../data';
+import {
+  CareerSlot,
+  skillSlots,
+  talentSlots,
+  availableChars,
+  designationsFor,
+  inCareerStatus,
+  takenLabels,
+  concreteLabel,
+  splitLabel,
+  talentMaxReached,
+} from '../engine/careerSlots';
+import { careerSkillAdditions } from '../engine/talentEffects';
+import { levelsForCareer, findSkill, findTalent, findCareer, careers } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -26,6 +42,7 @@ export interface CharAdvanceRow {
 }
 export interface SkillAdvanceRow {
   name: string;
+  spec?: string;
   characteristic: CharKey;
   advances: number;
   /** Le héros possède-t-il déjà la Compétence (sinon : acquérable à 0 si in-carrière). */
@@ -33,17 +50,35 @@ export interface SkillAdvanceRow {
   inCareer: boolean;
   nextCost: number;
 }
-export interface TalentAdvanceRow {
-  name: string;
-  times: number;
-  inCareer: boolean;
+/** Emplacement de Compétence « (Au choix) » non désigné : à apprendre/désigner via un choix de spec. */
+export interface SkillSlotRow {
+  slotKey: string;
+  entry: string;
+  group: string;
+  characteristic: CharKey;
+  /** Specs proposées (liste restreinte du slot ou specs de skills.json), specs déjà prises exclues. */
+  options: { spec: string; ownedAdvances: number }[];
+  /** Coût d'une 1re Augmentation (spec non possédée) — une spec possédée se désigne à 0 PX. */
   nextCost: number;
+}
+export interface TalentSlotRow {
+  slotKey: string;
+  entry: string;
+  /** Libellé concret si l'entrée est explicite ou le slot désigné. */
+  label?: string;
+  times: number;
+  nextCost: number;
+  maxReached: boolean;
+  /** Slot à choix non désigné : libellés proposés (specs/options libres de la carrière). */
+  options?: { label: string; owned: boolean }[];
 }
 export interface CareerTarget {
   career: string;
   level: number;
   label: string;
   cost: number;
+  ok: boolean;
+  reason?: string;
 }
 export interface AdvancementView {
   xp: number;
@@ -55,8 +90,24 @@ export interface AdvancementView {
   changeCost: number;
   chars: CharAdvanceRow[];
   skills: SkillAdvanceRow[];
-  talents: TalentAdvanceRow[];
+  skillSlotsOpen: SkillSlotRow[];
+  talents: TalentSlotRow[];
   targets: CareerTarget[];
+  /** Coût d'un changement vers une carrière donnée (sélecteur) : +100 hors Classe (LDB 08 l.9). */
+  changeCostFor: (careerLabel: string) => number;
+}
+
+/** Remise « 5 PX de moins par Augmentation » (LDB 10 Maître artisan/Oreille absolue/…) quand la
+ *  Compétence ajoutée par un talent est DÉJÀ couverte par la carrière. */
+function additionDiscount(additions: string[], slots: CareerSlot[], designations: Record<string, string>, name: string, spec?: string): number {
+  const added = additions.some((a) => {
+    const p = splitLabel(a);
+    if (p.name !== name) return false;
+    if (p.spec && /au choix/i.test(p.spec)) return true; // joker de groupe (Savoir (Région) reste exact)
+    return (p.spec ?? '') === (spec ?? '');
+  });
+  if (!added) return 0;
+  return inCareerStatus(slots, designations, name, spec) ? 5 : 0;
 }
 
 export function buildAdvancementView(hero: Combatant): AdvancementView {
@@ -64,9 +115,11 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const careerLevel = hero.careerLevel ?? 1;
   const levels = levelsForCareer(career);
   const cur = levels.find((l) => l.level === careerLevel);
-  const careerChars = cur?.characteristics ?? [];
-  const careerSkills = cur?.skills ?? [];
-  const careerTalents = cur?.talents ?? [];
+  const sSlots = skillSlots(levels, careerLevel); // cumul niveaux ≤ courant (LDB 07 l.78)
+  const tSlots = talentSlots(levels, careerLevel); // niveau courant seul (l.100)
+  const careerChars = availableChars(levels, careerLevel); // cumul (l.67)
+  const designations = designationsFor(hero, career);
+  const additions = careerSkillAdditions(hero);
 
   const chars: CharAdvanceRow[] = CHAR_KEYS.map((key) => {
     const advances = hero.charAdvances?.[key] ?? 0;
@@ -74,38 +127,88 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     return { key, label: CHAR_LABELS[key], value: hero.characteristics[key], advances, inCareer, nextCost: advanceCost(advances, 'characteristic', inCareer) };
   });
 
+  // Compétences connues — identité (name, spec) : chaque Spécialisation est une Compétence
+  // distincte (LDB 09 l.42). In-carrière = slot explicite / désigné / joker libre, OU
+  // compétence ajoutée par un talent (« à n'importe quelle Carrière », LDB 10).
   const skills: SkillAdvanceRow[] = hero.skills.map((s) => {
-    const inCareer = inCareerSkill(careerSkills, s.name);
-    return { name: s.name, characteristic: s.characteristic, advances: s.advances, known: true, inCareer, nextCost: advanceCost(s.advances, 'skill', inCareer) };
+    const status = inCareerStatus(sSlots, designations, s.name, s.spec);
+    const addedExact = additions.some((a) => {
+      const p = splitLabel(a);
+      return p.name === s.name && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (s.spec ?? ''));
+    });
+    const inCareer = status != null || addedExact;
+    const discount = additionDiscount(additions, sSlots, designations, s.name, s.spec);
+    return {
+      name: s.name,
+      spec: s.spec,
+      characteristic: s.characteristic,
+      advances: s.advances,
+      known: true,
+      inCareer,
+      nextCost: advanceCost(s.advances, 'skill', inCareer, discount),
+    };
   });
-  // Compétences du Niveau pas encore connues → acquérables à advances 0 (coût in-carrière).
-  const knownSkills = new Set(hero.skills.map((s) => s.name));
-  for (const name of careerSkills) {
-    if (knownSkills.has(name)) continue;
-    const characteristic = CHAR_BY_LABEL[findSkill(name)?.characteristic ?? ''] ?? 'Int';
-    skills.push({ name, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
+  // Entrées EXPLICITES de carrière pas encore connues → acquérables à advances 0.
+  const knows = (name: string, spec?: string) => hero.skills.some((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
+  for (const slot of sSlots) {
+    if (slot.needsChoice) continue;
+    const o = slot.options[0];
+    if (knows(o.name, o.spec)) continue;
+    if (skills.some((r) => !r.known && r.name === o.name && (r.spec ?? '') === (o.spec ?? ''))) continue;
+    const characteristic = CHAR_BY_LABEL[findSkill(o.name)?.characteristic ?? ''] ?? 'Int';
+    skills.push({ name: o.name, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
+  }
+  // Emplacements de Compétence « (Au choix) » non désignés → choix de spec (désigner/apprendre).
+  const taken = takenLabels([...sSlots, ...tSlots], designations);
+  const skillSlotsOpen: SkillSlotRow[] = [];
+  for (const slot of sSlots) {
+    if (!slot.needsChoice || designations[slot.key]) continue;
+    const o = slot.options[0];
+    const specPool = o.specOptions ?? findSkill(o.name)?.specs ?? [];
+    const options = specPool
+      .filter((spec) => !taken.has(concreteLabel(o.name, spec)))
+      .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => s.name === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
+    const characteristic = CHAR_BY_LABEL[findSkill(o.name)?.characteristic ?? ''] ?? 'Int';
+    skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 
-  const talents: TalentAdvanceRow[] = hero.talents.map((t) => ({
-    name: t.name,
-    times: t.times,
-    inCareer: inCareerTalent(careerTalents, t.name),
-    nextCost: talentCost(t.times),
-  }));
-  // Talents du Niveau pas encore possédés → acquérables (les Talents hors-carrière ne s'achètent pas, l.97).
-  const ownedTalents = new Set(hero.talents.map((t) => t.name));
-  for (const name of careerTalents) {
-    if (ownedTalents.has(name)) continue;
-    talents.push({ name, times: 0, inCareer: true, nextCost: talentCost(0) });
-  }
+  // Talents : un rang par EMPLACEMENT du niveau courant (LDB 07 l.100).
+  const talents: TalentSlotRow[] = tSlots.map((slot) => {
+    const label = slot.needsChoice ? designations[slot.key] : concreteLabel(slot.options[0].name, slot.options[0].spec);
+    if (label) {
+      const times = hero.talents.find((t) => t.name === label)?.times ?? 0;
+      return { slotKey: slot.key, entry: slot.entry, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, label) };
+    }
+    // Slot à choix non désigné : proposer les options concrètes non prises par la carrière.
+    const options: { label: string; owned: boolean }[] = [];
+    for (const o of slot.options) {
+      const pool: (string | undefined)[] = o.wildcard ? (o.specOptions ?? findTalent(o.name)?.specs ?? [undefined]) : [o.spec];
+      for (const spec of pool) {
+        const lbl = concreteLabel(o.name, spec);
+        if (taken.has(lbl)) continue;
+        options.push({ label: lbl, owned: (hero.talents.find((t) => t.name === lbl)?.times ?? 0) > 0 });
+      }
+    }
+    return { slotKey: slot.key, entry: slot.entry, times: 0, nextCost: talentCost(0), maxReached: false, options };
+  });
 
-  const completed = cur ? isCareerLevelComplete(hero, careerLevel, careerSkills, careerTalents) : false;
+  const completed = cur
+    ? isCareerLevelComplete(hero, careerLevel, { skillSlots: sSlots, talentSlots: tSlots, careerChars, designations })
+    : false;
   const changeCost = careerChangeCost(completed);
 
-  // Cible de progression : le Niveau suivant de la même Carrière (LDB 07-Carrières l.136).
+  // Cibles de progression (LDB 07 l.137) : Niveau suivant (exige la complétion) + Niveaux inférieurs.
   const targets: CareerTarget[] = [];
-  const next = levels.find((l) => l.level === careerLevel + 1);
-  if (next) targets.push({ career, level: next.level, label: next.label, cost: changeCost });
+  for (const l of levels) {
+    if (l.level === careerLevel) continue;
+    if (l.level > careerLevel + 1) continue; // pas de saut de niveau (réservé au MJ)
+    const v = validateCareerChange(hero, career, l.level, { completed, sameClass: true, targetLevelExists: true });
+    targets.push({ career, level: l.level, label: l.label, cost: v.cost, ok: v.ok, reason: v.reason });
+  }
+
+  const curClass = findCareer(career)?.class;
+  const changeCostFor = (careerLabel: string) =>
+    changeCost + (findCareer(careerLabel)?.class === curClass ? 0 : 100); // LDB 08 l.9-11
 
   return {
     xp: hero.xp ?? 0,
@@ -117,7 +220,14 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     changeCost,
     chars,
     skills,
+    skillSlotsOpen,
     talents,
     targets,
+    changeCostFor,
   };
+}
+
+/** Toutes les carrières, pour le sélecteur de changement (libellé + Classe). */
+export function allCareerChoices(): { label: string; class: string }[] {
+  return careers.map((c) => ({ label: c.label, class: c.class }));
 }

@@ -308,6 +308,41 @@ body {
   flex: 1;
   overflow: auto;
 }
+/* Assistant multi-étapes (création LDB 04/05) */
+.wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px 0;
+}
+.step-chip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.step-chip.active {
+  border-color: var(--accent2);
+  color: var(--text);
+  font-weight: 600;
+}
+.step-chip.done {
+  color: var(--ok);
+}
+.step-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.wizard-body {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-content: start;
+}
+.wizard-body .panel {
+  align-self: start;
+}
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);

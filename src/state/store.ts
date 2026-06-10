@@ -250,14 +250,19 @@ export interface GameState {
   grantXp: (heroId: string, amount: number) => void;
   /** Achète une Augmentation de Caractéristique (coût in/hors-carrière auto, recalc Blessures). */
   buyCharAdvance: (heroId: string, char: CharKey) => void;
-  /** Achète une Augmentation de Compétence ; acquiert la Compétence de carrière non connue à 0. */
-  buySkillAdvance: (heroId: string, skillName: string) => void;
-  /** Achète/augmente un Talent (refusé hors carrière, LDB l.97). */
+  /** Achète une Augmentation de Compétence (identité name+spec) ; acquiert la Compétence de
+   *  carrière non connue à 0 ; l'achat via un slot « (Au choix) » libre le désigne. */
+  buySkillAdvance: (heroId: string, skillName: string, spec?: string) => void;
+  /** Achète/augmente un Talent (libellé concret ; refusé hors carrière l.97 / Maxi atteint). */
   buyTalent: (heroId: string, talentName: string) => void;
+  /** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante (LDB 09 l.38). */
+  designateCareerSlot: (heroId: string, slotKey: string, label: string) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
-  /** Change de Carrière/Niveau (coût 100 si Niveau actuel complété, 200 sinon). */
+  /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
   changeCareer: (heroId: string, newCareer: string, newLevel: number) => void;
+  /** Crédite la bourse du groupe (Richesse initiale d'un héros créé, LDB 05 l.578-583). */
+  creditPartyMoney: (m: import('../engine/money').Money, note?: string) => void;
   startScene: (scene: Scene) => void;
   /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. */
   loadProject: (scenes: Scene[], entryId: string) => void;
@@ -639,10 +644,12 @@ export const useGame = create<GameState>((set, get) => ({
   setItemSkin: (heroId, uid, patch) => partyFlow.setItemSkin(get, set, heroId, uid, patch),
   grantXp: (heroId, amount) => partyFlow.grantXp(get, set, heroId, amount),
   buyCharAdvance: (heroId, char) => partyFlow.buyCharAdvance(get, set, heroId, char),
-  buySkillAdvance: (heroId, skillName) => partyFlow.buySkillAdvance(get, set, heroId, skillName),
+  buySkillAdvance: (heroId, skillName, spec) => partyFlow.buySkillAdvance(get, set, heroId, skillName, spec),
   buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
+  designateCareerSlot: (heroId, slotKey, label) => partyFlow.designateCareerSlot(get, set, heroId, slotKey, label),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
+  creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),
 
   setParty: (p) => set({ party: p }),
 

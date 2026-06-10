@@ -76,6 +76,18 @@ export interface TalentInstance {
   times: number;
 }
 
+/** Détails supplémentaires d'un héros (LDB 05 étape 6 — cosmétique, aucune règle). */
+export interface HeroDetails {
+  age?: number;
+  /** Taille en cm. */
+  height?: number;
+  eyes?: string;
+  hair?: string;
+  /** Ambitions à court / long terme (LDB 05 l.710-717). */
+  ambitionShort?: string;
+  ambitionLong?: string;
+}
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
@@ -298,6 +310,8 @@ export interface Combatant {
   resilience?: number;
   resolve?: number;
   motivation?: string;
+  /** Détails supplémentaires (âge, taille, yeux, cheveux, ambitions — LDB 05 étape 6). */
+  details?: HeroDetails;
   // Traumatisme (LDB 18) — modèle de mort
   /** Nombre de Blessures critiques cumulées (mort si > Bonus d'Endurance + Inconscient + 0 PB). */
   criticalWounds?: number;
@@ -353,6 +367,11 @@ export interface Combatant {
   charAdvances?: Partial<Record<CharKey, number>>;
   /** Niveau de Carrière courant (défaut 1) — détermine le schéma in-carrière pour le coût. */
   careerLevel?: number;
+  /** Désignations des emplacements « (Au choix) » des carrières (LDB 09 l.38 : la Spécialisation
+   *  se choisit à l'allocation). Par carrière : slotKey → libellé concret (« Sens aiguisé (Ouïe) »).
+   *  Deux slots d'une même carrière ne désignent jamais le même libellé ; les désignations sont
+   *  PAR carrière (un changement de carrière rouvre les choix). Cf. engine/careerSlots.ts. */
+  careerSlotChoices?: Record<string, Record<string, string>>;
   // Combat tactique (grille)
   pos?: { x: number; y: number };
   initiative?: number;
