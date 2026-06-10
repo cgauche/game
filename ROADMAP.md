@@ -793,10 +793,14 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   → Destin/pendingFateSave gratuits) ; B. de Souffle = immunité (`noBreath`) ; démo de curation
   **Ombres étrangleuses** (Exténué + suffocation + incantation coupée) et **Transmutation de
   Chamon** (3 États persistants + 1 PA + suffocation) — familles Ombres/Métal amorcées.
-- **L11 — Zones persistantes** : généraliser `battle.smoke[]` (TTL + LoS existants) en
-  `battle.zones[]` {tiles, rounds, blocksLoS?, onEnter?, perRound?, blocksProjectiles?} → Mur de
-  feu, Grands feux d'U'Zhul, Bouclier anti-flèches, Dôme, volet zone de Purification ; Pont
-  (walkability) si budget.
+- ✅ **L11 — Zones persistantes** *(2026-06-11, commit `8fc668b`)* : `battle.zones[]` {tiles,
+  rounds, blocksLoS?, onCross?, perRound?} généralise la fumée (migration franche, rendu
+  gris/orange) ; traversée câblée aux 5 sites de déplacement ; `SpellSpec.persistentZone`
+  (disc/wall) → **Mur de feu** (mur ⊥ lanceur→cible, BFM m +BFM/+2 DR, traverser = BFM Dégâts
+  + En flammes), **Grands feux d'U'Zhul** (zone qui brûle : 1d10+6 ignore PA + En flammes/Round) ;
+  auras portées → **Bouclier anti-flèches** (projectiles organiques détruits en entrant) et
+  **Dôme** (Protection 6+ vs tirs et Projectiles magiques extérieurs). Volet zone de
+  Purification vérifié RAW : rien de plus à mécaniser (le +DR En flammes au cast couvre).
 - ✅ **L12 — Dissipation** *(2026-06-10, merge `cfeb97b` + fix `7b651f0`)* : Contre-sort réactif
   joueur ET ennemi (Test opposé Langue (Magick), 1/Round) ; la modale d'incantation ennemie
   suspend le tour de l'IA.
