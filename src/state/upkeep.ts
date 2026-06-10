@@ -41,15 +41,24 @@ export function dayIndex(gameTime: number): number {
 }
 
 /** Purge les effets à durée d'HORLOGE arrivés à échéance (`untilTime` ≤ maintenant) : contrecoups
- *  d'incantation (LDB 46/40). Appelée par advanceTime ET par l'entretien quotidien (repos/voyage). */
+ *  d'incantation (LDB 46/40) ET buffs de sort à durée en minutes/heures/jours (LDB 47 — cascade #T3).
+ *  Appelée par advanceTime (donc à chaque Round de combat) ET par l'entretien quotidien (repos/voyage) ;
+ *  couvre le groupe ET les combattants d'une bataille en cours (copies de spawn). */
 export function purgeClockEffects(get: Get, set: Set): void {
   const now = get().gameTime;
   const expiredLog: string[] = [];
-  for (const h of get().party) {
+  const pool = [...get().party, ...(get().battle?.combatants ?? [])];
+  for (const h of pool) {
     const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
-    if (!exp.length) continue;
-    for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
-    h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
+    if (exp.length) {
+      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
+      h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
+    }
+    const fx = (h.activeEffects ?? []).filter((e) => e.untilTime != null && e.untilTime <= now);
+    if (fx.length) {
+      for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe.`);
+      h.activeEffects = h.activeEffects!.filter((e) => !(e.untilTime != null && e.untilTime <= now));
+    }
   }
   if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
 }

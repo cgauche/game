@@ -55,6 +55,7 @@ import {
   castBlockedBy,
   hasTalent,
   evaluateMissile,
+  durationClockMinutes,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -2326,9 +2327,11 @@ export function applyCast(
       // branche missile du POC n'appliquait aucun effet parsé).
       if (missileSpec.curated && missileSpec.ops.length) {
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
+        const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...applyOps(t, missileSpec.ops, {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
@@ -2364,13 +2367,17 @@ export function applyCast(
   } else {
     if (res.cast) {
       // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
-      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours) : elle dépasse
-      // l'échelle tactique → l'effet persiste pour ce combat (COMBAT_PERSIST),
-      // on n'invente PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
+      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours, LDB 47) : l'effet est posé à
+      // COMBAT_PERSIST (échelle tactique) AVEC son échéance d'HORLOGE `untilTime` (cascade #T3 —
+      // « 1 heure » expire en 60 min de gameTime, plus au bout de 9999 Rounds) ; on n'invente
+      // PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spellSpecFor(spell);
       const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
+      const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+      const clockMin = baseClockMin != null ? baseClockMin * durationMult : null;
       if (durationMult > 1 && baseRounds != null) logLines.push(`Surincantation : durée ×${durationMult} (${rounds} Rounds).`);
+      if (durationMult > 1 && baseClockMin != null) logLines.push(`Surincantation : durée ×${durationMult}.`);
       for (const t of [target, ...extraTargets]) {
         if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
         logLines.push(
@@ -2380,6 +2387,7 @@ export function applyCast(
             label: spell.label,
             now: get().gameTime,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+            ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );

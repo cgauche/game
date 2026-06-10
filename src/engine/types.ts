@@ -160,6 +160,10 @@ export interface ActiveEffect {
   bonus: number;
   /** Rounds restants avant dissipation. */
   roundsLeft: number;
+  /** Échéance d'HORLOGE (minutes `gameTime`) d'un buff à durée en minutes/heures/jours (LDB 47 —
+   *  « (Bonus de FM) heures », « Jusqu'au lever du soleil »…) : purgé par la cascade #T3
+   *  (`purgeClockEffects`) ; `roundsLeft` reste à COMBAT_PERSIST en attendant. */
+  untilTime?: number;
   /** État RÉCURRENT (« la cible gagne 1 État X par Round ») : ré-appliqué à chaque fin de
    *  Round tant que l'effet dure (sorts à État récurrent — specs curées). */
   condPerRound?: { name: string; value: number };

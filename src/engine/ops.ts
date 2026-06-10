@@ -98,6 +98,10 @@ export interface OpsCtx {
   label?: string;
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
   defaultDurationRounds?: number;
+  /** Échéance d'HORLOGE (minutes `gameTime`) des effets actifs d'un sort à durée en
+   *  minutes/heures/jours (LDB 47) : posée sur l'ActiveEffect (`untilTime`), purgée par la
+   *  cascade #T3. À fournir AVEC `defaultDurationRounds = COMBAT_PERSIST`. */
+  defaultUntilTime?: number;
   /** Horloge de jeu (minutes) — base des `castPenalty` à durée en minutes/jours. */
   now?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
@@ -175,6 +179,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           target.activeEffects.push({
             label: ctx.label ?? 'Effet', bonus: 0,
             roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+            ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
             condPerRound: { name: o.name, value: v },
           });
           lines.push(`${target.name} subira ${v} État ${o.name} par Round (${ctx.label ?? 'sort'}).`);
@@ -203,7 +208,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const rounds = o.durationRounds != null
           ? resolveFormula(o.durationRounds, ref, rng)
           : ctx.defaultDurationRounds ?? COMBAT_PERSIST;
-        applyActiveEffect(target, { label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, roundsLeft: rounds });
+        applyActiveEffect(target, {
+          label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, roundsLeft: rounds,
+          ...(o.durationRounds == null && ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+        });
         charParts.push(`${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char]}`);
         charRounds = rounds;
         break;
@@ -212,7 +220,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
         const rounds = ctx.defaultDurationRounds ?? COMBAT_PERSIST;
         target.activeEffects = target.activeEffects ?? [];
-        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, roundsLeft: rounds, apAll: n });
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0, roundsLeft: rounds, apAll: n,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+        });
         lines.push(`${target.name} : +${n} PA à toutes les Localisations (${ctx.label ?? 'sort'}${rounds !== COMBAT_PERSIST ? `, ${rounds} rounds` : ''}).`);
         break;
       }

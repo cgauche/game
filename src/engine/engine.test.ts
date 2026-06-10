@@ -275,6 +275,7 @@ import {
   parseConditionEffect,
   parseCharBuffs,
   buffDurationRounds,
+  durationClockMinutes,
   isMagicMissile,
   isArcaneSpell,
   knowsCastingSkill,
@@ -670,6 +671,22 @@ describe('Magie — correctifs de fidélité (audit)', () => {
     expect(buffDurationRounds('(Bonus d’Agilité) Rounds', c)).toBe(3);
     expect(buffDurationRounds('1 minute', c)).toBeNull(); // hors-rounds : pas de défaut inventé
     expect(buffDurationRounds(undefined, c)).toBeNull();
+  });
+
+  // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil ».
+  it('durationClockMinutes : littéral, (Bonus de X), (X), lever du soleil ; null hors-horloge', () => {
+    const c = caster({ FM: 45, Int: 38 }); // BFM 4 ; Int 38
+    expect(durationClockMinutes('1 heure', c, 0)).toBe(60);
+    expect(durationClockMinutes('(Bonus de Force Mentale) jours', c, 0)).toBe(4 * 24 * 60);
+    expect(durationClockMinutes('(Bonus de Force Mentale) minutes', c, 0)).toBe(4);
+    expect(durationClockMinutes('(Intelligence) minutes', c, 0)).toBe(38); // caractéristique PLEINE
+    // « Jusqu'au lever du soleil » : prochaine aube (05:00) ; à l'aube pile → un cycle entier.
+    expect(durationClockMinutes("Jusqu'au lever du soleil", c, 0)).toBe(5 * 60);
+    expect(durationClockMinutes("Jusqu'au prochain lever de soleil", c, 5 * 60)).toBe(24 * 60);
+    // Hors-horloge : Rounds (échelle tactique), Instantanée, Spécial → null (rien d'inventé).
+    expect(durationClockMinutes('6 rounds', c, 0)).toBeNull();
+    expect(durationClockMinutes('Instantanée', c, 0)).toBeNull();
+    expect(durationClockMinutes('Spécial', c, 0)).toBeNull();
   });
 });
 
