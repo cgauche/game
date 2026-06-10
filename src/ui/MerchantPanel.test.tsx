@@ -7,6 +7,7 @@ const noop = {
   onAddToCart: () => {}, onDecCart: () => {}, onRemoveCart: () => {}, onClearCart: () => {}, onRefuse: () => {}, onPay: () => {},
   onAssignDist: () => {}, onConfirmDist: () => {}, onSell: () => {}, onRepair: () => {}, onBargain: () => {},
   onAppraise: () => {}, onClose: () => {},
+  onAddToSellCart: () => {}, onRemoveSellCart: () => {}, onClearSellCart: () => {}, onConfirmSell: () => {},
 };
 const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] as { label: string; qty: number }[], cart: [] as { label: string; qty: number }[], bargainLocked: false };
 

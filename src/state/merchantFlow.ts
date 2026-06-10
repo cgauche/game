@@ -41,6 +41,9 @@ export interface MerchantState {
   /** Botch (« rater de beaucoup », LDB 60 l.12) : le marchand se méfie — plus de marchandage cette visite. */
   soured?: boolean;
   cart: { label: string; qty: number }[];
+  /** Panier de VENTE (#22b) : instances d'objets sélectionnées chez leur porteur, vendues d'un coup
+   *  (`confirmSell`) — parité avec le panier d'achat. Une instance est unique (pas de quantité). */
+  sellCart?: { uid: string; heroId: string }[];
   pendingDistribution?: { item: ItemInstance; heroId: string }[] | null;
   bargainLocked: boolean;
   bargainPaid?: boolean;
@@ -219,29 +222,78 @@ export function confirmDistribution(_get: Get, set: Set): void {
   });
 }
 
+/** Gain de revente d'un objet (catalogue × qualité × resaleRate × facteur de Marchandage). SOURCE UNIQUE
+ *  du prix de vente — partagée par `sellItem`, `confirmSell` ET l'aperçu UI (pas de formule dupliquée).
+ *  Option 2 (LDB 60 l.22) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
+export function sellGain(item: ItemInstance, m: MerchantState): ReturnType<typeof fromBrass> {
+  const t = findTrapping(item.name);
+  const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
+  const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
+  return fromBrass(Math.round(base * m.resaleRate * sellFactor));
+}
+
+/** Retire de `party` (clone + recompute) les instances `entries` (uid+heroId) et renvoie la nouvelle liste. */
+function removeSold(party: Combatant[], entries: { uid: string; heroId: string }[]): Combatant[] {
+  return party.map((h) => {
+    const uids = entries.filter((e) => e.heroId === h.id).map((e) => e.uid);
+    if (!uids.length) return h;
+    const clone: Combatant = JSON.parse(JSON.stringify(h));
+    clone.items = (clone.items ?? []).filter((i) => !uids.includes(i.uid));
+    recomputeLoadout(clone);
+    return clone;
+  });
+}
+
+/** Vente immédiate d'un objet (conservée : API + tests). Délègue le prix à `sellGain`. */
 export function sellItem(get: Get, set: Set, uid: string, heroId: string): void {
   const m = get().merchant; if (!m) return;
   const hero = get().party.find((h) => h.id === heroId);
   const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-  const t = findTrapping(item.name);
-  const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-  // Option 2 (LDB 60 l.22, lecture « miroir ») : par défaut le marchand lowballe (¼ = resaleRate/2) ;
-  // il faut GAGNER le Marchandage de vente pour tenir le ½ (resaleRate). Perdre/ne pas négocier = ¼.
-  const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
-  const gain = fromBrass(Math.round(base * m.resaleRate * sellFactor));
+  const gain = sellGain(item, m);
   set((s) => ({
     money: moneyAdd(s.money, gain),
     // bargainSellUsed : une vente a eu lieu → la négociation de vente est HONORÉE (pas de verrou au départ).
     merchant: s.merchant ? { ...s.merchant, bargainSellUsed: true } : s.merchant,
-    party: s.party.map((h) => {
-      if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
-      clone.items = (clone.items ?? []).filter((i) => i.uid !== uid);
-      recomputeLoadout(clone);
-      return clone;
-    }),
+    party: removeSold(s.party, [{ uid, heroId }]),
   }));
   get().log(`Vente : ${item.name}.`);
+}
+
+export function addToSellCart(_get: Get, set: Set, uid: string, heroId: string): void {
+  set((s) => {
+    const m = s.merchant; if (!m) return {};
+    const cart = m.sellCart ?? [];
+    if (cart.some((c) => c.uid === uid)) return {}; // instance unique : déjà au panier
+    return { merchant: { ...m, sellCart: [...cart, { uid, heroId }] } };
+  });
+}
+
+export function removeFromSellCart(_get: Get, set: Set, uid: string): void {
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, sellCart: (s.merchant.sellCart ?? []).filter((c) => c.uid !== uid) } } : {}));
+}
+
+export function clearSellCart(_get: Get, set: Set): void {
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, sellCart: [] } } : {}));
+}
+
+/** Conclut la vente du panier (parité achat/`payCart`) : crédite la somme des `sellGain`, retire les
+ *  objets de leurs porteurs, honore la négociation de vente. Réutilise `sellGain`/`removeSold`. */
+export function confirmSell(get: Get, set: Set): void {
+  const m = get().merchant; if (!m) return;
+  const cart = m.sellCart ?? []; if (!cart.length) return;
+  let gain = fromBrass(0);
+  const names: string[] = [];
+  for (const c of cart) {
+    const item = get().party.find((h) => h.id === c.heroId)?.items?.find((i) => i.uid === c.uid);
+    if (item) { gain = moneyAdd(gain, sellGain(item, m)); names.push(item.name); }
+  }
+  if (!names.length) return;
+  set((s) => ({
+    money: moneyAdd(s.money, gain),
+    merchant: s.merchant ? { ...s.merchant, sellCart: [], bargainSellUsed: true } : s.merchant,
+    party: removeSold(s.party, cart),
+  }));
+  get().log(`Vente : ${names.join(', ')} (+${formatMoney(gain)}).`);
 }
 
 export function repairArmour(get: Get, set: Set, uid: string, heroId: string): void {

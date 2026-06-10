@@ -272,6 +272,11 @@ export interface GameState {
   assignDistribution: (index: number, heroId: string) => void;
   confirmDistribution: () => void;
   sellItem: (uid: string, heroId: string) => void;
+  /** Panier de VENTE (#22b, parité achat) : ajoute / retire / vide / conclut toute la vente d'un coup. */
+  addToSellCart: (uid: string, heroId: string) => void;
+  removeFromSellCart: (uid: string) => void;
+  clearSellCart: () => void;
+  confirmSell: () => void;
   /** Réparation d'armure chez le marchand : remet damageTaken à 0 contre 10 %/PA perdu (LDB 63 l.97-98). */
   repairArmour: (uid: string, heroId: string) => void;
   /** Marchandage (LDB 60 l.12) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
@@ -786,6 +791,10 @@ export const useGame = create<GameState>((set, get) => ({
   assignDistribution: (index, heroId) => merchantFlow.assignDistribution(get, set, index, heroId),
   confirmDistribution: () => merchantFlow.confirmDistribution(get, set),
   sellItem: (uid, heroId) => merchantFlow.sellItem(get, set, uid, heroId),
+  addToSellCart: (uid, heroId) => merchantFlow.addToSellCart(get, set, uid, heroId),
+  removeFromSellCart: (uid) => merchantFlow.removeFromSellCart(get, set, uid),
+  clearSellCart: () => merchantFlow.clearSellCart(get, set),
+  confirmSell: () => merchantFlow.confirmSell(get, set),
   repairArmour: (uid, heroId) => merchantFlow.repairArmour(get, set, uid, heroId),
   startBargain: (mode) => merchantFlow.startBargain(get, set, mode),
   bargainRoll: () => FLOWS.bargain.roll(get, set),

@@ -1,13 +1,14 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
 import { findTrapping } from '../data/index';
-import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, type Money } from '../engine/money';
+import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
-import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
+import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrapping } from '../engine/items';
 import { describeQuality } from '../engine/qualities/describe';
+import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import { Coins } from './Coins';
 
@@ -76,7 +77,7 @@ const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', sa
 const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
 
 /** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
-export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onRepair, onBargain, onAppraise, onClose, initialTab, initialDetails, initialBuyView }: {
+export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onSell, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, initialTab, initialDetails, initialBuyView, initialSellView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
@@ -89,6 +90,10 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   onAssignDist: (index: number, heroId: string) => void;
   onConfirmDist: () => void;
   onSell: (uid: string, heroId: string) => void;
+  onAddToSellCart: (uid: string, heroId: string) => void;
+  onRemoveSellCart: (uid: string) => void;
+  onClearSellCart: () => void;
+  onConfirmSell: () => void;
   onRepair: (uid: string, heroId: string) => void;
   onBargain: (mode: 'buy' | 'sell') => void;
   onAppraise: (uid: string, heroId: string) => void;
@@ -96,11 +101,13 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   initialTab?: 'buy' | 'sell' | 'repair';
   initialDetails?: string;
   initialBuyView?: 'browse' | 'cart';
+  initialSellView?: 'browse' | 'cart';
 }) {
   const [tab, setTab] = useState<'buy' | 'sell' | 'repair'>(initialTab ?? 'buy');
   const [buyCat, setBuyCat] = useState<string | null>(null);
   const [details, setDetails] = useState<string | null>(initialDetails ?? null);
   const [buyView, setBuyView] = useState<'browse' | 'cart'>(initialBuyView ?? 'browse');
+  const [sellView, setSellView] = useState<'browse' | 'cart'>(initialSellView ?? 'browse');
   const [sellHero, setSellHero] = useState<string | null>(null); // onglet PJ actif côté Vente
   const toggleDetails = (label: string) => setDetails((d) => (d === label ? null : label));
 
@@ -111,8 +118,14 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   const buyHaggle = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
   const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle;
   const buyDiscount = Math.round((1 - buyHaggle) * 100);
-  const sellFactor = merchant.bargainSell ? bargainSellFactor(merchant.bargainSell.won, merchant.bargainSell.drNet, merchant.bargainSell.negotiator) : 0.5;
-  const sellPriceMoney = (it: ItemInstance): Money => fromBrass(Math.round(toBrass(priceToMoney(findTrapping(it.name)?.price ?? {})) * craftPriceFactor(it) * merchant.resaleRate * sellFactor));
+  const sellPriceMoney = (it: ItemInstance): Money => sellGain(it, merchant); // prix de vente = source unique (engine)
+  // Panier de VENTE (#22b) : instances résolues chez leur porteur + total (mêmes briques que l'achat).
+  const sellCart = merchant.sellCart ?? [];
+  const sellInCart = (uid: string) => sellCart.some((c) => c.uid === uid);
+  const sellCartItems = sellCart
+    .map((c) => ({ hero: party.find((h) => h.id === c.heroId), it: party.find((h) => h.id === c.heroId)?.items?.find((i) => i.uid === c.uid) }))
+    .filter((x): x is { hero: Combatant; it: ItemInstance } => !!x.it && !!x.hero);
+  const sellCartTotal = sellCartItems.reduce((acc, x) => moneyAdd(acc, sellPriceMoney(x.it)), fromBrass(0));
 
   // Stock groupé par famille puis trié (Disponibilité → nom).
   const inStock = merchant.stock.filter((l) => l.qty > 0);
@@ -365,6 +378,79 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     );
   };
 
+  // --- Vente : Parcourir (un onglet par PJ) — bouton « + Vendre » qui pousse au panier de vente ---
+  const renderSellBrowse = () => {
+    const sellHeroes = party.filter((h) => (h.items ?? []).length > 0);
+    if (!sellHeroes.length) return <p className="empty">— rien à vendre —</p>;
+    const activeSellId = (sellHero && sellHeroes.some((h) => h.id === sellHero) ? sellHero : sellHeroes[0]?.id) ?? '';
+    const heroItems = party.find((h) => h.id === activeSellId)?.items ?? [];
+    return (
+      <>
+        <div className="cart-bar">
+          {sellCart.length > 0
+            ? <><span className="cart-info">🛒 {sellCart.length} à vendre · +{formatMoney(sellCartTotal)}</span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
+            : <span className="cart-info empty">🛒 Rien à vendre sélectionné</span>}
+        </div>
+        <div className="merch-subtabs" role="tablist">
+          {sellHeroes.map((h) => (
+            <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)}>
+              {h.name}<span className="tab-count">{(h.items ?? []).length}</span>
+            </button>
+          ))}
+        </div>
+        {heroItems.map((it) => (
+          <div className="merch-row sell" key={it.uid}>
+            <span className="merch-name">
+              {it.name}
+              {it.equipped && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
+              {it.identified === false ? ' (non identifié)' : ''}
+            </span>
+            <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
+            {it.identified === false && (
+              <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
+            )}
+            {sellInCart(it.uid)
+              ? <button className="btn small" onClick={() => onRemoveSellCart(it.uid)} title="Retirer du panier de vente">✓ au panier</button>
+              : <button className="btn small" onClick={() => onAddToSellCart(it.uid, activeSellId)} title="Ajouter au panier de vente">+ Vendre</button>}
+          </div>
+        ))}
+        {!heroItems.length && <p className="empty">— rien à vendre pour ce personnage —</p>}
+      </>
+    );
+  };
+
+  // --- Vente : Panier (parité achat — mêmes briques cart-*) ---
+  const renderSellCart = () => (
+    <>
+      <div className="cart-head">
+        <button className="btn small" onClick={() => setSellView('browse')}>← Continuer</button>
+        <strong>🛒 Vente</strong>
+      </div>
+      {!sellCartItems.length ? (
+        <p className="empty">— panier de vente vide —</p>
+      ) : (
+        <>
+          <table className="cart-table">
+            <tbody>
+              {sellCartItems.map(({ hero, it }) => (
+                <tr key={it.uid}>
+                  <td className="cart-name">{it.name}<span className="cart-owner">{hero.name}</span></td>
+                  <td className="cart-sub"><Coins money={sellPriceMoney(it)} /></td>
+                  <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveSellCart(it.uid)} aria-label="Retirer">✕</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="cart-total">Total : <strong>+<Coins money={sellCartTotal} /></strong></div>
+          <div className="cart-actions">
+            <button className="btn small" onClick={onClearSellCart}>Vider</button>
+            <button className="btn btn-primary" onClick={() => { onConfirmSell(); setSellView('browse'); }}>Vendre <Coins money={sellCartTotal} /></button>
+          </div>
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="merchant-panel modal-overlay">
       <div className="merchant-box">
@@ -393,39 +479,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                       <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>
                     </>}
               </div>
-              {(() => {
-                // #18/#19 : un onglet par PJ qui a des objets (au lieu d'une liste à plat « PJ : objet ») ; tag « équipé ».
-                const sellHeroes = party.filter((h) => (h.items ?? []).length > 0);
-                const activeSellId = (sellHero && sellHeroes.some((h) => h.id === sellHero) ? sellHero : sellHeroes[0]?.id) ?? '';
-                const heroItems = party.find((h) => h.id === activeSellId)?.items ?? [];
-                if (!sellHeroes.length) return <p className="empty">— rien à vendre —</p>;
-                return (
-                  <>
-                    <div className="merch-subtabs" role="tablist">
-                      {sellHeroes.map((h) => (
-                        <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)}>
-                          {h.name}<span className="tab-count">{(h.items ?? []).length}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {heroItems.map((it) => (
-                      <div className="merch-row sell" key={it.uid}>
-                        <span className="merch-name">
-                          {it.name}
-                          {it.equipped && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
-                          {it.identified === false ? ' (non identifié)' : ''}
-                        </span>
-                        <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
-                        {it.identified === false && (
-                          <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
-                        )}
-                        <button className="btn small" onClick={() => onSell(it.uid, activeSellId)}>Vendre</button>
-                      </div>
-                    ))}
-                    {!heroItems.length && <p className="empty">— rien à vendre pour ce personnage —</p>}
-                  </>
-                );
-              })()}
+              {sellView === 'cart' ? renderSellCart() : renderSellBrowse()}
             </div>
           )}
 
@@ -461,6 +515,10 @@ export function MerchantPanel() {
   const assignDistribution = useGame((s) => s.assignDistribution);
   const confirmDistribution = useGame((s) => s.confirmDistribution);
   const sellItem = useGame((s) => s.sellItem);
+  const addToSellCart = useGame((s) => s.addToSellCart);
+  const removeFromSellCart = useGame((s) => s.removeFromSellCart);
+  const clearSellCart = useGame((s) => s.clearSellCart);
+  const confirmSell = useGame((s) => s.confirmSell);
   const repairArmour = useGame((s) => s.repairArmour);
   const startBargain = useGame((s) => s.startBargain);
   const appraiseItem = useGame((s) => s.appraiseItem);
@@ -471,7 +529,8 @@ export function MerchantPanel() {
       merchant={merchant} party={party} money={money}
       onAddToCart={addToCart} onDecCart={decFromCart} onRemoveCart={removeFromCart} onClearCart={clearCart} onRefuse={refuseBargain} onPay={payCart}
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
-      onSell={sellItem} onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
+      onSell={sellItem} onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}
+      onRepair={repairArmour} onBargain={startBargain} onAppraise={appraiseItem} onClose={closeMerchant}
     />
   );
 }

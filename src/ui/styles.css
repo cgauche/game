@@ -2339,6 +2339,7 @@ textarea:focus {
 .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
 .cart-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 .cart-table .cart-name { width: 100%; }
+.cart-table .cart-owner { color: var(--muted); font-size: 11px; margin-left: 6px; }
 .cart-table .cart-unit, .cart-table .cart-sub { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cart-table .cart-unit { color: var(--muted); }
 .cart-table .cart-sub { color: var(--gold); font-weight: 600; }
