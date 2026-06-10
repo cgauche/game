@@ -120,7 +120,9 @@ src/engine/                 Règles WFRP4, PUR + testé :
   items.ts                    inventaire/équipement : itemFromTrapping, recomputeLoadout, encombrement
   skills.ts                   valeur d'un test de compétence (partyBest) hors combat
   conditions.ts               États (+ durées d'États de sort, États récurrents)
-  ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps
+  ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps ;
+                              Jalon 2.6 : PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/
+                              enchantWeapon/cureDisease/… ; SpellSpec.teleportMeters/pushMeters
   spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
   magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
   miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
@@ -142,7 +144,9 @@ src/state/
   partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
   merchantFlow.ts             marchand : réassort, panier, achat/vente/réparation, Marchandage, Évaluation
   travelFlow.ts               voyage jour par jour (temps, fatigue, péripéties d10+auteur, interruption/reprise)
-  upkeep.ts                   entretien QUOTIDIEN (rations/faim) sur franchissement de jour — anti-double-comptage
+  upkeep.ts                   entretien QUOTIDIEN (#T3 cascade : rations/faim + maladies + convalescence
+                              des critiques, jours CALENDAIRES) + purge des effets a duree d'horloge
+                              (castPenalties/ActiveEffect.untilTime) — anti-double-comptage lastUpkeepDay
   spawn.ts / path.ts / bus.ts
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)

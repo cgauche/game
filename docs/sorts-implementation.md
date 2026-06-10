@@ -6,7 +6,7 @@
 > (effet journalisé verbatim). « curé » = spec relue de la source (`data/spellspecs/`),
 > sinon repli regex iso-POC. Implémenter un sort = le curer dans son fichier de famille.
 
-**Synthèse** : 221 sorts — ✅ 64 mécaniques · 🟡 18 partiels · 📜 139 narratifs (arbitrage MJ) · 87 specs curées.
+**Synthèse** : 221 sorts — ✅ 77 mécaniques · 🟡 19 partiels · 📜 125 narratifs (arbitrage MJ) · 87 specs curées.
 
 ## Béni (19)
 
@@ -16,9 +16,9 @@
 | Bénédiction de Chance | 📜 | oui | Bénédiction de Chance : la cible peut relancer le prochain Test auquel elle échoue (second résultat conservé). |
 | Bénédiction de Charisme | ✅ | oui |  |
 | Bénédiction de Conscience | 📜 | oui | Bénédiction de Conscience : Test de Force Mentale Accessible (+20) pour briser un Commandement de la divinité, sinon Honte (pas d’Action) — arbitrage MJ. |
-| Bénédiction de Convalescence | 📜 | oui | Bénédiction de Convalescence : réduit d’1 journée la durée d’une maladie (une seule fois par maladie et par personne). |
+| Bénédiction de Convalescence | ✅ | oui |  |
 | Bénédiction de Courage | ✅ | oui |  |
-| Bénédiction de Droiture | 📜 | oui | Bénédiction de Droiture : l’arme de la cible est considérée comme Magique. |
+| Bénédiction de Droiture | ✅ | oui |  |
 | Bénédiction de Finesse | ✅ | oui |  |
 | Bénédiction de Grâce | ✅ | oui |  |
 | Bénédiction de Guérison | ✅ | oui |  |
@@ -91,23 +91,23 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Amère catharsis | 🟡 | oui | Amère catharsis : une maladie peut être retirée (+1 purge par +2 DR) ; le prêtre subit 1d10 − BSoc Blessures NON mitigées par purge — arbitrage MJ. |
+| Amère catharsis | 🟡 | oui | Amère catharsis : le prêtre subit 1d10 − BSoc Blessures NON mitigées par poison/maladie purgé — arbitrage MJ. |
 | Baume pour un esprit blessé | 📜 | oui | Baume pour un esprit blessé : Traits psychologiques retirés pour la durée, puis sommeil réparateur jusqu’à l’aube (cible non volontaire : Test de Calme +0 pour résister) — arbitrage MJ. |
 | Endurance de l'anachorète | 📜 | oui | Endurance de l’anachorète : la cible ne ressent aucune douleur et ne subit AUCUNE pénalité d’État pour la durée (immunité non modélisée — arbitrage MJ). |
-| Innocence immaculée | 🟡 | oui | Innocence immaculée : −1 Point de Corruption supplémentaire par +2 DR ; sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ. |
-| Larmes de Shallya | 📜 | oui | Larmes de Shallya : après 10 − BSoc Rounds de Prière ininterrompue, guérit 1 Blessure Critique (+1 par +2 DR ; jamais une amputation) — appliquer via la convalescence, arbitrage MJ. |
+| Innocence immaculée | 🟡 | oui | Innocence immaculée : sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ. |
+| Larmes de Shallya | 🟡 | oui | Larmes de Shallya : exige 10 − BSoc Rounds de Prière ininterrompue — arbitrage MJ. |
 | Martyr | 📜 | oui | Martyr : le prêtre reçoit les Dégâts subis par la cible (BE doublé pour ces Dégâts) — redirection non modélisée, arbitrage MJ. |
 
 ## Invocation — Sigmar (6)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Comète à Deux Queues | 🟡 | oui | Comète à Deux Queues : +DR Dégâts supplémentaires (ignorant BE/PA) — à ajouter selon le jet ; cible les ennemis de Sigmar, à l’extérieur seulement. |
-| Feu de l'âme | 🟡 | oui | Feu de l’âme : les Morts-vivants et Démons gagnent aussi En flammes ; +2 Dégâts aux impies par +2 DR (arbitrage MJ). |
-| Flambeau de Vertu | 🟡 | oui | Flambeau de Vertu : Talent Sans peur tant que le Miracle est actif et que la cible reste en Ligne de Vue ; les peaux-vertes en LdV doivent tester leur Psychologie (arbitrage MJ). |
-| Marteau ardent de Sigmar | 📜 | oui | Marteau ardent : votre marteau devient Magique, +BSoc Dégâts, et chaque cible frappée reçoit En flammes + À Terre (enchantement d’arme — arbitrage MJ). |
+| Comète à Deux Queues | 🟡 | oui | Comète à Deux Queues : cible les ennemis de Sigmar, à l’extérieur seulement — arbitrage MJ. |
+| Feu de l'âme | 🟡 | oui | Feu de l’âme : par +2 DR, étendre la ZdE de +BSoc mètres OU +2 Dégâts aux peaux-vertes/morts-vivants/serviteurs de la Ruine — au choix, arbitrage MJ. |
+| Flambeau de Vertu | 🟡 | oui | Flambeau de Vertu : le Talent tient tant que la cible reste en Ligne de Vue du prêtre ; les peaux-vertes en LdV doivent tester leur Psychologie — arbitrage MJ. |
+| Marteau ardent de Sigmar | ✅ | oui |  |
 | N'écoutez point la Sorcière | 📜 | oui | N’écoutez point la Sorcière : −20 aux Tests de Langue (Magick) de tout Sort ciblant la zone de BSoc mètres autour du prêtre (+BSoc m / −10 par +2 DR) — arbitrage MJ. |
-| Vaincre les impies | 📜 | oui | Vaincre les impies : les alliés désignés gagnent le Trait psychologique Haine (peaux-vertes, morts-vivants, créatures du Chaos) pour la durée (arbitrage MJ). |
+| Vaincre les impies | ✅ | oui |  |
 
 ## Invocation — Taal (6)
 
@@ -146,7 +146,7 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Arme aethyrique | 📜 | oui | Arme aethyrique : arme de Corps à corps MAGIQUE de Dégâts = BFM, toute Compétence de CC utilisable (arbitrage MJ — enchantement d’arme non modélisé). |
+| Arme aethyrique | 🟡 | oui | Arme aethyrique : arme créée de Dégâts = BFM (sans Bonus de Force), maniable avec n’importe quelle Compétence de Corps à corps — arbitrage MJ. |
 | Armure Aethyrique | ✅ | oui |  |
 | Attaques en chaîne | 🟡 | oui | Attaques en chaîne : si la cible tombe à 0 Blessure, le Projectile rebondit sur une cible à BFM mètres (arbitrage MJ). |
 | Aura ordinaire | 📜 | oui | Aura ordinaire : votre nature magique est indétectable (Perception de la magie et similaires). |
@@ -156,19 +156,19 @@
 | Chute | ✅ | oui |  |
 | Déplacement d'objet | 📜 | oui | Déplacement d’objet : déplace un objet inanimé (Force = votre FM) de BFM mètres. |
 | Dôme | 📜 | oui | Dôme : Protection (6+) contre les attaques magiques/à distance venant de l’extérieur, pour quiconque est dans la ZdE. |
-| Effrayant | 📜 | oui | Effrayant : vous gagnez Peur 1 tant que le Sort est actif (+1 par +3 DR) — Trait temporisé, arbitrage MJ. |
-| Enchevêtrement | 🟡 | oui | Enchevêtrement : Force de l’entrave = Intelligence du lanceur ; +1 Empêtré par +2 DR (arbitrage MJ). |
-| Envol | 📜 | oui | Envol : vous gagnez le Trait Vol (Agilité) tant que le Sort est actif (déplacement aérien — arbitrage MJ). |
+| Effrayant | ✅ | oui |  |
+| Enchevêtrement | 🟡 | oui | Enchevêtrement : Force de l’entrave = Intelligence du lanceur (arbitrage MJ). |
+| Envol | ✅ | oui |  |
 | Explosion | ✅ | oui |  |
-| Perturbant | 📜 | oui | Perturbant : vous gagnez le Trait Perturbant tant que le Sort est actif (−10 aux Tests sociaux adverses — arbitrage MJ). |
+| Perturbant | ✅ | oui |  |
 | Pont | 📜 | oui | Pont : pont d’énergie de BFM mètres (long./larg.), +BFM mètres par +2 DR (arbitrage MJ). |
-| Poussée | 🟡 | oui | Poussée : repoussé de BFM mètres (collision avec un obstacle : Dégâts = distance restante — arbitrage MJ). |
-| Protection | 📜 | oui | Protection : vous gagnez le Trait Protection (9+) tant que le Sort est actif (arbitrage MJ). |
-| Sang corrosif | 📜 | oui | Sang corrosif : vous gagnez le Trait Sang corrosif tant que le Sort est actif (arbitrage MJ). |
+| Poussée | ✅ | oui |  |
+| Protection | ✅ | oui |  |
+| Sang corrosif | ✅ | oui |  |
 | Souffle | 🟡 | oui | Souffle : attaque de Souffle (type selon votre Domaine) — Projectile magique de Dégâts = votre Bonus d’Endurance. |
-| Téléportation | 📜 | oui | Téléportation : vous vous téléportez de BFM mètres (+BFM par +2 DR) — déplacement hors grille, arbitrage MJ. |
-| Terrifiant | 📜 | oui | Terrifiant : vous gagnez le Trait Terreur 1 tant que le Sort est actif (arbitrage MJ). |
-| Vision dans l'obscurité | 📜 | oui | Vision dans l’obscurité : vous gagnez le Trait Infravision tant que le Sort est actif. |
+| Téléportation | 📜 | oui |  |
+| Terrifiant | ✅ | oui |  |
+| Vision dans l'obscurité | ✅ | oui |  |
 
 ## Magie des Arcanes — Bête (8)
 
@@ -209,14 +209,14 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Cautériser | 🟡 | oui | Cautériser : les Blessures ne s’infecteront pas. |
-| Cœurs ardents | 🟡 | oui | Cœurs ardents : +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif (arbitrage MJ). |
-| Couronne de Flammes | 🟡 | oui | Couronne de Flammes : Trait Peur 1 + Talent Seigneur de guerre tant que le Sort est actif (arbitrage MJ). |
+| Cautériser | ✅ | oui |  |
+| Cœurs ardents | 🟡 | oui | Cœurs ardents : +1 Talent Coude-à-coude tant que le Sort est actif (arbitrage MJ). |
+| Couronne de Flammes | 🟡 | oui | Couronne de Flammes : +1 Talent Seigneur de guerre tant que le Sort est actif ; par +2 DR, +1 Peur OU Seigneur de guerre repris — arbitrage MJ. |
 | Grands feux d'U'Zhul | 🟡 | oui | Grands feux d’U’Zhul : la ZdE autour de la cible subit +5 Dégâts (ignore PA) et brûle pour la durée du Sort (1d10+6 Dégâts/Round, +1 En flammes) — arbitrage MJ. |
 | L'Égide d'Aqshy | 📜 | oui | Égide d’Aqshy : immunisé aux Dégâts de feu non magiques, ignore l’État En flammes, Protection (9+) contre le feu magique (arbitrage MJ). |
-| L'Épée ardente de Rhuin | 📜 | oui | Épée ardente de Rhuin : l’arme gagne Dégâts +6, l’Atout Percutante, et inflige +1 En flammes à la touche (arbitrage MJ — enchantement d’arme non modélisé). |
+| L'Épée ardente de Rhuin | 🟡 | oui | Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ. |
 | Mur de feu | 🟡 | oui | Mur de feu : mur de BFM mètres (épais d’1 m) pour la durée du Sort — traverser inflige 1 En flammes + un Projectile magique de BFM Dégâts (zone persistante : arbitrage MJ). |
-| Purification | 🟡 | oui | Purification : chaque créature de la zone gagne +DR État En flammes (au-delà du 1er appliqué) ; consume les Influences corruptrices — arbitrage MJ. |
+| Purification | 🟡 | oui | Purification : consume les Influences corruptrices de la zone (malepierre, objets du Chaos) — arbitrage MJ. |
 
 ## Magie des Arcanes — Gueule (7)
 
