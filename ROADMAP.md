@@ -854,7 +854,12 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 
 ## 🎯 Jalon 5 — Méta-jeu & persistance
 
-- **Sauvegarde/chargement** (localStorage + export/import).
+- ✅ **Sauvegarde/chargement** *(2026-06-11, commit `66ce86c`)* : snapshot **zéro-maintenance**
+  (clés de données de `getInitialState` — toute donnée d'état future est sauvée gratis), 3 slots
+  localStorage versionnés + **export/import JSON** ; refusée en combat ; UI : modale 3 emplacements
+  (scène + date impériale + horodatage) via le menu ☰ en exploration + « Charger une partie » au
+  menu principal. La scène vivante, flags, horloge, groupe, marchands, voyage voyagent dans la save.
+  *(Reste : recette navigateur — Playwright à repasser.)*
 - **Entre deux aventures** : achats/marchandage ✅ (Marchand, Jalon 1.6), fabrication, activités, soins/maladies.
 - ✅ **Repos & récupération naturelle** (Jalon 1.8) : « Dormir / Se reposer N jours » — Exténué dissipé,
   Blessures soignées (Résistance +20 → DR+BE, +BE/jour, LDB 18 l.380), cauchemars.
