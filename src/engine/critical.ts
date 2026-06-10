@@ -7,7 +7,7 @@ import { d100, d10, RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape } from './combat';
-import { BodyShape, Combatant, Difficulty, HitLocation, Trauma } from './types';
+import { BodyShape, Combatant, Difficulty, HitLocation, Trauma, HIT_LOCATION_LABELS } from './types';
 import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
 import { traumaFromKind } from './trauma';
 
@@ -44,10 +44,10 @@ export function permanentAmputations(name: string, note: string, location: HitLo
   const out: Trauma[] = [];
   if (location === 'jambeG' || location === 'jambeD') {
     if (/orteil/.test(t)) {
-      out.push({ label: `Orteil(s) amputé(s) (${location})`, location, charPenalty: { Ag: -1, CC: -1 },
+      out.push({ label: `Orteil(s) amputé(s) (${HIT_LOCATION_LABELS[location]})`, location, charPenalty: { Ag: -1, CC: -1 },
         note: 'LDB 18 l.366 : −1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
     } else {
-      out.push({ label: `Membre inférieur amputé (${location})`, location, movementHalved: true, dodgePenalty: -20,
+      out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, movementHalved: true, dodgePenalty: -20,
         prosthesis: [MERVEILLE, { name: 'Fausse jambe', cancels: 'movement' }],
         note: 'LDB 18 l.369/347 : Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse (LDB 73) : Fausse jambe / Merveille.' });
     }
@@ -57,11 +57,11 @@ export function permanentAmputations(name: string, note: string, location: HitLo
     const dominant = location === 'brasD'; // droitier
     if (/doigt/.test(t)) {
       // 1 doigt par critique (« Doigt sectionné » / « Main ouverte : perdez 1 doigt »). Cumulé par consolidateAmputations.
-      out.push({ label: `Doigts amputés (${location})`, location, count: 1, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
+      out.push({ label: `Doigts amputés (${HIT_LOCATION_LABELS[location]})`, location, count: 1, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
         prosthesis: [MERVEILLE],
         note: `LDB 18 l.341 : −5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille (LDB 73).` });
     } else if (/\bmain\b|bras inutilisable/.test(t)) {
-      out.push({ label: `Main/bras amputé (${location})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
+      out.push({ label: `Main/bras amputé (${HIT_LOCATION_LABELS[location]})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
         prosthesis: [MERVEILLE],
         note: `LDB 18 l.352/335 : pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille (LDB 73).` });
     }
@@ -163,7 +163,7 @@ export function rollCritical(
     }
     // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
     traumas.push({
-      label: `Amputation (${location})`,
+      label: `Amputation (${HIT_LOCATION_LABELS[location]})`,
       location,
       needsSurgery: true,
       note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
@@ -181,6 +181,6 @@ export function rollCritical(
     traumas,
     note: entry.note,
     roll,
-    log: `Blessure critique (${location}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
+    log: `Blessure critique (${HIT_LOCATION_LABELS[location]}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
   };
 }

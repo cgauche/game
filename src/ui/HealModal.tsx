@@ -4,6 +4,7 @@ import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
 import { RollFlowShell, Dice } from './RollFlowShell';
 import { TeamPortrait } from './CombatantBadge';
+import { ModalSubject } from './ModalSubject';
 import { DrBar } from './DrBar';
 
 /**
@@ -26,6 +27,8 @@ export function HealModal() {
   const setTarget = useGame((s) => s.healSetTarget);
   const surgeryPass = useGame((s) => s.surgeryPass);
   const surgerySetWound = useGame((s) => s.surgerySetWound);
+  const surgeryBandage = useGame((s) => s.surgeryBandage);
+  const surgeryStopBleed = useGame((s) => s.surgeryStopBleed);
   if (!ph) return null;
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const healer = pool.find((c) => c.id === ph.healerId); // peut être absent (PNJ médecin) → Chance/Résilience à 0
@@ -65,13 +68,7 @@ export function HealModal() {
             <strong>{ph.healerName}</strong> opère <strong>{ph.targetName}</strong>{' '}
             <span className="rm-weapon">(cumuler {cible} DR · Intermédiaire +0)</span>
           </p>
-          {target && (
-            <div className="modal-subject">
-              <TeamPortrait combatant={target} size={40} />
-              <strong>{target.name}</strong>
-              <span className="ms-pv">{target.wounds.current}/{target.wounds.max} PB</span>
-            </div>
-          )}
+          {target && <ModalSubject c={target} size={40} pv />}
           {!started && targetPicker}
           {!started && wnds.length > 1 && (
             <div className="heal-target-pick">
@@ -92,6 +89,9 @@ export function HealModal() {
           <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10). À 0 PB, l’opération s’interrompt.</p>
           <div className="modal-actions">
             <button className="btn" onClick={cancel}>Arrêter</button>
+            {/* #16 : gérer le patient (bander / arrêter l'hémorragie) SANS interrompre l'opération. */}
+            <button className="btn" onClick={surgeryBandage} disabled={!target || target.wounds.current >= target.wounds.max} title="Bander les Blessures (Test de Guérison, +BI+DR PB) — sans interrompre l'opération">🩹 Bander</button>
+            <button className="btn" onClick={surgeryStopBleed} disabled={!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)} title="Arrêter l'hémorragie (Test de Guérison) — sans interrompre l'opération">🩸 Hémorragie</button>
             <button className="btn btn-primary" onClick={surgeryPass}>🔪 Opérer (une passe)</button>
           </div>
         </div>
@@ -114,13 +114,7 @@ export function HealModal() {
       }
       extra={
         <>
-          {target && (
-            <div className="modal-subject">
-              <TeamPortrait combatant={target} size={38} />
-              <strong>{target.name}</strong>
-              <span className="ms-pv">{target.wounds.current}/{target.wounds.max} PB</span>
-            </div>
-          )}
+          {target && <ModalSubject c={target} pv />}
           {targetPicker}
         </>
       }

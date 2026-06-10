@@ -26,7 +26,7 @@ describe('applyCriticalToTarget — choix de localisation sur Coup Critique forc
     seedBattleRng(1);
     const log: string[] = [];
     applyCriticalToTarget(mk(), 'corps', true, 0, log, () => {}, 'tete');
-    expect(log.some((l) => l.includes('(tete)'))).toBe(true);
+    expect(log.some((l) => l.includes('(Tête)'))).toBe(true); // localisation affichée en FR (HIT_LOCATION_LABELS)
   });
 
   it('sans choix → localisation aléatoire (comportement inchangé), un critique est bien appliqué', () => {

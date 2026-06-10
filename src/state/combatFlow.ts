@@ -4,7 +4,7 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState, RevealEntry } from './store';
-import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { TEMPO } from './tempo';
@@ -769,6 +769,7 @@ export function applyCriticalToTarget(
   log: string[],
   set: any,
   chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
+  ctx?: { attackerId?: string; weapon?: string }, // qui inflige le coup + l'arme → modale de Critique enrichie
 ): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
@@ -785,12 +786,17 @@ export function applyCriticalToTarget(
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
   log.push(crit.log);
   const revealLines = [crit.log];
+  // Effets DÉTAILLÉS pour la modale enrichie : chaque trauma (Amputation, Fracture…) AVEC son explication
+  // RAW (note) — « à quoi ça correspond » (#critique). Localisation FR, et pas de « (Jambe droite) (jambeD) ».
+  const details: { text: string; note?: string }[] = [];
   if (crit.traumas.length) {
     target.traumas = [...(target.traumas ?? []), ...crit.traumas];
     for (const t of crit.traumas) {
-      const line = `  ↳ ${t.label} (${t.location}).`;
-      log.push(line);
-      revealLines.push(line);
+      const locLbl = HIT_LOCATION_LABELS[t.location];
+      const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
+      log.push(`  ↳ ${text}.`);
+      revealLines.push(`  ↳ ${text}.`);
+      details.push({ text, note: t.note });
     }
     // Cumuls par comptage (LDB 18) : doigts (−5/doigt, 4+ → main) et dents (−1 Soc/paire) fusionnés ;
     // 2e œil/oreille → Cécité / Surdité agrégée (l.360/363).
@@ -798,6 +804,7 @@ export function applyCriticalToTarget(
     for (const l of escalateSensoryLoss(target)) {
       log.push(`  ↳ ${l}`);
       revealLines.push(`  ↳ ${l}`);
+      details.push({ text: l });
     }
   }
   if (!crit.lethal) {
@@ -806,10 +813,16 @@ export function applyCriticalToTarget(
     if (crit.note) {
       log.push(`  ↳ ${crit.note}`); // effet long terme journalisé, non simulé
       revealLines.push(`  ↳ ${crit.note}`);
+      details.push({ text: crit.note });
     }
   }
-  // « Un jet = une modale » : le joueur voit le dé du Coup Critique (infligé ou subi).
-  pushReveal(set, { kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id });
+  // « Un jet = une modale » : modale de Coup Critique COMPLÈTE (qui inflige + arme + dé + localisation +
+  // Blessures + États + effets expliqués), au niveau de la modale d'attaque.
+  pushReveal(set, {
+    kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
+    actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
+    crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
+  });
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
 }
 
@@ -875,7 +888,7 @@ export function applyAttackResult(
     if (res.critical && (autoDeviate || deviated === true)) {
       deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
     } else if (res.critical || overkill > 0) {
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name });
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
@@ -1734,7 +1747,7 @@ export function applyCast(
       const overkill = res.woundsLost - currentBefore;
       target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
       if (res.isCritical || overkill > 0) {
-        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines, set);
+        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
         if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
       } else if (target.wounds.current <= 0) {
         applyZeroWounds(target);

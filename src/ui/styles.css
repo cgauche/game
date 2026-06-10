@@ -2834,3 +2834,66 @@ textarea:focus {
 /* Messages de victoire (Effets journal de onVictory) — affichés dans l'écran de victoire (#9). */
 .victory-messages { margin: 4px 0 12px; max-width: 520px; text-align: center; }
 .victory-msg { color: var(--gold); font-size: 14px; margin: 4px 0; line-height: 1.5; }
+
+/* ── Coup Critique : panneau complet (au niveau de la modale d'attaque) ── */
+.crit-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0;
+}
+.crit-stat {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8705f;
+  background: rgba(192, 57, 43, 0.16);
+  border: 1px solid rgba(224, 83, 58, 0.5);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.crit-cond {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+.crit-effects {
+  margin: 8px 0 4px;
+  max-height: 34vh;
+  overflow: auto;
+}
+.crit-effect {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.crit-effect .ce-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0d9a0;
+}
+.crit-effect .ce-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Sélecteur de soin par portrait dans l'ActionBar (#20). */
+.ab-heal-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 4px 7px;
+}
+.ab-heal-pick .ab-heal-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 2px;
+}

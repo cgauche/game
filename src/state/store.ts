@@ -47,9 +47,9 @@ import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
-import { hasHealSkill, hasSurgerySkill, availableHealModes, healWoundsDelta, applyHealWounds, applyStopBleed, type HealMode } from '../engine/healing';
+import { hasHealSkill, hasSurgerySkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
-import { rollContraction, contractDisease } from '../engine/disease';
+import { rollContraction } from '../engine/disease';
 import { persistentConditions } from '../engine/persistence';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
@@ -309,6 +309,10 @@ export interface GameState {
   healSetTarget: (targetId: string) => void;
   /** Chirurgie (Test étendu) : choisit la Blessure Critique à opérer avant la 1re passe. */
   surgerySetWound: (idx: number) => void;
+  /** #16 : pendant la Chirurgie (Test étendu), bander les Blessures / arrêter l'Hémorragie SANS
+   *  interrompre l'opération (Tests de Guérison appliqués sur le patient, n'avancent pas le DR). */
+  surgeryBandage: () => void;
+  surgeryStopBleed: () => void;
   /** Chirurgie (Test étendu) : effectue une passe (1d10 PB + Hémorragie, cumule le DR jusqu'à la cible). */
   surgeryPass: () => void;
   healRoll: () => void;
@@ -1027,21 +1031,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!target) return;
     let log: string[];
     if (ph.mode === 'wounds') {
-      const healed = healWoundsDelta(ph.intBonus, ph.sl, ph.success);
-      log = applyHealWounds(target, healed);
-      if (healed > 0) bus.emit(EVT.ANIM_FLOAT, { to: target.id, text: `+${healed}`, kind: 'heal' }); // flottant de soin (R8)
-      // LDB 09-Compétences (Guérison) : « Sur un Échec Stupéfiant, votre patient contractera également une
-      // Infection mineure ». Échec Stupéfiant = DR ≤ −6 ; contraction automatique (pas de Test de Résistance).
-      if (!ph.success && ph.sl <= -6) {
-        const dz = contractDisease('Infection Mineure', battleRng());
-        if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
-          target.diseases = [...(target.diseases ?? []), dz];
-          log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
-        }
-      }
+      const r = resolveWoundsHeal(target, ph.intBonus, ph.sl, ph.success, battleRng());
+      log = r.log;
+      if (r.healed > 0) bus.emit(EVT.ANIM_FLOAT, { to: target.id, text: `+${r.healed}`, kind: 'heal' }); // flottant de soin (R8)
     } else {
       log = ph.mode === 'bleed'
-        ? (ph.success ? applyStopBleed(target, ph.sl) : [`${target.name} : l'hémorragie ne cède pas.`])
+        ? resolveBleedHeal(target, ph.sl, ph.success)
         : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
     }
     finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
@@ -1096,6 +1091,32 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingHeal: { ...ph, surgeryCumDR: cum, roll: res.roll, sl: res.sl, success: res.success }, ...touchActors(get()) });
     get().log(log[0]);
+  },
+
+  /** #16 : BANDER les Blessures pendant la Chirurgie (Test de Guérison Intermédiaire, +BI+DR PB) —
+   *  pour empêcher le patient de sombrer à 0 PB sans interrompre l'opération. N'avance pas le DR. */
+  surgeryBandage: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.mode !== 'surgery') return;
+    const target = actorIn(get(), ph.targetId);
+    if (!target || target.wounds.current >= target.wounds.max) return;
+    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
+    const { log } = resolveWoundsHeal(target, ph.intBonus, res.sl, res.success, battleRng());
+    set({ pendingHeal: { ...ph }, ...touchActors(get()) });
+    for (const l of log) get().log(l);
+  },
+
+  /** #16 : ARRÊTER l'Hémorragie que les passes de Chirurgie infligent (Test de Guérison, retire 1+DR
+   *  pions) — sans interrompre l'opération. N'avance pas le DR. */
+  surgeryStopBleed: () => {
+    const ph = get().pendingHeal;
+    if (!ph || ph.mode !== 'surgery') return;
+    const target = actorIn(get(), ph.targetId);
+    if (!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)) return;
+    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
+    const log = resolveBleedHeal(target, res.sl, res.success);
+    set({ pendingHeal: { ...ph }, ...touchActors(get()) });
+    for (const l of log) get().log(l);
   },
 
   healCancel: () => set({ pendingHeal: null }),

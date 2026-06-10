@@ -224,6 +224,16 @@ export interface RevealEntry {
   /** Combattant CONCERNÉ par la révélation (victime du critique, lanceur de la Colère…) → portrait
    *  + nom dans la modale (« on sait toujours à qui ça s'applique »). Absent pour les entretiens de Round. */
   subjectId?: string;
+  /** Auteur du coup (Coup Critique « infligé PAR ») → portrait + nom dans la modale (qui → arme → cible). */
+  actorId?: string;
+  /** Arme employée (Coup Critique). */
+  weapon?: string;
+  /** Effets détaillés (table des Critiques) AVEC leur explication RAW — pour qu'on sache « à quoi ça
+   *  correspond » (plus de simple texte gris). */
+  details?: { text: string; note?: string }[];
+  /** Données du Coup Critique pour une modale COMPLÈTE : localisation (FR), Blessures infligées (ignore
+   *  Endurance + Armure), États appliqués. */
+  crit?: { location: string; woundsLost: number; conditions?: { name: string; value: number }[] };
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */

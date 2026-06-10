@@ -6,6 +6,8 @@
 import { Combatant } from './types';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
 import { hasTreatableTrauma, hasSurgeryTrauma } from './trauma';
+import { contractDisease } from './disease';
+import type { RNG } from './dice';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
 const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -101,4 +103,25 @@ export function applyStopBleed(target: Combatant, dr: number): string[] {
     log.push(`${target.name} est Exténué (après l'arrêt de l'hémorragie, LDB 16 l.109).`);
   }
   return log;
+}
+
+/** SOURCE UNIQUE de l'application d'un soin de Blessures (Guérison) : delta BI+DR appliqué (mutation),
+ *  + Infection Mineure sur Échec Stupéfiant (DR ≤ −6, LDB 09). Partagée par le soin de combat, le
+ *  médecin payant ET la chirurgie (bandage). Renvoie le journal + le nombre de PB rendus. */
+export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: number, success: boolean, rng: RNG): { log: string[]; healed: number } {
+  const healed = healWoundsDelta(intBonus, sl, success);
+  const log = applyHealWounds(target, healed);
+  if (!success && sl <= -6) {
+    const dz = contractDisease('Infection Mineure', rng);
+    if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
+      target.diseases = [...(target.diseases ?? []), dz];
+      log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
+    }
+  }
+  return { log, healed };
+}
+
+/** SOURCE UNIQUE de l'arrêt d'Hémorragie (Guérison) : applique si réussi, message d'échec sinon. */
+export function resolveBleedHeal(target: Combatant, sl: number, success: boolean): string[] {
+  return success ? applyStopBleed(target, sl) : [`${target.name} : l'hémorragie ne cède pas.`];
 }

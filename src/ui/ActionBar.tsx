@@ -13,6 +13,7 @@ import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { PortraitTile } from './PortraitTile';
+import { TeamPortrait } from './CombatantBadge';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -219,17 +220,18 @@ export function ActionBar() {
       {battle.action === 'heal' && (
         <div className="ab-spells">
           {healTargets.length === 0 && <div className="ab-hint">Aucune cible à portée.</div>}
-          {healTargets.flatMap((t) =>
-            availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
-              <div key={`${t.id}:${m}`} className="ab-spell-row">
-                <button className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action (LDB 09-Compétences)">
-                  {m === 'wounds'
-                    ? `🩹 Soigner ${t.name} (${t.wounds.current}/${t.wounds.max})`
-                    : `🩸 Stopper l'hémorragie de ${t.name} (${bleedStacks(t)} pion)`}
+          {/* #20 : choisir QUI soigner par son PORTRAIT (puis le mode : Blessures / Hémorragie). */}
+          {healTargets.map((t) => (
+            <div key={t.id} className="ab-heal-pick">
+              <TeamPortrait combatant={t} size={34} />
+              <span className="ab-heal-name">{t.name}</span>
+              {availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
+                <button key={m} className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action (LDB 09-Compétences)">
+                  {m === 'wounds' ? `🩹 ${t.wounds.current}/${t.wounds.max}` : `🩸 ${bleedStacks(t)} pion`}
                 </button>
-              </div>
-            )),
-          )}
+              ))}
+            </div>
+          ))}
         </div>
       )}
       {battle.action === 'mvt' && (
