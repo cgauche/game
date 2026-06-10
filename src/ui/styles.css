@@ -1504,6 +1504,14 @@ textarea:focus {
   color: var(--muted);
   padding: 6px 14px;
 }
+/* Badge d'aperçu tap-1 sur la scène (modèle de clic implicite) */
+.pv-badge {
+  font: 700 13px system-ui, sans-serif;
+  fill: #ffd75e;
+  paint-order: stroke;
+  stroke: #15100a;
+  stroke-width: 3px;
+}
 /* Rappel du modèle de clic implicite (clic case = déplacer · clic ennemi = attaquer) */
 .ab-hint-implicit {
   align-self: center;

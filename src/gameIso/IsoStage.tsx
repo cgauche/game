@@ -150,6 +150,11 @@ export function IsoStage() {
       const k = e.key.toLowerCase();
       if (k === 'e') rotateCam(1);
       else if (k === 'q') rotateCam(-1);
+      else if (e.key === 'Escape') {
+        // Échap purge l'aperçu tap-1 du modèle de clic implicite.
+        const st = useGame.getState();
+        if (st.battle?.preview) useGame.setState({ battle: { ...st.battle, preview: null } });
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -265,6 +270,25 @@ export function IsoStage() {
     for (const k of displayedReach(useGame.getState).keys()) {
       const [x, y] = k.split(',').map(Number);
       hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
+    }
+    // Aperçu tap-1 (modèle implicite) : chemin pointillé, case d'arrivée, badge de l'action du tap 2.
+    const pv = battle.preview;
+    if (pv) {
+      const pvPath = pv.kind === 'attack' ? [] : pv.path;
+      if (pvPath.length > 1) {
+        const pts = pvPath.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
+        hl.push(<polyline key="pv-path" points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} strokeDasharray="7 5" opacity={0.9} pointerEvents="none" />);
+      }
+      const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
+      const pvDest = pv.kind === 'move' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
+      if (pvDest) hl.push(<path key="pv-dest" d={diamondPath(pvDest.x, pvDest.y, d)} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.95} pointerEvents="none" />);
+      if (pvTgt?.pos) hl.push(<path key="pv-tgt" d={diamondPath(pvTgt.pos.x, pvTgt.pos.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />);
+      const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
+      const pvAt = pvDest ?? pvTgt?.pos;
+      if (pvAt) {
+        const c0 = tileCenter(pvAt.x, pvAt.y, d);
+        hl.push(<text key="pv-lbl" x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{pvLbl} — re-cliquer pour confirmer</text>);
+      }
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {
