@@ -362,6 +362,9 @@ export interface PendingCast {
    *  rayon (cases, Chebyshev) sont visés — `extraTargetIds` porte les cibles au-delà de la
    *  première (résolution multi-cibles du même jet). Cibles figées au ciblage. */
   zone?: { center: { x: number; y: number }; radius: number };
+  /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
+   *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
+  grimoire?: boolean;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

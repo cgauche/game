@@ -12,7 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
-  finishPlayerAction, restPartyOvernight,
+  effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
@@ -261,6 +261,8 @@ export interface GameState {
   buySkillAdvance: (heroId: string, skillName: string) => void;
   /** Achète/augmente un Talent (refusé hors carrière, LDB l.97). */
   buyTalent: (heroId: string, talentName: string) => void;
+  /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
+  buySpell: (heroId: string, label: string) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (coût 100 si Niveau actuel complété, 200 sinon). */
@@ -410,7 +412,7 @@ export interface GameState {
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
-  oocCastSpell: (casterId: string, label: string, targetId: string) => void;
+  oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
@@ -667,6 +669,17 @@ export const useGame = create<GameState>((set, get) => ({
   buyCharAdvance: (heroId, char) => partyFlow.buyCharAdvance(get, set, heroId, char),
   buySkillAdvance: (heroId, skillName) => partyFlow.buySkillAdvance(get, set, heroId, skillName),
   buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
+  /** Mémorise un sort (PX selon le Talent, LDB 46/10) ; un sort du Chaos corrompt (+1, seuil → mutation). */
+  buySpell: (heroId, label) => {
+    const r = partyFlow.buySpell(get, set, heroId, label);
+    if (r.ok && r.chaos) {
+      const hero = get().party.find((h) => h.id === heroId);
+      if (hero) {
+        for (const l of gainCorruption(get, set, hero, 1)) get().log(l);
+        set({ party: [...get().party] });
+      }
+    }
+  },
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
 
@@ -1218,7 +1231,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell) return;
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
@@ -1232,7 +1245,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
@@ -1246,7 +1259,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
     const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
@@ -1260,7 +1273,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (pc.result.roll > 0 && pc.result.roll <= pc.result.target) return; // jet propre réussi → rien à pactiser
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || caster.kind !== 'hero' || !target || !spell) return;
     for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
     const res = pc.missile
@@ -1273,7 +1286,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     set({ pendingCast: null });
     if (caster && target && spell) {
       // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
@@ -1318,7 +1331,7 @@ export const useGame = create<GameState>((set, get) => ({
   castCancel: () => set({ pendingCast: null }),
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
-  oocCastSpell: (casterId, label, targetId) => {
+  oocCastSpell: (casterId, label, targetId, fromGrimoire) => {
     const { battle, party } = get();
     if (battle) return; // en combat : l'incantation passe par l'action de combat
     const caster = party.find((c) => c.id === casterId);
@@ -1329,7 +1342,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     const target = party.find((c) => c.id === targetId) ?? caster;
-    castSpell(get, set, caster, target, label); // pose `pendingCast` (missile:false, focused selon caster.focus)
+    castSpell(get, set, caster, target, label, fromGrimoire); // pose `pendingCast` (missile:false, focused selon caster.focus)
   },
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
@@ -2541,7 +2554,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
     const ni = pc.focused ? 0 : spell.cn ?? 0;

@@ -31,6 +31,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveSin',
   'corruptionExposure',
   'giveCorruption',
+  'learnSpell',
   'rest',
   'startCombat',
   'transition',
@@ -56,6 +57,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
+  learnSpell: 'Apprendre un sort (trouvaille, sans PX)',
   rest: 'Repos (Dormir / Se reposer N jours)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
@@ -108,6 +110,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'corruptionExposure', level: 'mineure', skill: 'Résistance', heroId: '' };
     case 'giveCorruption':
       return { type: 'giveCorruption', amount: 1, heroId: '' };
+    case 'learnSpell':
+      return { type: 'learnSpell', spell: '', heroId: '' };
     case 'rest':
       return { type: 'rest', days: 1 };
     case 'setTime':
@@ -207,6 +211,12 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
           <>
             <label>Points de Corruption <input type="number" min={1} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'learnSpell' && (
+          <>
+            <input placeholder="Libellé exact du sort (spells.json), ex. Fléchette" value={e.spell ?? ''} onChange={(ev) => upd({ spell: ev.target.value })} />
+            <input placeholder="id du héros (vide = premier au Talent éligible)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
         )}
         {effect.type === 'giveMoney' && (

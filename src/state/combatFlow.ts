@@ -53,6 +53,7 @@ import {
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
@@ -286,6 +287,22 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           for (const l of lines) get().log(l);
           set({ party: [...get().party] });
         }
+        break;
+      }
+      case 'learnSpell': {
+        // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
+        // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
+        const sp = findSpell(e.spell);
+        if (!sp) break;
+        let who = '';
+        set((s: GameState) => {
+          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
+          if (idx < 0) idx = s.party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.label));
+          if (idx < 0) return {};
+          who = s.party[idx].name;
+          return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.label) ? { ...h, spells: [...(h.spells ?? []), sp.label] } : h)) };
+        });
+        if (who) get().log(`${who} apprend ${sp.label}.`);
         break;
       }
       case 'inflictDisease': {
@@ -1843,6 +1860,7 @@ export function castSpell(
   caster: Combatant,
   target: Combatant,
   label: string,
+  fromGrimoire = false,
 ) {
   const spell = findSpell(label);
   if (!spell) {
@@ -1855,10 +1873,25 @@ export function castSpell(
     get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
     return;
   }
+  // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
+  if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
+    get().log(`${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
+    return;
+  }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
   set({
-    pendingCast: { casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell), focused: focusedNI0, result: null },
+    pendingCast: {
+      casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell),
+      focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
+    },
   });
+}
+
+/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
+export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
+  const spell = findSpell(pc.spellLabel);
+  if (!spell || !pc.grimoire || spell.cn == null) return spell;
+  return { ...spell, cn: spell.cn * 2 };
 }
 
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */

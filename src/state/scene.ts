@@ -217,6 +217,10 @@ export type Effect =
   /** Points de Corruption DIRECTS (LDB 19) — contact d'un artefact maudit, Sombre Pacte scénarisé…
    *  (sans Test ; pour l'exposition testée, utiliser `corruptionExposure`). */
   | { type: 'giveCorruption'; amount?: number; heroId?: string }
+  /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
+   *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
+   *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
+  | { type: 'learnSpell'; spell: string; heroId?: string }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
