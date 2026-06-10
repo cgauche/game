@@ -11,6 +11,8 @@ import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
 import { rangeBandModifier, rangeBandName } from '../engine/combat';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { resolveFormula } from '../engine/ops';
+import { spellSpecFor } from '../data/spellspecs';
 import { findSpell } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction } from '../engine/conditions';
@@ -754,7 +756,13 @@ export function IsoStage() {
         {battle?.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && activeC.pos && hover && !pendingCast &&
           (() => {
             const spell = findSpell(battle.selectedSpell!);
-            const radius = spell ? zdeRadiusTiles(spell.target, activeC) : null;
+            // Même calcul que battleClickTile : rayon de spec curée prioritaire sur le champ Cible.
+            const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
+            const radius = spell
+              ? specRadius != null
+                ? Math.max(0, Math.floor(resolveFormula(specRadius, activeC) / 2))
+                : zdeRadiusTiles(spell.target, activeC)
+              : null;
             if (spell == null || radius == null) return null;
             const range = spellRangeTiles(spell.range, activeC);
             const ok = range == null || cheb(activeC.pos!, hover) <= range;

@@ -97,7 +97,7 @@ describe('registre curé — Bénédictions ≡ repli (golden iso-comportement)'
   });
 
   it('un sort non curé passe par le repli', () => {
-    const fleche = spells.find((s) => s.label === 'Fléchette')!;
-    expect(spellSpecFor(fleche).curated).toBe(false);
+    const ombres = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Ombres')!;
+    expect(spellSpecFor(ombres).curated).toBe(false);
   });
 });

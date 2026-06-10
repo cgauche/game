@@ -151,6 +151,9 @@ export interface ActiveEffect {
   /** État RÉCURRENT (« la cible gagne 1 État X par Round ») : ré-appliqué à chaque fin de
    *  Round tant que l'effet dure (sorts à État récurrent — specs curées). */
   condPerRound?: { name: string; value: number };
+  /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
+   *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
+  apAll?: number;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

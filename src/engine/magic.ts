@@ -18,7 +18,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, TestResult } from './tests';
-import { bonus, effectiveChar } from './characteristics';
+import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
@@ -451,7 +451,7 @@ export function evaluateMissile(
   const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'E'));
-  const ap = spellDmg?.ignorePA ? 0 : target.armour[loc] ?? 0;
+  const ap = spellDmg?.ignorePA ? 0 : effectiveArmourAt(target, loc); // PA portés + temporisés (Armure Aethyrique)
   const woundsLost = Math.max(1, damage - (tb + ap));
   const defeated = target.wounds.current - woundsLost <= 0;
   const mitLabel =

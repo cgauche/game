@@ -57,6 +57,9 @@ export type GameOp =
   | { op: 'wounds'; amount: Formula }
   /** Blessures rendues (plafonnées au max). */
   | { op: 'heal'; amount: Formula }
+  /** Blessures rendues AU LANCEUR (« Puis vous Guérissez 1 Point de Blessure » — Drain).
+   *  Sans `ctx.caster`, s'applique à la cible (auto-sort). */
+  | { op: 'healCaster'; amount: Formula }
   /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
    *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
    *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
@@ -67,6 +70,9 @@ export type GameOp =
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort) ou persistance hors-échelle (COMBAT_PERSIST). */
   | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
+  /** PA TEMPORISÉS à toutes les localisations (Armure Aethyrique « +1 PA à toutes les
+   *  Localisations ») — ActiveEffect.apAll, lu par effectiveArmourAt à la mitigation. */
+  | { op: 'apAll'; amount: Formula }
   /** Test imbriqué (« Test de Résistance Accessible (+20) ou … ») : résolu
    *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`.
    *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
@@ -154,6 +160,13 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(`${target.name} regagne ${n} Blessure(s).`);
         break;
       }
+      case 'healCaster': {
+        const who = ctx.caster ?? target;
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng));
+        who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
+        lines.push(`${who.name} regagne ${n} Blessure(s).`);
+        break;
+      }
       case 'condition': {
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng));
         if (o.perRound) {
@@ -195,6 +208,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         charRounds = rounds;
         break;
       }
+      case 'apAll': {
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng));
+        const rounds = ctx.defaultDurationRounds ?? COMBAT_PERSIST;
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, roundsLeft: rounds, apAll: n });
+        lines.push(`${target.name} : +${n} PA à toutes les Localisations (${ctx.label ?? 'sort'}${rounds !== COMBAT_PERSIST ? `, ${rounds} rounds` : ''}).`);
+        break;
+      }
       case 'test': {
         const t = rollTest(testValue(target, o.skill), o.difficulty, rng);
         lines.push(
@@ -206,7 +227,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'corruption': {
-        if (ctx.onCorruption) {
+        if (o.amount < 0) {
+          // RETRAIT de Corruption (Innocence immaculée, LDB 42) : décrément direct, jamais sous 0.
+          const before = target.corruption ?? 0;
+          target.corruption = Math.max(0, before + o.amount);
+          lines.push(`${target.name} : ${target.corruption - before} Point(s) de Corruption (total ${target.corruption}).`);
+        } else if (ctx.onCorruption) {
           lines.push(...ctx.onCorruption(o.amount));
         } else {
           target.corruption = (target.corruption ?? 0) + o.amount;

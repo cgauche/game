@@ -24,16 +24,46 @@ import {
 
 export interface SpellSpec {
   label: string;
+  /** Désambiguïsation des labels en DOUBLE entre familles (« Enchevêtrement » existe en
+   *  Sort d'Arcane ET en Miracle de Taal) : absent = la spec vaut pour tout type. */
+  type?: string;
   /** Ops appliquées à la cible quand le sort est lancé (référent des formules = LANCEUR). */
   ops: GameOp[];
   /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
    *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) —
    *  on n'invente PAS un nombre de rounds (LDB). */
   durationRounds: Formula | null;
+  /** RAYON de Zone d'Effet en MÈTRES (specs curées dont la zone vit dans la desc —
+   *  « dans un rayon de (Bonus de Sociabilité) mètres », Feu de l'âme/Comète…) ;
+   *  prioritaire sur le parsing du champ Cible (zdeRadiusTiles). */
+  zdeRadiusMeters?: Formula;
+  /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
+   *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
+  zdeExcludesCaster?: boolean;
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */
   source?: string;
+}
+
+/**
+ * Niveau de prise en charge MÉCANIQUE d'un sort (pour l'inventaire et les badges UI) :
+ *  - 'mecanique' : tous ses effets connus sont appliqués par le moteur (ops mécaniques
+ *    et/ou résolution de Projectile magique) ;
+ *  - 'partiel'   : effets mécaniques + un volet journalisé « arbitrage MJ » ;
+ *  - 'narratif'  : RIEN n'est appliqué mécaniquement — l'effet est journalisé verbatim
+ *    (sorts utilitaires, Traits temporisés, enchantements d'arme…) ;
+ *  - le drapeau `curated` distingue une spec relue de la source d'un repli regex.
+ */
+export function spellSupport(
+  spec: SpellSpec,
+  missile: boolean,
+): 'mecanique' | 'partiel' | 'narratif' {
+  const mech = spec.ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null;
+  const narr = spec.ops.some((o) => o.op === 'narrative') || (!spec.curated && spec.ops.length === 0);
+  if (mech && narr) return 'partiel';
+  if (mech) return 'mecanique';
+  return 'narratif';
 }
 
 /**

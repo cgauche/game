@@ -1956,6 +1956,7 @@ export function applyCast(
 
   if (missile) {
     // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
+    const missileSpec = spellSpecFor(spell);
     const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
       if (!mres.hit || !mres.woundsLost) return;
       const currentBefore = t.wounds.current;
@@ -1968,6 +1969,17 @@ export function applyCast(
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
+      }
+      // Ops d'une spec CURÉE de Projectile (« Grands feux d'U'Zhul » : +2 En flammes, À Terre ;
+      // « Drain » : soigne le lanceur) — le repli regex n'en émet jamais ici (iso-POC : la
+      // branche missile du POC n'appliquait aucun effet parsé).
+      if (missileSpec.curated && missileSpec.ops.length) {
+        const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
+        logLines.push(...applyOps(t, missileSpec.ops, {
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime,
+          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
+        }));
       }
       // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
       logLines.push(...checkFocusInterruption(get, set, t));
@@ -2008,7 +2020,9 @@ export function applyCast(
             rng: battleRng(),
             caster,
             label: spell.label,
+            now: get().gameTime,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+            onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );
       }

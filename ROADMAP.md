@@ -627,12 +627,23 @@ iso-POC pour les sorts non curés (curation incrémentale, zéro régression —
   correctif **Surincantation des Prières** (LDB 41/42), scénario 🕯️ **« Magie — Jalon 2 »**
   (`14-magie-jalon2.ts` : Péché→Colère, exposition→mutation, Sombre Pacte, ZdE, Surincantation,
   mémorisation).
-- **Backlog incrémental** (pattern en place, 1 fichier/famille dans `data/spellspecs/`) : curation
-  des ~190 sorts restants (Magie mineure, Arcanes communs, 7 Domaines, Miracles ×10 cultes) ; effets
-  « par identité » non modélisés (relance de Bénédiction de Chance, armes enchantées, Trait Peur de
-  sort, immunités) ; **Dissipation/Contre-sort** (nécessite des lanceurs IA des deux côtés) ;
-  composants & malepierre ; Vents tourbillonnants (règle optionnelle).
-- **2236 tests verts**, typecheck 0, lint 0 erreur ; recette navigateur À REPASSER (session sans Playwright).
+- ✅ **Lot 8 bis — curation élargie + inventaire** : Magie mineure (25), Arcanes communs (23),
+  Miracles de Sigmar + Shallya (12) curés — **87 specs curées**, dont : Éblouissant (Aveuglé
+  RÉCURRENT), Drain (soigne le lanceur — les ops de spec curée s'appliquent désormais aussi sur la
+  branche Projectile), **Armure Aethyrique enfin mécanique** (PA temporisés `ActiveEffect.apAll`,
+  lus par `effectiveArmourAt` à la mitigation), Innocence immaculée (RETRAIT de Corruption),
+  Poussée/Feu de l'âme/Comète (zone portée par la spec `zdeRadiusMeters`, lanceur exclu) ;
+  labels en DOUBLE désambiguïsés par type (« Enchevêtrement » Arcane ≠ miracle de Taal).
+  **Inventaire d'implémentation** : `docs/sorts-implementation.md` (GÉNÉRÉ par
+  `npx tsx scripts/gen-sorts-doc.mts`) — état des 221 sorts (✅ 64 mécaniques · 🟡 18 partiels ·
+  📜 139 « arbitrage MJ », avec pour chacun CE QUI RESTE à mécaniser) ; badge 📜/🟡 sur la fiche.
+- **Backlog incrémental** (= `docs/sorts-implementation.md`, 1 fichier/famille dans
+  `data/spellspecs/`) : curation des 7 Domaines restants + Miracles ×8 cultes + Sorcellerie/
+  Nécromancie/Démonologie/Chaos ; effets « par identité » non modélisés (relance de Bénédiction de
+  Chance, armes enchantées, Traits temporisés Peur/Protection/Vol, immunités, redirections type
+  Martyr) ; **Dissipation/Contre-sort** (nécessite des lanceurs IA des deux côtés) ; composants &
+  malepierre ; Vents tourbillonnants (règle optionnelle).
+- **2243 tests verts**, typecheck 0, lint 0 erreur ; recette navigateur À REPASSER (session sans Playwright).
 
 ## 🎯 Jalon 3 — Création de personnage complète
 

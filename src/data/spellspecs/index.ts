@@ -8,17 +8,23 @@ import { SpellSpec, fallbackSpec } from '../../engine/spellspec';
 import { SpellLike } from '../../engine/magic';
 import { BENEDICTIONS } from './benedictions';
 import { DOMAINE_FEU } from './domaine-feu';
+import { MAGIE_MINEURE } from './magie-mineure';
+import { ARCANES_COMMUNS } from './arcanes-communs';
+import { MIRACLES_SIGMAR } from './miracles-sigmar';
+import { MIRACLES_SHALLYA } from './miracles-shallya';
 
-const ALL: SpellSpec[] = [...BENEDICTIONS, ...DOMAINE_FEU];
+const ALL: SpellSpec[] = [
+  ...BENEDICTIONS, ...DOMAINE_FEU, ...MAGIE_MINEURE, ...ARCANES_COMMUNS,
+  ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
+];
 
-const BY_LABEL = new Map(ALL.map((s) => [s.label, s]));
-
-/** Spec curée d'un sort, si elle existe. */
-export function curatedSpec(label: string): SpellSpec | undefined {
-  return BY_LABEL.get(label);
+/** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */
+export function curatedSpec(label: string, type?: string): SpellSpec | undefined {
+  const candidates = ALL.filter((s) => s.label === label);
+  return candidates.find((s) => s.type != null && s.type === type) ?? candidates.find((s) => s.type == null);
 }
 
 /** Spec d'un sort : curée si présente au registre, sinon repli (desc → regex). */
 export function spellSpecFor(spell: SpellLike): SpellSpec {
-  return BY_LABEL.get(spell.label) ?? fallbackSpec(spell);
+  return curatedSpec(spell.label, spell.type) ?? fallbackSpec(spell);
 }

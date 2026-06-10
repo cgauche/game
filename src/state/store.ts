@@ -59,6 +59,8 @@ import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
 import { gainCorruption } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
+import { spellSpecFor } from '../data/spellspecs';
+import { resolveFormula } from '../engine/ops';
 import * as partyFlow from './partyFlow';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
@@ -1516,7 +1518,13 @@ export const useGame = create<GameState>((set, get) => ({
     // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
     if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {
       const spell = findSpell(battle.selectedSpell);
-      const radius = spell ? zdeRadiusTiles(spell.target, active) : null;
+      // Rayon : spec curée (zone décrite dans la desc — Feu de l'âme…) prioritaire sur le champ Cible.
+      const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
+      const radius = spell
+        ? specRadius != null
+          ? Math.max(0, Math.floor(resolveFormula(specRadius, active) / 2))
+          : zdeRadiusTiles(spell.target, active)
+        : null;
       if (spell && radius != null) {
         const range = spellRangeTiles(spell.range, active);
         if (range != null && active.pos && chebyshev(active.pos, pt) > range) {

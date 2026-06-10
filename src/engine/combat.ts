@@ -8,7 +8,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
-import { bonus, effectiveChar } from './characteristics';
+import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
@@ -330,7 +330,8 @@ export interface AttackOptions {
  */
 export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number): number {
   const tb = bonus(effectiveChar(target, 'E'));
-  const ap = Math.max(0, (target.armour[location] ?? 0) - qualitySum(weapon, 'armourReduction'));
+  // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47).
+  const ap = Math.max(0, effectiveArmourAt(target, location) - qualitySum(weapon, 'armourReduction'));
   return Math.max(1, totalDamage - (tb + ap));
 }
 

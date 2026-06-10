@@ -39,6 +39,17 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
 }
 
 /**
+ * Points d'Armure EFFECTIFS à une localisation : armure portée/naturelle (`c.armour`,
+ * mutations comprises via recomputeLoadout) + PA TEMPORISÉS des effets magiques actifs
+ * (Armure Aethyrique « +1 PA à toutes les Localisations » — additifs, LDB 47).
+ */
+export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armour']): number {
+  let ap = c.armour[location] ?? 0;
+  for (const e of c.activeEffects ?? []) ap += e.apAll ?? 0;
+  return ap;
+}
+
+/**
  * Points de Blessure de départ.
  *
  * Livre de base, Tableau des Attributs : « Points de Blessure = BF+(2×BE)+BFM »

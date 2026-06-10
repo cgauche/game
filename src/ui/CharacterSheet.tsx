@@ -7,6 +7,8 @@ import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '.
 import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
+import { spellSupport } from '../engine/spellspec';
+import { spellSpecFor } from '../data/spellspecs';
 import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
@@ -144,11 +146,13 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
+          const support = spellSupport(spellSpecFor(sp), offensive);
           return (
-            <div className="spell-row" key={sp.label} title={sp.desc}>
+            <div className="spell-row" key={sp.label} title={sp.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : '')}>
               <span className="spell-name">
                 {sp.label}
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
+                {support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
@@ -581,10 +585,12 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <>
             <div className="mini-title">Sorts — mémorisation ({learnable.length})</div>
             <div className="adv-grid">
-              {learnable.map(({ spell, cost }) => (
-                <div className="adv-row acquire" key={spell.label} title={spell.desc}>
+              {learnable.map(({ spell, cost }) => {
+                const support = spellSupport(spellSpecFor(spell), isMagicMissile(spell));
+                return (
+                <div className="adv-row acquire" key={spell.label} title={spell.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : '')}>
                   <span className="adv-name">
-                    {spell.label}
+                    {spell.label}{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
                     <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
                   </span>
                   <span className="adv-meta" />
@@ -593,7 +599,8 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                     {spell.type === 'Magie du Chaos' ? ' · +1 Corruption' : ''}
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </>
         );
