@@ -210,7 +210,8 @@ export function firstLevel(career: string): CareerLevelData | undefined {
   return levelsForCareer(career)[0];
 }
 export function findSkill(label: string): SkillData | undefined {
-  return skills.find((s) => s.label === label);
+  // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
+  return skills.find((s) => s.label === label) ?? skills.find((s) => s.label.toLowerCase() === label.toLowerCase());
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);

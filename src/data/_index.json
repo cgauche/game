@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T15:23:47.727Z",
+  "generatedAt": "2026-06-10T20:05:19.756Z",
   "allowedBooks": [
     "LDB",
     "ADE1",
@@ -7,15 +7,14 @@
   ],
   "skippedByBook": {
     "SOC": 33,
-    "EDO": 33,
+    "EDO": 30,
     "AA": 25,
     "VDLM": 150,
     "Lustria": 4,
     "Middenheim": 1,
     "ADE3": 30,
     "Salzemund": 1,
-    "EDOC": 9,
-    "MSR": 1
+    "EDOC": 9
   },
   "counts": {
     "characteristics": 18,
@@ -29,7 +28,7 @@
     "traits": 81,
     "qualities": 32,
     "trappings": 270,
-    "creatures": 58,
+    "creatures": 62,
     "spells": 221,
     "eyes": 10,
     "hairs": 10,

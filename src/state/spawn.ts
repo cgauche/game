@@ -2,7 +2,8 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
+import { parseSkillRef, skillCharacteristic } from '../engine/character';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
@@ -160,6 +161,29 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
   return out;
 }
 
+/** Compétences d'un statbloc au FORMAT LIVRE (« Langue (Magick) 63 », « Focalisation 65 ») : la
+ *  valeur imprimée est la valeur de TEST FINALE (présentation des statblocs de PNJ — ex. Eusapia
+ *  Balacañon, MSR Compagnon p.48) → avances = valeur − Caractéristique de la Compétence (inverse
+ *  de LDB 09 : Test = Caractéristique + avances). Les avances se calculent sur le profil IMPRIMÉ —
+ *  un profil retouché ensuite (carac. aléatoires LDB 78, Taille) garde les mêmes avances.
+ *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). */
+export function skillsFromBook(list: string[] | undefined, printedChars: Characteristics): SkillInstance[] {
+  const out: SkillInstance[] = [];
+  for (const raw of list ?? []) {
+    const m = raw.trim().match(/^(.+?)\s+(\d+)\s*$/);
+    if (!m) continue;
+    const { name, spec } = parseSkillRef(m[1]);
+    const characteristic = skillCharacteristic(name);
+    out.push({ name, spec, characteristic, advances: Math.max(0, Number(m[2]) - printedChars[characteristic]) });
+  }
+  return out;
+}
+
+/** Talents d'un statbloc (libellés concrets : « Magie des Arcanes (Ghur) », « Menaçant »). */
+export function talentsFromBook(list: string[] | undefined): TalentInstance[] {
+  return (list ?? []).map((name) => ({ name: name.trim(), times: 1 })).filter((t) => t.name);
+}
+
 /** Personnalisations d'AUTEUR d'un spawn de créature du bestiaire (EncounterDef.enemies[i]). */
 export interface SpawnExtras {
   /** Traits FACULTATIFS choisis (LDB 76 l.49), chaînes éditées — fusionnés avant toute dérivation. */
@@ -178,6 +202,9 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // « – » du Schéma des Profils (LDB 76) = caractéristique INEXISTANTE → 0 (Int/FM nulles = Fabriqué,
   // auto-réussite via isMindless ; CT nulle = pas d'arme à distance dans la donnée). Pas de 30 inventé.
   let chars = charsFrom(creature.char, 0);
+  // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
+  const skills = skillsFromBook(creature.skills, chars);
+  const talents = talentsFromBook(creature.talents);
   if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
   // imprimé est FINAL pour ses traits fixes, mais un facultatif AJOUTÉ s'applique par-dessus.
@@ -212,11 +239,12 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
-    ...(extras?.spells?.length ? { spells: [...extras.spells] } : {}), // sorts d'auteur → l'IA incante (combatFlow)
+    // Sorts : ceux de la DONNÉE (PNJ nommés — Eusapia en a 12), surchargés par le choix d'auteur.
+    ...(extras?.spells?.length ? { spells: [...extras.spells] } : creature.spells.length ? { spells: [...creature.spells] } : {}),
     groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
-    skills: [],
-    talents: [],
+    skills,
+    talents,
     movement,
     pos,
   };
@@ -224,6 +252,9 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
 
 export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
   let chars = charsFrom(sb.char as any);
+  // Compétences (format livre, avances dérivées du profil SAISI) + talents du statbloc.
+  const skills = skillsFromBook(sb.skills, chars);
+  const talents = talentsFromBook(sb.talents);
   // Caractéristiques aléatoires (LDB 78) : le statbloc saisi est le profil ROND → −10 + 2d10 au spawn.
   if (sb.randomChars) chars = randomizeChars(chars, id);
   // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : appliqués aux
@@ -261,8 +292,8 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     ...(sb.spells?.length ? { spells: [...sb.spells] } : {}), // sorts d'auteur → l'IA incante (combatFlow)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
     traits: sb.traits, // conservés → attaques gratuites de créature en combat
-    skills: [],
-    talents: [],
+    skills,
+    talents,
     movement,
     pos,
   };

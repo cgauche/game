@@ -46,6 +46,11 @@ export interface CustomStatblock {
   groups?: string[];
   /** Sorts connus (libellés de spells.json) — choix d'AUTEUR ; l'IA incante les Projectiles magiques. */
   spells?: string[];
+  /** Compétences au FORMAT LIVRE (« Langue (Magick) 63 ») : valeur de Test FINALE → avances dérivées
+   *  au spawn (valeur − Caractéristique, inverse de LDB 09). */
+  skills?: string[];
+  /** Talents (libellés concrets : « Magie des Arcanes (Ghur) », « Menaçant »). */
+  talents?: string[];
   /** Caractéristiques aléatoires au spawn (LDB 78 : « soustrayez -10 et ajoutez 2d10 »). */
   randomChars?: boolean;
 }

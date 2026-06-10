@@ -58,7 +58,8 @@ export function parseSkillRef(s: string): { name: string; spec?: string } {
   return { name: s.trim() };
 }
 
-function skillCharacteristic(name: string): CharKey {
+/** Caractéristique d'une Compétence (skills.json) — LDB 09 : valeur de Test = Caractéristique + avances. */
+export function skillCharacteristic(name: string): CharKey {
   const data = findSkill(name);
   if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
   return 'Dex'; // repli prudent

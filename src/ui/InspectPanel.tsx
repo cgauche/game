@@ -102,6 +102,20 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
           </div>
         )}
 
+        {(c.skills?.length ?? 0) > 0 && !isHero && (
+          <div className="insp-row">
+            <span className="insp-lbl">Compétences</span>
+            <span className="insp-traits">
+              {/* valeur de Test finale = Caractéristique + avances (LDB 09) */}
+              {c.skills.map((s, i) => (
+                <span key={i} className="insp-trait-chip">
+                  {s.name}{s.spec ? ` (${s.spec})` : ''} {c.characteristics[s.characteristic] + s.advances}
+                </span>
+              ))}
+            </span>
+          </div>
+        )}
+
         {(c.traits?.length ?? 0) > 0 && (
           <div className="insp-row">
             <span className="insp-lbl">Traits</span>

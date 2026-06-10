@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { weaponFromTrait, creatureToCombatant } from './spawn';
+import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook } from './spawn';
 import { weaponFamily } from '../gameIso/rig/parts/equipment';
 import { findCreature } from '../data';
 import { CHAR_KEYS } from '../engine/types';
+import { knowsCastingSkill, castingValue } from '../engine/magic';
 
 /** Traits d'arme FR vérifiés dans L'ennemi dans l'Ombre ch.2 (Knud Cratinx & co). */
 describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () => {
@@ -112,5 +113,59 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
       const bf = Math.floor(c.characteristics.F / 10), be = Math.floor(c.characteristics.E / 10), bfm = Math.floor(c.characteristics.FM / 10);
       expect(c.wounds.max).toBe(bf + 2 * be + bfm); // Mutant : Taille Moyenne
     });
+  });
+});
+
+describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia Balacañon, MSR Compagnon p.48)', () => {
+  const at = { x: 0, y: 0 };
+  const eusapia = findCreature('Eusapia Balacañon')!;
+
+  it('est dans creatures.json (livres de campagne admis au bestiaire)', () => {
+    expect(eusapia).toBeTruthy();
+    expect(eusapia.source.book).toBe('MSR');
+  });
+
+  it('compétences au format livre → avances dérivées (Test FINAL = Caractéristique + avances, LDB 09)', () => {
+    const c = creatureToCombatant(eusapia, 'e1', at);
+    const langue = c.skills.find((s) => s.name === 'Langue' && s.spec === 'Magick')!;
+    expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
+    expect(c.characteristics.Int + langue.advances).toBe(63);
+    const foc = c.skills.find((s) => s.name === 'Focalisation' && s.spec === 'Ghur')!;
+    expect(c.characteristics.FM + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
+  });
+
+  it('talents portés (Magie des Arcanes (Ghur), Magie mineure…) et 12 sorts de la donnée', () => {
+    const c = creatureToCombatant(eusapia, 'e1', at);
+    expect(c.talents.map((t) => t.name)).toContain('Magie des Arcanes (Ghur)');
+    expect(c.talents.map((t) => t.name)).toContain('Magie mineure');
+    expect(c.spells).toHaveLength(12);
+    expect(c.spells).toContain('Fléchette');
+  });
+
+  it('incante par la voie NORMALE (Langue (Magick) 63, sans le Trait Lanceur de Sorts)', () => {
+    const c = creatureToCombatant(eusapia, 'e1', at);
+    expect(knowsCastingSkill(c, 'Langue', 'Magick')).toBe(true);
+    expect(castingValue(c, 'Langue', 'Magick')).toBe(63);
+  });
+
+  it('arme du trait : « Arme (Bâton de combat) +7 » → arme tenue', () => {
+    const c = creatureToCombatant(eusapia, 'e1', at);
+    expect(c.weapons[0]).toMatchObject({ name: 'Bâton de combat', damage: '+7' });
+  });
+
+  it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
+    const c = statblockToCombatant(
+      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: ['Langue (Magick) 63', 'Esquive 48'], talents: ['Menaçant'] },
+      'e1', at,
+    );
+    expect(c.skills.find((s) => s.name === 'Langue')!.advances).toBe(15);
+    expect(c.talents[0]).toEqual({ name: 'Menaçant', times: 1 });
+  });
+
+  it('skillsFromBook : casse tolérée (« Corps à Corps (Bagarre) 50 », Furie du Chaos) ; sans valeur → ignorée', () => {
+    const chars = { CC: 45 } as any;
+    const [cc] = skillsFromBook(['Corps à Corps (Bagarre) 50'], chars);
+    expect(cc).toMatchObject({ name: 'Corps à Corps', characteristic: 'CC', advances: 5 });
+    expect(skillsFromBook(['Athlétisme'], chars)).toEqual([]); // rien d'inventé
   });
 });

@@ -7,10 +7,12 @@ import type { TestScenario } from './_shared';
 //    gratuites PAR TOUR à coût d'Avantage 0, Empêtré sur Dégâts (LDB 85 l.354-355) + Constricteur ;
 //  - Sorcier mutant (statbloc) : `spells: ['Fléchette']` → l'IA incante le Projectile magique ;
 //  - Squelette + facultatif « Élite » (Trait standard, LDB 76 : ajouté à la liste Facultative de
-//    toutes les créatures) + Caractéristiques aléatoires (LDB 78 : −10 + 2d10, tirage stable au spawn).
+//    toutes les créatures) + Caractéristiques aléatoires (LDB 78 : −10 + 2d10, tirage stable au spawn) ;
+//  - Eusapia Balacañon (MSR Compagnon p.48, ref bestiaire) : PNJ nommé COMPLET de la donnée —
+//    compétences chiffrées (Langue (Magick) 63 → avances dérivées), talents, 12 sorts.
 const scene = arena({ id: 'test-pieuvre-lanceur', nom: 'Créatures personnalisées', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
 scene.startMessage =
-  'Personnalisations d’auteur : la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré sur Dégâts) ; le Sorcier mutant lance Fléchette ; le Squelette est un facultatif « Élite » (LDB 76) aux Caractéristiques aléatoires (LDB 78). Inspectez-les via l’ordre de bataille (chips de traits, M/Taille, badge 🪄).';
+  'Personnalisations d’auteur : la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré sur Dégâts) ; le Sorcier mutant lance Fléchette ; le Squelette est un facultatif « Élite » (LDB 76) aux Caractéristiques aléatoires (LDB 78) ; Eusapia Balacañon (MSR) incante avec Langue (Magick) 63 et ses talents de la donnée. Inspectez-les via l’ordre de bataille (chips, M/Taille, Compétences, badge 🪄).';
 scene.encounters = [
   {
     id: 'enc-pieuvre',
@@ -26,6 +28,7 @@ scene.encounters = [
         pos: { x: 14, y: 3 },
       },
       { ref: 'Squelette', pos: { x: 12, y: 9 }, optionals: ['Élite'], randomChars: true },
+      { ref: 'Eusapia Balacañon', pos: { x: 15, y: 6 } },
     ],
   },
 ];
@@ -35,7 +38,7 @@ export const scenario: TestScenario = {
   order: 16,
   icon: '🐙',
   title: 'Créatures personnalisées',
-  tests: '« 8 Tentacules +9 » (8 attaques gratuites à coût 0, Empêtré), ennemi lanceur de sorts (Fléchette via l’IA), trait facultatif (LDB 76 : Élite sur Squelette), Caractéristiques aléatoires (LDB 78), inspecteur enrichi (M/Taille, chips, badge 🪄).',
+  tests: '« 8 Tentacules +9 » (8 attaques gratuites à coût 0, Empêtré), ennemis lanceurs de sorts (statbloc + PNJ MSR Eusapia : compétences chiffrées de la donnée), trait facultatif (LDB 76 : Élite sur Squelette), Caractéristiques aléatoires (LDB 78), inspecteur enrichi (M/Taille, chips, Compétences, badge 🪄).',
   partyNote: '4 pré-tirés',
   makeParty: () => makePregens().slice(0, 4),
   scene,
