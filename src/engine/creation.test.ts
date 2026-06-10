@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import { CHAR_KEYS, CharKey } from './types';
 import {
-  RANDOM_SPECIES_TABLE,
+  randomSpeciesTable,
   rollSpecies,
   rollCareer,
   validatePointBuy,
@@ -31,16 +31,24 @@ describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () =>
   });
 });
 
-describe('Tableau des Races aléatoires (LDB 04 l.90)', () => {
-  it('bornes : 01-90 Humain, 91-94 Halfling, 95-98 Nain, 99 Haut elfe, 00 Elfe sylvain', () => {
-    expect(RANDOM_SPECIES_TABLE.map((e) => e.max)).toEqual([90, 94, 98, 99, 100]);
-    // Les 5 labels existent dans species.json.
-    for (const e of RANDOM_SPECIES_TABLE) expect(findSpecies(e.label), e.label).toBeTruthy();
+describe('Tableau des Races aléatoires (LDB 04 l.90) — dérivé des données (species.rand)', () => {
+  it('bornes croissantes jusqu\'à 100, représentantes du Livre de base en priorité', () => {
+    const table = randomSpeciesTable();
+    const bounds = table.map((e) => e.max);
+    expect(bounds).toEqual([...bounds].sort((a, b) => a - b));
+    expect(bounds[bounds.length - 1]).toBe(100);
+    // Les bornes du Livre de base sont représentées par les espèces LDB (pas une variante ADE).
+    const byMax = Object.fromEntries(table.map((e) => [e.max, e.label]));
+    expect(byMax[90]).toBe('Humains (Reiklander)');
+    expect(byMax[94]).toBe('Halflings');
+    expect(byMax[99]).toBe('Hauts elfes');
+    expect(byMax[100]).toBe('Elfes sylvains');
+    for (const e of table) expect(findSpecies(e.label), e.label).toBeTruthy();
   });
   it('rollSpecies : déterministe (RNG seedé) et cohérent avec son jet', () => {
     const a = rollSpecies(makeRNG(7));
     expect(a).toEqual(rollSpecies(makeRNG(7)));
-    const entry = RANDOM_SPECIES_TABLE.find((e) => a.roll <= e.max)!;
+    const entry = randomSpeciesTable().find((e) => a.roll <= e.max)!;
     expect(a.label).toBe(entry.label);
   });
 });

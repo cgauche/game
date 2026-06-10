@@ -85,46 +85,40 @@ function main() {
   write('characteristics.json', characteristics, characteristics.length);
 
   // --- Espèces (avec profil de base reconstruit) ---------------------------
-  // Mouvement par espèce (Livre de base : « Mouvement 4 3 3 » p.5 pour
-  // Humain/Nain/Halfling ; bestiaire « Les peuples du Reikland » pour Elfe M5,
-  // Ogre M6). Indexé par refChar.
-  const SPECIES_MOVEMENT: Record<string, number> = {
-    Humain: 4,
-    Nain: 3,
-    Halfling: 3,
-    'Haut Elfe': 5,
-    'Elfe Sylvain': 5,
-    Gnome: 3,
-    Ogre: 6,
-  };
-  // Destin / Résilience / Points supplémentaires (Tableau des Attributs LDB).
-  // Elfe : 0 / 0 / 2. Gnome & Ogre (Archives) : valeurs de repli.
-  const SPECIES_FATE: Record<string, { fate: number; resilience: number; extra: number }> = {
-    Humain: { fate: 2, resilience: 1, extra: 3 },
-    Nain: { fate: 0, resilience: 2, extra: 2 },
-    Halfling: { fate: 0, resilience: 2, extra: 3 },
-    'Haut Elfe': { fate: 0, resilience: 0, extra: 2 },
-    'Elfe Sylvain': { fate: 0, resilience: 0, extra: 2 },
-    Gnome: { fate: 0, resilience: 2, extra: 2 },
-    Ogre: { fate: 0, resilience: 0, extra: 3 },
-  };
-  const PETIT = new Set(['Halfling', 'Gnome']); // talent Petit ⇒ Blessures sans BF
+  // TOUT le Tableau des Attributs (LDB 05 l.396-413) vient de raw.characteristic, qui porte
+  // une colonne par refChar : les 10 Caractéristiques (abr), puis les lignes Blessure (formule),
+  // Destin, Résilience, Extra Points et Mouvement — rien n'est codé en dur, les suppléments
+  // (Gnome, Ogre…) sont couverts par leurs colonnes.
+  const attrRow = (label: string): Record<string, any> =>
+    raw.characteristic.find((c: Any) => c.label === label)?.rand ?? {};
+  const ROW_MOVE = attrRow('Mouvement');
+  const ROW_FATE = attrRow('Destin');
+  const ROW_RESILIENCE = attrRow('Résilience');
+  const ROW_EXTRA = attrRow('Extra Points');
+  const ROW_WOUNDS = attrRow('Blessure'); // formule : « (2 × BE)+BFM » (sans BF) ⇒ talent Petit
   const species = raw.specie.map((s: Any) => {
     const baseChar: Record<string, number> = {};
     for (const c of raw.characteristic) {
-      if (!c.rand || !c.abr) continue;
+      if (!c.rand || !c.abr || c.abr === 'B' || c.abr === 'M') continue;
       const v = c.rand[s.refChar];
       if (typeof v === 'number') baseChar[c.abr] = v;
     }
+    const woundsFormula = String(ROW_WOUNDS[s.refChar] ?? 'BF+(2 × BE)+BFM');
     return {
       label: s.label,
       refChar: s.refChar,
       refCareer: s.refCareer,
       rand: s.rand,
       desc: s.desc,
-      movement: SPECIES_MOVEMENT[s.refChar] ?? 4,
-      fate: SPECIES_FATE[s.refChar] ?? { fate: 0, resilience: 0, extra: 2 },
-      small: PETIT.has(s.refChar),
+      movement: Number(ROW_MOVE[s.refChar]) || 4,
+      fate: {
+        fate: Number(ROW_FATE[s.refChar]) || 0,
+        resilience: Number(ROW_RESILIENCE[s.refChar]) || 0,
+        extra: Number(ROW_EXTRA[s.refChar]) || 0,
+      },
+      // Blessures SANS le Bonus de Force (BF seul, pas le BFM de « +BFM ») = talent Petit
+      // (Halfling/Gnome : « (2 × BE)+BFM ») ; l'Ogre « (BF+(2×BE)+BFM)×2 » en a un.
+      small: !/BF(?!M)/.test(woundsFormula),
       baseChar, // ex. { CC: 20, CT: 20, ... } — on ajoute 2d10 à la création
       // Compétences/Talents raciaux (Livre de base, étape 4 de création) :
       // liste de Compétences d'espèce (3 reçoivent +5, 3 reçoivent +3) et
@@ -284,6 +278,25 @@ function main() {
   const hairs = detailTable(raw.hair ?? []);
   write('hairs.json', hairs, hairs.length);
 
+  // --- Âge / Taille (Détails supplémentaires, LDB 05 l.691-707) -------------
+  // Formules « base + N d10 » par colonne d'espèce (raw.detail). CORRECTION citée : all-data
+  // porte Height Roll Halfling = 5, mais le LDB (05 l.707) écrit « 90 + 2d10cm » → 2.
+  const detailRow = (label: string): Record<string, number> => {
+    const row = (raw.detail ?? []).find((x: Any) => x.label === label)?.desc ?? {};
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(row)) if (typeof v === 'number') out[k] = v;
+    return out;
+  };
+  const heightRoll = detailRow('Height Roll');
+  if (heightRoll['Halfling'] === 5) heightRoll['Halfling'] = 2; // LDB 05 l.707
+  const details = {
+    ageBase: detailRow('Age Base'),
+    ageRoll: detailRow('Age Roll'),
+    heightBase: detailRow('Height Base'),
+    heightRoll,
+  };
+  write('details.json', details, Object.keys(details).length);
+
   // --- Sorts ----------------------------------------------------------------
   const spells = keep(raw.spell).map((s: Any) => ({
     label: s.label,
@@ -319,6 +332,7 @@ function main() {
       spells: spells.length,
       eyes: eyes.length,
       hairs: hairs.length,
+      details: Object.keys(details).length,
     },
   };
   write('_index.json', index, 1);

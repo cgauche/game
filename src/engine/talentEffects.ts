@@ -1,21 +1,25 @@
 /**
- * Effets des Talents qui influencent la création / les attributs (LDB 10 — descriptions
- * verbatim, encodées dans talents.json via `addCharacteristic` / `addSkill`) :
+ * Effets des Talents qui influencent la création / les attributs — PILOTÉS PAR LES DONNÉES :
+ * chaque talent de talents.json porte `addCharacteristic` / `addSkill`, posés par l'extraction
+ * des livres ; un supplément qui ajoute un talent étiqueté pareil est couvert sans code.
  *
- *  - « Vous gagnez un bonus permanent de +5 à votre Caractéristique X de départ (ne compte pas
- *    comme des Augmentations) » : Guerrier né (CC), Tireur de précision (CT), Très fort (F),
- *    Très résistant (E), Vivacité (I), Réflexes foudroyants (Ag), Doigts de fée (Dex),
- *    Perspicace (Int), Imperturbable (FM), Affable (Soc) — tous Maxi 1.
- *  - Dur à cuire : « autant de Points de Blessure supplémentaires que votre Bonus d'Endurance »
- *    (recalculé si le BE augmente) — par acquisition.
- *  - Chanceux : « maximum de Points de Chance = Points de Destin + nombre de fois Chanceux ».
- *  - Obstiné : « Ajoutez votre niveau d'Obstiné au maximum de votre réserve de Détermination ».
- *  - Véloce : « Vous gagnez +1 à votre Attribut de Mouvement ».
- *  - « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la Compétence
- *    est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence pour
- *    5 PX de moins par Augmentation » : Maître artisan (Métier), Oreille absolue
- *    (Divertissement (Chant)), Sorcier ! (Langue (Magick)), Voyageur aguerri (Savoir (Région)),
- *    Artiste (Art).
+ * Sémantique des `addCharacteristic` (descriptions LDB 10, verbatim) :
+ *  - une des 10 Caractéristiques (« Force », « Sociabilité »…) : « Vous gagnez un bonus
+ *    permanent de +5 à votre Caractéristique X de départ (ne compte pas comme des
+ *    Augmentations) » — Guerrier né, Tireur de précision, Très fort, Très résistant, Vivacité,
+ *    Réflexes foudroyants, Doigts de fée, Perspicace, Imperturbable, Affable (tous Maxi 1) ;
+ *  - « Blessure » : « autant de Points de Blessure supplémentaires que votre Bonus
+ *    d'Endurance » (Dur à cuire) — recalculé si le BE augmente, par acquisition ;
+ *  - « Chance » : « maximum de Points de Chance = Points de Destin + nombre de fois » (Chanceux) ;
+ *  - « Détermination » : « Ajoutez votre niveau au maximum de votre réserve » (Obstiné) ;
+ *  - « Mouvement » : « Vous gagnez +1 à votre Attribut de Mouvement » (Véloce) ;
+ *  - « Corruption » (Âme pure) : seuil de Corruption — système non modélisé, ignoré ici.
+ *
+ * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
+ * Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence
+ * pour 5 PX de moins par Augmentation » — Maître artisan (Métier), Oreille absolue
+ * (Divertissement (Chant)), Sorcier ! (Langue (Magick)), Voyageur aguerri (Savoir (Région)),
+ * Artiste (Art).
  *
  * Costaud (Encombrement) est déjà appliqué par items.maxEncumbrance ; Petit/Massif (Taille)
  * par l'espèce. Les autres talents (combat, social…) sont hors périmètre.
@@ -25,46 +29,52 @@ import { bonus, maxWounds } from './characteristics';
 import { findTalent } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
 
+/** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
+function addCharOf(talentLabel: string): string | null {
+  return findTalent(splitLabel(talentLabel).name)?.addCharacteristic ?? null;
+}
+
+/** Somme des `times` des talents du héros dont addCharacteristic === attr. */
+function timesWithAddChar(hero: Combatant, attr: string): number {
+  return hero.talents.reduce((a, t) => a + (addCharOf(t.name) === attr ? t.times : 0), 0);
+}
+
 /** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null. */
 export function talentCharBonus(talentLabel: string): CharKey | null {
-  const data = findTalent(splitLabel(talentLabel).name);
-  if (!data?.addCharacteristic) return null;
-  return CHAR_BY_LABEL[data.addCharacteristic] ?? null;
+  const attr = addCharOf(talentLabel);
+  return attr ? CHAR_BY_LABEL[attr] ?? null : null;
 }
 
 /**
  * Applique l'effet d'acquisition d'un Talent (création OU achat PX) — mute le héros.
- * +5 Caractéristique de départ (PAS une Augmentation → charAdvances intacts) ; Véloce : +1
- * Mouvement. Les effets dérivés (Blessures, Chance, Détermination) sont des helpers recalculés
- * par l'appelant (heroMaxWounds / fortuneMax / resolveMax).
+ * +5 Caractéristique de départ (PAS une Augmentation → charAdvances intacts) ; Mouvement : +1.
+ * Les effets dérivés (Blessures, Chance, Détermination) sont des helpers recalculés par
+ * l'appelant (heroMaxWounds / fortuneMax / resolveMax).
  */
 export function applyTalentAcquisition(hero: Combatant, talentLabel: string): void {
   const key = talentCharBonus(talentLabel);
   if (key) hero.characteristics[key] += 5;
-  if (splitLabel(talentLabel).name === 'Véloce') hero.movement += 1;
+  if (addCharOf(talentLabel) === 'Mouvement') hero.movement += 1;
 }
 
-/** Points de Blessure supplémentaires : Dur à cuire = BE par acquisition (LDB 10). */
+/** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire). */
 export function extraWounds(hero: Combatant): number {
-  const times = hero.talents.find((t) => t.name === 'Dur à cuire')?.times ?? 0;
-  return times * bonus(hero.characteristics.E);
+  return timesWithAddChar(hero, 'Blessure') * bonus(hero.characteristics.E);
 }
 
-/** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + Dur à cuire. */
+/** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + talents « Blessure ». */
 export function heroMaxWounds(hero: Combatant): number {
   return maxWounds(hero.characteristics, hero.size ?? 'moyenne') + extraWounds(hero);
 }
 
-/** Maximum de Points de Chance : Destin + niveaux de Chanceux (LDB 10 « Chanceux »). */
+/** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10). */
 export function fortuneMax(hero: Combatant): number {
-  const times = hero.talents.find((t) => t.name === 'Chanceux')?.times ?? 0;
-  return (hero.fate ?? 0) + times;
+  return (hero.fate ?? 0) + timesWithAddChar(hero, 'Chance');
 }
 
-/** Maximum de Détermination : Résilience + niveaux d'Obstiné (LDB 10 « Obstiné »). */
+/** Maximum de Détermination : Résilience + niveaux des talents « Détermination » (Obstiné). */
 export function resolveMax(hero: Combatant): number {
-  const times = hero.talents.find((t) => t.name === 'Obstiné')?.times ?? 0;
-  return (hero.resilience ?? 0) + times;
+  return (hero.resilience ?? 0) + timesWithAddChar(hero, 'Détermination');
 }
 
 /**

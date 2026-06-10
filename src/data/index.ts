@@ -17,6 +17,7 @@ import creaturesJson from './creatures.json';
 import spellsJson from './spells.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
+import detailsJson from './details.json';
 import { CharKey } from '../engine/types';
 
 export interface SpeciesData {
@@ -129,6 +130,13 @@ export interface DetailColorData {
   rand: number;
   color: Record<string, string>;
 }
+/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne refChar. */
+export interface DetailsData {
+  ageBase: Record<string, number>;
+  ageRoll: Record<string, number>;
+  heightBase: Record<string, number>;
+  heightRoll: Record<string, number>;
+}
 export interface SpellData {
   label: string;
   type: string;
@@ -157,6 +165,7 @@ export const creatures = creaturesJson as CreatureData[];
 export const spells = spellsJson as SpellData[];
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
+export const details = detailsJson as DetailsData;
 
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);

@@ -17,7 +17,7 @@
 import { RNG, defaultRNG, roll } from './dice';
 import { CharKey, CHAR_KEYS } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, eyes as eyesTable, hairs as hairsTable } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables } from '../data';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -26,18 +26,33 @@ export const XP_CAREER_TOP3 = 25; // LDB 05 l.193
 export const XP_CHARS_KEPT = 50; // LDB 05 l.381
 export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
 
-/** Tableau des Races aléatoires (LDB 04 l.90) — bornes hautes d100, labels de species.json. */
-export const RANDOM_SPECIES_TABLE: { max: number; label: string }[] = [
-  { max: 90, label: 'Humains (Reiklander)' }, // 01-90 Humain
-  { max: 94, label: 'Halflings' }, // 91-94
-  { max: 98, label: 'Nains' }, // 95-98
-  { max: 99, label: 'Hauts elfes' }, // 99
-  { max: 100, label: 'Elfes sylvains' }, // 00
-];
+/**
+ * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
+ * borne haute d100 (`SpeciesData.rand`, suppléments inclus). Plusieurs espèces partagent une
+ * même borne (variantes régionales d'ADE) : la représentante d'une borne est l'espèce du
+ * Livre de base si elle existe, sinon la première en priorité de livre (LDB > ADE1 > ADE2 >
+ * autres suppléments).
+ */
+const BOOK_PRIORITY = ['LDB', 'ADE1', 'ADE2'];
+export function randomSpeciesTable(): { max: number; label: string }[] {
+  const byBound = new Map<number, SpeciesData[]>();
+  for (const s of allSpecies) {
+    if (typeof s.rand !== 'number') continue;
+    byBound.set(s.rand, [...(byBound.get(s.rand) ?? []), s]);
+  }
+  const rank = (s: SpeciesData) => {
+    const i = BOOK_PRIORITY.indexOf(s.source.book);
+    return i === -1 ? BOOK_PRIORITY.length : i;
+  };
+  return [...byBound.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([max, list]) => ({ max, label: list.sort((a, b) => rank(a) - rank(b))[0].label }));
+}
 
 export function rollSpecies(rng: RNG = defaultRNG): { roll: number; label: string } {
+  const table = randomSpeciesTable();
   const r = roll(1, 100, rng);
-  const entry = RANDOM_SPECIES_TABLE.find((e) => r <= e.max)!;
+  const entry = table.find((e) => r <= e.max) ?? table[table.length - 1];
   return { roll: r, label: entry.label };
 }
 
@@ -98,33 +113,23 @@ export function rollInitialWealth(status: Status, rng: RNG = defaultRNG): Money 
   return m;
 }
 
-/** Famille de détails par refChar : Humain / Nain / Halfling / Elfe (LDB 05 l.691-707). */
-function detailFamily(sp: SpeciesData): 'Humain' | 'Nain' | 'Halfling' | 'Elfe' {
-  if (/Elfe/i.test(sp.refChar)) return 'Elfe';
-  if (/Nain/i.test(sp.refChar)) return 'Nain';
-  if (/Halfling|Gnome/i.test(sp.refChar)) return 'Halfling';
-  return 'Humain';
+/** Formule « base + N d10 » des tables de détails (details.json), colonne refChar de l'espèce
+ *  (repli : colonne Humain). N non entier dans les données (Gnome 2,5) → arrondi au plus près. */
+function rollDetailFormula(base: Record<string, number>, dice: Record<string, number>, sp: SpeciesData, rng: RNG): number {
+  const b = base[sp.refChar] ?? base['Humain'] ?? 0;
+  const n = Math.round(dice[sp.refChar] ?? dice['Humain'] ?? 1);
+  return b + (n > 0 ? roll(n, 10, rng) : 0);
 }
 
-/** Âge (LDB 05 l.693) : Humain 15+1d10, Nain 15+10d10, Elfe 30+10d10, Halfling 15+5d10. */
+/** Âge (LDB 05 l.693, table par espèce — ex. Humain 15+1d10, Nain 15+10d10). */
 export function rollAge(sp: SpeciesData, rng: RNG = defaultRNG): number {
-  switch (detailFamily(sp)) {
-    case 'Nain': return 15 + roll(10, 10, rng);
-    case 'Elfe': return 30 + roll(10, 10, rng);
-    case 'Halfling': return 15 + roll(5, 10, rng);
-    default: return 15 + roll(1, 10, rng);
-  }
+  return rollDetailFormula(detailTables.ageBase, detailTables.ageRoll, sp, rng);
 }
 
-/** Taille en cm (LDB 05 l.707) : Humain 145+5d10, Nain 130+3d10, Elfe 180+2d10,
- *  Halfling 90+2d10. (Le dé bonus humain sur un 10 — l.705 — n'est pas simulé.) */
+/** Taille en cm (LDB 05 l.707 — ex. Humain 145+5d10, Halfling 90+2d10).
+ *  (Le dé bonus humain sur un 10 — l.705 — n'est pas simulé.) */
 export function rollHeight(sp: SpeciesData, rng: RNG = defaultRNG): number {
-  switch (detailFamily(sp)) {
-    case 'Nain': return 130 + roll(3, 10, rng);
-    case 'Elfe': return 180 + roll(2, 10, rng);
-    case 'Halfling': return 90 + roll(2, 10, rng);
-    default: return 145 + roll(5, 10, rng);
-  }
+  return rollDetailFormula(detailTables.heightBase, detailTables.heightRoll, sp, rng);
 }
 
 /** Couleur des yeux (2d10, table LDB 05 l.719-731) pour la colonne d'espèce (refChar). */
