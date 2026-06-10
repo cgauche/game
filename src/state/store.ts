@@ -881,10 +881,13 @@ export const useGame = create<GameState>((set, get) => ({
   /** Démarre réellement le combat après la phase d'établissement (clic « Commencer le combat ») : lève
    *  `establishing` et lance le 1er tour (IA si l'ordre commence par un ennemi). */
   beginCombat: () => {
-    if (!get().battle || !get().establishing) return;
-    set({ establishing: false });
+    const b = get().battle;
+    if (!b || !get().establishing) return;
+    // #12a : à la fin de la phase « plan d'ensemble », on entre dans la pause de DÉBUT DU ROUND 1 (comme
+    // les Rounds suivants) → la pré-emption d'initiative (Chance « agir en premier ») est dispo DÈS le
+    // Round 1. L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart → maybeRunEnemyTurn).
+    set({ establishing: false, pendingRoundStart: { round: b.round } });
     bus.emit(EVT.SCENE_DIRTY);
-    maybeRunEnemyTurn(get, set);
   },
 
   // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
