@@ -4,6 +4,7 @@ import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
+import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
@@ -27,6 +28,7 @@ export function RollModal() {
   const battle = useGame((s) => s.battle);
   const setLocation = useGame((s) => s.attackSetLocation);
   const setWeapon = useGame((s) => s.attackSetWeapon);
+  const setDualMode = useGame((s) => s.attackSetDualMode);
   const roll = useGame((s) => s.attackRoll);
   const reroll = useGame((s) => s.attackReroll);
   const bonusSL = useGame((s) => s.attackBonusSL);
@@ -47,6 +49,12 @@ export function RollModal() {
   // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
   const pickable = attacker.weapons.filter((w) => w.name !== 'Mains nues' && !!w.uid);
   const res = pa.result;
+  // Maniement de deux armes (LDB 10 l.638) : proposé seulement à un héros qui a le talent ET tient 2 armes de
+  // MÊLÉE à 1 main, sur l'attaque-ACTION (jamais une frappe gratuite/enchaînée — ni cleave, ni 2ᵉ frappe).
+  const dualEligible = !res && attacker.kind === 'hero' && attackModesFor(attacker).includes('dual-wield')
+    && attacker.weapons.some((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)
+    && attacker.weapons.some((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1)
+    && !pa.cleave && !pa.dualSecond;
   // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
@@ -76,8 +84,19 @@ export function RollModal() {
 
         {!res ? (
           <>
-            {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; l'aperçu reflète le mod. */}
-            {pickable.length >= 2 && (
+            {/* Maniement de deux armes (LDB 10 l.638) : attaquer des DEUX armes pour son Action. */}
+            {dualEligible && (
+              <label
+                className="rm-loc-inline rm-dual-toggle"
+                title="Frapper des deux armes : 2ᵉ frappe de la main secondaire si la 1ʳᵉ touche ; -10 à TOUTES vos défenses jusqu'à votre prochain Tour ; Avantage seulement si les deux touchent."
+              >
+                <input type="checkbox" checked={!!pa.dualMode} onChange={(e) => setDualMode(e.target.checked)} />
+                <span className="mini-title">⚔️ Des deux armes</span>
+              </label>
+            )}
+            {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; l'aperçu reflète le mod.
+                Masqué en mode « des deux armes » (l'attaque-Action utilise alors la main directrice). */}
+            {pickable.length >= 2 && !pa.dualMode && (
               <div className="rm-loc-inline">
                 <span className="mini-title">Arme</span>
                 <select

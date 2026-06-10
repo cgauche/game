@@ -968,6 +968,14 @@ textarea:focus {
   gap: 8px;
   margin-bottom: 10px;
 }
+/* Maniement de deux armes : interrupteur cliquable (toute la ligne). */
+.rm-dual-toggle,
+.rm-dual-toggle input {
+  cursor: pointer;
+}
+.rm-dual-toggle {
+  user-select: none;
+}
 .rm-loc-select {
   flex: 1;
   min-width: 0;

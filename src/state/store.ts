@@ -416,6 +416,8 @@ export interface GameState {
   attackSetLocation: (loc: HitLocation | null) => void;
   /** Choisit l'arme d'attaque (uid d'ItemInstance du loadout actif ; null = auto) — avant le jet. */
   attackSetWeapon: (uid: string | null) => void;
+  /** Maniement de deux armes (LDB 10 l.638) : (dés)active le mode « des deux armes » sur l'attaque-Action. */
+  attackSetDualMode: (on: boolean) => void;
   /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
   attackSetIntoCrowd: (v: boolean) => void;
   /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
@@ -1861,6 +1863,14 @@ export const useGame = create<GameState>((set, get) => ({
     const pa = get().pendingAttack;
     if (!pa || pa.result) return; // choix d'arme avant le jet seulement
     set({ pendingAttack: { ...pa, weaponUid: uid ?? undefined } });
+  },
+  attackSetDualMode: (on) => {
+    const pa = get().pendingAttack;
+    if (!pa || pa.result) return; // choix avant le jet seulement
+    // Mode « des deux armes » : l'attaque-Action utilise la MAIN DIRECTRICE (la 2ᵉ frappe suit, off-hand).
+    const a = get().battle?.combatants.find((c) => c.id === pa.attackerId);
+    const mainUid = a?.weapons.find((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)?.uid;
+    set({ pendingAttack: { ...pa, dualMode: on, weaponUid: on ? (mainUid ?? pa.weaponUid) : pa.weaponUid } });
   },
   attackSetIntoCrowd: (v) => {
     const pa = get().pendingAttack;
