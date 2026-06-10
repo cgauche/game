@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import type { RollBreakdown } from '../engine/combat';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { RollLine } from './RollLine';
 import { Modal } from './Modal';
 
 /** Affichage canonique d'un d100 (100 → « 00 », zéro-paddé). */
@@ -37,6 +39,9 @@ export function RollFlowShell({
   cancelAfterRoll = false,
   resultOk,
   result,
+  breakdown,
+  outcome,
+  determination,
   fortune,
   rerollable,
   onReroll,
@@ -51,7 +56,7 @@ export function RollFlowShell({
   variant?: 'roll' | 'test';
   title: ReactNode;
   subtitle: ReactNode;
-  /** Contenu optionnel entre le sous-titre et le jet (ex. sélecteur de cible du soin). */
+  /** Contenu optionnel entre le sous-titre et le jet (ex. sélecteur de cible du soin, portraits). */
   extra?: ReactNode;
   rolled: boolean;
   rollLabel?: string;
@@ -61,14 +66,20 @@ export function RollFlowShell({
   /** « Annuler » avant « Lancer » (défaut : oui pour la famille 'test'). */
   cancelFirst?: boolean;
   cancelAfterRoll?: boolean;
-  /** Verdict du bloc résultat (classe ok/fail). */
+  /** Verdict du bloc résultat (classe ok/fail) — pour le rendu legacy `result`. */
   resultOk: boolean;
-  /** Contenu (spans) du bloc `.test-result`. */
-  result: ReactNode;
+  /** Contenu (spans) du bloc `.test-result` (rendu legacy, si pas de `breakdown`). */
+  result?: ReactNode;
+  /** Ligne de jet riche (base = cible · d100 · DR), façon Attaque/Défense. Prioritaire sur `result`. */
+  breakdown?: RollBreakdown;
+  /** Ligne d'issue style journal sous la ligne de jet (le « log » de l'action). */
+  outcome?: ReactNode;
+  /** Détermination (LDB 17 l.62) : bouton 1ʳᵉ classe — immunité Psychologie. Affiché pré-jet et après échec. */
+  determination?: { resolve: number; onResolve: () => void };
   fortune: number;
   rerollable: boolean;
   onReroll: () => void;
-  /** Absent → Test binaire : bouton « Relancer » simple (pas de « +1 DR »). */
+  /** Absent → Test binaire : bouton « 🍀 Relancer » simple (pas de « +1 DR »). */
   onBonusSL?: () => void;
   resilience?: number;
   /** Absent → pas de Résilience sur ce flux. */
@@ -86,6 +97,11 @@ export function RollFlowShell({
       Annuler
     </button>
   );
+  const determineBtn = determination && determination.resolve > 0 && (
+    <button className="btn" onClick={determination.onResolve} title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)">
+      ✊ Détermination ({determination.resolve})
+    </button>
+  );
   const preCancelFirst = cancelFirst ?? variant === 'test';
   return (
     <Modal title={title} variant={variant}>
@@ -99,11 +115,19 @@ export function RollFlowShell({
             </button>
             {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
             {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}
+            {determineBtn}
             {!preCancelFirst && cancelBtn}
           </div>
         ) : (
           <>
-            <div className={`test-result ${resultOk ? 'ok' : 'fail'}`}>{result}</div>
+            {breakdown ? (
+              <>
+                <div className="rm-rolls"><RollLine d={breakdown} /></div>
+                {outcome}
+              </>
+            ) : (
+              <div className={`test-result ${resultOk ? 'ok' : 'fail'}`}>{result}</div>
+            )}
             <div className="modal-actions">
               {onBonusSL ? (
                 <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />

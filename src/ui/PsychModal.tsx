@@ -1,25 +1,18 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { CIBLE_TYPES } from '../engine/psychology';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
+import { RollFlowShell } from './RollFlowShell';
 import { TeamPortrait } from './CombatantBadge';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
-
-/** Libellés des Traits psy ciblés (LDB 21). */
-const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
-  animosite: { emoji: '😤', label: 'Animosité' },
-  haine: { emoji: '😡', label: 'Haine' },
-  prejuge: { emoji: '🙄', label: 'Préjugé' },
-  amour: { emoji: '❤️', label: 'Amour' },
-  camaraderie: { emoji: '🤝', label: 'Camaraderie' },
-  phobie: { emoji: '🕷️', label: 'Phobie' },
-};
+import { CIBLE_LABEL, calmeBreakdown } from './psychLabels';
 
 /**
  * Modale de Test de Psychologie (Calme) du héros (LDB 21) : Peur (Test ÉTENDU — cumuler le DR vers
- * l'Indice), Terreur (1ʳᵉ rencontre → Brisé), ou Trait CIBLÉ (Animosité/Haine/… — Test binaire visant
- * un groupe). « Lancer » → « Chance » → « Appliquer ». Test obligatoire (pas d'« Annuler »).
- * Invariante « un jet = une modale ».
+ * l'Indice), Terreur (1ʳᵉ rencontre → Brisé), ou Trait CIBLÉ (Animosité/Haine/…). Sur la coquille de
+ * jet partagée, comme Attaque/Défense : ligne de jet riche (RollLine) + issue style journal +
+ * Détermination 1ʳᵉ classe (immunité Psychologie, LDB 17 l.62). Test obligatoire (pas d'« Annuler »).
  */
 export function PsychModal() {
   const pp = useGame((s) => s.pendingPsych);
@@ -28,6 +21,7 @@ export function PsychModal() {
   const reroll = useGame((s) => s.psychReroll);
   const bonusSL = useGame((s) => s.psychBonusSL);
   const force = useGame((s) => s.psychForceSuccess);
+  const determine = useGame((s) => s.psychResolve);
   const confirm = useGame((s) => s.psychConfirm);
   if (!pp || !battle) return null;
   const c = battle.combatants.find((x) => x.id === pp.combatantId);
@@ -39,6 +33,14 @@ export function PsychModal() {
   const failed = r ? (isCible || isTerreur ? !r.success : (r.dr ?? 0) === 0) : false;
   const ok = r ? (isCible || isTerreur ? !!r.success : !!r.vaincue) : false;
   const cl = isCible ? CIBLE_LABEL[pp.kind] : null;
+
+  const outcomeText = !r
+    ? ''
+    : isCible
+      ? r.success ? `${c.name} garde son sang-froid.` : `${c.name} est en proie à son ${cl?.label.toLowerCase() ?? pp.kind}.`
+      : isTerreur
+        ? r.success ? `${c.name} garde son sang-froid.` : `${c.name} est terrifié : ${r.brise} État(s) Brisé, puis Peur ${pp.indice}.`
+        : r.vaincue ? `${c.name} surmonte sa peur.` : `${c.name} reste sous l'emprise de la Peur (${r.calmeDR}/${pp.indice} DR).`;
 
   return (
     <RollFlowShell
@@ -63,28 +65,9 @@ export function PsychModal() {
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
       resultOk={ok}
-      result={
-        r && (
-          <>
-            <span className="dice">
-              <Dice roll={r.roll} />
-            </span>
-            <span className="verdict">
-              {isCible
-                ? r.success
-                  ? 'Sang-froid gardé.'
-                  : `En proie à son ${cl?.label.toLowerCase() ?? pp.kind}.`
-                : isTerreur
-                  ? r.success
-                    ? 'Sang-froid gardé.'
-                    : `Terrifié : ${r.brise} État(s) Brisé, puis Peur ${pp.indice}.`
-                  : r.vaincue
-                    ? `Peur surmontée ! (${r.calmeDR}/${pp.indice} DR)`
-                    : `Toujours apeuré (${r.calmeDR}/${pp.indice} DR).`}
-            </span>
-          </>
-        )
-      }
+      breakdown={r ? calmeBreakdown(calmeValue(c), r) : undefined}
+      outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, c.id, source?.id)} combatants={battle.combatants} /> : undefined}
+      determination={{ resolve: c.resolve ?? 0, onResolve: determine }}
       fortune={c.fortune ?? 0}
       rerollable={!!r && canReroll(failed, !!pp.rerolled)}
       onReroll={reroll}

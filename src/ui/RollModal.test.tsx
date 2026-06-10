@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { RollLine } from './RollModal';
+import { RollLine } from './RollLine';
 
 describe('RollLine — détail d’un jet pour la modale', () => {
   it('réussite : base + modificateur = cible, le d100, et le DR', () => {

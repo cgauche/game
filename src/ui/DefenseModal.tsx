@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { defenseValue } from '../engine/combat';
-import { RollLine } from './RollModal';
+import { RollLine } from './RollLine';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';

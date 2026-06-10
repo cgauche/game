@@ -27,7 +27,7 @@ export interface PendingEncounterPsych {
   sourceName: string;
   indice: number;
   cible?: string;
-  result: { roll: number; success: boolean; brise?: number } | null;
+  result: { roll: number; success: boolean; brise?: number; target?: number; sl?: number } | null;
   rerolled?: boolean;
 }
 
@@ -59,10 +59,10 @@ function rollFor(pe: PendingEncounterPsych, hero: Combatant): PendingEncounterPs
   const calme = calmeValue(hero);
   if (pe.kind === 'terreur') {
     const r = resolveTerreurTest(calme, pe.indice, battleRng());
-    return { roll: r.roll, success: r.success, brise: r.brise };
+    return { roll: r.roll, success: r.success, brise: r.brise, target: r.target, sl: r.sl };
   }
   const r = resolveCalmeSimple(calme, battleRng()); // Peur (simple hors combat) ou trait ciblé : binaire
-  return { roll: r.roll, success: r.success };
+  return { roll: r.roll, success: r.success, target: r.target, sl: r.sl };
 }
 
 export function encounterPsychRoll(get: () => GameState, set: (s: Partial<GameState>) => void): void {

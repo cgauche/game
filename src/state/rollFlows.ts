@@ -45,7 +45,7 @@ function psychResolve(s: GameState, p: PendingPsych, actor: Combatant | undefine
   if (!s.battle || !actor) return null;
   if (CIBLE_TYPES.has(p.kind)) {
     const t = resolveCalmeSimple(calmeValue(actor), battleRng());
-    return { result: { roll: t.roll, success: t.success } };
+    return { result: { roll: t.roll, success: t.success, target: t.target, sl: t.sl } };
   }
   if (p.kind === 'terreur') return { result: resolveTerreurTest(calmeValue(actor), p.indice, battleRng()) };
   return { result: resolvePeurTest(calmeValue(actor), p.indice, p.prevDR, battleRng()) };

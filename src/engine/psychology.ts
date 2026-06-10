@@ -123,6 +123,14 @@ export function isPsychImmune(c: Combatant): boolean {
   return !!c.psychImmune || !!c.frenzied || (c.psychImmuneRoundsLeft ?? 0) > 0;
 }
 
+/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
+export function spendResolveForPsychImmunity(c: Combatant): string | null {
+  if ((c.resolve ?? 0) <= 0) return null;
+  c.resolve = (c.resolve ?? 0) - 1;
+  c.psychImmuneRoundsLeft = 2;
+  return `${c.name} : immunisé à la Psychologie jusqu'à la fin du prochain Round (Détermination).`;
+}
+
 /** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)
  *  générées par la créature `deadId` — LDB : les effets psy d'une créature prennent fin à sa mort.
  *  Mute `psychState`. (Les États génériques déjà acquis, ex. Brisé, restent — ils ont leur propre
@@ -157,11 +165,11 @@ export function resolvePeurTest(
   indice: number,
   prevDR: number,
   rng: RNG = defaultRNG,
-): { dr: number; calmeDR: number; vaincue: boolean; roll: number } {
+): { dr: number; calmeDR: number; vaincue: boolean; roll: number; target: number; sl: number; success: boolean } {
   const t = rollTest(calme, 'intermediaire', rng);
   const dr = t.success ? Math.max(0, t.sl) : 0;
   const calmeDR = prevDR + dr;
-  return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll };
+  return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
 }
 
 /** Traits ciblés visant un ALLIÉ (on les défend) plutôt qu'un ennemi (LDB 21 : Amour l.74, Camaraderie l.79). */
@@ -186,9 +194,9 @@ export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: 
 
 /** Test de Psychologie SIMPLE (Calme, Intermédiaire +0) d'un trait ciblé (LDB 21) : succès = résisté.
  *  Binaire (pas de Test étendu) — contrairement à la Peur. */
-export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { success: boolean; roll: number; sl: number } {
+export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { success: boolean; roll: number; sl: number; target: number } {
   const t = rollTest(calme, 'intermediaire', rng);
-  return { success: t.success, roll: t.roll, sl: t.sl };
+  return { success: t.success, roll: t.roll, sl: t.sl, target: t.target };
 }
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
@@ -197,8 +205,8 @@ export function resolveTerreurTest(
   calme: number,
   indice: number,
   rng: RNG = defaultRNG,
-): { success: boolean; brise: number; devientPeur: number; roll: number } {
+): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
   const t = rollTest(calme, 'intermediaire', rng);
   const brise = t.success ? 0 : indice + Math.max(0, -t.sl);
-  return { success: t.success, brise, devientPeur: indice, roll: t.roll };
+  return { success: t.success, brise, devientPeur: indice, roll: t.roll, target: t.target, sl: t.sl };
 }
