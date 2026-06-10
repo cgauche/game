@@ -97,7 +97,7 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   // Réticule = TÉLÉGRAPHE de tir ennemi (« qui l'adversaire vise ») ; rien sur les actions du joueur.
   const enemyAim = useGame((s) => s.enemyAim);
-  const establishing = useGame((s) => s.establishing); // plan d'ensemble d'ouverture (R2) : cadrer tout le champ
+  const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
@@ -460,9 +460,9 @@ export function IsoStage() {
         }
       : focus;
     const active = battle.combatants.find((c) => c.id === battle.order[battle.turn] && c.pos);
-    // Plan d'ensemble (R2) : pendant l'établissement, on cadre le CENTRE du champ (vue des forces) ;
+    // Ouverture du combat (pause du Round 1) : on cadre le CENTRE du champ (vue des forces) ;
     // sinon la caméra SUIT le token actif qui glisse (n'arrive plus avant lui).
-    if (establishing) focus = centroid;
+    if (planView) focus = centroid;
     else if (active?.pos) focus = walkPosOf(active.id, active.pos.x, active.pos.y);
     else focus = centroid;
   }

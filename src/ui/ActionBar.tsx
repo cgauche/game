@@ -51,8 +51,6 @@ export function ActionBar() {
   const cancelMove = useGame((s) => s.cancelMove);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
-  const establishing = useGame((s) => s.establishing);
-  const beginCombat = useGame((s) => s.beginCombat);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
@@ -60,22 +58,16 @@ export function ActionBar() {
   const [confirmEnd, setConfirmEnd] = useState(false);
   useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
-  // Début de combat (R2) : tant qu'on n'a pas validé, la barre d'action est REMPLACÉE par un bouton
-  // « Commencer le combat » — on voit les forces en présence sur le champ, puis on lance (cf. beginCombat).
-  if (establishing) {
-    return (
-      <div className="action-bar establishing-bar">
-        <button className="btn btn-primary commencer-btn" onClick={beginCombat}>⚔️ Commencer le combat</button>
-      </div>
-    );
-  }
   // Début de Round (LDB ch.17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
-  // « Commencer le round ». On voit l'ordre (frise d'initiative (InitiativeStrip)) et on peut y dépenser sa Chance pour agir en
-  // premier (cf. canActFirst) avant de lancer le Round (confirmRoundStart). Le champ reste visible.
+  // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
+  // (canActFirst) avant de lancer. Au Round 1 c'est l'ouverture du combat (« Commencer le combat »).
   if (pendingRoundStart) {
+    const first = pendingRoundStart.round <= 1;
     return (
       <div className="action-bar establishing-bar">
-        <button className="btn btn-primary commencer-btn" onClick={confirmRoundStart}>▶️ Commencer le round {pendingRoundStart.round}</button>
+        <button className="btn btn-primary commencer-btn" onClick={confirmRoundStart}>
+          {first ? '⚔️ Commencer le combat' : `▶️ Commencer le round ${pendingRoundStart.round}`}
+        </button>
       </div>
     );
   }

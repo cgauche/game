@@ -139,9 +139,6 @@ export interface GameState {
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
-  /** « Plan d'ensemble » d'ouverture de combat (R2) : champ montré ~1 s SANS modale, IA gelée ;
-   *  l'ordre d'Initiative est lu dans `battle.order` (frise d'initiative (InitiativeStrip)), pas dans une modale. */
-  establishing: boolean;
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   rotateCam: (dir: 1 | -1) => void;
   /** Orientation MONDE vivante par entité/combattant (Dir8) — projetée au rendu (camRot). */
@@ -303,8 +300,6 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[]) => void;
-  /** Valide la phase d'établissement (« Commencer le combat ») et lance le 1er tour. */
-  beginCombat: () => void;
   battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
@@ -521,7 +516,6 @@ export const useGame = create<GameState>((set, get) => ({
   party: [],
   scene: null,
   mode: 'exploration',
-  establishing: false,
   camRot: 0,
   rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
   facing: {},
@@ -885,23 +879,11 @@ export const useGame = create<GameState>((set, get) => ({
       onVictory: onVictory ?? enc.onVictory,
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
-    set({ battle, mode: 'battle', establishing: true, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
+    // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
+    // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
-    bus.emit(EVT.SCENE_DIRTY);
-    // « Plan d'ensemble » (R2) : on MONTRE le champ AVANT le 1er tour (l'ordre d'Initiative est lu dans la
-    // frise d'initiative (InitiativeStrip) ; la surprise est journalisée), IA gelée par `establishing`. Le joueur valide quand
-    // il a vu les forces via le bouton « Commencer le combat » (cf. beginCombat) — champ visible, pas de modale.
-  },
-
-  /** Démarre réellement le combat après la phase d'établissement (clic « Commencer le combat ») : lève
-   *  `establishing` et lance le 1er tour (IA si l'ordre commence par un ennemi). */
-  beginCombat: () => {
-    const b = get().battle;
-    if (!b || !get().establishing) return;
-    // #12a : à la fin de la phase « plan d'ensemble », on entre dans la pause de DÉBUT DU ROUND 1 (comme
-    // les Rounds suivants) → la pré-emption d'initiative (Chance « agir en premier ») est dispo DÈS le
-    // Round 1. L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart → maybeRunEnemyTurn).
-    set({ establishing: false, pendingRoundStart: { round: b.round } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 

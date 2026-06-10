@@ -2057,7 +2057,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().establishing || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
