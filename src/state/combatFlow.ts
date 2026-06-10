@@ -58,6 +58,10 @@ import {
   castInfo,
   castingValue,
   castTestTalentDR,
+  knowsCastingSkill,
+  isDispellableSpell,
+  resolveCounterspell,
+  rederiveCastSL,
   parseSpellDamage,
   spellRangeTiles,
   type CastResult,
@@ -2347,6 +2351,62 @@ export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean })
   return { ...spell, cn: spell.cn * 2 };
 }
 
+/** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.201-202) contre un Sort de `caster` visant
+ *  `target` : camp opposé, actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts),
+ *  pas encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE
+ *  (« Si un Sort vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à
+ *  votre Force Mentale » (1 case = 2 m ; Ligne de Vue scène + fumée). */
+export function counterspellCandidates(
+  battle: BattleState | null,
+  scene: Scene | null | undefined,
+  caster: Combatant,
+  target: Combatant,
+): Combatant[] {
+  if (!battle || battle.over) return [];
+  return battle.combatants.filter((c) => {
+    if (c.kind === caster.kind || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
+    if (!knowsCastingSkill(c, 'Langue', 'Magick')) return false;
+    if (c.id === target.id) return true;
+    if (!c.pos || !target.pos) return false;
+    if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
+    return !scene || !lineOfSightCover(scene, c.pos, target.pos, [], smokeOf(battle)).blocked;
+  });
+}
+
+/** Applique un Contre-sort de `counter` au `pendingCast` FIGÉ (résultat déjà jeté) : Test opposé de
+ *  Langue (Magick) (LDB 46 l.201-202) — dissipé si le contre-lanceur gagne, sinon l'incantation se
+ *  re-détermine au DR NET. Marque l'essai du Round et re-dérive le résultat (Projectile compris) ;
+ *  la Surincantation est re-planifiée (IA) ou remise à zéro (héros — le budget a changé). */
+export function applyCounterspell(get: () => GameState, set: any, counter: Combatant): boolean {
+  const pc = get().pendingCast;
+  if (!pc?.result || pc.result.dispelled) return false;
+  const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
+  const target = get().battle?.combatants.find((c) => c.id === pc.targetId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !target || !spell || !isDispellableSpell(spell)) return false;
+  if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
+  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.202)
+  const res = pc.result;
+  // Le Test d'Incantation du lanceur, reconstruit tel que figé (même convention que rederiveCastSL).
+  const castT = { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
+  const out = resolveCounterspell(counter, castT, battleRng());
+  let next: typeof pc.result;
+  if (out.dispelled) {
+    next = { ...res, cast: false, dispelled: true, hit: false, damage: undefined, woundsLost: undefined, defenderDefeated: false, log: `${out.log}` };
+  } else {
+    next = rederiveCastSL(caster, target, spell, res, pc.missile, pc.focused, out.casterNetSL - res.sl);
+    next.log = `${out.log} ${next.log}`;
+  }
+  // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
+  const oc = caster.kind === 'enemy' && pc.missile && !pc.zone
+    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused)
+    : {};
+  set({ pendingCast: { ...pc, result: next, overcast: undefined, extraTargetIds: undefined, ...oc } });
+  const b = get().battle;
+  if (b) set({ battle: { ...b, log: [...b.log, ev('info', out.log, counter.id, caster.id)] } });
+  return true;
+}
+
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
 export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
@@ -2371,7 +2431,9 @@ export function applyCast(
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
   const isSort = !castInfoIsPrayer(spell.type);
-  const crit = !!res.isCritical && isSort;
+  // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
+  // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
+  const crit = !!res.isCritical && isSort && !res.dispelled;
   let choice = critChoice;
   if (crit) {
     // Défaut (IA / non choisi) : repêcher un DR insuffisant (Puissance totale), sinon
@@ -2851,6 +2913,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   for (const c of battle.combatants) {
     if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
+    c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }
   // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
   const swarms = battle.combatants.filter((s) => s.swarm && !isOutOfAction(s));

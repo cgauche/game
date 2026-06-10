@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { counterspellCandidates } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
@@ -15,7 +16,9 @@ import { Dice } from './Dice';
 export function CastModal() {
   const pc = useGame((s) => s.pendingCast);
   const battle = useGame((s) => s.battle);
+  const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
+  const counterspell = useGame((s) => s.castCounterspell);
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
@@ -147,6 +150,27 @@ export function CastModal() {
                       })}
                     </div>
                   )}
+                </div>
+              );
+            })()}
+            {/* Dissipation (LDB 46 l.201-202) : un héros lanceur ÉLIGIBLE oppose Langue (Magick) au
+                Sort ennemi figé — gratuit, un seul par Round. Bloqué si le critique ennemi sera
+                « Force inéluctable » (défaut IA d'un Sort non-Projectile réussi, l.59). */}
+            {(() => {
+              if (caster.kind !== 'enemy' || !res.cast || res.dispelled || isPrayer) return null;
+              if (res.isCritical && !pc.missile) return null; // inéluctable (défaut IA)
+              const cands = counterspellCandidates(battle ?? null, scene, caster, target).filter((c) => c.kind === 'hero');
+              if (!cands.length) return null;
+              return (
+                <div className="rm-overcast">
+                  <span className="mini-title">🛡️ Contre-sort (Dissipation) — Test opposé de Langue (Magick), 1/Round</span>
+                  <div className="modal-actions" style={{ justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                    {cands.map((h) => (
+                      <button key={h.id} className="btn small" onClick={() => counterspell(h.id)} title="Gagné : le Sort est dissipé. Perdu : l'incantation se résout au DR net du Test opposé.">
+                        🛡️ {h.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               );
             })()}

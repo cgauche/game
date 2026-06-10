@@ -17,7 +17,7 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, TestResult } from './tests';
+import { rollTest, resolveOpposed, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
@@ -376,6 +376,8 @@ export interface CastResult {
   isCritical: boolean;
   /** Maladresse (double raté) → Incantation Imparfaite / Colère des dieux. */
   isFumble: boolean;
+  /** DISSIPÉ par un Contre-sort (LDB 46 l.201-202) — une « Puissance totale » ne le repêche pas. */
+  dispelled?: boolean;
   log: string;
 }
 
@@ -443,6 +445,52 @@ export function evaluateCasting(
     log = `${caster.name} lance ${spell.label} (DR ${t.sl}).`;
   }
   return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log };
+}
+
+/** Issue d'un Contre-sort (Dissipation, LDB 46 l.201-202). */
+export interface CounterspellOutcome {
+  /** Le contre-lanceur GAGNE le Test opposé : le Sort est dissipé. */
+  dispelled: boolean;
+  /** Jet de Langue (Magick) du contre-lanceur (affichage/journal). */
+  counter: TestResult;
+  /** « le Sort utilise le DR du Test opposé » : DR NET (signé) du lanceur si non dissipé. */
+  casterNetSL: number;
+  log: string;
+}
+
+/** Seul un SORT se dissipe (LDB 46 l.201 : « Si un Sort vous cible ») — pas une Prière
+ *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
+export function isDispellableSpell(spell: SpellLike): boolean {
+  return !PRAYER_TYPES.includes(spell.type);
+}
+
+/**
+ * Dissipation (LDB 46 l.201-202) : « vous pouvez opposer le Test d'Incantation avec Langue
+ * (Magick), car vous chantez un Contre-sort. Effectuez un Test opposé de Langue (Magick). Sur un
+ * succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour
+ * déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul
+ * Sort chaque Round. »
+ * `castT` = le Test d'Incantation du lanceur, DÉJÀ jeté (DR ajustés : talents, armure). Le jet du
+ * contre-lanceur subit les mêmes règles de Test de Langue (Magick) : « Repousser les Vents »
+ * (l.199, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
+ * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
+ */
+export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
+  const value = castingValue(counter, 'Langue', 'Magick');
+  const t = rollTest(value, 'intermediaire', rng);
+  const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
+  const counterT = adj ? { ...t, sl: t.sl + adj } : t;
+  const opp = resolveOpposed(castT, counterT); // le lanceur tient le rôle « attaquant »
+  const dispelled = opp.winner === 'defender';
+  const net = castT.sl - counterT.sl;
+  return {
+    dispelled,
+    counter: counterT,
+    casterNetSL: net,
+    log: dispelled
+      ? `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
+      : `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
+  };
 }
 
 export interface MissileResult extends CastResult {

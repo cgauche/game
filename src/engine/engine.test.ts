@@ -282,6 +282,8 @@ import {
   resolveMagicMissile,
   resolveFocus,
   castTestTalentDR,
+  resolveCounterspell,
+  isDispellableSpell,
   type SpellLike,
 } from './magic';
 import { rollMiscast } from './miscast';
@@ -721,6 +723,32 @@ describe('Magie — compétences Avancées (gating)', () => {
       if (a.roll <= (a.target ?? 0)) expect(b.dr).toBe(a.dr + 3);
       else expect(b.dr).toBe(a.dr); // échec : pas de bonus (« utilisation réussie »)
     }
+  });
+
+  it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
+    const langue = (adv: number) => [{ name: 'Langue', spec: 'Magick', characteristic: 'Int' as const, advances: adv }];
+    // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
+    const fort = caster({ Int: 89 }, langue(10));
+    const castT = { roll: 40, target: 50, success: true, sl: 1, isDouble: false };
+    let dispelCount = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const out = resolveCounterspell(fort, castT, makeRNG(seed));
+      expect(out.casterNetSL).toBe(castT.sl - out.counter.sl); // « le DR du Test opposé »
+      if (out.dispelled) {
+        dispelCount++;
+        expect(out.counter.sl).toBeGreaterThan(castT.sl); // gagné = DR strictement supérieur (ou cible sup. à égalité)
+      }
+    }
+    expect(dispelCount).toBeGreaterThan(6); // valeur 99 vs DR 1 : la dissipation domine
+    // contre-lanceur nul : jamais dissipé sur un DR adverse élevé
+    const nul = caster({ Int: 10 }, langue(0));
+    const fortCast = { roll: 11, target: 95, success: true, sl: 8, isDouble: false };
+    for (let seed = 1; seed <= 8; seed++) expect(resolveCounterspell(nul, fortCast, makeRNG(seed)).dispelled).toBe(false);
+  });
+
+  it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
+    expect(isDispellableSpell(FLECHETTE)).toBe(true);
+    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', cn: null, duration: '', desc: '' })).toBe(false);
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
