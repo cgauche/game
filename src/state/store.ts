@@ -404,6 +404,8 @@ export interface GameState {
   battleAim: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;
+  /** Choisit l'arme d'attaque (uid d'ItemInstance du loadout actif ; null = auto) — avant le jet. */
+  attackSetWeapon: (uid: string | null) => void;
   /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
   attackSetIntoCrowd: (v: boolean) => void;
   /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
@@ -1831,6 +1833,11 @@ export const useGame = create<GameState>((set, get) => ({
     const pa = get().pendingAttack;
     if (!pa || pa.result) return; // la visée ne change plus après le jet
     set({ pendingAttack: { ...pa, location: loc } });
+  },
+  attackSetWeapon: (uid) => {
+    const pa = get().pendingAttack;
+    if (!pa || pa.result) return; // choix d'arme avant le jet seulement
+    set({ pendingAttack: { ...pa, weaponUid: uid ?? undefined } });
   },
   attackSetIntoCrowd: (v) => {
     const pa = get().pendingAttack;

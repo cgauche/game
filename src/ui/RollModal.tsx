@@ -26,6 +26,7 @@ export function RollModal() {
   const pa = useGame((s) => s.pendingAttack);
   const battle = useGame((s) => s.battle);
   const setLocation = useGame((s) => s.attackSetLocation);
+  const setWeapon = useGame((s) => s.attackSetWeapon);
   const roll = useGame((s) => s.attackRoll);
   const reroll = useGame((s) => s.attackReroll);
   const bonusSL = useGame((s) => s.attackBonusSL);
@@ -43,6 +44,8 @@ export function RollModal() {
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
   const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto, mêlée au contact / distance) + munition
+  // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
+  const pickable = attacker.weapons.filter((w) => w.name !== 'Mains nues' && !!w.uid);
   const res = pa.result;
   // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
@@ -73,6 +76,22 @@ export function RollModal() {
 
         {!res ? (
           <>
+            {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; l'aperçu reflète le mod. */}
+            {pickable.length >= 2 && (
+              <div className="rm-loc-inline">
+                <span className="mini-title">Arme</span>
+                <select
+                  className="rm-loc-select"
+                  value={pa.weaponUid ?? weapon.uid ?? ''}
+                  onChange={(e) => setWeapon(e.target.value || null)}
+                  title="Avec quelle arme frapper ? La main secondaire subit -20 (réduit par Ambidextre)."
+                >
+                  {pickable.map((w) => (
+                    <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde -20)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact
                 plutôt qu'une grille de 7 boutons. Viser une localisation rend le Test Complexe (-10). */}
             <div className="rm-loc-inline">
