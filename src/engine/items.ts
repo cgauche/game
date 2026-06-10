@@ -138,11 +138,13 @@ export function isWeaponActive(c: Combatant, uid?: string): boolean {
  *  tag `hand`) ; sans loadout = comportement historique (toutes armes équipées, `hand:'main'`). */
 export function recomputeLoadout(c: Combatant): void {
   const items = c.items ?? [];
-  // Auto-prune : un slot référençant une arme qui a quitté l'inventaire (vente/transfert/perte) est vidé,
-  // sur TOUS les loadouts (pas seulement l'actif) — évite les références orphelines.
+  // Auto-prune : un slot référençant une arme qui a quitté l'inventaire (vente/transfert/perte) OU qui est
+  // DÉTRUITE (Incident de Tir / usure, LDB 14/62) est vidé, sur TOUS les loadouts — évite les références
+  // orphelines (et nettoie le slot d'une arme cassée, plus rééquipable telle quelle).
+  const slotDead = (uid?: string) => uid != null && !items.some((i) => i.uid === uid && !i.destroyed);
   for (const lo of c.loadouts ?? []) {
-    if (lo.main && !items.some((i) => i.uid === lo.main)) lo.main = undefined;
-    if (lo.off && !items.some((i) => i.uid === lo.off)) lo.off = undefined;
+    if (slotDead(lo.main)) lo.main = undefined;
+    if (slotDead(lo.off)) lo.off = undefined;
   }
   const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)

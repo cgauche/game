@@ -295,6 +295,17 @@ describe('items — recomputeLoadout / encombrement', () => {
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']);
   });
+  it('auto-prune : un slot pointant vers une arme DÉTRUITE (Incident de Tir / usure) est vidé', () => {
+    const c = {
+      characteristics: { F: 30, E: 30 },
+      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true, destroyed: true })],
+      loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
+      activeLoadoutId: 'l1',
+    } as unknown as Combatant;
+    recomputeLoadout(c);
+    expect(c.loadouts![0].main).toBeUndefined(); // slot vidé (l'arme détruite n'est plus tenable)
+    expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']);
+  });
   it('Merveille d’ingénierie (cancels all) sur la main secondaire amputée : le bouclier reste utilisable (LDB 73)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
