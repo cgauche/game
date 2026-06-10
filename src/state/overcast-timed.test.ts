@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { applyCast } from './combatFlow';
+import { applyCast, overcastTargetCandidates } from './combatFlow';
 import { makePregens } from '../data/pregens';
 import { findSpell } from '../data';
 import { applyOps } from '../engine/ops';
@@ -67,6 +67,44 @@ describe('États récurrents (« un par Round »)', () => {
     const v2 = c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
     expect(v2).toBeGreaterThanOrEqual(v1); // ré-appliqué au Round 2 (dernier de l'effet)
     expect(c.activeEffects?.length ?? 0).toBe(0); // l'effet porteur expiré
+  });
+});
+
+/** Combattant minimal posé en (x,0) pour les listes de cibles. */
+function stub(id: string, kind: 'hero' | 'enemy', x: number, wounds = 12): Combatant {
+  return {
+    id, name: id, kind,
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: wounds, max: 12, base: 12 },
+    advantage: 0, conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4, pos: { x, y: 0 },
+  } as Combatant;
+}
+
+describe('overcastTargetCandidates — cibles supplémentaires proposables (modale, LDB 47 l.28-31)', () => {
+  it('Projectile : exclut la cible principale, le figurant tombé à 0 PB (hors de combat) et le mort', () => {
+    const caster = stub('w', 'hero', 0);
+    const downed = stub('e3', 'enemy', 3, 0); // Mort Subite (LDB 18 l.51-54) : à 0 PB il est « mort » sur le plateau
+    const dead = { ...stub('e4', 'enemy', 4), dead: true };
+    const pool = [caster, stub('e1', 'enemy', 1), stub('e2', 'enemy', 2), downed, dead];
+    const ids = overcastTargetCandidates(pool, caster, 'e1', findSpell('Carreau')!, true).map((c) => c.id);
+    expect(ids).toEqual(['e2']);
+  });
+
+  it('Projectile : les cibles supplémentaires doivent être À PORTÉE du Sort', () => {
+    const caster = stub('w', 'hero', 0); // Carreau : Portée FM mètres → FM 30 = 15 cases
+    const far = stub('e3', 'enemy', 90);
+    const ids = overcastTargetCandidates([caster, stub('e1', 'enemy', 1), stub('e2', 'enemy', 2), far], caster, 'e1', findSpell('Carreau')!, true).map((c) => c.id);
+    expect(ids).toEqual(['e2']);
+  });
+
+  it('bénéfique : le lanceur et un allié Inconscient restent proposables (un soin le réveille), un mort non', () => {
+    const caster = stub('w', 'hero', 0);
+    const ko = stub('h2', 'hero', 1, 0);
+    addCondition(ko, 'Inconscient', 1);
+    const dead = { ...stub('h3', 'hero', 2), dead: true };
+    const ids = overcastTargetCandidates([caster, stub('h1', 'hero', 3), ko, dead], caster, 'h1', { range: null }, false).map((c) => c.id);
+    expect(ids).toEqual(['w', 'h2']);
   });
 });
 

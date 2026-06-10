@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { counterspellCandidates } from '../state/combatFlow';
+import { counterspellCandidates, overcastTargetCandidates } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
@@ -120,9 +120,7 @@ export function CastModal() {
               const canTargets = typeof spell.target === 'number' && spell.target >= 1 && spell.range !== 'Vous';
               if (!canDuration && !canTargets) return null;
               const pool = battle?.combatants ?? party;
-              const candidates = pc.missile
-                ? pool.filter((m) => m.kind === 'enemy' && m.id !== pc.targetId && !m.dead)
-                : pool.filter((m) => m.kind === 'hero' && m.id !== pc.targetId && !m.dead);
+              const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile);
               return (
                 <div className="rm-overcast">
                   <span className="mini-title">🌬️ Surincantation — surplus {left}×2 DR disponible</span>

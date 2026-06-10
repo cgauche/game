@@ -2452,6 +2452,26 @@ export function aiOvercastPlan(
   return { overcast: { duration: 0, targets: extras.length }, extraTargetIds: extras };
 }
 
+/** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
+ *  modale : hors cible principale, À PORTÉE du Sort (quand les positions existent — hors combat
+ *  le groupe n'est pas sur un plateau), et surtout EN ÉTAT D'ÊTRE CIBLÉES — un Projectile vise un
+ *  adversaire encore en combat (un figurant à 0 PB est mort, LDB 18 l.51-54) ; un sort bénéfique
+ *  vise un allié non mort/évacué (l'Inconscient reste soignable). Aligné sur aiOvercastPlan/ZdE. */
+export function overcastTargetCandidates(
+  pool: Combatant[],
+  caster: Combatant,
+  targetId: string,
+  spell: { range: string | null },
+  missile: boolean,
+): Combatant[] {
+  const range = spellRangeTiles(spell.range, caster);
+  return pool.filter((m) => {
+    if (m.id === targetId) return false;
+    if (missile ? m.kind === caster.kind || isOutOfAction(m) : m.kind !== caster.kind || m.dead || m.outOfRencontre) return false;
+    return range == null || !caster.pos || !m.pos || combatDistance(caster, m) <= range;
+  });
+}
+
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
 export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = findSpell(pc.spellLabel);
