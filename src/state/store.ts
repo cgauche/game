@@ -154,6 +154,10 @@ export interface GameState {
   /** Projection de la carte (bascule) : 'iso' losange ou 'top' grille carrée — préférence de vue. */
   viewMode: 'iso' | 'top';
   toggleViewMode: () => void;
+  /** Décalage manuel de la caméra (caméra libre tactique) ; remis à zéro au refocus (changement de tour). */
+  camPan: { x: number; y: number };
+  panCamBy: (dx: number, dy: number) => void;
+  resetCamPan: () => void;
   /** Option de jeu : INSPECTION des combattants (statbloc au clic sur la frise d'ordre). OFF par défaut
    *  (préférence du joueur — l'inspection casse un peu l'immersion) ; préférence persistante (comme la vue). */
   inspectEnabled: boolean;
@@ -565,9 +569,12 @@ export const useGame = create<GameState>((set, get) => ({
     set({ facing: next });
   },
   zoom: 1,
-  setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(1, z)) }),
+  setZoom: (z) => set({ zoom: Math.min(2.6, Math.max(0.4, z)) }), // floor 0.4 : dézoom tactique large
   viewMode: 'iso',
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === 'iso' ? 'top' : 'iso' })),
+  camPan: { x: 0, y: 0 },
+  panCamBy: (dx, dy) => set((s) => ({ camPan: { x: s.camPan.x + dx, y: s.camPan.y + dy } })),
+  resetCamPan: () => set((s) => (s.camPan.x === 0 && s.camPan.y === 0 ? {} : { camPan: { x: 0, y: 0 } })),
   inspectEnabled: false,
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
   partyPos: { x: 0, y: 0 },

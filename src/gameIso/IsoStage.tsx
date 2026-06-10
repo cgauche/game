@@ -54,8 +54,9 @@ const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
  *  l'herbe (cyan/bleu = proche/facile → orange/rouge = loin/difficile ; le vert se noierait au sol). */
 const bandColor = (mod: number): string =>
   mod >= 60 ? '#46e0c0' : mod >= 40 ? '#5aa6ff' : mod >= 0 ? '#e6d24a' : mod >= -10 ? '#e8973f' : '#e0533a';
-const ZOOM_MIN = 1;
+const ZOOM_MIN = 0.4; // dézoom tactique large (cf. store.setZoom)
 const ZOOM_MAX = 2.6;
+const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
 
 // Viewport virtuel : le SVG remplit tout l'espace dispo (preserveAspectRatio
 // slice) et la caméra recadre autour du point focal (groupe / combattant actif).
@@ -102,6 +103,8 @@ export function IsoStage() {
   const pendingAttack = useGame((s) => s.pendingAttack);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
+  // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
+  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: { x: number; y: number } | null } | null>(null);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
   // Rotation caméra (cran de 90°). `camRot` = cible (store, lu en live par le rig) ;
@@ -110,6 +113,9 @@ export function IsoStage() {
   const camRot = useGame((s) => s.camRot);
   const rotateCam = useGame((s) => s.rotateCam);
   const viewMode = useGame((s) => s.viewMode);
+  const camPan = useGame((s) => s.camPan);
+  const panCamBy = useGame((s) => s.panCamBy);
+  const resetCamPan = useGame((s) => s.resetCamPan);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [turning, setTurning] = useState(false);
   // Tuile survolée (pour l'infobulle de portée en mode tir).
@@ -160,6 +166,13 @@ export function IsoStage() {
 
   // FX de combat pilotés par le bus (flottants/projectiles/halos/zones) — extraits dans fx/useCombatFx.
   const { floats, projs, auras, aoes } = useCombatFx();
+
+  // Refocus « sur celui qui joue après » : tout décalage manuel de caméra est annulé quand l'unité
+  // active change (nouveau tour) — sinon le pion actif pourrait rester hors champ après un panoramique.
+  const activeTurnKey = mode === 'battle' && battle ? battle.order[battle.turn] : 'explore';
+  useEffect(() => {
+    resetCamPan();
+  }, [activeTurnKey, resetCamPan]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
@@ -477,7 +490,9 @@ export function IsoStage() {
     else focus = centroid;
   }
   const fc = tileCenter(focus.x, focus.y, dims);
-  const cam = { x: VW / 2 - fc.cx, y: VH / 2 - fc.cy };
+  // Caméra libre tactique : le suivi auto-cadre le point focal, + un décalage manuel (camPan) qu'on
+  // accumule au glisser. Remis à zéro quand l'unité active change (refocus « sur celui qui joue après »).
+  const cam = { x: VW / 2 - fc.cx + camPan.x, y: VH / 2 - fc.cy + camPan.y };
 
   // --- Interaction (clic / survol → tuile) ---
   // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
@@ -497,40 +512,27 @@ export function IsoStage() {
 
   // Survol : suit la tuile sous le curseur quand on vise (infobulle de portée). Ne met à jour
   // l'état que sur changement de tuile (pas à chaque pixel) → re-rendus bornés.
-  const onPointerMove = (ev: React.PointerEvent) => {
-    const t = tileFromEvent(ev);
-    // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
-    const sc = useGame.getState().scene;
-    const overInteractive =
-      !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact || !!e.merchant));
-    (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
-    if (!aimWeapon) {
-      if (hover) setHover(null);
-      return;
-    }
-    if (!t) {
-      if (hover) setHover(null);
-      return;
-    }
-    if (!hover || hover.x !== t.x || hover.y !== t.y) setHover(t);
-  };
-  const onPointerLeave = () => {
-    if (hover) setHover(null);
+  // Écran → coordonnées SVG (repère viewBox), via la CTM — base du panoramique (delta de glissement).
+  const clientToSvg = (ev: React.PointerEvent): { x: number; y: number } | null => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const pt = svg.createSVGPoint();
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+    return { x: loc.x, y: loc.y };
   };
 
-  const onPointerDown = (ev: React.PointerEvent) => {
+  // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
+  const performClick = (t: { x: number; y: number } | null) => {
     const st = useGame.getState();
     const sc = st.scene;
-    if (!sc || st.dialogue) return;
-    const t = tileFromEvent(ev);
-    if (!t) return;
+    if (!sc || st.dialogue || !t) return;
     const { x, y } = t;
-
     if (st.mode === 'battle') {
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
-      // En mode incantation, on peut cibler n'importe quel combattant (allié,
-      // ennemi ou soi) ; sinon seuls les ennemis sont cliquables pour attaquer.
+      // En mode incantation, on peut cibler n'importe quel combattant (allié, ennemi ou soi) ;
+      // sinon seuls les ennemis sont cliquables pour attaquer.
       if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast')) st.battleClickEntity(occ.id);
       else st.battleClickTile({ x, y });
       return;
@@ -553,6 +555,60 @@ export function IsoStage() {
     }
     st.setPendingInteract(null); // clic ailleurs : annule un déplacement-puis-fouille en attente
     moveAlong(sc, st.partyPos, { x, y });
+  };
+
+  // Caméra libre : on ARME un glisser au pointer-down (sans agir), on panoramique au mouvement
+  // au-delà du seuil, et le clic ne se déclenche au relâchement QUE si on n'a pas glissé.
+  const onPointerDown = (ev: React.PointerEvent) => {
+    if (useGame.getState().dialogue) return;
+    const p = clientToSvg(ev);
+    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: tileFromEvent(ev) };
+    svgRef.current?.setPointerCapture?.(ev.pointerId);
+  };
+
+  const onPointerMove = (ev: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (d) {
+      if (!d.panned && Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) > PAN_THRESHOLD) d.panned = true;
+      if (d.panned) {
+        const p = clientToSvg(ev);
+        if (p) {
+          panCamBy((p.x - d.lastX) / zoom, (p.y - d.lastY) / zoom); // delta écran (viewBox) → unités caméra
+          d.lastX = p.x;
+          d.lastY = p.y;
+        }
+        (ev.currentTarget as SVGElement).style.cursor = 'grabbing';
+        return; // pendant un panoramique : pas d'affordance ni de hover de visée
+      }
+    }
+    const t = tileFromEvent(ev);
+    // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
+    const sc = useGame.getState().scene;
+    const overInteractive =
+      !!sc && !!t && useGame.getState().mode === 'exploration' &&
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact || !!e.merchant));
+    (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
+    if (!aimWeapon) {
+      if (hover) setHover(null);
+      return;
+    }
+    if (!t) {
+      if (hover) setHover(null);
+      return;
+    }
+    if (!hover || hover.x !== t.x || hover.y !== t.y) setHover(t);
+  };
+
+  const onPointerUp = (ev: React.PointerEvent) => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    svgRef.current?.releasePointerCapture?.(ev.pointerId);
+    (ev.currentTarget as SVGElement).style.cursor = '';
+    if (d && !d.panned && d.button === 0) performClick(d.tile); // tap (sans glisser) au bouton principal = clic
+  };
+
+  const onPointerLeave = () => {
+    if (hover) setHover(null);
   };
 
   const moveAlong = (sc: GameScene, from: { x: number; y: number }, to: { x: number; y: number }) => {
@@ -585,7 +641,10 @@ export function IsoStage() {
       preserveAspectRatio="xMidYMid slice"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
       onPointerLeave={onPointerLeave}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>

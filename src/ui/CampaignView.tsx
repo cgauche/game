@@ -48,7 +48,6 @@ export function CampaignView() {
   const [inspectId, setInspectId] = useState<string | null>(null);
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
-  const dateShort = clockDate.intercalary ?? `${clockDate.day} ${clockDate.monthName}`;
   const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
@@ -96,9 +95,6 @@ export function CampaignView() {
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} />
-        {mode === 'exploration' && (
-          <div className="date-chip" title={dateLine}>{phase.icon} {dateShort}</div>
-        )}
         <PartyDock heroes={dockHeroes} activeId={activeId} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls

@@ -45,14 +45,6 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
       style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 5, userSelect: 'none' }}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <button
-        type="button"
-        title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
-        style={{ ...BTN, background: view === 'top' ? '#2a3550' : '#1c2230', borderColor: view === 'top' ? '#6f86c0' : '#3a4660' }}
-        onPointerDown={stop(onToggleView)}
-      >
-        {view === 'top' ? '◇' : '▦'}
-      </button>
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" title="Tourner anti-horaire (Q)" style={BTN} onPointerDown={stop(onRotateLeft)}>
           ⟲
@@ -61,9 +53,19 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
           ⟳
         </button>
       </div>
-      <button type="button" title="Zoom avant" style={{ ...BTN, fontSize: 26 }} onPointerDown={stop(onZoomIn)}>
-        +
-      </button>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" title="Zoom avant" style={{ ...BTN, fontSize: 26 }} onPointerDown={stop(onZoomIn)}>
+          +
+        </button>
+        <button
+          type="button"
+          title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
+          style={{ ...BTN, fontSize: 22, background: view === 'top' ? '#2a3550' : '#1c2230', borderColor: view === 'top' ? '#6f86c0' : '#3a4660' }}
+          onPointerDown={stop(onToggleView)}
+        >
+          {view === 'top' ? '◇' : '▦'}
+        </button>
+      </div>
       <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>
         −
       </button>
