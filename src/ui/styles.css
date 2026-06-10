@@ -1827,6 +1827,37 @@ textarea:focus {
 .insp-traits {
   opacity: 0.85;
   font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.insp-trait-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 1px 6px;
+  cursor: help; /* desc verbatim (LDB 85) en tooltip */
+}
+/* Aperçu du profil du bestiaire (éditeur, volet spawn) — ligne M CC CT … B, « – » = inexistante */
+.creature-profile table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: center;
+}
+.creature-profile th {
+  color: var(--muted);
+  font-weight: 600;
+  padding: 1px 2px;
+}
+.creature-profile td {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
+}
+.creature-profile-traits {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 4px 0 6px;
 }
 .rm-crowd {
   display: flex;

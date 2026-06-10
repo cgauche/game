@@ -1804,10 +1804,10 @@ export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant)
 // Morsure/Caudale (Indice) avant Piétinement (BF+0) — cf. exemple Aventures à Ubersreik.
 // ---------------------------------------------------------------------------
 
-/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale = +Indice (BF inclus). */
+/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale/Tentacules = +Indice (BF inclus). */
 function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
-  const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : 'Morsure';
+  const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
   return { name, type: 'melee', damage: `+${bonus}`, qualities: [] };
 }
 
@@ -1819,6 +1819,7 @@ export function creatureAttackKind(weaponName: string): string | undefined {
   if (n.includes('caudale') || n.includes('queue')) return 'caudale';
   if (n.includes('piétin') || n.includes('pietin')) return 'pietinement';
   if (n.includes('corne')) return 'cornes';
+  if (n.includes('tentacule')) return 'tentacules';
   if (n.includes('griffe') || n === 'arme') return 'arme';
   return undefined;
 }
@@ -1849,6 +1850,14 @@ export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant
     get().log(`${target.name} est Empêtré (Constricteur).`);
   }
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
+  // Tentacules (LDB 85 l.355) : « Si elle cause des Dégâts, elle peut aussi infliger à son adversaire
+  // l'État Empêtré, bien que cela entame une Empoignade avec ce tentacule. » Un Constricteur (toute
+  // touche, ci-dessus) a pu le poser déjà — le garde-fou évite le double-comptage.
+  if (kind === 'tentacules' && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
+    get().log(`${target.name} est Empêtré (Tentacules).`);
+  }
   // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
   if (kind === 'morsure' && traits.some((t) => /^vampirique/i.test(t))) {
     attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
@@ -1880,10 +1889,11 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
 
 /** Résout UNE attaque gratuite de `kind` contre `target`, OPPOSÉE et GRATUITE : ouvre la modale de
  *  défense (héros) → suspendu (true) ; sinon résout instantanément (opposé auto, ou passif si Surpris),
- *  restaure l'Action et applique les effets. Dépense 1 Avantage. */
-function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number): boolean {
+ *  restaure l'Action et applique les effets. Dépense `cost` Avantage (coût RAW par type :
+ *  Cornes/Tentacules 0, Morsure/Caudale/Piétinement 1). */
+function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
   const prevActed = get().battle?.acted ?? false;
-  attacker.advantage = Math.max(0, attacker.advantage - (kind === 'cornes' ? 0 : 1)); // 1 Avantage ; Cornes = gratuite SUR CHARGE (sans coût)
+  attacker.advantage = Math.max(0, attacker.advantage - cost);
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
@@ -2108,9 +2118,14 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
     const langue = atks.find((a) => a.kind === 'langue');
     if (langue && enemy.advantage >= langue.avantage) applyTongue(get, set, enemy, langue); // Jabberslythe : langue à distance
     if (atks.some((a) => a.kind === 'hurlement') && enemy.advantage >= 2) applyWail(get, set, enemy); // Banshee : cri (tous les Av)
-    const traitKinds = atks
-      .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
-      .map((a) => a.kind);
+    const traitKinds: string[] = [];
+    for (const a of atks) {
+      if (a.trigger !== 'free') continue;
+      if (a.kind === 'morsure' || a.kind === 'caudale') traitKinds.push(a.kind);
+      // Tentacules (LDB 85 l.354-355 : « Gagnez une Action d'Attaque gratuite PAR tentacule ») :
+      // count× entrées (« 8 Tentacules +9 » → 8), coût d'Avantage 0.
+      if (a.kind === 'tentacules') for (let i = 0; i < (a.count ?? 1); i++) traitKinds.push('tentacules');
+    }
     // Cornes : Attaque gratuite gagnée EN CHARGEANT (LDB 85), sans coût d'Avantage → en tête.
     const cornes = enemy.chargedThisTurn && atks.some((a) => a.kind === 'cornes') ? ['cornes'] : [];
     enemy.chargedThisTurn = false; // consommée
@@ -2118,13 +2133,17 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   }
   while (enemy.pendingFreeAttacks.length) {
     const kind = enemy.pendingFreeAttacks[0];
-    if (kind !== 'cornes' && enemy.advantage < 1) break; // Cornes (Charge) ne coûte pas d'Avantage
+    // Coût en Avantage PAR TYPE (RAW, lu de creatureAttacks) : Cornes (Charge) et Tentacules = 0 ;
+    // Morsure/Caudale = 1 ; Piétinement (Taille) = 1. Une entrée inabordable est SAUTÉE (pas de
+    // break : des Tentacules à coût 0 restent jouables derrière une Morsure inabordable).
+    const cost = kind === 'pietinement' ? 1 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
+    if (enemy.advantage < cost) { enemy.pendingFreeAttacks.shift(); continue; }
     const b2 = get().battle; if (!b2 || b2.over) break;
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
     const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
     enemy.pendingFreeAttacks.shift();
-    if (applyFreeAttack(get, set, enemy, target, kind, bonus)) return true; // modale ouverte → reprise via defenseConfirm
+    if (applyFreeAttack(get, set, enemy, target, kind, bonus, cost)) return true; // modale ouverte → reprise via defenseConfirm
   }
   enemy.pendingFreeAttacks = undefined; // file épuisée
   return false;

@@ -14,6 +14,8 @@ import { ParamFields } from './ParamFields';
 import { EffectList } from './EffectList';
 import { EntityListPanel } from './EntityListPanel';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
+import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
+import { findCreature } from '../../data';
 import { propRefPatch } from './propDefaults';
 import { KIND_LABEL } from './tools';
 
@@ -150,6 +152,26 @@ export function Inspector({
                     ))}
                   </select>
                 </label>
+                {(() => {
+                  const cr = spawn.ref ? findCreature(spawn.ref) : undefined;
+                  if (!cr) return null;
+                  return (
+                    <>
+                      {/* Aperçu du profil posé (LDB 76 : « – » = caractéristique inexistante) */}
+                      <CreatureProfile creature={cr} />
+                      <OptionalTraitsPicker creature={cr} value={spawn.optionals} onChange={(optionals) => updateSpawn({ optionals })} />
+                      <SpellsField value={spawn.spells} onChange={(spells) => updateSpawn({ spells })} />
+                      <label className="ed-field" title="LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable).">
+                        <input
+                          type="checkbox"
+                          checked={spawn.randomChars ?? false}
+                          onChange={(e) => updateSpawn({ randomChars: e.target.checked || undefined })}
+                        />{' '}
+                        🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+                      </label>
+                    </>
+                  );
+                })()}
                 <button
                   className="btn small"
                   onClick={() => updateSpawn({ ref: undefined, statblock: emptyStatblock(spawn.ref || 'Ennemi') })}

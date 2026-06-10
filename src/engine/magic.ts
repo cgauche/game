@@ -152,8 +152,14 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  * peut tenter le Test que si l'on y possède au moins une Augmentation (Livre de
  * base, 09 - Compétences : « Si ce n'est pas le cas, vous ne pouvez pas tenter le
  * Test »). Sinon, aucune incantation possible — pas de repli sur la Caractéristique.
+ *
+ * Exception : le Trait de créature « Lanceur de Sorts (Divers) » (LDB 85 l.182-183 :
+ * « La créature peut lancer des Sorts ») autorise l'incantation SANS la Compétence —
+ * les statblocs du bestiaire ne portent pas de Compétences ; le Test se fait alors
+ * sur la Caractéristique seule (castingValue, avances 0).
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
+  if (c.traits?.some((t) => /^lanceur de sorts\b/i.test(t))) return true;
   return c.skills.some(
     (s) => s.name === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
   );

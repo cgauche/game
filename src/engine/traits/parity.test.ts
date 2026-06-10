@@ -20,7 +20,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Cornes', 'attaque gratuite à la Charge (creatureAttacks.ts)'],
   ['Morsure', 'attaque gratuite (creatureAttacks.ts)'],
   ['Souffle', 'attaque de zone (creatureAttacks.ts + combatFlow)'],
-  ['Tentacules', 'attaques gratuites par tentacule (creatureAttacks.ts)'],
+  ['Tentacules', 'attaques gratuites par tentacule, count× à coût 0 (creatureAttacks.ts + aiCreatureFreeAttacks)'],
   ['Étreinte glaciale', 'attaque-Action magique (creatureAttacks.ts + combatFlow)'],
   ['Langue préhensile', 'attaque gratuite à distance (creatureAttacks.ts)'],
   ['Hurlement fantomatique', 'cri de zone (creatureAttacks.ts + combatFlow)'],
@@ -60,7 +60,7 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Dressé', 'dressages spécifiques (Divertir/Garder/Monture…) — arbitrage MJ'],
   ['Béni', 'Bénédictions de PNJ — pas de liste de prières dans la donnée (MJ)'],
   ['Miracles', 'Miracles de PNJ — pas de liste dans la donnée (MJ)'],
-  ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus (MJ) ; l’IA lance déjà enemy.spells si fournis'],
+  ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
   ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
 ]);

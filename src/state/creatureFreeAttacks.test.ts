@@ -171,6 +171,20 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2
   });
 
+  it('« 8 Tentacules +9 » : 8 Attaques gratuites à coût 0, Empêtré sur Dégâts, Avantage non consommé (LDB 85 l.354-355)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.traits = ['8 Tentacules +9']; E.advantage = 0; E.characteristics.CC = 95; // coût 0 : pas besoin d'Avantage
+    const before = H.wounds.current;
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false); // cible Surprise → résolution instantanée
+    const st = useGame.getState();
+    const h = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(before - h.wounds.current).toBeGreaterThan(20); // ≥ plusieurs touches à +9 : bien 8 attaques, pas 1
+    expect(h.conditions.some((c) => c.name === 'Empêtré')).toBe(true); // « Si elle cause des Dégâts … Empêtré »
+    expect(st.battle!.acted).toBe(false); // gratuites : l'Action n'est pas consommée
+  });
+
   it('Constricteur : toute touche → Empêtré ; Vampirique : la Morsure soigne l’attaquant', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();

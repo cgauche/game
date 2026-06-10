@@ -14,6 +14,7 @@ import { creatures, findCreature } from '../../data';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
+import { SpellsField } from './OptionalTraitsPicker';
 
 const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'Mouvement', def: 4 }];
 
@@ -121,6 +122,15 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
             onChange({ ...stat, groups: groups.length ? groups : undefined });
           }}
         />
+      </label>
+      <SpellsField value={stat.spells} onChange={(spells) => onChange({ ...stat, spells })} />
+      <label className="ed-field" title="LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable) ; Blessures recalculées par la formule.">
+        <input
+          type="checkbox"
+          checked={stat.randomChars ?? false}
+          onChange={(e) => onChange({ ...stat, randomChars: e.target.checked || undefined })}
+        />{' '}
+        🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
       </label>
       <label className="ed-field">
         Dégâts d'arme de secours (si aucun trait d'arme, ex. +BF+4)

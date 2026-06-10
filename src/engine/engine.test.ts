@@ -688,6 +688,13 @@ describe('Magie — compétences Avancées (gating)', () => {
     expect(res.cast).toBe(false);
     expect(res.log).toContain('ne maîtrise pas');
   });
+  it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
+    const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
+    c.traits = ['Lanceur de Sorts (Sorcellerie)'];
+    expect(knowsCastingSkill(c, 'Langue', 'Magick')).toBe(true);
+    const res = resolveCasting(c, FLECHETTE, makeRNG(1));
+    expect(res.log).not.toContain('ne maîtrise pas'); // le Test se fait sur Int seule
+  });
 });
 
 describe('Magie — Incantations Imparfaites & Colère des dieux', () => {

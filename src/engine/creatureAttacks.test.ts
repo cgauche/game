@@ -43,6 +43,10 @@ describe('creatureAttacks — attaques + RÈGLES dérivées des traits (RAW)', (
     const a = by(['Tentacules +6'], 'tentacules');
     expect([a.trigger, a.avantage, a.perTentacle, a.entangle]).toEqual(['free', 0, true, true]);
   });
+  it('« 8 Tentacules +9 » (Pieuvre des tourbières) : compte en tête lu, Indice non avalé', () => {
+    const a = by(['8 Tentacules +9'], 'tentacules');
+    expect([a.count, a.bonus, a.avantage, a.entangle]).toEqual([8, 9, 0, true]);
+  });
   it('Étreinte glaciale = 2 Avantages + Action, magique', () => {
     const a = by(['Étreinte glaciale'], 'etreinte');
     expect([a.trigger, a.avantage, a.magic]).toEqual(['action', 2, true]);

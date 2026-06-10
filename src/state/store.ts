@@ -986,7 +986,11 @@ export const useGame = create<GameState>((set, get) => ({
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     });
-    const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
+    const enemies = enc.enemies.map((e, i) =>
+      spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, {
+        appearance: e.appearance, weapon: e.weapon,
+        optionals: e.optionals, spells: e.spells, randomChars: e.randomChars, // personnalisations d'auteur (LDB 76/78)
+      }));
     // Combat monté (LDB 14) : marquer les montures rideables, basculer les acteurs « alliés », puis appairer
     // les couples pré-montés (rides → index de la monture dans `enemies`). Le cavalier monte SUR sa monture.
     enc.enemies.forEach((e, i) => {

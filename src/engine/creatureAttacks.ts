@@ -45,6 +45,8 @@ export interface CreatureAttack {
   magic?: boolean;
   /** Une Attaque gratuite PAR tentacule (le nombre dépend de la créature). */
   perTentacle?: boolean;
+  /** Nombre porté EN TÊTE du trait (« 8 Tentacules +9 » — « # Tentacules (Indice) », LDB 85 l.354). */
+  count?: number;
   /** Aspect/Type entre parenthèses (Souffle : Feu/Froid/Corrosif/… ; Cornes : Aspect). */
   type?: string;
 }
@@ -90,10 +92,14 @@ function parseType(label: string): string | undefined {
 export function creatureAttacks(traits: string[]): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const t of traits) {
+    // Compte EN TÊTE toléré (« 8 Tentacules +9 », Pieuvre des tourbières — « # Tentacules », LDB 85 l.354).
+    const cm = t.match(/^(\d+)\s+(.+)$/);
+    const body = cm ? cm[2] : t;
     for (const { re, kind, base } of RULES) {
-      if (re.test(t)) {
-        const m = t.match(/[+-]?\d+/);
-        out.push({ kind, label: t, bonus: m ? parseInt(m[0], 10) : 0, type: parseType(t), ...base });
+      if (re.test(body)) {
+        // Indice de Dégâts : le « +N » signé d'abord (ne pas avaler un compte en tête), repli non signé.
+        const m = body.match(/[+-]\d+/) ?? body.match(/\d+/);
+        out.push({ kind, label: t, bonus: m ? parseInt(m[0], 10) : 0, type: parseType(body), ...(cm ? { count: parseInt(cm[1], 10) } : {}), ...base });
         break;
       }
     }
