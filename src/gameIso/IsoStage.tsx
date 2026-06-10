@@ -3,7 +3,7 @@
  * dessine la scène courante (exploration ou combat), gère le clic→tuile, les
  * surbrillances de combat et le déplacement animé. Réutilise toute la logique.
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
@@ -174,6 +174,124 @@ export function IsoStage() {
     resetCamPan();
   }, [activeTurnKey, resetCamPan]);
 
+  // ——— Couches LOURDES memoïsées (perf : « ça saccade quand le personnage bouge ») ———
+  // useWalkAnim re-rend IsoStage ~60×/s pour faire GLISSER le token le long du chemin. Ces couches
+  // (sol, décor, bâtiments, grilles de surbrillance) ne dépendent PAS de la position interpolée du
+  // token : sans mémoïsation, chaque frame reconstruisait des centaines de chaînes SVG → dépassement
+  // du budget de frame. On les fige tant que leurs vraies entrées (scène/rotation/vue/combat) n'ont
+  // pas changé. Un pas de marche (setWalkTick) ne crée NI nouveau `battle` NI nouveau `partyPos` →
+  // les memos tiennent ; un vrai déplacement (set({battle:{...}})/moveParty) en crée un → recalcul 1×.
+  const floorEls = useMemo<JSX.Element[]>(() => {
+    if (!scene) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const out: JSX.Element[] = [];
+    for (let y = 0; y < d.h; y++)
+      for (let x = 0; x < d.w; x++)
+        out.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, d) }} />);
+    return out;
+  }, [scene, shownRot, viewMode]);
+
+  const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+    if (!scene) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    // Tuiles occupées par un ACTEUR — pour estomper l'arbre/mur qui masquerait un personnage derrière.
+    const actorTiles: { x: number; y: number }[] = [];
+    if (mode === 'battle' && battle) {
+      for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
+    } else {
+      actorTiles.push(partyPos);
+      for (const ent of scene.entities) if (ent.kind === 'personnage') actorTiles.push(ent.pos);
+    }
+    const occludesActor = (tx: number, ty: number) =>
+      actorTiles.some((a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7);
+    const out: { d: number; el: JSX.Element }[] = [];
+    for (let y = 0; y < d.h; y++)
+      for (let x = 0; x < d.w; x++) {
+        const ov = terrainOverlay(tileAt(scene, x, y), x, y, d);
+        if (ov)
+          out.push({
+            d: ov.d,
+            el: (
+              <g key={`ov${x}-${y}`} style={{ opacity: occludesActor(x, y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: ov.html }} />
+            ),
+          });
+      }
+    return out;
+  }, [scene, shownRot, viewMode, mode, battle, partyPos]);
+
+  const buildingObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+    if (!scene) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const allies =
+      mode === 'battle' && battle
+        ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
+        : [partyPos];
+    const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
+    return (scene.buildings ?? []).map((b) => buildingObj(b, d, roofHidden(b, allies), night));
+  }, [scene, shownRot, viewMode, mode, battle, partyPos, gameTime]);
+
+  // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
+  // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés
+  // à la frame (peu coûteux) plus bas.
+  const staticHighlights = useMemo<JSX.Element[]>(() => {
+    if (!scene || mode !== 'battle' || !battle) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const hl: JSX.Element[] = [];
+    const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+    const aimWeapon =
+      battle.action === 'attack' && activeC?.kind === 'hero' && activeC.pos
+        ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
+        : undefined;
+    // Bandes de portée concentriques autour du tireur (peintes SOUS les tokens).
+    if (aimWeapon && activeC?.pos) {
+      for (let y = 0; y < d.h; y++)
+        for (let x = 0; x < d.w; x++) {
+          const dist = cheb(activeC.pos, { x, y });
+          if (dist === 0) continue;
+          const m = rangeBandModifier(dist, aimWeapon.range!);
+          if (m == null) continue; // hors de portée → pas de teinte
+          hl.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, d)} fill={bandColor(m)} opacity={0.26} pointerEvents="none" />);
+        }
+    }
+    for (const k of battle.reachable.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
+    }
+    // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
+    for (const c of battle.combatants) {
+      if (!c.pos || isOutOfAction(c)) continue;
+      const isActiveC = c.id === activeC?.id;
+      const fill = tileTint(c.kind === 'hero', isActiveC);
+      const fp = sizeFootprint(c.size);
+      for (let dx = 0; dx < fp; dx++)
+        for (let dy = 0; dy < fp; dy++)
+          hl.push(<path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, d)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />);
+    }
+    // Fumée (R7) : les nuages bloquent la Ligne de Vue → peints en gris.
+    for (const s of battle.smoke ?? []) {
+      hl.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, d)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
+    }
+    // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer ».
+    if (battle.action === 'attack' && activeC?.kind === 'hero' && !pendingAttack) {
+      const eligible = eligibleAttackTargetIds(useGame.getState);
+      for (const c of battle.combatants) {
+        if (!c.pos || !eligible.has(c.id)) continue;
+        hl.push(<path key={`tgt-${c.id}`} d={diamondPath(c.pos.x, c.pos.y, d)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
+      }
+    }
+    // « Tirer dans le tas » : cibles ÉLIGIBLES touchables au hasard.
+    if (pendingAttack?.intoCrowd) {
+      const atk = battle.combatants.find((c) => c.id === pendingAttack.attackerId);
+      const tgt = battle.combatants.find((c) => c.id === pendingAttack.targetId);
+      if (atk && tgt)
+        for (const v of crowdEligible(battle, atk, tgt)) {
+          if (!v.pos) continue;
+          hl.push(<path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, d)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />);
+        }
+    }
+    return hl;
+  }, [scene, shownRot, viewMode, mode, battle, pendingAttack]);
+
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
   const size = stageSize(dims);
@@ -203,44 +321,11 @@ export function IsoStage() {
       ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
       : undefined;
 
-  // --- Couche sol (losanges + raccord d'arêtes) ---
-  const floor: JSX.Element[] = [];
-  for (let y = 0; y < dims.h; y++)
-    for (let x = 0; x < dims.w; x++)
-      floor.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, dims) }} />);
-
-  // --- Surbrillances de combat ---
-  const highlights: JSX.Element[] = [];
+  // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le
+  //     token qui glisse : tether d'engagement, halo de l'actif) recalculés à la frame (peu coûteux). ---
+  const highlights: JSX.Element[] = [...staticHighlights];
   if (mode === 'battle' && battle) {
-    // Bandes de portée concentriques autour du tireur (peintes SOUS les tokens).
-    if (aimWeapon && activeC?.pos) {
-      for (let y = 0; y < dims.h; y++)
-        for (let x = 0; x < dims.w; x++) {
-          const dist = cheb(activeC.pos, { x, y });
-          if (dist === 0) continue;
-          const m = rangeBandModifier(dist, aimWeapon.range!);
-          if (m == null) continue; // hors de portée → pas de teinte
-          highlights.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, dims)} fill={bandColor(m)} opacity={0.26} pointerEvents="none" />);
-        }
-    }
-    for (const k of battle.reachable.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      highlights.push(<path key={`h${k}`} d={diamondPath(x, y, dims)} fill="#4f8fe0" opacity={0.32} />);
-    }
-    // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
-    for (const c of battle.combatants) {
-      if (!c.pos || isOutOfAction(c)) continue;
-      const isActiveC = c.id === activeC?.id;
-      const fill = tileTint(c.kind === 'hero', isActiveC);
-      const fp = sizeFootprint(c.size);
-      for (let dx = 0; dx < fp; dx++)
-        for (let dy = 0; dy < fp; dy++)
-          highlights.push(
-            <path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, dims)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />,
-          );
-    }
-    // État ENGAGÉ (R7) : tether de mêlée entre paires Engagées (zone de contrôle) — auparavant invisible
-    // alors qu'il conditionne déplacement libre / Charge / Désengagement. Dédupliqué (id < otherId).
+    // État ENGAGÉ (R7) : tether de mêlée entre paires Engagées (zone de contrôle). Dédupliqué (id < otherId).
     for (const c of battle.combatants) {
       if (!c.pos || isOutOfAction(c)) continue;
       for (const oid of c.engagedWith ?? []) {
@@ -254,34 +339,6 @@ export function IsoStage() {
         highlights.push(<line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="#d98a3a" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" />);
       }
     }
-    // Fumée (R7) : les nuages bloquent la Ligne de Vue mais étaient INVISIBLES → on les peint en gris.
-    for (const s of battle.smoke ?? []) {
-      highlights.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, dims)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
-    }
-    // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » sur les ennemis à portée
-    // (mêlée à l'Allonge / tir dans une bande AVEC Ligne de Vue) — mêmes prédicats que la résolution.
-    if (battle.action === 'attack' && activeC?.kind === 'hero' && !pendingAttack) {
-      const eligible = eligibleAttackTargetIds(useGame.getState);
-      for (const c of battle.combatants) {
-        if (!c.pos || !eligible.has(c.id)) continue;
-        highlights.push(
-          <path key={`tgt-${c.id}`} d={diamondPath(c.pos.x, c.pos.y, dims)} fill="none" stroke="#ff5a4d" strokeWidth={2.5} opacity={0.9} pointerEvents="none" />,
-        );
-      }
-    }
-    // « Tirer dans le tas » : surligne les cibles ÉLIGIBLES (les deux camps au contact de la cible)
-    // qui peuvent être touchées au hasard — base du futur surlignage des zones d'effet (Explosion/sorts).
-    if (pendingAttack?.intoCrowd) {
-      const atk = battle.combatants.find((c) => c.id === pendingAttack.attackerId);
-      const tgt = battle.combatants.find((c) => c.id === pendingAttack.targetId);
-      if (atk && tgt)
-        for (const v of crowdEligible(battle, atk, tgt)) {
-          if (!v.pos) continue;
-          highlights.push(
-            <path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, dims)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />,
-          );
-        }
-    }
     if (activeC?.pos) {
       const ap = walkPosOf(activeC.id, activeC.pos.x, activeC.pos.y); // le halo SUIT le token qui glisse
       highlights.push(
@@ -294,46 +351,9 @@ export function IsoStage() {
   type Obj = { d: number; el: JSX.Element };
   const objs: Obj[] = [];
 
-  // Tuiles occupées par un ACTEUR (héros/ennemi/pnj) — pour estomper l'arbre/mur
-  // qui les masquerait. Un occulteur haut (arbre ~5 tuiles) peint par-dessus un
-  // acteur situé DERRIÈRE (depth plus faible) et dans sa colonne écran → on le rend
-  // semi-transparent pour qu'on voie toujours le personnage (« à la Baldur's Gate »).
-  const actorTiles: { x: number; y: number }[] = [];
-  if (mode === 'battle' && battle) {
-    for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
-  } else {
-    actorTiles.push(partyPos);
-    for (const ent of scene.entities) if (ent.kind === 'personnage') actorTiles.push(ent.pos);
-  }
-  const occludesActor = (tx: number, ty: number) =>
-    actorTiles.some(
-      (a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7,
-    );
-
-  // décor statique
-  for (let y = 0; y < dims.h; y++)
-    for (let x = 0; x < dims.w; x++) {
-      const ov = terrainOverlay(tileAt(scene, x, y), x, y, dims);
-      if (ov)
-        objs.push({
-          d: ov.d,
-          el: (
-            <g
-              key={`ov${x}-${y}`}
-              style={{ opacity: occludesActor(x, y) ? 0.4 : 1, transition: 'opacity 0.25s' }}
-              dangerouslySetInnerHTML={{ __html: ov.html }}
-            />
-          ),
-        });
-    }
-
-  // bâtiments multi-tuiles (toit togglable pour le cutaway)
-  const allies =
-    mode === 'battle' && battle
-      ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
-      : [partyPos];
-  const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
-  for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, roofHidden(b, allies), night));
+  // décor statique + bâtiments multi-tuiles : éléments memoïsés (cf. decorObjs/buildingObjs), juste
+  // ré-insérés dans le tri de profondeur (leurs `el` gardent une réf stable → React saute le sous-arbre).
+  objs.push(...decorObjs, ...buildingObjs);
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
@@ -648,7 +668,7 @@ export function IsoStage() {
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
-        <g>{floor}</g>
+        <g>{floorEls}</g>
         <g>{highlights}</g>
         {mode === 'exploration' && !dialogue && (
           <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
