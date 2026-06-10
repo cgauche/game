@@ -59,8 +59,8 @@ export function Editor() {
   const [encOpen, setEncOpen] = useState(false);
   const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
 
-  const { rot, setRot, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = useEditorView();
-  const dims: Dims = { ...scene.dimensions, rot };
+  const { rot, setRot, viewMode, setViewMode, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = useEditorView();
+  const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
   const stage = stageSize(dims);
   stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
 
@@ -703,6 +703,8 @@ export function Editor() {
               onZoomReset={() => setView({ zoom: 1, x: 0, y: 0 })}
               onRotateLeft={() => setRot((r) => (((r + 3) % 4) as 0 | 1 | 2 | 3))}
               onRotateRight={() => setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3))}
+              view={viewMode}
+              onToggleView={() => setViewMode((v) => (v === 'iso' ? 'top' : 'iso'))}
             />
           </div>
           <p className="hint">

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
  */
 export function useEditorView() {
   const [rot, setRot] = useState<0 | 1 | 2 | 3>(0); // rotation caméra éditeur (snap, local)
+  const [viewMode, setViewMode] = useState<'iso' | 'top'>('iso'); // projection éditeur (bascule, local)
   const [view, setView] = useState({ zoom: 1, x: 0, y: 0 }); // x,y = origine viewBox (coords contenu)
   const spaceRef = useRef(false); // barre Espace maintenue → pan au glisser
   const panRef = useRef<{ sx: number; sy: number; vx: number; vy: number } | null>(null);
@@ -77,5 +78,5 @@ export function useEditorView() {
     };
   }, []);
 
-  return { rot, setRot, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef };
+  return { rot, setRot, viewMode, setViewMode, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef };
 }

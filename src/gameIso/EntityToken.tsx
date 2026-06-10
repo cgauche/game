@@ -1,4 +1,4 @@
-import { type Dims } from './iso';
+import { CELL, type Dims } from './iso';
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { sizeTokenScale } from './sizeScale';
@@ -9,17 +9,29 @@ import type { SceneEntity } from '../state/scene';
 /**
  * Rendu d'une ENTITÉ de scène posée sur sa tuile — SOURCE UNIQUE partagée par le jeu (IsoStage)
  * et l'éditeur (WYSIWYG). Le backend (rig humanoïde / plan non-bipède animé + orientation authored /
- * sprite) est choisi par `pickBackend` (même classifieur qu'IsoStage) ; le positionnement par
- * `BodyToken`. Les non-bipèdes (loup/cheval/dragon…) s'animent désormais ici aussi (plus de sprite figé).
+ * sprite) est choisi par `pickBackend(subject, dims.view)` ; le positionnement par `BodyToken`.
+ * En vue du dessus (`dims.view==='top'`), un acteur (rig/plan) devient un disque-portrait centré ;
+ * le décor (sprite) reste un billboard de face.
  */
 export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dims: Dims; scale?: number }) {
-  const r = pickBackend({ kind: 'sceneEntity', ent });
+  const top = dims.view === 'top';
+  const r = pickBackend({ kind: 'sceneEntity', ent }, dims.view);
   // Centrée + mise à l'échelle de son empreinte par Taille (LDB 15 l.55) : une grande créature est
   // aussi grande dans l'éditeur qu'en combat. Objets/statiques : Taille indéfinie ⇒ ×1, inchangé.
   const sz = entitySize(ent);
   const off = (sizeFootprint(sz) - 1) / 2;
+  const discR = (sizeFootprint(sz) * CELL) / 2 * 0.85;
   return (
-    <BodyToken x={ent.pos.x + off} y={ent.pos.y + off} dims={dims} scale={scale * sizeTokenScale(sz)} bakedDeath={r.backend !== 'sprite'}>
+    <BodyToken
+      x={ent.pos.x + off}
+      y={ent.pos.y + off}
+      dims={dims}
+      scale={scale * sizeTokenScale(sz)}
+      bakedDeath={r.backend !== 'sprite'}
+      flat={top && r.flat}
+      portraitBox={r.portraitBox}
+      discR={discR}
+    >
       {r.body}
     </BodyToken>
   );
