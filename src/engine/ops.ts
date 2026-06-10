@@ -18,6 +18,7 @@ import { rollTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds } from './conditions';
+import { groupMatch } from './groups';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -46,6 +47,19 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   return rollDice(f.dice.n, f.dice.sides, rng) + (f.dice.plus ?? 0);
 }
 
+/** Échelle « par +N DR » d'un sort (LDB 41/42/47 — « +1 par +2 DR », « +DR Dégâts ») :
+ *  appliquée au DR du jet d'incantation (`OpsCtx.sl`), jamais négative. */
+export interface PerSL {
+  /** Palier de DR (« par +2 DR » → 2). */
+  every: number;
+  /** Quantité ajoutée par palier (peut être négative — retrait de Corruption). */
+  amount: number;
+}
+export function slBonus(sl: number | undefined, p?: PerSL): number {
+  if (!p || sl == null) return 0;
+  return Math.floor(Math.max(0, sl) / Math.max(1, p.every)) * p.amount;
+}
+
 // ---------------------------------------------------------------------------
 // Ops
 // ---------------------------------------------------------------------------
@@ -53,17 +67,19 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
 export type GameOp =
   /** Blessures subies DIRECTEMENT (déjà mitigées par la source : les tables de
    *  contrecoup ignorent BE et PA — LDB 46/40 ; les dégâts d'arme/Projectile
-   *  passent par le chemin d'attaque, pas par cette op). */
-  | { op: 'wounds'; amount: Formula }
+   *  passent par le chemin d'attaque, pas par cette op). `perSL` : « +DR Dégâts »
+   *  (Comète à Deux Queues) ; `onlyGroups` : ne touche que les cibles d'un Groupe
+   *  (engine/groups — « les Morts-vivants… », Feu de l'âme). */
+  | { op: 'wounds'; amount: Formula; perSL?: PerSL; onlyGroups?: string[] }
   /** Blessures rendues (plafonnées au max). */
-  | { op: 'heal'; amount: Formula }
+  | { op: 'heal'; amount: Formula; perSL?: PerSL }
   /** Blessures rendues AU LANCEUR (« Puis vous Guérissez 1 Point de Blessure » — Drain).
    *  Sans `ctx.caster`, s'applique à la cible (auto-sort). */
   | { op: 'healCaster'; amount: Formula }
   /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
    *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
    *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
-  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean }
+  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[] }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). */
   | { op: 'removeCondition'; name?: string; value?: Formula }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
@@ -80,7 +96,7 @@ export type GameOp =
   | { op: 'test'; skill: string; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
-  | { op: 'corruption'; amount: number }
+  | { op: 'corruption'; amount: number; perSL?: PerSL }
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
@@ -104,6 +120,8 @@ export interface OpsCtx {
   defaultUntilTime?: number;
   /** Horloge de jeu (minutes) — base des `castPenalty` à durée en minutes/jours. */
   now?: number;
+  /** DR du jet d'incantation — alimente les échelles « par +N DR » (`PerSL`) des ops. */
+  sl?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -149,17 +167,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     lines.push(`${target.name} : ${ctx.label ?? 'Effet'} (${charParts.join(', ')}, ${dur}).`);
     charParts.length = 0;
   };
+  // Filtre par Groupe de la CIBLE (engine/groups — « les Morts-vivants gagnent aussi… »).
+  const groupGate = (only?: string[]): boolean =>
+    !only || only.some((g) => groupMatch(g, target.groups ?? []));
   for (const o of ops) {
     if (o.op !== 'charMod') flushCharMods();
     switch (o.op) {
       case 'wounds': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng));
+        if (!groupGate(o.onlyGroups)) break;
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng) + slBonus(ctx.sl, o.perSL));
         loseWounds(target, n); // perte centralisée (−Avantage + À Terre à 0)
         lines.push(`${target.name} subit ${n} Blessure(s) (ignorant BE et PA).`);
         break;
       }
       case 'heal': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng));
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng) + slBonus(ctx.sl, o.perSL));
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(`${target.name} regagne ${n} Blessure(s).`);
         break;
@@ -172,7 +194,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'condition': {
-        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng));
+        if (!groupGate(o.onlyGroups)) break;
+        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
         if (o.perRound) {
           // État récurrent : porté par un effet actif, ré-appliqué chaque fin de Round.
           target.activeEffects = target.activeEffects ?? [];
@@ -238,16 +261,19 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'corruption': {
-        if (o.amount < 0) {
-          // RETRAIT de Corruption (Innocence immaculée, LDB 42) : décrément direct, jamais sous 0.
+        const amount = o.amount + slBonus(ctx.sl, o.perSL);
+        if (amount === 0) break;
+        if (amount < 0) {
+          // RETRAIT de Corruption (Innocence immaculée, LDB 42 — −1 de plus par +2 DR) :
+          // décrément direct, jamais sous 0.
           const before = target.corruption ?? 0;
-          target.corruption = Math.max(0, before + o.amount);
+          target.corruption = Math.max(0, before + amount);
           lines.push(`${target.name} : ${target.corruption - before} Point(s) de Corruption (total ${target.corruption}).`);
         } else if (ctx.onCorruption) {
-          lines.push(...ctx.onCorruption(o.amount));
+          lines.push(...ctx.onCorruption(amount));
         } else {
-          target.corruption = (target.corruption ?? 0) + o.amount;
-          lines.push(`${target.name} : +${o.amount} Point${o.amount > 1 ? 's' : ''} de Corruption (total ${target.corruption}).`);
+          target.corruption = (target.corruption ?? 0) + amount;
+          lines.push(`${target.name} : +${amount} Point${amount > 1 ? 's' : ''} de Corruption (total ${target.corruption}).`);
         }
         break;
       }

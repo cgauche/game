@@ -2329,7 +2329,7 @@ export function applyCast(
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...applyOps(t, missileSpec.ops, {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime,
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
@@ -2386,6 +2386,7 @@ export function applyCast(
             caster,
             label: spell.label,
             now: get().gameTime,
+            sl: res.sl,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,

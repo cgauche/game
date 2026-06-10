@@ -95,11 +95,11 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: 'Purification',
-    // « toutes les créatures dans la zone gagnent +DR État En flammes » — l'op `value`
-    // ne connaît pas le DR du jet : on applique 1 (plancher fidèle) + journal du +DR.
+    // « toutes les créatures dans la zone gagnent +DR État Enflammé » (LDB 48 p.229) —
+    // total = DR du jet, mécanique via `valuePerSL` (base 0 + 1/DR, plancher 1 de l'op).
     ops: [
-      { op: 'condition', name: 'En flammes' },
-      { op: 'narrative', text: 'Purification : chaque créature de la zone gagne +DR État En flammes (au-delà du 1er appliqué) ; consume les Influences corruptrices — arbitrage MJ.' },
+      { op: 'condition', name: 'En flammes', value: 0, valuePerSL: { every: 1, amount: 1 } },
+      { op: 'narrative', text: 'Purification : consume les Influences corruptrices de la zone (malepierre, objets du Chaos) — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

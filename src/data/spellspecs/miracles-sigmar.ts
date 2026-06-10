@@ -9,12 +9,11 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: 'Comète à Deux Queues',
     // « Tout ce qui se trouve dans un rayon de (BSoc) mètres subit 1d10 + DR Dégâts qui
-    //   ignorent BE et PA, et gagne l'État En flammes. » (le +DR exact des Dégâts :
-    //   journalisé — l'op ne connaît pas le DR ; le 1d10 plancher est appliqué.)
+    //   ignorent BE et PA, et gagne l'État En flammes. » — 1d10 + DR mécanique via `perSL`.
     ops: [
-      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
+      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } }, perSL: { every: 1, amount: 1 } },
       { op: 'condition', name: 'En flammes' },
-      { op: 'narrative', text: 'Comète à Deux Queues : +DR Dégâts supplémentaires (ignorant BE/PA) — à ajouter selon le jet ; cible les ennemis de Sigmar, à l’extérieur seulement.' },
+      { op: 'narrative', text: 'Comète à Deux Queues : cible les ennemis de Sigmar, à l’extérieur seulement — arbitrage MJ.' },
     ],
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'Soc' },
@@ -25,10 +24,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: "Feu de l'âme",
     // « Toutes les cibles dans la ZdE subissent 1d10 Blessures qui ignorent BE et PA.
-    //   Morts-vivants/Démoniaques : aussi En flammes (conditionnel au Trait → journalisé). »
+    //   Les cibles possédant les Traits Mort-vivant et Démoniaque gagnent aussi En flammes. »
+    //   — gate par Groupe (`onlyGroups`, engine/groups : folder bestiaire → Mort-vivant/Démon).
+    //   L'option « +2 DR : étendre la ZdE OU +2 Dégâts aux impies » = un CHOIX → journalisée.
     ops: [
       { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
-      { op: 'narrative', text: 'Feu de l’âme : les Morts-vivants et Démons gagnent aussi En flammes ; +2 Dégâts aux impies par +2 DR (arbitrage MJ).' },
+      { op: 'condition', name: 'En flammes', onlyGroups: ['Mort-vivant', 'Démon'] },
+      { op: 'narrative', text: 'Feu de l’âme : par +2 DR, étendre la ZdE de +BSoc mètres OU +2 Dégâts aux peaux-vertes/morts-vivants/serviteurs de la Ruine — au choix, arbitrage MJ.' },
     ],
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'Soc' },

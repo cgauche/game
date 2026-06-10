@@ -37,11 +37,12 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: 'Innocence immaculée',
-    // « La cible perd 1 Point de Corruption (+1 par +2 DR). » Maladresse : 1d10 Corruption
-    // pour les deux — la Maladresse de Prière déclenche déjà la Colère ; le 1d10 reste MJ.
+    // « La cible perd 1 Point de Corruption (+1 par +2 DR). » — −1/+2 DR mécanique via `perSL`.
+    // Maladresse : 1d10 Corruption pour les deux — la Maladresse de Prière déclenche déjà la
+    // Colère ; le 1d10 reste MJ.
     ops: [
-      { op: 'corruption', amount: -1 },
-      { op: 'narrative', text: 'Innocence immaculée : −1 Point de Corruption supplémentaire par +2 DR ; sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ.' },
+      { op: 'corruption', amount: -1, perSL: { every: 2, amount: -1 } },
+      { op: 'narrative', text: 'Innocence immaculée : sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,
