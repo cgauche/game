@@ -94,6 +94,18 @@ export function encounterPsychForceSuccess(get: () => GameState, set: (s: Partia
   set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
 }
 
+/** Détermination (LDB 17 l.62) : dépense 1 point de Détermination → immunité à la Psychologie, la
+ *  rencontre est surmontée d'office (retour playtest #6 : pouvoir se protéger des effets psy d'un clic). */
+export function encounterPsychResolve(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+  const { pendingEncounterPsych: pe, party } = get();
+  if (!pe) return;
+  const hero = party.find((h) => h.id === pe.heroId);
+  if (!hero || (hero.resolve ?? 0) <= 0) return;
+  hero.resolve = (hero.resolve ?? 0) - 1;
+  const base = pe.result ?? { roll: 1, success: false };
+  set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
+}
+
 export function encounterPsychConfirm(get: () => GameState, set: (s: Partial<GameState>) => void): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || !pe.result) return;

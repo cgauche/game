@@ -2,6 +2,8 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { CIBLE_TYPES } from '../engine/psychology';
 import { RollFlowShell, Dice } from './RollFlowShell';
+import { TeamPortrait } from './CombatantBadge';
+import { DrBar } from './DrBar';
 
 /** Libellés des Traits psy ciblés (LDB 21). */
 const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
@@ -41,17 +43,21 @@ export function PsychModal() {
   return (
     <RollFlowShell
       title={cl ? `${cl.emoji} ${cl.label}${pp.cible ? ` (${pp.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pp.indice}`}
-      subtitle={
-        isCible ? (
-          <>
-            <strong>{c.name}</strong> doit garder son sang-froid face à <strong>{source?.name ?? pp.cible ?? '?'}</strong>
-          </>
-        ) : (
-          <>
-            <strong>{c.name}</strong> doit garder son sang-froid face à <strong>{source?.name ?? '?'}</strong>
-            {!isTerreur && ` (${pp.prevDR}/${pp.indice} DR)`}
-          </>
-        )
+      subtitle={<>{c.name} doit garder son sang-froid{isCible && cl ? ` (${cl.label}${pp.cible ? ` — ${pp.cible}` : ''})` : ''}.</>}
+      extra={
+        <>
+          <div className="modal-vs">
+            <span className="mv-side"><TeamPortrait combatant={c} size={40} /><strong>{c.name}</strong></span>
+            {source && (
+              <>
+                <span className="mv-arrow">▸</span>
+                <span className="mv-side"><TeamPortrait combatant={source} size={40} /><strong>{source.name}</strong></span>
+              </>
+            )}
+          </div>
+          {/* Peur = Test ÉTENDU : barre de DR cumulé vers l'Indice (#23). */}
+          {!isCible && !isTerreur && <DrBar cum={pp.prevDR ?? 0} target={pp.indice} />}
+        </>
       }
       rolled={!!r}
       rollLabel="🎲 Test de Calme"

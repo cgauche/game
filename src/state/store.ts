@@ -72,6 +72,7 @@ import {
   encounterPsychReroll as encounterPsychRerollFlow,
   encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
   encounterPsychConfirm as encounterPsychConfirmFlow,
+  encounterPsychResolve as encounterPsychResolveFlow,
 } from './encounterPsychFlow';
 import { findSpell } from '../data/index';
 import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
@@ -447,6 +448,7 @@ export interface GameState {
   encounterPsychReroll: () => void;
   encounterPsychForceSuccess: () => void;
   encounterPsychConfirm: () => void;
+  encounterPsychResolve: () => void;
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   frenzyRoll: () => void;
@@ -1283,6 +1285,7 @@ export const useGame = create<GameState>((set, get) => ({
   encounterPsychReroll: () => encounterPsychRerollFlow(get, set),
   encounterPsychForceSuccess: () => encounterPsychForceSuccessFlow(get, set),
   encounterPsychConfirm: () => encounterPsychConfirmFlow(get, set),
+  encounterPsychResolve: () => encounterPsychResolveFlow(get, set),
 
   // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
   battleFrenzy: () => {

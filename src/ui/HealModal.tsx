@@ -3,6 +3,8 @@ import { canReroll } from '../engine/fortune';
 import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
 import { RollFlowShell, Dice } from './RollFlowShell';
+import { TeamPortrait } from './CombatantBadge';
+import { DrBar } from './DrBar';
 
 /**
  * Modale de soin (Guérison, LDB 09-Compétences) : « Lancer » jette le Test (Intermédiaire +0),
@@ -28,6 +30,7 @@ export function HealModal() {
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const healer = pool.find((c) => c.id === ph.healerId); // peut être absent (PNJ médecin) → Chance/Résilience à 0
   const fortune = healer?.fortune ?? 0;
+  const target = pool.find((c) => c.id === ph.targetId); // le soigné — portrait dans la modale (#20)
   const rolled = ph.roll != null;
   // Sélection de la cible (PNJ soigneur) : avant le jet, si plusieurs héros sont éligibles.
   const choices = !rolled && (ph.candidateIds?.length ?? 0) > 1
@@ -36,10 +39,12 @@ export function HealModal() {
   const targetPicker = choices.length > 0 && (
     <div className="heal-target-pick">
       <span className="branch-label">Qui soigner ?</span>
-      <div className="modal-actions">
+      <div className="heal-pick-grid">
         {choices.map((c) => (
-          <button key={c.id} className={`btn small${c.id === ph.targetId ? ' btn-primary' : ''}`} onClick={() => setTarget(c.id)}>
-            {c.name} ({c.wounds.current}/{c.wounds.max})
+          <button key={c.id} type="button" className={`heal-pick${c.id === ph.targetId ? ' active' : ''}`} onClick={() => setTarget(c.id)} title={`Soigner ${c.name} (${c.wounds.current}/${c.wounds.max} PB)`}>
+            <TeamPortrait combatant={c} size={44} />
+            <span className="heal-pick-name">{c.name}</span>
+            <span className="heal-pick-pv">{c.wounds.current}/{c.wounds.max}</span>
           </button>
         ))}
       </div>
@@ -48,7 +53,6 @@ export function HealModal() {
 
   // ── CHIRURGIE : Test ÉTENDU (cumul de DR, passe par passe) — flux dédié, hors coquille standard ──
   if (ph.mode === 'surgery') {
-    const target = pool.find((c) => c.id === ph.targetId);
     const cible = ph.surgeryTargetDR ?? 7;
     const cum = ph.surgeryCumDR ?? 0;
     const started = cum > 0 || rolled;
@@ -61,6 +65,13 @@ export function HealModal() {
             <strong>{ph.healerName}</strong> opère <strong>{ph.targetName}</strong>{' '}
             <span className="rm-weapon">(cumuler {cible} DR · Intermédiaire +0)</span>
           </p>
+          {target && (
+            <div className="modal-subject">
+              <TeamPortrait combatant={target} size={40} />
+              <strong>{target.name}</strong>
+              <span className="ms-pv">{target.wounds.current}/{target.wounds.max} PB</span>
+            </div>
+          )}
           {!started && targetPicker}
           {!started && wnds.length > 1 && (
             <div className="heal-target-pick">
@@ -74,13 +85,10 @@ export function HealModal() {
               </div>
             </div>
           )}
-          <div className="test-result">
-            <span className="verdict">
-              DR cumulé <strong>{cum} / {cible}</strong>
-              {rolled && ` — dernière passe : ${ph.sl >= 0 ? '+' : ''}${ph.sl} DR`}
-              {target && ` · ${target.name} ${target.wounds.current}/${target.wounds.max} PB`}
-            </span>
-          </div>
+          <DrBar cum={cum} target={cible} />
+          {rolled && (
+            <p className="rm-note">Dernière passe : {ph.sl >= 0 ? '+' : ''}{ph.sl} DR{target ? ` · ${target.name} ${target.wounds.current}/${target.wounds.max} PB` : ''}</p>
+          )}
           <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10). À 0 PB, l’opération s’interrompt.</p>
           <div className="modal-actions">
             <button className="btn" onClick={cancel}>Arrêter</button>
@@ -104,7 +112,18 @@ export function HealModal() {
           <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
         </>
       }
-      extra={targetPicker}
+      extra={
+        <>
+          {target && (
+            <div className="modal-subject">
+              <TeamPortrait combatant={target} size={38} />
+              <strong>{target.name}</strong>
+              <span className="ms-pv">{target.wounds.current}/{target.wounds.max} PB</span>
+            </div>
+          )}
+          {targetPicker}
+        </>
+      }
       rolled={rolled}
       onRoll={roll}
       onCancel={cancel}
