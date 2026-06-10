@@ -2624,3 +2624,21 @@ describe('transferItem — donner un objet à un autre héros', () => {
     expect(useGame.getState().party.find((c) => c.id === 'b')!.items!.length).toBe(0);
   });
 });
+
+describe('viewMode (vue du dessus)', () => {
+  beforeEach(() => reset());
+
+  it('toggleViewMode bascule iso ⇄ top', () => {
+    useGame.setState({ viewMode: 'iso' });
+    useGame.getState().toggleViewMode();
+    expect(useGame.getState().viewMode).toBe('top');
+    useGame.getState().toggleViewMode();
+    expect(useGame.getState().viewMode).toBe('iso');
+  });
+
+  it('startScene PRÉSERVE viewMode (préférence de vue, comme zoom/camRot)', () => {
+    useGame.setState({ viewMode: 'top' });
+    useGame.getState().startScene(emptyScene());
+    expect(useGame.getState().viewMode).toBe('top');
+  });
+});
