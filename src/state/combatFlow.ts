@@ -68,7 +68,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction, contractDisease } from '../engine/disease';
+import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
@@ -1180,6 +1180,25 @@ export function applyAttackResult(
     const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
     critLog.push(`${target.name} est Empêtré (Toile).`);
   }
+  // Infecté / Maladie (Type) (LDB 85 p.340) : un héros BLESSÉ par la créature porteuse est exposé →
+  // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
+  if (res.hit && res.woundsLost && target.kind === 'hero') {
+    const atkTraits = attacker.traits ?? [];
+    if (atkTraits.some((t) => /^infecté/i.test(t))) {
+      target.woundedByInfected = true;
+      if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
+    }
+    for (const t of atkTraits) {
+      const m = t.match(/^Maladie\s*\(([^)]+)\)/i);
+      if (m && !(target.diseaseExposure ?? []).includes(m[1].trim())) target.diseaseExposure = [...(target.diseaseExposure ?? []), m[1].trim()];
+    }
+  }
+  // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
+  if (res.defenderDetail?.label === 'Esquive' && !res.defenderDetail.success
+      && hasActiveSymptom(target, 'nausee') && !hasCondition(target, 'Sonné')) {
+    addCondition(target, 'Sonné');
+    critLog.push(`${target.name} vomit (Nausée) : Sonné.`);
+  }
   // Sang corrosif (LDB 85 p.341) : Blessures subies en mêlée → tous les Engagés avec la créature
   // reçoivent 1d10 PB modifiés par le BE et les PA (min 1).
   if (res.hit && res.woundsLost && weapon.type === 'melee' && hasCorrosiveBlood(target.traits)) {
@@ -2054,6 +2073,19 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   const lines: string[] = [];
   for (const h of party) lines.push(...restRecovery(h, battleRng(), n, caredFor));
+  // Contagion (LDB 20 l.185, « Toux et Éternuements ») : un malade contagieux expose son entourage —
+  // un Test de Contraction par JOUR de promiscuité pour chaque autre membre (approximation de
+  // l'exposition horaire, échelle du repos).
+  for (const sick of party) {
+    for (const dz of contagiousDiseases(sick)) {
+      for (const other of party) {
+        if (other === sick || other.dead) continue;
+        const resVal = effectiveChar(other, 'E') + (other.skills?.find((sk) => sk.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+        const def = DISEASE_DEFS[dz.name];
+        for (let d = 0; d < n; d++) lines.push(...rollContraction(other, dz.name, resVal, def?.contractDifficulty ?? 'accessible', battleRng()));
+      }
+    }
+  }
   const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
   set({ party: [...party], journal: [...get().journal.slice(-40), title, ...lines] });
   bus.emit(EVT.SCENE_DIRTY);
@@ -2299,6 +2331,23 @@ export function finalizeBattle(get: () => GameState, set: any): void {
     if (c.dead || dressed) continue;
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
     infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
+  }
+  // Trait Infecté (LDB 20 l.32/49) : blessé par une créature Infectée → Résistance Facile (+40) ou
+  // Blessure Purulente ; blessé par un RONGEUR Infecté → aussi Résistance Accessible (+20) ou Fièvre
+  // du Rongeur. Trait Maladie (Type) (LDB 85 p.340) : Test de Contraction de la maladie portée.
+  for (const c of battle.combatants) {
+    if (c.kind !== 'hero' || c.dead) continue;
+    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'Blessure Purulente', resVal, 'facile', battleRng()));
+    if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'Fièvre du Rongeur', resVal, 'accessible', battleRng()));
+    for (const name of c.diseaseExposure ?? []) {
+      const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
+      if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));
+      else infectLog.push(`${c.name} a été exposé à : ${name} (maladie non répertoriée — arbitrage MJ).`);
+    }
+    c.woundedByInfected = false;
+    c.woundedByRodent = false;
+    c.diseaseExposure = undefined;
   }
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');

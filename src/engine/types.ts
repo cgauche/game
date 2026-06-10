@@ -376,6 +376,15 @@ export interface Combatant {
   /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes lus par
    *  `diseaseCharPenalties` (fièvre) / `rest.ts` (malaise→Exténué, blessé bloque la guérison). */
   diseases?: import('./disease').Disease[];
+  /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
+  diseaseImmunities?: string[];
+  /** Blessé pendant CE combat par une créature au Trait Infecté → Test post-combat de Résistance
+   *  Facile (+40) ou Blessure Purulente (LDB 20 l.32) ; rongeur Infecté → aussi Fièvre du Rongeur (+20, l.49). */
+  woundedByInfected?: boolean;
+  woundedByRodent?: boolean;
+  /** Maladies (Trait « Maladie (Type) ») auxquelles ce combattant a été EXPOSÉ pendant le combat
+   *  (blessé par la créature porteuse) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20). */
+  diseaseExposure?: string[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
   nextActionPenalty?: number;
