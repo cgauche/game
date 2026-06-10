@@ -388,7 +388,12 @@ function FicheBody({ hero }: { hero: Combatant }) {
                     </span>
                   )}
                   {equipable ? (
-                    <button className={`btn small ${it.equipped ? 'btn-primary' : ''}`} title={isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined} onClick={() => toggleEquip(hero.id, it.uid)}>
+                    <button
+                      className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
+                      disabled={inBattleNow}
+                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined}
+                      onClick={() => toggleEquip(hero.id, it.uid)}
+                    >
                       {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
                     </button>
                   ) : consumable ? (
@@ -407,7 +412,8 @@ function FicheBody({ hero }: { hero: Combatant }) {
                     <select
                       className="give-sel"
                       value=""
-                      title="Donner cet objet à un autre héros"
+                      disabled={inBattleNow}
+                      title={inBattleNow ? 'Transfert verrouillé en combat' : 'Donner cet objet à un autre héros'}
                       onChange={(e) => {
                         if (e.target.value) transferItem(it.uid, hero.id, e.target.value);
                       }}
