@@ -41,6 +41,8 @@ export function CampaignView() {
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
   const rotateCam = useGame((s) => s.rotateCam);
+  const viewMode = useGame((s) => s.viewMode);
+  const toggleViewMode = useGame((s) => s.toggleViewMode);
   const battleClickEntity = useGame((s) => s.battleClickEntity);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [inspectId, setInspectId] = useState<string | null>(null);
@@ -106,6 +108,8 @@ export function CampaignView() {
           onZoomReset={() => setZoom(1)}
           onRotateLeft={() => rotateCam(-1)}
           onRotateRight={() => rotateCam(1)}
+          view={viewMode}
+          onToggleView={toggleViewMode}
         />
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}

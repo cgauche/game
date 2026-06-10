@@ -11,6 +11,9 @@ interface ViewControlsProps {
   onZoomReset: () => void;
   onRotateLeft: () => void;
   onRotateRight: () => void;
+  /** Projection courante (iso losange / top grille carrée) + bascule. */
+  view: 'iso' | 'top';
+  onToggleView: () => void;
 }
 
 const BTN: React.CSSProperties = {
@@ -30,7 +33,7 @@ const BTN: React.CSSProperties = {
   opacity: 0.92,
 };
 
-export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight }: ViewControlsProps) {
+export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -42,6 +45,14 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
       style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 5, userSelect: 'none' }}
       onPointerDown={(e) => e.stopPropagation()}
     >
+      <button
+        type="button"
+        title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
+        style={{ ...BTN, background: view === 'top' ? '#2a3550' : '#1c2230', borderColor: view === 'top' ? '#6f86c0' : '#3a4660' }}
+        onPointerDown={stop(onToggleView)}
+      >
+        {view === 'top' ? '◇' : '▦'}
+      </button>
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" title="Tourner anti-horaire (Q)" style={BTN} onPointerDown={stop(onRotateLeft)}>
           ⟲
