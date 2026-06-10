@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { resolveDualSecond } from './combatFlow';
-import { reverseRoll } from '../engine/combat';
+import { resolveDualSecond, applyAttackResult } from './combatFlow';
+import { reverseRoll, type AttackResult } from '../engine/combat';
 import type { Combatant, Weapon } from '../engine/types';
 
 const W = (uid: string, hand: 'main' | 'off'): Weapon =>
@@ -56,5 +56,24 @@ describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.
     const off = h.weapons.find((w) => w.hand === 'off')!;
     const res = resolveDualSecond(useGame.getState, h, f2, off, 11, { critValue: 56 });
     expect(res.attackerRoll).toBe(56);
+  });
+});
+
+describe('applyAttackResult : defer de l’Avantage de l’attaquant', () => {
+  it('deferAttackerAdvantage=true → n’incrémente PAS l’Avantage de l’attaquant', () => {
+    const { h, f1 } = setupBattle();
+    h.advantage = 0;
+    const res = { hit: true, attackerRoll: 10, netSL: 2, critical: false, advantageTo: 'attacker',
+      defenderDefeated: false, woundsLost: 0, location: 'corps', log: 'x' } as unknown as AttackResult;
+    applyAttackResult(useGame.getState, useGame.setState, h, f1, h.weapons[0], res, undefined, undefined, true);
+    expect(h.advantage).toBe(0);
+  });
+  it('sans defer → incrémente normalement', () => {
+    const { h, f1 } = setupBattle();
+    h.advantage = 0;
+    const res = { hit: true, attackerRoll: 10, netSL: 2, critical: false, advantageTo: 'attacker',
+      defenderDefeated: false, woundsLost: 0, location: 'corps', log: 'x' } as unknown as AttackResult;
+    applyAttackResult(useGame.getState, useGame.setState, h, f1, h.weapons[0], res);
+    expect(h.advantage).toBe(1);
   });
 });

@@ -912,6 +912,7 @@ export function applyAttackResult(
   res: AttackResult,
   deviated?: boolean,
   prerolledCrit?: CriticalResolved, // « Subir » après déviation : applique CE Critique (déjà montré) sans re-tirer
+  deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.638) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
 ): boolean {
   // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
   // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
@@ -1005,7 +1006,7 @@ export function applyAttackResult(
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
-  if (res.advantageTo === 'attacker') {
+  if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
     attacker.advantage += 1;
     attacker.gainedAdvThisRound = true;
   }

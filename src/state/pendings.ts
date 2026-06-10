@@ -167,6 +167,10 @@ export interface PendingAttack {
   /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
    *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
   forced?: boolean;
+  /** Attaque-Action en mode « des deux armes » (main directrice) : chaîne une 2ᵉ frappe si elle touche (LDB 10 l.638). */
+  dualMode?: boolean;
+  /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
+  dualSecond?: boolean;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
@@ -175,6 +179,17 @@ export interface PendingCleave {
   attackerId: string;
   hitIds: string[];
   count: number;
+}
+/** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.638), après une 1ʳᵉ frappe RÉUSSIE.
+ *  Calqué sur PendingCleave : le joueur clique une cible (ou renonce via `dualStrikeSkip`). `mainRoll` = jet
+ *  conservé de la 1ʳᵉ frappe ; `critValue` = valeur du tableau des Critiques si la 1ʳᵉ était un Critique ;
+ *  `mainAdvantage` = l'Avantage différé de la 1ʳᵉ frappe (accordé seulement si la 2ᵉ touche aussi). */
+export interface PendingDualStrike {
+  attackerId: string;
+  offWeaponUid: string;
+  mainRoll: number;
+  critValue?: number;
+  mainAdvantage: boolean;
 }
 /** Piétinement en attente (LDB 85 l.320-321) : modale interactive — Lancer (resolveTrample) →
  *  Chance → Appliquer (dépense 1 Avantage, action gratuite). */

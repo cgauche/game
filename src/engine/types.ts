@@ -360,6 +360,8 @@ export interface Combatant {
   gainedAdvThisRound?: boolean;
   /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
   defensiveStance?: boolean;
+  /** Maniement de deux armes (LDB 10 l.638) : −10 à TOUTES ses défenses jusqu'au début de son prochain Tour. */
+  dualStrikeDefensePenalty?: boolean;
   /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
    *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */
   aiming?: boolean;
