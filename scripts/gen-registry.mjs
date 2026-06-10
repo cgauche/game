@@ -138,6 +138,15 @@ export const REGISTRIES = [
     type: 'QualityDef',
     typeFrom: './types',
   },
+  {
+    // Traits de créature (LDB 85) : 1 trait = 1 fichier defs/ (slug ASCII, clé FR dans la def).
+    dir: 'src/engine/traits/defs',
+    out: 'src/engine/traits/_registry.generated.ts',
+    exportName: 'trait',
+    arrayName: 'TRAIT_DEFS',
+    type: 'TraitDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {

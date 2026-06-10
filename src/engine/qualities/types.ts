@@ -84,6 +84,9 @@ export interface QualityDef {
   pushback?: boolean;
   /** Piège-lame (LDB 62 l.292-294) : Critique en défense vs une lame → piéger/briser au lieu du Coup Critique. */
   bladeTrap?: boolean;
+  /** Qualité MAGIQUE (ADE2) : l'arme porte une enchantement — ses attaques comptent comme MAGIQUES
+   *  (blesse l'Éthéré, LDB 85 p.339). */
+  magic?: boolean;
   // --- Qualités d'ARMURE intrinsèques (LDB 63) ---
   /** Flexible : portable SOUS une couche non Flexible → bénéfices des deux (cumul des PA). */
   layerable?: boolean;

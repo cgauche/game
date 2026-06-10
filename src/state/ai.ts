@@ -12,12 +12,13 @@
  */
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
-import { reachable, manhattan, chebyshev, Pt } from './path';
+import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
 import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
+import { isBestial, isTerritorial } from '../engine/traits/dispatch';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
@@ -39,6 +40,8 @@ export interface EnemyTurnInput {
   movement: number;
   /** Libellé d'un sort offensif prêt, déjà résolu par l'appelant (qui a les données). */
   offensiveSpell?: string;
+  /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
+  flying?: boolean;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
   smoke?: Pt[];
 }
@@ -66,7 +69,7 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke } = input;
+  const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke, flying } = input;
   if (heroes.length === 0) return { kind: 'end' };
   if (hasCondition(enemy, 'Surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
@@ -99,12 +102,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const canShoot = !frenzied && hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootableHeroes.length > 0;
   const canCast = !frenzied && offensiveSpell != null && shootableHeroes.length > 0;
 
-  // Cases atteignables ce tour (inclut la case de départ à distance 0).
-  const reach = reachable(scene, pos, movement, blocked, sizeFootprint(enemy.size));
+  // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
+  // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
+  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, sizeFootprint(enemy.size));
 
-  // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
-  // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'Brisé') && !isEngaged(enemy)) {
+  // Fuite vers la case atteignable la PLUS éloignée des héros (Brisé / Bestial blessé).
+  const fleeMove = (): EnemyAction => {
     let best = pos;
     let bestDist = Math.min(...heroes.map((h) => chebyshev(pos, h.pos!)));
     for (const k of reach.keys()) {
@@ -113,7 +116,15 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       if (d > bestDist) { bestDist = d; best = { x, y }; }
     }
     return best.x === pos.x && best.y === pos.y ? { kind: 'end' } : { kind: 'move', to: best, thenTargetId: heroes[0].id };
-  }
+  };
+  // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
+  // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
+  if (hasCondition(enemy, 'Brisé') && !isEngaged(enemy)) return fleeMove();
+  // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
+  // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
+  // le drapeau frenzied de l'appelant).
+  if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !enemy.frenzied
+      && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return fleeMove();
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une
   // case atteignable lui est adjacente.

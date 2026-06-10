@@ -411,6 +411,9 @@ export interface Combatant {
   /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
    *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
   pushbackMode?: boolean;
+  /** Dans l'aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests — recalculé
+   *  à chaque franchissement de Round par combatFlow. */
+  perturbed?: boolean;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;

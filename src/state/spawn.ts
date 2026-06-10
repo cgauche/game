@@ -9,6 +9,9 @@ import { emptyArmour } from '../engine/items';
 import { maxWounds } from '../engine/characteristics';
 import { parseSizeLabel, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
+import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn } from '../engine/traits/dispatch';
+import { rollMutation } from '../data/mutations';
+import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
 import { norm as normTrait } from '../lib/normalize';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
@@ -131,6 +134,15 @@ function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Chara
   return { chars, wounds: wounds * 5 };
 }
 
+/** Mutation / Corruption mentale (LDB 85 p.339-340) : tirage sur les Tableaux des Corruptions au
+ *  spawn — graine STABLE dérivée de l'id (déterministe, rejouable). */
+function spawnMutations(traits: string[] | undefined, id: string) {
+  const kinds = mutationsAtSpawn(traits);
+  if (!kinds.length) return {};
+  const rng = makeRNG(hashSeed(`mut:${id}`));
+  return { mutations: kinds.map((k) => rollMutation(k, rng)) };
+}
+
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }): Combatant {
   let chars = charsFrom(creature.char);
   const size = sizeFromTraits(creature.traits) ?? 'moyenne';
@@ -153,6 +165,8 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     bodyShape: bodyShapeOf(creature.label), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(creature.traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
+    ...(isMindless(creature.traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
+    ...spawnMutations(creature.traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
     traits: creature.traits, // conservés → attaques gratuites de créature en combat
     skills: [],
@@ -164,12 +178,19 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
 
 export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
   let chars = charsFrom(sb.char as any);
+  // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : appliqués aux
+  // statblocks d'ÉDITEUR seulement (LDB 77 : « utilisez l'un des profils standard et AJOUTEZ les
+  // Traits ») ; les profils du bestiaire (creatures.json) sont imprimés FINALS → jamais réappliqués.
+  for (const [k, v] of Object.entries(traitCharMods(sb.traits))) chars[k as keyof Characteristics] += v ?? 0;
   const size = sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne';
   // Blessures : surcharge explicite `char.B` si fournie, sinon formule par Taille (vide ⇒ formule, LDB 85).
   let wounds = typeof sb.char.B === 'number' ? (sb.char.B as number) : maxWounds(chars, size);
+  // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
+  // statbloc est réputé final, comme au bestiaire).
+  if (typeof sb.char.B !== 'number' && traitBonusWoundsBE(sb.traits)) wounds += Math.floor(chars.E / 10);
   const swarm = swarmFromTraits(sb.traits ?? []);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
-  const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4;
+  const movement = (typeof sb.char.M === 'number' ? (sb.char.M as number) : 4) + traitMovementMod(sb.traits);
   return {
     id,
     name: sb.name,
@@ -186,6 +207,8 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(sb.traits ?? []), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
+    ...(isMindless(sb.traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
+    ...spawnMutations(sb.traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
     traits: sb.traits, // conservés → attaques gratuites de créature en combat
     skills: [],

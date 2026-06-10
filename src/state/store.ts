@@ -44,6 +44,7 @@ import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmuni
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst } from '../engine/qualities/dispatch';
+import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
@@ -1668,7 +1669,9 @@ export const useGame = create<GameState>((set, get) => ({
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
       const charM = mountMovement(battle, active);
-      const reach = reachable(scene, active.pos!, charM * 2, blocked, sizeFootprint(geom.size)); // portée de Course
+      // Bond ×2 / Foulée ×1,5 (LDB 85) : multiplicateur de COURSE/CHARGE de la créature qui porte le
+      // déplacement (la monture en combat monté).
+      const reach = reachable(scene, active.pos!, Math.floor(charM * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size)); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
         get().log('Cible hors de portée de Charge.');

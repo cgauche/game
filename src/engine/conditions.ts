@@ -71,6 +71,8 @@ export function combatTestPenalty(c: Combatant): number {
   if (hasCondition(c, 'Sonné')) cand.push(-10);
   const ext = stacks(c, 'Exténué');
   if (ext > 0) cand.push(-10 * ext);
+  // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
+  if (c.perturbed) cand.push(-20);
   return cand.length ? Math.min(...cand) : 0;
 }
 

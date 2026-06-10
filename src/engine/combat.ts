@@ -17,8 +17,9 @@ import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt } from './items';
+import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, isMagicWeapon } from './qualities/dispatch';
 import { offHandPenalty } from './combatFeatures/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -242,6 +243,9 @@ export function attackModifiers(
   } else if (target) {
     const vuln = meleeAttackerBonus(target);
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
+    // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
+    const para = meleeHitPenalty(target.traits);
+    if (para) out.push({ label: 'Parasité', value: para });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
@@ -634,6 +638,15 @@ function applyHit(
 ): AttackResult {
   weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
+  // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
+  // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.
+  if (isEtherial(defender) && !attacksAreMagical(attacker) && !isMagicWeapon(weapon)) {
+    return {
+      hit: true, attackerRoll: atkBd.roll, attackerDetail: atkBd, netSL: dr, location: loc,
+      damage: 0, woundsLost: 0, critical: false, advantageTo: 'attacker', defenderDefeated: false,
+      log: `${attacker.name} touche ${defender.name}… mais le coup passe au travers (Éthéré — seules les attaques magiques la blessent).`,
+    };
+  }
   // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
   const sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
   const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
