@@ -19,7 +19,7 @@ export const DOMAINE_FEU: SpellSpec[] = [
     ops: [
       { op: 'heal', amount: { dice: { n: 1, sides: 10 } } },
       { op: 'removeCondition', name: 'Hémorragique', value: 99 },
-      { op: 'narrative', text: 'Cautériser : les Blessures ne s’infecteront pas.' },
+      { op: 'preventInfection' }, // « De plus, les Blessures ne s'infecteront pas. » (→ woundDressed, LDB 18 l.382)
       { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [{ op: 'narrative', text: 'La cible hurle de douleur (Aqshy brûle en guérissant).' }], onFailHard: { dr: -6, ops: [{ op: 'condition', name: 'Inconscient' }] } },
     ],
     durationRounds: null,

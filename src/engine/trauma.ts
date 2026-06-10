@@ -149,6 +149,29 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
   return log;
 }
 
+/**
+ * Guérison MIRACULEUSE de Blessures critiques (Jalon 2.6 — Larmes de Shallya, LDB 42 : « vous
+ * guérissez la cible d'1 Blessure Critique. Pour chaque +2 DR, +1 […] jamais une amputation ») :
+ * retire jusqu'à `n` traumas de CONVALESCENCE (déchirures/fractures — `kind` posé ; les
+ * amputations et leurs séquelles, sans `kind`, sont exclues) avec leurs pénalités, et décrémente
+ * `criticalWounds`. Mute `c`, renvoie le journal.
+ */
+export function cureCriticalWounds(c: Combatant, n: number): string[] {
+  if (!c.traumas?.length || n <= 0) return [];
+  const log: string[] = [];
+  let left = n;
+  const kept: Trauma[] = [];
+  for (const t of c.traumas) {
+    if (left > 0 && t.kind != null) {
+      left -= 1;
+      if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+      log.push(`${c.name} : ${t.label} (${t.location}) guérit miraculeusement.`);
+    } else kept.push(t);
+  }
+  c.traumas = kept;
+  return log;
+}
+
 /** Le personnage porte-t-il un trauma exigeant de la Chirurgie (amputation, fracture majeure, l.305/398) ? */
 export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);

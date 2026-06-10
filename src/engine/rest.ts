@@ -29,7 +29,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
 import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
-import { tickDisease, activeMalaiseCount, diseaseBlesseCount } from './disease';
+import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } from './disease';
 import { isStarving } from './provisions';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
@@ -66,6 +66,41 @@ export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor
   if (malaiseDelta > 0) addCondition(c, 'Exténué', malaiseDelta);
   else if (malaiseDelta < 0) removeCondition(c, 'Exténué', -malaiseDelta);
   return log;
+}
+
+/**
+ * PURGE de maladies par miracle (Jalon 2.6 — Amère catharsis, LDB 42 : « aspire un poison, ou
+ * une maladie, de la cible, le retirant complètement de son organisme ») : retire jusqu'à `n`
+ * maladies (actives d'abord), avec immunité post-guérison (Vérole Urticante) et réconciliation
+ * de l'Exténué « collant » du malaise. Mute `c`, renvoie le journal.
+ */
+export function cureDiseases(c: Combatant, n: number): string[] {
+  if (!c.diseases?.length || n <= 0) return [];
+  const log: string[] = [];
+  const malaiseStart = activeMalaiseCount(c);
+  const order = [...c.diseases].sort((a, b) => (a.phase === 'active' ? 0 : 1) - (b.phase === 'active' ? 0 : 1));
+  const removed = new Set(order.slice(0, n));
+  c.diseases = c.diseases.filter((d) => !removed.has(d));
+  for (const d of removed) {
+    log.push(`${c.name} est purgé de : ${d.name}.`);
+    if (DISEASE_DEFS[d.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.name];
+  }
+  const delta = activeMalaiseCount(c) - malaiseStart;
+  if (delta < 0) removeCondition(c, 'Exténué', -delta);
+  return log;
+}
+
+/**
+ * Bénédiction de Convalescence (LDB 41 : « réduire la durée d'une maladie dont elle est affligée
+ * d'une journée. Cette Prière ne peut être tentée qu'une fois par maladie et par personne ») :
+ * −`days` jour(s) (min 1) sur la première maladie ACTIVE non encore bénie. Mute `c`.
+ */
+export function blessDiseaseDuration(c: Combatant, days = 1): string[] {
+  const dz = (c.diseases ?? []).find((d) => d.phase === 'active' && !d.convalescenceBlessed);
+  if (!dz) return [`${c.name} : aucune maladie active à soulager (ou déjà bénie).`];
+  dz.convalescenceBlessed = true;
+  dz.daysLeft = Math.max(1, dz.daysLeft - days);
+  return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${dz.daysLeft} j).`];
 }
 
 /**

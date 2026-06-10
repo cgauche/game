@@ -20,6 +20,8 @@ import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds } from './conditions';
 import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
+import { cureDiseases, blessDiseaseDuration } from './rest';
+import { cureCriticalWounds } from './trauma';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -116,6 +118,15 @@ export type GameOp =
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
   | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; onHitConditions?: { name: string; value?: number }[] }
+  /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
+  | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
+  /** −N jours sur la durée d'une maladie active (B. de Convalescence, LDB 41 — 1×/maladie). */
+  | { op: 'reduceDiseaseDays'; days?: number }
+  /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.382). */
+  | { op: 'preventInfection' }
+  /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
+   *  (Larmes de Shallya, LDB 42). */
+  | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -359,6 +370,27 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(o.onHitConditions ?? []).map((x) => `${x.name} à la touche`),
         ];
         lines.push(`${target.name} : son arme est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'cureDisease': {
+        const n = Math.max(0, (o.count ?? 1) + slBonus(ctx.sl, o.countPerSL));
+        const cured = cureDiseases(target, n);
+        lines.push(...(cured.length ? cured : [`${target.name} n'a aucune maladie à purger.`]));
+        break;
+      }
+      case 'reduceDiseaseDays': {
+        lines.push(...blessDiseaseDuration(target, o.days ?? 1));
+        break;
+      }
+      case 'preventInfection': {
+        target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
+        lines.push(`${target.name} : ses blessures ne s'infecteront pas (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'cureCriticalWound': {
+        const n = Math.max(0, (o.count ?? 1) + slBonus(ctx.sl, o.countPerSL));
+        const cured = cureCriticalWounds(target, n);
+        lines.push(...(cured.length ? cured : [`${target.name} n'a aucune Blessure critique guérissable (les amputations sont hors d'atteinte).`]));
         break;
       }
       case 'grantTalent': {
