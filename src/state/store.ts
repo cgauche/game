@@ -36,7 +36,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -132,6 +132,9 @@ export interface BattleState {
   /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
    *  Vue ; `rounds` = Rounds restants (décrémenté à chaque frontière de Round, retiré à 0). */
   smoke?: { x: number; y: number; rounds: number }[];
+  /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
+   *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
+  domainCasts?: { targetId: string; domain: string }[];
   /** Instantané positionnel pris au PREMIER segment de Mouvement du Tour (R6/LOT 6) : permet
    *  d'ANNULER tout le déplacement tant qu'aucune Action n'a été prise (`cancelMove`). Restaure
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
@@ -398,6 +401,8 @@ export interface GameState {
   castBonusSL: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
   castDarkPact: () => void;
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
+  castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -1266,7 +1271,13 @@ export const useGame = create<GameState>((set, get) => ({
     const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     set({ pendingCast: null });
-    if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused);
+    if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice);
+  },
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
+  castSetCritChoice: (choice) => {
+    const pc = get().pendingCast;
+    if (!pc || !pc.result?.isCritical) return;
+    set({ pendingCast: { ...pc, critChoice: choice } });
   },
   castCancel: () => set({ pendingCast: null }),
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
@@ -1321,8 +1332,19 @@ export const useGame = create<GameState>((set, get) => ({
     const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
     caster.focus = { spell: pf.spellLabel, dr: prev + res.dr };
     const ni = spell.cn ?? 0;
-    const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
-    // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
+    const logLines = [res.log];
+    // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+    // QUEL QUE SOIT le DR accumulé — mais tant de magie si vite concentrée provoque un
+    // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique.
+    if (res.isCritical) {
+      caster.focus = { spell: pf.spellLabel, dr: Math.max(caster.focus.dr, ni) };
+      logLines.push(`${caster.name} — Focalisation CRITIQUE : ${spell.label} est lançable au prochain Round (NI 0) !`);
+      if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+      else logLines.push(`Harmonisation aethyrique : le contrecoup est maîtrisé (pas d'Imparfaite).`);
+    }
+    logLines.push(caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`);
+    // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
+    // tout double OU tout résultat en 0 au-delà de la Compétence).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
     finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
   },

@@ -27,9 +27,16 @@ import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL
 export interface SpellLike {
   label: string;
   type: string;
+  /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
+  subType?: string | null;
   cn: number | null;
   duration?: string;
   desc: string;
+}
+
+/** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
+export function hasTalent(c: Combatant, name: string): boolean {
+  return c.talents.some((t) => t.name === name && (t.times ?? 1) >= 1);
 }
 
 /** Branche d'incantation déduite du type de sort. */
@@ -83,7 +90,9 @@ export function prayerMaxZeroDR(c: Combatant): boolean {
 /**
  * Valeur d'un test d'incantation : Caractéristique de la compétence + avances de
  * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
- * modulée par les contrecoups actifs (castPenalties).
+ * modulée par les contrecoups actifs (castPenalties) et, EN COMBAT, par
+ * l'Avantage (« Les Avantages s'appliquent aux Tests d'Incantation, pas aux
+ * Tests de Focalisation », LDB 46 l.176).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
   const charKey = skillName === 'Prière' ? 'Soc' : skillName === 'Focalisation' ? 'FM' : 'Int';
@@ -94,7 +103,48 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
   const penalty = skillName === 'Prière' || skillName === 'Langue' || skillName === 'Focalisation'
     ? castPenaltyMod(c, skillName)
     : 0;
-  return base + (sk?.advances ?? 0) + penalty;
+  const advantage = skillName === 'Focalisation' ? 0 : 10 * (c.advantage ?? 0);
+  return base + (sk?.advances ?? 0) + penalty + advantage;
+}
+
+/**
+ * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
+ * Focalisation par PA (net) sur la Localisation la mieux protégée par une ARMURE
+ * PORTÉE (les PA naturels d'une mutation ne sont pas une armure). Exemptions
+ * (l.188) : Magie des Arcanes (Métal) ignore les armures métalliques, (Bêtes)
+ * ignore les armures de cuir.
+ */
+export function armourCastDRPenalty(c: Combatant): number {
+  // Le talent spécialisé est stocké « Magie des Arcanes (Métal) » (nom complet).
+  const ignoreMetal = c.talents.some((t) => /^Magie des Arcanes \(M[ée]tal\)$/.test(t.name));
+  const ignoreLeather = c.talents.some((t) => /^Magie des Arcanes \(Bêtes?\)$/.test(t.name));
+  let maxPA = 0;
+  for (const it of c.items ?? []) {
+    if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
+    const name = `${it.name} ${it.subType ?? ''}`.toLowerCase();
+    const metal = /maille|plate|métal|metal|gambison.*métal/.test(name);
+    const leather = /cuir/.test(name);
+    if (metal && ignoreMetal) continue;
+    if (leather && ignoreLeather) continue;
+    maxPA = Math.max(maxPA, Math.max(0, it.pa - (it.damageTaken ?? 0)));
+  }
+  return maxPA;
+}
+
+/** Spécialisation de Focalisation requise par un sort : son Domaine (`subType`),
+ *  sinon aucune (Sorts d'Arcane communs — n'importe quel Vent les alimente). */
+export function focusSpecOf(spell: SpellLike): string | undefined {
+  return spell.subType ?? undefined;
+}
+
+/** Compétence Focalisation utilisable pour CE sort : spécialisation du Vent
+ *  correspondante (LDB 46 — Focalisation est spécialisée par Domaine). Une
+ *  compétence SANS spécialisation (données historiques) reste acceptée. */
+export function focusSkillFor(c: Combatant, spell: SpellLike) {
+  const spec = focusSpecOf(spell);
+  return c.skills.find(
+    (s) => s.name === 'Focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
+  );
 }
 
 /**
@@ -275,7 +325,10 @@ export function resolveCasting(
   }
   const value = castingValue(caster, info.skill, info.spec);
   const t = rollTest(value, difficulty, rng);
-  return evaluateCasting(caster, spell, t, focusedNI0);
+  // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
+  // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
+  const pen = armourCastDRPenalty(caster);
+  return evaluateCasting(caster, spell, pen ? { ...t, sl: t.sl - pen } : t, focusedNI0);
 }
 
 /**
@@ -399,21 +452,30 @@ export interface FocusResult {
   log: string;
 }
 
-/** Un Round de Test étendu de Focalisation (FM + spécialisation). */
+/** Un Round de Test étendu de Focalisation (FM + spécialisation PAR VENT — le
+ *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.180-199). */
 export function resolveFocus(
   caster: Combatant,
   spell: SpellLike,
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
 ): FocusResult {
-  if (!knowsCastingSkill(caster, 'Focalisation')) {
-    return { dr: 0, isCritical: false, isFumble: false, roll: 0, log: `${caster.name} ne maîtrise pas Focalisation.` };
+  const sk = focusSkillFor(caster, spell);
+  if (!sk) {
+    const spec = focusSpecOf(spell);
+    return {
+      dr: 0, isCritical: false, isFumble: false, roll: 0,
+      log: `${caster.name} ne maîtrise pas Focalisation${spec ? ` (${spec})` : ''}.`,
+    };
   }
-  const value = castingValue(caster, 'Focalisation');
+  const value = castingValue(caster, 'Focalisation', sk.spec);
   const t = rollTest(value, difficulty, rng);
-  const dr = t.success ? Math.max(0, t.sl) : 0;
+  // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
+  const dr = t.success ? Math.max(0, t.sl - armourCastDRPenalty(caster)) : 0;
   const isCritical = t.isDouble && t.success;
-  const isFumble = t.isDouble && !t.success;
+  // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
+  // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.
+  const isFumble = !t.success && (t.isDouble || t.roll % 10 === 0);
   const log = t.success
     ? `${caster.name} focalise ${spell.label} (+${dr} DR).`
     : `${caster.name} échoue à focaliser ${spell.label}.`;

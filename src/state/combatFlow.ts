@@ -45,6 +45,8 @@ import {
   isMagicMissile,
   prayerWrathTriggered,
   castBlockedBy,
+  hasTalent,
+  evaluateMissile,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -1072,6 +1074,9 @@ export function applyAttackResult(
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
   if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
+  // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+  // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
+  if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
   if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
@@ -1082,6 +1087,29 @@ export function applyAttackResult(
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
   return false; // non suspendu : application complète terminée
+}
+
+/**
+ * Interruption de Focalisation (LDB 46 l.193-194) : « Si vous êtes perturbé par
+ * quelque chose — bruits forts, Dégâts subis… — vous devrez réussir un Test de
+ * Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre
+ * tous les DR accumulés au Test étendu de Focalisation. » Jet SUBI auto-résolu,
+ * révélé au joueur pour un héros (kind 'calme' — précédent : Calme de Fuite).
+ */
+export function checkFocusInterruption(get: () => GameState, set: any, target: Combatant): string[] {
+  if (!target.focus || target.focus.dr <= 0) return [];
+  const t = rollTest(testValue(target, 'Calme'), 'difficile', battleRng());
+  const lines = [
+    `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
+  ];
+  if (!t.success) {
+    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${target.focus.spell}.`);
+    target.focus = undefined;
+    lines.push(...applyMiscast(get, set, target, 'mineure'));
+  }
+  if (target.kind === 'hero')
+    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id });
+  return lines;
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
@@ -1833,6 +1861,9 @@ export function castSpell(
   });
 }
 
+/** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
+export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
+
 /** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
 export function applyCast(
   get: () => GameState,
@@ -1843,17 +1874,59 @@ export function applyCast(
   res: CastResult & Partial<MissileResult>,
   missile: boolean,
   focusedNI0: boolean,
+  critChoice?: CastCritChoice,
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
+
+  // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
+  // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
+  // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
+  const isSort = !castInfoIsPrayer(spell.type);
+  const crit = !!res.isCritical && isSort;
+  let choice = critChoice;
+  if (crit) {
+    // Défaut (IA / non choisi) : repêcher un DR insuffisant (Puissance totale), sinon
+    // Blessure Critique pour un Projectile, sinon Force inéluctable.
+    choice ??= !res.cast ? 'puissance' : missile ? 'critique' : 'ineluctable';
+    if (choice === 'puissance' && !res.cast) {
+      res = missile
+        ? evaluateMissile(caster, target, spell, { ...res, cast: true })
+        : { ...res, cast: true, log: `${caster.name} lance ${spell.label} (Puissance totale — Critique).` };
+    }
+  }
   const logLines: string[] = [res.log];
+  if (crit) {
+    logLines.push(
+      choice === 'critique'
+        ? 'Incantation Critique : le Projectile inflige une Blessure Critique.'
+        : choice === 'puissance'
+          ? 'Puissance totale : le sort est lancé quels que soient NI et DR (mais peut être Dissipé).'
+          : 'Force inéluctable : le sort ne peut pas être Dissipé.',
+    );
+    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    else logLines.push('Diction instinctive : aucune Imparfaite sur le double réussi.');
+  }
+  // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
+  // MÊME Domaine ce Round, le lanceur gagne +1 Avantage (le Vent converge). Sorts seulement.
+  if (battle && isSort && spell.subType && res.cast) {
+    const marks = battle.domainCasts ?? [];
+    if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
+      caster.advantage += 1;
+      caster.gainedAdvThisRound = true;
+      logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name} (LDB 46).`);
+    }
+    battle.domainCasts = [...marks, { targetId: target.id, domain: spell.subType }];
+  }
 
   if (missile) {
     if (res.hit && res.woundsLost) {
       const currentBefore = target.wounds.current;
       const overkill = res.woundsLost - currentBefore;
       target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
-      if (res.isCritical || overkill > 0) {
-        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
+      // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
+      const critWound = crit && choice === 'critique';
+      if (critWound || overkill > 0) {
+        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
         if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
       } else if (target.wounds.current <= 0) {
         applyZeroWounds(target);
@@ -1868,6 +1941,8 @@ export function applyCast(
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
     }
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
+    // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
+    if (res.hit && res.woundsLost) logLines.push(...checkFocusInterruption(get, set, target));
     if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
@@ -2107,6 +2182,8 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   decayEngagement(battle.combatants);
   // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
   if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
+  // « Avantages et Magie » : la convergence de Domaine ne vaut que DANS le Round (LDB 46 l.176).
+  if (battle.domainCasts?.length) battle.domainCasts = undefined;
   // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;

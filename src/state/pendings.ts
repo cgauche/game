@@ -348,6 +348,10 @@ export interface PendingCast {
   result: (CastResult & Partial<MissileResult>) | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix du lanceur — Blessure Critique
+   *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
+   *  Force inéluctable (indissipable). Défaut auto à l'application. */
+  critChoice?: 'critique' | 'puissance' | 'ineluctable';
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

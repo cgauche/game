@@ -19,6 +19,7 @@ export function CastModal() {
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
   const darkPact = useGame((s) => s.castDarkPact);
+  const setCritChoice = useGame((s) => s.castSetCritChoice);
   const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
@@ -95,6 +96,28 @@ export function CastModal() {
                     : 'Incantation échouée'}
             </div>
             <p className="rm-log">{res.log}</p>
+            {res.isCritical && !isPrayer && caster.kind === 'hero' && (
+              <div className="rm-crit-choice">
+                {/* Incantation CRITIQUE (LDB 46 l.52-59) : puissance supplémentaire au choix
+                    (le contrecoup — Imparfaite Mineure sauf Diction instinctive — est automatique). */}
+                <span className="mini-title">⚡ Incantation Critique — choisir l'effet</span>
+                <div className="modal-actions" style={{ justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                  {([
+                    ...(pc.missile ? [['critique', '💥 Blessure Critique', 'Si le Sort inflige des Dégâts, il inflige aussi une Blessure Critique.']] : []),
+                    ['puissance', '🌀 Puissance totale', 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
+                    ['ineluctable', '🛡️ Force inéluctable', 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
+                  ] as [('critique' | 'puissance' | 'ineluctable'), string, string][]).map(([val, label, tip]) => {
+                    const def = !res.cast ? 'puissance' : pc.missile ? 'critique' : 'ineluctable';
+                    const selected = (pc.critChoice ?? def) === val;
+                    return (
+                      <button key={val} className={`btn small ${selected ? 'btn-primary' : ''}`} title={tip} onClick={() => setCritChoice(val)}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="modal-actions">
               <ChanceButtons
                 fortune={fortune}
