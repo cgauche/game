@@ -16,6 +16,7 @@ import { Combatant } from '../engine/types';
 import {
   TW,
   TH,
+  CELL,
   Dims,
   tileCenter,
   diamondPath,
@@ -108,6 +109,7 @@ export function IsoStage() {
   // creux d'opacité de la transition « dim-and-turn ».
   const camRot = useGame((s) => s.camRot);
   const rotateCam = useGame((s) => s.rotateCam);
+  const viewMode = useGame((s) => s.viewMode);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [turning, setTurning] = useState(false);
   // Tuile survolée (pour l'infobulle de portée en mode tir).
@@ -160,8 +162,11 @@ export function IsoStage() {
   const { floats, projs, auras, aoes } = useCombatFx();
 
   if (!scene) return null;
-  const dims: Dims = { ...scene.dimensions, rot: shownRot };
+  const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
   const size = stageSize(dims);
+  // Vue du dessus : les acteurs deviennent des pions-portraits (disques). Rayon = empreinte × ½ case.
+  const top = viewMode === 'top';
+  const discR = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
 
   // Position VISUELLE d'un token : interpolée le long du chemin si une marche est en cours
   // (anti-téléportation), sinon la position logique. Défini TÔT pour que les surbrillances (halo
@@ -326,10 +331,11 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
     <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} walking={walking} bakedDeath
-      hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}>
+      hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR}>
       {child}
     </BodyToken>
   );
@@ -359,15 +365,16 @@ export function IsoStage() {
     for (const c of battle.combatants) {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
-      // Combat monté : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE sur sa monture (ci-dessous).
-      if (isRider(c)) { if (isHero) hi++; continue; }
-      // Monture MONTÉE : dessinée avec son cavalier en UN corps composite (boucle ci-dessous).
-      if (isMount(c)) continue;
+      // Combat monté (iso seulement) : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE
+      // sur sa monture (ci-dessous). En vue du dessus, cavalier et monture sont deux pions distincts.
+      if (!top && isRider(c)) { if (isHero) hi++; continue; }
+      // Monture MONTÉE (iso) : dessinée avec son cavalier en UN corps composite (boucle ci-dessous).
+      if (!top && isMount(c)) continue;
       const ring = isHero ? HERO_RING[hi++ % HERO_RING.length] : ENEMY_RING;
       const wp = walkPosOf(c.id, c.pos.x, c.pos.y);
       // Backend choisi par le classifieur unique (rig humanoïde / plan non-bipède) ; base 0.62,
       // l'échelle d'espèce (bipède ou créature) vient du backend.
-      const r = pickBackend({ kind: 'combatant', combatant: c });
+      const r = pickBackend({ kind: 'combatant', combatant: c }, viewMode);
       // Empreinte multi-cases (LDB 15 l.55) : token CENTRÉ sur le bloc N×N et mis à l'échelle pour le remplir.
       const off = (sizeFootprint(c.size) - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
@@ -379,6 +386,9 @@ export function IsoStage() {
         veil: veilTint(isHero),
         active: c.id === activeC?.id,
         ringDash: teamShape(isHero), // R9 : ennemi = anneau pointillé (indice d'équipe non-coloré)
+        flat: top,
+        portraitBox: r.portraitBox,
+        discR: discR(c.size),
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
@@ -386,7 +396,7 @@ export function IsoStage() {
     // (MountedToken) trié au niveau de l'os → vraie profondeur (jambe lointaine derrière le
     // barillet, buste derrière la tête). Un seul BodyToken à la tuile/échelle de la monture
     // (une ombre partagée). L'empreinte/échelle restent celles de la monture.
-    for (const mount of battle.combatants) {
+    if (!top) for (const mount of battle.combatants) {
       if (!isMount(mount) || !mount.pos) continue;
       const rider = riderOf(battle, mount);
       if (!rider) continue;
@@ -402,7 +412,7 @@ export function IsoStage() {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue; // props déjà rendus (au-dessus)
       // Backend par le classifieur unique : rig humanoïde (0.58, +0.1 de profondeur) /
       // plan non-bipède animé (0.55) / sprite statique (objet, 0.55 + anim CSS d'ambiance).
-      const r = pickBackend({ kind: 'sceneEntity', ent });
+      const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
         objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(r.id, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
       } else {
@@ -411,18 +421,18 @@ export function IsoStage() {
         // Créature posée : centrée et mise à l'échelle de son empreinte par Taille (comme en combat).
         const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
         const ex = ent.pos.x + off, ey = ent.pos.y + off;
-        objs.push({ d: depth(ex, ey, dims) + dBoost, el: tokenNode(r.id, ex, ey, r.body, base * r.speciesScale * sizeTokenScale(entitySize(ent))) });
+        objs.push({ d: depth(ex, ey, dims) + dBoost, el: tokenNode(r.id, ex, ey, r.body, base * r.speciesScale * sizeTokenScale(entitySize(ent)), undefined, false, false, { flat: top, portraitBox: r.portraitBox, discR: discR(entitySize(ent)) }) });
       }
     }
     // groupe (token = 1er héros VIVANT et conscient — #27b : si le principal est mort/à terre, on
     // affiche le suivant encore debout) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
     const wp = leader ? walkPosOf(leader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
-    const r = pickBackend({ kind: 'partyLeader', leader });
+    const r = pickBackend({ kind: 'partyLeader', leader }, viewMode);
     const el =
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0])
-        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking);
+        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(undefined) });
     objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
