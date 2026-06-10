@@ -24,6 +24,17 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
 const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
 const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] };
 
+describe('rollMeleeDefender : pénalité de main secondaire APPLIQUÉE au jet de parade (pas que l’affichage)', () => {
+  const main: Weapon = { name: 'Épée', type: 'melee', damage: '+BF', qualities: [], hand: 'main', hands: 1, uid: 'm' };
+  const off: Weapon = { name: 'Dague', type: 'melee', damage: '+BF', qualities: [], hand: 'off', hands: 1, uid: 'o' };
+  it('parer avec l’arme de main secondaire (non Parade) → cible du jet -20 vs main principale', () => {
+    const d = mk({ weapons: [main, off] });
+    const withMain = rollMeleeDefender(d, 'parade', makeRNG(1), 0, main).target;
+    const withOff = rollMeleeDefender(d, 'parade', makeRNG(1), 0, off).target;
+    expect(withMain - withOff).toBe(20);
+  });
+});
+
 describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () => {
   const off: Weapon = { name: 'Dague', type: 'melee', damage: '+BF', qualities: [], hand: 'off', hands: 1 };
   const main: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], hand: 'main', hands: 1 };

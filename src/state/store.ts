@@ -482,6 +482,8 @@ export interface GameState {
   /** Flux de défense réactive (héros attaqué par l'IA) : choisir Parade/Esquive, défendre,
    *  dépenser une Chance, appliquer ; « Subir » = défense passive. */
   defenseSetMode: (mode: 'parade' | 'esquive') => void;
+  /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
+  defenseSetParryWeapon: (uid: string | null) => void;
   defenseRoll: () => void;
   defenseReroll: () => void;
   defenseBonusSL: () => void;
@@ -2063,6 +2065,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pd || pd.result) return; // le mode ne change plus après le jet
     set({ pendingDefense: { ...pd, mode } });
   },
+  defenseSetParryWeapon: (uid) => {
+    const pd = get().pendingDefense;
+    if (!pd || pd.result) return; // choix d'arme de parade avant le jet seulement
+    set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
+  },
   defenseRoll: () => {
     // « Défendre » : roule la défense du héros et résout le Test opposé (atk figé).
     const { battle, pendingDefense: pd } = get();
@@ -2071,8 +2078,9 @@ export const useGame = create<GameState>((set, get) => ({
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
     if (!attacker || !defender) return;
     const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.115-116/225)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
+    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
     set({ pendingDefense: { ...pd, def, result: res } });
   },
   defenseReroll: () => {
@@ -2085,8 +2093,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
     const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.225)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod);
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod);
+    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » du défenseur : +1 DR à SA défense figée (le jet d'attaque reste figé). */
@@ -2099,7 +2108,8 @@ export const useGame = create<GameState>((set, get) => ({
     defender.fortune = (defender.fortune ?? 0) - 1;
     const dd = pd.result.defenderDetail!;
     const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
+    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined, [], 0, undefined, parry);
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },
   defenseConfirm: () => {

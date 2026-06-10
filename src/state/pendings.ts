@@ -276,6 +276,8 @@ export interface PendingDefense {
   location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
   atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
   mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
+  /** Arme de parade choisie (uid d'ItemInstance) ; absent = main principale (weapons[0]). */
+  parryWeaponUid?: string;
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */

@@ -409,6 +409,7 @@ export function finishMelee(
   env: ModLine[] = [],
   dodgeMod = 0,
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
+  parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
 ): AttackResult {
   // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
   // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
@@ -420,10 +421,10 @@ export function finishMelee(
   // la parade utilise l'arme du défenseur (pas l'esquive — l'esquive ne « teste » pas l'arme).
   const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success);
   const defSL = def.sl - parrySizePenalty
-    + (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) + craftTestDRAdjust(defender.weapons[0], def.success) : 0);
+    + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, defender.weapons[0]), def, defenseModifiers(defender, defenseMode, dodgeMod, defender.weapons[0]));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon));
 
   if (opp.winner === 'defender') {
     return {
