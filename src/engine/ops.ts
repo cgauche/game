@@ -17,7 +17,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { rollTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, removeCondition, loseWounds } from './conditions';
+import { addCondition, addTimedCondition, removeCondition, loseWounds } from './conditions';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -57,8 +57,10 @@ export type GameOp =
   | { op: 'wounds'; amount: Formula }
   /** Blessures rendues (plafonnées au max). */
   | { op: 'heal'; amount: Formula }
-  /** Ajout d'un État nommé (LDB 16). */
-  | { op: 'condition'; name: string; value?: Formula }
+  /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
+   *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
+   *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
+  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). */
   | { op: 'removeCondition'; name?: string; value?: Formula }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
@@ -154,8 +156,23 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'condition': {
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng));
-        addCondition(target, o.name, v);
-        lines.push(`${target.name} reçoit ${v} État ${o.name}.`);
+        if (o.perRound) {
+          // État récurrent : porté par un effet actif, ré-appliqué chaque fin de Round.
+          target.activeEffects = target.activeEffects ?? [];
+          target.activeEffects.push({
+            label: ctx.label ?? 'Effet', bonus: 0,
+            roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+            condPerRound: { name: o.name, value: v },
+          });
+          lines.push(`${target.name} subira ${v} État ${o.name} par Round (${ctx.label ?? 'sort'}).`);
+        } else if (o.durationRounds != null) {
+          const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
+          addTimedCondition(target, o.name, v, rounds);
+          lines.push(`${target.name} reçoit ${v} État ${o.name} (${rounds} Round${rounds > 1 ? 's' : ''}).`);
+        } else {
+          addCondition(target, o.name, v);
+          lines.push(`${target.name} reçoit ${v} État ${o.name}.`);
+        }
         break;
       }
       case 'removeCondition': {

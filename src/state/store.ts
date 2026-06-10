@@ -403,6 +403,10 @@ export interface GameState {
   castDarkPact: () => void;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
+  /** Surincantation (LDB 47 l.28-31) : alloue +2 DR du surplus à un axe (Durée / Cible). */
+  castAllocOvercast: (axis: 'duration' | 'targets') => void;
+  /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
+  castToggleExtraTarget: (id: string) => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -1271,13 +1275,44 @@ export const useGame = create<GameState>((set, get) => ({
     const target = actorIn(get(), pc.targetId);
     const spell = findSpell(pc.spellLabel);
     set({ pendingCast: null });
-    if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice);
+    if (caster && target && spell) {
+      // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
+      const extras = (pc.extraTargetIds ?? [])
+        .map((id) => actorIn(get(), id))
+        .filter((x): x is NonNullable<typeof x> => !!x)
+        .slice(0, pc.overcast?.targets ?? 0);
+      applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
+        durationMult: 1 + (pc.overcast?.duration ?? 0),
+        extraTargets: extras,
+      });
+    }
   },
   /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
   castSetCritChoice: (choice) => {
     const pc = get().pendingCast;
     if (!pc || !pc.result?.isCritical) return;
     set({ pendingCast: { ...pc, critChoice: choice } });
+  },
+  /** Surincantation (LDB 47 l.28-31) : chaque allocation consomme +2 DR du surplus (DR − NI). */
+  castAllocOvercast: (axis) => {
+    const pc = get().pendingCast;
+    const spell = pc && findSpell(pc.spellLabel);
+    if (!pc || !pc.result?.cast || !spell || spell.cn == null) return; // Sorts seulement (ch.47)
+    const oc = pc.overcast ?? { duration: 0, targets: 0 };
+    const budget = Math.floor(Math.max(0, pc.result.sl - (pc.focused ? 0 : spell.cn)) / 2);
+    if (oc.duration + oc.targets >= budget) return; // surplus épuisé
+    set({ pendingCast: { ...pc, overcast: { ...oc, [axis]: oc[axis] + 1 } } });
+  },
+  castToggleExtraTarget: (id) => {
+    const pc = get().pendingCast;
+    if (!pc || !pc.result?.cast) return;
+    const cur = pc.extraTargetIds ?? [];
+    const next = cur.includes(id)
+      ? cur.filter((x) => x !== id)
+      : cur.length < (pc.overcast?.targets ?? 0) && id !== pc.targetId
+        ? [...cur, id]
+        : cur;
+    set({ pendingCast: { ...pc, extraTargetIds: next } });
   },
   castCancel: () => set({ pendingCast: null }),
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.

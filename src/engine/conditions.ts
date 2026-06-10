@@ -20,8 +20,30 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
 export function addCondition(c: Combatant, name: string, value = 1): void {
   c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
   const existing = c.conditions.find((x) => x.name === name);
-  if (existing) existing.value += value;
-  else c.conditions.push({ name, value });
+  if (existing) {
+    existing.value += value;
+    // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
+    // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
+    delete existing.roundsLeft;
+  } else {
+    c.conditions.push({ name, value });
+  }
+}
+
+/** Ajout d'un État À DURÉE (posé par un sort : « 1 État Sonné qui dure N Rounds », LDB).
+ *  Sur un État déjà porté : temporisé → durée max conservée ; NON temporisé → inchangé
+ *  (la durée du sort ne raccourcit pas un État permanent). */
+export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number): void {
+  const existing = c.conditions.find((x) => x.name === name);
+  if (existing) {
+    c.advantage = 0;
+    existing.value += value;
+    if (existing.roundsLeft != null) existing.roundsLeft = Math.max(existing.roundsLeft, rounds);
+    // sinon : instance non temporisée — elle le reste.
+  } else {
+    addCondition(c, name, value);
+    c.conditions.find((x) => x.name === name)!.roundsLeft = rounds;
+  }
 }
 
 export function removeCondition(c: Combatant, name: string, value = 1): void {
@@ -166,12 +188,26 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
       log.push(`${c.name} : un État ${n} se dissipe.`);
     }
   }
+  // États RÉCURRENTS (« un par Round ») portés par un effet actif de sort — ré-appliqués
+  // tant que l'effet dure (AVANT le décrément : l'effet agit aussi son dernier Round).
+  for (const e of c.activeEffects ?? []) {
+    if (!e.condPerRound || e.roundsLeft <= 0) continue;
+    addCondition(c, e.condPerRound.name, e.condPerRound.value);
+    log.push(`${c.name} reçoit ${e.condPerRound.value} État ${e.condPerRound.name} (${e.label}).`);
+  }
   // Effets magiques temporisés (Bénédictions, Sorts de bonus).
   if (c.activeEffects?.length) {
     for (const e of c.activeEffects) e.roundsLeft -= 1;
     const expired = c.activeEffects.filter((e) => e.roundsLeft <= 0);
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
+  }
+  // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.
+  if (c.conditions.some((x) => x.roundsLeft != null)) {
+    for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
+    const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
+    for (const x of done) log.push(`${c.name} : l'État ${x.name} (sort) se dissipe.`);
+    c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40) —
   // l'entretien hors combat rejoue endOfRound (couture A) → ils tickent aussi hors combat.

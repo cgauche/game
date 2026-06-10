@@ -93,7 +93,8 @@ const MAJOR: Row[] = [
   { min: 51, max: 55, name: 'Vue assombrie', ops: () => [{ op: 'castPenalty', skill: 'Focalisation', mod: -20, hours: d(1, 10) }] },
   { min: 56, max: 60, name: 'Lévitation' },
   { min: 61, max: 65, name: 'Lévitation (suite)' },
-  { min: 66, max: 70, name: 'Régurgitation', ops: () => [cond('Sonné')] },
+  // « Gagnez l'État Sonné, qui dure 1d10 Rounds » (l.126).
+  { min: 66, max: 70, name: 'Régurgitation', ops: () => [{ op: 'condition', name: 'Sonné', durationRounds: d(1, 10) }] },
   { min: 71, max: 75, name: 'Cœur de traître' },
   { min: 76, max: 80, name: 'Cœur de traître (suite)' },
   // « Gagnez 1 Point de Corruption, 1 État À Terre et 1 État Exténué » (l.132).

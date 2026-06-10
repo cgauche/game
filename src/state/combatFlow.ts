@@ -1875,8 +1875,11 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
+  extras?: { durationMult?: number; extraTargets?: Combatant[] },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
+  const durationMult = Math.max(1, extras?.durationMult ?? 1);
+  const extraTargets = extras?.extraTargets ?? [];
 
   // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
@@ -1915,22 +1918,36 @@ export function applyCast(
       caster.gainedAdvThisRound = true;
       logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name} (LDB 46).`);
     }
-    battle.domainCasts = [...marks, { targetId: target.id, domain: spell.subType }];
+    battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.subType! }))];
   }
 
   if (missile) {
-    if (res.hit && res.woundsLost) {
-      const currentBefore = target.wounds.current;
-      const overkill = res.woundsLost - currentBefore;
-      target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
+    // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
+    const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
+      if (!mres.hit || !mres.woundsLost) return;
+      const currentBefore = t.wounds.current;
+      const overkill = mres.woundsLost - currentBefore;
+      t.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
-        if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
-      } else if (target.wounds.current <= 0) {
-        applyZeroWounds(target);
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
+        if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
+      } else if (t.wounds.current <= 0) {
+        applyZeroWounds(t);
       }
+      // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
+      logLines.push(...checkFocusInterruption(get, set, t));
+      if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
+    };
+    applyMissileHit(target, res);
+    // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
+    for (const t2 of extraTargets) {
+      if (!res.cast) break;
+      const r2 = evaluateMissile(caster, t2, spell, res);
+      logLines.push(r2.log);
+      applyMissileHit(t2, r2);
+      if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
     }
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
@@ -1941,25 +1958,27 @@ export function applyCast(
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
     }
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
-    // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
-    if (res.hit && res.woundsLost) logLines.push(...checkFocusInterruption(get, set, target));
-    if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
       // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
       // desc — iso-POC). Durée hors-rounds (minutes/heures/jours) : elle dépasse
       // l'échelle tactique → l'effet persiste pour ce combat (COMBAT_PERSIST),
-      // on n'invente PAS un nombre de rounds.
+      // on n'invente PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spellSpecFor(spell);
-      const rounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
-      logLines.push(
-        ...applyOps(target, spec.ops, {
-          rng: battleRng(),
-          caster,
-          label: spell.label,
-          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
-        }),
-      );
+      const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
+      const rounds = baseRounds != null ? baseRounds * durationMult : null;
+      if (durationMult > 1 && baseRounds != null) logLines.push(`Surincantation : durée ×${durationMult} (${rounds} Rounds).`);
+      for (const t of [target, ...extraTargets]) {
+        if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
+        logLines.push(
+          ...applyOps(t, spec.ops, {
+            rng: battleRng(),
+            caster,
+            label: spell.label,
+            defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          }),
+        );
+      }
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
       logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));

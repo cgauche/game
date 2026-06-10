@@ -352,6 +352,12 @@ export interface PendingCast {
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */
   critChoice?: 'critique' | 'puissance' | 'ineluctable';
+  /** Surincantation (LDB 47 l.28-31) : « pour chaque +2 DR [au-delà du NI], ajouter une
+   *  valeur de Portée/ZdE/Durée/Cible égale à la valeur initiale », cumulable. Allocation
+   *  du surplus dans la modale — `duration` = ×(1+n) sur la durée ; `targets` = n cibles
+   *  SUPPLÉMENTAIRES (`extraTargetIds`, choisies dans la modale). Sorts seulement. */
+  overcast?: { duration: number; targets: number };
+  extraTargetIds?: string[];
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

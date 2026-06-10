@@ -20,6 +20,8 @@ export function CastModal() {
   const bonusSL = useGame((s) => s.castBonusSL);
   const darkPact = useGame((s) => s.castDarkPact);
   const setCritChoice = useGame((s) => s.castSetCritChoice);
+  const allocOvercast = useGame((s) => s.castAllocOvercast);
+  const toggleExtraTarget = useGame((s) => s.castToggleExtraTarget);
   const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
@@ -96,6 +98,51 @@ export function CastModal() {
                     : 'Incantation échouée'}
             </div>
             <p className="rm-log">{res.log}</p>
+            {/* Surincantation (LDB 47 l.28-31) : pour chaque +2 DR au-delà du NI, étendre la
+                Durée (×initiale) ou la Cible (+1) — Sorts seulement, jamais « Vous »/« Spécial ». */}
+            {(() => {
+              if (isPrayer || !res.cast || caster.kind !== 'hero') return null;
+              const budget = Math.floor(Math.max(0, res.sl - (pc.focused ? 0 : ni)) / 2);
+              if (budget <= 0) return null;
+              const oc = pc.overcast ?? { duration: 0, targets: 0 };
+              const left = budget - oc.duration - oc.targets;
+              const canDuration = spell.duration != null && /rounds?/i.test(spell.duration ?? '');
+              const canTargets = typeof spell.target === 'number' && spell.target >= 1 && spell.range !== 'Vous';
+              if (!canDuration && !canTargets) return null;
+              const pool = battle?.combatants ?? party;
+              const candidates = pc.missile
+                ? pool.filter((m) => m.kind === 'enemy' && m.id !== pc.targetId && !m.dead)
+                : pool.filter((m) => m.kind === 'hero' && m.id !== pc.targetId && !m.dead);
+              return (
+                <div className="rm-overcast">
+                  <span className="mini-title">🌬️ Surincantation — surplus {left}×2 DR disponible</span>
+                  <div className="modal-actions" style={{ justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                    {canDuration && (
+                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast('duration')} title="Ajoute la durée initiale du sort (cumulable) — 2 DR">
+                        ⏳ +Durée{oc.duration ? ` ×${oc.duration + 1}` : ''}
+                      </button>
+                    )}
+                    {canTargets && (
+                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast('targets')} title="Cible supplémentaire (même jet) — 2 DR">
+                        🎯 +Cible{oc.targets ? ` (+${oc.targets})` : ''}
+                      </button>
+                    )}
+                  </div>
+                  {oc.targets > 0 && (
+                    <div className="modal-actions" style={{ justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                      {candidates.map((m) => {
+                        const on = (pc.extraTargetIds ?? []).includes(m.id);
+                        return (
+                          <button key={m.id} className={`btn small ${on ? 'btn-primary' : ''}`} onClick={() => toggleExtraTarget(m.id)}>
+                            {on ? '✓ ' : ''}{m.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {res.isCritical && !isPrayer && caster.kind === 'hero' && (
               <div className="rm-crit-choice">
                 {/* Incantation CRITIQUE (LDB 46 l.52-59) : puissance supplémentaire au choix
