@@ -27,6 +27,7 @@ de capacités de combat** extensible (talents + traits de créature deviennent d
 | Actions gratuites | LDB 13 l.116 | **Dégainer une arme** = Action gratuite (exemple cité). **Le nombre est laissé au MJ.** Être **Engagé peut interdire** une Action gratuite « qui pourrait octroyer un bonus à l'ennemi ». Changer d'armure **n'est PAS** une Action gratuite (non listé ; aucune règle d'enfilage dans tout le LDB). |
 | Frénésie | LDB 21 l.34 | Action = un Test de CC ; **+ un Test de CC GRATUIT** chaque Round. |
 | Spécialisations CC | LDB 09 l.144 | Base, Escrime, Parade, Cavalerie, Fléau, Arme d'hast, Arme à 2 mains, Bagarre. |
+| Maladresse / amputation ↔ main | LDB 14 l.53-57 ; LDB 18 l.341/352 | Maladresse (échec + double) → « Tableau des Oups! » (peut faire **lâcher l'arme**) ; ratage d'arme à feu → Localisation **Bras principal** + arme détruite. Critique au bras → **amputation** de la main (brasD principal → -20 ; brasG secondaire). → la main qui lâche/est amputée mappe sur **brasD/brasG**. |
 
 Exemples-cibles du registre (hors périmètre, vérifiés pour valider les seams) :
 - **Riposte** (talent, LDB 10 l.843-852) : arme **Rapide** → inflige des dégâts quand on est attaqué « comme si
@@ -71,6 +72,9 @@ Exemples-cibles du registre (hors périmètre, vérifiés pour valider les seams
 - **`ItemInstance` / `Weapon`** gagnent `hand?: 'main' | 'off'` sur l'arme ACTIVE dérivée (porté par le
   `Weapon` que lit le combat). `equipped` reste utilisé **pour l'armure** ; pour les armes, « actif » = « dans
   le loadout actif ».
+- **Mapping main↔localisation (convention canon)** : `main` = **brasD** (droitier / « Bras principal »,
+  LDB 14 l.57 ; déjà la convention de `critical.ts`), `off` = **brasG**. C'est le substrat des effets qui
+  ciblent une localisation de bras : **lâcher l'arme** (Maladresse) et **amputation de la main** (Critique).
 
 ### 4.2 `recomputeLoadout` révisé
 
@@ -147,6 +151,16 @@ Séquence :
 Implémentation via la file de modales existante (arbitre R2) : 1ʳᵉ attaque → (si touche) sélection de la 2ᵉ cible
 → 2ᵉ attaque. Pur autant que possible (le d100 inversé est dérivé, pas re-tiré → déterminisme intact).
 
+### 5.7 Lâcher / amputation ↔ loadout (Maladresse, Critique)
+
+Le slot de main du loadout est le substrat des effets ciblant un bras (mapping `main`↔brasD, `off`↔brasG, §4.1) :
+- **Maladresse « lâche l'arme »** (Tableau des Oups!, LDB 14 l.53-54) : vide le slot de la main concernée →
+  l'arme tombe au sol (objet ramassable) ou retourne à l'inventaire non tenu. `recomputeLoadout` re-dérive.
+- **Critique au bras → amputation** (LDB 18) : la main est perdue → slot vidé définitivement ; arme à 2 mains
+  inutilisable (`cannotWieldTwoHanded`, déjà géré). **Main PRINCIPALE perdue** → l'arme secondaire restante se
+  joue désormais à la **pénalité de main secondaire** (`offHandPenalty`/Ambidextre) — ce qui **unifie** le -20
+  forfaitaire actuel de `critical.ts` (`charPenalty CC/CT -20`) avec le modèle off-hand de ce chantier.
+
 ### 5.6 Bornage Frénésie / attaques gratuites
 L'attaque gratuite de Frénésie (et toute attaque gratuite) reste **mono-arme** : le mode « Des deux armes »
 n'est pas proposé. Le **choix d'arme mono** (avec -20 si main secondaire) s'y applique normalement.
@@ -203,3 +217,6 @@ n'est pas proposé. Le **choix d'arme mono** (avec -20 si main secondaire) s'y a
 3. **Combat** : choix arme attaque + choix arme parade + commutateur loadout (1/tour, libre, même engagé)
    + verrou d'équipement en combat.
 4. **Maniement de deux armes** (mode d'attaque via Ph.0 ; flux complet §5.5).
+5. **Lâcher / amputation ↔ loadout** (§5.7) : Maladresse « lâche l'arme » + Critique « amputation » vident le
+   slot de main (brasD=main / brasG=off) ; main principale perdue → arme secondaire à la pénalité off-hand
+   (unifie le -20 forfaitaire de `critical.ts`).
