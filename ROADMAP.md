@@ -809,11 +809,14 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   consommer + révélation, IA renonce au coup), **Martyr** (le prêtre encaisse les Dégâts bruts
   à 2×BE + ses PA, attaques ET Projectiles ; la cible est épargnée), **Attaques en chaîne**
   (rebond mécanique sur l'ennemi le plus proche ≤ BFM m tant que la cible tombe à 0, max BFM).
-- **L14 — Attributs de Domaine** (LDB 48, intros des 8 Couleurs — relevés 2026-06-11) : Bête
-  (option Peur 1, 1d10 Rounds), Cieux (ignore PA métal + arc 2 m BFM), Feu (+1 En flammes ;
-  +10 Incant/Focus par En flammes proche), Lumière (Aveuglé ; Démon/MV +BInt ignore BE+PA),
-  Métal (ignore PA métal + dégâts = PA), Mort (+1 Exténué), Ombres (ignore PA non magiques),
-  Vie (+10 rural ; purge Exténué/Hémorragique ; MV +BFM). Exemption par Talent du défenseur.
+- ✅ **L14 — Attributs de Domaine** *(2026-06-11, commit `8d1db0e`)* : `engine/domainAttributes`
+  (strict par subType) — Métal (ignore PA métal + dégâts = PA), Cieux (ignore PA métal + arc
+  2 m BFM), Ombres (ignore PA non magiques, l'apAll magique tient), Feu (+1 En flammes adverses
+  + +10 Incantation/pion En flammes à BFM m), Lumière (Aveuglé + BInt ignore BE/PA aux
+  Démons/MV), Mort (+1 Exténué vivants, 1× — `shyishExhausted`), Vie (purge Exténué/Hémorragique
+  + BFM aux MV), Bête (Peur 1, 1d10 Rounds au lanceur). Différés documentés : +10 rural (Vie,
+  pas de classification de scène), volet Focalisation du +10 d'Aqshy.
+  **→ Le reliquat 2.6 est CLOS (L9-L14)** ; le « Différé réel assumé » ci-dessous reste le seul reste.
 - **Différé réel assumé** : ~20 utilitaires narratifs hors grille (Bruits, Repères, Serrure
   ouverte…), volet « Commandements divins » de B. de Conscience.
 
