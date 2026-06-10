@@ -37,6 +37,11 @@ export const QUALITY_DESC: Record<string, string> = {
   'Inoffensive': "Peu efficace contre l'armure : tous les PA sont doublés, et pas de minimum de 1 Blessure sur une touche.", // 63 l.22
   'Lente': 'Frappe toujours en dernier dans le Round ; les adversaires gagnent +1 DR pour se défendre (prime sur Rapide).', // 63 l.25
   'Recharge': "Longue à recharger : une fois déchargée, exige un Test étendu de Projectiles cumulant Indice DR.", // 63 l.28
+  // Qualités d'armure intrinsèques — LDB 63
+  'Flexible': "Peut être portée sous une couche d'armure non Flexible : vous gagnez les bénéfices des deux.", // 63 Qualités des armures
+  'Impénétrable': 'Les Blessures Critiques causées par un nombre impair pour vous toucher sont ignorées.', // 63 Qualités des armures
+  'Partielle': "Couverture incomplète : un jet de toucher pair, ou un Coup Critique, ignore les PA de cette pièce.", // 63 Qualités des armures
+  'Points faibles': "Une arme Empaleuse qui obtient un Critique ignore les PA de cette armure.", // 63 Qualités des armures
   // Atouts/Défauts d'artisanat — LDB 60
   'Léger': "Fabriqué pour le transport : −1 Point d'Encombrement.", // 60 l.55
   'Pratique': "+1 DR à un Test raté avec l'objet ; pour une armure, pénalités de port réduites d'un niveau.", // 60 l.58

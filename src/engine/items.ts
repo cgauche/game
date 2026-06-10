@@ -191,12 +191,7 @@ export function recomputeLoadout(c: Combatant): void {
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 
-  const armour = emptyArmour();
-  for (const it of items) {
-    if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
-    const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
-    for (const l of it.locs) armour[l] = Math.max(armour[l], net);
-  }
+  const armour = wornArmourPoints(items);
   // Mutations de Corruption (LDB 19) : PA NATURELS additifs (Peau d'acier +2 partout,
   // Écailles épineuses +1 partout, Cornes asymétriques +1 Tête) — par-dessus l'armure portée.
   for (const l of Object.keys(armour) as (keyof typeof armour)[]) armour[l] += mutationArmourBonus(c, l);
@@ -281,6 +276,55 @@ export function addItemToHero(hero: Combatant, label: string): Combatant {
   clone.items = [...(clone.items ?? []), it];
   recomputeLoadout(clone);
   return clone;
+}
+
+/**
+ * PA portés par localisation, dérivés des pièces équipées. Une seule pièce compte par localisation
+ * (la meilleure), SAUF Flexible (LDB 63) : « peut être portée sous une couche d'armure non
+ * Flexible […] vous gagnez les bénéfices des deux » → meilleure pièce rigide + meilleure pièce
+ * Flexible se CUMULENT. `exclude` retire des pièces du calcul (PA ignorés par la touche —
+ * Partielle/Points faibles, cf. `ignoredArmourAP`).
+ */
+export function wornArmourPoints(items: ItemInstance[], exclude?: (it: ItemInstance) => boolean): ArmourPoints {
+  const rigid = emptyArmour();
+  const flex = emptyArmour();
+  for (const it of items) {
+    if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
+    if (exclude?.(it)) continue;
+    const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
+    const layer = hasQuality(it, 'Flexible') ? flex : rigid;
+    for (const l of it.locs) layer[l] = Math.max(layer[l], net);
+  }
+  const armour = emptyArmour();
+  for (const l of Object.keys(armour) as HitLocation[]) armour[l] = rigid[l] + flex[l];
+  return armour;
+}
+
+/**
+ * PA portés à `loc` IGNORÉS par cette touche (LDB 63, Qualités des armures) :
+ *  - Partielle : « Un adversaire qui obtient un nombre pair pour vous toucher, ou obtient un
+ *    Coup Critique, ignore les PA de l'armure Partielle » ;
+ *  - Points faibles : « Si votre adversaire possède une arme avec l'Atout Empaleuse et obtient
+ *    un Critique, les PA de votre armure sont ignorés ».
+ * Différence entre les PA dérivés avec et sans les pièces ignorées (gère la superposition Flexible).
+ */
+export function ignoredArmourAP(c: Combatant, loc: HitLocation, hit: { roll: number; critical: boolean; empaleuse: boolean }): number {
+  const items = c.items ?? [];
+  if (!items.length) return 0;
+  const even = hit.roll % 2 === 0;
+  const ignored = (it: ItemInstance): boolean =>
+    (hasQuality(it, 'Partielle') && (even || hit.critical)) ||
+    (hasQuality(it, 'Points faibles') && hit.critical && hit.empaleuse);
+  if (!items.some((it) => it.equipped && it.kind === 'armor' && it.locs?.includes(loc) && ignored(it))) return 0;
+  return Math.max(0, wornArmourPoints(items)[loc] - wornArmourPoints(items, ignored)[loc]);
+}
+
+/** La localisation `loc` est-elle protégée par une pièce Impénétrable (LDB 63 : les Coups
+ *  Critiques obtenus sur un jet de toucher IMPAIR sont ignorés) ? */
+export function impenetrableAt(c: Combatant, loc: HitLocation): boolean {
+  return (c.items ?? []).some(
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, 'Impénétrable'),
+  );
 }
 
 /** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.52-55). Héros : endommage la

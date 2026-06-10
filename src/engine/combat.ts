@@ -16,6 +16,7 @@ import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
+import { ignoredArmourAP, impenetrableAt } from './items';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP } from './qualities/dispatch';
 import { offHandPenalty } from './combatFeatures/dispatch';
@@ -647,14 +648,19 @@ function applyHit(
   const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
-  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP);
-  const newWounds = defender.wounds.current - woundsLost;
-  const defeated = newWounds <= 0;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
   // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
   const empale = qualityCritTriggered(weapon, atkBd.roll);
-  const isCritical = critical || empale;
+  let isCritical = critical || empale;
+  // Impénétrable (LDB 63) : « Toutes les Blessures Critiques causées par un nombre impair pour vous
+  // toucher sont ignorées » — pièce Impénétrable à la localisation + jet de toucher impair.
+  if (isCritical && atkBd.roll % 2 === 1 && impenetrableAt(defender, loc)) isCritical = false;
+  // Partielle / Points faibles (LDB 63) : PA des pièces concernées ignorés par CETTE touche.
+  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: isCritical, empaleuse: hasQuality(weapon, 'Empaleuse') });
+  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP);
+  const newWounds = defender.wounds.current - woundsLost;
+  const defeated = newWounds <= 0;
   return {
     hit: true,
     attackerRoll: atkBd.roll,
