@@ -10,6 +10,10 @@ import { bodyPlanOf } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
 import { entitySprite, pnjSprite } from './sprites';
 import { hashSeed } from './appearance';
+import { resolveRig, RigSprite } from './rig/composeRig';
+import { defaultAppearance, type Appearance } from './rig/appearance';
+import { equipFromCombatant, type EquipCtx } from './rig/parts/equipment';
+import type { RigOverlay } from './rig/bones';
 
 /**
  * Sujet à rendre comme token. Discriminé : combattant (combat), entité de scène
@@ -29,9 +33,11 @@ export interface PickedBackend {
   speciesScale: number;
   /** Clé de routage bus/facing, préfixe déjà appliqué (`c.id` / `e-<id>` / `__party`). */
   id: string;
-  /** viewBox (repère 120×150 du corps) cadrant le VISAGE pour un portrait (RigPortrait).
+  /** viewBox (repère 120×150 du corps) cadrant le VISAGE pour un portrait (RigPortrait / disque top).
    *  Humanoïde = gros plan tête ; créature = haut-avant (la tête varie selon le gabarit). */
   portraitBox: string;
+  /** Vue du dessus : ce sujet doit être rendu en disque-portrait centré (true) ou billboard ancré (false). */
+  flat: boolean;
 }
 
 /** Gros plan VISAGE d'un humanoïde (tête centrée ~(60,46) dans la boîte 120×150). */
@@ -40,35 +46,70 @@ const FACE_BOX = '42 28 38 38';
 const CREATURE_BOX = '22 14 80 80';
 
 /**
+ * Vue de face cadrée sur le VISAGE (top-mode). Résout le rig en vue `front` et cadre le viewBox sur
+ * l'os `tete` RÉSOLU (centré sur LE visage de chaque race — Nain/Ogre/… quelle que soit sa taille).
+ * Math PURE, partagée par le pion-portrait de la carte (BodyToken flat) ET la vignette HUD (RigPortrait).
+ */
+function faceFrame(appearance: Appearance, equip: EquipCtx, career: string | undefined, overlays: RigOverlay[]): { body: ReactNode; box: string } {
+  const bones = resolveRig(appearance, equip, {}, career, 'front', overlays);
+  const tete = bones.find((b) => b.id === 'tete');
+  const m = tete?.matrix ?? [1, 0, 0, 1, 60, 54];
+  const sy = tete?.scale[1] ?? 1;
+  const cx = m[4];
+  const cy = m[5] + 10 * sy; // le visage est dessiné SOUS l'origine de l'os tete (crâne) → on descend le cadre
+  const S = 46 * Math.max(0.9, sy); // cadre proportionnel à la taille de la tête (Ogre > Nain)
+  return {
+    body: <RigSprite appearance={appearance} equip={equip} career={career} view="front" overlays={overlays} />,
+    box: `${(cx - S / 2).toFixed(1)} ${(cy - S / 2).toFixed(1)} ${S.toFixed(1)} ${S.toFixed(1)}`,
+  };
+}
+
+/**
  * CLASSIFIEUR UNIQUE : décide quel backend monter (rig humanoïde / plan non-bipède / sprite)
  * et produit le corps prêt à insérer. Source unique remplaçant l'échelle
  * `isHero / enemyRigProfile / entityRigProfile / bodyPlanOf` dupliquée aux 4 sites de dispatch
  * (IsoStage combat + exploration + leader, éditeur via EntityToken).
  *
+ * `view: 'top'` (vue du dessus) → les ACTEURS deviennent un disque-portrait (vue de face cadrée,
+ * `flat: true`) ; le décor reste un billboard de face (`flat: false`). En iso, comportement inchangé.
+ *
  * NE porte AUCUNE info de layout (ombre/anneau/dim/échelle de base/walking) : ça reste au site
  * appelant (BodyToken/token/tokenNode). Les deux moteurs d'animation (rig à clips vs plan rAF)
  * restent DEUX backends distincts (asymétrie essentielle : parade/sort/clips d'arme côté rig).
  */
-export function pickBackend(subject: TokenSubject): PickedBackend {
+export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'): PickedBackend {
+  const top = view === 'top';
+
   if (subject.kind === 'combatant') {
     const c = subject.combatant;
     // On décide par le PLAN CORPOREL (humanoïde vs créature), PAS par le camp. `kind==='hero'` est
-    // surchargé (PJ bipède OU acteur allié — store bascule `side:'ally'` en kind='hero', cheval libre
-    // compris) : router sur kind dessinerait un cheval allié comme un humanoïde. Donc : nom humanoïde
-    // → rig (héros = son appearance, ennemi = profil dérivé) ; créature → gabarit animé (plan).
+    // surchargé (PJ bipède OU acteur allié — cheval libre compris) : router sur kind dessinerait un
+    // cheval allié comme un humanoïde. Donc : nom humanoïde → rig ; créature → gabarit animé (plan).
     if (classifyEnemy(c.name) === 'rig') {
       const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
-      return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} /> };
+      if (top) {
+        const appearance = prof?.appearance ?? c.appearance ?? defaultAppearance(c);
+        const equip = prof?.equip ?? equipFromCombatant(c);
+        const career = prof?.career ?? c.career;
+        const overlays = prof?.overlays ?? [];
+        const f = faceFrame(appearance, equip, career, overlays);
+        return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: f.box, flat: true, body: f.body };
+      }
+      return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} /> };
+    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} /> };
   }
 
   if (subject.kind === 'partyLeader') {
     const leader = subject.leader;
     if (leader) {
-      return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, body: <AnimatedRigToken combatant={leader} /> };
+      if (top) {
+        const f = faceFrame(leader.appearance ?? defaultAppearance(leader), equipFromCombatant(leader), leader.career, []);
+        return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: f.box, flat: true, body: f.body };
+      }
+      return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={leader} /> };
     }
-    return { backend: 'sprite', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, body: <g dangerouslySetInnerHTML={{ __html: pnjSprite() }} /> };
+    return { backend: 'sprite', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: pnjSprite() }} /> };
   }
 
   // sceneEntity (exploration + éditeur)
@@ -80,12 +121,16 @@ export function pickBackend(subject: TokenSubject): PickedBackend {
       ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { career: ent.appearance?.career, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build })
       : null;
   if (prof) {
-    return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: FACE_BOX, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} /> };
+    if (top) {
+      const f = faceFrame(prof.appearance, prof.equip, prof.career, prof.overlays ?? []);
+      return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: f.box, flat: true, body: f.body };
+    }
+    return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} /> };
   }
   const refName = ent.ref ?? ent.label ?? '';
   const planId = bodyPlanOf(refName);
   if (planId !== 'biped' && planId !== 'monolithic') {
-    return { backend: 'plan', id, speciesScale: creatureSpeciesScale(refName), portraitBox: CREATURE_BOX, body: <AnimatedPlanToken id={id} name={refName} colors={ent.appearance?.colors} facing={ent.facing} /> };
+    return { backend: 'plan', id, speciesScale: creatureSpeciesScale(refName), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} name={refName} colors={ent.appearance?.colors} facing={ent.facing} /> };
   }
-  return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
+  return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
 }
