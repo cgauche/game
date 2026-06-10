@@ -10,7 +10,7 @@ import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
-import { applyAttackResult, applyEffects } from './combatFlow';
+import { applyAttackResult, applyEffects, computeMoveReach } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -1782,7 +1782,7 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
   }
 
   function firstMoveTarget(fromX: number, fromY: number) {
-    const reach = [...useGame.getState().battle!.reachable.keys()].map((k) => {
+    const reach = [...computeMoveReach(useGame.getState).keys()].map((k) => {
       const [x, y] = k.split(',').map(Number);
       return { x, y };
     });
@@ -1792,9 +1792,8 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
   it('restaure la position et remet le Mouvement à zéro après un segment', () => {
     const H = moveSetup();
     const from = { ...H.pos! };
-    useGame.getState().battleSelectAction('move');
     const target = firstMoveTarget(from.x, from.y);
-    useGame.getState().battleClickTile(target);
+    useGame.getState().battleClickTile(target, { confirm: true });
     let st = useGame.getState();
     expect(st.battle!.movementUsed).toBeGreaterThan(0);
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(target);
@@ -1808,9 +1807,8 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
   it('ne fait RIEN une fois l’Action prise (l’annulation est une aide PRÉ-Action)', () => {
     const H = moveSetup();
     const from = { ...H.pos! };
-    useGame.getState().battleSelectAction('move');
     const target = firstMoveTarget(from.x, from.y);
-    useGame.getState().battleClickTile(target);
+    useGame.getState().battleClickTile(target, { confirm: true });
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } }); // une Action a été prise
     useGame.getState().cancelMove();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(target);

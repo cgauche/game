@@ -29,6 +29,57 @@ function setup() {
   return { H };
 }
 
+describe('clic-sol implicite — tap 1 aperçu, tap 2 déplace', () => {
+  beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingDisengage: null }); });
+
+  it('1er clic = aperçu (pas de déplacement), 2e clic même case = déplacement', () => {
+    const { H } = setup();
+    const before = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const dest = { x: before.x + 2, y: before.y };
+    useGame.getState().battleClickTile(dest);
+    let st = useGame.getState();
+    expect(st.battle!.preview).toMatchObject({ kind: 'move', tile: dest });
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(before); // pas bougé
+    useGame.getState().battleClickTile(dest);
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(dest);
+    expect(st.battle!.movementUsed).toBe(2);
+    expect(st.battle!.preview).toBeNull();
+  });
+
+  it('cliquer une AUTRE case remplace l’aperçu ; case hors de portée le purge', () => {
+    const { H } = setup();
+    const p = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos!;
+    useGame.getState().battleClickTile({ x: p.x + 1, y: p.y });
+    useGame.getState().battleClickTile({ x: p.x + 2, y: p.y });
+    expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'move', tile: { x: p.x + 2, y: p.y } });
+    useGame.getState().battleClickTile({ x: p.x + 30, y: p.y }); // hors de portée
+    expect(useGame.getState().battle!.preview).toBeNull();
+  });
+
+  it('{ confirm: true } court-circuite l’aperçu (compat tests)', () => {
+    const { H } = setup();
+    const p = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos!;
+    useGame.getState().battleClickTile({ x: p.x + 1, y: p.y }, { confirm: true });
+    expect(useGame.getState().battle!.movementUsed).toBe(1);
+    void H;
+  });
+
+  it('Engagé : le clic-sol ouvre le Désengagement (pas de déplacement libre)', () => {
+    const { H } = setup();
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 1, y: h.pos!.y };
+    h.engagedWith = [e.id]; e.engagedWith = [h.id];
+    const at = { ...h.pos! };
+    useGame.getState().battleClickTile({ x: at.x - 1, y: at.y });
+    const st = useGame.getState();
+    expect(st.pendingDisengage ?? null).not.toBeNull(); // menu A/B ouvert (Avantages égaux)
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(at);
+  });
+});
+
 describe('computeMoveReach / displayedReach — portée de Marche dérivée (mode neutre)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null }); });
 
