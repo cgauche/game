@@ -132,10 +132,12 @@ export function rollCritical(
   location: HitLocation,
   rng: RNG = defaultRNG,
   overkill = 0,
+  twice = false, // Bénédiction de Sauvagerie (LDB 41) : « deux lancers, choisissez le meilleur » (l'attaquant veut le plus sévère)
 ): CriticalResolved {
   const be = bonus(effectiveChar(target, 'E'));
   const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
-  const roll = Math.max(1, d100(rng) - reduction);
+  const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
+  const roll = Math.max(1, raw - reduction);
   const entry = findEntry(CRITICAL_TABLES[location], roll);
   const resistVal =
     effectiveChar(target, 'E') +

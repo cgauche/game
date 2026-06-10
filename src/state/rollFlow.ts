@@ -22,6 +22,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
+import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
 import { gainCorruption } from './corruptionFlow';
 
@@ -87,10 +88,18 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       if (!p || !spec.rolled(p)) return;
       if (!canReroll(spec.failed(p), !!p.rerolled)) return; // jet propre raté, 1× max
       const actor = spec.actor(s, p);
-      if (!actor || (actor.fortune ?? 0) <= 0) return;
+      // Bénédiction de Chance (LDB 41) : relance GRATUITE du prochain Test raté — le drapeau
+      // est consommé à la place d'un Point de Chance (et permet la relance même à 0 Chance).
+      const free = !!actor && hasActiveFlag(actor, 'freeReroll');
+      if (!actor || (!free && (actor.fortune ?? 0) <= 0)) return;
       const patch = (spec.reresolve ?? spec.resolve)(s, p, actor);
       if (!patch) return;
-      actor.fortune = (actor.fortune ?? 0) - 1;
+      if (free) {
+        const label = consumeActiveFlag(actor, 'freeReroll');
+        get().log(`${actor.name} relance sans dépenser de Chance (${label ?? 'Bénédiction de Chance'}).`);
+      } else {
+        actor.fortune = (actor.fortune ?? 0) - 1;
+      }
       set({ [spec.key]: { ...p, ...patch, rerolled: true }, ...touch(s) } as Partial<GameState>);
     },
     bonusSL(get, set) {

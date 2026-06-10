@@ -17,11 +17,12 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { rollTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, removeCondition, loseWounds } from './conditions';
+import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
+import { damageLeatherArmour } from './items';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -29,6 +30,7 @@ import {
   Combatant,
   Difficulty,
   DIFFICULTY_LABELS,
+  HIT_LOCATION_LABELS,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -82,7 +84,11 @@ export type GameOp =
   /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
    *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
    *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
-  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[] }
+  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[];
+      /** Gates d'État (Sommeil, LDB 47 : « Si la cible possède un État À Terre, elle gagne
+       *  Inconscient » / sinon « gagnant l'État À Terre ») : appliqué seulement si la cible
+       *  porte (`onlyIfCondition`) / ne porte pas (`unlessCondition`) l'État nommé. */
+      onlyIfCondition?: string; unlessCondition?: string }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). */
   | { op: 'removeCondition'; name?: string; value?: Formula }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
@@ -129,6 +135,18 @@ export type GameOp =
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
+  /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
+   *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
+  | { op: 'ignoreStatePenalties' }
+  /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
+   *  drapeau consommé à l'usage au point de relance des flux de jet. */
+  | { op: 'freeReroll' }
+  /** « Deux lancers [de Blessure Critique], choisissez le meilleur » quand le porteur INFLIGE un
+   *  Critique (Bénédiction de Sauvagerie, LDB 41) — lu par rollCritical via l'attaquant. */
+  | { op: 'critTwice' }
+  /** Putréfaction (LDB 47) : « le cuir se racornit (perdant 1 PA à 1 Localisation) » — seule la
+   *  matière `cuir` est mécanisée (pièce d'armure portée) ; le reste (denrées, vêtements) reste MJ. */
+  | { op: 'damageArmour'; material: 'cuir' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -221,6 +239,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'condition': {
         if (!groupGate(o.onlyGroups)) break;
+        // Gates d'État (Sommeil, LDB 47) : l'op ne s'applique que si la cible porte / ne porte pas l'État.
+        if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
+        if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
         if (o.perRound) {
           // État récurrent : porté par un effet actif, ré-appliqué chaque fin de Round.
@@ -408,6 +429,46 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.wounds.current = 0;
         addCondition(target, 'Inconscient');
         lines.push(`${target.name} : Blessures réduites à 0 (Inconscient).`);
+        break;
+      }
+      case 'ignoreStatePenalties': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          ignoreStatePenalties: true,
+        });
+        lines.push(`${target.name} ne subit plus aucune pénalité d'État (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'freeReroll': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          freeReroll: true,
+        });
+        lines.push(`${target.name} pourra relancer le prochain Test auquel il échoue (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'critTwice': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          critRollTwice: true,
+        });
+        lines.push(`${target.name} : ses Blessures Critiques infligées tireront deux lancers — le meilleur conservé (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'damageArmour': {
+        const loc = damageLeatherArmour(target);
+        lines.push(loc
+          ? `${target.name} : le cuir de son armure se racornit — −1 PA (${HIT_LOCATION_LABELS[loc]}).`
+          : `${target.name} ne porte pas de cuir à pourrir (autres matières organiques : arbitrage MJ).`);
         break;
       }
       case 'narrative':

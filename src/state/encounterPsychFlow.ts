@@ -17,6 +17,7 @@ import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
 import { calmeValue, resolveTerreurTest, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { canReroll } from '../engine/fortune';
+import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { battleRng } from './battleRng';
 import { addCondition } from '../engine/conditions';
 
@@ -78,8 +79,11 @@ export function encounterPsychReroll(get: () => GameState, set: (s: Partial<Game
   if (!pe || !pe.result) return;
   if (!canReroll(!pe.result.success, !!pe.rerolled)) return;
   const hero = party.find((h) => h.id === pe.heroId);
-  if (!hero || (hero.fortune ?? 0) <= 0) return;
-  hero.fortune = (hero.fortune ?? 0) - 1;
+  // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
+  const free = !!hero && hasActiveFlag(hero, 'freeReroll');
+  if (!hero || (!free && (hero.fortune ?? 0) <= 0)) return;
+  if (free) consumeActiveFlag(hero, 'freeReroll');
+  else hero.fortune = (hero.fortune ?? 0) - 1;
   set({ pendingEncounterPsych: { ...pe, result: rollFor(pe, hero), rerolled: true }, party: [...party] });
 }
 

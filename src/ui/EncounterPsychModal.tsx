@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
 import { RollFlowShell } from './RollFlowShell';
 import { TeamPortrait } from './CombatantBadge';
@@ -57,6 +58,7 @@ export function EncounterPsychModal() {
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, hero.id, pe.sourceId)} combatants={lite} /> : undefined}
       determination={{ resolve: hero.resolve ?? 0, onResolve: determine }}
       fortune={hero.fortune ?? 0}
+      freeReroll={freeRerollOf(hero)}
       rerollable={!!r && canReroll(!ok, !!pe.rerolled)}
       onReroll={reroll}
       /* Hors combat = Test SIMPLE binaire → relance simple, pas de « +1 DR ». */

@@ -1,5 +1,6 @@
 import { useGame, type PendingReload } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -10,6 +11,7 @@ import { DrBar } from './DrBar';
 export function ReloadModalView({
   pr,
   fortune,
+  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -18,6 +20,7 @@ export function ReloadModalView({
 }: {
   pr: PendingReload;
   fortune: number;
+  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -50,6 +53,7 @@ export function ReloadModalView({
         />
       )}
       fortune={fortune}
+      freeReroll={freeReroll}
       rerollable={rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
@@ -73,8 +77,9 @@ export function ReloadModal() {
   const confirm = useGame((s) => s.reloadConfirm);
   const cancel = useGame((s) => s.reloadCancel);
   if (!pr || !battle) return null;
-  const fortune = battle.combatants.find((c) => c.id === pr.actorId)?.fortune ?? 0;
+  const actor = battle.combatants.find((c) => c.id === pr.actorId);
+  const fortune = actor?.fortune ?? 0;
   return (
-    <ReloadModalView pr={pr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
+    <ReloadModalView pr={pr} fortune={fortune} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
   );
 }

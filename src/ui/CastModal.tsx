@@ -3,6 +3,7 @@ import { counterspellCandidates, overcastTargetCandidates } from '../state/comba
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { Dice } from './Dice';
@@ -202,6 +203,7 @@ export function CastModal() {
                 fortune={fortune}
                 rerollable={rerollable}
                 onReroll={reroll}
+                freeReroll={freeRerollOf(caster)}
                 onBonusSL={bonusSL}
                 darkPactable={caster.kind === 'hero' && res.roll > 0 && res.roll > res.target}
                 onDarkPact={darkPact}

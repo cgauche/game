@@ -44,10 +44,11 @@ export const BENEDICTIONS: SpellSpec[] = [
     curated: true,
     source: '« Votre cible peut retirer 1 Etat. »',
   },
-  // --- Effets « par identité » non encore mécanisés (Lot 8) : journalisés verbatim ---
   {
     label: 'Bénédiction de Chance',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Chance : la cible peut relancer le prochain Test auquel elle échoue (second résultat conservé).' }],
+    // « Votre cible peut relancer le prochain Test auquel elle échoue. Le second résultat doit être
+    //   conservé. » — drapeau freeReroll consommé à l'usage au point de relance (sans Point de Chance).
+    ops: [{ op: 'freeReroll' }],
     durationRounds: 6,
     curated: true,
     source: '« Votre cible peut relancer le prochain Test auquel elle échoue. »',
@@ -87,7 +88,9 @@ export const BENEDICTIONS: SpellSpec[] = [
   },
   {
     label: 'Bénédiction de Sauvagerie',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Sauvagerie : sur les Blessures Critiques infligées, deux lancers — garder le meilleur.' }],
+    // Drapeau critRollTwice : quand le PORTEUR inflige une Blessure Critique, rollCritical tire
+    // deux d100 et garde le plus sévère (le « meilleur » du point de vue de l'attaquant béni).
+    ops: [{ op: 'critTwice' }],
     durationRounds: 6,
     curated: true,
     source: '« Quand votre cible inflige par la suite des Blessures Critiques, effectuez deux lancers et choisissez le meilleur résultat. »',

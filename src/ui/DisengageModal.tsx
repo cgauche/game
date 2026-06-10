@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { Dice } from './Dice';
@@ -86,7 +87,7 @@ export function DisengageModal() {
               </span>
             </div>
             <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} freeReroll={freeRerollOf(mover)} onBonusSL={bonusSL} />
               <ResilienceButton resilience={mover.resilience ?? 0} show={pd.phase === 'esquive' && pd.result !== 'success'} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer

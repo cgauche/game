@@ -1,5 +1,6 @@
 import { useGame, type PendingBargain } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -9,6 +10,7 @@ import { ev } from '../state/combatLog';
 export function BargainModalView({
   pb,
   fortune,
+  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -17,6 +19,7 @@ export function BargainModalView({
 }: {
   pb: PendingBargain;
   fortune: number;
+  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -62,6 +65,7 @@ export function BargainModalView({
         />
       )}
       fortune={fortune}
+      freeReroll={freeReroll}
       rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
@@ -86,6 +90,7 @@ export function BargainModal() {
   const confirm = useGame((s) => s.bargainConfirm);
   const cancel = useGame((s) => s.bargainCancel);
   if (!pb) return null;
-  const fortune = party.find((c) => c.id === pb.playerId)?.fortune ?? 0;
-  return <BargainModalView pb={pb} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />;
+  const actor = party.find((c) => c.id === pb.playerId);
+  const fortune = actor?.fortune ?? 0;
+  return <BargainModalView pb={pb} fortune={fortune} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />;
 }

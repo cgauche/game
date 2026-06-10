@@ -81,6 +81,7 @@ import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, dam
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
+import { hasActiveFlag } from '../engine/activeFlags';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
@@ -1120,7 +1121,7 @@ export function applyCriticalToTarget(
   log: string[],
   set: any,
   chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
-  ctx?: { attackerId?: string; weapon?: string }, // qui inflige le coup + l'arme → modale de Critique enrichie
+  ctx?: { attackerId?: string; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
   prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
   suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
 ): boolean {
@@ -1134,7 +1135,7 @@ export function applyCriticalToTarget(
   // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
   // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
   const loc = prerolled ? prerolled.location : isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
-  const crit = prerolled ?? rollCritical(target, loc, battleRng(), overkill);
+  const crit = prerolled ?? rollCritical(target, loc, battleRng(), overkill, ctx?.critTwice);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
   log.push(crit.log);
@@ -1252,7 +1253,10 @@ function applyOpposedCritical(
     return;
   }
   const currentBefore = victim.wounds.current;
-  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined, ctx);
+  // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
+  const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
+  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined,
+    { ...ctx, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined });
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
 }
 
@@ -1311,7 +1315,7 @@ export function applyAttackResult(
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const overkill = Math.max(0, res.woundsLost - target.wounds.current);
     const cloc = res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
-    const crit = rollCritical(target, cloc, battleRng(), overkill);
+    const crit = rollCritical(target, cloc, battleRng(), overkill, hasActiveFlag(attacker, 'critRollTwice'));
     const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
     set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true } });
     return true; // suspendu — le caller NE doit PAS exécuter ses post-étapes (rejouées à la résolution)
@@ -1334,7 +1338,7 @@ export function applyAttackResult(
     } else if (res.critical || overkill > 0) {
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name }, prerolledCrit, !!prerolledCrit);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -2616,7 +2620,7 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') });
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);

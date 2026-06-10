@@ -1,5 +1,6 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -9,6 +10,7 @@ import { ev } from '../state/combatLog';
 export function StateRecoveryModalView({
   sr,
   fortune,
+  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -17,6 +19,7 @@ export function StateRecoveryModalView({
 }: {
   sr: PendingStateRecovery;
   fortune: number;
+  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -57,6 +60,7 @@ export function StateRecoveryModalView({
         />
       )}
       fortune={fortune}
+      freeReroll={freeReroll}
       rerollable={rolled && canReroll(!sr.success, !!sr.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
@@ -79,8 +83,9 @@ export function StateRecoveryModal() {
   const confirm = useGame((s) => s.recoverConfirm);
   const cancel = useGame((s) => s.recoverCancel);
   if (!sr || !battle) return null;
-  const fortune = battle.combatants.find((c) => c.id === sr.actorId)?.fortune ?? 0;
+  const actor = battle.combatants.find((c) => c.id === sr.actorId);
+  const fortune = actor?.fortune ?? 0;
   return (
-    <StateRecoveryModalView sr={sr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
+    <StateRecoveryModalView sr={sr} fortune={fortune} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
   );
 }

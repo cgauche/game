@@ -31,8 +31,11 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: "Endurance de l'anachorète",
+    // « La cible ne ressent aucune douleur, et ne subit aucune pénalité causée par les États. »
+    // — drapeau ignoreStatePenalties (combatTestPenalty/testStatePenalty → 0) pour (BSoc) Rounds.
     ops: [
-      { op: 'narrative', text: 'Endurance de l’anachorète : la cible ne ressent aucune douleur et ne subit AUCUNE pénalité d’État pour la durée (immunité non modélisée — arbitrage MJ).' },
+      { op: 'ignoreStatePenalties' },
+      { op: 'narrative', text: 'Endurance de l’anachorète : la cible ne ressent aucune douleur (effets hors pénalités d’États — arbitrage MJ).' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -39,6 +40,7 @@ export function TrampleModal() {
       breakdown={r?.attackerDetail}
       outcome={r && <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} />}
       fortune={attacker.fortune ?? 0}
+      freeReroll={freeRerollOf(attacker)}
       rerollable={!!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}

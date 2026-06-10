@@ -8,6 +8,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
 import { rollTest, isDoubleRoll } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
+import { hasActiveFlag } from './activeFlags';
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -67,12 +68,16 @@ export function hasCondition(c: Combatant, name: string): boolean {
  */
 export function combatTestPenalty(c: Combatant): number {
   const cand: number[] = [];
-  if (hasCondition(c, 'Aveuglé')) cand.push(-10);
-  if (hasCondition(c, 'Brisé')) cand.push(-10);
-  if (hasCondition(c, 'Empoisonné')) cand.push(-10);
-  if (hasCondition(c, 'Sonné')) cand.push(-10);
-  const ext = stacks(c, 'Exténué');
-  if (ext > 0) cand.push(-10 * ext);
+  // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
+  // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
+  if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
+    if (hasCondition(c, 'Aveuglé')) cand.push(-10);
+    if (hasCondition(c, 'Brisé')) cand.push(-10);
+    if (hasCondition(c, 'Empoisonné')) cand.push(-10);
+    if (hasCondition(c, 'Sonné')) cand.push(-10);
+    const ext = stacks(c, 'Exténué');
+    if (ext > 0) cand.push(-10 * ext);
+  }
   // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
   if (c.perturbed) cand.push(-20);
   return cand.length ? Math.min(...cand) : 0;
@@ -89,6 +94,8 @@ const BRISE_EXEMPT = /athl[ée]tisme|discr[ée]tion/i; // course / dissimulation
 const MOVEMENT_SKILL = /athl[ée]tisme|esquive|escalade|acrobat|[ée]quitation|nage/i; // Tests « impliquant un déplacement »
 export function testStatePenalty(c: Combatant, skill?: string): number {
   if (!c.conditions?.length) return 0;
+  // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée.
+  if (hasActiveFlag(c, 'ignoreStatePenalties')) return 0;
   const cand: number[] = [];
   if (hasCondition(c, 'Empoisonné')) cand.push(-10);
   if (hasCondition(c, 'Sonné')) cand.push(-10);

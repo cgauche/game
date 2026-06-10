@@ -42,6 +42,7 @@ import { gainAdvantage } from '../engine/advantage';
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
+import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
@@ -1329,8 +1330,11 @@ export const useGame = create<GameState>((set, get) => ({
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
-    caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
+    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
+    const free = !!caster && hasActiveFlag(caster, 'freeReroll');
+    if (!caster || !target || !spell || (!free && (caster.fortune ?? 0) <= 0)) return;
+    if (free) consumeActiveFlag(caster, 'freeReroll');
+    else caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
@@ -2298,8 +2302,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canReroll(!pa.result.attackerDetail?.success, !!pa.rerolled)) return;
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
     const target = battle.combatants.find((c) => c.id === pa.targetId);
-    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
-    attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
+    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
+    const free = !!attacker && hasActiveFlag(attacker, 'freeReroll');
+    if (!attacker || !target || (!free && (attacker.fortune ?? 0) <= 0)) return;
+    if (free) consumeActiveFlag(attacker, 'freeReroll');
+    else attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
     const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
     if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
   },
@@ -2614,8 +2621,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // défense propre ratée, 1× max
     const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
     const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
-    defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
+    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
+    const free = !!defender && hasActiveFlag(defender, 'freeReroll');
+    if (!attacker || !defender || (!free && (defender.fortune ?? 0) <= 0)) return;
+    if (free) consumeActiveFlag(defender, 'freeReroll');
+    else defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
     const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.225)
     const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
     const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon); // Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320)
@@ -2796,8 +2806,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !pd || !pd.result) return;
     if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // Esquive propre ratée, 1× max
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    if (!mover || (mover.fortune ?? 0) <= 0) return;
-    mover.fortune = (mover.fortune ?? 0) - 1;
+    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
+    const free = !!mover && hasActiveFlag(mover, 'freeReroll');
+    if (!mover || (!free && (mover.fortune ?? 0) <= 0)) return;
+    if (free) consumeActiveFlag(mover, 'freeReroll');
+    else mover.fortune = (mover.fortune ?? 0) - 1;
     const def = rollMeleeDefender(mover, 'esquive', battleRng());
     const opp = resolveOpposed(def, pd.atk!);
     set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner), rerolled: true }, battle: { ...battle } });

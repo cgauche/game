@@ -65,7 +65,18 @@ export const MAGIE_MINEURE: SpellSpec[] = [
   N('Pas léger', 'Pas léger : votre passage ne laisse aucune trace organique (−20 implicite au Pistage adverse — arbitrage MJ).'),
   N('Protection contre la pluie', 'Protection contre la pluie : vous restez au sec sous toute précipitation.'),
   N("Purification de l'eau", 'Purification de l’eau : purifie l’eau d’un récipient (poisons/polluants non magiques éliminés).'),
-  N('Putréfaction', 'Putréfaction : pourrit un volume organique de la taille d’un poing (cuir : −1 PA à 1 Localisation — arbitrage MJ).'),
+  {
+    label: 'Putréfaction',
+    // « le cuir se racornit (perdant 1 PA à 1 Localisation) » — mécanisé sur une pièce de cuir
+    // portée (op damageArmour) ; denrées/vêtements/« comme le MJ le décide » restent narratifs.
+    ops: [
+      { op: 'damageArmour', material: 'cuir' },
+      { op: 'narrative', text: 'Putréfaction : denrées et vêtements organiques pourrissent (taille d’un poing) — arbitrage MJ.' },
+    ],
+    durationRounds: null,
+    curated: true,
+    source: 'LDB 47 « Putréfaction »',
+  },
   N('Repères', 'Repères : vous savez où est le Nord.'),
   {
     label: 'Secousse',
@@ -78,9 +89,14 @@ export const MAGIE_MINEURE: SpellSpec[] = [
   N('Serrure ouverte', 'Serrure ouverte : déverrouille une serrure non magique touchée.'),
   {
     label: 'Sommeil',
-    // « Si la cible possède un État À Terre, elle gagne l'État Inconscient » — conditionnel à
-    // l'État (non exprimable en op) : journalisé fidèlement, le MJ/joueur applique.
-    ops: [{ op: 'narrative', text: 'Sommeil : une cible À Terre gagne l’État Inconscient pour la durée du Sort (réveillée par bruit fort/secousse) — appliquer si À Terre.' }],
+    // « Si la cible possède un État À Terre, elle gagne l'État Inconscient [pour la durée du Sort] ;
+    //   si elle se tient debout ou assise, elle commence à se réveiller en touchant le sol, gagnant
+    //   l'État À Terre, mais en demeurant consciente. » — gates d'État (onlyIf/unless).
+    ops: [
+      { op: 'condition', name: 'Inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'À Terre' },
+      { op: 'condition', name: 'À Terre', unlessCondition: 'À Terre' },
+      { op: 'narrative', text: 'Sommeil : bruits forts, déplacement ou bousculade réveillent instantanément — arbitrage MJ.' },
+    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.242 « Sommeil »',

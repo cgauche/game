@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -48,6 +49,7 @@ export function TestModal() {
       breakdown={rolled ? testBreakdown(pt.label, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pt.actorId)} combatants={party} />}
       fortune={actor?.fortune ?? 0}
+      freeReroll={freeRerollOf(actor)}
       rerollable={rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}

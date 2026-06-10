@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
 import { RollFlowShell } from './RollFlowShell';
 import { TeamPortrait } from './CombatantBadge';
@@ -69,6 +70,7 @@ export function PsychModal() {
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, c.id, source?.id)} combatants={battle.combatants} /> : undefined}
       determination={{ resolve: c.resolve ?? 0, onResolve: determine }}
       fortune={c.fortune ?? 0}
+      freeReroll={freeRerollOf(c)}
       rerollable={!!r && canReroll(failed, !!pp.rerolled)}
       onReroll={reroll}
       /* Trait ciblé = Test binaire → pas de « +1 DR » (bouton Relancer simple). */

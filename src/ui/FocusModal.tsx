@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { findSpell } from '../data/index';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
@@ -53,6 +54,7 @@ export function FocusModal() {
         />
       )}
       fortune={caster.fortune ?? 0}
+      freeReroll={freeRerollOf(caster)}
       rerollable={!!r && canReroll(r.dr === 0, !!pf.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}

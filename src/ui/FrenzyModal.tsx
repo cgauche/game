@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
@@ -44,6 +45,7 @@ export function FrenzyModal() {
         />
       )}
       fortune={c.fortune ?? 0}
+      freeReroll={freeRerollOf(c)}
       rerollable={!!r && !r.success && canReroll(true, !!pf.rerolled)}
       onReroll={reroll}
       resilience={c.resilience ?? 0}

@@ -42,6 +42,7 @@ export function RollFlowShell({
   fortune,
   rerollable,
   onReroll,
+  freeReroll,
   onBonusSL,
   darkPactable,
   onDarkPact,
@@ -75,6 +76,8 @@ export function RollFlowShell({
   fortune: number;
   rerollable: boolean;
   onReroll: () => void;
+  /** Bénédiction de Chance (LDB 41) : relance gratuite disponible (actif même à 0 Chance). */
+  freeReroll?: boolean;
   /** Absent → Test binaire : bouton « 🍀 Relancer » simple (pas de « +1 DR »). */
   onBonusSL?: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté, même déjà relancé. */
@@ -127,12 +130,18 @@ export function RollFlowShell({
             {outcome}
             <div className="modal-actions">
               {onBonusSL ? (
-                <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} darkPactable={darkPactable} onDarkPact={onDarkPact} />
+                <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} freeReroll={freeReroll} onBonusSL={onBonusSL} darkPactable={darkPactable} onDarkPact={onDarkPact} />
               ) : (
                 rerollable &&
-                fortune > 0 && (
-                  <button className="btn" onClick={onReroll} title="Dépense un point de Chance pour relancer le Test (LDB Destin)">
-                    🍀 Relancer ({fortune})
+                (freeReroll || fortune > 0) && (
+                  <button
+                    className="btn"
+                    onClick={onReroll}
+                    title={freeReroll
+                      ? 'Bénédiction de Chance (LDB 41) : relance gratuite du Test raté — sans dépenser de Chance'
+                      : 'Dépense un point de Chance pour relancer le Test (LDB Destin)'}
+                  >
+                    {freeReroll ? '🙏 Relancer' : `🍀 Relancer (${fortune})`}
                   </button>
                 )
               )}

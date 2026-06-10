@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
 import { RollFlowShell } from './RollFlowShell';
@@ -137,7 +138,8 @@ export function HealModal() {
       breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
       fortune={fortune}
-      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0}
+      freeReroll={freeRerollOf(healer)}
+      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}
       resilience={healer?.resilience ?? 0}

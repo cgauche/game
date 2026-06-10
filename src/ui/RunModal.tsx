@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown } from './breakdown';
@@ -46,6 +47,7 @@ export function RunModal() {
         />
       )}
       fortune={c.fortune ?? 0}
+      freeReroll={freeRerollOf(c)}
       rerollable={!!r && !r.success && canReroll(true, !!pr.rerolled)}
       onReroll={reroll}
       resilience={c.resilience ?? 0}

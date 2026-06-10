@@ -347,6 +347,19 @@ export function damageArmour(c: Combatant, loc: HitLocation): boolean {
   return false;
 }
 
+/** Putréfaction (LDB 47) : « le cuir se racornit (perdant 1 PA à 1 Localisation) » — endommage de
+ *  1 PA la première pièce de CUIR portée encore intacte, re-dérive l'armure. Retourne la
+ *  localisation touchée, ou null si rien en cuir (ennemi à armure plate : matière inconnue → MJ). */
+export function damageLeatherArmour(c: Combatant): HitLocation | null {
+  const piece = (c.items ?? []).find(
+    (i) => i.equipped && i.kind === 'armor' && /cuir/i.test(i.name) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+  );
+  if (!piece) return null;
+  piece.damageTaken = (piece.damageTaken ?? 0) + 1;
+  recomputeLoadout(c);
+  return piece.locs?.[0] ?? 'corps';
+}
+
 /** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */
 export function damageScore(d?: string): number {
   if (!d) return 0;

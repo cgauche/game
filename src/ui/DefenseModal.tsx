@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { defenseValue } from '../engine/combat';
 import { RollLine } from './RollLine';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
@@ -125,7 +126,7 @@ export function DefenseModal() {
               combatants={battle.combatants}
             />
             <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} freeReroll={freeRerollOf(defender)} onBonusSL={bonusSL} />
               <ResilienceButton resilience={defender.resilience ?? 0} show={!!res && res.hit} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer

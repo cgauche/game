@@ -3,6 +3,7 @@ import { useGame, movementRemaining } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
+import { freeRerollOf } from '../engine/activeFlags';
 import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { ChanceButtons } from './ChanceButtons';
@@ -254,6 +255,7 @@ export function RollModal() {
                 fortune={fortune}
                 rerollable={rerollable}
                 onReroll={reroll}
+                freeReroll={freeRerollOf(attacker)}
                 onBonusSL={bonusSL}
                 darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
                 onDarkPact={darkPact}

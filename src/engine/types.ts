@@ -188,6 +188,21 @@ export interface ActiveEffect {
     /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre). */
     onHitConditions?: { name: string; value?: number }[];
   };
+  /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
+   *  consommé à l'usage au point de relance des flux de jet (engine/activeFlags). */
+  freeReroll?: boolean;
+  /** « Deux lancers, choisissez le meilleur » quand le PORTEUR inflige une Blessure Critique
+   *  (Bénédiction de Sauvagerie, LDB 41) — lu par rollCritical via l'attaquant. */
+  critRollTwice?: boolean;
+  /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
+   *  lu par combatTestPenalty/testStatePenalty. */
+  ignoreStatePenalties?: boolean;
+  /** Traits psychologiques SUSPENDUS par l'effet (Baume pour un esprit blessé, LDB 42 : « Tous les
+   *  Traits Psychologiques sont retirés pour la durée ») — restitués à l'expiration (rounds OU horloge). */
+  suppressedPsych?: import('./psychology').PsychTrait[];
+  /** Aura « N'écoutez point la Sorcière » (LDB 42) : tout SORT (Langue (Magick)) ciblant quelqu'un
+   *  à `radiusMeters` du porteur subit −20 au Test d'incantation. */
+  castWard?: { radiusMeters: number };
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

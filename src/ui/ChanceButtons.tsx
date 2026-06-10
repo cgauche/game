@@ -14,6 +14,7 @@ export function ChanceButtons({
   onBonusSL,
   darkPactable = false,
   onDarkPact,
+  freeReroll = false,
 }: {
   fortune: number;
   rerollable: boolean;
@@ -21,6 +22,8 @@ export function ChanceButtons({
   onBonusSL: () => void;
   darkPactable?: boolean;
   onDarkPact?: () => void;
+  /** Bénédiction de Chance (LDB 41) : relance gratuite — bouton actif même à 0 Chance. */
+  freeReroll?: boolean;
 }) {
   const pactBtn = onDarkPact && darkPactable && (
     <button
@@ -31,14 +34,21 @@ export function ChanceButtons({
       🩸 Sombre Pacte
     </button>
   );
-  if (fortune <= 0) return <>{pactBtn}</>;
+  const rerollBtn = rerollable && (freeReroll || fortune > 0) && (
+    <button
+      className="btn"
+      onClick={onReroll}
+      title={freeReroll
+        ? 'Bénédiction de Chance (LDB 41) : relance gratuite du Test raté — sans dépenser de Chance'
+        : 'Dépense un point de Chance pour relancer le jet (LDB Destin)'}
+    >
+      {freeReroll ? '🙏 Relancer' : `🍀 Relancer (${fortune})`}
+    </button>
+  );
+  if (fortune <= 0) return <>{rerollBtn}{pactBtn}</>;
   return (
     <>
-      {rerollable && (
-        <button className="btn" onClick={onReroll} title="Dépense un point de Chance pour relancer le jet (LDB Destin)">
-          🍀 Relancer ({fortune})
-        </button>
-      )}
+      {rerollBtn}
       <button className="btn" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR (LDB Destin)">
         ➕ +1 DR ({fortune})
       </button>
