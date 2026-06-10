@@ -146,6 +146,8 @@ export interface PendingAttack {
   attackerId: string;
   targetId: string;
   location: HitLocation | null;
+  /** Arme choisie pour cette attaque (uid d'ItemInstance du loadout actif) ; absent = auto-choix. */
+  weaponUid?: string;
   result: AttackResult | null; // null = pas encore lancé
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;

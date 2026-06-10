@@ -452,9 +452,11 @@ export function selectedAmmo(attacker: Combatant, weapon: Weapon): ItemInstance 
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
-export function firedWeapon(attacker: Combatant, target: Combatant): Weapon {
+export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string): Weapon {
   const adj = combatDistance(attacker, target) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
-  const w = attackWeapon(attacker.weapons, adj);
+  // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
+  const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
+  const w = chosen ?? attackWeapon(attacker.weapons, adj);
   if (w.type === 'ranged' && attacker.kind === 'hero') {
     const ammo = selectedAmmo(attacker, w);
     if (ammo) return weaponWithAmmo(w, ammo);

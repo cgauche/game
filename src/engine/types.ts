@@ -91,6 +91,8 @@ export interface Weapon {
   hands?: 1 | 2;
   /** Main qui tient l'arme dans le loadout actif ('off' → pénalité de main secondaire). */
   hand?: 'main' | 'off';
+  /** uid de l'ItemInstance source (loadout) — pour matcher un choix d'arme. Absent : Mains nues/Crochet. */
+  uid?: string;
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
   /** Dégâts subis par l'arme (LDB 62 l.178) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
