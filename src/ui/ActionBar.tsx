@@ -13,28 +13,15 @@ import { hasHealSkill, healableTargets, availableHealModes } from '../engine/hea
 import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
-import { PortraitTile } from './PortraitTile';
+import { ActiveFrame } from './ActiveFrame';
 import { TeamPortrait } from './CombatantBadge';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
-/** Mini-jauge à bâtons colorée, SANS icône — le survol (title) nomme la ressource. Pleins = restants.
- *  `max` absent → jauge de pool (tous pleins). Rien rendu si total ≤ 0 (compteur masqué quand vide). */
-function Gauge({ kind, value, max, title }: { kind: string; value: number; max?: number; title: string }) {
-  const total = Math.max(max ?? value, 0);
-  if (total <= 0) return null;
-  return (
-    <span className={`ab-g ab-g-${kind}`} title={title} aria-label={title}>
-      {Array.from({ length: total }, (_, i) => (
-        <i key={i} className={`gp ${i < value ? 'on' : 'off'}`} />
-      ))}
-    </span>
-  );
-}
-
 /**
  * Barre d'action (hotbar) du combattant ACTIF, façon Baldur's Gate / NWN. Désencombrée :
- * primaires directs (Déplacer/Attaquer/Incanter/Soigner/Défensive) ; manœuvres situationnelles
+ * le déplacement et l'attaque sont IMPLICITES au clic (case/ennemi) ; primaires directs
+ * (Incanter/Soigner/Défensive) ; manœuvres situationnelles
  * repliées sous des catégories (Mouvement/Tir/Objets, idiome `ab-spells`, n'apparaissent que si
  * ≥1 enfant est dispo) ; la Détermination reste une ALERTE visible (États surgis à ne pas rater) ;
  * Piétiner/Frénésie = contextuels rares. Conçue pour s'étendre.
@@ -340,26 +327,20 @@ export function ActionBar() {
 
       <div className="ab-bar">
         <div className="ab-actor">
-          {/* Tuile-portrait partagée (même système que le dock/la frise) : portrait + jauge de PV
-              verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
-          <PortraitTile c={active} ring={ring} size={72} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
+          {/* Cadre du combattant ACTIF : Action verticale | portrait | Mouvement vertical ; dessous vie
+              (continue) puis Avantage (10 crans fixes). Jauges à taille fixe découpées en crans égaux. */}
+          <ActiveFrame
+            c={active} ring={ring} isHero={isHero}
+            actAvail={actAvail} actMax={actMax} moveLeft={moveLeft} moveMax={moveMax}
+            title={active.career ? `${active.name} — ${active.career}` : active.name}
+          />
           <div className="ab-actor-side">
             <div className="ab-actor-top">
               <span className="ab-name" title={active.career ? `${active.name} — ${active.career}` : active.name}>{active.name}</span>
-              {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
               {assailliN >= 2 && (
                 <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
               )}
             </div>
-            {/* RESSOURCES DU TOUR uniquement (bâtons colorés, survol = title) : Action + Mouvement — le PV
-                est dans le portrait. Chance/Résilience/Détermination/Destin sont des points PERMANENTS (pas
-                une ressource de tour) → pas affichés ici ; ils restent sur la fiche et dans les modales. */}
-            {isHero && (
-              <div className="ab-stats">
-                <Gauge kind="action" value={actAvail} max={actMax} title={`Action${actMax > 1 ? 's' : ''} disponible${actAvail > 1 ? 's' : ''} : ${actAvail}/${actMax}${active.frenzied ? ' (dont attaque gratuite de Frénésie)' : ''}`} />
-                <Gauge kind="move" value={moveLeft} max={moveMax} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />
-              </div>
-            )}
             {/* Commutateur de set d'armes (1 switch gratuit/tour, même Engagé — LDB 13 l.116). */}
             {isHero && loadouts.length >= 2 && (
               <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'}>

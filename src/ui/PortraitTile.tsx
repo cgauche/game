@@ -20,12 +20,14 @@ export interface PortraitTileProps {
   active?: boolean;
   /** PV chiffrés dans le portrait (dock d'équipe seulement, cf. spec). */
   showPv?: boolean;
+  /** Jauge de PV interne (bord gauche). Off dans l'ActiveFrame : la vie y est une barre externe. */
+  showGauge?: boolean;
   maxStates?: number;
   onClick?: () => void;
   title?: string;
 }
 
-export function PortraitTile({ c, ring, size = 56, active, showPv, maxStates = 4, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = true, maxStates = 4, onClick, title }: PortraitTileProps) {
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
   const all = summarizeEffects(c.conditions, c.activeEffects, Infinity, combatantFlags(c)).visible;
@@ -42,9 +44,11 @@ export function PortraitTile({ c, ring, size = 56, active, showPv, maxStates = 4
       >
         {active && <i className="ptile-caret">▼</i>}
         <RigPortrait combatant={c} size={size} ring={ring} />
-        <i className="ptile-gauge">
-          <b style={{ height: `${Math.round(ratio * 100)}%`, background: hpColor(ratio) }} />
-        </i>
+        {showGauge && (
+          <i className="ptile-gauge">
+            <b style={{ height: `${Math.round(ratio * 100)}%`, background: hpColor(ratio) }} />
+          </i>
+        )}
         {showPv && <span className="ptile-pv">{c.dead ? '☠️' : `${c.wounds.current}/${c.wounds.max}`}</span>}
         {ko && <span className="ko-cross">✕</span>}
       </button>
