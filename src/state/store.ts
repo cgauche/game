@@ -41,7 +41,7 @@ import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/te
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -121,6 +121,8 @@ export interface BattleState {
    *  Mouvement (pas de « Mouvement → Action → Mouvement », règle maison). Cf. `canMove`. */
   movedPreAction: boolean;
   acted: boolean;
+  /** Le set d'armes a-t-il déjà été changé ce Tour ? (1 switch gratuit/tour — LDB 13 l.116). Reset au tour. */
+  loadoutSwapped?: boolean;
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
   onVictory?: Effect[];
@@ -396,6 +398,8 @@ export interface GameState {
   fateAccept: () => void;
   /** « Sur la défensive » : utilise l'Action pour +20 en défense jusqu'au prochain tour. */
   battleDefendTotal: () => void;
+  /** Bascule le set d'armes actif du combattant actif (Action gratuite, 1/tour, même Engagé — LDB 13 l.116). */
+  battleSwitchLoadout: (loadoutId: string) => void;
   /** Action « Viser » (sans jet) : +20 (Accessible) au prochain tir tant que c'est la dernière action. */
   battleAim: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
@@ -1598,6 +1602,19 @@ export const useGame = create<GameState>((set, get) => ({
     active.defensiveStance = true;
     active.aiming = false; // une autre action que le tir gâche la visée
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('defensive', `${active.name} se met sur la défensive (+20 en défense).`, active.id)] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+
+  // ── Changer de set d'armes en combat (Action gratuite, 1/tour, AUTORISÉ même Engagé — LDB 13 l.116) ──
+  battleSwitchLoadout: (loadoutId) => {
+    const battle = get().battle;
+    if (!battle || battle.over || battle.loadoutSwapped) return; // 1 switch gratuit / tour
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || active.activeLoadoutId === loadoutId) return;
+    loadoutSetActive(active, loadoutId);
+    recomputeLoadout(active); // re-dérive les armes actives du combattant
+    const name = active.loadouts?.find((l) => l.id === loadoutId)?.name ?? 'set';
+    set({ battle: { ...battle, loadoutSwapped: true, log: [...battle.log, ev('detail', `${active.name} dégaine : ${name}.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
