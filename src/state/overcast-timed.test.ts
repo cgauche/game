@@ -83,12 +83,14 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     expect(useGame.getState().pendingCast!.overcast).toEqual({ duration: 2, targets: 0 });
   });
 
-  it('les PRIÈRES ne surincantent pas (ch.47 = règles des Sorts)', () => {
+  it('les Bénédictions surincantent sur le DR ENTIER (LDB 41 « Degrés de Réussite ») : +4 DR → 2 allocations', () => {
     const { priest, ally } = pair();
     useGame.setState({ party: [priest, ally] as Combatant[] });
-    useGame.setState({ pendingCast: { casterId: priest.id, targetId: ally.id, spellLabel: 'Bénédiction de Bataille', missile: false, focused: false, result: okRes(6) } });
+    useGame.setState({ pendingCast: { casterId: priest.id, targetId: ally.id, spellLabel: 'Bénédiction de Bataille', missile: false, focused: false, result: okRes(4) } });
     useGame.getState().castAllocOvercast('duration');
-    expect(useGame.getState().pendingCast!.overcast).toBeUndefined();
+    useGame.getState().castAllocOvercast('targets');
+    useGame.getState().castAllocOvercast('targets'); // refusé : budget 2 épuisé
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ duration: 1, targets: 1 });
   });
 
   it('durée ×(1+n) et cible supplémentaire appliquées par applyCast', () => {

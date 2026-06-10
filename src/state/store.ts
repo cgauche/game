@@ -1307,13 +1307,16 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result?.isCritical) return;
     set({ pendingCast: { ...pc, critChoice: choice } });
   },
-  /** Surincantation (LDB 47 l.28-31) : chaque allocation consomme +2 DR du surplus (DR − NI). */
+  /** Surincantation : chaque allocation consomme +2 DR du surplus — Sorts : DR − NI (LDB 47
+   *  l.28-31) ; Bénédictions/Miracles : DR entier (LDB 41/42 « Degrés de Réussite » — Durée
+   *  +durée initiale, Cibles +1). */
   castAllocOvercast: (axis) => {
     const pc = get().pendingCast;
     const spell = pc && findSpell(pc.spellLabel);
-    if (!pc || !pc.result?.cast || !spell || spell.cn == null) return; // Sorts seulement (ch.47)
+    if (!pc || !pc.result?.cast || !spell) return;
     const oc = pc.overcast ?? { duration: 0, targets: 0 };
-    const budget = Math.floor(Math.max(0, pc.result.sl - (pc.focused ? 0 : spell.cn)) / 2);
+    const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
+    const budget = Math.floor(Math.max(0, pc.result.sl - ni) / 2);
     if (oc.duration + oc.targets >= budget) return; // surplus épuisé
     set({ pendingCast: { ...pc, overcast: { ...oc, [axis]: oc[axis] + 1 } } });
   },

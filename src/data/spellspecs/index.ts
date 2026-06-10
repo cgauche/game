@@ -7,8 +7,9 @@
 import { SpellSpec, fallbackSpec } from '../../engine/spellspec';
 import { SpellLike } from '../../engine/magic';
 import { BENEDICTIONS } from './benedictions';
+import { DOMAINE_FEU } from './domaine-feu';
 
-const ALL: SpellSpec[] = [...BENEDICTIONS];
+const ALL: SpellSpec[] = [...BENEDICTIONS, ...DOMAINE_FEU];
 
 const BY_LABEL = new Map(ALL.map((s) => [s.label, s]));
 

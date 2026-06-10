@@ -577,17 +577,62 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
 **Dette sourcée** (hors lot) : Faim/Soif bloquant la récup (l.418) ; **Blessures CRITIQUES** = piste SÉPARÉE
 (convalescence, Guérison) → traitée au **Jalon 5** (ci-dessous). **~1657 tests verts**, typecheck propre.
 
-## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
+## ✅ Jalon 2 — Magie & Religion *(complet — 2026-06-10, 8 lots committés, suite verte entre chaque)*
 
-- ✅ Sorts/Bénédictions/Miracles en combat, Incantation, Focalisation, Projectiles, effets actifs,
-  Incantations Imparfaites & Colère des dieux (socle), gating des compétences Avancées, UI Incanter.
-- Reste (fidélité fine, hors périmètre 0.7) : **tables d'Imparfaites/Colère pleinement mécaniques**
-  (aujourd'hui : entrées combat appliquées, le reste laissé au MJ), **effets modulés par le DR**
-  (« pour chaque +2 DR »), **États récurrents** (un par round), **durées d'États** en rounds,
-  **Points de Péché** + déclencheur Colère sur prière réussie, **risques de Focalisation**
-  (interruption Calme −20, contrecoup Critique, spécialisation par **Vent**), **Corruption/mutations**.
-- Reste (contenu/UI) : **grimoire** (apprentissage/mémorisation des sorts), ciblage de **zone**
-  (gabarits AoE), sorts à effet non chiffré (relance, arme magique, peur…) par identité de sort.
+**Refonte structurelle** (l'existant 0.7 était un POC : effets devinés par regex sur la `desc` à
+l'application) : **vocabulaire d'ops partagé** + **specs structurées par sort**, avec repli regex
+iso-POC pour les sorts non curés (curation incrémentale, zéro régression — golden curé ≡ repli).
+
+- ✅ **Lot 0 — Socle** : `engine/ops.ts` (union `GameOp` : wounds/heal/condition[durée|récurrent]/
+  charMod/test imbriqué [+ palier `onFailHard`]/corruption/castPenalty/reduceToZero/narrative +
+  formules « (Bonus de X) »/dés, applicateur unique `applyOps`) ; `engine/spellspec.ts` +
+  registre `data/spellspecs/` (19 Bénédictions + Domaine du Feu curés, sources citées) ;
+  `applyCast` consomme la spec.
+- ✅ **Lot 1 — Péché & Colère** (LDB 40) : `sinPoints` persisté, **dé des unités ≤ Péchés → Colère
+  MÊME sur Prière réussie** (l.45), +10/Péché au jet, **Péché −1 après chaque jet** (l.53), Effet
+  d'éditeur `giveSin`, ⚖️ sur la fiche.
+- ✅ **Lot 2 — Corruption & mutations** (LDB 19) : expositions (mineure/modérée/majeure, gains par
+  seuils de DR — Effet `corruptionExposure` en modale + `giveCorruption`), **seuil BFM+BE → Test de
+  Résistance ou MUTATION** (−BFM, d100 corps/esprit PAR ESPÈCE, **Tableaux physique/mentale
+  verbatim** dans `data/mutations.ts` — caracs permanentes, Mouvement, PA naturels, mods de Tests,
+  Traits Tentacules/Frénésie), **limites → DAMNÉ** (hors-jeu) ; effets lus à la volée (patron
+  Traumatismes, survit au writeback) ; **Sombre Pacte** 🩸 (+1 Corruption pour RELANCER un Test
+  raté, même déjà relancé, même à 0 Chance — fabrique rollFlow + attack/cast/test) ; révélation 🧬.
+- ✅ **Lot 3 — Tables d'Imparfaites/Colère pleinement mécaniques** (LDB 46/40) : Tests imbriqués
+  (« Résistance ou Sonné »…), Corruption, **pénalités/blocages d'incantation temporisés**
+  (`CastPenalty` : −10 Langue/Prière, Tests interdits N Rounds/minutes/jours, « Pensez à vos
+  actes » = DR de Prière plafonné à 0 une semaine) — décrément fin de Round + purge horloge ;
+  le non-modélisable reste journalisé (MJ).
+- ✅ **Lot 4 — Risques d'incantation & Focalisation** (LDB 46) : **Incantation Critique** (l.52-59 :
+  Imparfaite Mineure sauf Diction instinctive + CHOIX Blessure Critique / Puissance totale / Force
+  inéluctable), **Focalisation Critique** (NI atteint + contrecoup sauf Harmonisation aethyrique),
+  **maladresse de Focalisation élargie** (double OU ×0 raté → Majeure), **interruption** (Dégâts
+  subis → Calme −20 ou DR perdus + Imparfaite), **spécialisation PAR VENT**, **« Repousser les
+  Vents »** (−1 DR/PA d'armure portée, exemptions Métal/Bêtes), **Avantage sur l'Incantation**
+  (+10/pt, jamais la Focalisation) + **convergence de Domaine** (+1 Avantage, l.176).
+- ✅ **Lot 5 — Surincantation & États temporisés** (LDB 47 l.28-31, 41/42) : +2 DR → **+Durée /
+  +Cible** (Sorts : au-delà du NI ; Bénédictions/Miracles : DR entier), allocation en modale,
+  multi-cibles du même jet ; `ConditionInstance.roundsLeft` (États « qui durent N Rounds ») ;
+  **États récurrents** (« un par Round », effet actif porteur).
+- ✅ **Lot 6 — Zone d'Effet** (LDB 47 l.44) : clic-CASE en mode incantation → toutes les cibles du
+  rayon (diamètre ZdE, 2 m/case) visées par le même jet, garde-fou de portée, **gabarit au survol**
+  (IsoStage). *(Reportés, documentés : zones persistantes spéciales — Mur de feu —, extension ZdE
+  par Surincantation post-jet, IA multi-cibles.)*
+- ✅ **Lot 7 — Grimoire** (LDB 46/47/10/41) : `engine/grimoire.ts` — coûts par bandes (Magie mineure
+  50×⌊connus/BFM⌋+1 ; Arcanes 100×⌊connus/BInt⌋+1 ; Invocation 1er Miracle inclus puis 100×connus ;
+  Chaos 100 PX **+1 Corruption**), **Bénédictions PAR CULTE** (table LDB 41 verbatim, les six à
+  0 PX) ; section « Sorts — mémorisation » (onglet Avancement) ; **lecture au grimoire porté**
+  (sort non mémorisé du Domaine, **NI ×2**, 📖 sur la fiche) ; Effet d'éditeur `learnSpell`.
+- ✅ **Lot 8 — Curation pilote + recette** : Domaine du Feu curé (8 sorts, ops riches + narratif MJ),
+  correctif **Surincantation des Prières** (LDB 41/42), scénario 🕯️ **« Magie — Jalon 2 »**
+  (`14-magie-jalon2.ts` : Péché→Colère, exposition→mutation, Sombre Pacte, ZdE, Surincantation,
+  mémorisation).
+- **Backlog incrémental** (pattern en place, 1 fichier/famille dans `data/spellspecs/`) : curation
+  des ~190 sorts restants (Magie mineure, Arcanes communs, 7 Domaines, Miracles ×10 cultes) ; effets
+  « par identité » non modélisés (relance de Bénédiction de Chance, armes enchantées, Trait Peur de
+  sort, immunités) ; **Dissipation/Contre-sort** (nécessite des lanceurs IA des deux côtés) ;
+  composants & malepierre ; Vents tourbillonnants (règle optionnelle).
+- **2236 tests verts**, typecheck 0, lint 0 erreur ; recette navigateur À REPASSER (session sans Playwright).
 
 ## 🎯 Jalon 3 — Création de personnage complète
 

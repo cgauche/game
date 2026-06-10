@@ -103,11 +103,12 @@ export function CastModal() {
                     : 'Incantation échouée'}
             </div>
             <p className="rm-log">{res.log}</p>
-            {/* Surincantation (LDB 47 l.28-31) : pour chaque +2 DR au-delà du NI, étendre la
-                Durée (×initiale) ou la Cible (+1) — Sorts seulement, jamais « Vous »/« Spécial ». */}
+            {/* Surincantation : pour chaque +2 DR (au-delà du NI pour un Sort, LDB 47 l.28-31 ;
+                DR entier pour une Bénédiction/un Miracle, LDB 41/42), étendre la Durée
+                (+durée initiale) ou la Cible (+1) — jamais « Vous »/« Spécial »/Instantanée. */}
             {(() => {
-              if (isPrayer || !res.cast || caster.kind !== 'hero' || pc.zone) return null;
-              const budget = Math.floor(Math.max(0, res.sl - (pc.focused ? 0 : ni)) / 2);
+              if (!res.cast || caster.kind !== 'hero' || pc.zone) return null;
+              const budget = Math.floor(Math.max(0, res.sl - (isPrayer || pc.focused ? 0 : ni)) / 2);
               if (budget <= 0) return null;
               const oc = pc.overcast ?? { duration: 0, targets: 0 };
               const left = budget - oc.duration - oc.targets;
