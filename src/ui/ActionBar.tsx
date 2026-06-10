@@ -17,6 +17,20 @@ import { TeamPortrait } from './CombatantBadge';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
+/** Mini-jauge à bâtons colorée, SANS icône — le survol (title) nomme la ressource. Pleins = restants.
+ *  `max` absent → jauge de pool (tous pleins). Rien rendu si total ≤ 0 (compteur masqué quand vide). */
+function Gauge({ kind, value, max, title }: { kind: string; value: number; max?: number; title: string }) {
+  const total = Math.max(max ?? value, 0);
+  if (total <= 0) return null;
+  return (
+    <span className={`ab-g ab-g-${kind}`} title={title} aria-label={title}>
+      {Array.from({ length: total }, (_, i) => (
+        <i key={i} className={`gp ${i < value ? 'on' : 'off'}`} />
+      ))}
+    </span>
+  );
+}
+
 /**
  * Barre d'action (hotbar) du combattant ACTIF, façon Baldur's Gate / NWN. Désencombrée :
  * primaires directs (Déplacer/Attaquer/Incanter/Soigner/Défensive) ; manœuvres situationnelles
@@ -107,6 +121,9 @@ export function ActionBar() {
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
   const freeFrenzy = isHero && !!active.frenzied && !active.frenzyFreeUsed;
+  // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
+  const actMax = 1 + (active.frenzied ? 1 : 0);
+  const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
@@ -163,21 +180,6 @@ export function ActionBar() {
   const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
   // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
   const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample;
-
-  const hint =
-    battle.action === 'move'
-      ? 'Cliquez une case bleue pour vous déplacer.'
-      : battle.action === 'attack'
-        ? "Cliquez un ennemi adjacent pour l'attaquer."
-        : battle.action === 'charge'
-          ? 'Cliquez un ennemi à charger (jusqu’à 2× le Mouvement).'
-          : battle.action === 'cast' && battle.selectedSpell
-            ? `Cliquez une cible pour lancer ${battle.selectedSpell}.`
-            : battle.action === 'trample'
-              ? 'Cliquez un adversaire adjacent plus petit à piétiner (coûte 1 Avantage).'
-              : battle.action === 'heal'
-                ? 'Choisissez la cible à soigner (soi ou allié adjacent).'
-                : null;
 
   return (
     <div className="action-bar">
@@ -329,40 +331,29 @@ export function ActionBar() {
         </div>
       )}
 
-      {stunned && isHero && <div className="ab-hint">Sonné : aucune Action ce tour (déplacement à demi-Mouvement).</div>}
-      {isHero && active.frenzied && <div className="ab-hint">🐗 Frénésie : charge/attaque l'ennemi le plus proche — 1 attaque au corps à corps GRATUITE ce Round (ton Action reste disponible après, LDB 21).</div>}
-      {hint && <div className="ab-hint">{hint}</div>}
-
       <div className="ab-bar">
         <div className="ab-actor">
           {/* Tuile-portrait partagée (même système que le dock/la frise) : portrait + jauge de PV
               verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
-          <PortraitTile c={active} ring={ring} size={64} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
+          <PortraitTile c={active} ring={ring} size={72} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
           <div className="ab-actor-side">
-            <div className="ab-actor-top">
-              {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
-              {assailliN >= 2 && (
-                <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
-              )}
-            </div>
-          {isHero && (
-            <div className="ab-pools" title="Chance · Résilience · Détermination · Destin">
-              🍀 {active.fortune ?? 0} · 🔥 {active.resilience ?? 0} · ✊ {active.resolve ?? 0} · ✨ {active.fate ?? 0}
-            </div>
-          )}
-          {isHero && (
-            <div className="ab-budget" title="Économie du tour — ce qu'il te reste à dépenser (1 Action + Mouvement, décomposable)">
-              <span className={battle.acted ? 'spent' : 'avail'}>⚔️ Action {battle.acted ? '✓' : 'dispo'}</span>
-              <span className="ab-move" title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''} restante${moveLeft > 1 ? 's' : ''}`}>
-                  🦶
-                  <span className="ab-move-track">
-                    {Array.from({ length: moveMax }, (_, i) => (
-                      <i key={i} className={`mp ${i < moveLeft ? 'on' : 'off'}`} />
-                    ))}
-                  </span>
-                </span>
-            </div>
-          )}
+            {(active.advantage > 0 || assailliN >= 2) && (
+              <div className="ab-actor-top">
+                {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
+                {assailliN >= 2 && (
+                  <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
+                )}
+              </div>
+            )}
+            {/* RESSOURCES DU TOUR uniquement (bâtons colorés, survol = title) : Action + Mouvement — le PV
+                est dans le portrait. Chance/Résilience/Détermination/Destin sont des points PERMANENTS (pas
+                une ressource de tour) → pas affichés ici ; ils restent sur la fiche et dans les modales. */}
+            {isHero && (
+              <div className="ab-stats">
+                <Gauge kind="action" value={actAvail} max={actMax} title={`Action${actMax > 1 ? 's' : ''} disponible${actAvail > 1 ? 's' : ''} : ${actAvail}/${actMax}${active.frenzied ? ' (dont attaque gratuite de Frénésie)' : ''}`} />
+                <Gauge kind="move" value={moveLeft} max={moveMax} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />
+              </div>
+            )}
           </div>
         </div>
 

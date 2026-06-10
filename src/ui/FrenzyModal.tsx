@@ -38,7 +38,7 @@ export function FrenzyModal() {
             <span className="dice">
               <Dice roll={r.roll} />
             </span>
-            <span className="verdict">{r.success ? 'Frénésie ! (+1 BF, immunité psy, attaque obligatoire)' : 'Échec — pas de Frénésie ce tour'}</span>
+            <span className="verdict">{r.success ? 'Réussi ! +1 BF, immunité psy, attaque obligatoire' : 'Échec — le sang ne monte pas ce tour'}</span>
           </>
         )
       }

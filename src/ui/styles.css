@@ -271,12 +271,12 @@ body {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 22px;
-  width: 520px;
+  width: min(520px, 94vw); /* jamais plus large que l'écran (mobile : pas de débord horizontal) */
   max-height: 86vh;
   overflow: auto;
 }
 .modal.wide {
-  width: 760px;
+  width: min(760px, 94vw);
 }
 .pregen-list {
   display: flex;
@@ -675,10 +675,36 @@ textarea:focus {
   border-radius: 5px;
   padding: 1px 5px;
 }
-.ab-pools {
-  font-size: 11px;
-  color: var(--muted);
+/* Compteurs en BÂTONS colorés (sans icône — survol = title). Couleurs distinctes par ressource. */
+.ab-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 7px;
+  margin-top: 2px;
 }
+.ab-g {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.ab-g .gp {
+  width: 5px;
+  height: 13px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.ab-g .gp.on {
+  background: var(--gc);
+  border-color: var(--gc);
+  box-shadow: 0 0 4px var(--gc);
+}
+.ab-g-action { --gc: #e0b83a; } /* Action — or */
+.ab-g-move   { --gc: #46c2d6; } /* Mouvement — cyan */
 /* Pastilles d'États/buffs partagées */
 .fx-chips {
   display: flex;
@@ -724,13 +750,18 @@ textarea:focus {
 /* Liste d'actions (tuiles, libellés complets) */
 .ab-slots {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* hotbar mobile : UNE rangée qui défile horizontalement (jamais de bouton orphelin à la ligne) */
   gap: 6px;
-  align-content: center;
-  justify-content: center; /* rangée(s) centrée(s) → pas de gros vide à droite quand ça déborde */
-  max-width: min(94vw, 760px); /* assez large pour tenir les actions courantes sur UNE rangée */
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: min(96vw, 900px);
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 .ab-slot {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1114,42 +1145,6 @@ textarea:focus {
 .rm-crowd-note {
   font-size: 11px;
   color: var(--muted);
-}
-/* Compteur d'économie d'action (panneau du héros actif). */
-.ab-budget {
-  display: flex;
-  gap: 10px;
-  font-size: 11px;
-  margin-top: 3px;
-}
-.ab-budget .avail {
-  color: #5fcf92;
-  font-weight: 700;
-}
-.ab-budget .spent {
-  color: var(--muted);
-  opacity: 0.65;
-}
-/* Mouvement à CRANS (un par case) : pleins = restants, vides = déjà parcourus. */
-.ab-move {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.ab-move-track {
-  display: inline-flex;
-  gap: 2px;
-}
-.ab-move-track .mp {
-  width: 5px;
-  height: 11px;
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-.ab-move-track .mp.on {
-  background: #5fcf92;
-  border-color: #5fcf92;
 }
 /* Rangée Av/assailli masquée quand vide (le nom du héros est passé en title sur le portrait). */
 .ab-actor-top:empty {
@@ -2608,6 +2603,18 @@ textarea:focus {
   .ptile-states { font-size: 10px; }
   .combat-feed { top: 78px; max-width: 94vw; }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
+  /* Barre d'action en bas, pleine largeur (respecte la safe-area iOS) : panneau héros compact AU-DESSUS,
+     puis une hotbar PLEINE LARGEUR dont les boutons GRANDISSENT pour remplir (tous visibles, pas de vide,
+     pas de bouton hors écran) ; si trop nombreux, ils rétrécissent au min puis la rangée défile. */
+  .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
+  .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
+  .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
+  .ab-slots { max-width: none; }
+  .ab-slot { flex: 1 1 0; min-width: 52px; padding: 6px 3px; }
+  .ab-ico { font-size: 17px; }
+  .ab-lbl { font-size: 9px; }
+  .ab-spells { max-height: 42vh; overflow-y: auto; }
+  .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
 }
 
 /* ── Dock d'équipe (gauche) ── */
