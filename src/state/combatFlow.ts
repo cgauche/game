@@ -41,6 +41,8 @@ import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, cle
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, entanglesOnHit, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
+import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
   wardSaves, hasChampionDefense, webForce, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
   isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
@@ -625,6 +627,11 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
     const aT = rollTest(sneakVal, 'intermediaire', battleRng());
     const dT = rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng());
     if (resolveOpposed({ ...aT, sl: aT.sl + sneakDR }, dT).winner === 'attacker') {
+      // Vigilance (LDB 10) : Test de Perception Intermédiaire (+0) pour ignorer la Surprise.
+      if (hasSurpriseSave(c) && rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng()).success) {
+        lines.push(`${c.name} flaire l'embuscade (Vigilance) : pas de Surprise.`);
+        continue;
+      }
       addCondition(c, 'Surpris');
       lines.push(`${c.name} est pris par surprise !`);
     }
@@ -1147,6 +1154,12 @@ export function applyAttackResult(
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
       const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name }, prerolledCrit, !!prerolledCrit);
+      // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
+      const fb = talentCritExtraWounds(attacker);
+      if (fb > 0 && !lethal) {
+        target.wounds.current = Math.max(0, target.wounds.current - fb);
+        critLog.push(`Frappe blessante : ${target.name} perd ${fb} Blessure(s) de plus.`);
+      }
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
@@ -1187,13 +1200,14 @@ export function applyAttackResult(
   // Champion (LDB 85 p.338) : « Si elle gagne un Test opposé en se défendant dans un Combat au
   // Corps à corps, elle cause autant de Dégâts que si elle était l'attaquant. »
   if (weapon.type === 'melee' && res.advantageTo === 'defender' && res.netSL > 0
-      && hasChampionDefense(target.traits) && !isOutOfAction(target) && target.weapons[0]) {
+      && (hasChampionDefense(target.traits) || (hasRiposte(target) && canStrikeFirst(res.parryWeapon ? [res.parryWeapon] : [])))
+      && !isOutOfAction(target) && target.weapons[0]) {
     const riposte = resolveMeleePassive(target, attacker, target.weapons[0],
       { roll: res.defenderRoll ?? 1, target: res.defenderDetail?.target ?? 1, success: true, sl: res.netSL, isDouble: false });
     if (riposte.hit && riposte.woundsLost) {
       const before = attacker.wounds.current;
       attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
-      critLog.push(`${target.name} (Champion) inflige ${riposte.woundsLost} Blessure(s) en défendant.`);
+      critLog.push(`${target.name} ${hasChampionDefense(target.traits) ? '(Champion)' : '(Riposte)'} inflige ${riposte.woundsLost} Blessure(s) en défendant.`);
       if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, 'Inconscient')) applyZeroWounds(attacker);
       if (isOutOfAction(attacker)) {
         clearEngagementOf(get().battle?.combatants ?? [], attacker.id);
@@ -1299,11 +1313,23 @@ export function applyAttackResult(
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
   if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
-    attacker.advantage += 1;
+    // Renversement (LDB 10) : « au lieu de gagner +1 Avantage, vous prenez tous les Avantages
+    // actuels de votre adversaire » — appliqué quand c'est mieux que +1.
+    if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
+      attacker.advantage += target.advantage;
+      target.advantage = 0;
+      critLog.push(`${attacker.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+    } else attacker.advantage += 1;
     attacker.gainedAdvThisRound = true;
   }
   if (res.advantageTo === 'defender') {
-    target.advantage += 1;
+    // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10) : +niveau Avantage en
+    // défense gagnée au Bouclier.
+    if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
+      target.advantage += attacker.advantage;
+      critLog.push(`${target.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+    } else target.advantage += 1;
+    target.advantage += shieldAdvantageLevel(target, res.parryWeapon);
     target.gainedAdvThisRound = true;
     attacker.advantage = 0; // l'attaquant a échoué au Test opposé
   }
@@ -2227,7 +2253,7 @@ export function applyCast(
     const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
-      const mr = magicResistanceOf(t.traits);
+      const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
       if (mr > 0 && mres.hit && mres.woundsLost) {
         mres = { ...mres, woundsLost: Math.max(0, mres.woundsLost - mr) };
         logLines.push(`${t.name} résiste à la magie (−${mr} DR de Sort).`);
@@ -2594,7 +2620,19 @@ export function advanceTurn(get: () => GameState, set: any) {
           const e = battle.combatants.find((x) => x.id === id);
           return !!e && e.kind !== c.kind && !isOutOfAction(e);
         }).length;
-        if (foes >= 2) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+        // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
+        if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+      }
+      // Mâchoires d'acier (LDB 10) : Test de Résistance (+0) — retire 1 + DR États Sonné (résolu au
+      // franchissement de Round, approximation de « chaque fois que vous gagnez un État Sonné »).
+      for (const c of battle.combatants) {
+        if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, 'Sonné')) continue;
+        const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+        if (t.success) {
+          const n = Math.min(stacks(c, 'Sonné'), 1 + Math.max(0, t.sl));
+          removeCondition(c, 'Sonné', n);
+          roundLines.push(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`);
+        }
       }
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
@@ -2721,8 +2759,9 @@ export function brokenRecovery(get: () => GameState, roundLines: string[]): void
     const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
     const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
     if (hidden) { removeCondition(c, 'Brisé', 1); roundLines.push(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`); }
-    // Récupération par Test de Calme : seulement si pas Engagé (l.57) et qu'il reste du Brisé.
-    if (!isEngaged(c) && stacks(c, 'Brisé')) {
+    // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
+    // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
+    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, 'Brisé')) {
       const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
       const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
       const t = rollTest(calmeValue(c), diff, battleRng());

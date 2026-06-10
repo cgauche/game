@@ -3,6 +3,7 @@
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
 import { Combatant } from './types';
+import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
 import { rollTest, isDoubleRoll } from './tests';
@@ -133,7 +134,8 @@ export function canTakeAction(c: Combatant): boolean {
 export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
   // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
-  const bleed = stacks(c, 'Hémorragique');
+  // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
+  const bleed = Math.max(0, stacks(c, 'Hémorragique') - bleedIgnoreLevel(c));
   if (bleed) {
     loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
     log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);

@@ -1,18 +1,10 @@
+/**
+ * Registre des capacités conférées par les TALENTS (LDB 10) — DÉRIVÉ du registre `defs/`
+ * (gen-registry.mjs), même patron que `engine/qualities`. Ajouter un talent à effet de jeu =
+ * déposer `defs/<slug>.ts` (`export const feature: CombatFeature = { key, … }`) puis `npm run gen`.
+ * Les helpers de `dispatch.ts` lisent `COMBAT_FEATURES` ; combat/combatFlow/rollFlows les consomment.
+ */
 import type { CombatFeature } from './types';
+import { FEATURE_DEFS } from './_registry.generated';
 
-/** Registre des capacités de combat (talents + traits). 1 entrée = 1 capacité ; clé = nom FR canonique. */
-export const COMBAT_FEATURES: Record<string, CombatFeature> = {
-  // Ambidextre (LDB 10 l.30-32) : pénalité de main secondaire -20 → -10 (1×) → 0 (2×).
-  Ambidextre: {
-    key: 'Ambidextre',
-    kind: 'talent',
-    modifyOffHandPenalty: (penalty, { level }) => (level >= 2 ? 0 : Math.min(0, penalty + 10)),
-  },
-  // Maniement de deux armes (LDB 10 l.638) : ajoute le mode d'attaque « des deux armes » (frappe off-hand
-  // conditionnelle, d100 inversé). Maxi = Bonus d'Agilité (le niveau ne change pas l'effet → binaire).
-  'Maniement de deux armes': {
-    key: 'Maniement de deux armes',
-    kind: 'talent',
-    attackModes: () => ['dual-wield'],
-  },
-};
+export const COMBAT_FEATURES: Record<string, CombatFeature> = Object.fromEntries(FEATURE_DEFS.map((f) => [f.key, f]));

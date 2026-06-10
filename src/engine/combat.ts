@@ -20,7 +20,7 @@ import { ignoredArmourAP, impenetrableAt } from './items';
 import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, isMagicWeapon } from './qualities/dispatch';
-import { offHandPenalty } from './combatFeatures/dispatch';
+import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -228,7 +228,9 @@ export function attackModifiers(
   }
   if (opts.kind === 'ranged') {
     if (opts.distanceTiles != null && weapon.range) {
-      const m = rangeBandModifier(opts.distanceTiles, weapon.range);
+      const m0 = rangeBandModifier(opts.distanceTiles, weapon.range);
+      // Tireur embusqué (LDB 10) : aucune pénalité à Longue distance, moitié à Portée extrême.
+      const m = m0 != null ? sniperRangeAdjust(attacker, m0) : null;
       const name = rangeBandName(opts.distanceTiles, weapon.range);
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
@@ -236,7 +238,7 @@ export function attackModifiers(
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.200).
     if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40 });
-    else if (target) {
+    else if (target && !ignoresSizeRangedMods(attacker)) { // Tireur d'élite (LDB 10) : ignore la Taille de la cible
       const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
       if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm });
     }
@@ -254,7 +256,9 @@ export function attackModifiers(
   // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
-  if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)) out.push({ label: 'Localisation visée', value: -10 });
+  // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
+  if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
+      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'Assommante'))) out.push({ label: 'Localisation visée', value: -10 });
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);
@@ -337,6 +341,9 @@ export interface AttackOptions {
  * `applyHit` et les touches de Maladresse (touche d'allié / Incident de Tir, LDB 14).
  */
 export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0): number {
+  // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un
+  // minimum de 1 Blessure » (le plancher 1 ci-dessous le garantit).
+  totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'E'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47)
   // + PA conférés par l'arme d'opposition (Protectrice, LDB 62 l.306 — `extraAP`).
@@ -648,7 +655,10 @@ function applyHit(
     };
   }
   // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
-  const sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
+  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
+  // Tueur (LDB 10) : « utilisez le Bonus d'Endurance de votre adversaire comme votre Bonus de Force
+  // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
+  if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'E')));
   const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
@@ -660,6 +670,9 @@ function applyHit(
   const noSize = !!attacker.swarm || !!defender.swarm;
   const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
+  // Talents de Dégâts (LDB 10) : Coup puissant (mêlée), Tir précis (distance), Combat déloyal
+  // (Bagarre), Charge berserk/Déterminé (en Charge) — +niveau, avant le multiplicateur de Taille.
+  damage += talentDamageBonus(attacker, weapon, !!attacker.chargedThisTurn);
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
   // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
@@ -671,7 +684,9 @@ function applyHit(
   if (isCritical && atkBd.roll % 2 === 1 && impenetrableAt(defender, loc)) isCritical = false;
   // Partielle / Points faibles (LDB 63) : PA des pièces concernées ignorés par CETTE touche.
   const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: isCritical, empaleuse: hasQuality(weapon, 'Empaleuse') });
-  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP);
+  // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
+  const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
+  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
   return {

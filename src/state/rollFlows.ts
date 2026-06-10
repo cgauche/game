@@ -22,7 +22,9 @@ import { actorIn } from './combatOrParty';
 import { TRAMPLE_WEAPON } from './combatFlow';
 import { mountMovement } from './mount';
 import { resolveTrample, rederivePassiveAttack } from '../engine/combat';
-import { rollTest, resolveOpposed, isDoubleRoll, type TestResult } from '../engine/tests';
+import { reverseRoll } from '../engine/combat';
+import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
+import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus } from '../engine/magic';
@@ -93,7 +95,8 @@ export const FLOWS = {
     actor: (s, p) => inBattle(s, p.combatantId),
     resolve: (s, p, actor) => {
       if (!s.battle || !actor) return null;
-      return { result: resolveRun(testValue(actor, actor.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(s.battle, actor), battleRng()) };
+      // Sprinter (LDB 10) : « Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez. »
+      return { result: resolveRun(testValue(actor, actor.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
     failed: (p) => !p.result?.success,
     force: {
@@ -224,9 +227,22 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => inParty(s, p.actorId),
     touch: touchParty,
-    resolve: (_s, p) => {
-      const res = rollTest(p.skillValue, p.difficulty);
-      return { roll: res.roll, sl: res.sl, isDouble: res.isDouble, success: res.success && res.sl >= p.requireSL };
+    resolve: (s, p) => {
+      const actor = inParty(s, p.actorId);
+      let res = rollTest(p.skillValue, p.difficulty);
+      // Talents d'INVERSION (LDB 10 — Sociable/Studieux/Lecture rapide/Pharmacologie/Chat de
+      // gouttière/Noctambule/Pansement de fortune) : un Test raté est relu chiffres inversés s'il
+      // devient réussi (Pansement plafonne à +1 DR).
+      if (actor && !res.success) {
+        const rev = talentReverseFailed(actor, p.label);
+        if (rev) {
+          const e = evaluateTest(reverseRoll(res.roll), res.target);
+          if (e.success) res = { ...e, isDouble: res.isDouble, sl: rev.capDR != null ? Math.min(e.sl, rev.capDR) : e.sl };
+        }
+      }
+      // Talents à bonus de DR (LDB 10 — Menaçant → Intimidation, Bonnes jambes → Saut…).
+      const sl = res.sl + (actor && res.success ? talentTestDR(actor, p.label) : 0);
+      return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
     },
     failed: (p) => (p.roll ?? 0) > p.target, // d100 propre raté (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },

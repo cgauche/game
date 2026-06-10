@@ -44,6 +44,7 @@ import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmuni
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst } from '../engine/qualities/dispatch';
+import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -968,7 +969,13 @@ export const useGame = create<GameState>((set, get) => ({
     // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
     const surpriseLines = enc.surprise ? applySurprise(all, enc.surprise) : [];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
-    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
+    // Combat instinctif (LDB 10) : +10 × niveau à l'Initiative de combat.
+    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10) + talentInitiativeBonus(c);
+    // Effrayant (LDB 10) : le porteur inspire Peur (Indice = niveau) — comme un statbloc « Peur N ».
+    for (const c of all) {
+      const fear = talentFearIndice(c);
+      if (fear > 0) c.causesPeur = Math.max(c.causesPeur ?? 0, fear);
+    }
     // Lente (LDB 63 l.25) : le porteur d'une arme Lente frappe toujours en dernier dans le Round.
     const ordered = initiativeOrder(all);
     const order = [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);
@@ -1733,8 +1740,9 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, pendingRoundStart } = get();
     if (!battle || !pendingRoundStart) return;
     const hero = battle.combatants.find((c) => c.id === heroId);
-    // Rapide (LDB 62 l.318-319) : pré-emption GRATUITE avec une arme Rapide ; sinon 1 point de Chance (LDB ch.17 l.27).
-    const free = !!hero && canStrikeFirst(hero.weapons);
+    // Rapide (LDB 62 l.318-319) / Tir rapide (LDB 10, arme à distance chargée) : pré-emption
+    // GRATUITE ; sinon 1 point de Chance (LDB ch.17 l.27).
+    const free = !!hero && (canStrikeFirst(hero.weapons) || canPreemptRanged(hero));
     if (!hero || hero.kind !== 'hero' || (!free && (hero.fortune ?? 0) <= 0)) return;
     if (battle.order[0] === heroId) return; // déjà en tête
     if (!free) hero.fortune = (hero.fortune ?? 0) - 1;
@@ -1887,7 +1895,9 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingReload: null });
     if (!a) return;
     a.aiming = false; // recharger est une autre action → la visée est perdue
-    const progress = Math.max(0, pr.progressBefore + pr.sl); // Test étendu : cumul des DR, plancher 0 (recommence)
+    // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
+    const reloadTalent = pr.success ? reloadDRBonus(a, a.weapons.find((x) => x.type === 'ranged')) : 0;
+    const progress = Math.max(0, pr.progressBefore + pr.sl + reloadTalent); // Test étendu : cumul des DR, plancher 0 (recommence)
     let log: string;
     if (progress >= pr.reload) {
       a.loaded = true;
@@ -2725,7 +2735,8 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, mover);
     // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
     // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
-    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked, sizeFootprint(mover.size)), log } });
+    // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
+    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   },
