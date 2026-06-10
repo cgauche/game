@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { narrateEvent } from '../gameIso/combatNarration';
+import { NarratedSegments } from './NarratedLine';
 import type { CombatEvent } from '../state/combatLog';
 
 /** Forme minimale acceptée pour les combattants (suffit à `narrateEvent` — id/name/kind). */
@@ -23,23 +23,11 @@ export function LogDrawer({ battle, journal, initialOpen = false }: {
         <div className="ld-panel">
           <div className="mini-title">{battle ? 'Journal de combat' : 'Journal'}</div>
           {battle
-            ? battle.log.slice(-30).map((l, i) => {
-                const n = narrateEvent(l, battle.combatants);
-                return (
-                  <p key={i} className="jr-line">
-                    <span className="jr-ic">{n.icon}</span>
-                    <span className="jr-tx">
-                      {n.segments.map((s, j) =>
-                        s.team ? (
-                          <b key={j} className={s.team === 'ally' ? 'nm-ally' : 'nm-foe'}>{s.text}</b>
-                        ) : (
-                          <span key={j}>{s.text}</span>
-                        ),
-                      )}
-                    </span>
-                  </p>
-                );
-              })
+            ? battle.log.slice(-30).map((l, i) => (
+                <p key={i} className="jr-line">
+                  <NarratedSegments event={l} combatants={battle.combatants} />
+                </p>
+              ))
             : journal.slice(-30).map((l, i) => (
                 <p key={i} className="jr-line"><span className="jr-tx">{l}</span></p>
               ))}

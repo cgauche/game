@@ -7,6 +7,8 @@ import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 import { Modal } from './Modal';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
@@ -194,21 +196,13 @@ export function RollModal() {
                 : <RollLine d={res.attackerDetail} />)}
               {res.defenderDetail && <div className="rm-roll-row"><TeamPortrait combatant={target} size={28} /><RollLine d={res.defenderDetail} /></div>}
             </div>
-            <div className={`rm-verdict ${res.hit ? 'ok' : 'fail'}`}>
-              {res.hit ? (
-                <>
-                  Touché{res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}
-                  {res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}
-                  {res.defenderDetail ? ` · DR net +${res.netSL}` : ''}
-                  {res.critical ? ' · CRITIQUE' : ''}
-                </>
-              ) : res.defenderDetail ? (
-                'Défense réussie — coup paré / esquivé'
-              ) : (
-                'Manqué'
-              )}
-            </div>
-            <p className="rm-log">{res.log}</p>
+            {/* Une seule ligne d'issue, dans le style du journal d'événements (la verdict + le log
+                disaient la même chose) : icône par nature du coup, noms colorés par camp. */}
+            <JournalLine
+              className="rm-journal"
+              event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
+              combatants={battle.combatants}
+            />
             {res.critical && pa.forced && (
               <div className="rm-loc">
                 {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}

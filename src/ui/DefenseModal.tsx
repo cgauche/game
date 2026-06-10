@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { HIT_LOCATION_LABELS } from '../engine/types';
 import { defenseValue } from '../engine/combat';
 import { RollLine } from './RollModal';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 import { Modal } from './Modal';
 
 /** Libellé FR de la nature d'une attaque gratuite de créature (freeKind) pour le contexte de défense. */
@@ -98,15 +99,12 @@ export function DefenseModal() {
               {res.attackerDetail && <div className="rm-roll-row"><TeamPortrait combatant={attacker} size={28} /><RollLine d={res.attackerDetail} /></div>}
               {res.defenderDetail && <div className="rm-roll-row"><TeamPortrait combatant={defender} size={28} /><RollLine d={res.defenderDetail} /></div>}
             </div>
-            {/* Défense réussie (res.hit === false) = succès du héros → classe « ok ». */}
-            <div className={`rm-verdict ${res.hit ? 'fail' : 'ok'}`}>
-              {res.hit
-                ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure(s)` : ''}${res.critical ? ' · CRITIQUE' : ''}`
-                : pd.mode === 'parade'
-                  ? 'Paré !'
-                  : 'Esquivé !'}
-            </div>
-            <p className="rm-log">{res.log}</p>
+            {/* Une seule ligne d'issue, style journal (la verdict dupliquait le log) : icône par nature. */}
+            <JournalLine
+              className="rm-journal"
+              event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
+              combatants={battle.combatants}
+            />
             <div className="modal-actions">
               <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
               <ResilienceButton resilience={defender.resilience ?? 0} show={!!res && res.hit} onForce={forceSuccess} />

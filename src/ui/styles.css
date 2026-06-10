@@ -2214,20 +2214,14 @@ textarea:focus {
   color: #e07a63;
   border-color: #7a3a2f;
 }
-.rm-verdict {
-  text-align: center;
-  font-weight: 700;
-  padding: 8px;
+/* Ligne d'issue d'un jet, rendue dans le style du journal (icône + noms colorés) au sein d'une modale. */
+.rm-journal {
+  margin: 8px 0;
+  padding: 8px 10px;
   border-radius: 8px;
-  margin: 4px 0 8px;
-}
-.rm-verdict.ok {
-  background: rgba(93, 184, 122, 0.16);
-  color: #8fe0a8;
-}
-.rm-verdict.fail {
-  background: rgba(192, 86, 63, 0.16);
-  color: #e89a86;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .test-scenarios { max-width: 720px; }
