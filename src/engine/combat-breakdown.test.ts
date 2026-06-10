@@ -24,6 +24,40 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
 const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
 const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] };
 
+describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () => {
+  const off: Weapon = { name: 'Dague', type: 'melee', damage: '+BF', qualities: [], hand: 'off', hands: 1 };
+  const main: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], hand: 'main', hands: 1 };
+  it('arme de main secondaire → -20', () => {
+    const mods = attackModifiers(mk(), mk(), off, { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
+  });
+  it('Ambidextre 1× → -10', () => {
+    const mods = attackModifiers(mk({ talents: [{ name: 'Ambidextre', times: 1 }] }), mk(), off, { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-10);
+  });
+  it('arme de main principale → aucune pénalité', () => {
+    const mods = attackModifiers(mk(), mk(), main, { kind: 'melee' });
+    expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+  });
+});
+
+describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
+  const parrySpec = { name: 'Corps à corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
+  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: '+BF', qualities: ['Défensive'], hand: 'off', hands: 1 };
+  it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
+    const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);
+    expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+  });
+  it('parade main secondaire SANS spé Parade → -20', () => {
+    const mods = defenseModifiers(mk({ skills: [] }), 'parade', 0, offShield);
+    expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
+  });
+  it('parade main principale → aucune pénalité', () => {
+    const mods = defenseModifiers(mk(), 'parade', 0, { ...offShield, hand: 'main' });
+    expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+  });
+});
+
 describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151-170 / 85 l.301-303)', () => {
   // bow portée 60, distanceTiles 28 → 56 m ≤ 60 = Moyenne (+0, pas de ligne de portée) : isole la Taille.
   it('tir : mod de Taille de la cible (Grande → +20)', () => {

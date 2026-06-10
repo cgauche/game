@@ -17,7 +17,8 @@ import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
+import { offHandPenalty } from './combatFeatures/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -246,6 +247,11 @@ export function attackModifiers(
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)) out.push({ label: 'Localisation visée', value: -10 });
+  // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
+  if (weapon.hand === 'off') {
+    const p = offHandPenalty(attacker);
+    if (p) out.push({ label: 'Main secondaire', value: p });
+  }
   // Modificateurs dérivés de la SCÈNE (couvert / obscurité / météo / mouvement / tir-mêlée), calculés
   // côté state (combatFlow) et injectés ici — la table de Difficultés de Combat n'est pas exhaustive.
   if (opts.env) out.push(...opts.env);
@@ -271,9 +277,23 @@ export function crowdMod(group: number): ModLine | null {
   return null;
 }
 
+/** Le défenseur possède-t-il une Spé de Corps à corps donnée (ex. 'Parade') ? */
+function hasMeleeSpec(c: Combatant, spec: string): boolean {
+  return (c.skills ?? []).some((s) => s.name.toLowerCase() === 'corps à corps' && (s.spec ?? '').toLowerCase() === spec.toLowerCase());
+}
+
+/** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.192) : 0 en main principale ; 0 si arme à 1 main +
+ *  Défensive + le défenseur a Corps à corps (Parade) ; sinon pénalité de main secondaire (Ambidextre la réduit). */
+export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): number {
+  if (!weapon || weapon.hand !== 'off') return 0;
+  if (weapon.hands === 1 && hasQuality(weapon, 'Défensive') && hasMeleeSpec(defender, 'Parade')) return 0;
+  return offHandPenalty(defender);
+}
+
 /** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). `dodgeMod` = pénalité météo
- *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). */
-export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0): ModLine[] {
+ *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). `weapon` = arme de parade
+ *  (pénalité de main secondaire en Parade, sauf exception Parade+Défensive). */
+export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0, weapon?: Weapon): ModLine[] {
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
   if (adv) out.push({ label: 'Avantage', value: adv });
@@ -281,6 +301,10 @@ export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive'
   if (pen) out.push({ label: 'État', value: pen });
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20 });
   if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod });
+  if (mode === 'parade') {
+    const pp = parryPenalty(defender, weapon);
+    if (pp) out.push({ label: 'Main secondaire', value: pp });
+  }
   return out;
 }
 
@@ -395,7 +419,7 @@ export function finishMelee(
     + (defenseMode === 'parade' ? parryDRAdjust(defender.weapons[0], weapon) + craftTestDRAdjust(defender.weapons[0], def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, defender.weapons[0]), def, defenseModifiers(defender, defenseMode, dodgeMod));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, defender.weapons[0]), def, defenseModifiers(defender, defenseMode, dodgeMod, defender.weapons[0]));
 
   if (opp.winner === 'defender') {
     return {
