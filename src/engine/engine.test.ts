@@ -281,6 +281,7 @@ import {
   resolveCasting,
   resolveMagicMissile,
   resolveFocus,
+  castTestTalentDR,
   type SpellLike,
 } from './magic';
 import { rollMiscast } from './miscast';
@@ -688,6 +689,40 @@ describe('Magie — compétences Avancées (gating)', () => {
     expect(res.cast).toBe(false);
     expect(res.log).toContain('ne maîtrise pas');
   });
+  it('Talents liés au Test (LDB 10 l.20) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
+    const skills = [{ name: 'Langue', spec: 'Magick', characteristic: 'Int' as const, advances: 10 }];
+    const sans = caster({ Int: 80 }, skills);
+    const avec = caster({ Int: 80 }, skills);
+    avec.talents = [{ name: 'Diction instinctive', times: 2 }];
+    expect(castTestTalentDR(avec, 'Langue (Magick)')).toBe(2);
+    expect(castTestTalentDR(sans, 'Langue (Magick)')).toBe(0);
+    // même graine = même d100 : sur un jet RÉUSSI, le DR final diffère exactement du niveau du Talent
+    for (let seed = 1; seed <= 6; seed++) {
+      const a = resolveCasting(sans, FLECHETTE, makeRNG(seed));
+      const b = resolveCasting(avec, FLECHETTE, makeRNG(seed));
+      expect(b.sl).toBe(a.sl + (a.roll <= a.target ? 2 : 0));
+    }
+  });
+
+  it('un Talent lié à une AUTRE Langue ne booste pas l’incantation (Langue (Magick) exigé)', () => {
+    const c = caster({ Int: 80 });
+    c.talents = [{ name: 'Linguistique', times: 3 }]; // test data : « Langue (Toutes) » ? — ne doit pas matcher Magick
+    expect(castTestTalentDR(c, 'Langue (Magick)')).toBe(0);
+  });
+
+  it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {
+    const skills = [{ name: 'Focalisation', spec: 'Aqshy', characteristic: 'FM' as const, advances: 5 }];
+    const sans = caster({ FM: 85 }, skills);
+    const avec = caster({ FM: 85 }, skills);
+    avec.talents = [{ name: 'Harmonisation aethyrique', times: 3 }];
+    for (let seed = 1; seed <= 6; seed++) {
+      const a = resolveFocus(sans, ARCANE, makeRNG(seed));
+      const b = resolveFocus(avec, ARCANE, makeRNG(seed));
+      if (a.roll <= (a.target ?? 0)) expect(b.dr).toBe(a.dr + 3);
+      else expect(b.dr).toBe(a.dr); // échec : pas de bonus (« utilisation réussie »)
+    }
+  });
+
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
     const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
     c.traits = ['Lanceur de Sorts (Sorcellerie)'];

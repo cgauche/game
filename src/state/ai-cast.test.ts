@@ -28,6 +28,12 @@ describe('aiBestMissile — choix du Projectile magique de l’IA (DR ≥ NI exi
     expect(aiBestMissile(c)).toBe("La lance d'Ambre");
   });
 
+  it('les DR de Talent lié au Test (LDB 10 l.20) comptent : Diction instinctive ×2 → SL max 8 → La lance d’Ambre', () => {
+    const c = eusapia();
+    c.talents = [...c.talents, { name: 'Diction instinctive', times: 2 }];
+    expect(aiBestMissile(c)).toBe("La lance d'Ambre"); // 63/10 = 6, +2 de Talent ≥ NI 8
+  });
+
   it('aucun NI atteignable → repli sur le moins exigeant (rien d’injouable choisi en boucle)', () => {
     const c = eusapia();
     c.skills = []; // plus de Langue (Magick) : valeur = Int 48 → SL max 4… on coupe aussi Int

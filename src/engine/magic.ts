@@ -22,6 +22,7 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
+import { findTalent } from '../data';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
@@ -248,6 +249,25 @@ export function isMagicMissile(spell: SpellLike): boolean {
 }
 
 /**
+ * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous
+ * gagnez +1 DR pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » Somme des
+ * acquisitions des Talents du porteur dont le champ « Tests » (talents.json, verbatim)
+ * référence la Compétence d'incantation visée — piloté par la DONNÉE, pas de liste en dur :
+ * Diction instinctive → « Langue (Magick) quand vous faites une Incantation » ;
+ * Harmonisation aethyrique → « Focalisation (Au choix) ».
+ * `needle` : « Langue (Magick) » (pas « Langue » nu — un Talent lié à Langue (Bretonnien)
+ * ne booste pas l'incantation), « Focalisation », « Prière ».
+ */
+export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Focalisation' | 'Prière'): number {
+  let n = 0;
+  for (const t of c.talents ?? []) {
+    const data = findTalent(t.name) ?? findTalent(t.name.replace(/\s*\([^)]*\)\s*$/, ''));
+    if (data?.test?.toLowerCase().includes(needle.toLowerCase())) n += t.times;
+  }
+  return n;
+}
+
+/**
  * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus
  * à l'intérieur de ce DIAMÈTRE ». Diamètre en mètres depuis le champ Cible
  * (« ZdE (Bonus de Force Mentale) mètres », « ZdE (4) mètres »…), résolu contre le
@@ -387,7 +407,11 @@ export function resolveCasting(
   // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
   // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
   const pen = armourCastDRPenalty(caster);
-  return evaluateCasting(caster, spell, pen ? { ...t, sl: t.sl - pen } : t, focusedNI0);
+  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
+  // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
+  // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
+  const tal = t.success ? castTestTalentDR(caster, info.skill === 'Prière' ? 'Prière' : 'Langue (Magick)') : 0;
+  return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
 }
 
 /**
@@ -534,7 +558,8 @@ export function resolveFocus(
   const value = castingValue(caster, 'Focalisation', sk.spec);
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
-  const dr = t.success ? Math.max(0, t.sl - armourCastDRPenalty(caster)) : 0;
+  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
+  const dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'Focalisation') - armourCastDRPenalty(caster)) : 0;
   const isCritical = t.isDouble && t.success;
   // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
   // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.
