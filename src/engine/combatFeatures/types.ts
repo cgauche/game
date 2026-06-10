@@ -18,4 +18,6 @@ export interface CombatFeature {
   kind: 'talent' | 'trait';
   /** Transforme la pénalité de main secondaire (Ambidextre : -20 → -10/0). */
   modifyOffHandPenalty?: (penalty: number, ctx: CombatFeatureCtx) => number;
+  /** Modes d'attaque ajoutés par la capacité (Maniement de deux armes → 'dual-wield'). */
+  attackModes?: (ctx: CombatFeatureCtx) => string[];
 }

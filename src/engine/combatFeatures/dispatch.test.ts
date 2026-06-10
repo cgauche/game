@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { offHandPenalty } from './dispatch';
+import { offHandPenalty, attackModesFor } from './dispatch';
 import type { Combatant } from '../types';
 
 const mk = (talents: { name: string; times: number }[]): Combatant =>
@@ -17,5 +17,14 @@ describe('offHandPenalty (registre de capacités)', () => {
   });
   it('insensible a la casse du nom de talent', () => {
     expect(offHandPenalty(mk([{ name: 'ambidextre', times: 1 }]))).toBe(-10);
+  });
+});
+
+describe('attackModesFor (registre de capacités)', () => {
+  it('héros avec Maniement de deux armes → contient "dual-wield" (LDB 10 l.638)', () => {
+    expect(attackModesFor(mk([{ name: 'Maniement de deux armes', times: 1 }]))).toContain('dual-wield');
+  });
+  it('sans le talent → vide', () => {
+    expect(attackModesFor(mk([]))).toEqual([]);
   });
 });

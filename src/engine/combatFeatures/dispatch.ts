@@ -21,3 +21,10 @@ export function offHandPenalty(c: Combatant): number {
   }
   return pen;
 }
+
+/** Modes d'attaque conférés par les capacités du combattant (ex. 'dual-wield' via Maniement de deux armes). */
+export function attackModesFor(c: Combatant): string[] {
+  const out: string[] = [];
+  for (const { def, ctx } of featuresOf(c)) if (def.attackModes) out.push(...def.attackModes(ctx));
+  return out;
+}

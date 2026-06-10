@@ -8,4 +8,11 @@ export const COMBAT_FEATURES: Record<string, CombatFeature> = {
     kind: 'talent',
     modifyOffHandPenalty: (penalty, { level }) => (level >= 2 ? 0 : Math.min(0, penalty + 10)),
   },
+  // Maniement de deux armes (LDB 10 l.638) : ajoute le mode d'attaque « des deux armes » (frappe off-hand
+  // conditionnelle, d100 inversé). Maxi = Bonus d'Agilité (le niveau ne change pas l'effet → binaire).
+  'Maniement de deux armes': {
+    key: 'Maniement de deux armes',
+    kind: 'talent',
+    attackModes: () => ['dual-wield'],
+  },
 };
