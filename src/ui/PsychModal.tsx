@@ -57,8 +57,9 @@ export function PsychModal() {
               </>
             )}
           </div>
-          {/* Peur = Test ÉTENDU : barre de DR cumulé vers l'Indice (#23). */}
-          {!isCible && !isTerreur && <DrBar cum={pp.prevDR ?? 0} target={pp.indice} />}
+          {/* Peur = Test ÉTENDU : barre de DR cumulé vers l'Indice (#23) — après le jet, montre le
+              cumul MIS À JOUR (result.calmeDR), pas l'état d'avant. */}
+          {!isCible && !isTerreur && <DrBar cum={r ? (r.calmeDR ?? pp.prevDR ?? 0) : (pp.prevDR ?? 0)} target={pp.indice} />}
         </>
       }
       rolled={!!r}

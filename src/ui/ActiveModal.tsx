@@ -15,6 +15,7 @@ import { CleaveModal } from './CleaveModal';
 import { DualStrikeModal } from './DualStrikeModal';
 import { TrampleModal } from './TrampleModal';
 import { RunModal } from './RunModal';
+import { ApproachModal } from './ApproachModal';
 import { FocusModal } from './FocusModal';
 import { PsychModal } from './PsychModal';
 import { EncounterPsychModal } from './EncounterPsychModal';
@@ -29,7 +30,7 @@ import { CorruptionModal } from './CorruptionModal';
 export type ModalKey =
   | 'fateSave' | 'fumble' | 'deviation' | 'bladeTrap' | 'renounce' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
   | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
-  | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
+  | 'approach' | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
 
 /** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
 export interface ModalPendings {
@@ -37,7 +38,7 @@ export interface ModalPendings {
   pendingCleave?: unknown; pendingDualStrike?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
   pendingDefense?: unknown; pendingPsych?: unknown; pendingEncounterPsych?: unknown;
   pendingDisengage?: unknown; pendingMountTarget?: unknown;
-  pendingFrenzy?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
+  pendingFrenzy?: unknown; pendingApproach?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
   pendingCast?: unknown; pendingReload?: unknown; pendingStateRecovery?: unknown;
   pendingAttack?: unknown; pendingTest?: unknown; pendingCorruption?: unknown;
 }
@@ -72,6 +73,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingDisengage, 'disengage'],
     [!!s.pendingMountTarget, 'mountTarget'],
     [!!s.pendingFrenzy, 'frenzy'],
+    [!!s.pendingApproach, 'approach'],
     [!!s.pendingRun, 'run'],
     [!!s.pendingFocus, 'focus'],
     [!!s.pendingHeal, 'heal'],
@@ -89,7 +91,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, bladeTrap: BladeTrapModal, renounce: RenounceModal, cleave: CleaveModal,
   trample: TrampleModal, reveal: RevealModal, dualStrike: DualStrikeModal, defense: DefenseModal, psych: PsychModal,
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
-  mountTarget: MountTargetModal, frenzy: FrenzyModal, run: RunModal, focus: FocusModal,
+  mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   attack: RollModal, test: TestModal, corruption: CorruptionModal,
 };

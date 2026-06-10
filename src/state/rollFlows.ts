@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy,
+  PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption,
 } from './store';
@@ -179,6 +179,25 @@ export const FLOWS = {
       guard: (p) => !p.result?.success,
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
       derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target } }),
+    },
+  }),
+
+  /** Approche d'une source de Peur (LDB 21 l.29) : Test SEC de Calme Intermédiaire (+0) pour oser
+   *  se rapprocher — distinct du Test étendu qui VAINC la Peur (flux `psych`). */
+  approach: makeRollFlow<PendingApproach>({
+    key: 'pendingApproach',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => inBattle(s, p.combatantId),
+    resolve: (_s, _p, actor) => {
+      if (!actor) return null;
+      const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
+      return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
+    },
+    failed: (p) => !p.result?.success,
+    force: {
+      guard: (p) => !p.result?.success,
+      // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
+      derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } }),
     },
   }),
 

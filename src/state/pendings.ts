@@ -210,6 +210,18 @@ export interface PendingRun {
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
 }
+/** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
+ *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →
+ *  l'intention est relancée (approches libres ce Tour) ; échec → aucune approche ce Tour (battle.fearGate). */
+export interface PendingApproach {
+  combatantId: string;
+  /** Source de Peur la plus proche dont le déplacement RAPPROCHE. */
+  sourceId: string;
+  /** Intention différée, relancée après un succès. */
+  intent: { kind: 'tile'; pt: Pt } | { kind: 'entity'; id: string };
+  result: { success: boolean; roll: number; target?: number; sl: number } | null;
+  rerolled?: boolean;
+}
 /** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
 export interface PendingFocus {
   casterId: string;

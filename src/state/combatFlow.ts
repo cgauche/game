@@ -983,6 +983,19 @@ export function displayedReach(get: () => GameState): Map<string, number> {
   return battle.reachable.size > 0 ? battle.reachable : computeMoveReach(get);
 }
 
+/** Source de PEUR active dont `dest` RAPPROCHE l'acteur (LDB 21 l.29) — null si aucune, ou si
+ *  immunisé à la Psychologie. « Sous l'emprise » ⟺ Test étendu de Calme pas encore au niveau
+ *  de l'Indice (calmeDR < indice). Pure. */
+export function fearedSourceTowards(battle: BattleState, active: Combatant, dest: Pt): Combatant | null {
+  if (!active.pos || isPsychImmune(active)) return null;
+  for (const p of active.psychState ?? []) {
+    if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
+    const src = battle.combatants.find((c) => c.id === p.sourceId);
+    if (src?.pos && !isOutOfAction(src) && chebyshev(dest, src.pos) < chebyshev(active.pos, src.pos)) return src;
+  }
+  return null;
+}
+
 export type AttackPlan =
   | { kind: 'attack' }
   | { kind: 'charge'; dest: Pt; path: Pt[]; adv: 0 | 1 }
@@ -2767,7 +2780,7 @@ export function advanceTurn(get: () => GameState, set: any) {
     if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
     if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }
   }
-  set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null } });
+  set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
@@ -2816,7 +2829,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   //     l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ; futurs Atouts/talents).
   //     L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf. garde de maybeRunEnemyTurn.
   const b = get().battle!;
-  set({ battle: { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null }, pendingRoundStart: { round: b.round } });
+  set({ battle: { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null }, pendingRoundStart: { round: b.round } });
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
@@ -2835,11 +2848,14 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
 export function approachFearTrigger(get: () => GameState, set: any, mover: Combatant, fromPos: Pt): void {
   const battle = get().battle;
   if (!battle || !mover.pos) return;
+  const approachKey = `${battle.round}:${battle.turn}`; // UN Test par Tour de la source (l.29) —
+  // un déplacement DÉCOMPOSÉ en segments (ou move-then-attack) ne re-déclenche pas la modale.
   for (const c of battle.combatants) {
     if (c.kind === mover.kind || isOutOfAction(c) || !c.pos) continue;
     const peur = (c.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === mover.id && (p.calmeDR ?? 0) < (p.indice ?? 0));
-    if (!peur) continue;
+    if (!peur || peur.lastApproachKey === approachKey) continue;
     if (chebyshev(mover.pos, c.pos) >= chebyshev(fromPos, c.pos)) continue; // ne s'est pas rapproché
+    peur.lastApproachKey = approachKey;
     const t = rollTest(calmeValue(c), 'intermediaire', battleRng());
     const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
     if (!t.success) addCondition(c, 'Brisé', 1);

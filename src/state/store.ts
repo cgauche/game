@@ -18,7 +18,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
-  displayedReach, computeRunReach, attackPlan,
+  displayedReach, computeRunReach, attackPlan, fearedSourceTowards,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -70,7 +70,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
 } from './pendings';
@@ -153,6 +153,9 @@ export interface BattleState {
   /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.80) :
    *  le reliquat non parcouru reste dépensable en segments. Null hors Course ; purgé au Tour/Round. */
   runBudget?: number | null;
+  /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.29) — une tentative par Tour :
+   *  'passed' = approches libres ce Tour ; 'failed' = aucune approche ce Tour. Purgé au Tour/Round. */
+  fearGate?: 'passed' | 'failed' | null;
   /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
    *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
   preview?:
@@ -238,6 +241,8 @@ export interface GameState {
   pendingTrample: PendingTrample | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
   pendingRun: PendingRun | null;
+  /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
+  pendingApproach: PendingApproach | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
   /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
@@ -522,6 +527,12 @@ export interface GameState {
   runForceSuccess: () => void;
   runConfirm: () => void;
   runCancel: () => void;
+  /** Approche d'une source de Peur (LDB 21 l.29) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
+  approachRoll: () => void;
+  approachReroll: () => void;
+  approachForceSuccess: () => void;
+  approachConfirm: () => void;
+  approachCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
   battleStandUp: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
@@ -706,6 +717,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReveals: [],
   pendingTrample: null,
   pendingRun: null,
+  pendingApproach: null,
   pendingFocus: null,
   pendingPsych: null,
   pendingEncounterPsych: null,
@@ -822,6 +834,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReveals: [],
       pendingTrample: null,
       pendingRun: null,
+      pendingApproach: null,
       pendingFocus: null,
       pendingPsych: null,
       pendingEncounterPsych: null,
@@ -1608,17 +1621,21 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     const stepCost = (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0; // coût (cases) du segment
-    // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
-    // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
-    if (!isPsychImmune(active))
-      for (const p of active.psychState ?? []) {
-        if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
-        const src = battle.combatants.find((c) => c.id === p.sourceId);
-        if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
-          get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
-          return;
-        }
+    // Peur (LDB 21 l.29) : se RAPPROCHER d'une source de Peur exige un Test de Calme Intermédiaire (+0)
+    // — vérifié au COMMIT seulement (l'aperçu reste libre). Une tentative par Tour (battle.fearGate) :
+    // succès → approches libres ce Tour ; échec → aucune approche ce Tour.
+    const fearGateBlocks = (): boolean => {
+      if (battle.fearGate === 'passed') return false;
+      const feared = fearedSourceTowards(battle, active, pt);
+      if (!feared) return false;
+      if (battle.fearGate === 'failed') {
+        get().log(`${active.name} ne peut pas s'approcher de ${feared.name} : la Peur le cloue (ce Tour).`);
+        return true;
       }
+      set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'tile', pt: { ...pt } }, result: null }, battle: { ...battle, preview: null } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return true;
+    };
     // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
     const geom = mountOf(battle, active) ?? active;
     const blocked = occupied(battle, geom);
@@ -1631,6 +1648,7 @@ export const useGame = create<GameState>((set, get) => ({
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
+      if (fearGateBlocks()) return;
       get().battleRun({ ...pt }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
       return;
     }
@@ -1642,6 +1660,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // Tap 2 : COMMIT.
+    if (fearGateBlocks()) return;
     // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
     // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
     const snapshot =
@@ -1736,6 +1755,20 @@ export const useGame = create<GameState>((set, get) => ({
       const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
       if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
         set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id } });
+        return;
+      }
+    }
+    // Peur (LDB 21 l.29) : charger / rejoindre une source de Peur = s'en RAPPROCHER → même Test de
+    // Calme d'approche que le clic-sol (une tentative par Tour, battle.fearGate).
+    if (plan.kind === 'charge' || plan.kind === 'moveAttack') {
+      const feared = battle.fearGate === 'passed' ? null : fearedSourceTowards(battle, active, plan.dest);
+      if (feared) {
+        if (battle.fearGate === 'failed') {
+          get().log(`${active.name} ne peut pas s'approcher de ${feared.name} : la Peur le cloue (ce Tour).`);
+          return;
+        }
+        set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'entity', id }, result: null }, battle: { ...get().battle!, preview: null } });
+        bus.emit(EVT.SCENE_DIRTY);
         return;
       }
     }
@@ -2422,6 +2455,33 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),
+
+  // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
+  //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;
+  //    échec → fearGate 'failed' (aucune approche ce Tour). « Un jet = une modale ». ──
+  approachRoll: () => FLOWS.approach.roll(get, set),
+  approachReroll: () => FLOWS.approach.reroll(get, set),
+  approachForceSuccess: () => FLOWS.approach.forceSuccess(get, set),
+  approachConfirm: () => {
+    const { battle, pendingApproach: pa } = get();
+    if (!battle || !pa || !pa.result) return;
+    const c = battle.combatants.find((x) => x.id === pa.combatantId);
+    const src = battle.combatants.find((x) => x.id === pa.sourceId);
+    set({ pendingApproach: null });
+    if (!c) return;
+    const ok = pa.result.success;
+    const log = [...battle.log, ev('fear', ok
+      ? `${c.name} rassemble son courage : il peut approcher ${src?.name ?? 'la source de sa Peur'} ce Tour.`
+      : `${c.name} n'ose pas approcher ${src?.name ?? 'la source de sa Peur'} : la Peur le cloue (ce Tour).`, c.id, src?.id)];
+    set({ battle: { ...get().battle!, fearGate: ok ? 'passed' : 'failed', log } });
+    if (ok) {
+      // Relance l'intention différée (le gate est désormais 'passed').
+      if (pa.intent.kind === 'tile') get().battleClickTile(pa.intent.pt, { confirm: true });
+      else get().battleClickEntity(pa.intent.id, { confirm: true });
+    }
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  approachCancel: () => set({ pendingApproach: null }), // renonce avant le jet : aucune trace, re-cliquable
 
   // ── Se relever d'À Terre (LDB 16-États l.37) : utilise le Mouvement pour se mettre debout. Impossible
   //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──

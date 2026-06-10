@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { conditionMeta, summarizeEffects, topImportantCondition } from './effectIcons';
-import type { ConditionInstance, ActiveEffect, CharKey } from '../engine/types';
+import { conditionMeta, summarizeEffects, topImportantCondition, combatantFlags } from './effectIcons';
+import type { Combatant, ConditionInstance, ActiveEffect, CharKey } from '../engine/types';
 
 const cond = (name: string, value = 1): ConditionInstance => ({ name, value });
 const buff = (label: string, bonus: number, roundsLeft: number, char?: CharKey): ActiveEffect => ({ label, bonus, roundsLeft, char });
@@ -17,6 +17,20 @@ describe('conditionMeta', () => {
   it('a un repli pour un état inconnu', () => {
     expect(conditionMeta('TrucBizarre').icon).toBeTruthy();
     expect(conditionMeta('TrucBizarre').important).toBe(false);
+  });
+});
+
+describe('combatantFlags — Peur (LDB 21 l.29)', () => {
+  const C = (psychState: unknown) => ({ conditions: [], psychState }) as unknown as Combatant;
+  it('sous l’emprise (calmeDR < Indice) → drapeau fear avec l’Indice max, et chip 😨 visible', () => {
+    const f = combatantFlags(C([{ type: 'peur', sourceId: 'x', indice: 2, calmeDR: 0 }, { type: 'peur', sourceId: 'y', indice: 3, calmeDR: 1 }]));
+    expect(f.fear).toBe(3);
+    const r = summarizeEffects([], [], 5, f);
+    expect(r.visible.some((v) => v.icon === '😨')).toBe(true);
+  });
+  it('Peur vaincue (calmeDR ≥ Indice) ou absente → pas de drapeau', () => {
+    expect(combatantFlags(C([{ type: 'peur', sourceId: 'x', indice: 2, calmeDR: 2 }])).fear).toBeUndefined();
+    expect(combatantFlags(C([])).fear).toBeUndefined();
   });
 });
 

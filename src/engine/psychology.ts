@@ -44,6 +44,9 @@ export interface PsychAffliction {
   calmeDR?: number;
   /** N° de Round du dernier Test de Calme (le Test étendu est UNE fois par Round). */
   lastTestRound?: number;
+  /** Clé `round:turn` du dernier Test de Calme « la source s'approche » (LDB 21 l.29) : UN Test par
+   *  Tour de la source — un déplacement DÉCOMPOSÉ en segments ne re-déclenche pas. */
+  lastApproachKey?: string;
   /** Trait CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : `true` = affliction non résistée
    *  (effets actifs, re-testable pour y mettre fin) ; `false` = testé et résisté (marqueur inerte
    *  empêchant le re-déclenchement ce rencontre). */

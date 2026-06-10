@@ -93,13 +93,18 @@ export interface EffectFlags {
   focusDr?: number;
   /** Faim (#T2, LDB 18 l.417-422) : jours sans manger + échecs (malus de caracs actifs). */
   hunger?: { days: number; failures: number };
+  /** Sous l'emprise de la PEUR (LDB 21 l.29) : Indice le plus élevé des sources non surmontées
+   *  (calmeDR < Indice). Undefined = aucune Peur active. */
+  fear?: number;
 }
 
 /** Extrait les états-drapeaux affichables d'un Combatant (source unique pour tous les affichages). */
 export function combatantFlags(c: Combatant): EffectFlags {
+  const fears = (c.psychState ?? []).filter((p) => p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 1));
   return {
     frenzied: c.frenzied, defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr,
     hunger: (c.hunger?.days ?? 0) >= 1 ? { days: c.hunger!.days, failures: c.hunger!.failures } : undefined,
+    fear: fears.length ? Math.max(...fears.map((p) => p.indice ?? 1)) : undefined,
   };
 }
 
@@ -114,6 +119,12 @@ function flagChips(flags?: EffectFlags): EffectChip[] {
     out.push({
       key: 'f-hunger', icon: '🍽️', kind: 'state', severity: 62,
       label: `Affamé (${h.days} j sans manger${h.failures >= 2 ? ' — −10 à toutes les Caractéristiques' : h.failures === 1 ? ' — −10 Force/Endurance' : ''}) : pas de récupération naturelle`,
+    });
+  }
+  if (flags?.fear != null) {
+    out.push({
+      key: 'f-fear', icon: '😨', kind: 'state', severity: 66,
+      label: `Peur (Indice ${flags.fear}) — −1 DR contre la source ; approcher exige un Test de Calme (+0) ; Test étendu de Calme en fin de Round pour la vaincre`,
     });
   }
   return out;
