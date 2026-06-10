@@ -23,9 +23,11 @@ export function buildingObj(b: BuildingFeature, dims: Dims, hideRoof = false, ni
         minY = Math.min(minY, cy - CELL / 2); maxY = Math.max(maxY, cy + CELL / 2);
       }
     const door = b.door ? tileCenter(b.door.x, b.door.y, dims) : null;
-    // Lettre du TYPE au centre (comme le « H » du départ héros) → on identifie le bâtiment d'un coup d'œil.
-    const letter = (b.type || b.label || '?').charAt(0).toUpperCase();
+    // Nom complet au centre du toit → on identifie le bâtiment d'un coup d'œil. Police mise à l'échelle
+    // pour tenir dans la largeur de l'empreinte (≈0.58·fontSize par caractère), bornée [7, 16].
+    const name = b.label || b.type || '?';
     const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+    const nameFont = Math.max(7, Math.min(16, (maxX - minX - 12) / Math.max(1, name.length * 0.58)));
     return {
       d: buildingDepth(b, dims),
       el: (
@@ -34,8 +36,8 @@ export function buildingObj(b: BuildingFeature, dims: Dims, hideRoof = false, ni
           <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={3} fill="#6e4f3a" stroke="#241a12" strokeWidth={4} />
           <rect x={minX + 5} y={minY + 5} width={maxX - minX - 10} height={maxY - minY - 10} rx={2} fill="none" stroke="#8a6a4a" strokeWidth={1.5} opacity={0.6} />
           {door && <rect x={door.cx - CELL / 2} y={door.cy - CELL / 2} width={CELL} height={CELL} fill="#caa46a" stroke="#3a2c1c" strokeWidth={1.5} />}
-          <text x={midX} y={midY} textAnchor="middle" dominantBaseline="central" fontSize={Math.min(28, (maxY - minY) * 0.55)} fontWeight="bold" fill="#f2e6cc" stroke="#241a12" strokeWidth={0.6} pointerEvents="none">
-            {letter}
+          <text x={midX} y={midY} textAnchor="middle" dominantBaseline="central" fontSize={nameFont} fontWeight="bold" fill="#f2e6cc" stroke="#241a12" strokeWidth={0.5} pointerEvents="none">
+            {name}
           </text>
         </g>
       ),
