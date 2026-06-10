@@ -1,5 +1,6 @@
 import { Combatant } from '../../engine/types';
 import { Scene, Terrain } from '../../state/scene';
+import type { WorldMap } from '../../state/worldMap';
 
 /** Un scénario de test = un groupe fixé + une scène adaptée (+ combat direct optionnel). */
 export interface TestScenario {
@@ -12,6 +13,10 @@ export interface TestScenario {
   makeParty: () => Combatant[];
   scene: Scene;
   autoCombat?: string; // id d'encounter → démarre le combat directement
+  /** Scènes supplémentaires du scénario (destinations de voyage, intérieurs…) — chargées en projet. */
+  extraScenes?: Scene[];
+  /** Carte du monde du scénario (#T2 Voyage). */
+  worldMap?: WorldMap;
 }
 
 /** Arène dégagée + point de départ des héros (base des scénarios de combat direct). */

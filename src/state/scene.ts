@@ -199,6 +199,10 @@ export type Effect =
    *  GRATUIT en soi (on peut dormir chez soi) ; un prix éventuel (auberge) est porté par le CHOIX de
    *  dialogue (`DialogueChoice.cost`), pas par le repos. */
   | { type: 'rest'; days?: number }
+  /** Repas (#T2 — auberge, hôte généreux…) : nourrit TOUT le groupe pour la journée SANS consommer de
+   *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.417-422). Le prix éventuel (« Repas,
+   *  auberge », LDB p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
+  | { type: 'mealParty' }
   /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
    *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
   | { type: 'inflictNightmares'; heroId?: string }

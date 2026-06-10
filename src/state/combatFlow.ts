@@ -72,6 +72,8 @@ import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solid
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
+import { feedFromMeal } from '../engine/provisions';
+import { runDailyUpkeep } from './upkeep';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable, condMet } from './scene';
@@ -243,6 +245,15 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         // l'action « Dormir » — récup Exténué/Blessures + convalescence + cauchemars (no-op en combat).
         restPartyOvernight(get, set, e.days ?? 1);
         break;
+      case 'mealParty': {
+        // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
+        // compteurs/malus de Faim remis à zéro (LDB 18 l.417-422 ; prix éventuel porté par le choix).
+        const diners = get().party;
+        for (const h of diners) if (!h.dead) feedFromMeal(h);
+        set({ party: [...diners] });
+        get().log('Le groupe prend un vrai repas — chacun mange à sa faim.');
+        break;
+      }
       case 'inflictNightmares': {
         // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
         let who = '';
@@ -1840,6 +1851,9 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   // stabilisés ; restRecovery refuse d'ailleurs le repos d'un héros encore Hémorragique/En flammes/Empoisonné.
   set({ gameTime: before + minutes });
   bus.emit(EVT.TIME_ADVANCED, { minutes });
+  // Entretien quotidien (#T2) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
+  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418).
+  runDailyUpkeep(get, set);
   const party = get().party;
   // Soin des maladies (LDB 09-Compétences) : si un soignant apte (Guérison) veille le groupe, la durée
   // des maladies des patients est réduite plus vite (−1 j/jour de soins, min 1). Test de Guérison supposé

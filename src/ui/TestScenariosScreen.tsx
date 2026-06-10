@@ -6,11 +6,14 @@ export function TestScenariosScreen() {
   const setScreen = useGame((s) => s.setScreen);
   const setParty = useGame((s) => s.setParty);
   const startScene = useGame((s) => s.startScene);
+  const loadProject = useGame((s) => s.loadProject);
   const startCombat = useGame((s) => s.startCombat);
 
   const launch = (sc: TestScenario) => {
     setParty(sc.makeParty());
-    startScene(sc.scene);
+    // Scénario multi-scènes / avec carte du monde (#T2) → chargé comme un projet ; sinon scène simple.
+    if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
+    else startScene(sc.scene);
     if (sc.autoCombat) startCombat(sc.autoCombat);
     setScreen('campaign');
   };

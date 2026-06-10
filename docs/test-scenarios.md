@@ -52,3 +52,7 @@ export const scenario: TestScenario = {
 | ⚔️ Engagé / Charge / Désengagement | charge, Engagement, désengagement |
 | ✨ Magie | incantation (NI/DR/Maladresse), Focalisation, Bénédictions |
 | 🖼️ Galerie de modèles | tous les modèles : 58 créatures + **toutes les carrières** + **toutes les armes** + mutants (énumérés depuis la data), **exploration sans combat** |
+| 🧭 Voyage & Nourriture | carte du monde (3 lieux), voyage à pied/diligence (temps, rations, marche forcée), faim RAW, péripéties (embuscade → interruption + reprise), repas d'auberge (`mealParty`) |
+
+Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :
+il est alors chargé comme un projet (`loadProject`).

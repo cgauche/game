@@ -4,6 +4,7 @@
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties } from './trauma';
 import { diseaseCharPenalties } from './disease';
+import { hungerCharPenalties } from './provisions';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
@@ -32,6 +33,8 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   mods.push(...traumaCharPenalties(c, key));
   // Pénalités de maladie (LDB 20 : fièvre −10 aux Tests Physiques/Sociaux) — même pool non-cumul.
   mods.push(...diseaseCharPenalties(c, key));
+  // Pénalités de faim (LDB 18 l.422 : −10 F/E au 1ᵉʳ échec, −10 ailleurs dès le 2ᵉ) — même pool.
+  mods.push(...hungerCharPenalties(c, key));
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));

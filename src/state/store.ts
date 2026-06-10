@@ -89,7 +89,9 @@ import { spawnEnemy } from './spawn';
 import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
 import { bus, EVT } from './bus';
-import { campaign } from '../scenes/campaign';
+import { campaign, campaignWorldMap } from '../scenes/campaign';
+import { dayIndex, runDailyUpkeep } from './upkeep';
+import * as travelFlow from './travelFlow';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test';
 
@@ -275,8 +277,9 @@ export interface GameState {
   /** Crédite la bourse du groupe (Richesse initiale d'un héros créé, LDB 05 l.578-583). */
   creditPartyMoney: (m: import('../engine/money').Money, note?: string) => void;
   startScene: (scene: Scene) => void;
-  /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. */
-  loadProject: (scenes: Scene[], entryId: string) => void;
+  /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. `worldMap` = carte du
+   *  monde du projet (#T2, projet v2) — null/absent : pas de voyage dans ce projet. */
+  loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
   interactEntity: (entityId: string) => void;
@@ -340,7 +343,7 @@ export interface GameState {
 
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
-  startCombat: (encounterId: string, onVictory?: Effect[]) => void;
+  startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
   battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
@@ -575,11 +578,30 @@ export interface GameState {
    *  soigne des Blessures (l.380 volet a Résistance +20 → DR+BE, ET volet b +BE/jour) et déclenche les
    *  cauchemars des héros marqués (LDB 16/18/21). `days` par défaut = 1 (une nuit). */
   restParty: (days?: number) => void;
+  // ── Voyage & nourriture (#T2) ──
+  /** Carte du monde du projet courant (graphe de lieux/routes, éditable) — null si le projet n'en a pas. */
+  worldMap: import('./worldMap').WorldMap | null;
+  /** Overlay carte du monde ouvert (exploration). */
+  worldMapOpen: boolean;
+  openWorldMap: () => void;
+  closeWorldMap: () => void;
+  /** Voyage en cours/interrompu (progression km — « Reprendre le voyage » après une embuscade). */
+  travelPlan: import('./travelFlow').TravelPlan | null;
+  /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number }) => void;
+  /** Reprend un voyage interrompu par une péripétie. */
+  resumeTravel: () => void;
+  /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
+  lastUpkeepDay: number;
 }
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
   gameTime: CAMPAIGN_START,
+  lastUpkeepDay: dayIndex(CAMPAIGN_START),
+  worldMap: campaignWorldMap,
+  worldMapOpen: false,
+  travelPlan: null,
   party: [],
   scene: null,
   mode: 'exploration',
@@ -724,12 +746,15 @@ export const useGame = create<GameState>((set, get) => ({
     openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
   },
 
-  loadProject: (scenes, entryId) => {
+  loadProject: (scenes, entryId, worldMap) => {
     // Enregistre toutes les scènes du projet (pour que les portes reveal:'door'
     // résolvent leurs intérieurs), puis démarre la scène d'entrée.
     for (const s of scenes) registerScene(s);
     const entry = scenes.find((s) => s.id === entryId) ?? scenes[0];
     if (entry) get().startScene(entry);
+    // La carte du PROJET remplace celle de la campagne (restaurée par le reset de startScene) ;
+    // un projet sans carte n'offre pas de voyage.
+    if (worldMap !== undefined) set({ worldMap });
   },
 
   /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).
@@ -902,7 +927,7 @@ export const useGame = create<GameState>((set, get) => ({
     seedBattleRng(seed);
   },
 
-  startCombat: (encounterId, onVictory) => {
+  startCombat: (encounterId, onVictory, opts) => {
     const { scene, party, partyPos } = get();
     if (!scene) return;
     const enc = scene.encounters.find((e) => e.id === encounterId);
@@ -952,7 +977,8 @@ export const useGame = create<GameState>((set, get) => ({
     });
     const all = [...heroes, ...enemies];
     // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
-    const surpriseLines = enc.surprise ? applySurprise(all, enc.surprise) : [];
+    // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
+    const surpriseLines = enc.surprise && !opts?.noSurprise ? applySurprise(all, enc.surprise) : [];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
     for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
     const order = initiativeOrder(all).map((c) => c.id);
@@ -2775,7 +2801,15 @@ export const useGame = create<GameState>((set, get) => ({
       h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
     }
     if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
+    // Entretien quotidien (#T2 — rations/faim) : traite les éventuels franchissements de jour.
+    runDailyUpkeep(get, set);
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => restPartyOvernight(get, set, days),
+
+  // ── Voyage & nourriture (#T2) ──
+  openWorldMap: () => { if (!get().battle && get().worldMap) set({ worldMapOpen: true }); },
+  closeWorldMap: () => set({ worldMapOpen: false }),
+  startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
+  resumeTravel: () => travelFlow.resumeTravel(get, set),
 }));
