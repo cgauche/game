@@ -13,6 +13,7 @@
  */
 import { ReactNode, useMemo, useState } from 'react';
 import { useGame } from '../../state/store';
+import { rosterAdd } from '../../state/roster';
 import {
   species as allSpecies,
   careersForSpecies,
@@ -207,8 +208,10 @@ export function CharacterCreator() {
 
   const create = () => {
     const hero = buildHero(d);
+    const wealth = draftWealth(d);
+    rosterAdd({ hero, wealth }); // roster persistant : réutilisable dans un futur groupe
     setParty([...party, hero]);
-    creditPartyMoney(draftWealth(d), `Richesse initiale de ${hero.name} (${level?.status ?? ''})`);
+    creditPartyMoney(wealth, `Richesse initiale de ${hero.name} (${level?.status ?? ''})`);
     setScreen('party');
   };
 
