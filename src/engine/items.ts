@@ -147,6 +147,10 @@ export function recomputeLoadout(c: Combatant): void {
       skin: it.skin, hands, hand };
   };
 
+  // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de
+  // chemin « toutes armes équipées »). Les ennemis (armes du statbloc, posées en dur, sans items) ne passent
+  // pas par ici (cf. spawn.ts), donc aucun statbloc n'est écrasé.
+  if (!activeLoadout(c)) ensureDefaultLoadout(c);
   const weapons: Weapon[] = [];
   const lo = activeLoadout(c);
   if (lo) {
@@ -160,14 +164,8 @@ export function recomputeLoadout(c: Combatant): void {
       const offW = offIt ? toWeapon(offIt, 'off') : null;
       if (offW) { weapons.push(offW); offUid = offIt!.uid; }
     }
-    // Synchronise `equipped` des ARMES sur le loadout (lecteurs legacy de weapon.equipped : marchand, etc.).
+    // Synchronise `equipped` des ARMES sur le loadout (lecteurs de weapon.equipped : marchand, etc.).
     for (const it of items) if (it.kind === 'melee' || it.kind === 'ranged') it.equipped = it.uid === lo.main || it.uid === offUid;
-  } else {
-    for (const it of items) {
-      if (!it.equipped || (it.kind !== 'melee' && it.kind !== 'ranged')) continue;
-      const w = toWeapon(it, 'main');
-      if (w) weapons.push(w);
-    }
   }
 
   // Crochet PORTÉ (prothèse, LDB 73) : « en Combat rapproché, considéré comme une Dague ». Arme dérivée.

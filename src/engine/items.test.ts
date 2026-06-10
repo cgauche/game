@@ -142,13 +142,13 @@ describe('recomputeLoadout piloté par loadout', () => {
     expect(lo.off).toBeUndefined(); // 'disparu' nettoyé
   });
 
-  it('aucun loadout → legacy : toutes armes équipées, hand main', () => {
-    const a = w('a', 'A', { subType: 'Base', hands: 1 });
-    const b = w('b', 'B', { subType: 'Base', hands: 1 });
+  it('sans loadout : recompute AUTO-GÉNÈRE un loadout par défaut (un seul modèle, plus de « toutes équipées »)', () => {
+    const a = w('a', 'A', { subType: 'Base', hands: 1, damage: '+BF+4' });
+    const b = w('b', 'B', { subType: 'Base', hands: 1, damage: '+BF' });
     const c = heroWith([a, b]);
     recomputeLoadout(c);
-    expect(c.weapons.map((x) => x.name)).toEqual(['A', 'B', 'Mains nues']);
-    expect(c.weapons.every((x) => x.hand !== 'off')).toBe(true);
+    expect((c.loadouts ?? []).length).toBeGreaterThanOrEqual(1); // loadout créé à la volée
+    expect(c.weapons.map((x) => [x.name, x.hand])).toEqual([['A', 'main'], ['B', 'off'], ['Mains nues', 'main']]);
   });
 });
 
@@ -234,17 +234,21 @@ describe('items — recomputeLoadout / encombrement', () => {
     const cr = c.weapons.find((w) => w.name === 'Crochet');
     expect(cr?.damage).toBe('+BF+2');
   });
-  it('amputation de main : Arc exclu, mais « Arbalète de poing » (1 main) reste utilisable', () => {
+  it('amputation de main : loadout Arc (2 mains) exclu → Mains nues ; loadout Arbalète de poing (1 main) utilisable', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, note: '' }],
       items: [
-        item({ name: 'Arc long', kind: 'ranged', subType: 'Arc', hands: 2, equipped: true }),
-        item({ name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', hands: 1, equipped: true }),
+        item({ uid: 'arc', name: 'Arc long', kind: 'ranged', subType: 'Arc', hands: 2, equipped: true }),
+        item({ uid: 'arb', name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', hands: 1, equipped: true }),
       ],
+      loadouts: [{ id: 'larc', name: 'Arc', main: 'arc' }, { id: 'larb', name: 'Arbalète', main: 'arb' }],
+      activeLoadoutId: 'larc',
     } as unknown as Combatant;
     recomputeLoadout(c);
-    expect(c.weapons.map((w) => w.name)).not.toContain('Arc long'); // arc bimanuel exclu
+    expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']); // Arc à 2 mains exclu par l'amputation
+    c.activeLoadoutId = 'larb';
+    recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).toContain('Arbalète de poing'); // 1 main → utilisable
   });
   it('prothèse PORTÉE = Enc 0 ; possédée mais non portée = son Enc (LDB 73)', () => {
