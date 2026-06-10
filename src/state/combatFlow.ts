@@ -92,7 +92,9 @@ import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenz
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, pathTo, chebyshev, Pt } from './path';
-import { chooseEnemyAction } from './ai';
+import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
+import { resolveRun } from '../engine/movement';
+import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
 
 
@@ -981,6 +983,44 @@ export function displayedReach(get: () => GameState): Map<string, number> {
   const battle = get().battle;
   if (!battle) return new Map();
   return battle.reachable.size > 0 ? battle.reachable : computeMoveReach(get);
+}
+
+/**
+ * PARITÉ héros/IA sur l'approche (LDB 15 l.74-82) : si le plan de MARCHE n'amène pas l'ennemi au
+ * contact, un combattant de mêlée non Engagé tente une CHARGE à portée de Course (2M × Bond/Foulée) ;
+ * si même la Course ne suffit pas, il COURT (Action + Test d'Athlétisme — Chevaucher à cheval —,
+ * résolution instantanée IA) : budget = Marche + Course + DR, et il n'attaque PAS ce tour.
+ * Pure (rng injecté) — renvoie le plan retenu et le jet de Course éventuel.
+ */
+export function aiApproachPlan(
+  input: EnemyTurnInput,
+  geom: Combatant,
+  action: EnemyAction,
+  rng: RNG,
+): { plan: EnemyAction; ran: { roll: number; budget: number } | null } {
+  const enemy = input.enemy;
+  const none = { plan: action, ran: null };
+  if (action.kind !== 'move') return none;
+  if (isEngaged(enemy) || hasCondition(enemy, 'À Terre') || !canTakeAction(enemy)) return none;
+  if (!enemy.weapons.some((w) => w.type === 'melee')) return none;
+  const M = effectiveMovement(geom);
+  if (M <= 0) return none;
+  const atContact = (a: EnemyAction): boolean =>
+    a.kind === 'move' && combatDistance({ ...enemy, pos: a.to } as Combatant, input.heroes.find((h) => h.id === a.thenTargetId) ?? input.heroes[0]) <= meleeReachTiles(enemy.weapons);
+  if (atContact(action)) return none; // la Marche suffit déjà
+  // Charge (portée de Course, sans Test — LDB 15 l.74-77).
+  const courseBudget = Math.floor(M * 2 * runMultiplier(geom.traits));
+  if (courseBudget <= input.movement) return none;
+  const charge = chooseEnemyAction({ ...input, movement: courseBudget });
+  if (charge.kind === 'move' && atContact(charge)) return { plan: charge, ran: null };
+  // Course (LDB 15 l.79-82) : Test d'Athlétisme/Chevaucher, budget = Marche + Course + DR ; pas d'attaque.
+  const r = resolveRun(testValue(enemy, enemy.mountId ? 'Chevaucher' : 'Athlétisme'), M, rng);
+  const runBudget = M + r.bonusCases;
+  const run = runBudget > input.movement ? chooseEnemyAction({ ...input, movement: runBudget }) : action;
+  if (run.kind === 'move' && (run.to.x !== action.to.x || run.to.y !== action.to.y))
+    return { plan: run, ran: { roll: r.roll, budget: runBudget } };
+  // La Course ne porte pas plus loin que le plan de Marche : marcher normalement (pas d'Action gâchée).
+  return none;
 }
 
 /** Source de PEUR active dont `dest` RAPPROCHE l'acteur (LDB 21 l.29) — null si aucune, ou si
@@ -3193,17 +3233,23 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       return;
     }
     case 'move': {
-      // Simplifications IA assumées (sévérité mineure, relevées par la revue de fidélité) :
+      // Simplification IA assumée (sévérité mineure, relevée par la revue de fidélité) :
       //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15-Dépl l.84-89) : un
       //    ennemi Engagé qui se repositionne ne paie pas l'Esquive/le sacrifice d'Avantage.
-      //  • l'IA charge dans la portée de MARCHE (chooseEnemyAction borne le déplacement à M),
-      //    pas la portée de Course (2M) ouverte au héros — l'IA charge donc moins loin.
+      // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
+      // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
+      const { plan, ran } = aiApproachPlan(
+        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, smoke: smokeOf(battle), flying: flyM != null },
+        geom, action, battleRng(),
+      );
+      const mv = plan.kind === 'move' ? plan : action;
+      if (ran) battle.log.push(ev('move', `${enemy.name} prend sa Course (${enemy.mountId ? 'Chevaucher' : 'Athlétisme'} ${ran.roll === 100 ? '00' : ran.roll}) : jusqu'à ${ran.budget} cases.`, enemy.id));
       const wasEngaged = isEngaged(enemy);
-      const distBefore = combatDistance(enemy, targetOf(action.thenTargetId)); // distance de combat AVANT le déplacement
+      const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
-      const path = pathTo(scene, enemy.pos!, action.to, blocked, sizeFootprint(geom.size));
-      enemy.pos = action.to;
-      if (geom !== enemy) geom.pos = { ...action.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
+      const path = pathTo(scene, enemy.pos!, mv.to, blocked, sizeFootprint(geom.size));
+      enemy.pos = mv.to;
+      if (geom !== enemy) geom.pos = { ...mv.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
       displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
       get().faceFromPath(enemy.id, path);
       if (geom !== enemy) get().faceFromPath(geom.id, path);
@@ -3212,8 +3258,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
-      const tgt = targetOf(action.thenTargetId);
-      if (canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
+      const tgt = targetOf(mv.thenTargetId);
+      // La Course a consommé l'Action (LDB 15 l.79) → pas d'attaque en arrivant.
+      if (!ran && canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
         // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
         if (!wasEngaged) {
           const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
