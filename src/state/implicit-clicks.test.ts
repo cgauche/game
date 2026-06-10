@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useGame } from './store';
+import { useGame, movementRemaining } from './store';
 import { computeMoveReach, computeRunReach, displayedReach } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -120,6 +120,24 @@ describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(dest);
     expect(st.battle!.acted).toBe(true);
     expect(st.pendingRun).toBeNull();
+  });
+
+  it('jet généreux : le reliquat de Course reste dépensable en segments après l’arrivée (l.80)', () => {
+    const { H } = setup();
+    const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const M = effectiveMovement(H);
+    const dest = { x: p.x + M + 2, y: p.y }; // coût M+2 ; budget M + 2M = 3M → reliquat 2M−2
+    useGame.setState({ pendingRun: { combatantId: H.id, dest, result: { success: true, roll: 10, target: 60, dr: 4, bonusCases: 2 * M } } });
+    useGame.getState().runConfirm();
+    let st = useGame.getState();
+    const h = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(st.battle!.runBudget).toBe(3 * M);
+    expect(movementRemaining(st.battle!, h)).toBe(2 * M - 2); // reliquat
+    expect(computeMoveReach(useGame.getState).size).toBeGreaterThan(0); // zone bleue rouverte
+    useGame.getState().battleClickTile({ x: dest.x + 2, y: dest.y }, { confirm: true }); // segment sur le reliquat
+    st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual({ x: dest.x + 2, y: dest.y });
+    expect(st.battle!.movementUsed).toBe(M + 4);
   });
 
   it('jet court : on s’arrête au dernier point ATTEIGNABLE du chemin vers la destination', () => {

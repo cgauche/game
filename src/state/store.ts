@@ -150,6 +150,9 @@ export interface BattleState {
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
    *  `movedPreAction`. Effacé à l'annulation ou écrasé au 1ᵉʳ segment du Tour suivant. */
   moveSnapshot?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean } | null;
+  /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.80) :
+   *  le reliquat non parcouru reste dépensable en segments. Null hors Course ; purgé au Tour/Round. */
+  runBudget?: number | null;
   /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
    *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
   preview?:
@@ -2398,7 +2401,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!stop || (stop.x === c.pos!.x && stop.y === c.pos!.y)) {
       // Jet désastreux : aucun pas possible — l'Action est tout de même consommée (le Test a eu lieu).
       log.push(ev('move', `${c.name} trébuche dans sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : sur place.`, c.id));
-      set({ battle: { ...get().battle!, action: null, acted: true, reachable: new Map(), preview: null, log } });
+      set({ battle: { ...get().battle!, action: null, acted: true, runBudget: range, reachable: new Map(), preview: null, log } });
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
@@ -2413,8 +2416,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (geom !== c) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: sub });
     const short = stop.x !== pr.dest.x || stop.y !== pr.dest.y;
     log.push(ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : ${cost} cases${short ? ' — le souffle manque avant la destination' : ''}.`, c.id));
-    // Le Mouvement consommé = coût parcouru (la Marche restante éventuelle reste utilisable, A-M*).
-    set({ battle: { ...get().battle!, action: null, acted: true, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
+    // Budget du Tour étendu à Marche + Course + DR (l.80) : le reliquat non parcouru reste dépensable
+    // en segments (A-M*) — `movementRemaining` lit `runBudget`.
+    set({ battle: { ...get().battle!, action: null, acted: true, runBudget: range, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),

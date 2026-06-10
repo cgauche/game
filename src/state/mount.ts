@@ -117,10 +117,13 @@ export function mountMovement(battle: BattleState, c: Combatant): number {
   return effectiveMovement(mount ?? c);
 }
 
-/** Cases de Mouvement encore disponibles ce Tour : budget de Marche (de la monture si cavalier) moins le
- *  Mouvement déjà parcouru (le déplacement est DÉCOMPOSABLE — règle maison, cf. `BattleState.movementUsed`). */
+/** Cases de Mouvement encore disponibles ce Tour : budget du Tour moins le Mouvement déjà parcouru
+ *  (déplacement DÉCOMPOSABLE — règle maison, cf. `BattleState.movementUsed`). Le budget est la Marche
+ *  (de la monture si cavalier), ÉTENDU par une Course réussie (`battle.runBudget` = Marche + Course + DR,
+ *  LDB 15 l.80 : la distance de Course « vient en plus » du Mouvement du Round — le reliquat reste dépensable). */
 export function movementRemaining(battle: BattleState, c: Combatant): number {
-  return Math.max(0, mountMovement(battle, c) - (battle.movementUsed ?? 0));
+  const budget = Math.max(battle.runBudget ?? 0, mountMovement(battle, c));
+  return Math.max(0, budget - (battle.movementUsed ?? 0));
 }
 
 /** Ce combattant peut-il (encore) se déplacer librement ce Tour ? Mouvement décomposable, mais NON entrelacé
