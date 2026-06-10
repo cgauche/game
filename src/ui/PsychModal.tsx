@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
 import { RollFlowShell } from './RollFlowShell';
-import { TeamPortrait } from './CombatantBadge';
+import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
@@ -20,6 +20,7 @@ export function PsychModal() {
   const roll = useGame((s) => s.psychRoll);
   const reroll = useGame((s) => s.psychReroll);
   const bonusSL = useGame((s) => s.psychBonusSL);
+  const darkPact = useGame((s) => s.psychDarkPact);
   const force = useGame((s) => s.psychForceSuccess);
   const determine = useGame((s) => s.psychResolve);
   const confirm = useGame((s) => s.psychConfirm);
@@ -48,15 +49,7 @@ export function PsychModal() {
       subtitle={<>{c.name} doit garder son sang-froid{isCible && cl ? ` (${cl.label}${pp.cible ? ` — ${pp.cible}` : ''})` : ''}.</>}
       extra={
         <>
-          <div className="modal-vs">
-            <span className="mv-side"><TeamPortrait combatant={c} size={40} /><strong>{c.name}</strong></span>
-            {source && (
-              <>
-                <span className="mv-arrow">▸</span>
-                <span className="mv-side"><TeamPortrait combatant={source} size={40} /><strong>{source.name}</strong></span>
-              </>
-            )}
-          </div>
+          <VsHeader actor={c} target={source} verb="▸" />
           {/* Peur = Test ÉTENDU : barre de DR cumulé vers l'Indice (#23) — après le jet, montre le
               cumul MIS À JOUR (result.calmeDR), pas l'état d'avant. */}
           {!isCible && !isTerreur && <DrBar cum={r ? (r.calmeDR ?? pp.prevDR ?? 0) : (pp.prevDR ?? 0)} target={pp.indice} />}
@@ -73,6 +66,8 @@ export function PsychModal() {
       onReroll={reroll}
       /* Trait ciblé = Test binaire → pas de « +1 DR » (bouton Relancer simple). */
       onBonusSL={isCible ? undefined : bonusSL}
+      darkPactable={!!r && failed && c.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={c.resilience ?? 0}
       onForce={force}
       forceShow={!ok}

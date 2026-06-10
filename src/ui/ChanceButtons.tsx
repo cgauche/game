@@ -6,6 +6,8 @@
  * Sombre Pacte (LDB 19 l.16/41) : si `onDarkPact` est fourni et que le jet est relançable par
  * le Pacte (`darkPactable` : Test raté, MÊME déjà relancé), un héros peut recevoir
  * volontairement 1 Point de Corruption pour relancer — y compris à 0 Chance, c'est son intérêt.
+ *
+ * Libellés courts normés (rangée « influencer le jet ») — les explications vivent en tooltip.
  */
 export function ChanceButtons({
   fortune,
@@ -18,30 +20,32 @@ export function ChanceButtons({
   fortune: number;
   rerollable: boolean;
   onReroll: () => void;
-  onBonusSL: () => void;
+  onBonusSL?: () => void;
   darkPactable?: boolean;
   onDarkPact?: () => void;
 }) {
   const pactBtn = onDarkPact && darkPactable && (
     <button
-      className="btn"
+      className="btn btn-resource"
       onClick={onDarkPact}
       title="Sombre Pacte (LDB 19) : recevoir volontairement 1 Point de Corruption pour relancer ce Test — même après une relance de Chance. Les Dieux Sombres écoutent…"
     >
-      🩸 Sombre Pacte
+      🩸 Pacte
     </button>
   );
   if (fortune <= 0) return <>{pactBtn}</>;
   return (
     <>
       {rerollable && (
-        <button className="btn" onClick={onReroll} title="Dépense un point de Chance pour relancer le jet (LDB Destin)">
-          🍀 Relancer ({fortune})
+        <button className="btn btn-resource" onClick={onReroll} title="Dépense un point de Chance pour relancer le jet (LDB Destin)">
+          🍀 Relancer ×{fortune}
         </button>
       )}
-      <button className="btn" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR (LDB Destin)">
-        ➕ +1 DR ({fortune})
-      </button>
+      {onBonusSL && (
+        <button className="btn btn-resource" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR (LDB Destin)">
+          ➕ +1 DR ×{fortune}
+        </button>
+      )}
       {pactBtn}
     </>
   );

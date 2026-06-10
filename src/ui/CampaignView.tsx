@@ -8,6 +8,7 @@ import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { ActionBar } from './ActionBar';
 import { CombatBanner } from './CombatBanner';
+import { TargetPrompt } from './TargetPrompt';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
 import { BargainModal } from './BargainModal';
@@ -107,6 +108,8 @@ export function CampaignView() {
           />
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
+        {/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation). */}
+        {mode === 'battle' && battle && <TargetPrompt />}
         <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} />
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}

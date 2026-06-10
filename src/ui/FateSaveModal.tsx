@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { Modal } from './Modal';
 
 /**
  * Sauvetage par le Destin (LDB « Destin et Résistance » ch.17 l.31-35) : quand un héros à Destin
@@ -18,27 +19,28 @@ export function FateSaveModal() {
   const fate = hero.fate ?? 0;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Le Destin de {hero.name}</h3>
-        <p className="rm-log">
-          {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
-          (il en reste {fate})
-        </p>
-        <div className="modal-actions">
+    <Modal title={`Le Destin de ${hero.name}`} subject={hero} subjectPv variant="test">
+      <p className="rm-log">
+        {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
+        (il en reste {fate})
+      </p>
+      <div className="rm-options">
+        <div className="rm-loc-grid">
           {p.source === 'hit' && (
-            <button className="btn" onClick={negate} title="Évite tout le coup et reste en combat (Destin −1)">
+            <button className="btn small" onClick={negate} title="Évite tout le coup et reste en combat (Destin −1)">
               🍀 Comment ça a pu rater ?
             </button>
           )}
-          <button className="btn" onClick={survive} title="Survit mais quitte le combat (Destin −1)">
+          <button className="btn small" onClick={survive} title="Survit mais quitte le combat (Destin −1)">
             🛟 Meurs un autre jour
-          </button>
-          <button className="btn btn-primary" onClick={accept} title="Le héros meurt">
-            ☠️ Accepter le sort
           </button>
         </div>
       </div>
-    </div>
+      <div className="modal-actions">
+        <button className="btn btn-primary" onClick={accept} title="Le héros meurt">
+          ☠️ Accepter le sort
+        </button>
+      </div>
+    </Modal>
   );
 }

@@ -19,6 +19,7 @@ export function CorruptionModal() {
   const roll = useGame((s) => s.corruptionRoll);
   const reroll = useGame((s) => s.corruptionReroll);
   const bonusSL = useGame((s) => s.corruptionBonusSL);
+  const darkPact = useGame((s) => s.corruptionDarkPact);
   const resolve = useGame((s) => s.resolveCorruption);
   if (!pc) return null;
   const pool = battle?.combatants ?? party;
@@ -47,6 +48,8 @@ export function CorruptionModal() {
       rerollable={rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}
+      darkPactable={rolled && pc.roll! > (pc.target ?? 0)}
+      onDarkPact={darkPact}
       confirmLabel="Continuer"
       onConfirm={resolve}
     />

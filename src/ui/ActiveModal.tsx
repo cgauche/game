@@ -11,8 +11,6 @@ import { RenounceModal } from './RenounceModal';
 import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
-import { CleaveModal } from './CleaveModal';
-import { DualStrikeModal } from './DualStrikeModal';
 import { TrampleModal } from './TrampleModal';
 import { RunModal } from './RunModal';
 import { ApproachModal } from './ApproachModal';
@@ -28,7 +26,7 @@ import { CorruptionModal } from './CorruptionModal';
 
 /** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire (R2 du diagnostic). */
 export type ModalKey =
-  | 'fateSave' | 'fumble' | 'deviation' | 'bladeTrap' | 'renounce' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
+  | 'fateSave' | 'fumble' | 'deviation' | 'bladeTrap' | 'renounce' | 'trample' | 'reveal' | 'defense'
   | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
   | 'approach' | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
 
@@ -48,25 +46,26 @@ export interface ModalPendings {
  * `pending` est posé). Garantit qu'UNE seule modale est montée à la fois ; les autres `pending` restent
  * dans le store et reprennent la main quand les plus prioritaires se ferment (file naturelle). `null` = aucune.
  *
- * Ordre : sauvetage par Destin > Maladresse > Déviation critique > Frappe Mortelle/Piétinement > révélations
+ * Ordre : sauvetage par Destin > Maladresse > Déviation critique > Piétinement > révélations
  * témoins > défense réactive > psychologie > manœuvres/actions du joueur > jet.
  * (Le DÉBUT DE ROUND n'est plus une modale : c'est une pause in-situ — frise d'initiative (InitiativeStrip) +
  *  bouton « Commencer le round » dans l'ActionBar — pour ne pas doubler l'ordre déjà affiché à droite.)
+ *
+ * Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation « +Cible » ne sont PLUS des modales :
+ * ce sont des CIBLAGES SUR LE CHAMP DE BATAILLE (bandeau `TargetPrompt` + surbrillances IsoStage +
+ * clic carte) — l'arbitre rend `null` pendant ces phases (la carte doit rester cliquable).
  */
 export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
+  // Surincantation : choix des cibles en cours sur la carte → la modale d'incantation s'efface.
+  const castPicking = !!(s.pendingCast as { pickingTargets?: boolean } | null | undefined)?.pickingTargets;
   const order: [boolean, ModalKey][] = [
     [!!s.pendingFateSave, 'fateSave'],
     [!!s.pendingFumble, 'fumble'],
     [!!s.pendingDeviation, 'deviation'],
     [!!s.pendingBladeTrap, 'bladeTrap'],
     [!!s.pendingRenounce, 'renounce'],
-    // Frappe Mortelle : le jet d'enchaînement (pendingAttack) prend la main — sinon CleaveModal rend `null`.
-    [!!s.pendingCleave && !s.pendingAttack, 'cleave'],
     [!!s.pendingTrample, 'trample'],
     [(s.pendingReveals?.length ?? 0) > 0, 'reveal'],
-    // Maniement de deux armes : sélection de la 2ᵉ cible — APRÈS les révélations (Critique de la 1ʳᵉ frappe
-    // d'abord) ; cède au jet de la 2ᵉ frappe (pendingAttack), sinon DualStrikeModal rend `null`.
-    [!!s.pendingDualStrike && !s.pendingAttack, 'dualStrike'],
     [!!s.pendingDefense, 'defense'],
     [!!s.pendingPsych, 'psych'],
     [!!s.pendingEncounterPsych, 'encounterPsych'],
@@ -77,7 +76,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingRun, 'run'],
     [!!s.pendingFocus, 'focus'],
     [!!s.pendingHeal, 'heal'],
-    [!!s.pendingCast, 'cast'],
+    [!!s.pendingCast && !castPicking, 'cast'],
     [!!s.pendingReload, 'reload'],
     [!!s.pendingStateRecovery, 'stateRecovery'],
     [!!s.pendingAttack, 'attack'],
@@ -88,8 +87,8 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
 }
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
-  fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, bladeTrap: BladeTrapModal, renounce: RenounceModal, cleave: CleaveModal,
-  trample: TrampleModal, reveal: RevealModal, dualStrike: DualStrikeModal, defense: DefenseModal, psych: PsychModal,
+  fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, bladeTrap: BladeTrapModal, renounce: RenounceModal,
+  trample: TrampleModal, reveal: RevealModal, defense: DefenseModal, psych: PsychModal,
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,

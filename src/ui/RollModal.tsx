@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useGame, movementRemaining } from '../state/store';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
-import { crowdMod } from '../engine/combat';
+import { combatValue, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
-import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
+import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../state/combatFlow';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
-import { CombatantBadge, TeamPortrait } from './CombatantBadge';
-import { RollLine } from './RollLine';
+import { DeterminationButton } from './DeterminationButton';
+import { RollPanel } from './RollPanel';
+import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { Modal } from './Modal';
@@ -16,12 +17,13 @@ import { Modal } from './Modal';
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
 /**
- * Modale d'attaque : on choisit la localisation visée (Complexe -10), on clique
- * « Lancer » pour faire le jet, puis on peut dépenser un point de Chance pour
- * relancer avant d'appliquer le résultat (LDB Destin / Combat).
+ * Modale d'attaque — modale de RÉFÉRENCE du panneau de jet unique (`RollPanel`) : l'avant-jet est
+ * le même bloc que le résultat, pré-rempli. MA ligne montre mon score + mes bonus/malus ; la ligne
+ * adverse ne montre QUE son portrait, sa compétence de défense probable et ses bonus/malus (pas de
+ * valeur, pas de % de toucher, pas d'encaissé — LDB : le joueur ne connaît pas la cible adverse).
  *
- * La mêlée est un TEST OPPOSÉ : on affiche donc les DEUX jets (attaquant ET défenseur),
- * leur cible (base + modificateurs) et leur DR — c'est le DR net qui décide.
+ * La mêlée est un TEST OPPOSÉ : post-jet, les DEUX lignes sont remplies et la ligne GAGNANTE est
+ * accentuée (badge « DR net »), l'issue tient en une ligne style journal.
  */
 export function RollModal() {
   const pa = useGame((s) => s.pendingAttack);
@@ -40,6 +42,7 @@ export function RollModal() {
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
   const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
+  const spendResolve = useGame((s) => s.spendResolveCondition);
   // « Frisson » du lancer (R3) : beat de roulement PUREMENT cosmétique (état UI-local, RNG seedé intact —
   // le jet réel n'a lieu qu'à la fin du beat). Honore prefers-reduced-motion.
   const [rolling, setRolling] = useState(false);
@@ -66,8 +69,8 @@ export function RollModal() {
   const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
   const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
-  // Aperçu AVANT le jet (R4) : valeur de toucher + décomposition des modificateurs (plus de « validation à
-  // l'aveugle »). Recalculé à chaque changement d'option (localisation / Tirer dans le tas / immobile).
+  // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
+  // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
   const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const doRoll = () => {
@@ -75,17 +78,26 @@ export function RollModal() {
     setRolling(true);
     window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson
   };
+  // Issue COURTE (1 ligne, sans répéter les noms — le panneau dit déjà qui) à la place du log complet.
+  const outcome = res
+    ? res.critical
+      ? `Coup Critique${res.critLocation || res.location ? ` — ${HIT_LOCATION_LABELS[(res.critLocation ?? res.location)!]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure${res.woundsLost > 1 ? 's' : ''}` : ''}${res.defenderDefeated ? ' · hors de combat !' : ''}`
+      : res.hit
+        ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost != null ? ` · ${res.woundsLost} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : ''}${res.defenderDefeated ? ' · hors de combat !' : ''}`
+        : `Attaque déjouée${res.advantageTo === 'defender' ? " — l'adversaire gagne l'Avantage" : ''}`
+    : '';
 
   return (
     <Modal title="Attaque">
-        <div className="rm-vs">
-          <CombatantBadge combatant={attacker} />
-          <span className="rm-vs-arrow"><span className="rm-weapon">{weapon?.name ?? 'Mains nues'}</span><br />→</span>
-          <CombatantBadge combatant={target} />
-        </div>
+      <VsHeader
+        actor={attacker}
+        target={target}
+        label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts {preview.dmg} + DR</> : null}</>}
+      />
 
-        {!res ? (
-          <>
+      {!res ? (
+        <>
+          <div className="rm-options">
             {/* Maniement de deux armes (LDB 10 l.638) : attaquer des DEUX armes pour son Action. */}
             {dualEligible && (
               <label
@@ -96,7 +108,7 @@ export function RollModal() {
                 <span className="mini-title">⚔️ Des deux armes</span>
               </label>
             )}
-            {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; l'aperçu reflète le mod.
+            {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; le panneau reflète le mod.
                 Masqué en mode « des deux armes » (l'attaque-Action utilise alors la main directrice). */}
             {pickable.length >= 2 && !pa.dualMode && (
               <div className="rm-loc-inline">
@@ -113,8 +125,8 @@ export function RollModal() {
                 </select>
               </div>
             )}
-            {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact
-                plutôt qu'une grille de 7 boutons. Viser une localisation rend le Test Complexe (-10). */}
+            {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact.
+                Viser une localisation rend le Test Complexe (-10). */}
             <div className="rm-loc-inline">
               <span className="mini-title">Localisation</span>
               <select
@@ -155,116 +167,123 @@ export function RollModal() {
                   : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
               </div>
             )}
-            {preview && (preview.blocked ? (
-              <div className="rm-preview bad">⛔ Pas de ligne de vue</div>
-            ) : !preview.inRange ? (
-              <div className="rm-preview bad">⛔ Hors de portée</div>
-            ) : (
-              <div className="rm-preview">
-                <div className="rm-preview-hit">🎯 Toucher : <b>{Math.max(0, Math.min(100, preview.target))}%</b></div>
-                {preview.mods.length > 0 && (
-                  <div className="rm-roll-mods">
-                    {preview.mods.map((m, i) => (
-                      <span key={i} className={`rm-mod ${m.value >= 0 ? 'pos' : 'neg'}`}>
-                        {m.value >= 0 ? '+' : '−'}{Math.abs(m.value)} {m.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <div className="rm-preview-dmg" title="Blessures = Dégâts d'arme + DR du jet − (Bonus d'Endurance + PA). Plancher 1.">
-                  ⚔️ Dégâts : <b>{preview.dmg}</b> + DR − <b>{preview.soak}</b> encaissé · ≈ <b>{Math.max(1, preview.dmg - preview.soak)}+</b> Blessures
-                </div>
+          </div>
+          {preview && (preview.blocked || !preview.inRange ? (
+            <div className="rm-blocked">⛔ {preview.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
+          ) : (
+            <RollPanel
+              rows={[
+                {
+                  combatant: attacker,
+                  pending: {
+                    label: preview.kind === 'ranged' ? 'Projectiles' : 'Corps à corps',
+                    base: combatValue(attacker, preview.kind, weapon),
+                    target: Math.max(0, Math.min(100, preview.target)),
+                    mods: preview.mods,
+                  },
+                },
+                { combatant: target, pending: { ...previewDefense(target), hideValue: true } },
+              ]}
+            />
+          ))}
+          {rolling ? (
+            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+          ) : (
+            <>
+              <div className="rm-influence">
+                {/* Résilience AVANT le jet (LDB 17 l.73) : force la réussite (résultat garanti, sans frisson). */}
+                <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
+                {/* Détermination (LDB 17 l.66) : retirer un État négatif AVANT de lancer — la ligne recalcule. */}
+                <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />
               </div>
-            ))}
-            {rolling ? (
-              <div className="rm-rolling"><span className="rm-die">🎲</span></div>
-            ) : (
               <div className="modal-actions">
-                <button className="btn" onClick={cancel}>
+                <button className="btn btn-ghost" onClick={cancel}>
                   Annuler
                 </button>
                 <button className="btn btn-primary" onClick={doRoll}>
                   🎲 Lancer
                 </button>
-                {/* Résilience AVANT le jet (LDB 17 l.73) : force la réussite (résultat garanti, sans frisson). */}
-                <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
               </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Jet opposé : portrait à côté de chaque ligne pour savoir QUI a fait quel jet (R10). */}
-            <div className="rm-rolls">
-              {res.attackerDetail && (res.defenderDetail
-                ? <div className="rm-roll-row"><TeamPortrait combatant={attacker} size={28} /><RollLine d={res.attackerDetail} /></div>
-                : <RollLine d={res.attackerDetail} />)}
-              {res.defenderDetail && <div className="rm-roll-row"><TeamPortrait combatant={target} size={28} /><RollLine d={res.defenderDetail} /></div>}
-            </div>
-            {/* Une seule ligne d'issue, dans le style du journal d'événements (la verdict + le log
-                disaient la même chose) : icône par nature du coup, noms colorés par camp. */}
-            <JournalLine
-              className="rm-journal"
-              event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
-              combatants={battle.combatants}
-            />
-            {pa.forced && res.attackerDetail && (() => {
-              // LDB 17 l.73 « vous choisissez le résultat » : plus haut double réussi (→ Coup Critique).
-              const maxRoll = Math.min(99, res.attackerDetail!.target);
-              const bestDouble = Math.floor(maxRoll / 11) * 11;
-              return (
-                <div className="rm-loc">
-                  <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>
-                  <div className="rm-loc-grid">
-                    <button className={`btn small ${res.attackerRoll === 1 ? 'btn-primary' : ''}`} title="DR maximum" onClick={() => setForcedRoll(1)}>
-                      01 · DR max
-                    </button>
-                    {bestDouble >= 11 && (
-                      <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique (LDB 17 l.75)" onClick={() => setForcedRoll(bestDouble)}>
-                        {String(bestDouble).padStart(2, '0')} · Critique
-                      </button>
-                    )}
-                    <input
-                      className="rm-die-input"
-                      type="number"
-                      min={1}
-                      max={maxRoll}
-                      value={res.attackerRoll}
-                      onChange={(e) => setForcedRoll(Number(e.target.value))}
-                      title={`Choisir librement la valeur du dé (1 à ${maxRoll})`}
-                    />
-                  </div>
-                </div>
-              );
-            })()}
-            {res.critical && pa.forced && (
-              <div className="rm-loc">
-                {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}
-                <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Test opposé : mêmes lignes que l'avant-jet, remplies — vainqueur accentué + DR net. */}
+          <RollPanel
+            rows={[
+              { combatant: attacker, d: res.attackerDetail },
+              { combatant: target, d: res.defenderDetail },
+            ]}
+            winnerIndex={res.defenderDetail ? (res.hit ? 0 : 1) : undefined}
+            netSL={res.defenderDetail ? res.netSL : undefined}
+          />
+          {/* Issue courte (1 ligne, icône du journal) — le détail des noms vit dans les lignes. */}
+          <JournalLine
+            className="rm-journal"
+            event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', outcome, attacker.id, target.id)}
+            combatants={battle.combatants}
+          />
+          {pa.forced && res.attackerDetail && (() => {
+            // LDB 17 l.73 « vous choisissez le résultat » : plus haut double réussi (→ Coup Critique).
+            const maxRoll = Math.min(99, res.attackerDetail!.target);
+            const bestDouble = Math.floor(maxRoll / 11) * 11;
+            return (
+              <div className="rm-options">
+                <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>
                 <div className="rm-loc-grid">
-                  {LOCS.map((l) => (
-                    <button key={l} className={`btn small ${res.critLocation === l ? 'btn-primary' : ''}`} onClick={() => setCritLocation(l)}>
-                      {HIT_LOCATION_LABELS[l]}
+                  <button className={`btn small ${res.attackerRoll === 1 ? 'btn-primary' : ''}`} title="DR maximum" onClick={() => setForcedRoll(1)}>
+                    01 · DR max
+                  </button>
+                  {bestDouble >= 11 && (
+                    <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique (LDB 17 l.75)" onClick={() => setForcedRoll(bestDouble)}>
+                      {String(bestDouble).padStart(2, '0')} · Critique
                     </button>
-                  ))}
+                  )}
+                  <input
+                    className="rm-die-input"
+                    type="number"
+                    min={1}
+                    max={maxRoll}
+                    value={res.attackerRoll}
+                    onChange={(e) => setForcedRoll(Number(e.target.value))}
+                    title={`Choisir librement la valeur du dé (1 à ${maxRoll})`}
+                  />
                 </div>
               </div>
-            )}
-            <div className="modal-actions">
-              <ChanceButtons
-                fortune={fortune}
-                rerollable={rerollable}
-                onReroll={reroll}
-                onBonusSL={bonusSL}
-                darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
-                onDarkPact={darkPact}
-              />
-              <ResilienceButton resilience={attacker.resilience ?? 0} show={!!res && !res.hit} onForce={forceSuccess} />
-              <button className="btn btn-primary" onClick={confirm}>
-                Appliquer
-              </button>
+            );
+          })()}
+          {res.critical && pa.forced && (
+            <div className="rm-options">
+              {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}
+              <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
+              <div className="rm-loc-grid">
+                {LOCS.map((l) => (
+                  <button key={l} className={`btn small ${res.critLocation === l ? 'btn-primary' : ''}`} onClick={() => setCritLocation(l)}>
+                    {HIT_LOCATION_LABELS[l]}
+                  </button>
+                ))}
+              </div>
             </div>
-          </>
-        )}
+          )}
+          <div className="rm-influence">
+            <ChanceButtons
+              fortune={fortune}
+              rerollable={rerollable}
+              onReroll={reroll}
+              onBonusSL={bonusSL}
+              darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
+              onDarkPact={darkPact}
+            />
+            <ResilienceButton resilience={attacker.resilience ?? 0} show={!!res && !res.hit} onForce={forceSuccess} />
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={confirm}>
+              Appliquer
+            </button>
+          </div>
+        </>
+      )}
     </Modal>
   );
 }

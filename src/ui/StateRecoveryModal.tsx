@@ -12,6 +12,7 @@ export function StateRecoveryModalView({
   onRoll,
   onReroll,
   onBonusSL,
+  onDarkPact,
   onConfirm,
   onCancel,
 }: {
@@ -20,6 +21,7 @@ export function StateRecoveryModalView({
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
+  onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -60,6 +62,8 @@ export function StateRecoveryModalView({
       rerollable={rolled && canReroll(!sr.success, !!sr.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
+      darkPactable={rolled && !sr.success}
+      onDarkPact={onDarkPact}
       onConfirm={onConfirm}
     />
   );
@@ -76,11 +80,12 @@ export function StateRecoveryModal() {
   const roll = useGame((s) => s.recoverRoll);
   const reroll = useGame((s) => s.recoverReroll);
   const bonusSL = useGame((s) => s.recoverBonusSL);
+  const darkPact = useGame((s) => s.recoverDarkPact);
   const confirm = useGame((s) => s.recoverConfirm);
   const cancel = useGame((s) => s.recoverCancel);
   if (!sr || !battle) return null;
   const fortune = battle.combatants.find((c) => c.id === sr.actorId)?.fortune ?? 0;
   return (
-    <StateRecoveryModalView sr={sr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
+    <StateRecoveryModalView sr={sr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

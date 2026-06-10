@@ -1,7 +1,7 @@
 import { useGame, type RevealEntry } from '../state/store';
 import { Modal } from './Modal';
-import { Dice } from './Dice';
-import { CombatantBadge } from './CombatantBadge';
+import { TableRollLine } from './RollLine';
+import { VsHeader } from './VsHeader';
 import { conditionMeta } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
 
@@ -15,6 +15,13 @@ const ICON: Record<RevealEntry['kind'], string> = {
   mutation: '🧬',
 };
 
+/** Nom de la table tirée pour la rangée d100 (présentation canonique `TableRollLine`). */
+const TABLE_LABEL: Partial<Record<RevealEntry['kind'], string>> = {
+  miscast: 'Table des Imparfaites',
+  critical: 'Table des Critiques',
+  mutation: 'Tableau des Corruptions',
+};
+
 /**
  * Corps riche d'un Coup Critique (qui inflige → arme → victime, le dé, la localisation FR, les Blessures
  * ignorant BE+PA, les États, et chaque effet AVEC son explication RAW). PARTAGÉ par la révélation témoin
@@ -23,21 +30,9 @@ const ICON: Record<RevealEntry['kind'], string> = {
 export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; actor?: Combatant; subject?: Combatant }) {
   return (
     <>
-      {(actor || subject) && (
-        <div className="rm-vs">
-          {actor && <CombatantBadge combatant={actor} />}
-          <span className="rm-vs-arrow">
-            <span className="rm-weapon">{entry.weapon ?? 'Mains nues'}</span>
-            <br />→
-          </span>
-          {subject && <CombatantBadge combatant={subject} />}
-        </div>
-      )}
+      <VsHeader actor={actor} target={subject} label={entry.weapon ?? 'Mains nues'} />
 
-      <div className="test-result fail">
-        {entry.dice != null && <span className="dice"><Dice roll={entry.dice} /></span>}
-        <span className="verdict">{entry.lines[0] ?? ''}</span>
-      </div>
+      <TableRollLine table={TABLE_LABEL[entry.kind] ?? entry.title} roll={entry.dice} result={entry.lines[0] ?? ''} />
 
       {entry.crit && (
         <div className="crit-stats">
@@ -91,10 +86,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
         <CriticalBody entry={entry} actor={actor} subject={subject} />
       ) : (
         <>
-          <div className="test-result fail">
-            {entry.dice != null && <span className="dice"><Dice roll={entry.dice} /></span>}
-            <span className="verdict">{entry.lines[0] ?? ''}</span>
-          </div>
+          <TableRollLine table={TABLE_LABEL[entry.kind] ?? entry.title} roll={entry.dice} result={entry.lines[0] ?? ''} />
           {entry.lines.slice(1).map((l, i) => (
             <p key={i} className="rm-log">
               {l}

@@ -13,6 +13,7 @@ export function ReloadModalView({
   onRoll,
   onReroll,
   onBonusSL,
+  onDarkPact,
   onConfirm,
   onCancel,
 }: {
@@ -21,6 +22,7 @@ export function ReloadModalView({
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
+  onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -53,6 +55,8 @@ export function ReloadModalView({
       rerollable={rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
+      darkPactable={rolled && pr.roll! > pr.target}
+      onDarkPact={onDarkPact}
       onConfirm={onConfirm}
     />
   );
@@ -70,11 +74,12 @@ export function ReloadModal() {
   const roll = useGame((s) => s.reloadRoll);
   const reroll = useGame((s) => s.reloadReroll);
   const bonusSL = useGame((s) => s.reloadBonusSL);
+  const darkPact = useGame((s) => s.reloadDarkPact);
   const confirm = useGame((s) => s.reloadConfirm);
   const cancel = useGame((s) => s.reloadCancel);
   if (!pr || !battle) return null;
   const fortune = battle.combatants.find((c) => c.id === pr.actorId)?.fortune ?? 0;
   return (
-    <ReloadModalView pr={pr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />
+    <ReloadModalView pr={pr} fortune={fortune} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

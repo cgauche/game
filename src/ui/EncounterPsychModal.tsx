@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
 import { RollFlowShell } from './RollFlowShell';
-import { TeamPortrait } from './CombatantBadge';
+import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { CIBLE_LABEL, calmeBreakdown } from './psychLabels';
@@ -18,6 +18,7 @@ export function EncounterPsychModal() {
   const party = useGame((s) => s.party);
   const roll = useGame((s) => s.encounterPsychRoll);
   const reroll = useGame((s) => s.encounterPsychReroll);
+  const darkPact = useGame((s) => s.encounterPsychDarkPact);
   const force = useGame((s) => s.encounterPsychForceSuccess);
   const determine = useGame((s) => s.encounterPsychResolve);
   const confirm = useGame((s) => s.encounterPsychConfirm);
@@ -45,11 +46,7 @@ export function EncounterPsychModal() {
     <RollFlowShell
       title={cl ? `${cl.emoji} ${cl.label}${pe.cible ? ` (${pe.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pe.indice}`}
       subtitle={<>{hero.name} doit garder son sang-froid face à <strong>{pe.sourceName}</strong>.</>}
-      extra={
-        <div className="modal-vs">
-          <span className="mv-side"><TeamPortrait combatant={hero} size={40} /><strong>{hero.name}</strong></span>
-        </div>
-      }
+      extra={<VsHeader actor={hero} />}
       rolled={!!r}
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
@@ -59,6 +56,8 @@ export function EncounterPsychModal() {
       fortune={hero.fortune ?? 0}
       rerollable={!!r && canReroll(!ok, !!pe.rerolled)}
       onReroll={reroll}
+      darkPactable={!!r && !ok}
+      onDarkPact={darkPact}
       /* Hors combat = Test SIMPLE binaire → relance simple, pas de « +1 DR ». */
       resilience={hero.resilience ?? 0}
       onForce={force}

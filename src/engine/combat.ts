@@ -177,7 +177,7 @@ const bd = (label: string, base: number, t: TestResult, mods?: ModLine[]): RollB
   success: t.success,
   sl: t.sl,
 });
-const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
+export const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
 
 /**
  * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS est plafonnée

@@ -12,14 +12,14 @@ const CHARS = (cc: number) => ({ CC: cc, CT: 30, F: 35, E: 35, I: 30, Ag: 30, De
 const ARM = () => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
 
 const mkHero = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'h', name: 'H', kind: 'hero', pos: { x: 0, y: 0 }, size: 3,
+  id: 'h', name: 'H', kind: 'hero', pos: { x: 0, y: 0 }, size: 'moyenne',
   characteristics: CHARS(50), skills: [], talents: [], advantage: 0, conditions: [],
   wounds: { base: 12, max: 12, current: 12 },
   weapons: [W('m', 'main'), W('o', 'off')], armour: ARM(), ...over,
 } as unknown as Combatant);
 
 const mkFoe = (id: string, x: number): Combatant => ({
-  id, name: id, kind: 'enemy', pos: { x, y: 0 }, size: 3,
+  id, name: id, kind: 'enemy', pos: { x, y: 0 }, size: 'moyenne',
   characteristics: CHARS(30), skills: [], talents: [], advantage: 0, conditions: [],
   wounds: { base: 10, max: 10, current: 10 },
   weapons: [{ name: 'Griffe', type: 'melee', damage: '+BF', qualities: [] }], armour: ARM(),

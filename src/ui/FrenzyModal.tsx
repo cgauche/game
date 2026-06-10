@@ -16,6 +16,7 @@ export function FrenzyModal() {
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.frenzyRoll);
   const reroll = useGame((s) => s.frenzyReroll);
+  const darkPact = useGame((s) => s.frenzyDarkPact);
   const force = useGame((s) => s.frenzyForceSuccess);
   const confirm = useGame((s) => s.frenzyConfirm);
   const cancel = useGame((s) => s.frenzyCancel);
@@ -46,6 +47,8 @@ export function FrenzyModal() {
       fortune={c.fortune ?? 0}
       rerollable={!!r && !r.success && canReroll(true, !!pf.rerolled)}
       onReroll={reroll}
+      darkPactable={!!r && !r.success && c.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={c.resilience ?? 0}
       onForce={force}
       forceShow={!r?.success}
