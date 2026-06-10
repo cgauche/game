@@ -21,6 +21,19 @@ describe('Personnages pré-tirés', () => {
     expect(sorcier?.spells).toContain('Fléchette');
     expect(pretre?.spells).toContain('Bénédiction de Guérison');
   });
+
+  it('les incantateurs portent les Talents REQUIS par leurs sorts (RAW)', () => {
+    const pregens = makePregens();
+    const sorcier = pregens.find((h) => h.career === 'Sorcier')!;
+    const pretre = pregens.find((h) => h.career === 'Prêtre')!;
+    // LDB 10 (Magie mineure) : « Vous pouvez apprendre des Sorts de Magie mineure » — requis pour Fléchette/Choc.
+    expect(sorcier.talents.map((t) => t.name)).toContain('Magie mineure');
+    // LDB 41 l.14 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
+    expect(pretre.talents.map((t) => t.name)).toContain('Béni (Sigmar)');
+    // Et les Compétences d'incantation restent là (gating des Compétences avancées).
+    expect(sorcier.skills.some((s) => s.name === 'Langue' && s.spec === 'Magick' && s.advances >= 1)).toBe(true);
+    expect(pretre.skills.some((s) => s.name === 'Prière' && s.advances >= 1)).toBe(true);
+  });
 });
 
 /**

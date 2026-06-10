@@ -17,12 +17,13 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, TestResult } from './tests';
+import { rollTest, resolveOpposed, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
+import { findTalent } from '../data';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
@@ -153,8 +154,14 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  * peut tenter le Test que si l'on y possède au moins une Augmentation (Livre de
  * base, 09 - Compétences : « Si ce n'est pas le cas, vous ne pouvez pas tenter le
  * Test »). Sinon, aucune incantation possible — pas de repli sur la Caractéristique.
+ *
+ * Exception : le Trait de créature « Lanceur de Sorts (Divers) » (LDB 85 l.182-183 :
+ * « La créature peut lancer des Sorts ») autorise l'incantation SANS la Compétence —
+ * les statblocs du bestiaire ne portent pas de Compétences ; le Test se fait alors
+ * sur la Caractéristique seule (castingValue, avances 0).
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
+  if (c.traits?.some((t) => /^lanceur de sorts\b/i.test(t))) return true;
   return c.skills.some(
     (s) => s.name === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
   );
@@ -240,6 +247,25 @@ export function parseCharBuffs(desc: string): { char: CharKey; bonus: number }[]
 /** Vrai si le sort est un Projectile magique (Dégâts résolus comme une attaque). */
 export function isMagicMissile(spell: SpellLike): boolean {
   return /projectile magique/i.test(spell.desc);
+}
+
+/**
+ * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous
+ * gagnez +1 DR pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » Somme des
+ * acquisitions des Talents du porteur dont le champ « Tests » (talents.json, verbatim)
+ * référence la Compétence d'incantation visée — piloté par la DONNÉE, pas de liste en dur :
+ * Diction instinctive → « Langue (Magick) quand vous faites une Incantation » ;
+ * Harmonisation aethyrique → « Focalisation (Au choix) ».
+ * `needle` : « Langue (Magick) » (pas « Langue » nu — un Talent lié à Langue (Bretonnien)
+ * ne booste pas l'incantation), « Focalisation », « Prière ».
+ */
+export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Focalisation' | 'Prière'): number {
+  let n = 0;
+  for (const t of c.talents ?? []) {
+    const data = findTalent(t.name) ?? findTalent(t.name.replace(/\s*\([^)]*\)\s*$/, ''));
+    if (data?.test?.toLowerCase().includes(needle.toLowerCase())) n += t.times;
+  }
+  return n;
 }
 
 /**
@@ -382,6 +408,8 @@ export interface CastResult {
   isCritical: boolean;
   /** Maladresse (double raté) → Incantation Imparfaite / Colère des dieux. */
   isFumble: boolean;
+  /** DISSIPÉ par un Contre-sort (LDB 46 l.201-202) — une « Puissance totale » ne le repêche pas. */
+  dispelled?: boolean;
   log: string;
 }
 
@@ -413,7 +441,11 @@ export function resolveCasting(
   // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
   // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
   const pen = armourCastDRPenalty(caster);
-  return evaluateCasting(caster, spell, pen ? { ...t, sl: t.sl - pen } : t, focusedNI0);
+  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
+  // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
+  // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
+  const tal = t.success ? castTestTalentDR(caster, info.skill === 'Prière' ? 'Prière' : 'Langue (Magick)') : 0;
+  return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
 }
 
 /**
@@ -445,6 +477,52 @@ export function evaluateCasting(
     log = `${caster.name} lance ${spell.label} (DR ${t.sl}).`;
   }
   return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log };
+}
+
+/** Issue d'un Contre-sort (Dissipation, LDB 46 l.201-202). */
+export interface CounterspellOutcome {
+  /** Le contre-lanceur GAGNE le Test opposé : le Sort est dissipé. */
+  dispelled: boolean;
+  /** Jet de Langue (Magick) du contre-lanceur (affichage/journal). */
+  counter: TestResult;
+  /** « le Sort utilise le DR du Test opposé » : DR NET (signé) du lanceur si non dissipé. */
+  casterNetSL: number;
+  log: string;
+}
+
+/** Seul un SORT se dissipe (LDB 46 l.201 : « Si un Sort vous cible ») — pas une Prière
+ *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
+export function isDispellableSpell(spell: SpellLike): boolean {
+  return !PRAYER_TYPES.includes(spell.type);
+}
+
+/**
+ * Dissipation (LDB 46 l.201-202) : « vous pouvez opposer le Test d'Incantation avec Langue
+ * (Magick), car vous chantez un Contre-sort. Effectuez un Test opposé de Langue (Magick). Sur un
+ * succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour
+ * déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul
+ * Sort chaque Round. »
+ * `castT` = le Test d'Incantation du lanceur, DÉJÀ jeté (DR ajustés : talents, armure). Le jet du
+ * contre-lanceur subit les mêmes règles de Test de Langue (Magick) : « Repousser les Vents »
+ * (l.199, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
+ * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
+ */
+export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
+  const value = castingValue(counter, 'Langue', 'Magick');
+  const t = rollTest(value, 'intermediaire', rng);
+  const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
+  const counterT = adj ? { ...t, sl: t.sl + adj } : t;
+  const opp = resolveOpposed(castT, counterT); // le lanceur tient le rôle « attaquant »
+  const dispelled = opp.winner === 'defender';
+  const net = castT.sl - counterT.sl;
+  return {
+    dispelled,
+    counter: counterT,
+    casterNetSL: net,
+    log: dispelled
+      ? `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
+      : `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
+  };
 }
 
 export interface MissileResult extends CastResult {
@@ -560,7 +638,8 @@ export function resolveFocus(
   const value = castingValue(caster, 'Focalisation', sk.spec);
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
-  const dr = t.success ? Math.max(0, t.sl - armourCastDRPenalty(caster)) : 0;
+  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
+  const dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'Focalisation') - armourCastDRPenalty(caster)) : 0;
   const isCritical = t.isDouble && t.success;
   // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
   // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.

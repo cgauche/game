@@ -282,6 +282,9 @@ import {
   resolveCasting,
   resolveMagicMissile,
   resolveFocus,
+  castTestTalentDR,
+  resolveCounterspell,
+  isDispellableSpell,
   type SpellLike,
 } from './magic';
 import { rollMiscast } from './miscast';
@@ -704,6 +707,73 @@ describe('Magie — compétences Avancées (gating)', () => {
     const res = resolveCasting(c, FLECHETTE, makeRNG(1));
     expect(res.cast).toBe(false);
     expect(res.log).toContain('ne maîtrise pas');
+  });
+  it('Talents liés au Test (LDB 10 l.20) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
+    const skills = [{ name: 'Langue', spec: 'Magick', characteristic: 'Int' as const, advances: 10 }];
+    const sans = caster({ Int: 80 }, skills);
+    const avec = caster({ Int: 80 }, skills);
+    avec.talents = [{ name: 'Diction instinctive', times: 2 }];
+    expect(castTestTalentDR(avec, 'Langue (Magick)')).toBe(2);
+    expect(castTestTalentDR(sans, 'Langue (Magick)')).toBe(0);
+    // même graine = même d100 : sur un jet RÉUSSI, le DR final diffère exactement du niveau du Talent
+    for (let seed = 1; seed <= 6; seed++) {
+      const a = resolveCasting(sans, FLECHETTE, makeRNG(seed));
+      const b = resolveCasting(avec, FLECHETTE, makeRNG(seed));
+      expect(b.sl).toBe(a.sl + (a.roll <= a.target ? 2 : 0));
+    }
+  });
+
+  it('un Talent lié à une AUTRE Langue ne booste pas l’incantation (Langue (Magick) exigé)', () => {
+    const c = caster({ Int: 80 });
+    c.talents = [{ name: 'Linguistique', times: 3 }]; // test data : « Langue (Toutes) » ? — ne doit pas matcher Magick
+    expect(castTestTalentDR(c, 'Langue (Magick)')).toBe(0);
+  });
+
+  it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {
+    const skills = [{ name: 'Focalisation', spec: 'Aqshy', characteristic: 'FM' as const, advances: 5 }];
+    const sans = caster({ FM: 85 }, skills);
+    const avec = caster({ FM: 85 }, skills);
+    avec.talents = [{ name: 'Harmonisation aethyrique', times: 3 }];
+    for (let seed = 1; seed <= 6; seed++) {
+      const a = resolveFocus(sans, ARCANE, makeRNG(seed));
+      const b = resolveFocus(avec, ARCANE, makeRNG(seed));
+      if (a.roll <= (a.target ?? 0)) expect(b.dr).toBe(a.dr + 3);
+      else expect(b.dr).toBe(a.dr); // échec : pas de bonus (« utilisation réussie »)
+    }
+  });
+
+  it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
+    const langue = (adv: number) => [{ name: 'Langue', spec: 'Magick', characteristic: 'Int' as const, advances: adv }];
+    // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
+    const fort = caster({ Int: 89 }, langue(10));
+    const castT = { roll: 40, target: 50, success: true, sl: 1, isDouble: false };
+    let dispelCount = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const out = resolveCounterspell(fort, castT, makeRNG(seed));
+      expect(out.casterNetSL).toBe(castT.sl - out.counter.sl); // « le DR du Test opposé »
+      if (out.dispelled) {
+        dispelCount++;
+        expect(out.counter.sl).toBeGreaterThan(castT.sl); // gagné = DR strictement supérieur (ou cible sup. à égalité)
+      }
+    }
+    expect(dispelCount).toBeGreaterThan(6); // valeur 99 vs DR 1 : la dissipation domine
+    // contre-lanceur nul : jamais dissipé sur un DR adverse élevé
+    const nul = caster({ Int: 10 }, langue(0));
+    const fortCast = { roll: 11, target: 95, success: true, sl: 8, isDouble: false };
+    for (let seed = 1; seed <= 8; seed++) expect(resolveCounterspell(nul, fortCast, makeRNG(seed)).dispelled).toBe(false);
+  });
+
+  it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
+    expect(isDispellableSpell(FLECHETTE)).toBe(true);
+    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', cn: null, duration: '', desc: '' })).toBe(false);
+  });
+
+  it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
+    const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
+    c.traits = ['Lanceur de Sorts (Sorcellerie)'];
+    expect(knowsCastingSkill(c, 'Langue', 'Magick')).toBe(true);
+    const res = resolveCasting(c, FLECHETTE, makeRNG(1));
+    expect(res.log).not.toContain('ne maîtrise pas'); // le Test se fait sur Int seule
   });
 });
 

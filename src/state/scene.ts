@@ -44,6 +44,15 @@ export interface CustomStatblock {
   size?: import('../engine/size').SizeCategory;
   /** Groupes d'appartenance manuels supplémentaires (Sigmarite, Cultiste…) pour les Traits psy ciblés (LDB 21). */
   groups?: string[];
+  /** Sorts connus (libellés de spells.json) — choix d'AUTEUR ; l'IA incante les Projectiles magiques. */
+  spells?: string[];
+  /** Compétences au FORMAT LIVRE (« Langue (Magick) 63 ») : valeur de Test FINALE → avances dérivées
+   *  au spawn (valeur − Caractéristique, inverse de LDB 09). */
+  skills?: string[];
+  /** Talents (libellés concrets : « Magie des Arcanes (Ghur) », « Menaçant »). */
+  talents?: string[];
+  /** Caractéristiques aléatoires au spawn (LDB 78 : « soustrayez -10 et ajoutez 2d10 »). */
+  randomChars?: boolean;
 }
 
 /** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).
@@ -288,6 +297,13 @@ export interface EncounterDef {
     rides?: number;
     /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture libre prêtable au groupe). Défaut 'enemy'. */
     side?: 'enemy' | 'ally';
+    /** Traits FACULTATIFS choisis (LDB 76 l.49) — chaînes ÉDITÉES (Indice/Cible complétés par l'auteur,
+     *  ex. « Armure 2 », « Haine (Sigmarites) »), fusionnées aux traits fixes au spawn (créature `ref`). */
+    optionals?: string[];
+    /** Sorts connus (créature `ref`) — la donnée bestiaire n'en liste pas : choix d'auteur. */
+    spells?: string[];
+    /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
+    randomChars?: boolean;
   }[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];

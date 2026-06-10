@@ -13,6 +13,9 @@ interface PregenDef {
   career: string;
   seed: number;
   motivation: string;
+  /** Talent de carrière CHOISI (libellé concret) — sans lui, createHero prend la 1ʳᵉ entrée du
+   *  Niveau, qui n'est PAS forcément le talent d'incantation requis (Magie mineure, Béni…). */
+  careerTalent?: string;
   /** Sorts/prières connus (libellés de src/data/spells.json). */
   spells?: string[];
   /** Sexe visuel (cosmétique ; aucune incidence de règles). Défaut 'M'. */
@@ -33,6 +36,8 @@ const DEFS: PregenDef[] = [
     career: 'Sorcier',
     seed: 707,
     motivation: 'Connaissance',
+    // LDB 46 (Sorts mineurs) : le Talent « Magie mineure » est REQUIS pour lancer Fléchette/Choc.
+    careerTalent: 'Magie mineure',
     spells: ['Fléchette', 'Choc'],
     sex: 'F',
     build: 0.42,
@@ -43,6 +48,8 @@ const DEFS: PregenDef[] = [
     career: 'Prêtre',
     seed: 808,
     motivation: 'Foi',
+    // LDB 41 (Bénédictions) : le Talent « Béni (Dieu) » est REQUIS pour réciter des Bénédictions.
+    careerTalent: 'Béni (Sigmar)',
     spells: ['Bénédiction de Guérison', 'Bénédiction de Bataille'],
   },
   { name: 'Aelindra Feuille-d’Argent', species: 'Elfes sylvains', career: 'Chasseur', seed: 303, motivation: 'Nature' },
@@ -61,6 +68,7 @@ export function makePregens(): Combatant[] {
         careerLabel: d.career,
         name: d.name,
         motivation: d.motivation,
+        careerTalent: d.careerTalent,
         rng: makeRNG(d.seed),
         id: `pregen-${d.seed}`,
       });

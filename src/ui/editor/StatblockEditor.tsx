@@ -14,6 +14,7 @@ import { creatures, findCreature } from '../../data';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
+import { SpellsField } from './OptionalTraitsPicker';
 
 const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'Mouvement', def: 4 }];
 
@@ -27,7 +28,15 @@ function cloneFromCreature(label: string): CustomStatblock | null {
   if (!c) return null;
   const char: CustomStatblock['char'] = {};
   for (const [k, v] of Object.entries(c.char)) if (typeof v === 'number') (char as Record<string, number>)[k] = v;
-  return { name: c.label, char, traits: [...(c.traits ?? [])] };
+  return {
+    name: c.label,
+    char,
+    traits: [...(c.traits ?? [])],
+    // PNJ nommés (Eusapia…) : compétences/talents/sorts de la donnée embarqués dans le clone.
+    ...(c.skills.length ? { skills: [...c.skills] } : {}),
+    ...(c.talents.length ? { talents: [...c.talents] } : {}),
+    ...(c.spells.length ? { spells: [...c.spells] } : {}),
+  };
 }
 
 export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onChange: (s: CustomStatblock) => void }) {
@@ -121,6 +130,37 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
             onChange({ ...stat, groups: groups.length ? groups : undefined });
           }}
         />
+      </label>
+      <label className="ed-field">
+        Compétences (une par ligne, format livre « Compétence (Spéc) Valeur » — la valeur est le Test FINAL :
+        « Langue (Magick) 63 », « Corps à corps (Base) 52 », « Esquive 48 » ; les avances sont dérivées au spawn)
+        <textarea
+          rows={3}
+          value={(stat.skills ?? []).join('\n')}
+          onChange={(e) => {
+            const skills = e.target.value.split('\n').map((s) => s.trim()).filter(Boolean);
+            onChange({ ...stat, skills: skills.length ? skills : undefined });
+          }}
+        />
+      </label>
+      <label className="ed-field">
+        Talents (séparés par des virgules — « Magie des Arcanes (Ghur), Magie mineure, Menaçant »)
+        <input
+          value={(stat.talents ?? []).join(', ')}
+          onChange={(e) => {
+            const talents = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+            onChange({ ...stat, talents: talents.length ? talents : undefined });
+          }}
+        />
+      </label>
+      <SpellsField value={stat.spells} onChange={(spells) => onChange({ ...stat, spells })} />
+      <label className="ed-field" title="LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable) ; Blessures recalculées par la formule.">
+        <input
+          type="checkbox"
+          checked={stat.randomChars ?? false}
+          onChange={(e) => onChange({ ...stat, randomChars: e.target.checked || undefined })}
+        />{' '}
+        🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
       </label>
       <label className="ed-field">
         Dégâts d'arme de secours (si aucun trait d'arme, ex. +BF+4)

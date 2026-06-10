@@ -57,6 +57,14 @@ import {
   evaluateMissile,
   spellRangeTiles,
   durationClockMinutes,
+  castInfo,
+  castingValue,
+  castTestTalentDR,
+  knowsCastingSkill,
+  isDispellableSpell,
+  resolveCounterspell,
+  rederiveCastSL,
+  parseSpellDamage,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -1903,10 +1911,10 @@ export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant)
 // Morsure/Caudale (Indice) avant Piétinement (BF+0) — cf. exemple Aventures à Ubersreik.
 // ---------------------------------------------------------------------------
 
-/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale = +Indice (BF inclus). */
+/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale/Tentacules = +Indice (BF inclus). */
 function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
-  const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : 'Morsure';
+  const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
   return { name, type: 'melee', damage: `+${bonus}`, qualities: [] };
 }
 
@@ -1918,6 +1926,7 @@ export function creatureAttackKind(weaponName: string): string | undefined {
   if (n.includes('caudale') || n.includes('queue')) return 'caudale';
   if (n.includes('piétin') || n.includes('pietin')) return 'pietinement';
   if (n.includes('corne')) return 'cornes';
+  if (n.includes('tentacule')) return 'tentacules';
   if (n.includes('griffe') || n === 'arme') return 'arme';
   return undefined;
 }
@@ -1948,6 +1957,14 @@ export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant
     get().log(`${target.name} est Empêtré (Constricteur).`);
   }
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
+  // Tentacules (LDB 85 l.355) : « Si elle cause des Dégâts, elle peut aussi infliger à son adversaire
+  // l'État Empêtré, bien que cela entame une Empoignade avec ce tentacule. » Un Constricteur (toute
+  // touche, ci-dessus) a pu le poser déjà — le garde-fou évite le double-comptage.
+  if (kind === 'tentacules' && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
+    get().log(`${target.name} est Empêtré (Tentacules).`);
+  }
   // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
   if (kind === 'morsure' && traits.some((t) => /^vampirique/i.test(t))) {
     attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
@@ -1979,10 +1996,11 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
 
 /** Résout UNE attaque gratuite de `kind` contre `target`, OPPOSÉE et GRATUITE : ouvre la modale de
  *  défense (héros) → suspendu (true) ; sinon résout instantanément (opposé auto, ou passif si Surpris),
- *  restaure l'Action et applique les effets. Dépense 1 Avantage. */
-function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number): boolean {
+ *  restaure l'Action et applique les effets. Dépense `cost` Avantage (coût RAW par type :
+ *  Cornes/Tentacules 0, Morsure/Caudale/Piétinement 1). */
+function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
   const prevActed = get().battle?.acted ?? false;
-  attacker.advantage = Math.max(0, attacker.advantage - (kind === 'cornes' ? 0 : 1)); // 1 Avantage ; Cornes = gratuite SUR CHARGE (sans coût)
+  attacker.advantage = Math.max(0, attacker.advantage - cost);
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
@@ -2207,9 +2225,14 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
     const langue = atks.find((a) => a.kind === 'langue');
     if (langue && enemy.advantage >= langue.avantage) applyTongue(get, set, enemy, langue); // Jabberslythe : langue à distance
     if (atks.some((a) => a.kind === 'hurlement') && enemy.advantage >= 2) applyWail(get, set, enemy); // Banshee : cri (tous les Av)
-    const traitKinds = atks
-      .filter((a) => a.trigger === 'free' && a.avantage === 1 && (a.kind === 'morsure' || a.kind === 'caudale'))
-      .map((a) => a.kind);
+    const traitKinds: string[] = [];
+    for (const a of atks) {
+      if (a.trigger !== 'free') continue;
+      if (a.kind === 'morsure' || a.kind === 'caudale') traitKinds.push(a.kind);
+      // Tentacules (LDB 85 l.354-355 : « Gagnez une Action d'Attaque gratuite PAR tentacule ») :
+      // count× entrées (« 8 Tentacules +9 » → 8), coût d'Avantage 0.
+      if (a.kind === 'tentacules') for (let i = 0; i < (a.count ?? 1); i++) traitKinds.push('tentacules');
+    }
     // Cornes : Attaque gratuite gagnée EN CHARGEANT (LDB 85), sans coût d'Avantage → en tête.
     const cornes = enemy.chargedThisTurn && atks.some((a) => a.kind === 'cornes') ? ['cornes'] : [];
     enemy.chargedThisTurn = false; // consommée
@@ -2217,13 +2240,17 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   }
   while (enemy.pendingFreeAttacks.length) {
     const kind = enemy.pendingFreeAttacks[0];
-    if (kind !== 'cornes' && enemy.advantage < 1) break; // Cornes (Charge) ne coûte pas d'Avantage
+    // Coût en Avantage PAR TYPE (RAW, lu de creatureAttacks) : Cornes (Charge) et Tentacules = 0 ;
+    // Morsure/Caudale = 1 ; Piétinement (Taille) = 1. Une entrée inabordable est SAUTÉE (pas de
+    // break : des Tentacules à coût 0 restent jouables derrière une Morsure inabordable).
+    const cost = kind === 'pietinement' ? 1 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
+    if (enemy.advantage < cost) { enemy.pendingFreeAttacks.shift(); continue; }
     const b2 = get().battle; if (!b2 || b2.over) break;
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
     const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
     enemy.pendingFreeAttacks.shift();
-    if (applyFreeAttack(get, set, enemy, target, kind, bonus)) return true; // modale ouverte → reprise via defenseConfirm
+    if (applyFreeAttack(get, set, enemy, target, kind, bonus, cost)) return true; // modale ouverte → reprise via defenseConfirm
   }
   enemy.pendingFreeAttacks = undefined; // file épuisée
   return false;
@@ -2375,11 +2402,117 @@ export function castSpell(
   });
 }
 
+/** Meilleur Projectile magique CONNU et jouable d'un ennemi (IA). Un Sort n'aboutit que si
+ *  DR ≥ NI (LDB 46) : le SL maximal d'un Test = valeur/10 (Avantage compris, LDB 46 l.176) →
+ *  on écarte les NI hors d'atteinte, puis on prend les Dégâts écrits les plus hauts (« Dégâts +N »,
+ *  les DR du Test s'y ajoutent), à égalité le NI le plus bas (plus fiable). Repli : aucun NI
+ *  atteignable → le moins exigeant (les Sorts mineurs NI 0 y pourvoient en pratique). */
+export function aiBestMissile(enemy: Combatant): string | undefined {
+  const known = (enemy.spells ?? [])
+    .map((label) => findSpell(label))
+    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
+  if (!known.length) return undefined;
+  const dmg = (sp: { desc: string }) => parseSpellDamage(sp.desc)?.damage ?? 0;
+  const maxSL = (sp: { type: string }) => {
+    const info = castInfo(sp as any);
+    // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —
+    // Diction instinctive ×N) : c'est ce qui détermine les NI passables SANS Focalisation.
+    const tal = castTestTalentDR(enemy, info.skill === 'Prière' ? 'Prière' : 'Langue (Magick)');
+    return Math.floor(castingValue(enemy, info.skill, info.spec) / 10) + tal;
+  };
+  const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));
+  const pool = feasible.length ? feasible : known;
+  pool.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
+  return pool[0].label;
+}
+
+/** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]
+ *  vous pouvez ajouter une valeur de […] Cible égale à la valeur initiale ») : le surplus
+ *  (DR − NI) est alloué à l'axe CIBLE d'un Projectile — adversaires actifs les plus proches,
+ *  à PORTÉE du Sort, hors cible principale. Retourne le patch de pendingCast ({} si rien). */
+export function aiOvercastPlan(
+  caster: Combatant,
+  targetId: string,
+  spell: { cn: number | null; range: string | null },
+  res: { cast: boolean; sl: number },
+  combatants: Combatant[],
+  focusedNI0 = false,
+): { overcast?: { duration: number; targets: number }; extraTargetIds?: string[] } {
+  if (!res.cast || !caster.pos) return {};
+  const ni = focusedNI0 ? 0 : spell.cn ?? 0;
+  const budget = Math.floor(Math.max(0, res.sl - ni) / 2);
+  if (budget <= 0) return {};
+  const range = spellRangeTiles(spell.range, caster) ?? Infinity;
+  const extras = combatants
+    .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range)
+    .sort((a, b) => combatDistance(caster, a) - combatDistance(caster, b))
+    .slice(0, budget)
+    .map((t) => t.id);
+  if (!extras.length) return {};
+  return { overcast: { duration: 0, targets: extras.length }, extraTargetIds: extras };
+}
+
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
 export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = findSpell(pc.spellLabel);
   if (!spell || !pc.grimoire || spell.cn == null) return spell;
   return { ...spell, cn: spell.cn * 2 };
+}
+
+/** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.201-202) contre un Sort de `caster` visant
+ *  `target` : camp opposé, actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts),
+ *  pas encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE
+ *  (« Si un Sort vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à
+ *  votre Force Mentale » (1 case = 2 m ; Ligne de Vue scène + fumée). */
+export function counterspellCandidates(
+  battle: BattleState | null,
+  scene: Scene | null | undefined,
+  caster: Combatant,
+  target: Combatant,
+): Combatant[] {
+  if (!battle || battle.over) return [];
+  return battle.combatants.filter((c) => {
+    if (c.kind === caster.kind || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
+    if (!knowsCastingSkill(c, 'Langue', 'Magick')) return false;
+    if (c.id === target.id) return true;
+    if (!c.pos || !target.pos) return false;
+    if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
+    return !scene || !lineOfSightCover(scene, c.pos, target.pos, [], smokeOf(battle)).blocked;
+  });
+}
+
+/** Applique un Contre-sort de `counter` au `pendingCast` FIGÉ (résultat déjà jeté) : Test opposé de
+ *  Langue (Magick) (LDB 46 l.201-202) — dissipé si le contre-lanceur gagne, sinon l'incantation se
+ *  re-détermine au DR NET. Marque l'essai du Round et re-dérive le résultat (Projectile compris) ;
+ *  la Surincantation est re-planifiée (IA) ou remise à zéro (héros — le budget a changé). */
+export function applyCounterspell(get: () => GameState, set: any, counter: Combatant): boolean {
+  const pc = get().pendingCast;
+  if (!pc?.result || pc.result.dispelled) return false;
+  const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
+  const target = get().battle?.combatants.find((c) => c.id === pc.targetId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !target || !spell || !isDispellableSpell(spell)) return false;
+  if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
+  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.202)
+  const res = pc.result;
+  // Le Test d'Incantation du lanceur, reconstruit tel que figé (même convention que rederiveCastSL).
+  const castT = { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
+  const out = resolveCounterspell(counter, castT, battleRng());
+  let next: typeof pc.result;
+  if (out.dispelled) {
+    next = { ...res, cast: false, dispelled: true, hit: false, damage: undefined, woundsLost: undefined, defenderDefeated: false, log: `${out.log}` };
+  } else {
+    next = rederiveCastSL(caster, target, spell, res, pc.missile, pc.focused, out.casterNetSL - res.sl);
+    next.log = `${out.log} ${next.log}`;
+  }
+  // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
+  const oc = caster.kind === 'enemy' && pc.missile && !pc.zone
+    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused)
+    : {};
+  set({ pendingCast: { ...pc, result: next, overcast: undefined, extraTargetIds: undefined, ...oc } });
+  const b = get().battle;
+  if (b) set({ battle: { ...b, log: [...b.log, ev('info', out.log, counter.id, caster.id)] } });
+  return true;
 }
 
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
@@ -2407,7 +2540,9 @@ export function applyCast(
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
   const isSort = !castInfoIsPrayer(spell.type);
-  const crit = !!res.isCritical && isSort;
+  // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
+  // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
+  const crit = !!res.isCritical && isSort && !res.dispelled;
   let choice = critChoice;
   if (crit) {
     // Défaut (IA / non choisi) : repêcher un DR insuffisant (Puissance totale), sinon
@@ -2933,6 +3068,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   for (const c of battle.combatants) {
     if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
+    c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }
   // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
   const swarms = battle.combatants.filter((s) => s.swarm && !isOutOfAction(s));
@@ -3211,12 +3347,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   // (empreinte + Mouvement) ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
   const blocked = occupied(battle, geom);
-  // Premier Projectile magique connu et prêt : la détection a besoin des données
-  // de sort, donc elle reste ici (couche impure), pas dans la décision pure (ai.ts).
-  const offensiveSpell = enemy.spells?.find((label) => {
-    const sp = findSpell(label);
-    return !!sp && isMagicMissile(sp);
-  });
+  // Meilleur Projectile magique connu et JOUABLE (NI atteignable, Dégâts max — cf. aiBestMissile) :
+  // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
+  const offensiveSpell = aiBestMissile(enemy);
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);

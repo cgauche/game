@@ -150,6 +150,14 @@ export interface DetailsData {
     ambitionLong: DetailText;
   };
 }
+/** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
+export interface TraitData {
+  label: string;
+  /** Squelette d'arguments du libellé (« (Indice) (Portée) »…), null si aucun. */
+  prefix: string | null;
+  desc: string;
+  source: { book: string; page: number };
+}
 export interface SpellData {
   label: string;
   type: string;
@@ -171,7 +179,7 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
-export const traits = traitsJson as any[];
+export const traits = traitsJson as TraitData[];
 export const qualities = qualitiesJson as any[];
 export const trappings = trappingsJson as TrappingData[];
 export const creatures = creaturesJson as CreatureData[];
@@ -202,7 +210,8 @@ export function firstLevel(career: string): CareerLevelData | undefined {
   return levelsForCareer(career)[0];
 }
 export function findSkill(label: string): SkillData | undefined {
-  return skills.find((s) => s.label === label);
+  // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
+  return skills.find((s) => s.label === label) ?? skills.find((s) => s.label.toLowerCase() === label.toLowerCase());
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);

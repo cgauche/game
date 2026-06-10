@@ -3,6 +3,9 @@ import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../engine/types';
 import { RigPortrait } from './RigPortrait';
 import { hpColor, ENEMY_RING, HERO_RING } from '../gameIso/teamColors';
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
+import { SIZE_LABEL, effectiveSize } from '../engine/size';
+import { parseTrait } from '../engine/traits/dispatch';
+import { traits as TRAIT_DATA } from '../data';
 
 /**
  * Panneau d'INSPECTION en lecture seule d'un combattant (clic sur l'ordre de bataille) — répond au
@@ -13,6 +16,15 @@ import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
  */
 const SHOWN_CHARS: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'FM'];
 const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
+
+/** Desc VERBATIM du trait (traits.json, LDB 85) — tooltip. Clé canonique de parseTrait (registre)
+ *  d'abord, sinon libellé nu (sans Indice/parenthèse/compte) cherché dans la donnée (« 8 Tentacules
+ *  +9 » → « Tentacules », « Arme +6 » → « Arme »). */
+function traitDesc(t: string): string | undefined {
+  const bare = t.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/g, '').replace(/\s*[+-]?\d+\s*\+?\s*$/, '').trim().toLowerCase();
+  const key = parseTrait(t)?.key.toLowerCase() ?? bare;
+  return TRAIT_DATA.find((d) => d.label.toLowerCase() === key)?.desc ?? TRAIT_DATA.find((d) => d.label.toLowerCase() === bare)?.desc;
+}
 
 export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onClose: () => void }) {
   const c = combatant;
@@ -36,7 +48,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
           </div>
         </div>
 
-        {(c.causesTerreur || c.causesPeur || c.psychImmune || c.frenzied) && (
+        {(c.causesTerreur || c.causesPeur || c.psychImmune || c.frenzied || (c.spells?.length ?? 0) > 0) && (
           <div className="insp-badges">
             {c.causesTerreur ? (
               <span className="insp-badge foe">😱 Terreur {c.causesTerreur}</span>
@@ -45,15 +57,23 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
             ) : null}
             {c.psychImmune && <span className="insp-badge">🧠 Immunité psy</span>}
             {c.frenzied && <span className="insp-badge foe">🐗 Frénésie</span>}
+            {(c.spells?.length ?? 0) > 0 && <span className="insp-badge foe" title={c.spells!.join(', ')}>🪄 Lanceur de sorts</span>}
           </div>
         )}
 
         <div className="insp-chars">
+          <span className="insp-char" title="Mouvement">
+            <b>M</b> {c.movement}
+          </span>
+          {/* « – » = caractéristique inexistante au bestiaire (Schéma des Profils, LDB 76) */}
           {SHOWN_CHARS.map((k) => (
             <span key={k} className="insp-char" title={CHAR_LABELS[k]}>
-              <b>{k}</b> {c.characteristics[k]}
+              <b>{k}</b> {c.characteristics[k] > 0 || isHero ? c.characteristics[k] : '–'}
             </span>
           ))}
+          <span className="insp-char" title="Taille (LDB 85)">
+            <b>Taille</b> {SIZE_LABEL[effectiveSize(c.size)]}
+          </span>
         </div>
 
         {weapons.length > 0 && (
@@ -82,10 +102,31 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
           </div>
         )}
 
+        {(c.skills?.length ?? 0) > 0 && !isHero && (
+          <div className="insp-row">
+            <span className="insp-lbl">Compétences</span>
+            <span className="insp-traits">
+              {/* valeur de Test finale = Caractéristique + avances (LDB 09) */}
+              {c.skills.map((s, i) => (
+                <span key={i} className="insp-trait-chip">
+                  {s.name}{s.spec ? ` (${s.spec})` : ''} {c.characteristics[s.characteristic] + s.advances}
+                </span>
+              ))}
+            </span>
+          </div>
+        )}
+
         {(c.traits?.length ?? 0) > 0 && (
           <div className="insp-row">
             <span className="insp-lbl">Traits</span>
-            <span className="insp-traits">{c.traits!.join(', ')}</span>
+            <span className="insp-traits">
+              {/* un chip par trait, desc VERBATIM (LDB 85) en tooltip */}
+              {c.traits!.map((t, i) => (
+                <span key={i} className="insp-trait-chip" title={traitDesc(t)}>
+                  {t}
+                </span>
+              ))}
+            </span>
           </div>
         )}
 

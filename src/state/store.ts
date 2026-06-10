@@ -16,7 +16,8 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
-  aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
+  counterspellCandidates, applyCounterspell,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
@@ -38,7 +39,7 @@ import {
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -441,6 +442,8 @@ export interface GameState {
   castBonusSL: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
   castDarkPact: () => void;
+  /** Contre-sort (Dissipation, LDB 46 l.201-202) : un héros lanceur oppose Langue (Magick) au Sort ennemi figé. */
+  castCounterspell: (counterId: string) => void;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Surincantation (LDB 47 l.28-31) : alloue +2 DR du surplus à un axe (Durée / Cible). */
@@ -1006,7 +1009,11 @@ export const useGame = create<GameState>((set, get) => ({
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     });
-    const enemies = enc.enemies.map((e, i) => spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, { appearance: e.appearance, weapon: e.weapon }));
+    const enemies = enc.enemies.map((e, i) =>
+      spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, {
+        appearance: e.appearance, weapon: e.weapon,
+        optionals: e.optionals, spells: e.spells, randomChars: e.randomChars, // personnalisations d'auteur (LDB 76/78)
+      }));
     // Combat monté (LDB 14) : marquer les montures rideables, basculer les acteurs « alliés », puis appairer
     // les couples pré-montés (rides → index de la monture dans `enemies`). Le cavalier monte SUR sa monture.
     enc.enemies.forEach((e, i) => {
@@ -1290,7 +1297,29 @@ export const useGame = create<GameState>((set, get) => ({
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
-    set({ pendingCast: { ...pc, result: res } });
+    // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
+    // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
+    const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
+      ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused)
+      : {};
+    set({ pendingCast: { ...pc, result: res, ...auto } });
+    // Dissipation (LDB 46 l.201-202) : un lanceur ENNEMI éligible chante un Contre-sort contre le
+    // SORT d'un héros — opposé au Test d'Incantation (déclaré pendant l'incantation : l'IA n'attend
+    // pas l'issue du jet), un seul par Round. Un jet CRITIQUE n'est pas contré (« Force
+    // inéluctable », LDB 46 l.59 — le choix appartient au lanceur).
+    if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
+      const best = counterspellCandidates(get().battle, get().scene, caster, target)
+        .sort((a, b) => castingValue(b, 'Langue', 'Magick') - castingValue(a, 'Langue', 'Magick'))[0];
+      if (best) applyCounterspell(get, set, best);
+    }
+  },
+  /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.201-202). */
+  castCounterspell: (counterId) => {
+    const pc = get().pendingCast;
+    const counter = actorIn(get(), counterId);
+    const caster = pc && actorIn(get(), pc.casterId);
+    if (!pc?.result || !counter || !caster || caster.kind !== 'enemy' || counter.kind !== 'hero') return;
+    if (applyCounterspell(get, set, counter)) set({ ...touchActors(get()) });
   },
   castReroll: () => {
     const { pendingCast: pc } = get();

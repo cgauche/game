@@ -327,6 +327,8 @@ export interface Combatant {
   pendingFreeAttacks?: string[];
   /** A chargé ce tour → ouvre une Attaque gratuite de Cornes (LDB 85) si la créature a le trait. */
   chargedThisTurn?: boolean;
+  /** Dissipation (LDB 46 l.201-202 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
+  dispelledThisRound?: boolean;
   characteristics: Characteristics;
   /** Points de Blessure. `base` = Blessures à vide (snapshot/surcharge au spawn) ; `max` dynamique
    *  = base + delta des buffs F/E/FM × Taille (cf. effectiveMaxWounds) ; `current` = PB restants. */

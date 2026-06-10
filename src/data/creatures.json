@@ -274,6 +274,82 @@
     }
   },
   {
+    "label": "Eusapia Balacañon",
+    "title": "Maître sorcier humain (OR 1)",
+    "folder": "Les peuples du Reikland",
+    "char": {
+      "M": 4,
+      "CC": 47,
+      "CT": 33,
+      "F": 35,
+      "E": 39,
+      "I": 42,
+      "Ag": 43,
+      "Dex": 29,
+      "Int": 48,
+      "FM": 53,
+      "Soc": 37,
+      "B": 14
+    },
+    "traits": [
+      "Animosité (Tiléens)",
+      "Arme (Bâton de combat) +7"
+    ],
+    "optionals": [],
+    "skills": [
+      "Chevaucher (Cheval) 58",
+      "Commandement 47",
+      "Corps à corps (Arme d'hast) 62",
+      "Corps à corps (Base) 52",
+      "Esquive 48",
+      "Focalisation (Ghur) 68",
+      "Intimidation 50",
+      "Intuition 47",
+      "Langue (Estalien) 63",
+      "Langue (Magick) 63",
+      "Perception 47",
+      "Ragot 52",
+      "Savoir (Magie) 53",
+      "Soin aux animaux 63"
+    ],
+    "talents": [
+      "Lire/Écrire",
+      "Magie des Arcanes (Ghur)",
+      "Magie mineure",
+      "Menaçant",
+      "Noblesse"
+    ],
+    "trappings": [
+      "Bâton de combat",
+      "Cheval de guerre léger",
+      "Selle et Harnais",
+      "Grimoire",
+      "Habit de cour",
+      "Licence magique",
+      "Robes de sorcier",
+      "1 CO"
+    ],
+    "spells": [
+      "Alerte",
+      "Fléchette",
+      "Pas léger",
+      "Repères",
+      "Carreau",
+      "Protection",
+      "Terrifiant",
+      "Vision dans l'obscurité",
+      "La lance d'Ambre",
+      "Langue bestiale",
+      "Maître de la bête",
+      "Vol du Destin"
+    ],
+    "desc": "La grâce et la sophistication de l'aristocratie estalienne associées à la présence et la stature de la noblesse de l'Empire font de Balacañon un membre respecté de la haute société. Et le fait qu'elle soit un sorcier la fait craindre à juste titre. Véritable machine de guerre, Balacañon combine son éducation avec les énergies primitives de Ghur pour se démarquer.",
+    "source": {
+      "book": "MSR",
+      "page": 48
+    }
+  },
+  {
     "label": "Araignée géante",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -2283,6 +2359,147 @@
     "source": {
       "book": "LDB",
       "page": 335
+    }
+  },
+  {
+    "label": "Furie du Chaos",
+    "title": null,
+    "folder": "Démons, les armées baragouinantes",
+    "char": {
+      "M": 4,
+      "CC": 45,
+      "CT": 0,
+      "F": 45,
+      "E": 35,
+      "I": 45,
+      "Ag": 45,
+      "Dex": 20,
+      "Int": 25,
+      "FM": 25,
+      "Soc": 5,
+      "B": 12
+    },
+    "traits": [
+      "Arme +8 (Griffes)",
+      "Cornes +6",
+      "Corruption (modérée)",
+      "Démoniaque 8+",
+      "Instable",
+      "Morsure +6",
+      "Nerveux",
+      "Peur 2",
+      "Vol 90"
+    ],
+    "optionals": [
+      "Brutal",
+      "Effrayé (Démons, Démonologues)",
+      "Intelligent",
+      "Mutation",
+      "Rapide",
+      "Taille (Minuscule ou Petit ou Grand)"
+    ],
+    "skills": [
+      "Corps à Corps (Bagarre) 50"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "À bien des égards, les furies du Chaos sont considérées comme des démons sans importance. Elles ne servent aucun dieu en particulier, et ne sont que des manifestations ataviques du Chaos dans sa forme indivisible, primitive et sans personnalité distincte. Leur faiblesse relative, ainsi que le fait qu’aucune puissance du Chaos ne chercherait à se venger si elles étaient maltraitées, font qu’elles sont souvent invoquées par des démonologues novices à la recherche d’un serviteur malléable et utile. <br><br> Malgré leur manque de puissance, les furies restent toujours plus fortes que la plupart des humains mortels, et capables de voler rapidement grâce à leurs ailes en cuir. Leur apparence est changeante, comme celle de tous les serviteurs du Chaos, mais elles ont généralement une silhouette grossière qui n’est pas sans évoquer celle d’un homme-bête ailé. Les furies sont souvent caractérisées par un long museau canin, des cornes courtes et pointues, des yeux jaunes brûlants et une peau parsemée de fourrure sombre et d’écailles reptiliennes rouges. <br><br> Les furies sont faibles et lâches par nature. Un démonologue peut facilement en lier une afin de délivrer de simples messages ou de s’attaquer à des cibles isolées. Cependant, si on leur confie des tâches trop pénibles, complexes ou dangereuses, elles peuvent devenir rancunières et refuser de coopérer.",
+    "source": {
+      "book": "EDO",
+      "page": 84
+    }
+  },
+  {
+    "label": "Horreur rose",
+    "title": null,
+    "folder": "Démons, les armées baragouinantes",
+    "char": {
+      "M": 4,
+      "CC": 50,
+      "CT": 30,
+      "F": 35,
+      "E": 30,
+      "I": 35,
+      "Ag": 30,
+      "Dex": 35,
+      "Int": 25,
+      "FM": 30,
+      "Soc": 10,
+      "B": 12
+    },
+    "traits": [
+      "Arme +8 (Griffes)",
+      "Corruption (modérée)",
+      "Dédoublement",
+      "Démoniaque 8+",
+      "Feu de Tzeentch",
+      "Instable",
+      "Peur 2"
+    ],
+    "optionals": [
+      "Lanceur de sorts (Tzeentch)",
+      "Langue préhensile +6 (6 mètres)",
+      "Mutation",
+      "Taille (Grande)",
+      "Perturbant"
+    ],
+    "skills": [
+      "Focalisation 65",
+      "Langue (Magick) 55"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies. <br><br> Les horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher. <br><br> Si une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions. <br><br> Si un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
+    "source": {
+      "book": "EDO",
+      "page": 85
+    }
+  },
+  {
+    "label": "Horreur bleue",
+    "title": null,
+    "folder": "Démons, les armées baragouinantes",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 30,
+      "F": 35,
+      "E": 30,
+      "I": 35,
+      "Ag": 30,
+      "Dex": 35,
+      "Int": 25,
+      "FM": 30,
+      "Soc": 10,
+      "B": 12
+    },
+    "traits": [
+      "Arme +6 (Griffes)",
+      "Corruption (Modérée)",
+      "Démoniaque 9+",
+      "Feu de Tzeentch",
+      "Instable",
+      "Peur 1"
+    ],
+    "optionals": [
+      "Lanceur de sorts (Tzeentch)",
+      "Langue préhensile +3 (3 mètres)",
+      "Mutation",
+      "Perturbant"
+    ],
+    "skills": [
+      "Focalisation 35",
+      "Langue (Magick) 30"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies. <br><br> Les horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher. <br><br> Si une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions. <br><br> Si un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
+    "source": {
+      "book": "EDO",
+      "page": 85
     }
   },
   {

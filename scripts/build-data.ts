@@ -18,6 +18,10 @@ const OUT = resolve(ROOT, 'src/data');
 
 /** Livres autorisés : Livre de base + Archives de l'Empire I & II. */
 const ALLOWED = new Set(['LDB', 'ADE1', 'ADE2']);
+/** Livres de CAMPAGNE (règle 2 : le contenu de campagne est éditable/posable) — admis pour le
+ *  BESTIAIRE SEULEMENT : les statblocs de PNJ nommés (Eusapia Balacañon, Horreurs…) sont du
+ *  contenu de scénario, pas des règles génériques (règle 1 reste LDB/ADE pour tout le reste). */
+const CAMPAIGN = new Set(['EDO', 'MSR', 'PDT']);
 
 type Any = Record<string, any>;
 
@@ -249,7 +253,8 @@ function main() {
   write('trappings.json', trappings, trappings.length);
 
   // --- Bestiaire ------------------------------------------------------------
-  const creatures = keep(raw.creature).map((c: Any) => {
+  // Règles (LDB/ADE) + PNJ de CAMPAGNE (EDO/MSR/PDT — statblocs de scénario, cf. CAMPAIGN).
+  const creatures = (raw.creature as Any[]).filter((c) => allowed(c) || CAMPAIGN.has(c.book)).map((c: Any) => {
     const ch: Record<string, number | null> = {};
     for (const [k, v] of Object.entries(c.char ?? {})) ch[k] = norm(v);
     return {

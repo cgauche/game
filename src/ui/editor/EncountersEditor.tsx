@@ -53,6 +53,14 @@ export function EncountersEditor({
                       </select>
                       <label>x<input type="number" value={en.pos.x} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, x: Number(e.target.value) } })} /></label>
                       <label>y<input type="number" value={en.pos.y} onChange={(e) => updEnemy(ei, ni, { pos: { ...en.pos, y: Number(e.target.value) } })} /></label>
+                      {/* Personnalisations d'auteur (édition fine : sélectionner le spawn → Inspector) */}
+                      {(en.optionals?.length || en.spells?.length || en.randomChars) ? (
+                        <span style={{ fontSize: 11, opacity: 0.8 }} title="Édité via l'Inspector (sélectionner le spawn sur la carte)">
+                          {en.optionals?.length ? `+${en.optionals.length} facultatif(s) ` : ''}
+                          {en.spells?.length ? '🪄 ' : ''}
+                          {en.randomChars ? '🎲' : ''}
+                        </span>
+                      ) : null}
                       <button className="btn small danger" onClick={() => upd(ei, { enemies: enc.enemies.filter((_, j) => j !== ni) })}>
                         ✕
                       </button>
