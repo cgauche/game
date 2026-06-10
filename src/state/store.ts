@@ -18,7 +18,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
-  displayedReach, attackPlan,
+  displayedReach, computeRunReach, attackPlan,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -154,6 +154,7 @@ export interface BattleState {
    *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
   preview?:
     | { kind: 'move'; tile: Pt; path: Pt[]; cost: number }
+    | { kind: 'run'; tile: Pt; path: Pt[]; cost: number }
     | { kind: 'attack'; targetId: string }
     | { kind: 'charge'; targetId: string; dest: Pt; path: Pt[]; adv: 0 | 1 }
     | { kind: 'moveAttack'; targetId: string; dest: Pt; path: Pt[]; cost: number }
@@ -512,7 +513,7 @@ export interface GameState {
   trampleConfirm: () => void;
   trampleCancel: () => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
-  battleRun: () => void;
+  battleRun: (dest?: Pt) => void;
   runRoll: () => void;
   runReroll: () => void;
   runForceSuccess: () => void;
@@ -1591,15 +1592,19 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canMove(battle, active)) return;
     const reach = displayedReach(get);
     const k = `${pt.x},${pt.y}`;
-    if (!reach.has(k)) {
-      // Clic hors de portée : purge l'aperçu en cours (geste « annuler »).
+    const inWalk = reach.has(k);
+    // Au-delà de la Marche : zone de COURSE (LDB 15 l.79-82) — le commit demande le Test d'Athlétisme,
+    // et le déplacement réel s'arrêtera là où le jet porte (runConfirm).
+    const runReach = inWalk ? null : computeRunReach(get);
+    if (!inWalk && !runReach?.has(k)) {
+      // Clic hors de toute portée : purge l'aperçu en cours (geste « annuler »).
       if (battle.preview) {
         set({ battle: { ...battle, preview: null } });
         bus.emit(EVT.SCENE_DIRTY);
       }
       return;
     }
-    const stepCost = reach.get(k) ?? 0; // coût (cases) du segment, à imputer au Mouvement du Tour
+    const stepCost = (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0; // coût (cases) du segment
     // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
     // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
     if (!isPsychImmune(active))
@@ -1614,8 +1619,19 @@ export const useGame = create<GameState>((set, get) => ({
     // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
     const geom = mountOf(battle, active) ?? active;
     const blocked = occupied(battle, geom);
-    // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
     const prev = battle.preview;
+    if (!inWalk) {
+      // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
+      if (!opts?.confirm && !(prev?.kind === 'run' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
+        const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
+        set({ battle: { ...battle, preview: { kind: 'run', tile: { ...pt }, path, cost: stepCost } } });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
+      get().battleRun({ ...pt }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
+      return;
+    }
+    // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
     if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
       const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
       set({ battle: { ...battle, preview: { kind: 'move', tile: { ...pt }, path, cost: stepCost } } });
@@ -2346,30 +2362,59 @@ export const useGame = create<GameState>((set, get) => ({
   trampleCancel: () => set({ pendingTrample: null }),
 
   // ── Course (LDB 15-Déplacement l.79-82) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
-  //    étendu (Marche + Course + DR). « Un jet = une modale » : le Test passe par pendingRun. ──
-  battleRun: () => {
+  //    étendu (Marche + Course + DR) vers la destination cliquée dans la zone de Course. « Un jet = une
+  //    modale » : le Test passe par pendingRun. ──
+  battleRun: (dest) => {
     const battle = get().battle;
     if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
-    set({ pendingRun: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
+    set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
   },
   runRoll: () => FLOWS.run.roll(get, set),
   runReroll: () => FLOWS.run.reroll(get, set),
   runForceSuccess: () => FLOWS.run.forceSuccess(get, set),
   runConfirm: () => {
     const { battle, scene, pendingRun: pr } = get();
-    if (!battle || !scene || !pr || !pr.result) return;
+    if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
     const c = battle.combatants.find((x) => x.id === pr.combatantId);
     set({ pendingRun: null });
     if (!c) return;
-    // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (le couple est solidaire ; le clic de déplacement synchronise la monture).
+    // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (couple solidaire).
     const geom = mountOf(battle, c) ?? c;
     const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
     const blocked = occupied(battle, geom);
     const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
-    const log = [...battle.log, ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`, c.id)];
-    set({ battle: { ...get().battle!, action: null, acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
+    // Le jet peut porter MOINS loin que la destination demandée : on suit le chemin et on s'arrête au
+    // dernier point que le budget permet (« au max qu'il puisse faire »).
+    const reach = reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size));
+    const path = pathTo(scene, c.pos!, pr.dest, blocked, sizeFootprint(geom.size)) ?? [];
+    let stopIdx = -1;
+    for (let i = path.length - 1; i >= 0; i--) {
+      if (reach.has(`${path[i].x},${path[i].y}`)) { stopIdx = i; break; }
+    }
+    const stop = stopIdx >= 0 ? path[stopIdx] : null;
+    const log = [...battle.log];
+    if (!stop || (stop.x === c.pos!.x && stop.y === c.pos!.y)) {
+      // Jet désastreux : aucun pas possible — l'Action est tout de même consommée (le Test a eu lieu).
+      log.push(ev('move', `${c.name} trébuche dans sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : sur place.`, c.id));
+      set({ battle: { ...get().battle!, action: null, acted: true, reachable: new Map(), preview: null, log } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+    const sub = path.slice(0, stopIdx + 1);
+    const cost = reach.get(`${stop.x},${stop.y}`) ?? sub.length;
+    c.pos = { ...stop };
+    if (geom !== c) geom.pos = { ...stop }; // la monture court sous le cavalier
+    displaceSmaller(get, geom);
+    get().faceFromPath(c.id, sub);
+    if (geom !== c) get().faceFromPath(geom.id, sub);
+    bus.emit(EVT.ANIM_MOVE, { id: c.id, path: sub });
+    if (geom !== c) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: sub });
+    const short = stop.x !== pr.dest.x || stop.y !== pr.dest.y;
+    log.push(ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : ${cost} cases${short ? ' — le souffle manque avant la destination' : ''}.`, c.id));
+    // Le Mouvement consommé = coût parcouru (la Marche restante éventuelle reste utilisable, A-M*).
+    set({ battle: { ...get().battle!, action: null, acted: true, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),

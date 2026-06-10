@@ -4,6 +4,7 @@
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
 import type { Difficulty, HitLocation, Weapon } from '../engine/types';
+import type { Pt } from './path';
 import type { Effect } from './scene';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
@@ -202,6 +203,9 @@ export interface PendingTrample {
  *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
 export interface PendingRun {
   combatantId: string;
+  /** Destination demandée (clic dans la zone de Course) : à l'application, on avance le long du chemin
+   *  jusqu'au dernier point que le budget du jet (Marche + Course + DR) permet. */
+  dest?: Pt;
   /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;

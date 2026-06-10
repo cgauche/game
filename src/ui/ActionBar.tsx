@@ -42,7 +42,6 @@ export function ActionBar() {
   const resolvePsychImmune = useGame((s) => s.battleResolvePsychImmune);
   const resolveIgnoreCrit = useGame((s) => s.battleResolveIgnoreCrit);
   const frenzy = useGame((s) => s.battleFrenzy);
-  const run = useGame((s) => s.battleRun);
   const standUp = useGame((s) => s.battleStandUp);
   const pickup = useGame((s) => s.battlePickup);
   const reload = useGame((s) => s.battleReload);
@@ -101,10 +100,9 @@ export function ActionBar() {
   const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
   const entangled = isHero && hasCondition(active, 'Empêtré'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'En flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
-  // Déplacement, Attaque et Charge n'ont PLUS de bouton : implicites au clic (sol/ennemi), la Charge
-  // se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77).
-  // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu.
-  const canRun = isHero && !engaged && !prone && !moveStarted && !battle.acted && !stunned;
+  // Déplacement, Attaque, Charge et Course n'ont PLUS de bouton : implicites au clic (sol/ennemi).
+  // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
+  // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
@@ -169,7 +167,7 @@ export function ActionBar() {
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
   // Catégories repliables : on n'affiche le bouton conteneur que si ≥1 enfant existe.
-  const hasMvt = canRun || canStandUp || engaged || mounted || !!mountCandidate;
+  const hasMvt = canStandUp || engaged || mounted || !!mountCandidate;
   const hasTir = !!rangedW;
   const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
   // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
@@ -225,11 +223,6 @@ export function ActionBar() {
       {battle.action === 'mvt' && (
         <div className="ab-spells">
           {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
-          {canRun && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={run} title="Courir : Action + Test d'Athlétisme (+20) → déplacement étendu (LDB 15)">💨 Courir</button>
-            </div>
-          )}
           {canStandUp && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement (LDB 16)">🧍 Se relever</button>
@@ -335,12 +328,12 @@ export function ActionBar() {
             title={active.career ? `${active.name} — ${active.career}` : active.name}
           />
           <div className="ab-actor-side">
-            <div className="ab-actor-top">
-              <span className="ab-name" title={active.career ? `${active.name} — ${active.career}` : active.name}>{active.name}</span>
-              {assailliN >= 2 && (
+            {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}
+            {assailliN >= 2 && (
+              <div className="ab-actor-top">
                 <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
-              )}
-            </div>
+              </div>
+            )}
             {/* Commutateur de set d'armes (1 switch gratuit/tour, même Engagé — LDB 13 l.116). */}
             {isHero && loadouts.length >= 2 && (
               <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'}>

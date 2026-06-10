@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { computeMoveReach, displayedReach } from './combatFlow';
+import { computeMoveReach, computeRunReach, displayedReach } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -77,6 +77,63 @@ describe('clic-sol implicite — tap 1 aperçu, tap 2 déplace', () => {
     const st = useGame.getState();
     expect(st.pendingDisengage ?? null).not.toBeNull(); // menu A/B ouvert (Avantages égaux)
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(at);
+  });
+});
+
+describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15 l.79-82)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingRun: null }); });
+
+  it('clic case au-delà de la Marche (≤ 3M) : aperçu run, re-clic ouvre pendingRun avec destination', () => {
+    const { H } = setup();
+    const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const M = effectiveMovement(H);
+    const dest = { x: p.x + M + 2, y: p.y }; // hors Marche, dans la Course
+    useGame.getState().battleClickTile(dest);
+    expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'run', tile: dest });
+    expect(useGame.getState().pendingRun).toBeNull(); // pas encore de jet
+    useGame.getState().battleClickTile(dest);
+    const pr = useGame.getState().pendingRun;
+    expect(pr).toMatchObject({ combatantId: H.id, dest });
+    expect(useGame.getState().battle!.preview).toBeNull();
+  });
+
+  it('zone de Course indisponible si Mouvement entamé ou Action prise', () => {
+    const { H } = setup();
+    const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const M = effectiveMovement(H);
+    expect(computeRunReach(useGame.getState).size).toBeGreaterThan(0);
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 1 } });
+    expect(computeRunReach(useGame.getState).size).toBe(0);
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0, acted: true } });
+    expect(computeRunReach(useGame.getState).size).toBe(0);
+    void p; void M;
+  });
+
+  it('runConfirm : jet généreux → arrive à destination, Action consommée', () => {
+    const { H } = setup();
+    const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const M = effectiveMovement(H);
+    const dest = { x: p.x + M + 2, y: p.y };
+    useGame.setState({ pendingRun: { combatantId: H.id, dest, result: { success: true, roll: 10, target: 60, dr: 4, bonusCases: 2 * M } } });
+    useGame.getState().runConfirm();
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(dest);
+    expect(st.battle!.acted).toBe(true);
+    expect(st.pendingRun).toBeNull();
+  });
+
+  it('jet court : on s’arrête au dernier point ATTEIGNABLE du chemin vers la destination', () => {
+    const { H } = setup();
+    const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
+    const M = effectiveMovement(H);
+    const dest = { x: p.x + 2 * M, y: p.y }; // demandé : 2M cases plein est
+    // Jet désastreux : bonus de Course 1 seule case → budget total M+1.
+    useGame.setState({ pendingRun: { combatantId: H.id, dest, result: { success: false, roll: 96, target: 60, dr: -3, bonusCases: 1 } } });
+    useGame.getState().runConfirm();
+    const st = useGame.getState();
+    const h = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.pos).toEqual({ x: p.x + M + 1, y: p.y }); // au max du possible le long du chemin
+    expect(st.battle!.acted).toBe(true);
   });
 });
 

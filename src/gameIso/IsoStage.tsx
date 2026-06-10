@@ -47,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach, computeRunReach } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
@@ -266,10 +266,18 @@ export function IsoStage() {
         }
     }
     // Portée de Marche AFFICHÉE EN PERMANENCE au tour d'un héros (modèle de clic implicite) :
-    // budget spécial stocké (Course, post-Désengagement) prioritaire, sinon Marche restante dérivée.
-    for (const k of displayedReach(useGame.getState).keys()) {
+    // budget spécial stocké (post-Désengagement) prioritaire, sinon Marche restante dérivée.
+    const walkReach = displayedReach(useGame.getState);
+    for (const k of walkReach.keys()) {
       const [x, y] = k.split(',').map(Number);
       hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
+    }
+    // Zone de COURSE (LDB 15 l.79-82) au-delà de la Marche, dans une AUTRE couleur : y cliquer
+    // demandera le Test d'Athlétisme, et le jet peut porter moins loin que la case visée.
+    for (const k of computeRunReach(useGame.getState).keys()) {
+      if (walkReach.has(k)) continue;
+      const [x, y] = k.split(',').map(Number);
+      hl.push(<path key={`r${k}`} d={diamondPath(x, y, d)} fill="#9b6be0" opacity={0.24} />);
     }
     // Aperçu tap-1 (modèle implicite) : chemin pointillé, case d'arrivée, badge de l'action du tap 2.
     const pv = battle.preview;
@@ -280,10 +288,10 @@ export function IsoStage() {
         hl.push(<polyline key="pv-path" points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} strokeDasharray="7 5" opacity={0.9} pointerEvents="none" />);
       }
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
-      const pvDest = pv.kind === 'move' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
+      const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
       if (pvDest) hl.push(<path key="pv-dest" d={diamondPath(pvDest.x, pvDest.y, d)} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.95} pointerEvents="none" />);
       if (pvTgt?.pos) hl.push(<path key="pv-tgt" d={diamondPath(pvTgt.pos.x, pvTgt.pos.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />);
-      const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
+      const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
       const pvAt = pvDest ?? pvTgt?.pos;
       if (pvAt) {
         const c0 = tileCenter(pvAt.x, pvAt.y, d);

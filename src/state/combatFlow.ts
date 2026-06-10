@@ -942,19 +942,37 @@ export function computeMoveReach(get: () => GameState): Map<string, number> {
   if (isEngaged(active) || !canMove(battle, active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
-  let reach = reachable(scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
-  // Brisé (LDB 16 l.55) : fuir seulement — aucune case qui RAPPROCHE d'un ennemi.
-  if (hasCondition(active, 'Brisé')) {
-    const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
-    if (foes.length) {
-      const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
-      reach = new Map([...reach].filter(([k]) => {
-        const [x, y] = k.split(',').map(Number);
-        return Math.min(...foes.map((e) => chebyshev({ x, y }, e.pos!))) >= distNow;
-      }));
-    }
-  }
-  return reach;
+  const reach = reachable(scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+  return briseFleeFilter(battle, active, reach);
+}
+
+/** Brisé (LDB 16 l.55) : fuir seulement — retire toute case qui RAPPROCHE d'un ennemi. */
+function briseFleeFilter(battle: BattleState, active: Combatant, reach: Map<string, number>): Map<string, number> {
+  if (!hasCondition(active, 'Brisé')) return reach;
+  const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
+  if (!foes.length) return reach;
+  const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
+  return new Map([...reach].filter(([k]) => {
+    const [x, y] = k.split(',').map(Number);
+    return Math.min(...foes.map((e) => chebyshev({ x, y }, e.pos!))) >= distNow;
+  }));
+}
+
+/** Zone NOMINALE de Course (LDB 15 l.79-82) : Marche + Course (3M cases, avant DR) — affichée dans une
+ *  autre couleur ; un clic dedans demande le Test d'Athlétisme (+20), le déplacement réel dépendant du
+ *  jet. Mêmes conditions que la Course : plein Mouvement, Action libre, non Engagé, pas À Terre. */
+export function computeRunReach(get: () => GameState): Map<string, number> {
+  const { battle, scene } = get();
+  if (!battle || !scene || battle.over || battle.acted || battle.movementUsed > 0) return new Map();
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return new Map();
+  if (isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return new Map();
+  const geom = mountOf(battle, active) ?? active;
+  const blocked = occupied(battle, geom);
+  const M = mountMovement(battle, active);
+  if (M <= 0) return new Map();
+  const reach = reachable(scene, active.pos, M * 3, blocked, sizeFootprint(geom.size));
+  return briseFleeFilter(battle, active, reach);
 }
 
 /** Cases cliquables affichées/validées : budget SPÉCIAL stocké (Course, post-Désengagement)
