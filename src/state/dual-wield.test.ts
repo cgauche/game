@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { resolveDualSecond, applyAttackResult } from './combatFlow';
-import { reverseRoll, type AttackResult } from '../engine/combat';
+import { reverseRoll, rollMeleeDefender, type AttackResult } from '../engine/combat';
+import { makeRNG } from '../engine/dice';
 import type { Combatant, Weapon } from '../engine/types';
 
 const W = (uid: string, hand: 'main' | 'off'): Weapon =>
@@ -75,5 +76,39 @@ describe('applyAttackResult : defer de l’Avantage de l’attaquant', () => {
       defenderDefeated: false, woundsLost: 0, location: 'corps', log: 'x' } as unknown as AttackResult;
     applyAttackResult(useGame.getState, useGame.setState, h, f1, h.weapons[0], res);
     expect(h.advantage).toBe(1);
+  });
+});
+
+describe('−10 à toutes les défenses du dual-wield (LDB 10 l.638)', () => {
+  it('un défenseur avec le flag pare 10 plus bas (cible) qu’un défenseur sans', () => {
+    const { f1 } = setupBattle();
+    const withPen = { ...f1, dualStrikeDefensePenalty: true } as Combatant;
+    const a = rollMeleeDefender(f1, 'parade', makeRNG(1));
+    const c = rollMeleeDefender(withPen, 'parade', makeRNG(1));
+    expect(a.target - c.target).toBe(10);
+  });
+  it('s’applique aussi à l’Esquive (« tous vos lancers défensifs »)', () => {
+    const { f1 } = setupBattle();
+    const withPen = { ...f1, dualStrikeDefensePenalty: true } as Combatant;
+    const a = rollMeleeDefender(f1, 'esquive', makeRNG(2));
+    const c = rollMeleeDefender(withPen, 'esquive', makeRNG(2));
+    expect(a.target - c.target).toBe(10);
+  });
+});
+
+describe('purge du −10 au début du prochain Tour du porteur', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('survit aux Tours adverses puis est purgé quand le porteur (order[0]) rejoue', () => {
+    const { h } = setupBattle();
+    h.dualStrikeDefensePenalty = true;
+    useGame.setState({ battle: { ...useGame.getState().battle!, turn: 0 } });
+    useGame.getState().battleEndTurn(); vi.clearAllTimers(); // → f1 : flag de h conservé
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.dualStrikeDefensePenalty).toBe(true);
+    useGame.getState().battleEndTurn(); vi.clearAllTimers(); // → f2 : conservé
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.dualStrikeDefensePenalty).toBe(true);
+    useGame.getState().battleEndTurn(); vi.clearAllTimers(); // franchissement de Round → h (order[0]) : purgé
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.dualStrikeDefensePenalty).toBe(false);
   });
 });

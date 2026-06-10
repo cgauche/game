@@ -2019,6 +2019,10 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
+      // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
+      // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
+      const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);
+      if (firstNext) firstNext.dualStrikeDefensePenalty = false;
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
       return;
@@ -2032,6 +2036,7 @@ export function advanceTurn(get: () => GameState, set: any) {
   let acted = false;
   if (newActive) {
     newActive.defensiveStance = false;
+    newActive.dualStrikeDefensePenalty = false; // Maniement de deux armes : expire au début de son Tour (LDB 10 l.638)
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
     if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
     if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }

@@ -305,6 +305,7 @@ export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive'
     const pp = parryPenalty(defender, weapon);
     if (pp) out.push({ label: 'Main secondaire', value: pp });
   }
+  if (defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
   return out;
 }
 
@@ -378,7 +379,8 @@ export function rollMeleeDefender(
   // Pénalité de main secondaire à la PARADE (LDB 62 l.192 ; 0 si Parade+Défensive ou main principale) —
   // appliquée au JET, pas seulement affichée. (Esquive : aucune arme → pas de pénalité d'arme.)
   const offHand = mode === 'parade' ? parryPenalty(defender, parryWeapon) : 0;
-  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand);
+  const dualPen = defender.dualStrikeDefensePenalty ? -10 : 0; // Maniement de deux armes : −10 à TOUTES ses défenses (LDB 10 l.638)
+  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand + dualPen);
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
