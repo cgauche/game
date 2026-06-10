@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
-  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty,
+  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, applyZoneCrossings,
   effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
@@ -24,6 +24,7 @@ import {
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
+import type { BattleZone } from './zones';
 import { ev, evLines, type CombatEvent } from './combatLog';
 import { rollOups } from '../engine/oups';
 import {
@@ -142,9 +143,10 @@ export interface BattleState {
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
   onVictory?: Effect[];
-  /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
-   *  Vue ; `rounds` = Rounds restants (décrémenté à chaque frontière de Round, retiré à 0). */
-  smoke?: { x: number; y: number; rounds: number }[];
+  /** Zones persistantes (L11 — généralise l'ancienne fumée) : fumée du Souffle (blocksLoS),
+   *  Mur de feu (onCross), Grands feux d'U'Zhul (perRound)… TTL décrémenté à chaque frontière
+   *  de Round (state/zones.ts). */
+  zones?: BattleZone[];
   /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
    *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
   domainCasts?: { targetId: string; domain: string }[];
@@ -1751,6 +1753,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (geom !== active) get().faceFromPath(geom.id, path);
     bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
     if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
+    applyZoneCrossings(get, active, path ?? [{ ...pt }]); // Mur de feu & co (L11) : traverser coûte
     // Mouvement décomposable : cumule le coût du segment ; reste en mode neutre → le joueur peut
     // re-cliquer une case (s'il reste du Mouvement) OU enchaîner une Action. Si ce segment précède
     // l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
@@ -1866,6 +1869,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
+      applyZoneCrossings(get, active, path); // Mur de feu & co (L11) : charger À TRAVERS coûte
       gainAdvantage(active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
       if (plan.adv > 0) active.gainedAdvThisRound = true;
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
@@ -1893,6 +1897,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) get().faceFromPath(geom.id, plan.path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path: plan.path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: plan.path });
+      applyZoneCrossings(get, active, plan.path); // Mur de feu & co (L11)
       set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
       // … puis on enchaîne sur la queue d'attaque (la cible est désormais à portée d'Allonge).

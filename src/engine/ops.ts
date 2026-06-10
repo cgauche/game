@@ -158,6 +158,12 @@ export type GameOp =
   /** « Soumis aux règles de la Suffocation » (LDB 18 l.424-425 — Ombres étrangleuses,
    *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
   | { op: 'suffocate' }
+  /** Bouclier anti-flèches (LDB 47 — L11) : « les projectiles constitués de matière organique
+   *  sont automatiquement détruits s'ils entrent dans la Zone d'Effet ». Aura sur la cible. */
+  | { op: 'arrowWard'; radius: Formula }
+  /** Dôme (LDB 47 — L11) : « Quiconque dans la ZdE gagne Protection (6+) contre les Attaques
+   *  magiques ou à distance provenant de l'extérieur du dôme ». Aura sur la cible. */
+  | { op: 'domeWard'; radius: Formula }
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   | { op: 'noBreath' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -536,6 +542,30 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           castWard: { radiusMeters: radius },
         });
         lines.push(`${target.name} : les Sorts visant la zone (${radius} m) subissent −20 en Langue (Magick) (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'arrowWard': {
+        const radius = Math.max(0, resolveFormula(o.radius, ref, rng));
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          arrowWard: { radiusMeters: radius },
+        });
+        lines.push(`${target.name} : les projectiles organiques entrant dans la zone (${radius} m) sont détruits (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'domeWard': {
+        const radius = Math.max(0, resolveFormula(o.radius, ref, rng));
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          domeWard: { radiusMeters: radius },
+        });
+        lines.push(`${target.name} : un dôme (${radius} m) protège la zone — Protection (6+) contre les attaques extérieures à distance/magiques (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'narrative':

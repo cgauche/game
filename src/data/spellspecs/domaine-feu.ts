@@ -62,12 +62,20 @@ export const DOMAINE_FEU: SpellSpec[] = [
     label: "Grands feux d'U'Zhul",
     // Projectile magique Dégâts +10 ignore PA (résolu par le moteur missile) ; la spec
     // porte les États de la cible : « inflige +2 État En flammes et l'État À Terre ».
-    // (Le brasier persistant de zone reste journalisé — zones persistantes hors périmètre.)
+    // « Le Sort cesse de se comporter comme un Projectile magique alors que le feu continue de
+    //   brûler dans la Zone d'Effet pour la durée du Sort. Quiconque se trouve dans la Zone
+    //   d'Effet au début d'un Round subit 1d10+6 Dégâts, qui ignorent les PA et gagne +1 État
+    //   En flammes. » — zone persistante (L11) en disque (BFM) m autour de la cible.
     ops: [
       { op: 'condition', name: 'En flammes', value: 2 },
       { op: 'condition', name: 'À Terre' },
-      { op: 'narrative', text: 'Grands feux d’U’Zhul : la ZdE autour de la cible subit +5 Dégâts (ignore PA) et brûle pour la durée du Sort (1d10+6 Dégâts/Round, +1 En flammes) — arbitrage MJ.' },
+      { op: 'narrative', text: 'Grands feux d’U’Zhul : la ZdE autour de la cible subit aussi +5 Dégâts immédiats (ignore PA) + Test d’Esquive ou En flammes — arbitrage MJ.' },
     ],
+    persistentZone: {
+      shape: 'disc',
+      radiusMeters: { bonusOf: 'FM' },
+      perRound: { damage: { amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreAP: true }, conditions: [{ name: 'En flammes' }] },
+    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 47 p.247 « Grands feux d'U'Zhul »",
@@ -101,9 +109,19 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: 'Mur de feu',
-    ops: [
-      { op: 'narrative', text: 'Mur de feu : mur de BFM mètres (épais d’1 m) pour la durée du Sort — traverser inflige 1 En flammes + un Projectile magique de BFM Dégâts (zone persistante : arbitrage MJ).' },
-    ],
+    // « Le Mur de feu est large d'un nombre de mètres égal à votre Bonus de Force Mentale, et
+    //   épais de 1 mètre. Pour chaque +2 DR, vous pouvez allonger la longueur du Mur de feu d'un
+    //   nombre de mètres égal à votre Bonus de Force Mentale. Quiconque traverse le mur de feu
+    //   gagne 1 État En flammes et subit une frappe avec un nombre de Dégâts égal à votre Bonus
+    //   de Force Mentale, traitée comme un Projectile magique. » — zone persistante (L11) en MUR
+    //   perpendiculaire à l'axe lanceur→cible, centré sur la cible (simplification de tracé).
+    ops: [],
+    persistentZone: {
+      shape: 'wall',
+      lengthMeters: { bonusOf: 'FM' },
+      lengthPerSL: { every: 2, metersFormula: { bonusOf: 'FM' } },
+      onCross: { damage: { amount: { bonusOf: 'FM' } }, conditions: [{ name: 'En flammes' }] },
+    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.248 « Mur de feu »',

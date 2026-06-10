@@ -208,6 +208,12 @@ export interface ActiveEffect {
   suffocates?: boolean;
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   noBreath?: boolean;
+  /** Bouclier anti-flèches (LDB 47 — L11) : les projectiles ORGANIQUES (flèches, carreaux,
+   *  javelots) entrant dans la zone de `radiusMeters` autour du porteur sont détruits. */
+  arrowWard?: { radiusMeters: number };
+  /** Dôme (LDB 47 — L11) : quiconque dans la zone gagne Protection (6+) contre les attaques
+   *  magiques ou à distance provenant de l'EXTÉRIEUR du dôme. */
+  domeWard?: { radiusMeters: number };
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

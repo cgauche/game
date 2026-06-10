@@ -83,6 +83,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
+import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
@@ -99,7 +100,7 @@ import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable, condMet } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
-import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
+import { lineOfSightCover, coverModifier, smokeZone, tilesBetween } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -631,8 +632,43 @@ export function crowdEligible(battle: BattleState, attacker: Combatant, target: 
   );
 }
 
-/** Cases enfumées actives de la bataille (Souffle (Fumée)) → bloquent la Ligne de Vue. */
-export const smokeOf = (battle: BattleState): Pt[] => (battle.smoke ?? []).map((s) => ({ x: s.x, y: s.y }));
+/** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */
+export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zones);
+
+/** Aura portée (L11 — Bouclier anti-flèches / Dôme) : vrai si la CIBLE est dans le rayon d'un
+ *  porteur vivant de l'aura `field` ET l'attaquant HORS de ce rayon (« provenant de l'extérieur » /
+ *  « s'ils entrent dans la Zone d'Effet »). */
+export function wardedAgainst(
+  combatants: Combatant[],
+  attacker: Combatant,
+  target: Combatant,
+  field: 'arrowWard' | 'domeWard',
+): boolean {
+  return combatants.some((w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some((e) => {
+    const ward = e[field];
+    if (!ward) return false;
+    const r = Math.max(1, Math.ceil(ward.radiusMeters / 2));
+    return combatDistance(w, target) <= r && combatDistance(w, attacker) > r;
+  }));
+}
+
+/** Projectile « constitué de matière organique » (Bouclier anti-flèches, LDB 47 : « comme des
+ *  flèches en bois ») : flèches (arcs), carreaux (arbalètes), javelots. Balles de poudre,
+ *  pierres de fronde et couteaux de lancer ne le sont pas (« matière non organique »). */
+export function organicProjectile(w: Weapon): boolean {
+  return /\barc\b|arbal|javelot|fl[èe]che|carreau/i.test(`${w.name} ${w.subType ?? ''}`);
+}
+
+/** Traversée de zones persistantes (Mur de feu, LDB 47 — L11) au terme d'un déplacement :
+ *  applique l'`onCross` des zones croisées par `path` et journalise. (La Téléportation ne
+ *  « traverse » pas — apparition — et n'appelle pas ce helper.) */
+export function applyZoneCrossings(get: () => GameState, mover: Combatant, path: Pt[]): void {
+  const battle = get().battle;
+  if (!battle?.zones?.length || !path.length) return;
+  const lines = crossZones(battle.zones, mover, path, (id) => (id ? battle.combatants.find((c) => c.id === id) : undefined), battleRng());
+  for (const l of lines) battle.log.push(ev('condition', l, mover.id));
+  if (lines.length) bus.emit(EVT.SCENE_DIRTY);
+}
 
 /** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
  *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77) ;
@@ -1289,6 +1325,18 @@ export function applyAttackResult(
         break;
       }
     }
+  }
+  // Bouclier anti-flèches (LDB 47 — L11) : projectile ORGANIQUE entrant dans la zone → détruit,
+  // « n'infligeant aucun Dégât à leur cible ». Le tir et la munition sont consommés normalement.
+  if (res.hit && weapon.type === 'ranged' && organicProjectile(weapon)
+    && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'arrowWard')) {
+    res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `Le projectile se désagrège en entrant dans la zone — ${target.name} est indemne (Bouclier anti-flèches).` };
+  }
+  // Dôme (LDB 47 — L11) : Protection (6+) contre une attaque À DISTANCE venant de l'extérieur.
+  else if (res.hit && res.woundsLost && weapon.type === 'ranged'
+    && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'domeWard')) {
+    const d = d10(battleRng());
+    if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
   }
   // Perturbante (LDB 62 l.275-276) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
   // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
@@ -2080,14 +2128,14 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   }
   // Type Fumée : la zone se remplit de fumée et bloque les Lignes de vue pendant BE Rounds (RAW Souffle).
-  let smoke = get().battle!.smoke;
+  let zones = get().battle!.zones;
   if (/fum/.test(type)) {
     const dur = Math.max(1, be); // Rounds = Bonus d'Endurance de la créature
-    const zone = smokeZone(attacker.pos!, center.pos!, blast);
-    smoke = [...(smoke ?? []), ...zone.map((t) => ({ x: t.x, y: t.y, rounds: dur }))];
+    const tiles = smokeZone(attacker.pos!, center.pos!, blast);
+    zones = [...(zones ?? []), { label: 'Fumée', tiles, rounds: dur, blocksLoS: true }];
     lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
   }
-  set({ battle: { ...get().battle!, smoke, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
+  set({ battle: { ...get().battle!, zones, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -2625,6 +2673,14 @@ export function applyCast(
         mres = { ...mres, woundsLost: Math.max(0, mres.woundsLost - mr) };
         logLines.push(`${t.name} résiste à la magie (−${mr} DR de Sort).`);
       }
+      // Dôme (LDB 47 — L11) : Protection (6+) contre une Attaque MAGIQUE venant de l'extérieur.
+      if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard')) {
+        const d = d10(battleRng());
+        if (d >= 6) {
+          logLines.push(`${t.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le Sort se brise sur la voûte.`);
+          return;
+        }
+      }
       if (!mres.hit || !mres.woundsLost) return;
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;
@@ -2670,6 +2726,9 @@ export function applyCast(
       applyMissileHit(t2, r2);
       if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
     }
+    // Zone persistante d'un Projectile (Grands feux d'U'Zhul : « le feu continue de brûler
+    // dans la Zone d'Effet pour la durée du Sort ») — posée autour de la cible touchée.
+    if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, res.sl, durationMult, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
@@ -2717,9 +2776,11 @@ export function applyCast(
           if (t.id === caster.id || !t.pos || isOutOfAction(t)) continue;
           const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, occupied(battle, t));
           if (r.pushed > 0) {
+            const fromPos = { ...t.pos };
             t.pos = { ...r.dest };
             bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
             logLines.push(`${t.name} est repoussé de ${r.pushed * 2} m.`);
+            applyZoneCrossings(get, t, [...tilesBetween(fromPos, r.dest), { ...r.dest }]); // une poussée TRAVERSE (Mur de feu, L11)
           }
           if (r.collided) logLines.push(`${t.name} percute un obstacle (Dégâts = distance restante — arbitrage MJ).`);
         }
@@ -2740,6 +2801,8 @@ export function applyCast(
           logLines.push(`${caster.name} crache un Souffle — hors combat, effet narratif (arbitrage MJ).`);
         }
       }
+      // Zone persistante d'un sort de soutien/zone (Mur de feu : « Quiconque traverse… »).
+      if (res.cast) placeSpellZone(get, caster, target, spell, spec, res.sl, durationMult, logLines);
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
       // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
@@ -2795,6 +2858,42 @@ export function applyCast(
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
 export function castInfoIsPrayer(type: string): boolean {
   return type === 'Béni' || type === 'Invocation';
+}
+
+/** Pose la ZONE PERSISTANTE d'un sort (L11 — Mur de feu : mur perpendiculaire à l'axe
+ *  lanceur→cible centré sur la cible ; Grands feux : disque autour de la cible). Durée = celle
+ *  du sort (× Surincantation), formules résolues contre le LANCEUR. Hors combat : narratif. */
+function placeSpellZone(
+  get: () => GameState,
+  caster: Combatant,
+  target: Combatant,
+  spell: { label: string },
+  spec: ReturnType<typeof spellSpecFor>,
+  sl: number,
+  durationMult: number,
+  logLines: string[],
+): void {
+  const pz = spec.persistentZone;
+  if (!pz) return;
+  const battle = get().battle;
+  if (!battle || !target.pos || !caster.pos) {
+    logLines.push(`${spell.label} : la zone persiste — hors grille de combat, arbitrage MJ.`);
+    return;
+  }
+  const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : 1;
+  const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
+  const tiles = pz.shape === 'wall'
+    ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))
+    : discTiles(target.pos, metersToTiles(Math.max(0, resolveFormula(pz.radiusMeters ?? 2, caster, battleRng()))));
+  const zone: BattleZone = {
+    label: spell.label, tiles, rounds, casterId: caster.id,
+    ...(pz.blocksLoS ? { blocksLoS: true } : {}),
+    ...(pz.onCross ? { onCross: pz.onCross } : {}),
+    ...(pz.perRound ? { perRound: pz.perRound } : {}),
+  };
+  battle.zones = [...(battle.zones ?? []), zone];
+  logLines.push(`${spell.label} : la zone persiste ${rounds} Round(s).`);
+  bus.emit(EVT.ANIM_AOE, { tiles, kind: 'spell' });
 }
 
 /** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :
@@ -3100,6 +3199,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
       for (const c of battle.combatants) suffocationTick(c).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
+      zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((l) => { battle.log.push(ev('condition', l)); roundLines.push(l); }); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
@@ -3163,8 +3263,12 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
       if (c.wounds.current <= 0) applyZeroWounds(c);
     }
   decayEngagement(battle.combatants);
-  // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
-  if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
+  // Zones persistantes (L11) : un Round de moins ; les zones épuisées se dissipent (fumée, Mur de feu…).
+  if (battle.zones?.length) {
+    const d = decayZones(battle.zones);
+    battle.zones = d.zones;
+    for (const l of d.log) battle.log.push(ev('info', l));
+  }
   // « Avantages et Magie » : la convergence de Domaine ne vaut que DANS le Round (LDB 46 l.176).
   if (battle.domainCasts?.length) battle.domainCasts = undefined;
   // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
@@ -3561,6 +3665,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       if (geom !== enemy) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
       if (geom !== enemy) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
+      applyZoneCrossings(get, enemy, path ?? [{ ...mv.to }]); // Mur de feu & co (L11) : traverser coûte
       approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);

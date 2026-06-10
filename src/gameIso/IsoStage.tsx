@@ -308,9 +308,13 @@ export function IsoStage() {
         for (let dy = 0; dy < fp; dy++)
           hl.push(<path key={`tt${c.id}-${dx}-${dy}`} d={diamondPath(c.pos.x + dx, c.pos.y + dy, d)} fill={fill} opacity={isActiveC ? 0.3 : 0.2} pointerEvents="none" />);
     }
-    // Fumée (R7) : les nuages bloquent la Ligne de Vue → peints en gris.
-    for (const s of battle.smoke ?? []) {
-      hl.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, d)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
+    // Zones persistantes (L11) : fumée opaque en gris ; zones de feu/effet (Mur de feu,
+    // Grands feux) en orange translucide — l'occupant voit le danger.
+    for (const z of battle.zones ?? []) {
+      const fill = z.blocksLoS ? '#9aa0a6' : '#e2641e';
+      for (const t of z.tiles) {
+        hl.push(<path key={`zone-${z.label}-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill={fill} opacity={z.blocksLoS ? 0.5 : 0.35} pointerEvents="none" />);
+      }
     }
     // Portée du SORT sélectionné (mode incantation) : cases à portée teintées — parité avec le tir.
     // (`range` null = portée non chiffrable — le lanceur/au toucher — → rien.)

@@ -47,7 +47,18 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     source: 'LDB 47 p.242 « Attaques en chaîne »',
   },
   N('Aura ordinaire', 'Aura ordinaire : votre nature magique est indétectable (Perception de la magie et similaires).', null),
-  N('Bouclier anti-flèches', 'Bouclier anti-flèches : les projectiles ORGANIQUES (flèches…) entrant dans la ZdE sont détruits ; les inorganiques passent (arbitrage MJ).'),
+  {
+    label: 'Bouclier anti-flèches',
+    // « Tous les projectiles constitués de matière organique, comme des flèches en bois, sont
+    //   automatiquement détruits s'ils entrent dans la Zone d'Effet, n'infligeant aucun Dégât à
+    //   leur cible. Les projectiles constitués uniquement de matière non organique […] ne sont
+    //   pas affectés. » — aura arrowWard (BFM m) portée par le lanceur, consommée à la
+    //   résolution des tirs (flèches/carreaux/javelots détruits ; balles/pierres passent).
+    ops: [{ op: 'arrowWard', radius: { bonusOf: 'FM' } }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.243 « Bouclier anti-flèches »',
+  },
   N('Bouclier magique', 'Bouclier magique : +BFM DR à vos tentatives de Dissipation tant que le Sort est actif (la Dissipation n’est pas encore modélisée).'),
   {
     label: 'Carreau',
@@ -66,7 +77,18 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     source: 'LDB 47 p.243 « Chute »',
   },
   N("Déplacement d'objet", 'Déplacement d’objet : déplace un objet inanimé (Force = votre FM) de BFM mètres.', null),
-  N('Dôme', 'Dôme : Protection (6+) contre les attaques magiques/à distance venant de l’extérieur, pour quiconque est dans la ZdE.'),
+  {
+    label: 'Dôme',
+    // « Quiconque se trouve dans la Zone d'Effet gagne le Trait de créature Protection (6+)
+    //   contre les Attaques magiques ou à distance provenant de l'extérieur du dôme. Les
+    //   personnes à l'intérieur peuvent attaquer des cibles situées à l'extérieur du dôme
+    //   normalement, et le dôme ne gêne pas le déplacement. » — aura domeWard (BFM m) portée
+    //   par le lanceur : sauvegarde d10 ≥ 6 contre tirs ET Projectiles magiques extérieurs.
+    ops: [{ op: 'domeWard', radius: { bonusOf: 'FM' } }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.244 « Dôme »',
+  },
   {
     label: 'Effrayant',
     // « Gagnez Peur 1. Pour chaque +3 DR, vous pouvez augmenter votre valeur de Peur de 1. »

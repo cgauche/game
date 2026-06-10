@@ -131,20 +131,21 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const { H, E } = setup();
     E.traits = ['Souffle +0 (Fumée)']; E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; // BE 4
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
-    const sm = useGame.getState().battle!.smoke ?? [];
-    expect(sm.length).toBeGreaterThan(0);
-    expect(sm.every((s) => s.rounds === 4)).toBe(true); // durée = Bonus d'Endurance (40 → 4)
-    expect(sm.some((s) => s.x === H.pos!.x && s.y === H.pos!.y)).toBe(true); // la cible est dans la fumée
+    const smoke = (useGame.getState().battle!.zones ?? []).find((z) => z.blocksLoS)!;
+    expect(smoke).toBeTruthy();
+    expect(smoke.tiles.length).toBeGreaterThan(0);
+    expect(smoke.rounds).toBe(4); // durée = Bonus d'Endurance (40 → 4)
+    expect(smoke.tiles.some((s) => s.x === H.pos!.x && s.y === H.pos!.y)).toBe(true); // la cible est dans la fumée
   });
 
   it('Fumée : −1 Round par frontière de Round, dissipation à 0', () => {
     setup();
     const b0 = useGame.getState().battle!;
-    useGame.setState({ battle: { ...b0, smoke: [{ x: 5, y: 5, rounds: 2 }] } });
+    useGame.setState({ battle: { ...b0, zones: [{ label: 'Fumée', tiles: [{ x: 5, y: 5 }], rounds: 2, blocksLoS: true }] } });
     resolveRoundBoundary(useGame.getState, useGame.setState);
-    expect(useGame.getState().battle!.smoke).toEqual([{ x: 5, y: 5, rounds: 1 }]);
+    expect(useGame.getState().battle!.zones).toEqual([{ label: 'Fumée', tiles: [{ x: 5, y: 5 }], rounds: 1, blocksLoS: true }]);
     resolveRoundBoundary(useGame.getState, useGame.setState);
-    expect(useGame.getState().battle!.smoke ?? []).toEqual([]); // épuisée → dissipée
+    expect(useGame.getState().battle!.zones ?? []).toEqual([]); // épuisée → dissipée
   });
 
   it('Regard pétrifiant : dépense tout l’Avantage, marge ≥ 6 DR → cible Pétrifiée', () => {

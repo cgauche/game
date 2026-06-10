@@ -14,6 +14,7 @@
  * dans engine/magic ; la spec ne décrit que les EFFETS d'un lancement réussi.
  */
 import { GameOp, Formula } from './ops';
+import type { ZoneEffect } from './zones';
 import {
   SpellLike,
   parseHealFormula,
@@ -54,6 +55,22 @@ export interface SpellSpec {
    *  Dégâts égaux à votre Bonus d'Endurance. » — délégué à l'attaque de ZONE du trait
    *  (applyAreaAttack), centrée sur la cible du sort ; Type selon le Domaine du lanceur. */
   breathAttack?: true;
+  /** ZONE PERSISTANTE posée par le sort (L11 — Mur de feu : « Quiconque traverse le mur » ;
+   *  Grands feux d'U'Zhul : « le feu continue de brûler dans la ZdE pour la durée […] au début
+   *  d'un Round ») : forme + effets, durée = celle du sort. Le mur est tracé PERPENDICULAIRE à
+   *  l'axe lanceur→cible, centré sur la cible (simplification : pas d'UI de tracé libre). */
+  persistentZone?: {
+    shape: 'disc' | 'wall';
+    /** Disque : rayon en mètres (« ZdE (BFM) mètres »). */
+    radiusMeters?: Formula;
+    /** Mur : longueur en mètres (« large d'un nombre de mètres égal à votre BFM »). */
+    lengthMeters?: Formula;
+    /** « Pour chaque +2 DR, vous pouvez allonger la longueur de BFM mètres » (Mur de feu). */
+    lengthPerSL?: { every: number; metersFormula: Formula };
+    blocksLoS?: boolean;
+    onCross?: ZoneEffect;
+    perRound?: ZoneEffect;
+  };
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */
@@ -73,7 +90,8 @@ export function spellSupport(
   spec: SpellSpec,
   missile: boolean,
 ): 'mecanique' | 'partiel' | 'narratif' {
-  const mech = spec.ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null;
+  const mech = spec.ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null
+    || spec.persistentZone != null || spec.breathAttack != null || spec.teleportMeters != null || spec.pushMeters != null;
   const narr = spec.ops.some((o) => o.op === 'narrative') || (!spec.curated && spec.ops.length === 0);
   if (mech && narr) return 'partiel';
   if (mech) return 'mecanique';
