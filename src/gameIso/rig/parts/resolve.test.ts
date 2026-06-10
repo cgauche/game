@@ -42,3 +42,24 @@ describe('resolveParts — priorité', () => {
     expect(r.cheveux?.svg).toContain('<');
   });
 });
+
+describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
+  const wh = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon => ({ name, type: 'melee', damage: '+4', qualities: q, hand } as Weapon);
+
+  it('épée + dague (hand off) → la 2e arme est dessinée à la main secondaire (os bouclier)', () => {
+    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);
+    expect(r.arme?.svg).toContain('<');
+    expect(r.bouclier?.svg).toContain('<'); // dague dessinée à la main secondaire
+  });
+
+  it('épée seule → main secondaire vide', () => {
+    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main')], armour: [] }, {}, 1);
+    expect(r.bouclier?.svg ?? '').toBe('');
+  });
+
+  it('épée + bouclier → le bouclier prime sur une arme à la main secondaire', () => {
+    const shield = { name: 'Bouclier', type: 'melee', damage: '+4', qualities: ['Bouclier'], hand: 'off' } as unknown as Weapon;
+    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), shield], armour: [], shield }, {}, 1);
+    expect(r.bouclier?.svg).toContain('<');
+  });
+});

@@ -134,10 +134,13 @@ export function resolveParts(
   // « flotte dans le vide » au bout de la manche). Sous l'arme (z) = la main tient.
   out.main = P(HAND);
 
-  // Mains : arme (1re arme non-bouclier) + bouclier.
+  // Mains : arme principale (1re non-bouclier) à l'os `arme` ; main secondaire (os `bouclier`) =
+  // bouclier si présent, sinon la 2e arme tenue (dual-wield non-bouclier : dague, main-gauche…) —
+  // détectée par `hand:'off'`. Ainsi épée+bouclier ET épée+dague s'affichent (plus seulement la principale).
   const mainWeapon = equip.weapons.find((w) => !isShield(w));
+  const offWeapon = equip.weapons.find((w) => w.hand === 'off' && !isShield(w) && w !== mainWeapon);
   out.arme = P(mainWeapon ? weaponPart(mainWeapon) : '');
-  out.bouclier = P(equip.shield ? shieldPart(equip.shield) : '');
+  out.bouclier = P(equip.shield ? shieldPart(equip.shield) : offWeapon ? weaponPart(offWeapon) : '');
 
   return out;
 }
