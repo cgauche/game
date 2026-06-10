@@ -1,11 +1,5 @@
 import { useGame } from '../state/store';
-import type { Money } from '../state/store';
-
-/** Bourse en notation canon FR (couronne d'or / pistole d'argent / sou de cuivre → CO/pa/sc). */
-function fmtMoney(m: Money): string {
-  const parts = [m.gold && `${m.gold} CO`, m.silver && `${m.silver} pa`, m.brass && `${m.brass} sc`].filter(Boolean);
-  return parts.length ? parts.join(' ') : '—';
-}
+import { Coins } from './Coins';
 
 /**
  * Écran de VICTOIRE plein écran (demande utilisateur) : récapitulatif de fin de combat — XP gagnée, or
@@ -30,9 +24,16 @@ export function VictoryScreen() {
       <div className="victory-screen">
         <h1 className="victory-title">🏆 Victoire !</h1>
 
+        {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
+        {(pv?.messages?.length ?? 0) > 0 && (
+          <div className="victory-messages">
+            {pv!.messages!.map((m, i) => <p key={i} className="victory-msg">{m}</p>)}
+          </div>
+        )}
+
         <div className="victory-rewards">
           <div className="victory-stat"><span className="vs-ico">✨</span> <b>{xp}</b> XP</div>
-          <div className="victory-stat"><span className="vs-ico">💰</span> {fmtMoney(gold)}</div>
+          <div className="victory-stat"><span className="vs-ico">💰</span> <Coins money={gold} /></div>
         </div>
 
         {defeated.length > 0 && (

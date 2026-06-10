@@ -24,6 +24,10 @@ export interface PendingVictory {
   gold: Money;
   loot: string[];
   defeated: { name: string; count: number }[];
+  /** Messages de journal de la victoire (Effets `journal` de onVictory) — affichés DANS l'écran (#9). */
+  messages?: string[];
+  /** Effets DIFFÉRÉS au clic « Continuer » (téléport/dialogue/combat) — sinon ils masquent l'écran (#9). */
+  onContinue?: Effect[];
 }
 /** Test de compétence interactif en attente d'acquittement par le joueur. */
 export interface PendingTest {

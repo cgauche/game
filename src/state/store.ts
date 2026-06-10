@@ -892,7 +892,11 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
   giveItemToHero: (label, heroId) => partyFlow.giveItemToHero(get, set, label, heroId),
-  dismissVictory: () => set({ pendingVictory: null, battle: null, mode: 'exploration' }),
+  dismissVictory: () => {
+    const cont = get().pendingVictory?.onContinue;
+    set({ pendingVictory: null, battle: null, mode: 'exploration' });
+    if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
+  },
 
   battleSelectAction: (a) => {
     const { battle, scene } = get();

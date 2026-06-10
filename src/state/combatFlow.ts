@@ -1860,7 +1860,14 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
     const xpBefore = get().party[0]?.xp ?? 0;
     const brassBefore = toBrass(get().money);
     const invBefore = get().inventory.length;
-    if (battle.onVictory) applyEffects(get, set, battle.onVictory);
+    // #9 : on sépare les effets onVictory. Récompenses/flags/journal s'appliquent MAINTENANT (pour peupler
+    // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
+    // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
+    const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
+    const deferred = (battle.onVictory ?? []).filter((e) => CONTEXT.has(e.type));
+    const immediate = (battle.onVictory ?? []).filter((e) => !CONTEXT.has(e.type));
+    const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
+    if (immediate.length) applyEffects(get, set, immediate);
     const after = get();
     const counts = new Map<string, number>();
     for (const c of battle.combatants) if (c.kind === 'enemy') counts.set(c.name, (counts.get(c.name) ?? 0) + 1);
@@ -1870,6 +1877,8 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
         gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
         loot: after.inventory.slice(invBefore),
         defeated: [...counts].map(([name, count]) => ({ name, count })),
+        messages: messages.length ? messages : undefined,
+        onContinue: deferred.length ? deferred : undefined,
       },
     });
     return true;
