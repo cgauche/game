@@ -7,6 +7,7 @@ import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPose
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
 import { STEP_MS, walkMs } from './walkPath';
+import { isTileVisible } from './viewport';
 
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
 
@@ -18,7 +19,7 @@ type Mode = { kind: 'rest' } | { kind: 'walk'; until: number } | { kind: 'attack
  * `plan` (null si monolithique), l'espèce, la `pose` courante, et `view`+`mirror`. EXTRAIT
  * d'AnimatedPlanToken pour être PARTAGÉ — le token seul ET MountedToken (monture) le consomment.
  */
-export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: Dir8): {
+export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }): {
   plan: BodyPlan | null;
   species: string;
   pose: Record<string, number>;
@@ -30,6 +31,8 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const [, force] = useState(0);
   const modeRef = useRef<Mode>({ kind: 'rest' });
   const rafRef = useRef(0);
+  const posRef = useRef(pos); // CULLING : tuile lue dans le rAF sans re-souscrire (pos stable)
+  posRef.current = pos;
 
   const planId = bodyPlanOf(name);
   const plan = planId === 'monolithic' ? null : planById(planId as BodyPlanId);
@@ -42,7 +45,10 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
       const t = performance.now();
       if (m.kind === 'walk' && t > m.until) modeRef.current = { kind: 'rest' };
       else if (m.kind === 'attack' && t - m.start > 360) modeRef.current = { kind: 'rest' };
-      force((n) => n + 1);
+      // CULLING viewport : hors-champ → on saute le re-rendu (donc resolveRig) mais on GARDE la
+      // boucle vivante (reprise auto en revenant dans le cadre). Le mode (walk/attack→rest) avance
+      // quand même, donc aucune désync de timing. Coût hors-champ = un simple test de cadre.
+      if (!posRef.current || isTileVisible(posRef.current.x, posRef.current.y)) force((n) => n + 1);
       rafRef.current = modeRef.current.kind === 'rest' && (!hasIdle || dead) ? 0 : requestAnimationFrame(loop);
     };
     const ensureLoop = () => { if (!rafRef.current) rafRef.current = requestAnimationFrame(loop); };

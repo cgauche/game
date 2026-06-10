@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Pose } from '../poses';
 import { CLIPS, sampleClip, type Clip, type ClipName } from './clips';
+import { isTileVisible } from '../../viewport';
 
 interface Active {
   clip: Clip;
@@ -14,10 +15,12 @@ interface Active {
 /** Anime le rig : boucle rAF qui échantillonne le clip courant en Pose. play()/hold().
  *  `restClip` = posture de REPOS (sinon idle) : un clip d'ambiance (dévore/hurle…) vers
  *  lequel on retombe après chaque geste — un seul token sert combat ET exploration. */
-export function useRigClip(restClip?: Clip) {
+export function useRigClip(restClip?: Clip, pos?: { x: number; y: number }) {
   const [pose, setPose] = useState<Pose>({});
   const rest = useRef<Clip | undefined>(restClip);
   rest.current = restClip;
+  const posRef = useRef(pos); // CULLING : tuile lue dans le rAF (pos stable, pas de re-souscription)
+  posRef.current = pos;
   const restState = (): Active => ({ clip: rest.current ?? CLIPS.idle, start: performance.now(), impactDone: true, hold: !!rest.current });
   const active = useRef<Active>({ clip: restClip ?? CLIPS.idle, start: 0, impactDone: true, hold: !!restClip });
   const raf = useRef(0);
@@ -30,7 +33,10 @@ export function useRigClip(restClip?: Clip) {
       const clip = a.clip;
       const elapsed = now - a.start;
       const { pose: p, done } = sampleClip(clip, elapsed);
-      setPose(p);
+      // CULLING viewport : hors-champ → on saute le re-rendu visuel (donc resolveRig), MAIS on
+      // laisse onImpact/onDone se déclencher (la logique de combat — dégâts, fin de tour — ne doit
+      // JAMAIS dépendre de la visibilité). Le clip continue d'avancer normalement.
+      if (!posRef.current || isTileVisible(posRef.current.x, posRef.current.y)) setPose(p);
       if (!a.impactDone && clip.onImpact != null && elapsed >= clip.onImpact) {
         a.impactDone = true;
         a.onImpact?.();

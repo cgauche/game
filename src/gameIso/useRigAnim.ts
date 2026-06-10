@@ -18,13 +18,15 @@ import { walkMs } from './walkPath';
  * RigToken pour être PARTAGÉ — RigToken (à pied) ET MountedToken (en selle) consomment le même
  * hook, sans dupliquer le câblage bus.
  */
-export function useRigAnim({ id, equip, restClip, facing }: {
+export function useRigAnim({ id, equip, restClip, facing, pos }: {
   id: string;
   equip: EquipCtx;
   restClip?: Clip;
   facing?: Dir8;
+  /** Tuile de l'acteur (CULLING viewport : les rigs hors-champ ne paient plus leur rAF). */
+  pos?: { x: number; y: number };
 }): { pose: Pose; holdPose: Pose; view: View; mirror: boolean } {
-  const { pose, play, playClip, holdClip } = useRigClip(restClip);
+  const { pose, play, playClip, holdClip } = useRigClip(restClip, pos);
   const camRot = useGame((s) => s.camRot);
   const worldDir = useGame((s) => s.facing?.[id]) ?? facing;
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];

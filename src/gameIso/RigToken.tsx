@@ -25,6 +25,7 @@ export function RigToken({
   overlays,
   ambientAnim,
   facing,
+  pos,
   outOfAction = false,
 }: {
   id: string;
@@ -35,10 +36,12 @@ export function RigToken({
   ambientAnim?: string;
   /** Orientation MONDE authored (entité de scène) — fallback si le store n'a pas d'orientation vivante. */
   facing?: Dir8;
+  /** Tuile de l'acteur (CULLING viewport : un rig hors-champ ne paie plus son rAF d'animation). */
+  pos?: { x: number; y: number };
   outOfAction?: boolean;
 }) {
   const restClip = ambientAnim ? ambientClip(ambientAnim) ?? undefined : undefined;
-  const { pose, holdPose, view, mirror } = useRigAnim({ id, equip, restClip, facing });
+  const { pose, holdPose, view, mirror } = useRigAnim({ id, equip, restClip, facing, pos });
   const body = (
     <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
       <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(holdPose, pose)} view={view} mirror={mirror} />

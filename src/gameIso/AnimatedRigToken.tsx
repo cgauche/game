@@ -10,7 +10,7 @@ import { RigToken } from './RigToken';
  * `profile`) vers le token rig UNIQUE. Aucune logique de rendu ici — tout est dans
  * RigToken (partagé combat ↔ exploration).
  */
-export function AnimatedRigToken({ combatant, profile }: { combatant: Combatant; profile?: EnemyRigProfile }) {
+export function AnimatedRigToken({ combatant, profile, pos }: { combatant: Combatant; profile?: EnemyRigProfile; pos?: { x: number; y: number } }) {
   return (
     <RigToken
       id={combatant.id}
@@ -18,6 +18,7 @@ export function AnimatedRigToken({ combatant, profile }: { combatant: Combatant;
       equip={profile?.equip ?? equipFromCombatant(combatant)}
       career={profile?.career ?? combatant.career}
       overlays={profile?.overlays}
+      pos={pos}
       outOfAction={!!combatant.wounds && !!combatant.conditions && isOutOfAction(combatant)}
     />
   );

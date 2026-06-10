@@ -23,7 +23,7 @@ const RIDE_SCALE = 0.78;
  */
 export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combatant }) {
   // Monture : gabarit animé. Sa vue/mirror sont autoritaires pour le couple.
-  const mountA = usePlanAnim(mount.id, mount.name, isOutOfAction(mount), undefined);
+  const mountA = usePlanAnim(mount.id, mount.name, isOutOfAction(mount), undefined, mount.pos);
   // Cavalier : apparence/équipement dérivés (héros = du Combatant ; ennemi/PNJ = profil rig).
   const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
   const appearance = prof?.appearance ?? rider.appearance ?? defaultAppearance(rider);
@@ -31,7 +31,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const career = prof?.career ?? rider.career;
   const overlays = prof?.overlays;
   // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id).
-  const riderA = useRigAnim({ id: rider.id, equip, facing: undefined });
+  const riderA = useRigAnim({ id: rider.id, equip, facing: undefined, pos: mount.pos });
 
   if (!mountA.plan) return null; // monture sans gabarit (improbable) — rien à composer
 

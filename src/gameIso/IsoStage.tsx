@@ -48,6 +48,7 @@ import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
 import { summarizeEffects, combatantFlags } from './effectIcons';
+import { setVisibleTileBounds } from './viewport';
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 /** Teinte d'une bande de portée selon son modificateur. Palette froide→chaude qui CONTRASTE avec
@@ -541,6 +542,16 @@ export function IsoStage() {
   // Caméra libre tactique : le suivi auto-cadre le point focal, + un décalage manuel (camPan) qu'on
   // accumule au glisser. Remis à zéro quand l'unité active change (refocus « sur celui qui joue après »).
   const cam = { x: VW / 2 - fc.cx + camPan.x, y: VH / 2 - fc.cy + camPan.y };
+
+  // CULLING d'animation : publie le cadre VISIBLE (AABB en tuiles des 4 coins de la fenêtre projetés)
+  // pour que les hooks d'anim (usePlanAnim/useRigClip) sautent le rAF des acteurs hors-champ. Recalculé
+  // à chaque rendu (donc suit la caméra pendant la marche). Écriture dans un module = pas de re-rendu.
+  {
+    const toTile = (sx: number, sy: number) => screenToTile((sx - VW / 2) / zoom + VW / 2 - cam.x, (sy - VH / 2) / zoom + VH / 2 - cam.y, dims);
+    const cs = [toTile(0, 0), toTile(VW, 0), toTile(0, VH), toTile(VW, VH)];
+    const xs = cs.map((c) => c.x), ys = cs.map((c) => c.y);
+    setVisibleTileBounds({ minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) });
+  }
 
   // --- Interaction (clic / survol → tuile) ---
   // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
