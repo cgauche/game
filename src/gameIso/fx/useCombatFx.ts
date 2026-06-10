@@ -4,10 +4,12 @@
  * Chaque système = un état local + un abonnement bus à durée de vie bornée (setTimeout).
  * Le RENDU vit dans `FxLayer.tsx` ; la marche animée dans `useWalkAnim.ts`.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
 import { isSupportiveCast, spellFxForLabel } from '../rig/anim/spellClips';
+import { conditionMeta } from '../effectIcons';
+import type { Combatant } from '../../engine/types';
 
 /** Couleur du flash de zone d'effet selon l'élément (feu/froid/poison/foudre), défaut rouge. */
 const aoeColor = (type?: string): string => {
@@ -40,15 +42,49 @@ export type Aura = { key: number; x: number; y: number; gradient: string; core: 
 // zone), ennemi comme joueur → on voit l'empreinte et pourquoi plusieurs combattants sont affectés.
 export type AoeFlash = { key: number; tiles: { x: number; y: number }[]; color: string };
 
+/** Signature `id → (État → valeur)` d'un instantané de combattants (pour le diff des flottants d'État). */
+export type CondSig = Map<string, Map<string, number>>;
+export function condSignature(combatants: Combatant[]): CondSig {
+  return new Map(combatants.map((c) => [c.id, new Map((c.conditions ?? []).map((cd) => [cd.name, cd.value ?? 1]))]));
+}
+
+/** États GAGNÉS entre deux instantanés (nouveaux ou empilés) — flottés sur le pion. Pure. */
+export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id: string; x: number; y: number; text: string }[] {
+  const out: { id: string; x: number; y: number; text: string }[] = [];
+  for (const c of combatants) {
+    const old = prev.get(c.id);
+    if (!old || !c.pos) continue; // pas d'instantané (entrée en scène) → pas de flottant rétroactif
+    for (const cd of c.conditions ?? []) {
+      const v = cd.value ?? 1;
+      const before = old.get(cd.name) ?? 0;
+      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, text: `${conditionMeta(cd.name).icon} ${cd.name}${v > 1 ? ` ${v}` : ''}` });
+    }
+  }
+  return out;
+}
+
 export function useCombatFx() {
   const [floats, setFloats] = useState<Float[]>([]);
   const floatId = useRef(0);
+  const push = useCallback((x: number, y: number, text: string, kind: FloatKind, crit = false) => {
+    const key = ++floatId.current;
+    setFloats((f) => [...f, { key, x, y, text, kind, crit }]);
+    setTimeout(() => setFloats((f) => f.filter((z) => z.key !== key)), kind === 'death' ? 1300 : 900);
+  }, []);
+  // Flottants d'ÉTAT par DIFF du store : tout État gagné (Sonné, Brisé, Hémorragique…) flotte sur le
+  // pion au moment où il tombe, quelle que soit la source (attaque, qualité, sort, psy, entretien).
+  const condSig = useRef<CondSig>(new Map());
+  useEffect(
+    () =>
+      useGame.subscribe((s) => {
+        const b = s.battle;
+        if (!b) { condSig.current = new Map(); return; }
+        for (const g of diffConditionGains(condSig.current, b.combatants)) push(g.x, g.y, g.text, 'condition');
+        condSig.current = condSignature(b.combatants);
+      }),
+    [push],
+  );
   useEffect(() => {
-    const push = (x: number, y: number, text: string, kind: FloatKind, crit = false) => {
-      const key = ++floatId.current;
-      setFloats((f) => [...f, { key, x, y, text, kind, crit }]);
-      setTimeout(() => setFloats((f) => f.filter((z) => z.key !== key)), kind === 'death' ? 1300 : 900);
-    };
     const offImpact = bus.on(EVT.ANIM_IMPACT, (d: any) => {
       const b = useGame.getState().battle;
       const r = d?.result;
