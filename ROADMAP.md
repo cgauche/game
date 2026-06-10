@@ -804,8 +804,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 - ✅ **L12 — Dissipation** *(2026-06-10, merge `cfeb97b` + fix `7b651f0`)* : Contre-sort réactif
   joueur ET ennemi (Test opposé Langue (Magick), 1/Round) ; la modale d'incantation ennemie
   suspend le tour de l'IA.
-- **L13 — Gates & redirections** : B. de Protection (Test de FM imposé à l'attaquant), Martyr
-  (redirection des dégâts vers le prêtre, BE doublé), Attaques en chaîne (rebond de Projectile).
+- ✅ **L13 — Gates & redirections** *(2026-06-11, commit `bd6dfac`)* : **B. de Protection**
+  (Test de FM Accessible (+20) imposé à l'attaquant à la DÉCLARATION — héros refusé sans rien
+  consommer + révélation, IA renonce au coup), **Martyr** (le prêtre encaisse les Dégâts bruts
+  à 2×BE + ses PA, attaques ET Projectiles ; la cible est épargnée), **Attaques en chaîne**
+  (rebond mécanique sur l'ennemi le plus proche ≤ BFM m tant que la cible tombe à 0, max BFM).
 - **L14 — Attributs de Domaine** (LDB 48, intros des 8 Couleurs — relevés 2026-06-11) : Bête
   (option Peur 1, 1d10 Rounds), Cieux (ignore PA métal + arc 2 m BFM), Feu (+1 En flammes ;
   +10 Incant/Focus par En flammes proche), Lumière (Aveuglé ; Démon/MV +BInt ignore BE+PA),
