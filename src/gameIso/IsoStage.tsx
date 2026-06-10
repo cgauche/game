@@ -489,6 +489,10 @@ export function IsoStage() {
     objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
   }
 
+  // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
+  // partagé entre le token d'exploration, l'émission ANIM_MOVE et le suivi caméra (même id).
+  const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
+
   if (mode === 'battle' && battle) {
     let hi = 0;
     for (const c of battle.combatants) {
@@ -540,11 +544,9 @@ export function IsoStage() {
     // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
     // dans le tri de profondeur, réfs stables → React saute leur re-rendu pendant la marche.
     objs.push(...entityObjs);
-    // groupe (token = 1er héros VIVANT et conscient — #27b : si le principal est mort/à terre, on
-    // affiche le suivant encore debout) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
-    const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
-    const wp = leader ? walkPosOf(leader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
-    const r = pickBackend({ kind: 'partyLeader', leader }, viewMode);
+    // groupe — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
+    const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
+    const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, viewMode);
     const el =
       r.backend === 'sprite'
         ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0])
@@ -573,7 +575,11 @@ export function IsoStage() {
     if (a?.pos && b?.pos) camPair = { from: a.pos, to: b.pos };
   }
 
-  let focus = partyPos;
+  // Hors combat, la caméra suit la position VISUELLE du leader (qui glisse via ANIM_MOVE), pas la
+  // tuile logique partyPos qui avance d'une case toutes les 150 ms — sinon, la transition transform
+  // étant coupée pendant la marche, l'écran bondit de case en case.
+  let focus: { x: number; y: number } = partyPos;
+  if (mode !== 'battle' && partyLeader) focus = walkPosOf(partyLeader.id, partyPos.x, partyPos.y);
   if (camPair) {
     // Cadrer les DEUX : on centre sur le milieu attaquant ↔ cible (« centré sur lui » corrigé).
     focus = { x: Math.round((camPair.from.x + camPair.to.x) / 2), y: Math.round((camPair.from.y + camPair.to.y) / 2) };
@@ -730,8 +736,8 @@ export function IsoStage() {
     if (!path || path.length < 2) return;
     movingRef.current = true;
     // Le déplacement d'exploration n'émet pas ANIM_MOVE côté store → on déclenche ici
-    // la marche du leader (token '__party') pour le chemin complet.
-    if (party[0]) bus.emit(EVT.ANIM_MOVE, { id: party[0].id, path });
+    // la marche du leader (même id que le token rendu et le suivi caméra) pour le chemin complet.
+    if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path });
     let i = 1;
     const step = () => {
       const st = useGame.getState();
