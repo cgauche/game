@@ -86,7 +86,7 @@ import { runDailyUpkeep } from './upkeep';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable, condMet } from './scene';
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
@@ -928,6 +928,41 @@ export function bestAdjacentReachable(reach: Map<string, number>, target: Pt): P
     }
   }
   return best;
+}
+
+/** Cases de Mouvement LIBRE cliquables MAINTENANT (héros actif, mode neutre) : Marche restante
+ *  (mouvement décomposable), géométrie de la monture, règle M-A-M, filtre Brisé. Vide si Engagé
+ *  (le déplacement passe par le Désengagement — LDB 15 l.84). Reprend la logique de l'ex-mode
+ *  « Déplacer » (battleSelectAction) ; source unique pour l'affichage ET la validation des clics. */
+export function computeMoveReach(get: () => GameState): Map<string, number> {
+  const { battle, scene } = get();
+  if (!battle || !scene || battle.over) return new Map();
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return new Map();
+  if (isEngaged(active) || !canMove(battle, active)) return new Map();
+  const geom = mountOf(battle, active) ?? active;
+  const blocked = occupied(battle, geom);
+  let reach = reachable(scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+  // Brisé (LDB 16 l.55) : fuir seulement — aucune case qui RAPPROCHE d'un ennemi.
+  if (hasCondition(active, 'Brisé')) {
+    const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
+    if (foes.length) {
+      const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
+      reach = new Map([...reach].filter(([k]) => {
+        const [x, y] = k.split(',').map(Number);
+        return Math.min(...foes.map((e) => chebyshev({ x, y }, e.pos!))) >= distNow;
+      }));
+    }
+  }
+  return reach;
+}
+
+/** Cases cliquables affichées/validées : budget SPÉCIAL stocké (Course, post-Désengagement)
+ *  prioritaire, sinon Marche restante dérivée. */
+export function displayedReach(get: () => GameState): Map<string, number> {
+  const battle = get().battle;
+  if (!battle) return new Map();
+  return battle.reachable.size > 0 ? battle.reachable : computeMoveReach(get);
 }
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir

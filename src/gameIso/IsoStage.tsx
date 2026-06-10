@@ -47,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, previewAttack } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
@@ -259,7 +259,9 @@ export function IsoStage() {
           hl.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, d)} fill={bandColor(m)} opacity={0.26} pointerEvents="none" />);
         }
     }
-    for (const k of battle.reachable.keys()) {
+    // Portée de Marche AFFICHÉE EN PERMANENCE au tour d'un héros (modèle de clic implicite) :
+    // budget spécial stocké (Course, post-Désengagement) prioritaire, sinon Marche restante dérivée.
+    for (const k of displayedReach(useGame.getState).keys()) {
       const [x, y] = k.split(',').map(Number);
       hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
     }
