@@ -36,6 +36,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
+import { gainAdvantage } from '../engine/advantage';
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
@@ -1725,7 +1726,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      active.advantage += adv; // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
+      gainAdvantage(active, adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
       if (adv > 0) active.gainedAdvThisRound = true;
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
       set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${adv ? ` (+${adv} Avantage)` : ''}.`, active.id, target.id)] } });
@@ -2226,7 +2227,7 @@ export const useGame = create<GameState>((set, get) => ({
       // 2ᵉ frappe résolue (LDB 10 l.638) : +1 Avantage UNIQUE si LES DEUX frappes touchent (pas +1 par frappe).
       // `dualBefore` n'existe que si la 1ʳᵉ a touché ; `pa.result.hit` = la 2ᵉ touche → les deux touchent.
       if (isDualSecond) {
-        if (dualBefore && pa.result.hit) { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
+        if (dualBefore && pa.result.hit) { gainAdvantage(attacker); attacker.gainedAdvThisRound = true; }
         set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
       // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du
@@ -2699,7 +2700,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!mover || !foe) return;
     const log = [...battle.log];
     if (pd.result === 'success') {
-      mover.advantage += 1; // +1 Avantage (l.89)
+      gainAdvantage(mover); // +1 Avantage (l.89)
       mover.gainedAdvThisRound = true;
       // Esquive réussie = on s'extrait du corps à corps → libéré de TOUS les Engagements
       // (cohérent avec l'option A, qui libère aussi tous les foes).
@@ -2718,7 +2719,7 @@ export const useGame = create<GameState>((set, get) => ({
       log.push(ev('flee', `${mover.name} : échange neutre, le désengagement échoue (personne ne prend l'avantage).`, mover.id, foe.id));
       set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
     } else {
-      foe.advantage += 1; // l'adversaire gagne +1, la fuite échoue (l.89)
+      gainAdvantage(foe); // l'adversaire gagne +1, la fuite échoue (l.89)
       foe.gainedAdvThisRound = true;
       log.push(ev('flee', `${mover.name} échoue à se désengager ; ${foe.name} gagne +1 Avantage.`, mover.id, foe.id));
       set({ battle: { ...battle, acted: true, action: null, reachable: new Map(), log } });
@@ -2736,7 +2737,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingDisengage: null });
     if (!mover || !foe) return;
     const log = [...battle.log];
-    foe.advantage += 1; // l'adversaire gagne immédiatement +1 Avantage (l.101)
+    gainAdvantage(foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
     foe.gainedAdvThisRound = true;
     const res = resolveBackstabAttack(foe, mover, battleRng());
     log.push(ev('flee', `${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`, mover.id, foe.id));
@@ -2744,7 +2745,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log], subjectId: mover.id });
     if (res.hit && res.woundsLost) {
       loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
-      foe.advantage += 1; // touché → +1 Avantage de plus (l.107)
+      gainAdvantage(foe); // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
       const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
       const ct = rollTest(calme, 'intermediaire', battleRng());

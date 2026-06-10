@@ -38,6 +38,7 @@ import {
   crowdMod,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
+import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, entanglesOnHit, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
@@ -565,7 +566,7 @@ export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
  *  persiste. À appeler une seule fois par attaque (avant le 1er jet ; pas sur une relance). */
 export function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void {
   if (attacker.weapons[0]?.type === 'melee' && target.conditions.some((c) => c.name === 'Sonné')) {
-    attacker.advantage += 1;
+    gainAdvantage(attacker);
     attacker.gainedAdvThisRound = true;
   }
 }
@@ -1327,20 +1328,20 @@ export function applyAttackResult(
     // Renversement (LDB 10) : « au lieu de gagner +1 Avantage, vous prenez tous les Avantages
     // actuels de votre adversaire » — appliqué quand c'est mieux que +1.
     if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
-      attacker.advantage += target.advantage;
+      gainAdvantage(attacker, target.advantage);
       target.advantage = 0;
       critLog.push(`${attacker.name} renverse l'échange et vole tous les Avantages (Renversement).`);
-    } else attacker.advantage += 1;
+    } else gainAdvantage(attacker);
     attacker.gainedAdvThisRound = true;
   }
   if (res.advantageTo === 'defender') {
     // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10) : +niveau Avantage en
     // défense gagnée au Bouclier.
     if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
-      target.advantage += attacker.advantage;
+      gainAdvantage(target, attacker.advantage);
       critLog.push(`${target.name} renverse l'échange et vole tous les Avantages (Renversement).`);
-    } else target.advantage += 1;
-    target.advantage += shieldAdvantageLevel(target, res.parryWeapon);
+    } else gainAdvantage(target);
+    gainAdvantage(target, shieldAdvantageLevel(target, res.parryWeapon));
     target.gainedAdvThisRound = true;
     attacker.advantage = 0; // l'attaquant a échoué au Test opposé
   }
@@ -2254,7 +2255,7 @@ export function applyCast(
   if (battle && isSort && spell.subType && res.cast) {
     const marks = battle.domainCasts ?? [];
     if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
-      caster.advantage += 1;
+      gainAdvantage(caster);
       caster.gainedAdvThisRound = true;
       logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name} (LDB 46).`);
     }
@@ -3112,7 +3113,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
         if (!wasEngaged) {
           const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
           if (adv) {
-            enemy.advantage += adv;
+            gainAdvantage(enemy, adv);
             enemy.gainedAdvThisRound = true;
             enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
           }
