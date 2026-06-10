@@ -5,22 +5,25 @@ import { CreatorSummary } from './CreatorSummary';
 import { newDraft } from './draft';
 
 describe('CharacterCreator (assistant) — rendu statique', () => {
-  it('étape 1 : fiche vivante + cartes d\'espèces illustrées + tirage d100 (+20 PX)', () => {
+  it('étape 1 : trois zones (rail de sélection, profil, fiche vivante) + tirage d100', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
     // Barre d'étapes
     expect(html).toContain('1. Espèce');
     expect(html).toContain('7. Récapitulatif');
-    // Fiche vivante (colonne gauche) : silhouette + stats dérivées en direct
+    // Coquille 3 zones : rail (liste de sélection), détail, fiche vivante
+    expect(html).toContain('creator-shell');
+    expect(html).toContain('creator-rail');
+    expect(html).toContain('creator-main');
     expect(html).toContain('creator-summary');
-    expect(html).toContain('creator-figure');
+    expect(html).toContain('pick-row selected');
     expect(html).toContain('Blessures');
     expect(html).toContain('PX bonus de création');
-    // Cartes d'espèces du Livre de base, avec figurine et description
-    expect(html).toContain('select-card');
-    expect(html).toContain('card-figure');
+    // Espèces du Livre de base listées + profil chiffré de la sélection
     for (const s of ['Humains (Reiklander)', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains']) {
       expect(html).toContain(s);
     }
+    expect(html).toContain('Caractéristiques de base');
+    expect(html).toContain('Compétences d&#x27;espèce');
     // Tirage aléatoire LDB 04
     expect(html).toContain('Tirer l&#x27;espèce (d100)');
     expect(html).toContain('Suivant →');
