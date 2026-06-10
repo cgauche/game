@@ -577,6 +577,44 @@ Empoisonné **refuse le repos**, l.105). Commits `e2f4229` / `623081b` / `26d35c
 **Dette sourcée** (hors lot) : Faim/Soif bloquant la récup (l.418) ; **Blessures CRITIQUES** = piste SÉPARÉE
 (convalescence, Guérison) → traitée au **Jalon 5** (ci-dessous). **~1657 tests verts**, typecheck propre.
 
+## ✅ Jalon 1.9 — Loadouts d'armes & combat à deux armes *(fait — 2026-06-10)*
+
+**Sets d'armes nommés** construits hors combat et commutés en combat, **choix de l'arme d'attaque ET de
+parade**, talent **Maniement de deux armes** complet, le tout sur un **registre de capacités de combat**
+extensible (talents + traits). RAW vérifié (LDB 10/14/18/62) ; spec/plans
+`docs/superpowers/{specs,plans}/2026-06-10-loadouts-deux-armes*` + `…-p1…p6…`.
+
+- **Modèle de loadouts** (`Combatant.loadouts[]` + `activeLoadoutId`) : `recomputeLoadout` dérive `c.weapons` du
+  loadout ACTIF (**un seul modèle** — legacy « toutes armes équipées » supprimé), tague chaque arme `hand:'main'|'off'`,
+  applique la contrainte 2 mains (`hands:1|2` via marqueur `(2M)` uniforme mêlée/distance), **auto-génère** un loadout
+  par défaut (Mêlée + Distance) si absent, **auto-prune** les slots orphelins (arme vendue/transférée/**détruite**).
+- **Pénalité de main secondaire** (LDB 14 l.181 : −20) appliquée à l'attaque ET à la parade (au **JET**, pas
+  cosmétique), via le **registre `engine/combatFeatures/`** (calqué sur `qualities/`) : **Ambidextre** (−20→−10→0) ;
+  exception **Parade** (arme 1 main Défensive + spé Corps à corps (Parade) → 0). Hooks `modifyOffHandPenalty` /
+  `attackModes` (terrain prêt pour Riposte/Champion/Tir rapide, sans dispatcher mort).
+- **Constructeur de loadouts** (fiche, hors combat) + **commutateur ActionBar** (switch gratuit **1/tour, autorisé
+  même Engagé**) + **verrou d'équipement en combat** (armure/brassage = hors combat ; seul le switch change l'arme).
+- **Choix de l'arme** d'attaque (`PendingAttack.weaponUid`, sélecteur RollModal) et de **parade**
+  (`PendingDefense.parryWeaponUid`, sélecteur DefenseModal) — parité aperçu↔résolution↔affichage via `Weapon.uid` +
+  `firedWeapon(weaponUid)`. Bug-fix : la pénalité de parade main-2nde était cosmétique (`rollMeleeDefender` la
+  calculait en ligne sans `defenseModifiers`) → désormais appliquée au jet.
+- **Talent Maniement de deux armes** (LDB 10 l.638, RAW vérifié) : mode « Des deux armes » → frappe main directrice ;
+  si elle touche, **2ᵉ frappe de la main secondaire** (`resolveDualSecond` : **d100 inversé** / valeur du tableau des
+  Critiques + −20 + **nouveau jet de défense**) contre une cible **au choix** ; **−10 à TOUTES ses défenses jusqu'à
+  son prochain Tour** ; **+1 Avantage UNIQUE, seulement si les deux touchent** ; **borné à l'attaque-Action** (jamais
+  une frappe gratuite/enchaînée). UI : `DualStrikeModal` (sélecteur de 2ᵉ cible) dans l'arbitre. Rendu **dual-wield**
+  (2ᵉ arme dessinée, profondeur de profil par couches). Recette navigateur passée (scénario `13-maniement-deux-armes.ts`,
+  jet inversé 60→06 + −10 défense + Avantage vérifiés en live, 0 erreur console).
+- **Marchand réconcilié** : « équipé » d'une arme = `isWeaponActive` (dérivé de `c.weapons`), **shim `equipped`-sync des
+  armes supprimé** ; `it.equipped` ne sert plus que pour l'armure + le seed du loadout par défaut. Lecteurs migrés
+  (equipCompare, usure par `uid`, MerchantPanel, CharacterSheet, rig bouclier).
+- **Amputation ↔ loadout** (vrai bug trouvé via une question utilisateur) : une main amputée ne tient plus rien
+  (`handAmputated`, brasD=main / brasG=off, hors prothèse « tout ») → l'arme directrice est conservée (−20 CC/CT déjà
+  appliqué, LDB 18) tant qu'une main reste, mais le **bouclier / 2ᵉ arme de main secondaire tombe** dès qu'une main
+  manque ; deux mains perdues → Mains nues. *(Audit RAW : la Maladresse « lâche l'arme » et « l'unification off-hand
+  du −20 » ont été ÉCARTÉES — sans base dans le Tableau des Oups ! VF, ni dans LDB 18.)*
+- **~2098 tests verts, typecheck 0** ; committé par lots sur `feat/wfrp4-rpg-foundation` (arbre partagé respecté).
+
 ## 🎯 Jalon 2 — Magie & Religion *(socle fait — Jalon 0.7)*
 
 - ✅ Sorts/Bénédictions/Miracles en combat, Incantation, Focalisation, Projectiles, effets actifs,
