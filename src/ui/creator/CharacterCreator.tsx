@@ -24,6 +24,9 @@ import {
   trappings as allTrappings,
   levelsForCareer,
   characteristics as charData,
+  eyes as eyesTable,
+  hairs as hairsTable,
+  details as detailTables,
   SpeciesData,
   CareerData,
 } from '../../data';
@@ -159,6 +162,36 @@ function TalentChip({ label }: { label: string }) {
   );
 }
 
+const RANDOM_CHIP_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
+
+/**
+ * ENTRÉE de talents d'une liste d'espèce/carrière : « A ou B » est éclaté en puces séparées
+ * (chacune avec SA règle au survol — une puce unique « Perspicace ou Affable » n'a pas
+ * d'infobulle) ; « N Talent aléatoire » reçoit une explication dédiée.
+ */
+function TalentEntryChips({ entry }: { entry: string }) {
+  const options = splitTopLevelOu(entry);
+  return (
+    <span className="entry-chips">
+      {options.map((opt, i) => {
+        const mRand = opt.match(RANDOM_CHIP_RE);
+        return (
+          <span key={opt} className="entry-chips">
+            {i > 0 && <em className="chip-ou">ou</em>}
+            {mRand ? (
+              <span className="tag talent" title={`${mRand[1] ?? 1} tirage(s) d100 sur le Tableau des Talents aléatoires — figé, relance seulement si déjà possédé.`}>
+                {opt}
+              </span>
+            ) : (
+              <TalentChip label={opt} />
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export function CharacterCreator() {
   const party = useGame((s) => s.party);
   const setParty = useGame((s) => s.setParty);
@@ -208,6 +241,15 @@ export function CharacterCreator() {
             </button>
           ))}
         </div>
+        {/* Mobile : indicateur compact (pas de rangée défilante → pas de scrollbar). */}
+        <div className="steps-progress">
+          <span>
+            Étape <b>{step + 1}</b>/{STEPS.length} · {STEPS[step]}
+          </span>
+          <div className="steps-bar">
+            <i style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+          </div>
+        </div>
       </header>
 
       <div className="creator-shell">
@@ -239,45 +281,64 @@ export function CharacterCreator() {
 
 type StepProps = { d: CreatorDraft; setD: (d: CreatorDraft) => void };
 
-// ════ 1) Espèce (LDB 04 l.84-90) — rail : liste + d100 ; détail : profil complet ════
+/** Famille d'une espèce : « Humains (Middenheim) » → « Humains » ; sans variante → le label. */
+function speciesFamily(label: string): { family: string; variant: string | null } {
+  const m = label.match(/^(.*?)\s*\((.*)\)\s*$/);
+  return m ? { family: m[1].trim(), variant: m[2].trim() } : { family: label, variant: null };
+}
+
+/** Rendu HTML léger des textes de données (descriptions — données locales de confiance). */
+function LoreText({ html }: { html: string | null | undefined }) {
+  if (!html?.trim()) return null;
+  return <div className="lore-text" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+// ════ 1) Espèce (LDB 04 l.84-90) — rail : liste groupée par race ; détail : onglets ════
 function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
-  const core = allSpecies.filter((s) => CORE.includes(s.label));
-  const others = allSpecies.filter((s) => !CORE.includes(s.label));
-  const row = (s: SpeciesData) => (
-    <button key={s.label} className={`pick-row ${d.speciesLabel === s.label ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.label))}>
-      <Figure speciesLabel={s.label} sex={d.sex} />
-      <span className="row-body">
-        <strong>{s.label}</strong>
-        <em>
-          M {s.movement} · Destin {s.fate.fate} · Rés. {s.fate.resilience} · +{s.fate.extra}
-        </em>
-      </span>
-    </button>
-  );
+  const [tab, setTab] = useState<'profil' | 'carrieres' | 'description' | 'details'>('profil');
+
+  // Groupes par race (les variantes des suppléments perdent leur préfixe répétitif),
+  // les races du Livre de base d'abord — l'ordre des familles suit les données.
+  const families: { family: string; list: SpeciesData[] }[] = [];
+  for (const s of allSpecies) {
+    const { family } = speciesFamily(s.label);
+    const g = families.find((f) => f.family === family);
+    if (g) g.list.push(s);
+    else families.push({ family, list: [s] });
+  }
+  families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
+
+  const row = (s: SpeciesData) => {
+    const { variant } = speciesFamily(s.label);
+    return (
+      <button key={s.label} className={`pick-row ${d.speciesLabel === s.label ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.label))}>
+        <Figure speciesLabel={s.label} sex={d.sex} />
+        <span className="row-body">
+          <strong>{variant ?? s.label}</strong>
+          <em>
+            M {s.movement} · Destin {s.fate.fate} · Rés. {s.fate.resilience} · +{s.fate.extra}
+          </em>
+        </span>
+      </button>
+    );
+  };
 
   const rail = (
     <>
-      <Section title="Espèces du Livre de base">
-        <div className="pick-list">{core.map(row)}</div>
-      </Section>
-      <Section title="Autres origines (suppléments)">
-        <div className="pick-list">{others.map(row)}</div>
-      </Section>
+      {families.map(({ family, list }) => (
+        <div key={family}>
+          <div className="rail-group">{family}</div>
+          <div className="pick-list">{list.map(row)}</div>
+        </div>
+      ))}
     </>
   );
 
-  const standout = CHAR_KEYS.filter((k) => (sp.baseChar[k] ?? 20) !== 20);
-  const main = (
+  // ── Onglet Profil : l'essentiel chiffré ──
+  const profil = (
     <>
-      <div className="main-head">
-        <Figure speciesLabel={sp.label} sex={d.sex} className="main-figure" />
-        <div>
-          <h2>{sp.label}</h2>
-          <p className="hint">{blurb(sp.desc, 460)}</p>
-        </div>
-      </div>
-      <Section title="Tirage aléatoire (LDB 04)" right={<XpBadge value={speciesXp(d)} />}>
+      <Section title="Tirage aléatoire" right={<XpBadge value={speciesXp(d)} />}>
         {!d.speciesRoll ? (
           <div className="row-flex">
             <button className="btn" onClick={() => setD(rollDraftSpecies(d))}>
@@ -298,7 +359,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
           </div>
         )}
       </Section>
-      <Section title="Caractéristiques de base (+ 2d10 au tirage)">
+      <Section title="Caractéristiques de base">
         <div className="base-char-grid">
           {CHAR_KEYS.map((k) => {
             const base = sp.baseChar[k] ?? 20;
@@ -312,31 +373,127 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
             );
           })}
         </div>
-        {standout.length === 0 && <p className="hint">Profil équilibré : la moyenne humaine (20) partout.</p>}
+        <p className="hint" style={{ marginBottom: 0 }}>2d10 s'ajoutent à chaque valeur au tirage des Caractéristiques.</p>
         <div className="derived" style={{ marginTop: 8 }}>
           <span>
             Mouvement <b>{sp.movement}</b>
           </span>
           <span>
-            Destin <b>{sp.fate.fate}</b> · Résilience <b>{sp.fate.resilience}</b> · +<b>{sp.fate.extra}</b> à répartir (étape 3)
+            Destin <b>{sp.fate.fate}</b> · Résilience <b>{sp.fate.resilience}</b> · +<b>{sp.fate.extra}</b> à répartir
           </span>
-          {sp.small && <span title="Talent Petit : Blessures calculées SANS le Bonus de Force (LDB 05)">Taille <b>Petite</b> (PB sans BF)</span>}
+          {sp.small && <span title="Talent Petit : Blessures calculées sans le Bonus de Force">Taille <b>Petite</b></span>}
         </div>
       </Section>
-      <Section title="Compétences d'espèce (3 à +5 et 3 à +3 — étape 4)">
+      <Section title="Compétences d'espèce">
+        <p className="hint" style={{ marginTop: 0 }}>Vous en formerez 3 à +5 et 3 à +3.</p>
         <div className="skill-tags">
           {sp.skills.map((s) => (
             <SkillChip key={s} label={s} />
           ))}
         </div>
       </Section>
-      <Section title="Talents d'espèce (survolez pour la règle)">
+      <Section title="Talents d'espèce">
         <div className="skill-tags">
           {sp.talents.map((t) => (
-            <TalentChip key={t} label={t} />
+            <TalentEntryChips key={t} entry={t} />
           ))}
         </div>
       </Section>
+    </>
+  );
+
+  // ── Onglet Carrières : ce que cette espèce peut embrasser ──
+  const accessible = careersForSpecies(sp.refCareer);
+  const carrieres = (
+    <>
+      <p className="hint" style={{ marginTop: 0 }}>
+        {accessible.length} carrières accessibles aux {sp.label} — le choix se fait à l'étape suivante.
+      </p>
+      {classes.map((cl) => {
+        const list = accessible.filter((c) => c.class === cl.label);
+        if (!list.length) return null;
+        return (
+          <Section key={cl.label} title={`${cl.label} (${list.length})`}>
+            <div className="skill-tags">
+              {list.map((c) => (
+                <span key={c.label} className="tag" title={blurb(c.desc, 260)}>
+                  {c.label}
+                </span>
+              ))}
+            </div>
+          </Section>
+        );
+      })}
+    </>
+  );
+
+  // ── Onglet Description : le texte complet ──
+  const description = <LoreText html={sp.desc} />;
+
+  // ── Onglet Détails : âge, taille, noms, yeux/cheveux (tables des données) ──
+  const ref = sp.refChar;
+  const txt = detailTables.texts;
+  const eyeColors = [...new Set(eyesTable.map((e) => e.color[ref]).filter(Boolean))];
+  const hairColors = [...new Set(hairsTable.map((e) => e.color[ref]).filter(Boolean))];
+  const detailsTab = (
+    <>
+      <Section title="Âge">
+        <p style={{ marginTop: 0 }}>
+          Tirage : <b>{detailTables.ageBase[ref] ?? detailTables.ageBase['Humain']} + {Math.round(detailTables.ageRoll[ref] ?? 1)}d10</b> ans
+        </p>
+        <LoreText html={txt.age.bySpecies[ref] ?? ''} />
+      </Section>
+      <Section title="Taille">
+        <p style={{ marginTop: 0 }}>
+          Tirage : <b>{detailTables.heightBase[ref] ?? detailTables.heightBase['Humain']} + {Math.round(detailTables.heightRoll[ref] ?? 1)}d10</b> cm
+        </p>
+        <LoreText html={txt.taille.bySpecies[ref] ?? txt.taille.all} />
+      </Section>
+      <Section title="Noms">
+        <LoreText html={txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain']} />
+      </Section>
+      <Section title="Yeux & cheveux">
+        <p className="hint" style={{ marginTop: 0 }}>Couleurs tirées à l'étape Détails (2d10 sur les tables).</p>
+        <div className="skill-tags">
+          {eyeColors.map((c) => (
+            <span key={`e-${c}`} className="tag">👁 {c}</span>
+          ))}
+        </div>
+        <div className="skill-tags" style={{ marginTop: 6 }}>
+          {hairColors.map((c) => (
+            <span key={`h-${c}`} className="tag">💇 {c}</span>
+          ))}
+        </div>
+      </Section>
+    </>
+  );
+
+  const TABS = [
+    ['profil', 'Profil'],
+    ['carrieres', 'Carrières'],
+    ['description', 'Description'],
+    ['details', 'Détails'],
+  ] as const;
+  const main = (
+    <>
+      <div className="main-head">
+        <Figure speciesLabel={sp.label} sex={d.sex} className="main-figure" />
+        <div>
+          <h2>{sp.label}</h2>
+          <p className="hint">{blurb(sp.desc, 300)}</p>
+        </div>
+      </div>
+      <div className="zone-tabs">
+        {TABS.map(([key, label]) => (
+          <button key={key} className={`zone-tab ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === 'profil' && profil}
+      {tab === 'carrieres' && carrieres}
+      {tab === 'description' && description}
+      {tab === 'details' && detailsTab}
     </>
   );
   return { rail, main };
@@ -355,7 +512,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
       <Section title={`Carrières (${accessible.length} accessibles)`}>
         <label className="radio" style={{ marginBottom: 8, fontSize: 12 }}>
           <input type="checkbox" checked={d.ignoreRestrictions} onChange={(e) => setD({ ...d, ignoreRestrictions: e.target.checked })} />
-          Ignorer les restrictions d'espèce (MJ)
+          Ignorer les restrictions d'espèce
         </label>
         {classes.map((cl) => {
           const list = accessible.filter((c) => c.class === cl.label);
@@ -395,7 +552,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           <p className="hint">{blurb(career?.desc, 460)}</p>
         </div>
       </div>
-      <Section title="Tirage aléatoire (LDB 05)" right={<XpBadge value={careerXp(d)} />}>
+      <Section title="Tirage aléatoire" right={<XpBadge value={careerXp(d)} />}>
         <p className="hint" style={{ marginTop: 0 }}>
           1ᵉʳ jet accepté : +50 PX · choix parmi 3 jets : +25 PX · choix libre / relances : +0 PX.
         </p>
@@ -425,7 +582,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           </button>
         )}
       </Section>
-      <Section title="Évolution de carrière (les 4 Niveaux)">
+      <Section title="Évolution de carrière">
         <div className="career-path">
           {levels.map((l) => (
             <span key={l.level} className={`path-node ${l.level === 1 ? 'current' : ''}`} title={`Compétences : ${l.skills.join(', ')}\nTalents : ${l.talents.join(', ')}`}>
@@ -437,7 +594,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
       </Section>
       {lvl1 && (
         <>
-          <Section title="Schéma de progression — Caractéristiques de carrière (étape 3)">
+          <Section title="Caractéristiques de carrière">
             <div className="skill-tags">
               {lvl1.characteristics.map((c) => (
                 <span key={c} className="tag char" title={CHAR_DESC[CHAR_BY_LABEL[c] ?? ''] ?? ''}>
@@ -446,17 +603,17 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
               ))}
             </div>
           </Section>
-          <Section title="Compétences du Niveau 1 (40 augmentations — étape 4)">
+          <Section title="Compétences du Niveau 1">
             <div className="skill-tags">
               {lvl1.skills.map((s) => (
                 <SkillChip key={s} label={s} />
               ))}
             </div>
           </Section>
-          <Section title="Talents du Niveau 1 (un au choix à la création)">
+          <Section title="Talents du Niveau 1">
             <div className="skill-tags">
               {lvl1.talents.map((t) => (
-                <TalentChip key={t} label={t} />
+                <TalentEntryChips key={t} entry={t} />
               ))}
             </div>
           </Section>
@@ -508,7 +665,7 @@ function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
       </Section>
       <Section title="Augmentations gratuites" right={<b className={allocTotal === 5 ? 'ok-text' : 'warn-text'}>{allocTotal}/5</b>}>
         <p className="hint" style={{ marginTop: 0 }}>
-          Sur les 3 Caractéristiques de carrière (LDB 05).
+          À répartir sur les Caractéristiques de votre carrière.
         </p>
         {careerCharKeys.map((k) => (
           <div key={k} className="rail-line" title={CHAR_DESC[k]}>
@@ -840,7 +997,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
       <Section title="Richesse initiale">
         <p className="hint" style={{ marginTop: 0 }}>
           Statut <b>{level?.status}</b> — Bronze : 2d10 sous × Standing · Argent : 1d10 pistoles × Standing · Or : 1 CO ×
-          Standing (LDB 05). Jet figé.
+          Standing. Le jet est figé.
         </p>
         <p style={{ margin: 0 }}>
           Bourse : <b>{formatMoney(wealth)}</b> (au groupe)
@@ -922,7 +1079,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
             <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
           </label>
           <label>
-            Motivation <em className="hint">(recharge la Détermination, LDB 05)</em>
+            Motivation <em className="hint">(recharge la Détermination)</em>
             <input value={d.motivation} onChange={(e) => setD({ ...d, motivation: e.target.value })} placeholder="Ex. Devoir, Vengeance, Rebelle…" />
           </label>
           <label>
@@ -959,7 +1116,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
         <li>Carrière aléatoire : +{careerXp(d)} PX</li>
         <li>Caractéristiques : +{charsXp(d)} PX</li>
       </ul>
-      <p className="hint">À dépenser dans la fiche (onglet Avancement), d'abord dans votre Niveau de Carrière (LDB 05).</p>
+      <p className="hint">À dépenser dans la fiche (onglet Avancement), d'abord dans votre Niveau de Carrière.</p>
     </Section>
   );
   const main = (

@@ -130,12 +130,25 @@ export interface DetailColorData {
   rand: number;
   color: Record<string, string>;
 }
-/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne refChar. */
+/** Texte d'aide (LDB 05 « Détails ») : global + par colonne refChar (HTML léger des données). */
+export interface DetailText {
+  all: string;
+  bySpecies: Record<string, string>;
+}
+/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne refChar —
+ *  + textes d'aide (conventions de noms, espérance de vie, tailles moyennes, Ambitions). */
 export interface DetailsData {
   ageBase: Record<string, number>;
   ageRoll: Record<string, number>;
   heightBase: Record<string, number>;
   heightRoll: Record<string, number>;
+  texts: {
+    nom: DetailText;
+    age: DetailText;
+    taille: DetailText;
+    ambitionShort: DetailText;
+    ambitionLong: DetailText;
+  };
 }
 export interface SpellData {
   label: string;

@@ -32,6 +32,35 @@ body {
   height: 100dvh; /* mobile : suit la barre d'adresse dynamique (fallback 100% au-dessus) */
 }
 
+/* Scrollbars fines, discrètes et thémées partout (la barre système claire jure sur le
+   thème sombre) ; pouce renforcé au survol. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Défilement SANS scrollbar visible (rangées de puces, carrousels tactiles). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ══════════════════ RESPONSIVE — STRUCTURE GLOBALE ══════════════════
    Breakpoints canon du projet : 900px (empilement des colonnes latérales),
    700px (mobile large), 560px (téléphone étroit). RÈGLE : tout NOUVEL écran
@@ -417,6 +446,76 @@ body {
 .step-chip:disabled {
   opacity: 0.45;
   cursor: default;
+}
+/* Indicateur d'étape compact (mobile) — remplace les puces, AUCUN défilement. */
+.steps-progress {
+  display: none;
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+.steps-progress b {
+  color: var(--gold);
+}
+.steps-bar {
+  height: 4px;
+  background: var(--bg2);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.steps-bar i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+}
+/* Puces d'une entrée « A ou B » : chaque option garde SA règle au survol. */
+.entry-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.chip-ou {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+/* Onglets internes d'une zone de détail (Profil / Carrières / Description / Détails). */
+.zone-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.zone-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.zone-tab:hover {
+  color: var(--text);
+}
+.zone-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+.lore-text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 70ch;
+}
+.lore-text b {
+  color: var(--gold);
 }
 .creator-shell {
   flex: 1;
@@ -854,17 +953,13 @@ body {
   }
 }
 @media (max-width: 700px) {
-  /* Barre d'étapes : rangée défilante horizontale (7 puces ne tiennent pas). */
+  /* Étapes : PAS de rangée défilante sur mobile (scrollbar disgracieuse) — les puces
+     laissent place à l'indicateur compact .steps-progress (barre de progression). */
   .bar .wizard-steps {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-left: 0;
-    flex: 1 1 100%;
-    padding-bottom: 2px;
+    display: none;
   }
-  .step-chip {
-    white-space: nowrap;
+  .steps-progress {
+    display: block;
   }
   .char-alloc-grid {
     grid-template-columns: 1fr;

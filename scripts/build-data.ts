@@ -289,11 +289,26 @@ function main() {
   };
   const heightRoll = detailRow('Height Roll');
   if (heightRoll['Halfling'] === 5) heightRoll['Halfling'] = 2; // LDB 05 l.707
+  // Textes d'aide par espèce (LDB 05 « Détails supplémentaires ») : noms (conventions +
+  // exemples), espérance de vie, tailles moyennes, et le mode d'emploi des Ambitions.
+  const detailText = (label: string): { all: string; bySpecies: Record<string, string> } => {
+    const row = (raw.detail ?? []).find((x: Any) => x.label === label) ?? {};
+    const bySpecies: Record<string, string> = {};
+    for (const [k, v] of Object.entries(row.desc ?? {})) if (typeof v === 'string' && v.trim()) bySpecies[k] = v;
+    return { all: row.allDesc ?? '', bySpecies };
+  };
   const details = {
     ageBase: detailRow('Age Base'),
     ageRoll: detailRow('Age Roll'),
     heightBase: detailRow('Height Base'),
     heightRoll,
+    texts: {
+      nom: detailText('Nom'),
+      age: detailText('Age'),
+      taille: detailText('Taille'),
+      ambitionShort: detailText('Ambitions à court terme'),
+      ambitionLong: detailText('Ambitions à long terme'),
+    },
   };
   write('details.json', details, Object.keys(details).length);
 
