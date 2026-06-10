@@ -414,8 +414,9 @@ export function IsoStage() {
         objs.push({ d: depth(ex, ey, dims) + dBoost, el: tokenNode(r.id, ex, ey, r.body, base * r.speciesScale * sizeTokenScale(entitySize(ent))) });
       }
     }
-    // groupe (token = 1er héros) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
-    const leader = party[0];
+    // groupe (token = 1er héros VIVANT et conscient — #27b : si le principal est mort/à terre, on
+    // affiche le suivant encore debout) — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
+    const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
     const wp = leader ? walkPosOf(leader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
     const r = pickBackend({ kind: 'partyLeader', leader });
     const el =

@@ -400,10 +400,12 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
  */
 function openMedicalAid(get: () => GameState, set: any, e: { act: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
   const party = get().party;
-  const needs = (h: Combatant): boolean =>
-    e.act === 'wounds' ? !h.dead && !h.outOfRencontre && h.wounds.current < h.wounds.max
+  const needs = (h: Combatant): boolean => {
+    if (h.dead || h.outOfRencontre) return false; // #27a : un MORT ne se soigne pas (était omis pour bleed/chirurgie → soin sur un mort)
+    return e.act === 'wounds' ? h.wounds.current < h.wounds.max
       : e.act === 'bleed' ? (h.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)
         : hasSurgeryTrauma(h); // chirurgie
+  };
   const cands = party.filter(needs);
   if (!cands.length) { get().log(`Le soigneur examine le groupe : personne ne requiert cet acte pour l'instant.`); return; }
   // Le PNJ soigneur : NOM et id viennent de l'entité de scène (`entityId`) — rien de codé en dur.

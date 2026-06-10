@@ -237,7 +237,7 @@ export function ActionBar() {
           {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
           {canCharge && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={moveStarted || battle.acted || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
+              <button className="btn btn-sm" disabled={moveStarted || (battle.acted && !freeFrenzy) || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
             </div>
           )}
           {canRun && (
