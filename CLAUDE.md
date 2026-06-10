@@ -25,6 +25,10 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 3. **Le moteur de règles (`src/engine`) reste pur et testé.** Le store, l'UI et le rendu en
    dépendent, jamais l'inverse.
 4. **UI en français**, et qui **scale** : dès qu'un panneau dépasse ~2 sections → onglets.
+   **Tout nouvel écran est responsive dès sa création** (utilisable à 360px) : composer les
+   primitives globales de `styles.css` — `.layout-sidebar` (colonne latérale, s'empile ≤900px),
+   `.panel-grid` (1 colonne ≤700px), `.bar` (s'enroule ≤700px), cibles tactiles via
+   `pointer: coarse`. Breakpoints canon : 900 / 700 / 560 px.
 
 ## Sources VF (NE PAS chercher — c'est ici)
 
