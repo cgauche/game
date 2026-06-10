@@ -656,6 +656,17 @@ export function resolveDualSecond(
   return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
 }
 
+/** Cibles VALIDES de la 2ᵉ frappe du Maniement de deux armes (LDB 10 l.638 : « un adversaire disponible de
+ *  votre choix ») : adversaires encore actifs, à portée de l'arme secondaire (Allonge). Sans position connue
+ *  (tests purs) → non filtré sur la distance. */
+export function dualStrikeTargets(battle: BattleState, attacker: Combatant, offWeapon: Weapon): Combatant[] {
+  return battle.combatants.filter((c) => {
+    if (c.kind === attacker.kind || isOutOfAction(c)) return false;
+    if (!attacker.pos || !c.pos) return true;
+    return combatDistance(attacker, c) <= reachTiles(offWeapon);
+  });
+}
+
 /** Aperçu d'attaque (R4) : la valeur de toucher (cible du d100) et sa décomposition de modificateurs, SANS
  *  tirer le dé. Rejoue le MÊME `attackEnv` + `attackModifiers` que la résolution → l'aperçu ne ment jamais.
  *  `inRange` = cible atteignable (mêlée : Allonge ; tir : dans une bande de portée) ; `blocked` = tir sans LdV. */

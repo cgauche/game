@@ -10,6 +10,7 @@ import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
 import { CleaveModal } from './CleaveModal';
+import { DualStrikeModal } from './DualStrikeModal';
 import { TrampleModal } from './TrampleModal';
 import { RunModal } from './RunModal';
 import { FocusModal } from './FocusModal';
@@ -23,14 +24,14 @@ import { RevealModal } from './RevealModal';
 
 /** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire (R2 du diagnostic). */
 export type ModalKey =
-  | 'fateSave' | 'fumble' | 'deviation' | 'cleave' | 'trample' | 'reveal' | 'defense'
+  | 'fateSave' | 'fumble' | 'deviation' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
   | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
   | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test';
 
 /** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
 export interface ModalPendings {
   pendingFateSave?: unknown; pendingFumble?: unknown; pendingDeviation?: unknown;
-  pendingCleave?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
+  pendingCleave?: unknown; pendingDualStrike?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
   pendingDefense?: unknown; pendingPsych?: unknown; pendingEncounterPsych?: unknown;
   pendingDisengage?: unknown; pendingMountTarget?: unknown;
   pendingFrenzy?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
@@ -57,6 +58,9 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingCleave && !s.pendingAttack, 'cleave'],
     [!!s.pendingTrample, 'trample'],
     [(s.pendingReveals?.length ?? 0) > 0, 'reveal'],
+    // Maniement de deux armes : sélection de la 2ᵉ cible — APRÈS les révélations (Critique de la 1ʳᵉ frappe
+    // d'abord) ; cède au jet de la 2ᵉ frappe (pendingAttack), sinon DualStrikeModal rend `null`.
+    [!!s.pendingDualStrike && !s.pendingAttack, 'dualStrike'],
     [!!s.pendingDefense, 'defense'],
     [!!s.pendingPsych, 'psych'],
     [!!s.pendingEncounterPsych, 'encounterPsych'],
@@ -77,7 +81,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, cleave: CleaveModal,
-  trample: TrampleModal, reveal: RevealModal, defense: DefenseModal, psych: PsychModal,
+  trample: TrampleModal, reveal: RevealModal, dualStrike: DualStrikeModal, defense: DefenseModal, psych: PsychModal,
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
