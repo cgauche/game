@@ -134,6 +134,14 @@ describe('recomputeLoadout piloté par loadout', () => {
     expect(c.weapons.map((x) => x.name)).toEqual(['Hallebarde', 'Mains nues']);
   });
 
+  it('auto-prune : un slot référençant une arme absente (vendue/transférée) est vidé', () => {
+    const c = heroWith([w('e', 'Epee', { subType: 'Base', hands: 1 })], { loadouts: [{ id: 'l', name: 'L', main: 'e', off: 'disparu' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    const lo = c.loadouts!.find((l) => l.id === 'l')!;
+    expect(lo.main).toBe('e');
+    expect(lo.off).toBeUndefined(); // 'disparu' nettoyé
+  });
+
   it('aucun loadout → legacy : toutes armes équipées, hand main', () => {
     const a = w('a', 'A', { subType: 'Base', hands: 1 });
     const b = w('b', 'B', { subType: 'Base', hands: 1 });

@@ -131,6 +131,12 @@ export function activeLoadout(c: Combatant): WeaponLoadout | null {
  *  tag `hand`) ; sans loadout = comportement historique (toutes armes équipées, `hand:'main'`). */
 export function recomputeLoadout(c: Combatant): void {
   const items = c.items ?? [];
+  // Auto-prune : un slot référençant une arme qui a quitté l'inventaire (vente/transfert/perte) est vidé,
+  // sur TOUS les loadouts (pas seulement l'actif) — évite les références orphelines.
+  for (const lo of c.loadouts ?? []) {
+    if (lo.main && !items.some((i) => i.uid === lo.main)) lo.main = undefined;
+    if (lo.off && !items.some((i) => i.uid === lo.off)) lo.off = undefined;
+  }
   const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
     const hands = weaponHands(it);
