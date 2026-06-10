@@ -777,27 +777,38 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   Surincantation dépense le DR excédentaire, inconnu avant de lancer) ; petit reste UI : masquer
   le bouton « +Durée » pour les sorts Instantanés.
 
-**Reste tracé (designs validés au plan 2026-06-10, prochaine session)** :
-- **L9 résiduel — drapeaux** : B. de Chance (`rerollNextFailed` au point de relance rollFlow),
-  B. de Sauvagerie (2 lancers de critique — passer l'attaquant à `rollCritical`), Endurance de
-  l'anachorète (ignore `testStatePenalty`), Sommeil (À Terre → Inconscient — gate d'op
-  `onlyIfCondition`), Putréfaction (−1 PA via `damageArmour`), Souffle-sort (déléguer à
-  `creatureAttacks.breath`), N'écoutez point la Sorcière (castPenalty aux lanceurs visant la
-  zone), Baume pour un esprit blessé (suspension `psychTraits` temporisée).
-- **L10 — Suffocation** (RAW LDB 18 l.424-425 : −1 PB/Round, 0 PB → Inconscient, mort après BE
-  Rounds — patron mort-lente/hémorragie) : B. de Souffle (immunité) + 2 sorts Métal/Ombres
-  (LDB 48 l.397/534) en démo de curation.
+**Reste tracé (designs validés au plan 2026-06-10)** :
+- ✅ **L9 résiduel — drapeaux** *(2026-06-11, commits `711af3d` + `0f88c21`)* : B. de Chance
+  (relance GRATUITE `freeReroll` consommée aux 6 points de relance + bouton 🙏 dans les modales),
+  B. de Sauvagerie (`rollCritical` 2 lancers garde le plus sévère, 4 sites), Endurance de
+  l'anachorète (`ignoreStatePenalties` → combatTestPenalty/testStatePenalty), Sommeil (gates
+  d'op `onlyIfCondition`/`unlessCondition` : À Terre → Inconscient, sinon À Terre), Putréfaction
+  (op `damageArmour` cuir), Souffle (délégué à l'attaque de ZONE du Trait via `applyAreaAttack`
+  centre imposé, Dégâts = BE, Type mappé du Domaine, portée du TRAIT), N'écoutez point la
+  Sorcière (aura `castWard` rayon BSoc +BSoc/+2 DR → −20 Langue (Magick), 3 sites de jet),
+  Baume pour un esprit blessé (`suppressPsych` : Traits psy suspendus portés par l'effet,
+  restitués à l'expiration rounds ET horloge).
+- ✅ **L10 — Suffocation** *(2026-06-11, commit `7a22bbf`)* : `engine/suffocation.ts` (−1 PB/Round,
+  0 PB → Inconscient, mort après BE Rounds via `suffocationCountdown` lu par `inDeathCondition`
+  → Destin/pendingFateSave gratuits) ; B. de Souffle = immunité (`noBreath`) ; démo de curation
+  **Ombres étrangleuses** (Exténué + suffocation + incantation coupée) et **Transmutation de
+  Chamon** (3 États persistants + 1 PA + suffocation) — familles Ombres/Métal amorcées.
 - **L11 — Zones persistantes** : généraliser `battle.smoke[]` (TTL + LoS existants) en
   `battle.zones[]` {tiles, rounds, blocksLoS?, onEnter?, perRound?, blocksProjectiles?} → Mur de
   feu, Grands feux d'U'Zhul, Bouclier anti-flèches, Dôme, volet zone de Purification ; Pont
   (walkability) si budget.
-- **L12 — Dissipation** (LDB 46 l.201-207) : contre-sort réactif (Test opposé Langue (Magick),
-  1/Round — patron `pendingDefense`) + dissiper un sort durable (Test ÉTENDU, DR ≥ NI — patron
-  Focalisation) ; Bouclier magique (+BFM DR) devient mécanique.
+- ✅ **L12 — Dissipation** *(2026-06-10, merge `cfeb97b` + fix `7b651f0`)* : Contre-sort réactif
+  joueur ET ennemi (Test opposé Langue (Magick), 1/Round) ; la modale d'incantation ennemie
+  suspend le tour de l'IA.
 - **L13 — Gates & redirections** : B. de Protection (Test de FM imposé à l'attaquant), Martyr
   (redirection des dégâts vers le prêtre, BE doublé), Attaques en chaîne (rebond de Projectile).
+- **L14 — Attributs de Domaine** (LDB 48, intros des 8 Couleurs — relevés 2026-06-11) : Bête
+  (option Peur 1, 1d10 Rounds), Cieux (ignore PA métal + arc 2 m BFM), Feu (+1 En flammes ;
+  +10 Incant/Focus par En flammes proche), Lumière (Aveuglé ; Démon/MV +BInt ignore BE+PA),
+  Métal (ignore PA métal + dégâts = PA), Mort (+1 Exténué), Ombres (ignore PA non magiques),
+  Vie (+10 rural ; purge Exténué/Hémorragique ; MV +BFM). Exemption par Talent du défenseur.
 - **Différé réel assumé** : ~20 utilitaires narratifs hors grille (Bruits, Repères, Serrure
-  ouverte…), volet « Commandements divins » de B. de Conscience, contre-sort par l'IA.
+  ouverte…), volet « Commandements divins » de B. de Conscience.
 
 ## 🎯 Jalon 3 — Création de personnage complète
 
