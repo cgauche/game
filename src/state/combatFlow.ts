@@ -55,6 +55,10 @@ import {
   castBlockedBy,
   hasTalent,
   evaluateMissile,
+  castInfo,
+  castingValue,
+  parseSpellDamage,
+  spellRangeTiles,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -2285,6 +2289,53 @@ export function castSpell(
   });
 }
 
+/** Meilleur Projectile magique CONNU et jouable d'un ennemi (IA). Un Sort n'aboutit que si
+ *  DR ≥ NI (LDB 46) : le SL maximal d'un Test = valeur/10 (Avantage compris, LDB 46 l.176) →
+ *  on écarte les NI hors d'atteinte, puis on prend les Dégâts écrits les plus hauts (« Dégâts +N »,
+ *  les DR du Test s'y ajoutent), à égalité le NI le plus bas (plus fiable). Repli : aucun NI
+ *  atteignable → le moins exigeant (les Sorts mineurs NI 0 y pourvoient en pratique). */
+export function aiBestMissile(enemy: Combatant): string | undefined {
+  const known = (enemy.spells ?? [])
+    .map((label) => findSpell(label))
+    .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
+  if (!known.length) return undefined;
+  const dmg = (sp: { desc: string }) => parseSpellDamage(sp.desc)?.damage ?? 0;
+  const maxSL = (sp: { type: string }) => {
+    const info = castInfo(sp as any);
+    return Math.floor(castingValue(enemy, info.skill, info.spec) / 10);
+  };
+  const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));
+  const pool = feasible.length ? feasible : known;
+  pool.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
+  return pool[0].label;
+}
+
+/** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]
+ *  vous pouvez ajouter une valeur de […] Cible égale à la valeur initiale ») : le surplus
+ *  (DR − NI) est alloué à l'axe CIBLE d'un Projectile — adversaires actifs les plus proches,
+ *  à PORTÉE du Sort, hors cible principale. Retourne le patch de pendingCast ({} si rien). */
+export function aiOvercastPlan(
+  caster: Combatant,
+  targetId: string,
+  spell: { cn: number | null; range: string | null },
+  res: { cast: boolean; sl: number },
+  combatants: Combatant[],
+  focusedNI0 = false,
+): { overcast?: { duration: number; targets: number }; extraTargetIds?: string[] } {
+  if (!res.cast || !caster.pos) return {};
+  const ni = focusedNI0 ? 0 : spell.cn ?? 0;
+  const budget = Math.floor(Math.max(0, res.sl - ni) / 2);
+  if (budget <= 0) return {};
+  const range = spellRangeTiles(spell.range, caster) ?? Infinity;
+  const extras = combatants
+    .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range)
+    .sort((a, b) => combatDistance(caster, a) - combatDistance(caster, b))
+    .slice(0, budget)
+    .map((t) => t.id);
+  if (!extras.length) return {};
+  return { overcast: { duration: 0, targets: extras.length }, extraTargetIds: extras };
+}
+
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
 export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = findSpell(pc.spellLabel);
@@ -3071,12 +3122,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   // (empreinte + Mouvement) ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
   const blocked = occupied(battle, geom);
-  // Premier Projectile magique connu et prêt : la détection a besoin des données
-  // de sort, donc elle reste ici (couche impure), pas dans la décision pure (ai.ts).
-  const offensiveSpell = enemy.spells?.find((label) => {
-    const sp = findSpell(label);
-    return !!sp && isMagicMissile(sp);
-  });
+  // Meilleur Projectile magique connu et JOUABLE (NI atteignable, Dégâts max — cf. aiBestMissile) :
+  // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
+  const offensiveSpell = aiBestMissile(enemy);
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);

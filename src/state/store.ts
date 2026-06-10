@@ -16,7 +16,7 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
-  aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
+  aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, attackPlan,
 } from './combatFlow';
@@ -1312,7 +1312,12 @@ export const useGame = create<GameState>((set, get) => ({
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
-    set({ pendingCast: { ...pc, result: res } });
+    // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
+    // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
+    const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
+      ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused)
+      : {};
+    set({ pendingCast: { ...pc, result: res, ...auto } });
   },
   castReroll: () => {
     const { pendingCast: pc } = get();
