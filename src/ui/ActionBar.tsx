@@ -337,14 +337,13 @@ export function ActionBar() {
               verticale interne + PV chiffrés + états — remplace l'ancien bloc large portrait+barre. */}
           <PortraitTile c={active} ring={ring} size={72} showPv title={active.career ? `${active.name} — ${active.career}` : active.name} />
           <div className="ab-actor-side">
-            {(active.advantage > 0 || assailliN >= 2) && (
-              <div className="ab-actor-top">
-                {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
-                {assailliN >= 2 && (
-                  <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
-                )}
-              </div>
-            )}
+            <div className="ab-actor-top">
+              <span className="ab-name" title={active.career ? `${active.name} — ${active.career}` : active.name}>{active.name}</span>
+              {active.advantage > 0 && <span className="adv">Av+{active.advantage}</span>}
+              {assailliN >= 2 && (
+                <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
+              )}
+            </div>
             {/* RESSOURCES DU TOUR uniquement (bâtons colorés, survol = title) : Action + Mouvement — le PV
                 est dans le portrait. Chance/Résilience/Détermination/Destin sont des points PERMANENTS (pas
                 une ressource de tour) → pas affichés ici ; ils restent sur la fiche et dans les modales. */}

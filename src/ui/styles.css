@@ -633,8 +633,10 @@ textarea:focus {
 .ab-actor-side {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 3px;
   min-width: 0;
+  flex: 1; /* occupe la largeur restante du panneau (le nom remplit l'espace, plus de gros vide) */
 }
 .ab-actor-top {
   display: flex;
@@ -643,10 +645,12 @@ textarea:focus {
 }
 .ab-name {
   font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  flex: 1;
+  min-width: 0;
 }
 .ab-actor-top .adv {
   font-size: 11px;
@@ -2603,9 +2607,12 @@ textarea:focus {
   .ptile-states { font-size: 10px; }
   .combat-feed { top: 78px; max-width: 94vw; }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
-  /* Barre d'action en bas, pleine largeur (respecte la safe-area iOS) : panneau héros compact AU-DESSUS,
-     puis une hotbar PLEINE LARGEUR dont les boutons GRANDISSENT pour remplir (tous visibles, pas de vide,
-     pas de bouton hors écran) ; si trop nombreux, ils rétrécissent au min puis la rangée défile. */
+  .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
+}
+
+/* TÉLÉPHONE étroit seulement : la barre passe pleine largeur (la hotbar remplit). Aux largeurs tablette
+   (561-700px) on garde la barre CENTRÉE qui épouse son contenu — sinon un grand vide à droite du panneau. */
+@media (max-width: 560px) {
   .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
   .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
   .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
@@ -2614,7 +2621,6 @@ textarea:focus {
   .ab-ico { font-size: 17px; }
   .ab-lbl { font-size: 9px; }
   .ab-spells { max-height: 42vh; overflow-y: auto; }
-  .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
 }
 
 /* ── Dock d'équipe (gauche) ── */
