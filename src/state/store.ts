@@ -36,7 +36,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -1277,10 +1277,11 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCast: null });
     if (caster && target && spell) {
       // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
+      // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
       const extras = (pc.extraTargetIds ?? [])
         .map((id) => actorIn(get(), id))
         .filter((x): x is NonNullable<typeof x> => !!x)
-        .slice(0, pc.overcast?.targets ?? 0);
+        .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
       applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
         durationMult: 1 + (pc.overcast?.duration ?? 0),
         extraTargets: extras,
@@ -1495,6 +1496,32 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Sort à ZONE D'EFFET (LDB 47 l.44) : en mode incantation, un clic-CASE cible la zone —
+    // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
+    if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {
+      const spell = findSpell(battle.selectedSpell);
+      const radius = spell ? zdeRadiusTiles(spell.target, active) : null;
+      if (spell && radius != null) {
+        const range = spellRangeTiles(spell.range, active);
+        if (range != null && active.pos && chebyshev(active.pos, pt) > range) {
+          get().log(`${spell.label} : zone hors de portée (${range} cases).`);
+          return;
+        }
+        const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
+        if (!inZone.length) {
+          get().log(`${spell.label} : personne dans la zone.`);
+          return;
+        }
+        set({
+          pendingCast: {
+            casterId: active.id, targetId: inZone[0].id, spellLabel: spell.label,
+            missile: isMagicMissile(spell), focused: active.focus?.spell === spell.label && active.focus.dr >= (spell.cn ?? 0),
+            result: null, zone: { center: { ...pt }, radius }, extraTargetIds: inZone.slice(1).map((c) => c.id),
+          },
+        });
+        return;
+      }
+    }
     if (battle.action === 'move' && canMove(battle, active)) {
       const k = `${pt.x},${pt.y}`;
       if (!battle.reachable.has(k)) return;

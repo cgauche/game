@@ -358,6 +358,10 @@ export interface PendingCast {
    *  SUPPLÉMENTAIRES (`extraTargetIds`, choisies dans la modale). Sorts seulement. */
   overcast?: { duration: number; targets: number };
   extraTargetIds?: string[];
+  /** Sort à Zone d'Effet (LDB 47 l.44) ciblé sur une CASE : tous les combattants dans le
+   *  rayon (cases, Chebyshev) sont visés — `extraTargetIds` porte les cibles au-delà de la
+   *  première (résolution multi-cibles du même jet). Cibles figées au ciblage. */
+  zone?: { center: { x: number; y: number }; radius: number };
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

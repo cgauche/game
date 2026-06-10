@@ -48,7 +48,12 @@ export function CastModal() {
             ({spell.label}
             {!isPrayer ? ` · NI ${ni}` : ''})
           </span>
-          {selfTarget ? (
+          {pc.zone ? (
+            <>
+              {' '}
+              → <strong>Zone d'Effet</strong> ({1 + (pc.extraTargetIds?.length ?? 0)} cible{(pc.extraTargetIds?.length ?? 0) > 0 ? 's' : ''} : {[target.name, ...(pc.extraTargetIds ?? []).map((id) => pool.find((c) => c.id === id)?.name ?? '?')].join(', ')})
+            </>
+          ) : selfTarget ? (
             ' — sur lui-même'
           ) : (
             <>
@@ -101,7 +106,7 @@ export function CastModal() {
             {/* Surincantation (LDB 47 l.28-31) : pour chaque +2 DR au-delà du NI, étendre la
                 Durée (×initiale) ou la Cible (+1) — Sorts seulement, jamais « Vous »/« Spécial ». */}
             {(() => {
-              if (isPrayer || !res.cast || caster.kind !== 'hero') return null;
+              if (isPrayer || !res.cast || caster.kind !== 'hero' || pc.zone) return null;
               const budget = Math.floor(Math.max(0, res.sl - (pc.focused ? 0 : ni)) / 2);
               if (budget <= 0) return null;
               const oc = pc.overcast ?? { duration: 0, targets: 0 };
