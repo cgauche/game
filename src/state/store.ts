@@ -18,6 +18,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
+  displayedReach,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -147,6 +148,14 @@ export interface BattleState {
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
    *  `movedPreAction`. Effacé à l'annulation ou écrasé au 1ᵉʳ segment du Tour suivant. */
   moveSnapshot?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean } | null;
+  /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
+   *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
+  preview?:
+    | { kind: 'move'; tile: Pt; path: Pt[]; cost: number }
+    | { kind: 'attack'; targetId: string }
+    | { kind: 'charge'; targetId: string; dest: Pt; path: Pt[]; adv: 0 | 1 }
+    | { kind: 'moveAttack'; targetId: string; dest: Pt; path: Pt[]; cost: number }
+    | null;
 }
 
 export interface GameState {
@@ -431,7 +440,7 @@ export interface GameState {
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
-  battleClickTile: (pt: Pt) => void;
+  battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
   battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
@@ -1106,7 +1115,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Quitter le mode incantation oublie le sort sélectionné.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
-    set({ battle: { ...battle, action: a, reachable: reach, selectedSpell } });
+    set({ battle: { ...battle, action: a, reachable: reach, selectedSpell, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1570,7 +1579,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   frenzyCancel: () => set({ pendingFrenzy: null }),
 
-  battleClickTile: (pt) => {
+  battleClickTile: (pt, opts) => {
     const { battle, scene } = get();
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
@@ -1607,48 +1616,72 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
     }
-    if (battle.action === 'move' && canMove(battle, active)) {
-      const k = `${pt.x},${pt.y}`;
-      if (!battle.reachable.has(k)) return;
-      const stepCost = battle.reachable.get(k) ?? 0; // coût (cases) du segment, à imputer au Mouvement du Tour
-      // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
-      // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
-      if (!isPsychImmune(active))
-        for (const p of active.psychState ?? []) {
-          if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
-          const src = battle.combatants.find((c) => c.id === p.sourceId);
-          if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
-            get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
-            return;
-          }
-        }
-      // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
-      // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
-      const snapshot =
-        (battle.movementUsed ?? 0) === 0
-          ? {
-              pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
-              facing: { ...get().facing },
-              movedPreAction: battle.movedPreAction,
-            }
-          : battle.moveSnapshot ?? null;
-      // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
-      const geom = mountOf(battle, active) ?? active;
-      const blocked = occupied(battle, geom);
-      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size));
-      active.pos = { ...pt };
-      if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
-      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
-      get().faceFromPath(active.id, path);
-      if (geom !== active) get().faceFromPath(geom.id, path);
-      bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
-      if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      // Mouvement décomposable : cumule le coût du segment ; on retombe en mode neutre (action: null) →
-      // le joueur peut re-cliquer « Déplacer » (s'il reste du Mouvement) OU enchaîner une Action. Si ce
-      // segment précède l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
-      set({ battle: { ...battle, moveSnapshot: snapshot, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map() } });
-      bus.emit(EVT.SCENE_DIRTY);
+    // Mode NEUTRE = clic-sol implicite (les modes restants — heal/ammo/trample/resolve… — ne
+    // déplacent pas au clic-case ; le cas cast-zone est traité plus haut).
+    if (battle.action !== null) return;
+    // Engagé : pas de déplacement libre (LDB 15 l.84) → le clic-sol route vers le Désengagement.
+    if (isEngaged(active)) {
+      startDisengage(get, set, active);
+      return;
     }
+    if (!canMove(battle, active)) return;
+    const reach = displayedReach(get);
+    const k = `${pt.x},${pt.y}`;
+    if (!reach.has(k)) {
+      // Clic hors de portée : purge l'aperçu en cours (geste « annuler »).
+      if (battle.preview) {
+        set({ battle: { ...battle, preview: null } });
+        bus.emit(EVT.SCENE_DIRTY);
+      }
+      return;
+    }
+    const stepCost = reach.get(k) ?? 0; // coût (cases) du segment, à imputer au Mouvement du Tour
+    // Peur (LDB 21 l.29) : impossible de s'APPROCHER de la source tant qu'on est sous son emprise
+    // (sauf immunité à la Psychologie — trait/Frénésie/Détermination, LDB 17 l.62).
+    if (!isPsychImmune(active))
+      for (const p of active.psychState ?? []) {
+        if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
+        const src = battle.combatants.find((c) => c.id === p.sourceId);
+        if (src?.pos && chebyshev(pt, src.pos) < chebyshev(active.pos!, src.pos)) {
+          get().log(`${active.name} ne peut pas s'approcher de ${src.name} : la Peur le paralyse.`);
+          return;
+        }
+      }
+    // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
+    const geom = mountOf(battle, active) ?? active;
+    const blocked = occupied(battle, geom);
+    // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
+    const prev = battle.preview;
+    if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
+      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
+      set({ battle: { ...battle, preview: { kind: 'move', tile: { ...pt }, path, cost: stepCost } } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+    // Tap 2 : COMMIT.
+    // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
+    // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
+    const snapshot =
+      (battle.movementUsed ?? 0) === 0
+        ? {
+            pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+            facing: { ...get().facing },
+            movedPreAction: battle.movedPreAction,
+          }
+        : battle.moveSnapshot ?? null;
+    const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size));
+    active.pos = { ...pt };
+    if (geom !== active) geom.pos = { ...pt }; // déplace la monture sous le cavalier (couple solidaire)
+    displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+    get().faceFromPath(active.id, path);
+    if (geom !== active) get().faceFromPath(geom.id, path);
+    bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
+    if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
+    // Mouvement décomposable : cumule le coût du segment ; reste en mode neutre → le joueur peut
+    // re-cliquer une case (s'il reste du Mouvement) OU enchaîner une Action. Si ce segment précède
+    // l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
+    set({ battle: { ...battle, moveSnapshot: snapshot, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map(), preview: null } });
+    bus.emit(EVT.SCENE_DIRTY);
   },
 
   cancelMove: () => {
@@ -1665,7 +1698,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({
       facing: { ...snap.facing },
-      battle: { ...battle, movementUsed: 0, movedPreAction: snap.movedPreAction, moveSnapshot: null, action: null, reachable: new Map() },
+      battle: { ...battle, movementUsed: 0, movedPreAction: snap.movedPreAction, moveSnapshot: null, action: null, reachable: new Map(), preview: null },
     });
     bus.emit(EVT.SCENE_DIRTY);
   },

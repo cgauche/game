@@ -29,17 +29,18 @@ describe('Approche sous Peur (store)', () => {
     E.pos = { x: 15, y: 10 };
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 2, calmeDR: 0 }];
     const turn = b.order.indexOf(H.id);
+    // Clic-sol implicite : mode NEUTRE (action: null), portée dérivée (displayedReach).
     useGame.setState({
-      battle: { ...b, turn, action: 'move', movementUsed: 0, reachable: new Map([['11,10', 1], ['9,10', 1]]) },
+      battle: { ...b, turn, action: null, movementUsed: 0, reachable: new Map() },
       pendingReveals: [],
     });
 
-    // Vers la source (15,10) : 11,10 réduit la distance → refusé.
-    useGame.getState().battleClickTile({ x: 11, y: 10 });
+    // Vers la source (15,10) : 11,10 réduit la distance → refusé (la garde de Peur précède l'aperçu).
+    useGame.getState().battleClickTile({ x: 11, y: 10 }, { confirm: true });
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual({ x: 10, y: 10 });
 
     // S'éloigner (9,10) : autorisé.
-    useGame.getState().battleClickTile({ x: 9, y: 10 });
+    useGame.getState().battleClickTile({ x: 9, y: 10 }, { confirm: true });
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual({ x: 9, y: 10 });
   });
 });

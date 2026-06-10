@@ -72,8 +72,8 @@ describe('« Je te renie ! » (LDB 17 l.71)', () => {
     const h = hero();
     h.resilience = 0;
     useGame.setState({ party: [h] });
-    let lines = corruptPastThreshold(h);
-    if (!lines.some((l) => /MUTE/.test(l))) lines = corruptPastThreshold(h);
+    const first = corruptPastThreshold(h);
+    if (!first.some((l) => /MUTE/.test(l))) corruptPastThreshold(h);
     expect(useGame.getState().pendingRenounce).toBeNull();
     expect((h.mutations ?? []).length).toBeGreaterThanOrEqual(1);
   });

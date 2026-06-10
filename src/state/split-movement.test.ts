@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame, movementRemaining, canMove } from './store';
+import { displayedReach } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -42,20 +43,18 @@ describe('Mouvement décomposable', () => {
   it('deux segments de Mouvement avant l’Action : Mvt 2 → Mvt 2 (total = Marche)', () => {
     const { H } = setup();
     const M = effectiveMovement(H);
-    useGame.getState().battleSelectAction('move');
-    const dest1 = pickAtDist(useGame.getState().battle!.reachable, 2);
-    useGame.getState().battleClickTile(dest1);
+    // Clic-sol implicite (mode neutre) : la portée affichée est dérivée (displayedReach).
+    const dest1 = pickAtDist(displayedReach(useGame.getState), 2);
+    useGame.getState().battleClickTile(dest1, { confirm: true });
     let st = useGame.getState();
     let h = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.pos).toEqual(dest1);
     expect(st.battle!.movementUsed).toBe(2);
     expect(movementRemaining(st.battle!, h)).toBe(M - 2);
     // 2e segment encore disponible (aucune Action entre-temps)
-    useGame.getState().battleSelectAction('move');
-    st = useGame.getState();
-    expect(st.battle!.reachable.size).toBeGreaterThan(0);
-    const dest2 = pickAtDist(st.battle!.reachable, 2);
-    useGame.getState().battleClickTile(dest2);
+    expect(displayedReach(useGame.getState).size).toBeGreaterThan(0);
+    const dest2 = pickAtDist(displayedReach(useGame.getState), 2);
+    useGame.getState().battleClickTile(dest2, { confirm: true });
     st = useGame.getState();
     h = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(st.battle!.movementUsed).toBe(4);
@@ -69,26 +68,23 @@ describe('Mouvement décomposable', () => {
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
     let h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(canMove(useGame.getState().battle!, h)).toBe(true);
-    // 1er segment post-Action
-    useGame.getState().battleSelectAction('move');
-    expect(useGame.getState().battle!.reachable.size).toBeGreaterThan(0);
-    const dest1 = pickAtDist(useGame.getState().battle!.reachable, 1);
-    useGame.getState().battleClickTile(dest1);
+    // 1er segment post-Action (clic-sol implicite, mode neutre)
+    expect(displayedReach(useGame.getState).size).toBeGreaterThan(0);
+    const dest1 = pickAtDist(displayedReach(useGame.getState), 1);
+    useGame.getState().battleClickTile(dest1, { confirm: true });
     expect(useGame.getState().battle!.movementUsed).toBe(1);
     // 2e segment post-Action encore permis (Action puis Mouvement*, pas de M-A-M)
-    useGame.getState().battleSelectAction('move');
+    expect(displayedReach(useGame.getState).size).toBeGreaterThan(0);
     const st = useGame.getState();
-    expect(st.battle!.reachable.size).toBeGreaterThan(0);
     h = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(movementRemaining(st.battle!, h)).toBe(M - 1);
   });
 
   it('INTERDIT : Mouvement → Action → Mouvement (l’Action scelle le Mouvement déjà entamé)', () => {
     const { H } = setup();
-    // 1er Mouvement (avant l'Action) → marque movedPreAction
-    useGame.getState().battleSelectAction('move');
-    const dest1 = pickAtDist(useGame.getState().battle!.reachable, 1);
-    useGame.getState().battleClickTile(dest1);
+    // 1er Mouvement (avant l'Action, clic-sol implicite) → marque movedPreAction
+    const dest1 = pickAtDist(displayedReach(useGame.getState), 1);
+    useGame.getState().battleClickTile(dest1, { confirm: true });
     expect(useGame.getState().battle!.movedPreAction).toBe(true);
     expect(useGame.getState().battle!.movementUsed).toBe(1);
     // L'Action est prise (p. ex. attaque résolue).
