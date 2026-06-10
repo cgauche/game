@@ -46,6 +46,7 @@ export function resolveRig(
   career?: string,
   view: View = 'front',
   overlays: RigOverlay[] = [],
+  mirror = false,
 ): ResolvedBone[] {
   const race = raceById(baseSpeciesOf(appearance.species));
   // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
@@ -180,15 +181,15 @@ export function resolveRig(
   const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 
-  // Profondeur en PROFIL : la main SECONDAIRE (bouclier / 2e arme) + son bras/jambe passent DERRIÈRE
-  // le corps ; la main DIRECTRICE (arme) + son côté devant. Indépendant du sens : le flip miroir
-  // préserve l'ordre z, donc l'arme secondaire reste derrière le héros quel que soit le regard.
+  // Profondeur en PROFIL, par COUCHES : ARME DU FOND ← (recouverte par) le HÉROS ← (recouverte par) l'ARME
+  // DEVANT. Seules les armes sont re-z-ées (le corps garde son ordre normal entre les deux) : l'arme du fond
+  // passe SOUS tout le héros (le bouclier, plus grand que la main, dépasse derrière sans être imprimé dessus) ;
+  // l'arme avant passe AU-DESSUS de tout. Quelle main est au fond dépend du sens (mirror) : main directrice
+  // (droite=arme) près face-à-droite / loin face-à-gauche ; main gauche (bouclier/2e arme) l'inverse.
   const zOverride: Partial<Record<BoneId, number>> = {};
   if (view === 'profile') {
-    const off: BoneId[] = ['epauleG', 'avantBrasG', 'mainG', 'bouclier', 'cuisseG', 'tibiaG', 'piedG'];
-    const main: BoneId[] = ['epauleD', 'avantBrasD', 'mainD', 'arme', 'cuisseD', 'tibiaD', 'piedD'];
-    off.forEach((id) => (zOverride[id] = 2)); // derrière le torse (z=5)
-    main.forEach((id) => (zOverride[id] = 8)); // devant
+    zOverride.arme = mirror ? -2 : 99; // arme = main droite (directrice)
+    zOverride.bouclier = mirror ? 99 : -2; // bouclier / 2e arme = main gauche
   }
 
   return BONE_IDS
@@ -198,15 +199,17 @@ export function resolveRig(
 }
 
 /** Composant : un <g data-bone> par os, transformable individuellement (anim C / postures D). */
-export function RigSprite({ appearance, equip, pose = {}, career, view = 'front', overlays }: {
+export function RigSprite({ appearance, equip, pose = {}, career, view = 'front', overlays, mirror = false }: {
   appearance: Appearance;
   equip: EquipCtx;
   pose?: Pose;
   career?: string;
   view?: View;
   overlays?: RigOverlay[];
+  /** Regarde à gauche (le token applique le flip horizontal) → profondeur de profil inversée. */
+  mirror?: boolean;
 }): JSX.Element {
-  const bones = resolveRig(appearance, equip, pose, career, view, overlays ?? []);
+  const bones = resolveRig(appearance, equip, pose, career, view, overlays ?? [], mirror);
   return (
     <g className="rig">
       {bones.map((b) => (

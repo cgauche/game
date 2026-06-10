@@ -41,7 +41,7 @@ export function RigToken({
   const { pose, holdPose, view, mirror } = useRigAnim({ id, equip, restClip, facing });
   const body = (
     <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(holdPose, pose)} view={view} />
+      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(holdPose, pose)} view={view} mirror={mirror} />
     </g>
   );
   // Hors de combat = CADAVRE AU SOL : bascule de tout le rig ~82° autour des pieds
