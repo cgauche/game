@@ -60,4 +60,40 @@ export interface QualityDef {
   damagesArmour?: boolean;
   /** Modificateur aux Tests de Sociabilité du porteur quand l'objet est équipé (Laid -10, LDB 60 l.85). */
   socMod?: number;
+  /** ±X DR au Test d'ATTAQUE avec l'arme, réussi ou non (Imprécise -1, LDB 63 l.19). */
+  attackDR?: number;
+  /** +X DR à TOUT Test de défense de l'adversaire contre cette arme — Parade ET Esquive (Lente +1, LDB 63 l.26). */
+  vsDefenseDR?: number;
+  /** Rapide (LDB 62 l.318-321) : pré-emption d'initiative + −10 à la PARADE adverse si l'arme de
+   *  parade n'est pas Rapide elle-même (les autres Compétences défendent normalement). */
+  fastStrike?: boolean;
+  /** Lente (LDB 63 l.25) : le porteur frappe toujours en dernier dans le Round. */
+  slowStrike?: boolean;
+  /** Dangereuse (LDB 63 l.13-14) : tout Test raté incluant un 9 (dizaines ou unités) = Maladresse. */
+  fumbleOn9?: boolean;
+  /** Épuisante (LDB 63 l.16-17) : Percutante/Dévastatrice de l'arme actives seulement en Charge. */
+  chargeGatedDamageAtouts?: boolean;
+  /** À Répétition (Indice) (LDB 62 l.264-265) : chargeur de Indice munitions avant rechargement complet. */
+  magazine?: boolean;
+  /** Immobilisante (LDB 62 l.289-290) : toute touche → État Empêtré (source = l'attaquant, Force). */
+  onHitEntangle?: boolean;
+  /** Protectrice (Indice) (LDB 62 l.306-307) : Indice PA partout quand on OPPOSE l'attaque avec
+   *  l'arme ; Indice ≥ 2 → peut aussi opposer les projectiles en Ligne de Vue. */
+  parryAP?: boolean;
+  /** Perturbante (LDB 62 l.275-276) : au lieu des Dégâts, repousse d'1 m par DR du Test opposé. */
+  pushback?: boolean;
+  /** Piège-lame (LDB 62 l.292-294) : Critique en défense vs une lame → piéger/briser au lieu du Coup Critique. */
+  bladeTrap?: boolean;
+  /** Qualité MAGIQUE (ADE2) : l'arme porte une enchantement — ses attaques comptent comme MAGIQUES
+   *  (blesse l'Éthéré, LDB 85 p.339). */
+  magic?: boolean;
+  // --- Qualités d'ARMURE intrinsèques (LDB 63) ---
+  /** Flexible : portable SOUS une couche non Flexible → bénéfices des deux (cumul des PA). */
+  layerable?: boolean;
+  /** Impénétrable : les Coups Critiques obtenus sur un jet de toucher IMPAIR sont ignorés. */
+  critImmuneOdd?: boolean;
+  /** Partielle : PA de la pièce ignorés sur un jet de toucher PAIR ou un Coup Critique. */
+  apIgnoredOnEven?: boolean;
+  /** Points faibles : PA de la pièce ignorés sur un Critique d'une arme Empaleuse. */
+  apIgnoredOnImpaleCrit?: boolean;
 }

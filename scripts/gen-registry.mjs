@@ -138,6 +138,24 @@ export const REGISTRIES = [
     type: 'QualityDef',
     typeFrom: './types',
   },
+  {
+    // Talents à effet de jeu (LDB 10) : 1 talent = 1 fichier defs/ (slug ASCII, clé FR dans la def).
+    dir: 'src/engine/combatFeatures/defs',
+    out: 'src/engine/combatFeatures/_registry.generated.ts',
+    exportName: 'feature',
+    arrayName: 'FEATURE_DEFS',
+    type: 'CombatFeature',
+    typeFrom: './types',
+  },
+  {
+    // Traits de créature (LDB 85) : 1 trait = 1 fichier defs/ (slug ASCII, clé FR dans la def).
+    dir: 'src/engine/traits/defs',
+    out: 'src/engine/traits/_registry.generated.ts',
+    exportName: 'trait',
+    arrayName: 'TRAIT_DEFS',
+    type: 'TraitDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {

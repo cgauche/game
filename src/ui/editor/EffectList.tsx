@@ -28,6 +28,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'restoreFortune',
   'inflictNightmares',
   'inflictDisease',
+  'inflictTrauma',
   'giveSin',
   'corruptionExposure',
   'giveCorruption',
@@ -55,6 +56,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
   inflictDisease: 'Infliger une maladie (LDB 20)',
+  inflictTrauma: 'Infliger une Blessure Critique (LDB 18)',
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
@@ -106,6 +108,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'inflictNightmares', heroId: '' };
     case 'inflictDisease':
       return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
+    case 'inflictTrauma':
+      return { type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' };
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
@@ -184,6 +188,30 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
               {DISEASE_NAMES.map((n) => (
                 <option key={n} value={n}>{n}</option>
               ))}
+            </select>
+            <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'inflictTrauma' && (
+          <>
+            <select value={e.kind ?? 'fracture'} onChange={(ev) => upd({ kind: ev.target.value })}>
+              <option value="dechirure">Déchirure musculaire</option>
+              <option value="fracture">Fracture</option>
+              <option value="amputation">Amputation</option>
+            </select>
+            {e.kind !== 'amputation' && (
+              <select value={e.severity ?? 'mineur'} onChange={(ev) => upd({ severity: ev.target.value })}>
+                <option value="mineur">Mineure</option>
+                <option value="majeur">Majeure</option>
+              </select>
+            )}
+            <select value={e.location ?? 'brasD'} onChange={(ev) => upd({ location: ev.target.value })}>
+              <option value="tete">Tête</option>
+              <option value="brasG">Bras gauche</option>
+              <option value="brasD">Bras droit</option>
+              <option value="corps">Corps</option>
+              <option value="jambeG">Jambe gauche</option>
+              <option value="jambeD">Jambe droite</option>
             </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>

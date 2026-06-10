@@ -21,6 +21,8 @@ export interface InitiativeStripProps {
   pendingRound: number | null;
   /** Ids des combattants pouvant « agir en premier » (canActFirst, calculé par CampaignView). */
   canFirstIds: string[];
+  /** Ids dont la pré-emption est GRATUITE (arme Rapide, LDB 62 l.318-319) — badge ⚡, pas de coût en Chance. */
+  freeFirstIds?: string[];
   inspectEnabled: boolean;
   /** Action de CIBLAGE en cours (#21) : le clic sur une tuile CIBLE ce combattant (titre adapté). */
   targeting?: boolean;
@@ -52,9 +54,11 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                   type="button"
                   className="is-first"
                   onClick={() => p.onPromote(id)}
-                  title={`Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round (LDB Destin)`}
+                  title={p.freeFirstIds?.includes(id)
+                    ? `${c.name} agit en premier ce Round — gratuit (arme Rapide, LDB 62)`
+                    : `Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round (LDB Destin)`}
                 >
-                  ⏫🍀{c.fortune ?? 0}
+                  {p.freeFirstIds?.includes(id) ? '⏫⚡' : `⏫🍀${c.fortune ?? 0}`}
                 </button>
               )}
             </div>

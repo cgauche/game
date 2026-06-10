@@ -11,6 +11,7 @@
 import { Combatant, CharKey, HitLocation, Trauma, Difficulty } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
+import { isPainless } from './traits/dispatch';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
@@ -217,8 +218,9 @@ export function escalateSensoryLoss(c: Combatant): string[] {
 }
 
 /** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.352) — sauf
- *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` (armes de mêlée
- *  du Groupe « Deux-mains »). NB : les armes à distance bimanuelles ne sont pas marquées → non couvertes. */
+ *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` via `weaponHands`
+ *  — le marqueur « (2M) » de la donnée est UNIFORME mêlée ET distance (Arc/Arbalète/Arquebuse/Tromblon),
+ *  donc les armes à distance bimanuelles SONT couvertes. */
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
   if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
@@ -302,11 +304,18 @@ function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'):
   });
 }
 
+
+/** Insensible à la douleur (LDB 85 p.340) : les pénalités de Blessures Critiques NE DÉCOULANT PAS
+ *  d'amputations sont ignorées (les États restent subis). Pur — lit le trait sur `c.traits`. */
+function painlessIgnores(c: Combatant, t: Trauma): boolean {
+  return isPainless(c.traits) && !/amputation|cécité|surdité/i.test(t.label);
+}
+
 /** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64 ;
  *  une prothèse portée — Fausse jambe / Merveille — annule la séquelle de jambe, LDB 73.) */
 export function traumaMovementHalved(c: Combatant): boolean {
   if (c.ignoreCritMods) return false;
-  return (c.traumas ?? []).some((t) => t.movementHalved === true && !prosthesisCancels(c, t, 'movement'));
+  return (c.traumas ?? []).some((t) => t.movementHalved === true && !prosthesisCancels(c, t, 'movement') && !painlessIgnores(c, t));
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
@@ -314,7 +323,7 @@ export function traumaMovementHalved(c: Combatant): boolean {
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   if (c.ignoreCritMods) return []; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
   return (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all'))
+    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
     .map((t) => t.charPenalty?.[key] ?? 0)
     .filter((p) => p < 0);
 }
@@ -325,7 +334,7 @@ export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
 export function traumaDodgePenalty(c: Combatant): number {
   if (c.ignoreCritMods) return 0; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
   const pens = (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all'))
+    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
     .map((t) => t.dodgePenalty ?? 0)
     .filter((p) => p < 0);
   return pens.length ? Math.min(...pens) : 0;
@@ -337,7 +346,7 @@ export function traumaSkillPenalty(c: Combatant, skill?: string): number {
   if (!skill || c.ignoreCritMods) return 0;
   const low = skill.toLowerCase();
   const pens = (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all'))
+    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
     .map((t) => {
       const sp = t.skillPenalty;
       if (!sp) return 0;

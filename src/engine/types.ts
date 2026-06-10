@@ -379,6 +379,15 @@ export interface Combatant {
   /** Faim (LDB 18 l.417-422) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
    *  caracs lus par `hungerCharPenalties`). Absent = nourri. Entretien quotidien : `dailyFoodUpkeep`. */
   hunger?: import('./provisions').HungerState;
+  /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
+  diseaseImmunities?: string[];
+  /** Blessé pendant CE combat par une créature au Trait Infecté → Test post-combat de Résistance
+   *  Facile (+40) ou Blessure Purulente (LDB 20 l.32) ; rongeur Infecté → aussi Fièvre du Rongeur (+20, l.49). */
+  woundedByInfected?: boolean;
+  woundedByRodent?: boolean;
+  /** Maladies (Trait « Maladie (Type) ») auxquelles ce combattant a été EXPOSÉ pendant le combat
+   *  (blessé par la créature porteuse) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20). */
+  diseaseExposure?: string[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
   nextActionPenalty?: number;
@@ -408,6 +417,15 @@ export interface Combatant {
   loaded?: boolean;
   /** DR cumulés du Test étendu de Projectiles vers `Weapon.reload` (Indice DR), pas un compteur d'Actions. */
   reloadProgress?: number;
+  /** À Répétition (Indice) (LDB 62 l.264-265) : munitions restantes dans le chargeur de l'arme à
+   *  distance équipée (auto-rechargées entre les coups) ; undefined = pas de chargeur / vide. */
+  chambered?: number;
+  /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
+   *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
+  pushbackMode?: boolean;
+  /** Dans l'aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests — recalculé
+   *  à chaque franchissement de Round par combatFlow. */
+  perturbed?: boolean;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;

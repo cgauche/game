@@ -295,6 +295,29 @@ export interface PendingDeviation {
   /** Reprendre le tour de l'IA après application (toujours vrai ici : la déviation survient pendant le tour ennemi). */
   resumeAfter: boolean;
 }
+/** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
+ *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
+ *  Point de Corruption). */
+export interface PendingRenounce {
+  heroId: string;
+  /** Jet du Test de Résistance raté (affichage). */
+  testRoll: number;
+  testTarget: number;
+}
+/** Piège-lame (LDB 62 l.292-294) : le HÉROS défenseur a obtenu un Critique en parant avec une arme
+ *  Piège-lame face à une arme à lame — il choisit entre le Coup Critique normal (LDB 14 l.7) et
+ *  PIÉGER la lame (Test opposé de Force + DR de la défense ; victoire → désarme, Stupéfiant → brise
+ *  sauf Incassable, échec → l'adversaire se libère). */
+export interface PendingBladeTrap {
+  defenderId: string; // le héros piégeur
+  attackerId: string; // l'adversaire dont la lame est visée
+  weapon: Weapon; // la lame de l'attaquant
+  parryWeaponName: string;
+  /** DR du Test de Corps à corps (défense) — ajouté au Test opposé de Force (l.293). */
+  defSL: number;
+  /** d100 du jet de défense critique (localisation du Coup Critique si refusé). */
+  roll: number;
+}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est

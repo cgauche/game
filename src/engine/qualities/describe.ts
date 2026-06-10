@@ -23,10 +23,25 @@ export const QUALITY_DESC: Record<string, string> = {
   'Pistolet': 'Peut être utilisée pour attaquer en Combat rapproché.', // 62 l.298
   'Pointue': '+1 DR à tout Test réussi quand vous attaquez avec cette arme.', // 62 l.301
   'Précise': '+10 à tout Test quand vous utilisez cette arme.', // 62 l.304
+  'À Répétition': "Chargeur de Indice munitions, auto-rechargées entre les coups ; vide, l'arme se recharge entièrement (règles normales).", // 62 l.264
+  'Immobilisante': "Toute touche réussie inflige l'État Empêtré (Force de l'attaquant) à l'adversaire.", // 62 l.289
+  'Perturbante': "Au lieu de causer des Dégâts, une attaque réussie peut repousser l'adversaire d'1 mètre par DR.", // 62 l.275
+  'Piège-lame': "Critique en défense contre une lame : peut la piéger (Test opposé de Force +DR) — désarme, voire brise (sauf Incassable).", // 62 l.292
+  'Protectrice': "Opposer une attaque avec cette arme confère Indice PA partout ; Indice ≥ 2 → peut aussi opposer les projectiles en vue.", // 62 l.306
+  'Rapide': "Peut attaquer hors de l'ordre d'Initiative ; −10 aux parades adverses sans arme Rapide.", // 62 l.318
   // Défauts d'arme + Taille + Recharge — LDB 63
   'Taille': "Lourde lame : sur une touche, Endommage de 1 une armure ou un Bouclier frappé, en plus de blesser.", // 63 l.7
+  'Dangereuse': 'Tout Test raté incluant un 9 (dizaines ou unités) entraîne une Maladresse.', // 63 l.13
+  'Épuisante': 'Percutante et Dévastatrice ne fonctionnent que lors d’un Tour de Charge.', // 63 l.16
+  'Imprécise': "−1 DR quand vous attaquez avec l'arme (prime sur Précise).", // 63 l.19
   'Inoffensive': "Peu efficace contre l'armure : tous les PA sont doublés, et pas de minimum de 1 Blessure sur une touche.", // 63 l.22
+  'Lente': 'Frappe toujours en dernier dans le Round ; les adversaires gagnent +1 DR pour se défendre (prime sur Rapide).', // 63 l.25
   'Recharge': "Longue à recharger : une fois déchargée, exige un Test étendu de Projectiles cumulant Indice DR.", // 63 l.28
+  // Qualités d'armure intrinsèques — LDB 63
+  'Flexible': "Peut être portée sous une couche d'armure non Flexible : vous gagnez les bénéfices des deux.", // 63 Qualités des armures
+  'Impénétrable': 'Les Blessures Critiques causées par un nombre impair pour vous toucher sont ignorées.', // 63 Qualités des armures
+  'Partielle': "Couverture incomplète : un jet de toucher pair, ou un Coup Critique, ignore les PA de cette pièce.", // 63 Qualités des armures
+  'Points faibles': "Une arme Empaleuse qui obtient un Critique ignore les PA de cette armure.", // 63 Qualités des armures
   // Atouts/Défauts d'artisanat — LDB 60
   'Léger': "Fabriqué pour le transport : −1 Point d'Encombrement.", // 60 l.55
   'Pratique': "+1 DR à un Test raté avec l'objet ; pour une armure, pénalités de port réduites d'un niveau.", // 60 l.58

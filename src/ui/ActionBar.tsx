@@ -8,6 +8,7 @@ import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable } from '../engine/psychology';
 import { itemUse } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
+import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import type { Combatant } from '../engine/types';
@@ -61,6 +62,7 @@ export function ActionBar() {
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
   const aim = useGame((s) => s.battleAim);
+  const togglePushback = useGame((s) => s.battleTogglePushback);
   const heal = useGame((s) => s.battleHeal);
   const cancelMove = useGame((s) => s.cancelMove);
   const switchLoadout = useGame((s) => s.battleSwitchLoadout);
@@ -171,6 +173,8 @@ export function ActionBar() {
   const rangedW = isHero ? active.weapons.find((w) => w.type === 'ranged') : undefined;
   const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !active.loaded; // l'Arc (reload 0) ne recharge jamais
   const ammoChoices = isHero && rangedW ? compatibleAmmo(active, rangedW) : [];
+  // Perturbante (LDB 62 l.275-276) : mode « Repousser » disponible avec une arme de mêlée Perturbante.
+  const canPush = isHero && active.weapons.some((w) => w.type === 'melee' && canPushback(w));
 
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned;
@@ -266,6 +270,11 @@ export function ActionBar() {
           {rangedW && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action (LDB Difficultés)">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
+            </div>
+          )}
+          {canPush && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts (LDB 62)">↩️ {active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</button>
             </div>
           )}
           {needsReload && (

@@ -40,7 +40,14 @@ import {
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, entanglesOnHit, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
+import { canStrikeFirst } from '../engine/qualities/dispatch';
+import {
+  wardSaves, hasChampionDefense, webForce, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
+  isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
+  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, isNervous, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
+} from '../engine/traits/dispatch';
 import {
   isMagicMissile,
   prayerWrathTriggered,
@@ -53,9 +60,10 @@ import {
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
@@ -63,9 +71,9 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction, contractDisease } from '../engine/disease';
+import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
-import { rollCritical, critLocationRoll, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
@@ -116,6 +124,29 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
     for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
   }
   return s;
+}
+
+/** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction
+ *  opposée à l'attaquant (cases praticables et libres seulement). Renvoie les cases reculées. */
+export function pushBackTiles(get: () => GameState, attacker: Combatant, target: Combatant, tiles: number): number {
+  const { scene, battle } = get();
+  if (!scene || !battle || !attacker.pos || !target.pos || tiles <= 0) return 0;
+  let pos = target.pos;
+  const dx = Math.sign(pos.x - attacker.pos.x);
+  const dy = Math.sign(pos.y - attacker.pos.y);
+  if (!dx && !dy) return 0;
+  const blocked = occupied(battle, target);
+  let moved = 0;
+  for (let i = 0; i < tiles; i++) {
+    const next = { x: pos.x + dx, y: pos.y + dy };
+    const foot = footprintTiles(next, target.size);
+    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(`${t.x},${t.y}`))) break;
+    pos = next;
+    moved++;
+  }
+  target.pos = pos;
+  if (moved) bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...target.pos }] });
+  return moved;
 }
 
 export function findFreeTile(scene: Scene): Pt {
@@ -316,6 +347,33 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         if (who) get().log(`${who} apprend ${sp.label}.`);
         break;
       }
+      case 'inflictTrauma': {
+        // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via la
+        // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
+        // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
+          const target = idx >= 0 ? idx : 0;
+          return {
+            party: s.party.map((h, i) => {
+              if (i !== target) return h;
+              who = h.name;
+              const be = Math.floor(effectiveChar(h, 'E') / 10);
+              // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
+              // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
+              const ampNote = e.location === 'tete' ? 'Perte de l’œil — Amputation (Intermédiaire)' : 'Main/bras inutilisable — Amputation (Intermédiaire)';
+              const traumas = e.kind === 'amputation'
+                ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
+                : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
+              return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
+            }),
+          };
+        });
+        if (who) get().log(`${who} subit une Blessure Critique (${e.kind}, ${e.location}).`);
+        break;
+      }
       case 'inflictDisease': {
         // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
         // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
@@ -497,6 +555,8 @@ function openMedicalAid(get: () => GameState, set: any, e: { act: 'wounds' | 'bl
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
  *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
 export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
+  // Bestial (LDB 85 p.338) : « En défense, elle peut seulement utiliser la Compétence Esquive. »
+  if (isBestial(defender.traits)) return 'esquive';
   return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
 }
 
@@ -567,11 +627,22 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
   const surprised = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind === 'hero' : c.kind !== 'hero') && !isOutOfAction(c));
   const ambushers = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind !== 'hero' : c.kind === 'hero') && !isOutOfAction(c));
   if (!surprised.length || !ambushers.length) return [];
-  const ambushDiscretion = Math.min(...ambushers.map((a) => testValue(a, 'Discrétion'))); // la plus faible (l.77)
+  // L'embusqueur de référence = la Discrétion la plus FAIBLE du groupe (l.77). Furtif (LDB 85
+  // p.339) : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion ».
+  const sneak = ambushers.reduce((a, b) => (testValue(b, 'Discrétion') < testValue(a, 'Discrétion') ? b : a));
+  const sneakVal = testValue(sneak, 'Discrétion');
+  const sneakDR = hasStealthAgBonus(sneak.traits) ? bonus(effectiveChar(sneak, 'Ag')) : 0;
   const lines: string[] = [];
   for (const c of surprised) {
     // Embusqueur (Discrétion) vs guetteur (Perception) : si l'embusqueur l'emporte → le guetteur est Surpris.
-    if (opposedTest(ambushDiscretion, testValue(c, 'Perception'), battleRng()).attackerWins) {
+    const aT = rollTest(sneakVal, 'intermediaire', battleRng());
+    const dT = rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng());
+    if (resolveOpposed({ ...aT, sl: aT.sl + sneakDR }, dT).winner === 'attacker') {
+      // Vigilance (LDB 10) : Test de Perception Intermédiaire (+0) pour ignorer la Surprise.
+      if (hasSurpriseSave(c) && rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng()).success) {
+        lines.push(`${c.name} flaire l'embuscade (Vigilance) : pas de Surprise.`);
+        continue;
+      }
       addCondition(c, 'Surpris');
       lines.push(`${c.name} est pris par surprise !`);
     }
@@ -593,6 +664,11 @@ export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean 
  *  (`previewAttack`), pour que l'aperçu affiche EXACTEMENT ce que le jet appliquera (R4). Pur (lit l'état).
  *  `blocked` = tir sans Ligne de Vue ; `inMelee`/`crowd`/`cm`/`sc` servent à la résolution (tir dévié,
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
+/** Voit dans l'obscurité : Trait Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne (LDB 10). */
+function seesInDark(c: Combatant): boolean {
+  return traitSeesInDark(c.traits) || (c.talents ?? []).some((t) => /^vision nocturne/i.test(t.name));
+}
+
 export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; }
 export function attackEnv(
   get: () => GameState,
@@ -612,7 +688,8 @@ export function attackEnv(
     const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
     if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
-    if (sc.concealed) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
+    // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
+    if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
     // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
     // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
@@ -716,7 +793,7 @@ export function resolveDualSecond(
   const atk = evaluateTest(atkRoll, toHit); // { roll, target, success, sl, isDouble }
   const mode = cannotDefend(target) ? 'none' : bestDefenseMode(target);
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
-  const def = rollMeleeDefender(target, mode, battleRng()); // NOUVEAU jet de défense (LDB 10 l.638)
+  const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
   return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
 }
 
@@ -978,6 +1055,37 @@ function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): v
   log.push(`L'armure Bâclée de ${target.name} (${loc}) se brise sous le Coup Critique.`);
 }
 
+/** « Arme possédant une lame » (Piège-lame, LDB 62 l.292) — la source ne liste pas les armes :
+ *  approximation par mots-clés du nom (épées/dagues/haches/armes d'hast à fer tranchant). */
+export function weaponHasBlade(w: Weapon | undefined): boolean {
+  if (!w || w.type !== 'melee') return false;
+  return /épée|epee|dague|lame|rapière|rapiere|cimeterre|couteau|sabre|fauchon|hache|hallebarde|glaive|estoc|faux|coutille|vouge/i.test(w.name);
+}
+
+/** Blessure critique « sèche » d'un Test opposé (LDB 14 l.7) : un double réussi inflige une Blessure
+ *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation dérivée du jet
+ *  critique inversé (comme une touche). Un ENNEMI avec de la PA à la zone dévie toujours (−1 PA,
+ *  Critique ignoré — parité avec la Déviation auto de l'IA, LDB 63 l.63-66) ; un HÉROS victime le
+ *  subit directement (pas de modale de déviation sur ce chemin secondaire — limitation documentée). */
+function applyOpposedCritical(
+  get: () => GameState,
+  set: any,
+  victim: Combatant,
+  roll: number,
+  ctx: { attackerId?: string; weapon?: string },
+  log: string[],
+): void {
+  const loc = hitLocationByShape(reverseRoll(roll), victim.bodyShape);
+  if (victim.kind === 'enemy' && (victim.armour[loc] ?? 0) > 0) {
+    damageArmour(victim, loc);
+    log.push(`${victim.name} dévie le Critique sur son armure (−1 PA, Critique ignoré).`);
+    return;
+  }
+  const currentBefore = victim.wounds.current;
+  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined, ctx);
+  if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
+}
+
 export function applyAttackResult(
   get: () => GameState,
   set: any,
@@ -995,6 +1103,32 @@ export function applyAttackResult(
   // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
   // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
   if (deviated === undefined && hasCondition(target, 'Surpris')) removeCondition(target, 'Surpris', 1);
+  // Démoniaque (Indice+) / Protection (Indice) — LDB 85 p.339/341 : « Lancez 1d10 après chaque coup
+  // reçu ; si la créature obtient le nombre de l'Indice ou plus, le coup est ignoré, même critique. »
+  // (Les héros n'ont pas ces traits → pas de double-jet sur les reprises de déviation.)
+  if (res.hit && res.woundsLost) {
+    for (const thr of wardSaves(target.traits)) {
+      const d = d10(battleRng());
+      if (d >= thr) {
+        res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} ignore le coup — sauvegarde ${d} ≥ ${thr} (Démoniaque/Protection).` };
+        break;
+      }
+    }
+  }
+  // Perturbante (LDB 62 l.275-276) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
+  // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
+  if (attacker.pushbackMode && weapon.type === 'melee' && canPushback(weapon)) {
+    attacker.pushbackMode = false; // consommé par cette attaque (réussie ou non)
+    if (res.hit) {
+      const meters = Math.max(0, res.netSL);
+      const wanted = Math.floor(meters / 2);
+      const moved = pushBackTiles(get, attacker, target, wanted);
+      res = {
+        ...res, woundsLost: 0, damage: 0, critical: false,
+        log: `${attacker.name} repousse ${target.name} de ${meters} m (Perturbante${moved < wanted ? ' — recul bloqué' : ''}).`,
+      };
+    }
+  }
   // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
   // résolution (deviationApply) rappelle cette fonction avec `deviated` défini (early-return sauté →
@@ -1031,6 +1165,12 @@ export function applyAttackResult(
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
       const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name }, prerolledCrit, !!prerolledCrit);
+      // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
+      const fb = talentCritExtraWounds(attacker);
+      if (fb > 0 && !lethal) {
+        target.wounds.current = Math.max(0, target.wounds.current - fb);
+        critLog.push(`Frappe blessante : ${target.name} perd ${fb} Blessure(s) de plus.`);
+      }
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
@@ -1044,6 +1184,101 @@ export function applyAttackResult(
       clearPsychOf(get().battle?.combatants ?? [], target.id);
     }
   }
+  // Critiques du Test opposé (LDB 14 l.7) : « Si vous obtenez un Critique, votre adversaire reçoit
+  // immédiatement une Blessure critique […] le DR est calculé comme d'habitude, tout comme la
+  // détermination du vainqueur. » Un double RÉUSSI inflige donc un Critique même sans gagner l'échange.
+  // (Pas de garde `deviated` : une 1ʳᵉ entrée qui SUSPEND (déviation) fait son early-return AVANT ce
+  // bloc — la reprise « Dévier »/« Subir » l'exécute donc UNE seule fois, comme les sous-attaques.)
+  if (weapon.type === 'melee' && res.defenderDetail) {
+    const ad = res.attackerDetail;
+    const dd = res.defenderDetail;
+    // (a) Attaquant : Critique au jet mais échange PERDU (pas de touche) → le défenseur subit un Critique sec.
+    if (ad && ad.success && isDoubleRoll(ad.roll) && !res.hit && !isOutOfAction(target)) {
+      critLog.push(`${attacker.name} place un Critique malgré l'échange perdu (LDB 14).`);
+      applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
+    }
+    // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec. Un HÉROS qui PARE
+    // avec une arme Piège-lame face à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → modale.
+    if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker)) {
+      if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
+        set({ pendingBladeTrap: { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll } });
+      } else {
+        critLog.push(`${target.name} place un Critique sur sa défense (LDB 14).`);
+        applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
+      }
+    }
+  }
+  // Champion (LDB 85 p.338) : « Si elle gagne un Test opposé en se défendant dans un Combat au
+  // Corps à corps, elle cause autant de Dégâts que si elle était l'attaquant. »
+  if (weapon.type === 'melee' && res.advantageTo === 'defender' && res.netSL > 0
+      && (hasChampionDefense(target.traits) || (hasRiposte(target) && canStrikeFirst(res.parryWeapon ? [res.parryWeapon] : [])))
+      && !isOutOfAction(target) && target.weapons[0]) {
+    const riposte = resolveMeleePassive(target, attacker, target.weapons[0],
+      { roll: res.defenderRoll ?? 1, target: res.defenderDetail?.target ?? 1, success: true, sl: res.netSL, isDouble: false });
+    if (riposte.hit && riposte.woundsLost) {
+      const before = attacker.wounds.current;
+      attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
+      critLog.push(`${target.name} ${hasChampionDefense(target.traits) ? '(Champion)' : '(Riposte)'} inflige ${riposte.woundsLost} Blessure(s) en défendant.`);
+      if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, 'Inconscient')) applyZeroWounds(attacker);
+      if (isOutOfAction(attacker)) {
+        clearEngagementOf(get().battle?.combatants ?? [], attacker.id);
+        clearPsychOf(get().battle?.combatants ?? [], attacker.id);
+      }
+    }
+  }
+  // Toile (Indice) (LDB 85 p.343) : toute touche réussie → État Empêtré (le Test de libération oppose
+  // la Force de la SOURCE — approximation de la « Force Indice » de la toile, documentée).
+  if (res.hit && webForce(attacker.traits) != null && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
+    critLog.push(`${target.name} est Empêtré (Toile).`);
+  }
+  // Infecté / Maladie (Type) (LDB 85 p.340) : un héros BLESSÉ par la créature porteuse est exposé →
+  // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
+  if (res.hit && res.woundsLost && target.kind === 'hero') {
+    const atkTraits = attacker.traits ?? [];
+    if (atkTraits.some((t) => /^infecté/i.test(t))) {
+      target.woundedByInfected = true;
+      if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
+    }
+    for (const t of atkTraits) {
+      const m = t.match(/^Maladie\s*\(([^)]+)\)/i);
+      if (m && !(target.diseaseExposure ?? []).includes(m[1].trim())) target.diseaseExposure = [...(target.diseaseExposure ?? []), m[1].trim()];
+    }
+  }
+  // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
+  if (res.defenderDetail?.label === 'Esquive' && !res.defenderDetail.success
+      && hasActiveSymptom(target, 'nausee') && !hasCondition(target, 'Sonné')) {
+    addCondition(target, 'Sonné');
+    critLog.push(`${target.name} vomit (Nausée) : Sonné.`);
+  }
+  // Sang corrosif (LDB 85 p.341) : Blessures subies en mêlée → tous les Engagés avec la créature
+  // reçoivent 1d10 PB modifiés par le BE et les PA (min 1).
+  if (res.hit && res.woundsLost && weapon.type === 'melee' && hasCorrosiveBlood(target.traits)) {
+    for (const id of target.engagedWith ?? []) {
+      const e = battle.combatants.find((c) => c.id === id);
+      if (!e || isOutOfAction(e)) continue;
+      const lost = Math.max(1, d10(battleRng()) - bonus(effectiveChar(e, 'E')) - (e.armour.corps ?? 0));
+      loseWounds(e, lost);
+      critLog.push(`${e.name} est éclaboussé de sang corrosif : ${lost} Blessure(s).`);
+    }
+  }
+  // Démoniaque (LDB 85 p.339) : à 0 PB, « son âme retourne immédiatement dans les Royaumes du
+  // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient.
+  if (res.hit && target.wounds.current <= 0 && banishedAtZero(target.traits) && !target.dead) {
+    target.dead = true;
+    critLog.push(`${target.name} est bannie — son essence retourne aux Royaumes du Chaos !`);
+  }
+  // Affamé (LDB 85 p.338) : adversaire mis hors de combat → Test de FM Accessible (+20) ou la
+  // créature festoie, perdant sa prochaine Action et son prochain Mouvement.
+  if (res.hit && isOutOfAction(target) && gorgesOnKill(attacker.traits) && !isOutOfAction(attacker)) {
+    const t = rollTest(effectiveChar(attacker, 'FM'), 'accessible', battleRng());
+    if (!t.success) {
+      attacker.loseNextAction = true;
+      attacker.loseNextMovement = true;
+      critLog.push(`${attacker.name} (Affamé) se jette sur sa proie et festoie — prochaine Action et Mouvement perdus.`);
+    }
+  }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
@@ -1054,8 +1289,15 @@ export function applyAttackResult(
       if (used.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== used.uid);
     }
     if ((weapon.reload ?? 0) > 0) {
-      attacker.loaded = false; // déchargé après le tir
-      attacker.reloadProgress = 0;
+      // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
+      // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
+      const mag = magazineSize(weapon);
+      if (mag != null) attacker.chambered = (attacker.chambered ?? mag) - 1;
+      if (mag == null || (attacker.chambered ?? 0) <= 0) {
+        attacker.chambered = undefined;
+        attacker.loaded = false; // déchargé après le tir
+        attacker.reloadProgress = 0;
+      }
     }
   }
   // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
@@ -1082,11 +1324,23 @@ export function applyAttackResult(
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
   if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
-    attacker.advantage += 1;
+    // Renversement (LDB 10) : « au lieu de gagner +1 Avantage, vous prenez tous les Avantages
+    // actuels de votre adversaire » — appliqué quand c'est mieux que +1.
+    if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
+      attacker.advantage += target.advantage;
+      target.advantage = 0;
+      critLog.push(`${attacker.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+    } else attacker.advantage += 1;
     attacker.gainedAdvThisRound = true;
   }
   if (res.advantageTo === 'defender') {
-    target.advantage += 1;
+    // Renversement côté défenseur (même règle) ; Porte-Bouclier (LDB 10) : +niveau Avantage en
+    // défense gagnée au Bouclier.
+    if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
+      target.advantage += attacker.advantage;
+      critLog.push(`${target.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+    } else target.advantage += 1;
+    target.advantage += shieldAdvantageLevel(target, res.parryWeapon);
     target.gainedAdvThisRound = true;
     attacker.advantage = 0; // l'attaquant a échoué au Test opposé
   }
@@ -1102,6 +1356,23 @@ export function applyAttackResult(
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
   if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
+  // Nerveux (LDB 85 p.340) : « facilement effrayée par […] les bruits forts » — un coup d'arme à
+  // feu (Poudre noire/Explosion) terrifie les créatures Nerveuses présentes : +3 État Brisé.
+  if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
+    for (const c of battle.combatants) {
+      if (!isOutOfAction(c) && isNervous(c.traits) && !hasCondition(c, 'Brisé')) {
+        addCondition(c, 'Brisé', 3);
+        log.push(ev('condition', `${c.name} (Nerveux) est terrifié par la détonation : +3 Brisé.`, c.id));
+      }
+    }
+  }
+  // Immobilisante (LDB 62 l.289-290) : toute touche réussie → État Empêtré, source = l'attaquant
+  // (le Test opposé de Force pour se libérer vise sa Force — LDB 16 l.61, comme Constricteur).
+  if (res.hit && entanglesOnHit(weapon) && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
+    log.push(ev('condition', `${target.name} est Empêtré (${weapon.name} — Immobilisante).`, target.id));
+  }
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
@@ -1111,7 +1382,7 @@ export function applyAttackResult(
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
   // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.48-51) : sa Parade/Esquive ratée sur un double.
-  if (target.kind === 'enemy' && defenderFumbled(res) && !isOutOfAction(target) && target.weapons[0]) {
+  if (target.kind === 'enemy' && defenderFumbled(res, target.weapons[0]) && !isOutOfAction(target) && target.weapons[0]) {
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
   return false; // non suspendu : application complète terminée
@@ -1140,14 +1411,20 @@ export function checkFocusInterruption(get: () => GameState, set: any, target: C
   return lines;
 }
 
-/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
-export function attackerFumbled(res: AttackResult): boolean {
-  return !!res.attackerDetail && isFumble(res.attackerDetail.roll, res.attackerDetail.success);
+/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
+ *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+export function attackerFumbled(res: AttackResult, weapon?: Weapon): boolean {
+  if (!res.attackerDetail) return false;
+  const { roll, success } = res.attackerDetail;
+  return isFumble(roll, success) || dangerousNine(weapon, roll, success);
 }
 
-/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51). */
-export function defenderFumbled(res: AttackResult): boolean {
-  return !!res.defenderDetail && isFumble(res.defenderDetail.roll, res.defenderDetail.success);
+/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51 ;
+ *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon): boolean {
+  if (!res.defenderDetail) return false;
+  const { roll, success } = res.defenderDetail;
+  return isFumble(roll, success) || dangerousNine(parryWeapon, roll, success);
 }
 
 /** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à
@@ -1259,7 +1536,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
 
 /** Maladresse d'un ENNEMI : résolue instantanément (IA abstraite). No-op si pas un ennemi/pas de fumble. */
 export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
-  if (enemy.kind !== 'enemy' || !attackerFumbled(res)) return;
+  if (enemy.kind !== 'enemy' || !attackerFumbled(res, weapon)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
 
@@ -1510,7 +1787,10 @@ export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant
     get().log(`${target.name} est mis À Terre (Attaque caudale).`);
   }
   const vd = venomDifficulty(attacker.traits ?? []);
-  if (vd && !hasCondition(target, 'Empoisonné')) {
+  // Immunité (Type) (LDB 85 p.339) : un type « Poison » ignore totalement le Venin.
+  if (vd && immunityTypes(target.traits).some((ty) => ty.includes('poison'))) {
+    get().log(`${target.name} est immunisé au poison (Immunité).`);
+  } else if (vd && !hasCondition(target, 'Empoisonné')) {
     const resAdv = target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
     const t = rollTest(effectiveChar(target, 'E') + resAdv, venomDiffKey(vd), battleRng());
     if (!t.success) {
@@ -1861,6 +2141,19 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   const lines: string[] = [];
   for (const h of party) lines.push(...restRecovery(h, battleRng(), n, caredFor));
+  // Contagion (LDB 20 l.185, « Toux et Éternuements ») : un malade contagieux expose son entourage —
+  // un Test de Contraction par JOUR de promiscuité pour chaque autre membre (approximation de
+  // l'exposition horaire, échelle du repos).
+  for (const sick of party) {
+    for (const dz of contagiousDiseases(sick)) {
+      for (const other of party) {
+        if (other === sick || other.dead) continue;
+        const resVal = effectiveChar(other, 'E') + (other.skills?.find((sk) => sk.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+        const def = DISEASE_DEFS[dz.name];
+        for (let d = 0; d < n; d++) lines.push(...rollContraction(other, dz.name, resVal, def?.contractDifficulty ?? 'accessible', battleRng()));
+      }
+    }
+  }
   const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
   set({ party: [...party], journal: [...get().journal.slice(-40), title, ...lines] });
   bus.emit(EVT.SCENE_DIRTY);
@@ -1972,6 +2265,13 @@ export function applyCast(
     // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
     const missileSpec = spellSpecFor(spell);
     const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
+      // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
+      // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
+      const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
+      if (mr > 0 && mres.hit && mres.woundsLost) {
+        mres = { ...mres, woundsLost: Math.max(0, mres.woundsLost - mr) };
+        logLines.push(`${t.name} résiste à la magie (−${mr} DR de Sort).`);
+      }
       if (!mres.hit || !mres.woundsLost) return;
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;
@@ -2000,6 +2300,13 @@ export function applyCast(
       if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
     };
     applyMissileHit(target, res);
+    // Nerveux (LDB 85 p.340) : « facilement effrayée par la magie […] elle gagne +3 État Brisé. »
+    for (const t of [target, ...extraTargets]) {
+      if (res.cast && isNervous(t.traits) && !hasCondition(t, 'Brisé') && !isOutOfAction(t)) {
+        addCondition(t, 'Brisé', 3);
+        logLines.push(`${t.name} (Nerveux) est terrifié par la magie : +3 Brisé.`);
+      }
+    }
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {
       if (!res.cast) break;
@@ -2093,6 +2400,41 @@ export function finalizeBattle(get: () => GameState, set: any): void {
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
     infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
   }
+  // Trait Infecté (LDB 20 l.32/49) : blessé par une créature Infectée → Résistance Facile (+40) ou
+  // Blessure Purulente ; blessé par un RONGEUR Infecté → aussi Résistance Accessible (+20) ou Fièvre
+  // du Rongeur. Trait Maladie (Type) (LDB 85 p.340) : Test de Contraction de la maladie portée.
+  for (const c of battle.combatants) {
+    if (c.kind !== 'hero' || c.dead) continue;
+    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'Blessure Purulente', resVal, 'facile', battleRng()));
+    if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'Fièvre du Rongeur', resVal, 'accessible', battleRng()));
+    for (const name of c.diseaseExposure ?? []) {
+      const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
+      if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));
+      else infectLog.push(`${c.name} a été exposé à : ${name} (maladie non répertoriée — arbitrage MJ).`);
+    }
+    c.woundedByInfected = false;
+    c.woundedByRodent = false;
+    c.diseaseExposure = undefined;
+  }
+  // Trait Corruption (Degré) (LDB 85 p.338 → LDB 19) : avoir AFFRONTÉ une créature corrompue est une
+  // EXPOSITION du Degré indiqué — Test de Résistance Intermédiaire auto-résolu en fin de combat,
+  // gain de Points selon le niveau et le DR (corruptionGain), puis seuil/mutation via gainCorruption.
+  const degrees = battle.combatants
+    .filter((c) => c.kind !== 'hero')
+    .flatMap((c) => (c.traits ?? []).map((t) => t.match(/^Corruption\s*\((Mineure|Modérée|Majeure)\)/i)?.[1]).filter(Boolean));
+  if (degrees.length) {
+    const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
+    const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
+    const level = worst.toLowerCase() === 'majeure' ? 'majeure' : worst.toLowerCase() === 'modérée' ? 'moderee' : 'mineure';
+    for (const c of battle.combatants) {
+      if (c.kind !== 'hero' || c.dead) continue;
+      const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+      const gain = corruptionGain(level, t.success, Math.max(0, t.sl));
+      infectLog.push(`${c.name} — exposition à la Corruption (${worst}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
+      if (gain > 0) infectLog.push(...gainCorruption(get, set, c, gain));
+    }
+  }
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;
@@ -2154,17 +2496,66 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   return false;
 }
 
+/** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
+ *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
+ *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
+export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean): void {
+  const { battle, pendingBladeTrap: pbt } = get();
+  if (!battle || !pbt) return;
+  set({ pendingBladeTrap: null });
+  const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
+  const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
+  if (!defender || !attacker) return;
+  const lines: string[] = [];
+  if (!trap) {
+    lines.push(`${defender.name} place un Critique sur sa défense (LDB 14).`);
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: pbt.parryWeaponName }, lines);
+  } else if (!isOutOfAction(attacker)) {
+    // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).
+    const dT = rollTest(effectiveChar(defender, 'F'), 'intermediaire', battleRng());
+    const aT = rollTest(effectiveChar(attacker, 'F'), 'intermediaire', battleRng());
+    const opp = resolveOpposed({ ...dT, sl: dT.sl + pbt.defSL }, aT);
+    lines.push(`Test opposé de Force : ${defender.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}+${pbt.defSL}) contre ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}).`);
+    if (opp.winner === 'attacker') {
+      const drop = attacker.weapons.find((w) => (pbt.weapon.uid && w.uid === pbt.weapon.uid) || w.name === pbt.weapon.name);
+      if (drop && opp.netSL >= 6) {
+        // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.294).
+        wearActiveWeapon(attacker, drop, true);
+        lines.push(drop.destroyed
+          ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
+          : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
+        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+      } else if (drop) {
+        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+        lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
+      }
+    } else {
+      lines.push(`${attacker.name} libère sa lame et peut combattre normalement.`);
+    }
+  }
+  const b = get().battle!;
+  set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
+  pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  resumeEnemyTurn(get, set);
+}
+
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
 export function advanceTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
+  // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
+  // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
+  const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;
@@ -2178,12 +2569,64 @@ export function advanceTurn(get: () => GameState, set: any) {
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
       const base = battle.baseOrder ?? battle.order;
-      const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
+      // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 63 l.25, permanent).
+      const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', `${c.name} agira en dernier ce Round (Maladresse).`, c.id)); }
       const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
       for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); });
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
+      // Régénération (LDB 85 p.341) : début de Round — PB > 0 → +1d10 PB ; à 0 PB → 1d10, 8+ → 1 PB
+      // (la créature reprend conscience) ; un 10 soigne aussi une Blessure Critique. (Exception du
+      // Feu non suivie — la provenance des Blessures n'est pas tracée ; limitation documentée.)
+      for (const c of battle.combatants) {
+        if (c.dead || c.outOfRencontre || !regenerates(c.traits)) continue;
+        const r = d10(battleRng());
+        if (c.wounds.current > 0) {
+          const healed = Math.min(c.wounds.max - c.wounds.current, r);
+          if (healed > 0) { c.wounds.current += healed; roundLines.push(`${c.name} régénère ${healed} Blessure(s).`); }
+        } else if (r >= 8) {
+          c.wounds.current = 1;
+          while (hasCondition(c, 'Inconscient')) removeCondition(c, 'Inconscient', 99);
+          roundLines.push(`${c.name} régénère et se relève (1 PB) !`);
+        }
+        if (r === 10 && (c.criticalWounds ?? 0) > 0) {
+          c.criticalWounds = (c.criticalWounds ?? 0) - 1;
+          if (c.traumas?.length) c.traumas = c.traumas.slice(0, -1);
+          roundLines.push(`${c.name} régénère une Blessure Critique.`);
+        }
+      }
+      // Instable (LDB 85 p.340) : fin de Round Engagé avec un adversaire d'Avantage SUPÉRIEUR →
+      // perd la différence en PB ; à 0 PB, elle « meurt » (les magies qui la maintiennent cèdent).
+      for (const c of battle.combatants) {
+        if (isOutOfAction(c) || !isUnstable(c.traits)) continue;
+        const foesAdv = (c.engagedWith ?? [])
+          .map((id) => battle.combatants.find((x) => x.id === id))
+          .filter((e): e is Combatant => !!e && e.kind !== c.kind && !isOutOfAction(e))
+          .map((e) => e.advantage ?? 0);
+        const diff = (foesAdv.length ? Math.max(...foesAdv) : 0) - (c.advantage ?? 0);
+        if (diff > 0) {
+          loseWounds(c, diff);
+          roundLines.push(`${c.name} (Instable) est repoussée : −${diff} PB.`);
+          if (c.wounds.current <= 0) { c.dead = true; roundLines.push(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`); }
+        }
+      }
+      // Bestial (LDB 85 p.338) : « Elle a peur du feu et gagne l'État Brisé si elle est touchée par
+      // ce dernier » — approximé sur l'État En flammes (granularité Round, documenté).
+      for (const c of battle.combatants) {
+        if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, 'En flammes') && !hasCondition(c, 'Brisé')) {
+          addCondition(c, 'Brisé');
+          roundLines.push(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`);
+        }
+      }
+      // Perturbant (LDB 85 p.341) : −20 à tous les Tests à Bonus d'Endurance mètres d'une créature
+      // Perturbante (non cumulable). Aura recalculée à chaque franchissement de Round (granularité assumée).
+      for (const c of battle.combatants) {
+        c.perturbed = !isOutOfAction(c) && !!c.pos && battle.combatants.some(
+          (p) => p.id !== c.id && p.kind !== c.kind && !isOutOfAction(p) && p.pos
+            && hasPerturbingAura(p.traits) && chebyshev(p.pos, c.pos!) * 2 <= bonus(effectiveChar(p, 'E')),
+        );
+      }
       // Surnombre (LDB 14 l.149) : un combattant surpassé en nombre (≥2 ennemis Engagés avec lui) perd 1 Avantage en fin de Round.
       for (const c of battle.combatants) {
         if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
@@ -2191,7 +2634,19 @@ export function advanceTurn(get: () => GameState, set: any) {
           const e = battle.combatants.find((x) => x.id === id);
           return !!e && e.kind !== c.kind && !isOutOfAction(e);
         }).length;
-        if (foes >= 2) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+        // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
+        if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+      }
+      // Mâchoires d'acier (LDB 10) : Test de Résistance (+0) — retire 1 + DR États Sonné (résolu au
+      // franchissement de Round, approximation de « chaque fois que vous gagnez un État Sonné »).
+      for (const c of battle.combatants) {
+        if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, 'Sonné')) continue;
+        const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+        if (t.success) {
+          const n = Math.min(stacks(c, 'Sonné'), 1 + Math.max(0, t.sl));
+          removeCondition(c, 'Sonné', n);
+          roundLines.push(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`);
+        }
       }
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
@@ -2277,7 +2732,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
@@ -2318,8 +2773,9 @@ export function brokenRecovery(get: () => GameState, roundLines: string[]): void
     const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
     const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
     if (hidden) { removeCondition(c, 'Brisé', 1); roundLines.push(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`); }
-    // Récupération par Test de Calme : seulement si pas Engagé (l.57) et qu'il reste du Brisé.
-    if (!isEngaged(c) && stacks(c, 'Brisé')) {
+    // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
+    // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
+    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, 'Brisé')) {
       const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
       const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
       const t = rollTest(calmeValue(c), diff, battleRng());
@@ -2344,7 +2800,12 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
-  if (isPsychImmune(enemy)) return; // Immunité (Psychologie) / Frénésie / Détermination temp
+  // Belliqueux (LDB 85 p.338) : immunité psy tant qu'il a plus d'Avantages que son adversaire ENGAGÉ.
+  const engagedFoesAdv = (enemy.engagedWith ?? [])
+    .map((id) => battle.combatants.find((x) => x.id === id))
+    .filter((e): e is Combatant => !!e && e.kind !== enemy.kind && !isOutOfAction(e))
+    .map((e) => e.advantage ?? 0);
+  if (isPsychImmune(enemy, engagedFoesAdv.length ? Math.max(...engagedFoesAdv) : undefined)) return; // Immunité (Psychologie) / Frénésie / Détermination temp / Belliqueux
   enemy.psychState ??= [];
   const log: string[] = [];
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
@@ -2354,7 +2815,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
     const src = fearSourceFor(enemy, foe);
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
     if (src.kind === 'terreur') {
-      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng());
+      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid : inverse un raté (LDB 85)
       if (!r.success) {
         addCondition(enemy, 'Brisé', r.brise);
         log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
@@ -2368,7 +2829,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
   // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — UNE fois par Round.
   for (const p of enemy.psychState) {
     if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 0) || p.lastTestRound === battle.round) continue;
-    const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng());
+    const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid (LDB 85)
     p.calmeDR = r.calmeDR;
     p.lastTestRound = battle.round;
     if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
@@ -2474,8 +2935,27 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
   endFrenzyIfDone(get, set, enemy); // Frénésie finie → Exténué, avant de tester la psychologie
+  // Rage (LDB 85 p.341) : « dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie ».
+  if (hasRage(enemy.traits) && !enemy.frenzied && (enemy.advantage ?? 0) >= 3) {
+    enemy.advantage = 0;
+    enemy.frenzied = true;
+    battle.log.push(ev('frenzy', `${enemy.name} entre dans une rage dévorante (Frénésie) !`, enemy.id));
+    set({ battle: { ...battle } });
+  }
   aiMaybeFrenzy(get, set, enemy); // l'IA tente d'entrer en Frénésie (LDB 21 l.32) AVANT le test psy (la Frénésie en rend immunisé) et le choix de cible
   resolvePsychAI(get, set, enemy); // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
+  // Stupide (LDB 85 p.341) : sans allié non-Stupide à ses côtés (adjacent), Test d'Intelligence
+  // Facile (+40) au début du Round ; sur un échec, elle perd son Mouvement ET son Action.
+  if (isStupid(enemy.traits) && enemy.pos) {
+    const guided = battle.combatants.some(
+      (a) => a.kind === enemy.kind && a.id !== enemy.id && !isOutOfAction(a) && !isStupid(a.traits) && a.pos && chebyshev(a.pos, enemy.pos!) <= 1,
+    );
+    if (!guided && !rollTest(effectiveChar(enemy, 'Int'), 'facile', battleRng()).success) {
+      battle.log.push(ev('detail', `${enemy.name} (Stupide) bave et regarde dans le vide — Mouvement et Action perdus.`, enemy.id));
+      set({ battle: { ...battle } });
+      return advanceTurn(get, set);
+    }
+  }
 
   const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
   if (heroes.length === 0) {
@@ -2509,7 +2989,12 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);
-  const moveBudget = justMounted ? 0 : effectiveMovement(geom) * (cavalryCharge ? 2 : 1);
+  // Bond ×2 / Foulée ×1,5 (LDB 85) sur la portée de COURSE/CHARGE (cavalerie) de la géométrie porteuse.
+  let moveBudget = justMounted ? 0 : Math.floor(effectiveMovement(geom) * (cavalryCharge ? 2 * runMultiplier(geom.traits) : 1));
+  // Vol (Indice) (LDB 85 p.343) : « elle peut voler jusqu'à Indice mètres » (1 case = 2 m) — le vol
+  // remplace la Marche s'il porte plus loin. (Les obstacles traversés sont ignorés via `flying`.)
+  const flyM = flyMeters(enemy.traits);
+  if (!justMounted && flyM != null) moveBudget = Math.max(moveBudget, Math.floor(flyM / 2));
   const action = chooseEnemyAction({
     enemy,
     heroes,
@@ -2518,6 +3003,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     movement: moveBudget,
     offensiveSpell,
     smoke: smokeOf(battle),
+    flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)

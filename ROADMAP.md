@@ -684,6 +684,59 @@ iso-POC pour les sorts non curés (curation incrémentale, zéro régression —
   malepierre ; Vents tourbillonnants (règle optionnelle).
 - **2243 tests verts**, typecheck 0, lint 0 erreur ; recette navigateur À REPASSER (session sans Playwright).
 
+## ✅ Jalon 2.5 — Intégration des règles manquantes : qualités, traits, talents, maladies, corruption, trauma *(fait — 2026-06-10)*
+
+**Origine** : demande utilisateur « intégrer tous les atouts/défauts d'armes, traits de créature,
+talents, maladies, corruption, trauma, psychologie manquants (hors sorts) ». Architecture : **un
+seul patron, trois registres** (defs/ généré + dispatch typé + **test de parité anti-empilement**)
+— les qualités (existant), les **traits de créature** (`engine/traits/`, NOUVEAU) et les **talents**
+(`engine/combatFeatures/` refondu). Critère « tous » mesurable : chaque entrée de la donnée est une
+def, couverte ailleurs (raison documentée) ou allowlistée MJ **en conscience**. 7 lots, suite verte
++ commit entre chaque (2 321 → 2 408 tests).
+
+- ✅ **Lot A — 10 derniers Atouts/Défauts d'armes** (LDB 62/63, allowlist vidée) : À Répétition
+  (chargeur `Combatant.chambered`), Immobilisante (Empêtré), Perturbante (mode « Repousser », bouton
+  ActionBar), Piège-lame (Critique défensif → piéger/briser, modale `BladeTrapModal`), Protectrice
+  (PA d'opposition + opposition aux projectiles Indice ≥ 2), Rapide (pré-emption gratuite ⚡ + −10
+  parade adverse), Dangereuse (Maladresse sur 9), Épuisante (Atouts de Dégâts en Charge seulement),
+  Imprécise (−1 DR, prime sur Précise), Lente (frappe en dernier, +1 DR défense adverse, prime sur
+  Rapide). **+ Critiques du Test opposé** (LDB 14 l.7) : un double réussi inflige une Blessure
+  critique même sans gagner l'échange. Préséance `beats` enfin consommée.
+- ✅ **Lot B — Atouts/Défauts d'armure intrinsèques** (LDB 63, l'ex-« C3 ») : Flexible
+  (superposition rigide+souple cumulée, `wornArmourPoints`), Impénétrable (Critique sur jet impair
+  ignoré), Partielle (PA ignorés sur jet pair/Critique), Points faibles (PA ignorés sur Critique
+  Empaleuse). Parité étendue au subType Armure.
+- ✅ **Lot C — Traits de créature** (LDB 85) : registre `engine/traits/` (40 defs), parité 81/81.
+  Profil dérivé au spawn des statblocks d'ÉDITEUR (Élite/Coriace/Brutal/Rapide/Grand/Rusé/
+  Intelligent/Meneur/Endurant — bestiaire imprimé final, LDB 77) ; Mutation/Corruption mentale
+  tirées au spawn (graine stable). Combat : Démoniaque/Protection (sauvegarde 1d10, bannissement),
+  Éthéré (attaques magiques seules), Champion, Parasité (−10), Perturbant (aura −20), Sang corrosif,
+  Toile, Instable, Régénération, Insensible à la douleur, Résistance à la Magie, Immunité (Poison).
+  Psy/IA : Belliqueux, À sang-froid (inverse FM ratés), Bestial (Esquive seule, fuite < ½ PB, Brisé
+  par le feu), Affamé, Stupide, Rage, Nerveux (+3 Brisé magie/détonations), Effrayé (Peur 0 ciblée).
+  Mouvement/vision : Vol (`flyReachable`), Bond ×2/Foulée ×1,5, Vision nocturne/Infravision, Furtif.
+  Scénario 🐲 « Traits de créature » (15).
+- ✅ **Lot D — Maladies** (LDB 20) : Litanie de la Pestilence **complète** (9/9 — +Courante
+  Galopante, Fièvre du Rongeur, Flux Sanglant, Peste Noire, Vérole du Tanneur, Vérole Urticante avec
+  immunité après guérison) ; +7 symptômes mécanisés (bubons, convulsions, démangeaisons, gangrène
+  → Localisation perdue, intoxication, nausée → Sonné, toux → contagion au repos). Traits
+  Infecté/Maladie câblés post-combat (`finalizeBattle`).
+- ✅ **Lot E — Corruption** : talent **Âme pure** (seuil +niveau), **« Je te renie ! »** (LDB 17
+  l.71 — modale `RenounceModal`, 1 Résilience pour refuser la mutation), trait **Corruption
+  (Degré)** → exposition auto-résolue en fin de combat.
+- ✅ **Lot F — Trauma (résidus)** : Effet d'éditeur **`inflictTrauma`** (déchirure/fracture/
+  amputation rétroactives) ; note 2M périmée corrigée (les armes à distance (2M) étaient déjà couvertes).
+- ✅ **Lot G — Talents** (LDB 10) : `combatFeatures/` refondu au patron defs/ (42 defs), **parité
+  172/172** (création/`talentEffects` · câblé ailleurs · narratif MJ). Câblés : Coup puissant, Tir
+  précis, Combat déloyal, Charge berserk, Déterminé, Tueur, Robuste, Frappe blessante, Tir sûr,
+  Frappe assommante, Tir mortel, Tireur d'élite, Tireur embusqué, Combat instinctif, Tir rapide,
+  Vigilance, Rechargement rapide, Artilleur, Sprinter, Fuite !, Porte-Bouclier, Riposte,
+  Renversement, Maîtrise du combat, Mâchoires d'acier, Cœur vaillant, Endurci, Résistance à la
+  Magie, Effrayant, Menaçant, + 7 talents d'inversion de Test raté.
+- *Limites documentées* : Perturbant/Mâchoires d'acier à granularité de Round ; déviation non
+  proposée sur les Critiques « secs » du Test opposé ; Battement/Feinte/Désarmer/Assaut féroce =
+  manœuvres d'Action dédiées différées (allowlist en conscience) ; Vol = IA seulement (pas de vol héros).
+
 ## 🎯 Jalon 3 — Création de personnage complète
 
 - ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce

@@ -25,6 +25,7 @@ export function carryOverState(c: Combatant): {
   soinRencontreUtilise: boolean;
   traumas: Trauma[];
   diseases?: Disease[];
+  diseaseImmunities?: string[];
   items?: ItemInstance[];
   sinPoints?: number;
   castPenalties?: import('./types').CastPenalty[];
@@ -46,6 +47,7 @@ export function carryOverState(c: Combatant): {
     traumas: (c.traumas ?? []).map((t) => ({ ...t })),
     // Maladies (LDB 20) : persistent hors combat — incubation/durée décomptées au repos.
     ...(c.diseases ? { diseases: c.diseases.map((d) => ({ ...d })) } : {}),
+    ...(c.diseaseImmunities ? { diseaseImmunities: [...c.diseaseImmunities] } : {}),
     // Inventaire à stats : persiste l'usure d'arme (damageTaken/destroyed) et la munition consommée
     // (qty) entre combats (LDB 62 l.177-180). roundsAtZero N'est PAS persisté : l'horloge de mort
     // lente repart à neuf au combat suivant (cohérent avec startCombat).

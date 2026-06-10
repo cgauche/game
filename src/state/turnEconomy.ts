@@ -3,6 +3,8 @@ import type { BattleState } from './store';
 import { trampleTarget, canMove } from './store';
 import { canTakeAction, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
+import { canStrikeFirst } from '../engine/qualities/dispatch';
+import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 
 /**
  * Le héros actif a-t-il ENCORE une option UTILE ce tour ? (R6 du diagnostic lisibilité-combat). Sert au
@@ -44,5 +46,12 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
 export function canActFirst(c: Combatant, battle: BattleState): boolean {
   if (c.kind !== 'hero' || isOutOfAction(c)) return false;
   if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
-  return (c.fortune ?? 0) > 0;
+  // Rapide (LDB 62 l.318-319) / Tir rapide (LDB 10) : attaque hors de l'ordre d'Initiative — gratuit.
+  return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons) || canPreemptRanged(c);
+}
+
+/** La pré-emption d'initiative est-elle GRATUITE pour `c` ? (arme Rapide, LDB 62 l.318-319 —
+ *  sinon elle coûte 1 point de Chance, LDB ch.17 l.27). */
+export function freeActFirst(c: Combatant): boolean {
+  return canStrikeFirst(c.weapons) || canPreemptRanged(c); // Rapide (LDB 62) / Tir rapide (LDB 10)
 }

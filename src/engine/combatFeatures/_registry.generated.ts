@@ -1,0 +1,47 @@
+// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
+import type { CombatFeature } from './types';
+import { feature as e0 } from './defs/ambidextre';
+import { feature as e1 } from './defs/artilleur';
+import { feature as e2 } from './defs/bonnes-jambes';
+import { feature as e3 } from './defs/charge-berserk';
+import { feature as e4 } from './defs/chat-de-gouttiere';
+import { feature as e5 } from './defs/coeur-vaillant';
+import { feature as e6 } from './defs/combat-deloyal';
+import { feature as e7 } from './defs/combat-instinctif';
+import { feature as e8 } from './defs/coup-puissant';
+import { feature as e9 } from './defs/determine';
+import { feature as e10 } from './defs/effrayant';
+import { feature as e11 } from './defs/endurci';
+import { feature as e12 } from './defs/frappe-assommante';
+import { feature as e13 } from './defs/frappe-blessante';
+import { feature as e14 } from './defs/fuite';
+import { feature as e15 } from './defs/grand-orateur';
+import { feature as e16 } from './defs/harmonisation-aethyrique';
+import { feature as e17 } from './defs/lecture-rapide';
+import { feature as e18 } from './defs/machoires-d-acier';
+import { feature as e19 } from './defs/maitrise-du-combat';
+import { feature as e20 } from './defs/maniement-de-deux-armes';
+import { feature as e21 } from './defs/menacant';
+import { feature as e22 } from './defs/noctambule';
+import { feature as e23 } from './defs/pansement-de-fortune';
+import { feature as e24 } from './defs/pharmacologie';
+import { feature as e25 } from './defs/porte-bouclier';
+import { feature as e26 } from './defs/rechargement-rapide';
+import { feature as e27 } from './defs/renversement';
+import { feature as e28 } from './defs/resistance-a-la-magie-talent';
+import { feature as e29 } from './defs/riposte';
+import { feature as e30 } from './defs/robuste';
+import { feature as e31 } from './defs/sociable';
+import { feature as e32 } from './defs/sprinter';
+import { feature as e33 } from './defs/studieux';
+import { feature as e34 } from './defs/tir-mortel';
+import { feature as e35 } from './defs/tir-precis';
+import { feature as e36 } from './defs/tir-rapide';
+import { feature as e37 } from './defs/tir-sur';
+import { feature as e38 } from './defs/tireur-d-elite';
+import { feature as e39 } from './defs/tireur-embusque';
+import { feature as e40 } from './defs/tueur';
+import { feature as e41 } from './defs/vigilance';
+
+export const FEATURE_DEFS: CombatFeature[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41];

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { formatImperial, toDate, dayPhase } from '../engine/clock';
-import { canActFirst } from '../state/turnEconomy';
+import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { IsoStage } from '../gameIso/IsoStage';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
@@ -66,6 +66,11 @@ export function CampaignView() {
         return !!c && canActFirst(c, battle);
       })
     : [];
+  // Pré-emption GRATUITE (arme Rapide, LDB 62 l.318-319) — badge ⚡ au lieu de 🍀.
+  const freeFirstIds = canFirstIds.filter((id) => {
+    const c = battle?.combatants.find((x) => x.id === id);
+    return !!c && freeActFirst(c);
+  });
   // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
   // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
   const targetingAction = battle && !battle.over ? battle.action : null;
@@ -93,6 +98,7 @@ export function CampaignView() {
             over={battle.over != null}
             pendingRound={pendingRoundStart?.round ?? null}
             canFirstIds={canFirstIds}
+            freeFirstIds={freeFirstIds}
             inspectEnabled={inspectEnabled}
             targeting={isTargeting}
             onToggleInspect={toggleInspect}

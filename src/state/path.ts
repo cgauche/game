@@ -54,6 +54,25 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
   return dist;
 }
 
+/**
+ * Vol (LDB 85 p.343) : destinations en LIGNE DIRECTE jusqu'à `range` cases — « elle ignore tous les
+ * terrains, obstacles et personnages qui s'interposent » ; seul l'ATTERRISSAGE exige une empreinte
+ * praticable et libre. Coût = distance de Tchebychev (déplacement libre dans les airs).
+ */
+export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
+  const dist = new Map<string, number>();
+  dist.set(key(start.x, start.y), 0);
+  for (let dy = -range; dy <= range; dy++)
+    for (let dx = -range; dx <= range; dx++) {
+      if (!dx && !dy) continue;
+      const nx = start.x + dx;
+      const ny = start.y + dy;
+      if (!footFits(scene, nx, ny, foot, blocked)) continue; // l'atterrissage doit tenir
+      dist.set(key(nx, ny), Math.max(Math.abs(dx), Math.abs(dy)));
+    }
+  return dist;
+}
+
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
  *  votre adversaire ») : la portée de Course (`range`) restreinte aux cases qui n'APPROCHENT PAS `foe` —
  *  leur distance de Tchebychev à l'adversaire doit être ≥ à celle de la case de départ. Pur. */

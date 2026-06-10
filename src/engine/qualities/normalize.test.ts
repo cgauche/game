@@ -16,7 +16,7 @@ describe('normalize — parseQuality (canonicalisation + Indice)', () => {
     expect(parseQuality('solide 5')).toEqual({ key: 'Solide', indice: 5 });
   });
   it('qualité inconnue du registre → null', () => {
-    expect(parseQuality('Lente')).toBeNull();
+    expect(parseQuality('Tournoyante')).toBeNull();
     expect(parseQuality('Bidon 9')).toBeNull();
     expect(parseQuality('')).toBeNull();
   });

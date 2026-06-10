@@ -17,7 +17,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
-  maybeOpenHeroPsych, displaceSmaller, applySurprise,
+  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -43,7 +43,9 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
-import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
+import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst } from '../engine/qualities/dispatch';
+import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
+import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
@@ -57,7 +59,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
-import { gainCorruption } from './corruptionFlow';
+import { gainCorruption, resolveRenounce } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { spellSpecFor } from '../data/spellspecs';
 import { resolveFormula } from '../engine/ops';
@@ -67,7 +69,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
-  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingDefense,
+  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
@@ -198,6 +200,10 @@ export interface GameState {
   pendingDefense: PendingDefense | null;
   /** Déviation Critique d'un héros en attente (choix Dévier/Subir, LDB 63 l.63-66). */
   pendingDeviation: PendingDeviation | null;
+  /** Piège-lame (LDB 62 l.292-294) : choix du héros défenseur — Coup Critique ou piéger la lame. */
+  pendingBladeTrap: PendingBladeTrap | null;
+  /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
+  pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
   /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
   pendingInteract: string | null;
@@ -447,6 +453,8 @@ export interface GameState {
   battleSwitchLoadout: (loadoutId: string) => void;
   /** Action « Viser » (sans jet) : +20 (Accessible) au prochain tir tant que c'est la dernière action. */
   battleAim: () => void;
+  /** Perturbante (LDB 62 l.275-276) : bascule le mode « Repousser » (1 m/DR au lieu des Dégâts). */
+  battleTogglePushback: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;
   /** Choisit l'arme d'attaque (uid d'ItemInstance du loadout actif ; null = auto) — avant le jet. */
@@ -545,6 +553,10 @@ export interface GameState {
   defenseCancel: () => void;
   /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
   deviationApply: (deviate: boolean) => void;
+  /** Piège-lame (LDB 62 l.292-294) : résout le choix (true = piéger la lame, false = Coup Critique). */
+  bladeTrapResolve: (trap: boolean) => void;
+  /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
+  renounceResolve: (renounce: boolean) => void;
   /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
    *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
   battleMount: () => void;
@@ -666,6 +678,8 @@ export const useGame = create<GameState>((set, get) => ({
   pendingStateRecovery: null,
   pendingDefense: null,
   pendingDeviation: null,
+  pendingBladeTrap: null,
+  pendingRenounce: null,
   pendingMountTarget: null,
   pendingDisengage: null,
   pendingInteract: null,
@@ -958,6 +972,7 @@ export const useGame = create<GameState>((set, get) => ({
       const rw = c.weapons.find((w) => w.type === 'ranged');
       c.loaded = true;
       c.reloadProgress = 0;
+      c.chambered = magazineSize(rw); // À Répétition : chargeur plein au début du combat (LDB 62 l.264)
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     });
@@ -980,8 +995,16 @@ export const useGame = create<GameState>((set, get) => ({
     // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
     const surpriseLines = enc.surprise && !opts?.noSurprise ? applySurprise(all, enc.surprise) : [];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
-    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10);
-    const order = initiativeOrder(all).map((c) => c.id);
+    // Combat instinctif (LDB 10) : +10 × niveau à l'Initiative de combat.
+    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10) + talentInitiativeBonus(c);
+    // Effrayant (LDB 10) : le porteur inspire Peur (Indice = niveau) — comme un statbloc « Peur N ».
+    for (const c of all) {
+      const fear = talentFearIndice(c);
+      if (fear > 0) c.causesPeur = Math.max(c.causesPeur ?? 0, fear);
+    }
+    // Lente (LDB 63 l.25) : le porteur d'une arme Lente frappe toujours en dernier dans le Round.
+    const ordered = initiativeOrder(all);
+    const order = [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);
     const battle: BattleState = {
       combatants: all,
       order,
@@ -1002,7 +1025,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingBladeTrap: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -1684,7 +1707,9 @@ export const useGame = create<GameState>((set, get) => ({
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
       const charM = mountMovement(battle, active);
-      const reach = reachable(scene, active.pos!, charM * 2, blocked, sizeFootprint(geom.size)); // portée de Course
+      // Bond ×2 / Foulée ×1,5 (LDB 85) : multiplicateur de COURSE/CHARGE de la créature qui porte le
+      // déplacement (la monture en combat monté).
+      const reach = reachable(scene, active.pos!, Math.floor(charM * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size)); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
         get().log('Cible hors de portée de Charge.');
@@ -1702,6 +1727,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
       active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
       active.gainedAdvThisRound = true;
+      active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
       set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name} (+${adv} Avantage).`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
@@ -1740,11 +1766,14 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, pendingRoundStart } = get();
     if (!battle || !pendingRoundStart) return;
     const hero = battle.combatants.find((c) => c.id === heroId);
-    if (!hero || hero.kind !== 'hero' || (hero.fortune ?? 0) <= 0) return;
+    // Rapide (LDB 62 l.318-319) / Tir rapide (LDB 10, arme à distance chargée) : pré-emption
+    // GRATUITE ; sinon 1 point de Chance (LDB ch.17 l.27).
+    const free = !!hero && (canStrikeFirst(hero.weapons) || canPreemptRanged(hero));
+    if (!hero || hero.kind !== 'hero' || (!free && (hero.fortune ?? 0) <= 0)) return;
     if (battle.order[0] === heroId) return; // déjà en tête
-    hero.fortune = (hero.fortune ?? 0) - 1;
+    if (!free) hero.fortune = (hero.fortune ?? 0) - 1;
     const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
-    set({ battle: { ...battle, order, log: [...battle.log, ev('info', `${hero.name} choisit d'agir en premier (Chance).`, hero.id)] } });
+    set({ battle: { ...battle, order, log: [...battle.log, ev('info', `${hero.name} choisit d'agir en premier (${free ? 'arme Rapide' : 'Chance'}).`, hero.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   confirmRoundStart: () => {
@@ -1846,6 +1875,16 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('aim', `${active.name} vise soigneusement (+20 au prochain tir).`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
+  // Perturbante (LDB 62 l.275-276) : arme le mode « Repousser » — la prochaine attaque réussie
+  // repousse d'1 m/DR AU LIEU de causer des Dégâts. Simple bascule (pas une Action).
+  battleTogglePushback: () => {
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || !active.weapons.some((w) => w.type === 'melee' && canPushback(w))) return;
+    active.pushbackMode = !active.pushbackMode;
+    set({ battle: { ...battle } });
+  },
 
   // ── Rechargement = Test étendu de Projectiles (LDB 63-Armures l.28-29 + 12-Tests l.199-211) — par modale ──
   battleReload: () => {
@@ -1882,11 +1921,14 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingReload: null });
     if (!a) return;
     a.aiming = false; // recharger est une autre action → la visée est perdue
-    const progress = Math.max(0, pr.progressBefore + pr.sl); // Test étendu : cumul des DR, plancher 0 (recommence)
+    // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
+    const reloadTalent = pr.success ? reloadDRBonus(a, a.weapons.find((x) => x.type === 'ranged')) : 0;
+    const progress = Math.max(0, pr.progressBefore + pr.sl + reloadTalent); // Test étendu : cumul des DR, plancher 0 (recommence)
     let log: string;
     if (progress >= pr.reload) {
       a.loaded = true;
       a.reloadProgress = 0;
+      a.chambered = magazineSize(a.weapons.find((x) => x.type === 'ranged')); // À Répétition : chargeur rempli (LDB 62 l.264-265)
       log = `${a.name} a rechargé ${pr.weaponName}.`;
     } else {
       a.reloadProgress = progress;
@@ -2161,7 +2203,7 @@ export const useGame = create<GameState>((set, get) => ({
       // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
       applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
-      if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
+      if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
       } else if (!isDualMain && !isDualSecond) {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
@@ -2349,7 +2391,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !defender) return;
     const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.115-116/225)
     const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry);
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon); // Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320)
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
     set({ pendingDefense: { ...pd, def, result: res } });
   },
@@ -2364,7 +2406,7 @@ export const useGame = create<GameState>((set, get) => ({
     defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
     const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.225)
     const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry);
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon); // Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320)
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
     set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
   },
@@ -2399,7 +2441,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
     // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
-    if (defender && defender.kind === 'hero' && defenderFumbled(pd.result) && !isOutOfAction(defender)) {
+    if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]) && !isOutOfAction(defender)) {
       set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null, resumeAfter: true } });
       return;
     }
@@ -2435,6 +2477,8 @@ export const useGame = create<GameState>((set, get) => ({
   // Rappelle applyAttackResult avec la décision (early-return de suspension sauté → application UNE
   // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
   // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
+  bladeTrapResolve: (trap: boolean) => resolveBladeTrap(get, set, trap),
+  renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
   deviationApply: (deviate: boolean) => {
     const { battle, pendingDeviation: pdv } = get();
     if (!battle || !pdv) return;
@@ -2448,7 +2492,7 @@ export const useGame = create<GameState>((set, get) => ({
       // (attaques gratuites de créature : enchaînées à la reprise ci-dessous)
       // Maladresse du défenseur héros (défense active ratée sur un double, LDB 14 l.48-51) : `defenderFumbled`
       // est FAUX sans jet de défense (doAttack / « Subir » passif) → ne se déclenche que pour la parade/esquive active.
-      if (target.kind === 'hero' && defenderFumbled(pdv.res) && !isOutOfAction(target)) {
+      if (target.kind === 'hero' && defenderFumbled(pdv.res, target.weapons[0]) && !isOutOfAction(target)) {
         set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null, resumeAfter: true } });
         return; // la reprise de l'IA suivra la modale de Maladresse (resumeAfter)
       }
@@ -2717,7 +2761,8 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, mover);
     // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
     // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
-    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, effectiveMovement(mover) * 2, blocked, sizeFootprint(mover.size)), log } });
+    // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
+    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   },

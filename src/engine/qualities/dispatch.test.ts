@@ -64,14 +64,11 @@ describe('registry — entrées attendues', () => {
 });
 
 describe('parité — toute qualité d’ARME des données est connue (registre ou allowlist explicite)', () => {
-  // Qualités d'arme présentes en data mais PAS dans le registre : soit implémentées AILLEURS
-  // (Assommante dans combatFlow, Recharge dans items.ts — migrations différées), soit non implémentées
-  // (dette ROADMAP). Toute NOUVELLE qualité de données doit être soit une entrée QUALITIES, soit
-  // ajoutée ici EN CONSCIENCE — c'est le garde-fou anti-empilement.
-  const NON_DANS_REGISTRE = new Set([
-    'À Répétition', 'Immobilisante', 'Perturbante', 'Piège-lame', 'Protectrice',
-    'Rapide', 'Dangereuse', 'Épuisante', 'Imprécise', 'Lente',
-  ]);
+  // Toute NOUVELLE qualité de données doit être soit une entrée QUALITIES, soit ajoutée ici EN
+  // CONSCIENCE — c'est le garde-fou anti-empilement. (Vide depuis l'intégration des 10 dernières
+  // qualités d'arme : À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
+  // Dangereuse, Épuisante, Imprécise, Lente.)
+  const NON_DANS_REGISTRE = new Set<string>([]);
   it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
     const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
@@ -79,6 +76,18 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
     const armes = all.filter((q) => (q.subType ?? '').toLowerCase().startsWith('arme'));
     const known = new Set(Object.keys(QUALITIES));
     const missing = armes.map((q) => q.label).filter((l) => !known.has(l) && !NON_DANS_REGISTRE.has(l));
+    expect(missing).toEqual([]);
+  });
+  // Pénalités « % en Discrétion/Perception » : pas des qualités du registre — parsées par
+  // wearPenalty.ts directement depuis la donnée d'armure (LDB 63, colonne Pénalités).
+  const ARMURE_HORS_REGISTRE = new Set(['% en discretion', '% en perception']);
+  it('chaque Atout/Défaut d’ARMURE de qualities.json est dans QUALITIES ou allowlisté', () => {
+    const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
+    const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+    const all = (Array.isArray(raw) ? raw : Object.values(raw as Record<string, unknown>)) as { label: string; subType?: string }[];
+    const armures = all.filter((q) => (q.subType ?? '').toLowerCase().startsWith('armure'));
+    const known = new Set(Object.keys(QUALITIES));
+    const missing = armures.map((q) => q.label).filter((l) => !known.has(l) && !ARMURE_HORS_REGISTRE.has(l));
     expect(missing).toEqual([]);
   });
 });

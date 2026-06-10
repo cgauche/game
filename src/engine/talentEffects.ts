@@ -13,7 +13,8 @@
  *  - « Chance » : « maximum de Points de Chance = Points de Destin + nombre de fois » (Chanceux) ;
  *  - « Détermination » : « Ajoutez votre niveau au maximum de votre réserve » (Obstiné) ;
  *  - « Mouvement » : « Vous gagnez +1 à votre Attribut de Mouvement » (Véloce) ;
- *  - « Corruption » (Âme pure) : seuil de Corruption — système non modélisé, ignoré ici.
+ *  - « Corruption » (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
+ *    (corruptionThresholdExceeded), pas ici.
  *
  * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
  * Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence

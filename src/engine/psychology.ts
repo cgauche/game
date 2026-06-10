@@ -6,10 +6,11 @@
  */
 import { Combatant } from './types';
 import { RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
+import { bellicosePsychImmune } from './traits/dispatch';
 
 export type PsychType =
   | 'peur'
@@ -73,6 +74,7 @@ const TARGETED_TRAITS: { re: RegExp; type: PsychType }[] = [
   { re: /^Amour\s*\(([^)]*)\)/i, type: 'amour' },
   { re: /^Camaraderie\s*\(([^)]*)\)/i, type: 'camaraderie' },
   { re: /^Phobie\s*\(([^)]*)\)/i, type: 'phobie' },
+  { re: /^Effray[ée]\s*\(([^)]*)\)/i, type: 'phobie' }, // Effrayé (LDB 85 p.339) : « Peur 0 de la Cible » → ciblé type phobie, Indice 0
 ];
 
 /** Parse les traits de données (`creatures.json`) en propriétés psy : Peur/Terreur/Immunité (LDB 85
@@ -93,7 +95,7 @@ export function parsePsychTraits(traits: string[]): { causesPeur?: number; cause
       const raw = m[1].trim();
       const cible = raw === '' || /au choix/i.test(raw) ? undefined : raw; // « un au choix » → inerte
       const trait: PsychTrait = { type, cible };
-      if (type === 'phobie') trait.indice = 1; // Phobie = Peur 1
+      if (type === 'phobie') trait.indice = /^effray/i.test(t) ? 0 : 1; // Phobie = Peur 1 ; Effrayé = Peur 0 (LDB 85 p.339)
       (out.psychTraits ??= []).push(trait);
     }
   }
@@ -119,8 +121,24 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
  * Round-indépendant : utilisable autant dans les déclencheurs (collectHeroPsych…) que dans les
  * modificateurs purs (attackModifiers). Futurs Talents/effets d'immunité psy : ajouter ICI.
  */
-export function isPsychImmune(c: Combatant): boolean {
+export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean {
+  // Belliqueux (LDB 85 p.338) : « Tant qu'elle a plus d'Avantages que son adversaire, elle gagne
+  // Immunité Psychologique » — `foesMaxAdvantage` = le meilleur Avantage de ses adversaires ENGAGÉS
+  // (fourni par les appelants qui ont le contexte de bataille ; absent ⇒ trait inerte).
+  if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
   return !!c.psychImmune || !!c.frenzied || (c.psychImmuneRoundsLeft ?? 0) > 0;
+}
+
+/** À sang-froid (LDB 85 p.338) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —
+ *  un jet RATÉ est relu avec ses chiffres inversés (91 → 19) si cela le rend réussi. Pur. */
+export function coldBloodedAdjust(
+  t: { roll: number; target: number; success: boolean; sl: number },
+  coldBlooded: boolean,
+): { roll: number; target: number; success: boolean; sl: number } {
+  if (!coldBlooded || t.success) return t;
+  const rev = t.roll === 100 ? 100 : (t.roll % 10) * 10 + Math.floor(t.roll / 10) || 100; // 30 → 3 ; « 00 » inchangé
+  const e = evaluateTest(rev, t.target);
+  return e.success ? { roll: e.roll, target: e.target, success: e.success, sl: e.sl } : t;
 }
 
 /** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
@@ -165,8 +183,9 @@ export function resolvePeurTest(
   indice: number,
   prevDR: number,
   rng: RNG = defaultRNG,
+  coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
 ): { dr: number; calmeDR: number; vaincue: boolean; roll: number; target: number; sl: number; success: boolean } {
-  const t = rollTest(calme, 'intermediaire', rng);
+  const t = coldBloodedAdjust(rollTest(calme, 'intermediaire', rng), coldBlooded);
   const dr = t.success ? Math.max(0, t.sl) : 0;
   const calmeDR = prevDR + dr;
   return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
@@ -205,8 +224,9 @@ export function resolveTerreurTest(
   calme: number,
   indice: number,
   rng: RNG = defaultRNG,
+  coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
 ): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
-  const t = rollTest(calme, 'intermediaire', rng);
+  const t = coldBloodedAdjust(rollTest(calme, 'intermediaire', rng), coldBlooded);
   const brise = t.success ? 0 : indice + Math.max(0, -t.sl);
   return { success: t.success, brise, devientPeur: indice, roll: t.roll, target: t.target, sl: t.sl };
 }
