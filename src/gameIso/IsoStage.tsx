@@ -287,7 +287,7 @@ export function IsoStage() {
       const pvAt = pvDest ?? pvTgt?.pos;
       if (pvAt) {
         const c0 = tileCenter(pvAt.x, pvAt.y, d);
-        hl.push(<text key="pv-lbl" x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{pvLbl} — re-cliquer pour confirmer</text>);
+        hl.push(<text key="pv-lbl" x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{pvLbl}</text>);
       }
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.

@@ -362,10 +362,6 @@ export function ActionBar() {
 
         {isHero ? (
           <div className="ab-slots">
-            {/* ── Implicite : clic case = se déplacer · clic ennemi = attaquer (Charge auto) ── */}
-            <span className="ab-hint-implicit" title="Le déplacement et l'attaque sont directs : cliquer une case (aperçu puis confirmation), cliquer un ennemi (mêlée, tir ou Charge selon la situation).">
-              🦶 clic case · ⚔️ clic ennemi
-            </span>
             {/* Annuler le déplacement (R6/LOT 6) : tant qu'aucune Action n'est prise, revenir au point de départ. */}
             {moveStarted && !battle.acted && (
               <button
