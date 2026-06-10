@@ -19,6 +19,7 @@ import { InitiativeStrip } from './InitiativeStrip';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { GameMenu } from './GameMenu';
+import { SaveLoadModal } from './SaveLoadModal';
 import { WorldMapView } from './WorldMapView';
 import { placeOfScene } from '../state/worldMap';
 import { campaign } from '../scenes/campaign';
@@ -52,6 +53,7 @@ export function CampaignView() {
   const battleClickEntity = useGame((s) => s.battleClickEntity);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [inspectId, setInspectId] = useState<string | null>(null);
+  const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
   const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
@@ -107,7 +109,8 @@ export function CampaignView() {
           />
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
-        <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} />
+        <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' ? () => setSaveOpen(true) : undefined} />
+        {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (

@@ -7,12 +7,14 @@ import { formatMoney, type Money } from '../engine/money';
  * complète du Calendrier Impérial, et « Quitter la partie » (retour à l'écran de groupe — parité
  * avec l'ancien bouton toujours visible). `initialOpen` = aide de test. Pur à props.
  */
-export function GameMenu({ sceneName, money, inventory, dateLine, onQuit, initialOpen = false }: {
+export function GameMenu({ sceneName, money, inventory, dateLine, onQuit, onSaveLoad, initialOpen = false }: {
   sceneName?: string;
   money: Money;
   inventory: string[];
   dateLine: string;
   onQuit: () => void;
+  /** Ouvre la modale Sauvegarder/Charger (Jalon 5) — absent en combat (sauvegarde refusée). */
+  onSaveLoad?: () => void;
   initialOpen?: boolean;
 }) {
   const [open, setOpen] = useState(initialOpen);
@@ -38,6 +40,11 @@ export function GameMenu({ sceneName, money, inventory, dateLine, onQuit, initia
               ))}
             </div>
           </div>
+          {onSaveLoad && (
+            <button type="button" className="btn small" onClick={() => { setOpen(false); onSaveLoad(); }}>
+              💾 Sauvegarder / Charger
+            </button>
+          )}
           <button type="button" className="btn small gm-quit" onClick={onQuit}>← Quitter la partie</button>
         </div>
       )}

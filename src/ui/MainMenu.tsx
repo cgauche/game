@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { useGame } from '../state/store';
+import { listSaves } from '../state/saves';
+import { SaveLoadModal } from './SaveLoadModal';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
+  const [loadOpen, setLoadOpen] = useState(false);
+  const hasSaves = listSaves().some((m) => m != null);
 
   return (
     <div className="menu">
@@ -11,6 +16,9 @@ export function MainMenu() {
         <div className="menu-buttons">
           <button className="btn btn-primary" onClick={() => setScreen('party')}>
             Nouvelle partie
+          </button>
+          <button className="btn" onClick={() => setLoadOpen(true)} title={hasSaves ? 'Reprendre une partie sauvegardée' : 'Aucun emplacement rempli — un fichier exporté reste importable'}>
+            📂 Charger une partie
           </button>
           <button className="btn" onClick={() => setScreen('editor')}>
             Éditeur de niveau
@@ -37,6 +45,7 @@ export function MainMenu() {
           générées localement.
         </p>
       </div>
+      {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
     </div>
   );
 }

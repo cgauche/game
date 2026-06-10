@@ -25,6 +25,16 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
+import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
+
+/** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
+ *  JSON round-trip écarte les fonctions) + données de la save par-dessus, écran campagne.
+ *  Le merge partiel de zustand préserve les actions du store. */
+function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): void {
+  const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
+  set({ ...base, ...(save.data as Partial<GameState>), screen: 'campaign' });
+  bus.emit(EVT.SCENE_DIRTY);
+}
 import { ev, evLines, type CombatEvent } from './combatLog';
 import { rollOups } from '../engine/oups';
 import {
@@ -275,6 +285,12 @@ export interface GameState {
   previousScene: { id: string; pos: Pt } | null;
 
   setScreen: (s: Screen) => void;
+  /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
+  saveGame: (slot: SaveSlot) => boolean;
+  /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
+  loadGame: (slot: SaveSlot) => boolean;
+  /** Applique une save importée (export/import JSON). */
+  importGame: (json: string) => boolean;
   setParty: (p: Combatant[]) => void;
   toggleEquip: (heroId: string, uid: string) => void;
   createLoadout: (heroId: string, name: string) => void;
@@ -737,6 +753,31 @@ export const useGame = create<GameState>((set, get) => ({
   previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
+
+  // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
+  saveGame: (slot) => {
+    const s = get();
+    if (s.battle) {
+      get().log('Impossible de sauvegarder en plein combat.');
+      return false;
+    }
+    const save = snapshotSave(s as unknown as Record<string, unknown>, useGame.getInitialState() as unknown as Record<string, unknown>, new Date().toISOString());
+    const ok = saveToSlot(slot, save);
+    get().log(ok ? `Partie sauvegardée (emplacement ${slot}).` : 'Sauvegarde impossible (stockage indisponible ou plein).');
+    return ok;
+  },
+  loadGame: (slot) => {
+    const save = readSlot(slot);
+    if (!save) return false;
+    applyLoadedSave(set, save);
+    return true;
+  },
+  importGame: (json) => {
+    const save = importSave(json);
+    if (!save) return false;
+    applyLoadedSave(set, save);
+    return true;
+  },
 
   // ── Actions GROUPE (équipement / avancement) : déléguées à partyFlow ──
   toggleEquip: (heroId, uid) => partyFlow.toggleEquip(get, set, heroId, uid),
