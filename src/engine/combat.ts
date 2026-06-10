@@ -371,10 +371,14 @@ export function rollMeleeDefender(
   mode: 'parade' | 'esquive',
   rng: RNG = defaultRNG,
   dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
+  parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + pénalité main 2nde)
 ): TestResult {
-  const defVal = defenseValue(defender, mode, defender.weapons[0]);
+  const defVal = defenseValue(defender, mode, parryWeapon);
   const snow = mode === 'esquive' ? dodgeMod : 0;
-  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow);
+  // Pénalité de main secondaire à la PARADE (LDB 62 l.192 ; 0 si Parade+Défensive ou main principale) —
+  // appliquée au JET, pas seulement affichée. (Esquive : aucune arme → pas de pénalité d'arme.)
+  const offHand = mode === 'parade' ? parryPenalty(defender, parryWeapon) : 0;
+  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand);
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
