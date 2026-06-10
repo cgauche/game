@@ -2869,18 +2869,8 @@ export const useGame = create<GameState>((set, get) => ({
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
       }
     }
-    // Contrecoups d'incantation à durée d'HORLOGE (minutes/jours — Drain de puissance,
-    // « Pensez à vos actes »…) : purge à l'échéance (LDB 46/40).
-    const now = get().gameTime;
-    const expiredLog: string[] = [];
-    for (const h of get().party) {
-      const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
-      if (!exp.length) continue;
-      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
-      h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
-    }
-    if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
-    // Entretien quotidien (#T2 — rations/faim) : traite les éventuels franchissements de jour.
+    // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à
+    // durée d'horloge (contrecoups LDB 46/40) : traite les éventuels franchissements de jour.
     runDailyUpkeep(get, set);
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).

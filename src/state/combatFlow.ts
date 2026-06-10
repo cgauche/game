@@ -2167,16 +2167,17 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   // stabilisés ; restRecovery refuse d'ailleurs le repos d'un héros encore Hémorragique/En flammes/Empoisonné.
   set({ gameTime: before + minutes });
   bus.emit(EVT.TIME_ADVANCED, { minutes });
-  // Entretien quotidien (#T2) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
-  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418).
-  runDailyUpkeep(get, set);
-  const party = get().party;
   // Soin des maladies (LDB 09-Compétences) : si un soignant apte (Guérison) veille le groupe, la durée
   // des maladies des patients est réduite plus vite (−1 j/jour de soins, min 1). Test de Guérison supposé
   // réussi sur des soins prolongés (abstraction, comme le soin de Blessures hors combat).
-  const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  // Entretien quotidien (#T2/#T3) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
+  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418) ; les
+  // maladies/convalescences des jours franchis avancent ici (cascade ; `caredFor` réduit les durées).
+  runDailyUpkeep(get, set, { caredFor });
+  const party = get().party;
   const lines: string[] = [];
-  for (const h of party) lines.push(...restRecovery(h, battleRng(), n, caredFor));
+  for (const h of party) lines.push(...restRecovery(h, battleRng(), n));
   // Contagion (LDB 20 l.185, « Toux et Éternuements ») : un malade contagieux expose son entourage —
   // un Test de Contraction par JOUR de promiscuité pour chaque autre membre (approximation de
   // l'exposition horaire, échelle du repos).

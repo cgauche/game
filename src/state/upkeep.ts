@@ -1,12 +1,24 @@
 /**
- * Entretien QUOTIDIEN du groupe (#T2) — source unique, anti-double-comptage.
+ * Entretien QUOTIDIEN du groupe (#T2/#T3) — source unique, anti-double-comptage.
  *
  * « Tout est horodaté » : chaque chemin qui avance l'horloge (advanceTime, repos, voyage) appelle
  * `runDailyUpkeep`, qui traite les FRANCHISSEMENTS DE JOUR entre `lastUpkeepDay` et le jour courant
  * — une journée n'est jamais comptée deux fois, quel que soit le chemin emprunté.
  *
- * Par journée écoulée et par héros : consommation d'une Ration (LDB p.302) sinon faim
- * (LDB 18 l.417-422 — Tests de Résistance, malus, dégâts ignorant les PA) — cf. `engine/provisions`.
+ * Par journée écoulée et par héros (#T3 — cascade RAW) :
+ *  1. consommation d'une Ration (LDB p.302) sinon faim (LDB 18 l.417-422) — cf. `engine/provisions` ;
+ *  2. progression des MALADIES (LDB 20 : incubation/durée en jours CALENDAIRES, repos ou pas) —
+ *     `dailyDiseaseUpkeep` (+ soins d'un soignant au repos via `opts.caredFor`) ;
+ *  3. CONVALESCENCE des Blessures critiques (LDB 18 l.317 : « un nombre de JOURS égal à 30 − BE »,
+ *     calendaire) — `tickTraumaRecovery`.
+ * (Corruption : AUCUN déclencheur temporel dans LDB 19 — rien à câbler, vérifié à la source.)
+ *
+ * `purgeClockEffects` (appelé à CHAQUE passage, même sans franchissement de jour) dissipe les effets
+ * à durée d'HORLOGE arrivés à échéance : contrecoups d'incantation `castPenalties.untilTime`
+ * (LDB 46/40 — « Pensez à vos actes » une semaine, Drain de puissance N minutes…). Avant #T3, cette
+ * purge ne vivait que dans `advanceTime` : un contrecoup expiré restait actif après un voyage/repos
+ * (qui posent `gameTime` directement).
+ *
  * N'importe QUE du moteur + battleRng (pas de cycle avec les flux).
  */
 import type { GameState } from './store';
@@ -16,6 +28,8 @@ import { dailyFoodUpkeep } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
+import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
+import { tickTraumaRecovery } from '../engine/trauma';
 import { bus, EVT } from './bus';
 
 type Get = () => GameState;
@@ -26,9 +40,25 @@ export function dayIndex(gameTime: number): number {
   return Math.floor(gameTime / MINUTES_PER_DAY);
 }
 
-/** Traite les journées écoulées depuis le dernier entretien (rations/faim). No-op si aucun
- *  franchissement de jour. Appelé par advanceTime, le repos et le voyage. */
-export function runDailyUpkeep(get: Get, set: Set): void {
+/** Purge les effets à durée d'HORLOGE arrivés à échéance (`untilTime` ≤ maintenant) : contrecoups
+ *  d'incantation (LDB 46/40). Appelée par advanceTime ET par l'entretien quotidien (repos/voyage). */
+export function purgeClockEffects(get: Get, set: Set): void {
+  const now = get().gameTime;
+  const expiredLog: string[] = [];
+  for (const h of get().party) {
+    const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
+    if (!exp.length) continue;
+    for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
+    h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
+  }
+  if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
+}
+
+/** Traite les journées écoulées depuis le dernier entretien (rations/faim, maladies, convalescence)
+ *  + purge des effets d'horloge. No-op (hors purge) si aucun franchissement de jour. Appelé par
+ *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage. */
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean } = {}): void {
+  purgeClockEffects(get, set);
   const today = dayIndex(get().gameTime);
   const last = get().lastUpkeepDay;
   if (today <= last) return;
@@ -38,10 +68,15 @@ export function runDailyUpkeep(get: Get, set: Set): void {
   for (let d = last + 1; d <= today; d++) {
     for (const h of party) {
       if (h.dead) continue;
+      // 1. Nourriture (LDB 18 l.417-422).
       const r = dailyFoodUpkeep(h, testValue(h, 'Résistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng());
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
+      // 2. Maladies (LDB 20 — jours calendaires, #T3).
+      lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor));
+      // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
+      lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h)));
     }
   }
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
