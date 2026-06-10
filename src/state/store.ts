@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
-  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, applyZoneCrossings, attackWardGate,
+  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
@@ -1297,11 +1297,14 @@ export const useGame = create<GameState>((set, get) => ({
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell) return;
-    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
+    const sigmar = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
+    const aqshy = domainCastBonus(get(), caster, spell); // attribut d'Aqshy : +10/En flammes proche (LDB 48)
+    const ward = sigmar + aqshy;
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
-    if (ward) get().log(`${caster.name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).`);
+    if (sigmar) get().log(`${caster.name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).`);
+    if (aqshy) get().log(`${caster.name} : +${aqshy} en Langue (Magick) — Aqshy se nourrit des flammes proches (LDB 48).`);
     // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
     // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
     const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
@@ -1339,7 +1342,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !target || !spell || (!free && (caster.fortune ?? 0) <= 0)) return;
     if (free) consumeActiveFlag(caster, 'freeReroll');
     else caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
-    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
+    const ward = castWardPenalty(get(), target, spell) + domainCastBonus(get(), caster, spell); // Sorcière (LDB 42) + Aqshy (LDB 48)
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
@@ -1368,7 +1371,7 @@ export const useGame = create<GameState>((set, get) => ({
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || caster.kind !== 'hero' || !target || !spell) return;
     for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
-    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
+    const ward = castWardPenalty(get(), target, spell) + domainCastBonus(get(), caster, spell); // Sorcière (LDB 42) + Aqshy (LDB 48)
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);

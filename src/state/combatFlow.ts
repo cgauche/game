@@ -83,6 +83,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
+import { domainOf, domainOnHitRiders, domainMissileMods, ghurFearAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
@@ -2926,6 +2927,33 @@ export function applyCast(
     if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
   }
 
+  // Attributs de Domaine (LDB 48 — L14) : riders post-lancement d'un Sort « issu du Domaine ».
+  if (res.cast) {
+    for (const t of [target, ...extraTargets]) {
+      logLines.push(...domainOnHitRiders(caster, t, spell, t.kind !== caster.kind, battleRng()));
+    }
+    // Cieux (l.87) : le Sort « se dirige vers toutes les autres cibles dans les 2 mètres » de la
+    // cible (sauf Magie des Arcanes (Cieux)) — BFM Dégâts, mitigés BE + PA (PA métal ignorées).
+    if (domainOf(spell) === 'Cieux' && battle && target.pos) {
+      const bfm = bonus(effectiveChar(caster, 'FM'));
+      const splashed = battle.combatants.filter((c) =>
+        c.id !== target.id && c.id !== caster.id && !isOutOfAction(c) && c.pos
+        && combatDistance(target, c) <= 1 && !hasArcaneTalent(c, 'Cieux'));
+      for (const s of splashed) {
+        const totalAP = Math.max(0, s.armour.corps ?? 0);
+        const dom = domainMissileMods(s, spell, 'corps', totalAP);
+        const wl = Math.max(0, bfm - bonus(effectiveChar(s, 'E')) - Math.max(0, totalAP - dom.apIgnored));
+        if (wl > 0) {
+          loseWounds(s, wl);
+          if (s.wounds.current <= 0) applyZeroWounds(s);
+        }
+        logLines.push(`L'arc d'Azyr saute sur ${s.name} : ${wl} Blessure(s) (attribut des Cieux, LDB 48).`);
+      }
+    }
+    // Bête (l.9) : le lanceur gagne Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi.
+    logLines.push(...ghurFearAfterCast(caster, spell, battleRng()));
+  }
+
   // Péché et Colère Divine (LDB 40 l.44-45) : à CHAQUE Test de Prière, si le dé des
   // unités ≤ Points de Péché → Colère des dieux, MÊME si le Test est réussi (la
   // Maladresse, elle, a déjà déclenché la sienne ci-dessus).
@@ -2997,6 +3025,21 @@ function domainBreathType(caster: Combatant): string | undefined {
   if (/m[ée]tal/.test(domain)) return 'Corrosif';
   if (/ombre/.test(domain)) return 'Fumée';
   return undefined;
+}
+
+/** Attribut d'Aqshy (LDB 48 l.157 — L14) : « Chaque État Enflammé situé à une distance en mètres
+ *  égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation
+ *  avec Aqshy. » — +10 par PION En flammes porté par un combattant à portée du LANCEUR.
+ *  (Volet Focalisation : non câblé — différé documenté.) */
+export function domainCastBonus(s: GameState, caster: Combatant, spell: { type?: string; subType?: string | null }): number {
+  if (domainOf(spell) !== 'Feu' || !caster.pos) return 0;
+  const radius = Math.max(1, Math.ceil(bonus(effectiveChar(caster, 'FM')) / 2));
+  let pions = 0;
+  for (const c of s.battle?.combatants ?? []) {
+    if (!c.pos || isOutOfAction(c)) continue;
+    if (combatDistance(caster, c) <= radius) pions += stacks(c, 'En flammes');
+  }
+  return 10 * pions;
 }
 
 /** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou

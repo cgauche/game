@@ -21,6 +21,7 @@ import { rollTest, resolveOpposed, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
+import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
 import { findTalent } from '../data';
@@ -562,10 +563,14 @@ export function evaluateMissile(
   const loc = hitLocationByShape(reverseRoll(cr.roll), target.bodyShape);
   const spellDmg = parseSpellDamage(spell.desc);
   const bfm = bonus(effectiveChar(caster, 'FM'));
-  const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm;
+  // Attribut de Domaine (LDB 48 — L14) : Métal ignore les PA métalliques ET les ajoute en Dégâts ;
+  // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.
+  const totalAP = effectiveArmourAt(target, loc); // PA portés + temporisés (Armure Aethyrique)
+  const dom = domainMissileMods(target, spell, loc, totalAP);
+  const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm + dom.bonusDamage;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'E'));
-  const ap = spellDmg?.ignorePA ? 0 : effectiveArmourAt(target, loc); // PA portés + temporisés (Armure Aethyrique)
+  const ap = spellDmg?.ignorePA ? 0 : Math.max(0, totalAP - dom.apIgnored);
   const woundsLost = Math.max(1, damage - (tb + ap));
   const defeated = target.wounds.current - woundsLost <= 0;
   const mitLabel =
