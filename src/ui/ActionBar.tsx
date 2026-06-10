@@ -63,6 +63,7 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const heal = useGame((s) => s.battleHeal);
   const cancelMove = useGame((s) => s.cancelMove);
+  const switchLoadout = useGame((s) => s.battleSwitchLoadout);
   const scene = useGame((s) => s.scene);
   const flags = useGame((s) => s.flags);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
@@ -89,6 +90,7 @@ export function ActionBar() {
   if (!active) return null;
 
   const isHero = active.kind === 'hero';
+  const loadouts = active.loadouts ?? []; // sets d'armes basculables en combat (≥2 → commutateur)
   // Mouvement DÉCOMPOSABLE (mais non entrelacé avec l'Action) : cases encore disponibles ce Tour (0 = épuisé).
   // `canMoveNow` applique aussi la règle M-A-M (pas de Mouvement après une Action déjà précédée de Mouvement).
   // Les manœuvres « plein Mouvement » (Charge/Course/Monter/Descendre/Se relever) exigent `movementUsed === 0`.
@@ -351,6 +353,22 @@ export function ActionBar() {
               <div className="ab-stats">
                 <Gauge kind="action" value={actAvail} max={actMax} title={`Action${actMax > 1 ? 's' : ''} disponible${actAvail > 1 ? 's' : ''} : ${actAvail}/${actMax}${active.frenzied ? ' (dont attaque gratuite de Frénésie)' : ''}`} />
                 <Gauge kind="move" value={moveLeft} max={moveMax} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />
+              </div>
+            )}
+            {/* Commutateur de set d'armes (1 switch gratuit/tour, même Engagé — LDB 13 l.116). */}
+            {isHero && loadouts.length >= 2 && (
+              <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'}>
+                <span className="ab-loadouts-ico">🗡</span>
+                {loadouts.map((lo) => (
+                  <button
+                    key={lo.id}
+                    className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
+                    disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
+                    onClick={() => switchLoadout(lo.id)}
+                  >
+                    {lo.name}
+                  </button>
+                ))}
               </div>
             )}
           </div>
