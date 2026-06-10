@@ -29,6 +29,9 @@ import {
   rangeBandModifier,
   resolveStrayRangedHit,
   resolveTrample,
+  resolveMeleePassive,
+  finishMelee,
+  rollMeleeDefender,
   AttackResult,
   ModLine,
   outnumberMod,
@@ -48,7 +51,7 @@ import {
   type MissileResult,
 } from '../engine/magic';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest, rollTest } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
@@ -628,6 +631,29 @@ export function resolveAttack(
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy }), weapon };
+}
+
+/** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,
+ *  ou `critValue` (valeur du tableau des Critiques) si la 1ʳᵉ frappe était un Critique. Le `target` (valeur à
+ *  toucher) inclut déjà la pénalité de main secondaire (l'arme `off` porte `hand:'off'`, cf. plan #1). Le
+ *  défenseur fait un NOUVEAU jet de défense (l.638 « opposée à un nouveau lancer de défense »). */
+export function resolveDualSecond(
+  get: () => GameState,
+  attacker: Combatant,
+  target: Combatant,
+  offWeapon: Weapon,
+  mainRoll: number,
+  opts?: { critValue?: number; location?: HitLocation },
+): AttackResult {
+  const { env } = attackEnv(get, attacker, target, offWeapon, {});
+  const mods = attackModifiers(attacker, target, offWeapon, { kind: 'melee', location: opts?.location, env });
+  const toHit = combatValue(attacker, 'melee', offWeapon) + combineMods(mods);
+  const atkRoll = opts?.critValue != null ? opts.critValue : reverseRoll(mainRoll);
+  const atk = evaluateTest(atkRoll, toHit); // { roll, target, success, sl, isDouble }
+  const mode = cannotDefend(target) ? 'none' : bestDefenseMode(target);
+  if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
+  const def = rollMeleeDefender(target, mode, battleRng()); // NOUVEAU jet de défense (LDB 10 l.638)
+  return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
 }
 
 /** Aperçu d'attaque (R4) : la valeur de toucher (cible du d100) et sa décomposition de modificateurs, SANS
