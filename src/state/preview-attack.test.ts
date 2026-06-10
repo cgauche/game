@@ -62,6 +62,24 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(duo - solo).toBe(20);
   });
 
+  it('choix d’arme : previewAttack(weaponUid) prend l’arme choisie + applique le -20 main secondaire, parité résolution', () => {
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [
+      { name: 'Épée', type: 'melee', damage: '+BF+4', reach: 'Moyenne', qualities: [], hand: 'main', hands: 1, uid: 'm' },
+      { name: 'Dague', type: 'melee', damage: '+BF', reach: 'Très courte', qualities: [], hand: 'off', hands: 1, uid: 'o' },
+    ] as never });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const get = mkGet([a, b]);
+    const main = previewAttack(get, a, b); // auto → Épée (main), aucune pénalité
+    expect(main.weapon.name).toBe('Épée');
+    expect(main.mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+    const off = previewAttack(get, a, b, undefined, { weaponUid: 'o' }); // Dague (main secondaire) → -20
+    expect(off.weapon.name).toBe('Dague');
+    expect(off.mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
+    seedBattleRng(2);
+    const r = resolveAttack(get, a, b, undefined, undefined, undefined, undefined, 'o');
+    expect(r!.weapon.name).toBe('Dague'); // parité : la résolution utilise la même arme choisie
+  });
+
   it('eligibleAttackTargetIds : seuls les ennemis vivants à portée sont éligibles', () => {
     const a = combatant({ id: 'A', pos: { x: 0, y: 0 } }); // épée, Allonge Moyenne = 1 case
     const near = combatant({ id: 'E1', kind: 'enemy', pos: { x: 1, y: 0 } }); // adjacent → éligible

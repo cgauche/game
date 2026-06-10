@@ -1855,9 +1855,9 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target) return;
     applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223)
     if (!r) {
-      get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
+      get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
       set({ pendingAttack: null });
       return;
     }
@@ -1872,7 +1872,7 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pa.targetId);
     if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
     attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
     if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
   },
   /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */
@@ -1886,7 +1886,7 @@ export const useGame = create<GameState>((set, get) => ({
     const r = pa.result;
     const ad = r.attackerDetail!;
     const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-    const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
+    const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto) + munition combinée
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;
@@ -1907,7 +1907,7 @@ export const useGame = create<GameState>((set, get) => ({
     const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
     set({ pendingAttack: null });
     if (attacker && target && victim) {
-      const weapon = firedWeapon(attacker, target);
+      const weapon = firedWeapon(attacker, target, pa.weaponUid);
       const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
       applyAttackResult(get, set, attacker, victim, weapon, pa.result);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
@@ -2279,7 +2279,7 @@ export const useGame = create<GameState>((set, get) => ({
     const ad = r.attackerDetail!;
     const defSL = r.defenderDetail?.sl ?? 0;
     const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
-    const weapon = firedWeapon(attacker, target); // arme tirée (munition combinée) — pas weapons[0]
+    const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto) + munition combinée
     let res: AttackResult;
     if (r.defenderDetail) {
       const dd = r.defenderDetail;

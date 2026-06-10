@@ -42,7 +42,7 @@ export function RollModal() {
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
-  const weapon = firedWeapon(attacker, target); // arme RÉELLEMENT tirée (mêlée au contact / distance + munition), pas weapons[0]
+  const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto, mêlée au contact / distance) + munition
   const res = pa.result;
   // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
@@ -55,7 +55,7 @@ export function RollModal() {
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Aperçu AVANT le jet (R4) : valeur de toucher + décomposition des modificateurs (plus de « validation à
   // l'aveugle »). Recalculé à chaque changement d'option (localisation / Tirer dans le tas / immobile).
-  const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround }) : null;
+  const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
   const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const doRoll = () => {
     if (reduceMotion) return roll();

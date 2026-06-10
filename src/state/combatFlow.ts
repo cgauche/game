@@ -591,9 +591,10 @@ export function resolveAttack(
   fromCharge?: boolean,
   intoCrowd?: boolean,
   heldGround?: boolean,
+  weaponUid?: string,
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const dist = combatDistance(attacker, target);
-  const weapon = firedWeapon(attacker, target); // arme + munition combinées (héros distance)
+  const weapon = firedWeapon(attacker, target, weaponUid); // arme choisie (ou auto) + munition combinées (héros distance)
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const battle = get().battle!;
@@ -644,10 +645,10 @@ export function previewAttack(
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
-  opts?: { intoCrowd?: boolean; heldGround?: boolean },
+  opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
 ): AttackPreview {
   const dist = combatDistance(attacker, target);
-  const weapon = firedWeapon(attacker, target);
+  const weapon = firedWeapon(attacker, target, opts?.weaponUid);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
   // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
