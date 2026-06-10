@@ -3,6 +3,7 @@ import { defenseValue, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { Dice } from './Dice';
 
 /**
  * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
@@ -75,7 +76,7 @@ export function DisengageModal() {
         ) : (
           <>
             <div className={`test-result ${success ? 'ok' : 'fail'}`}>
-              <span className="dice">{pd.def!.roll === 100 ? '00' : String(pd.def!.roll).padStart(2, '0')}</span>
+              <span className="dice"><Dice roll={pd.def!.roll} /></span>
               <span className="verdict">
                 {pd.result === 'success'
                   ? 'Désengagé ! (+1 Avantage)'

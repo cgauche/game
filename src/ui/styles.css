@@ -2154,6 +2154,28 @@ textarea:focus {
 .rm-roll-dice b {
   font-size: 16px;
 }
+/* Dé animé : le nombre « roule » (flou + tremblement) avant de se poser sur le résultat. */
+.d100 {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+.d100-rolling {
+  filter: blur(0.6px);
+  opacity: 0.85;
+  animation: d100-jitter 0.09s linear infinite;
+}
+@keyframes d100-jitter {
+  0% { transform: translateY(-1px); }
+  50% { transform: translateY(1px); }
+  100% { transform: translateY(-1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .d100-rolling {
+    filter: none;
+    animation: none;
+    opacity: 1;
+  }
+}
 .rm-roll-sl {
   text-align: right;
   font-weight: 600;

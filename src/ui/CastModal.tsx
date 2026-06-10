@@ -4,6 +4,7 @@ import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { Dice } from './Dice';
 
 /**
  * Modale d'incantation (« tous les jets méritent leur modale ») : on sélectionne un sort + une
@@ -74,7 +75,7 @@ export function CastModal() {
                   cible <b>{res.target}</b>
                 </span>
                 <span className="rm-roll-dice">
-                  🎲 <b>{res.roll === 100 ? '00' : String(res.roll).padStart(2, '0')}</b>
+                  🎲 <b><Dice roll={res.roll} /></b>
                 </span>
                 <span className="rm-roll-sl">
                   {res.sl >= 0 ? '+' : '−'}

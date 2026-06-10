@@ -1,5 +1,6 @@
 import { useGame, type PendingFumble } from '../state/store';
 import { Modal } from './Modal';
+import { Dice } from './Dice';
 import type { Combatant } from '../engine/types';
 
 /** Vue pure de la modale de Maladresse (testable sans store). Pas de Chance : elle agit AVANT
@@ -34,7 +35,7 @@ export function FumbleModalView({
         ) : (
           <>
             <div className="test-result fail">
-              <span className="dice">{r.roll === 100 ? '00' : String(r.roll).padStart(2, '0')}</span>
+              <span className="dice"><Dice roll={r.roll} /></span>
               <span className="verdict">{r.label}</span>
             </div>
             <div className="modal-actions">

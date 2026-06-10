@@ -5,10 +5,8 @@ import { ResilienceButton } from './ResilienceButton';
 import { RollLine } from './RollLine';
 import { Modal } from './Modal';
 
-/** Affichage canonique d'un d100 (100 → « 00 », zéro-paddé). */
-export function Dice({ roll }: { roll: number }) {
-  return <>{roll === 100 ? '00' : String(roll).padStart(2, '0')}</>;
-}
+// Dé d100 canonique (désormais animé) — ré-exporté pour les modales qui l'importaient d'ici.
+export { Dice } from './Dice';
 
 /**
  * Coquille PARTAGÉE des modales de jet différé (invariante « un jet = une modale ») — pendant UI de

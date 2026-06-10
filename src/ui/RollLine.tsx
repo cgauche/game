@@ -1,9 +1,9 @@
 import type { RollBreakdown } from '../engine/combat';
+import { Dice } from './Dice';
 
 /** Une ligne de jet : base + modificateurs = cible · d100 · DR (✓/✗), + le détail étiqueté
  *  des modificateurs (« Courte portée +40 », « Viser +20 »…) quand il réconcilie le total. */
 export function RollLine({ d }: { d: RollBreakdown }) {
-  const roll = d.roll === 100 ? '00' : String(d.roll).padStart(2, '0');
   const mod = d.modifier === 0 ? '' : ` ${d.modifier > 0 ? '+' : '−'}${Math.abs(d.modifier)}`;
   const mods = d.mods ?? [];
   const showMods = mods.length > 0 && mods.reduce((s, m) => s + m.value, 0) === d.modifier;
@@ -16,7 +16,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
           {mod} = <b>{d.target}</b>
         </span>
         <span className="rm-roll-dice">
-          🎲 <b>{roll}</b>
+          🎲 <b><Dice roll={d.roll} /></b>
         </span>
         <span className="rm-roll-sl">
           {d.success ? '✓' : '✗'} {d.sl >= 0 ? '+' : '−'}

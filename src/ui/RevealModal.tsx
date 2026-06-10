@@ -1,5 +1,6 @@
 import { useGame, type RevealEntry } from '../state/store';
 import { Modal } from './Modal';
+import { Dice } from './Dice';
 import { CombatantBadge } from './CombatantBadge';
 import { conditionMeta } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
@@ -33,7 +34,7 @@ export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; ac
       )}
 
       <div className="test-result fail">
-        {entry.dice != null && <span className="dice">{entry.dice === 100 ? '00' : String(entry.dice).padStart(2, '0')}</span>}
+        {entry.dice != null && <span className="dice"><Dice roll={entry.dice} /></span>}
         <span className="verdict">{entry.lines[0] ?? ''}</span>
       </div>
 
@@ -90,7 +91,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
       ) : (
         <>
           <div className="test-result fail">
-            {entry.dice != null && <span className="dice">{entry.dice === 100 ? '00' : String(entry.dice).padStart(2, '0')}</span>}
+            {entry.dice != null && <span className="dice"><Dice roll={entry.dice} /></span>}
             <span className="verdict">{entry.lines[0] ?? ''}</span>
           </div>
           {entry.lines.slice(1).map((l, i) => (
