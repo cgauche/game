@@ -23,3 +23,12 @@ public/qc/
 
 # compagnon visuel brainstorm
 .superpowers/
+
+# Environnement local : IDE, réglages Claude Code, installeurs, logs de scripts
+.idea/
+.claude/
+*.exe
+*.log
+
+# Bundles git transitoires (transfert de sessions cloud) : intégrés par merge puis supprimés
+*.bundle
