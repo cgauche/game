@@ -1,0 +1,30 @@
+/**
+ * Registre des specs de sorts CURÉES (cf. engine/spellspec) : une entrée = les
+ * effets structurés d'un sort, recopiés de sa description canon. Les sorts sans
+ * entrée passent par `fallbackSpec` (parseurs regex historiques) — la curation
+ * est incrémentale, famille par famille, sans régression.
+ */
+import { SpellSpec, fallbackSpec } from '../../engine/spellspec';
+import { SpellLike } from '../../engine/magic';
+import { BENEDICTIONS } from './benedictions';
+import { DOMAINE_FEU } from './domaine-feu';
+import { MAGIE_MINEURE } from './magie-mineure';
+import { ARCANES_COMMUNS } from './arcanes-communs';
+import { MIRACLES_SIGMAR } from './miracles-sigmar';
+import { MIRACLES_SHALLYA } from './miracles-shallya';
+
+const ALL: SpellSpec[] = [
+  ...BENEDICTIONS, ...DOMAINE_FEU, ...MAGIE_MINEURE, ...ARCANES_COMMUNS,
+  ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
+];
+
+/** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */
+export function curatedSpec(label: string, type?: string): SpellSpec | undefined {
+  const candidates = ALL.filter((s) => s.label === label);
+  return candidates.find((s) => s.type != null && s.type === type) ?? candidates.find((s) => s.type == null);
+}
+
+/** Spec d'un sort : curée si présente au registre, sinon repli (desc → regex). */
+export function spellSpecFor(spell: SpellLike): SpellSpec {
+  return curatedSpec(spell.label, spell.type) ?? fallbackSpec(spell);
+}

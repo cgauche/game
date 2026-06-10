@@ -29,7 +29,8 @@ import {
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
-import { levelsForCareer, findSkill, findCareer } from '../data/index';
+import { spellCost } from '../engine/grimoire';
+import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData } from '../data/index';
 import { bus, EVT } from './bus';
 
 type Get = () => GameState;
@@ -317,6 +318,44 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
     }),
   }));
   if (msg) get().log(msg);
+}
+
+/** Apprend/mémorise un sort (LDB 46 l.44-47 + Talents LDB 10) : coût en PX selon la
+ *  famille (engine/grimoire.spellCost) ; un sort de Magie du Chaos inflige AUSSI
+ *  +1 Point de Corruption (« le Sort s'insinue dans votre esprit ») — appliqué par
+ *  l'appelant store (seuil → mutation). */
+export function buySpell(get: Get, set: Set, heroId: string, label: string): { ok: boolean; chaos?: boolean } {
+  let msg = '';
+  let result: { ok: boolean; chaos?: boolean } = { ok: false };
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const sp = findSpellData(label);
+      if (!sp) {
+        msg = `Sort « ${label} » introuvable.`;
+        return h;
+      }
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const cost = spellCost(clone, sp);
+      if (cost == null) {
+        msg = `${clone.name} ne peut pas apprendre ${label} (déjà connu ou Talent manquant).`;
+        return h;
+      }
+      if ((clone.xp ?? 0) < cost) {
+        msg = `${clone.name} : ${cost} PX requis pour mémoriser ${label} (reste ${clone.xp ?? 0}).`;
+        return h;
+      }
+      clone.xp = (clone.xp ?? 0) - cost;
+      clone.spells = [...(clone.spells ?? []), label];
+      msg = cost > 0
+        ? `${clone.name} mémorise ${label} (−${cost} PX).`
+        : `${clone.name} reçoit ${label} (inclus au Talent).`;
+      result = { ok: true, chaos: sp.type === 'Magie du Chaos' };
+      return clone;
+    }),
+  }));
+  if (msg) get().log(msg);
+  return result;
 }
 
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {

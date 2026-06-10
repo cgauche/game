@@ -23,6 +23,7 @@ import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { touchActors } from './combatOrParty';
+import { gainCorruption } from './corruptionFlow';
 
 type Get = () => GameState;
 type Set = (s: Partial<GameState>) => void;
@@ -63,6 +64,9 @@ export interface RollFlowHandlers {
   bonusSL: (get: Get, set: Set) => void;
   forceSuccess: (get: Get, set: Set) => void;
   cancel: (get: Get, set: Set) => void;
+  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
+   *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
+  darkPact: (get: Get, set: Set) => void;
 }
 
 export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): RollFlowHandlers {
@@ -117,6 +121,22 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
     },
     cancel(_get, set) {
       set({ [spec.key]: null } as Partial<GameState>);
+    },
+    darkPact(get, set) {
+      const s = get();
+      const p = pendingOf(s);
+      if (!p || !spec.rolled(p)) return;
+      if (!spec.failed(p)) return; // on ne pactise que pour relancer un Test RATÉ (LDB 19 l.16)
+      const actor = spec.actor(s, p);
+      if (!actor || actor.kind !== 'hero') return; // la Corruption ne suit que les héros
+      const patch = (spec.reresolve ?? spec.resolve)(s, p, actor);
+      if (!patch) return;
+      // « recevoir volontairement un Point de Corruption pour pouvoir relancer un Test,
+      // même si un deuxième jet a déjà été effectué » (l.41) — pas de drapeau `rerolled`,
+      // le Pacte reste disponible (chaque usage corrompt un peu plus : c'est sa limite).
+      const lines = gainCorruption(get, set, actor, 1);
+      for (const l of lines) get().log(l);
+      set({ [spec.key]: { ...p, ...patch }, ...touch(get()) } as Partial<GameState>);
     },
   };
 }

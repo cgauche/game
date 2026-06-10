@@ -21,12 +21,13 @@ import { HealModal } from './HealModal';
 import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
+import { CorruptionModal } from './CorruptionModal';
 
 /** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire (R2 du diagnostic). */
 export type ModalKey =
   | 'fateSave' | 'fumble' | 'deviation' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
   | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
-  | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test';
+  | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
 
 /** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
 export interface ModalPendings {
@@ -36,7 +37,7 @@ export interface ModalPendings {
   pendingDisengage?: unknown; pendingMountTarget?: unknown;
   pendingFrenzy?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
   pendingCast?: unknown; pendingReload?: unknown; pendingStateRecovery?: unknown;
-  pendingAttack?: unknown; pendingTest?: unknown;
+  pendingAttack?: unknown; pendingTest?: unknown; pendingCorruption?: unknown;
 }
 
 /**
@@ -75,6 +76,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingStateRecovery, 'stateRecovery'],
     [!!s.pendingAttack, 'attack'],
     [!!s.pendingTest, 'test'],
+    [!!s.pendingCorruption, 'corruption'],
   ];
   return order.find(([on]) => on)?.[1] ?? null;
 }
@@ -85,7 +87,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
-  attack: RollModal, test: TestModal,
+  attack: RollModal, test: TestModal, corruption: CorruptionModal,
 };
 
 /**

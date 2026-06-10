@@ -23,7 +23,9 @@ const PRIMITIVES = [
   // dans les specs `rollFlows.ts`, ne sont atteignables QUE par ces handlers (garantie structurelle).
   'FLOWS.',
 ];
-const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
+// `*DarkPact` : Sombre Pacte (LDB 19 l.41) — bouton de la modale ouverte, au même titre que la
+// Chance (« +1 Corruption pour relancer ») : un résolveur de modale, pas un jet en ligne.
+const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel|DarkPact)$/;
 // `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
 // Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
 // le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
@@ -32,7 +34,10 @@ const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel)$/;
 // `surgeryPass`/`surgeryBandage`/`surgeryStopBleed` sont des résolveurs de la modale de Chirurgie (Test
 // ÉTENDU, LDB 10 l.154) : leurs boutons (« Opérer une passe », « Bander », « Hémorragie ») tirent un jet
 // de Guérison et gardent la modale ouverte — ce sont des jets DE la modale ouverte, comme healRoll.
-const EXTRA_OK = new Set(['resolveTest', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat', 'advanceTime', 'surgeryPass', 'surgeryBandage', 'surgeryStopBleed']);
+// `resolveCorruption` est le résolveur (« Continuer ») de la modale d'exposition corruptrice — le
+// Test a déjà été lancé/relancé dans la modale ; le Test de Résistance du SEUIL (LDB 19 l.80) est
+// une conséquence subie, révélée au joueur (pendingReveals, kind 'mutation'), comme un Critique.
+const EXTRA_OK = new Set(['resolveTest', 'resolveCorruption', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat', 'advanceTime', 'surgeryPass', 'surgeryBandage', 'surgeryStopBleed']);
 // Dette temporaire (résolue au fil des tâches) — VIDÉE : tous les jets héros/conséquences sont en modale.
 const TODO = new Set<string>([]);
 

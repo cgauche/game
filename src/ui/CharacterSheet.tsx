@@ -6,7 +6,10 @@ import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
-import { careers, findSpell } from '../data';
+import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
+import { spellSupport } from '../engine/spellspec';
+import { spellSpecFor } from '../data/spellspecs';
+import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { LoadoutSection } from './LoadoutSection';
@@ -113,10 +116,23 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const spells = (hero.spells ?? [])
     .map((label) => findSpell(label))
     .filter((s): s is NonNullable<ReturnType<typeof findSpell>> => !!s);
-  if (!spells.length) return null;
+  // Lecture au grimoire (LDB 47 l.34) : sorts NON mémorisés de son Domaine, lançables à
+  // deux mains depuis le livre porté — au NI DOUBLÉ.
+  const grimoireSpells = carriedGrimoire(hero)
+    ? allSpells.filter((s) => canCastFromGrimoire(hero, s))
+    : [];
+  if (!spells.length && !grimoireSpells.length) return null;
   return (
     <div className="sc-block sheet-spells">
       <span className="mini-title">Sorts — incantation hors combat</span>
+      {(hero.sinPoints ?? 0) > 0 && (
+        <span
+          className="muted"
+          title="Points de Péché (LDB 40) : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
+        >
+          ⚖️ Péché : {hero.sinPoints}
+        </span>
+      )}
       <label className="spell-target">
         Cible :{' '}
         <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
@@ -130,11 +146,13 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
+          const support = spellSupport(spellSpecFor(sp), offensive);
           return (
-            <div className="spell-row" key={sp.label} title={sp.desc}>
+            <div className="spell-row" key={sp.label} title={sp.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : '')}>
               <span className="spell-name">
                 {sp.label}
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
+                {support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
@@ -159,6 +177,23 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             </div>
           );
         })}
+        {grimoireSpells.map((sp) => (
+          <div className="spell-row" key={`g-${sp.label}`} title={`${sp.desc}\n\nLecture au grimoire (LDB 47) : sort non mémorisé de votre Domaine — NI doublé, deux mains.`}>
+            <span className="spell-name">
+              📖 {sp.label}
+              {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
+            </span>
+            {isMagicMissile(sp) ? (
+              <span className="muted">en combat</span>
+            ) : (
+              <span className="spell-actions">
+                <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.label, targetId, true)}>
+                  📖 Lancer (grimoire)
+                </button>
+              </span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -307,10 +342,26 @@ function FicheBody({ hero }: { hero: Combatant }) {
         )}
       </div>
 
-      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0) && (
+      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
         <div className="sheet-afflictions">
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
+            {(hero.corruption ?? 0) > 0 && (
+              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption (LDB 19) : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
+                <span className="ir-name">🕯️ Corruption</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
+                </span>
+              </div>
+            )}
+            {(hero.mutations ?? []).map((m, i) => (
+              <div key={`m${i}`} className="inv-row" title={m.note} style={{ alignItems: 'center' }}>
+                <span className="ir-name">🧬 {m.label}</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
+                </span>
+              </div>
+            ))}
             {(hero.traumas ?? []).map((t, i) => (
               <div key={`t${i}`} className="inv-row" title={t.note} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🩼 {t.label}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
@@ -500,6 +551,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
   const buySkillAdvance = useGame((s) => s.buySkillAdvance);
   const buyTalent = useGame((s) => s.buyTalent);
   const designateCareerSlot = useGame((s) => s.designateCareerSlot);
+  const buySpell = useGame((s) => s.buySpell);
   const changeCareer = useGame((s) => s.changeCareer);
   const [target, setTarget] = useState('');
 
@@ -601,6 +653,37 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           ),
         )}
       </div>
+
+      {(() => {
+        // Sorts apprenables (LDB 46 « Mémoriser des Sorts » + Talents LDB 10) : visibles dès
+        // qu'un Talent de lanceur est possédé. Bénédictions du culte = incluses (0 PX) ;
+        // un sort du Chaos coûte AUSSI 1 Point de Corruption (l'achat l'applique).
+        const learnable = learnableSpells(hero);
+        if (!learnable.length) return null;
+        return (
+          <>
+            <div className="mini-title">Sorts — mémorisation ({learnable.length})</div>
+            <div className="adv-grid">
+              {learnable.map(({ spell, cost }) => {
+                const support = spellSupport(spellSpecFor(spell), isMagicMissile(spell));
+                return (
+                <div className="adv-row acquire" key={spell.label} title={spell.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : '')}>
+                  <span className="adv-name">
+                    {spell.label}{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
+                    <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
+                  </span>
+                  <span className="adv-meta" />
+                  <button className="btn small" disabled={cost > 0 && !afford(cost)} onClick={() => buySpell(hero.id, spell.label)}>
+                    {cost > 0 ? `Mémoriser · ${cost} PX` : 'Inclus au Talent'}
+                    {spell.type === 'Magie du Chaos' ? ' · +1 Corruption' : ''}
+                  </button>
+                </div>
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
 
       <div className="mini-title">Carrière</div>
       <div className="adv-career">

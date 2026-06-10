@@ -124,6 +124,27 @@ export interface ConditionInstance {
   value: number; // certains États s'empilent (ex. Hémorragique)
   /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
   sourceId?: string;
+  /** Durée en Rounds d'un État posé par un SORT (« 1 État Sonné qui dure 1d10 Rounds ») —
+   *  décrémenté en fin de Round, l'État se dissipe à 0. Un ajout NON temporisé du même État
+   *  efface la durée (l'État redevient régi par ses règles normales — on n'écourte jamais). */
+  roundsLeft?: number;
+}
+
+/** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
+ *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.58-138). Une seule des deux durées :
+ *  `roundsLeft` (échelle tactique) ou `untilTime` (minutes d'horloge `gameTime`). */
+export interface CastPenalty {
+  label: string;
+  /** Compétence visée ; 'all' = toute magie (Prière + Langue + Focalisation). */
+  skill: 'Prière' | 'Langue' | 'Focalisation' | 'all';
+  /** Modificateur (négatif) à la valeur de Test (« Langue maladroite −10 »). */
+  mod?: number;
+  /** Tests interdits (« Vous abusez de ma patience », « Propos ésotériques »…). */
+  blocked?: boolean;
+  /** « Pensez à vos actes » : tout Test de Prière réussi est plafonné à 0 DR. */
+  maxZeroDR?: boolean;
+  roundsLeft?: number;
+  untilTime?: number;
 }
 
 /**
@@ -139,6 +160,12 @@ export interface ActiveEffect {
   bonus: number;
   /** Rounds restants avant dissipation. */
   roundsLeft: number;
+  /** État RÉCURRENT (« la cible gagne 1 État X par Round ») : ré-appliqué à chaque fin de
+   *  Round tant que l'effet dure (sorts à État récurrent — specs curées). */
+  condPerRound?: { name: string; value: number };
+  /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
+   *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
+  apAll?: number;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une
@@ -298,8 +325,17 @@ export interface Combatant {
   activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
+  /** Points de Péché (LDB 40 l.30-36) — Bienheureux ayant violé les commandements de
+   *  son dieu. Octroyés par le MJ/l'auteur (Effet `giveSin`), jamais inventés ; pas de
+   *  maximum ; chaque jet de Colère des dieux en retire 1 (l.53). Persisté entre combats. */
+  sinPoints?: number;
   /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */
   activeEffects?: ActiveEffect[];
+  /** Pénalités/blocages d'incantation temporisés (contrecoups des tables d'Imparfaites/Colère,
+   *  LDB 46/40) : « Langue maladroite −10 », « pas de Test de Prière N Rounds », « DR de Prière
+   *  plafonné à 0 une semaine »… `roundsLeft` décrémenté en fin de Round (combat + entretien hors
+   *  combat) ; `untilTime` purgé par l'horloge (advanceTime). Persisté. */
+  castPenalties?: CastPenalty[];
   /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
   focus?: { spell: string; dr: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
@@ -324,6 +360,16 @@ export interface Combatant {
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  /** Points de Corruption (LDB 19) — dérive de l'âme vers le Chaos. Gagnés par expositions/
+   *  Sombres Pactes/contrecoups magiques ; au-delà de BFM+BE, chaque gain impose un Test de
+   *  Résistance ou MUTATION. Persisté. */
+  corruption?: number;
+  /** Mutations subies (LDB 19, Tableaux p.184-185) — DONNÉE persistée ; les effets (caracs
+   *  permanentes, Mouvement, PA naturels, mods de Tests, Traits) sont lus à la volée. */
+  mutations?: import('./corruption').Mutation[];
+  /** Damné (LDB 19 l.95) : plus de mutations physiques que BE ou mentales que BFM — l'âme
+   *  appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort, affiché « Damné »). */
+  damned?: boolean;
   /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou
    *  Exténué. Posé par l'Effet d'éditeur `inflictNightmares` (assigné par l'auteur, jamais inventé). */
   nightmares?: boolean;

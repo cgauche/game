@@ -22,7 +22,11 @@ export function charBonus(chars: Characteristics, key: CharKey): number {
  * p.220). Ex. +20, +10 et -10 sur la même Caractéristique → +20 - 10 = +10 net.
  */
 export function effectiveChar(c: Combatant, key: CharKey): number {
-  const base = c.characteristics[key];
+  let base = c.characteristics[key];
+  // Mutations de Corruption (LDB 19) : modifications PERMANENTES de la caractéristique
+  // (« +5 Force », « -10 Sociabilité »…) — s'ajoutent à la BASE, hors pool de non-cumul
+  // (un corps transformé n'est pas un bonus magique). Sommé inline (cycle d'import évité).
+  for (const m of c.mutations ?? []) base += m.charMods?.[key] ?? 0;
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
   mods.push(...traumaCharPenalties(c, key));
@@ -32,6 +36,17 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));
   return base + bestBonus + worstPenalty;
+}
+
+/**
+ * Points d'Armure EFFECTIFS à une localisation : armure portée/naturelle (`c.armour`,
+ * mutations comprises via recomputeLoadout) + PA TEMPORISÉS des effets magiques actifs
+ * (Armure Aethyrique « +1 PA à toutes les Localisations » — additifs, LDB 47).
+ */
+export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armour']): number {
+  let ap = c.armour[location] ?? 0;
+  for (const e of c.activeEffects ?? []) ap += e.apAll ?? 0;
+  return ap;
 }
 
 /**

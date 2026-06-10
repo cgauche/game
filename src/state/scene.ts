@@ -205,6 +205,22 @@ export type Effect =
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
+  /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
+   *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
+   *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
+   *  chaque jet de Colère en expie 1 (l.53). */
+  | { type: 'giveSin'; amount?: number; heroId?: string }
+  /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence physique)
+   *  ou de Calme (spirituelle) par MODALE ; Points de Corruption selon le niveau et le DR. Cible : héros
+   *  désigné, sinon le premier vivant. Au-delà de BFM+BE : Test de Résistance ou MUTATION. */
+  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill: 'Résistance' | 'Calme'; heroId?: string }
+  /** Points de Corruption DIRECTS (LDB 19) — contact d'un artefact maudit, Sombre Pacte scénarisé…
+   *  (sans Test ; pour l'exposition testée, utiliser `corruptionExposure`). */
+  | { type: 'giveCorruption'; amount?: number; heroId?: string }
+  /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
+   *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
+   *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
+  | { type: 'learnSpell'; spell: string; heroId?: string }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

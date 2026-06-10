@@ -18,17 +18,25 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, TestResult } from './tests';
-import { bonus, effectiveChar } from './characteristics';
+import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
+import { Formula, resolveFormula } from './ops';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
   label: string;
   type: string;
+  /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
+  subType?: string | null;
   cn: number | null;
   duration?: string;
   desc: string;
+}
+
+/** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
+export function hasTalent(c: Combatant, name: string): boolean {
+  return c.talents.some((t) => t.name === name && (t.times ?? 1) >= 1);
 }
 
 /** Branche d'incantation déduite du type de sort. */
@@ -56,9 +64,35 @@ export function isArcaneSpell(spell: SpellLike): boolean {
   return !PRAYER_TYPES.includes(spell.type) && spell.type !== 'Magie mineure';
 }
 
+/** La pénalité `p` vise-t-elle la compétence de magie `skill` ? */
+function penaltyMatches(p: { skill: string }, skill: 'Prière' | 'Langue' | 'Focalisation'): boolean {
+  return p.skill === 'all' || p.skill === skill;
+}
+
+/** Somme des modificateurs d'incantation actifs (contrecoups : « Langue maladroite −10 »…). */
+export function castPenaltyMod(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): number {
+  let m = 0;
+  for (const p of c.castPenalties ?? []) if (penaltyMatches(p, skill) && p.mod != null) m += p.mod;
+  return m;
+}
+
+/** Libellé du contrecoup qui INTERDIT les Tests de `skill`, ou null si rien ne bloque.
+ *  (Les pénalités expirées sont purgées par l'entretien — fin de Round / horloge.) */
+export function castBlockedBy(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): string | null {
+  return (c.castPenalties ?? []).find((p) => penaltyMatches(p, skill) && p.blocked)?.label ?? null;
+}
+
+/** « Pensez à vos actes » (Colère, LDB 40) : tout Test de Prière réussi plafonné à 0 DR. */
+export function prayerMaxZeroDR(c: Combatant): boolean {
+  return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'Prière') && p.maxZeroDR);
+}
+
 /**
  * Valeur d'un test d'incantation : Caractéristique de la compétence + avances de
- * celle-ci (si le personnage la possède), sinon la Caractéristique seule.
+ * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
+ * modulée par les contrecoups actifs (castPenalties) et, EN COMBAT, par
+ * l'Avantage (« Les Avantages s'appliquent aux Tests d'Incantation, pas aux
+ * Tests de Focalisation », LDB 46 l.176).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
   const charKey = skillName === 'Prière' ? 'Soc' : skillName === 'Focalisation' ? 'FM' : 'Int';
@@ -66,7 +100,51 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
   const sk = c.skills.find(
     (s) => s.name === skillName && (spec == null || s.spec === spec),
   );
-  return base + (sk?.advances ?? 0);
+  const penalty = skillName === 'Prière' || skillName === 'Langue' || skillName === 'Focalisation'
+    ? castPenaltyMod(c, skillName)
+    : 0;
+  const advantage = skillName === 'Focalisation' ? 0 : 10 * (c.advantage ?? 0);
+  return base + (sk?.advances ?? 0) + penalty + advantage;
+}
+
+/**
+ * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
+ * Focalisation par PA (net) sur la Localisation la mieux protégée par une ARMURE
+ * PORTÉE (les PA naturels d'une mutation ne sont pas une armure). Exemptions
+ * (l.188) : Magie des Arcanes (Métal) ignore les armures métalliques, (Bêtes)
+ * ignore les armures de cuir.
+ */
+export function armourCastDRPenalty(c: Combatant): number {
+  // Le talent spécialisé est stocké « Magie des Arcanes (Métal) » (nom complet).
+  const ignoreMetal = c.talents.some((t) => /^Magie des Arcanes \(M[ée]tal\)$/.test(t.name));
+  const ignoreLeather = c.talents.some((t) => /^Magie des Arcanes \(Bêtes?\)$/.test(t.name));
+  let maxPA = 0;
+  for (const it of c.items ?? []) {
+    if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
+    const name = `${it.name} ${it.subType ?? ''}`.toLowerCase();
+    const metal = /maille|plate|métal|metal|gambison.*métal/.test(name);
+    const leather = /cuir/.test(name);
+    if (metal && ignoreMetal) continue;
+    if (leather && ignoreLeather) continue;
+    maxPA = Math.max(maxPA, Math.max(0, it.pa - (it.damageTaken ?? 0)));
+  }
+  return maxPA;
+}
+
+/** Spécialisation de Focalisation requise par un sort : son Domaine (`subType`),
+ *  sinon aucune (Sorts d'Arcane communs — n'importe quel Vent les alimente). */
+export function focusSpecOf(spell: SpellLike): string | undefined {
+  return spell.subType ?? undefined;
+}
+
+/** Compétence Focalisation utilisable pour CE sort : spécialisation du Vent
+ *  correspondante (LDB 46 — Focalisation est spécialisée par Domaine). Une
+ *  compétence SANS spécialisation (données historiques) reste acceptée. */
+export function focusSkillFor(c: Combatant, spell: SpellLike) {
+  const spec = focusSpecOf(spell);
+  return c.skills.find(
+    (s) => s.name === 'Focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
+  );
 }
 
 /**
@@ -99,19 +177,28 @@ export function parseSpellDamage(
 }
 
 /**
- * Soin apporté par un sort/prière : « N Points de Blessure » (littéral) ou
- * « Guérir (Bonus de X) Blessures » (paramétré, ex. Caresse de Rhya = Bonus de
- * Sociabilité). Retourne le nombre de Blessures rendues, ou null si aucun soin.
+ * Soin apporté par un sort/prière, au niveau FORMULE : « N Points de Blessure »
+ * (littéral) ou « Guérir (Bonus de X) Blessures » (paramétré, ex. Caresse de
+ * Rhya = Bonus de Sociabilité — résolu contre le lanceur à l'application).
  */
-export function parseHeal(desc: string, caster: Combatant): number | null {
+export function parseHealFormula(desc: string): Formula | null {
   const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
   if (lit) return parseInt(lit[1], 10);
   const bon = desc.match(/Gu[ée]ri(?:r|ssez)?[^.]*?\(Bonus d[e'’]\s*([^)]+)\)\s*Blessure/i);
   if (bon) {
     const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
+    if (key) return { bonusOf: key };
   }
   return null;
+}
+
+/**
+ * Soin apporté par un sort/prière : formule résolue contre le lanceur.
+ * Retourne le nombre de Blessures rendues, ou null si aucun soin.
+ */
+export function parseHeal(desc: string, caster: Combatant): number | null {
+  const f = parseHealFormula(desc);
+  return f == null ? null : resolveFormula(f, caster);
 }
 
 /**
@@ -154,6 +241,72 @@ export function isMagicMissile(spell: SpellLike): boolean {
   return /projectile magique/i.test(spell.desc);
 }
 
+/**
+ * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus
+ * à l'intérieur de ce DIAMÈTRE ». Diamètre en mètres depuis le champ Cible
+ * (« ZdE (Bonus de Force Mentale) mètres », « ZdE (4) mètres »…), résolu contre le
+ * lanceur. Null si pas de ZdE chiffrable (« ZdE (Spécial) », « un lieu unique »…).
+ */
+export function zdeDiameterMeters(target: number | string | null | undefined, caster: Combatant): number | null {
+  if (typeof target !== 'string') return null;
+  // « ZdE (…) mètres » OU diamètre nu « (Bonus de X) mètres » (Explosion, Dôme… — l'extraction
+  // a parfois perdu le marqueur ZdE) ; jamais les cibles dénombrées (« (BInt) alliés »், « Vous »…).
+  if (!/ZdE/i.test(target) && !/mètres?\s*$/i.test(target.trim())) return null;
+  if (/alli[ée]s|voilier|lieu unique|sp[ée]cial/i.test(target)) return null;
+  const bon = target.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
+  if (bon) {
+    const key = CHAR_BY_LABEL[bon[1].trim()];
+    if (key) return bonus(effectiveChar(caster, key));
+  }
+  const lit = target.match(/\((\d+)\)|(\d+)\s*mètres?/i);
+  if (lit) return parseInt(lit[1] ?? lit[2], 10);
+  return null;
+}
+
+/** Rayon de la ZdE en CASES (grille 2 m/case) : diamètre/2 mètres → ÷2 m/case,
+ *  arrondi à l'entier inférieur (min 0 = la seule case du centre). */
+export function zdeRadiusTiles(target: number | string | null | undefined, caster: Combatant): number | null {
+  const diam = zdeDiameterMeters(target, caster);
+  return diam == null ? null : Math.max(0, Math.floor(diam / 2 / 2));
+}
+
+/**
+ * Portée d'un sort en CASES (2 m/case) : « 6 mètres », « (Force Mentale) mètres »
+ * (caractéristique pleine), « (Bonus de X) mètres », « Vous » → 0, « Contact »/
+ * « Toucher » → 1. Null = non chiffrable (pas de garde-fou, comportement historique).
+ */
+export function spellRangeTiles(range: string | null | undefined, caster: Combatant): number | null {
+  if (!range) return null;
+  if (/^vous$/i.test(range.trim())) return 0;
+  if (/contact|toucher/i.test(range)) return 1;
+  const bon = range.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
+  if (bon) {
+    const key = CHAR_BY_LABEL[bon[1].trim()];
+    if (key) return Math.max(1, Math.floor(bonus(effectiveChar(caster, key)) / 2));
+  }
+  const full = range.match(/\(([^)]+)\)\s*mètres?/i);
+  if (full) {
+    const key = CHAR_BY_LABEL[full[1].trim()];
+    if (key) return Math.max(1, Math.floor(effectiveChar(caster, key) / 2));
+  }
+  const lit = range.match(/(\d+)\s*mètres?/i);
+  if (lit) return Math.max(1, Math.floor(parseInt(lit[1], 10) / 2));
+  return null;
+}
+
+/**
+ * Péché et Colère Divine (LDB 40 l.44-45) : « Chaque fois que vous effectuez un
+ * Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel
+ * de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière
+ * est réussi. » La règle ne mord que si l'on A péché (section « Il est risqué de
+ * faire appel à votre divinité quand vous avez agi de façon contraire à sa
+ * volonté ») : à 0 Péché, aucun déclenchement. Le dé des unités d'un 100 (00) est 0.
+ */
+export function prayerWrathTriggered(roll: number, sinPoints: number): boolean {
+  if (sinPoints <= 0) return false;
+  return roll % 10 <= sinPoints;
+}
+
 /** Durée d'un sort exprimée en Rounds (« 6 rounds »), sinon null. */
 export function parseDurationRounds(duration?: string): number | null {
   if (!duration) return null;
@@ -162,22 +315,28 @@ export function parseDurationRounds(duration?: string): number | null {
 }
 
 /**
- * Durée d'un buff en Rounds : « N rounds » (littéral) ou « (Bonus de X) Rounds »
- * (formule, résolue via le lanceur — ex. +20 Endurance pendant BFM rounds). Retourne
+ * Durée d'un sort en Rounds, au niveau FORMULE : « N rounds » (littéral) ou
+ * « (Bonus de X) Rounds » (résolu contre le lanceur à l'application). Retourne
  * null pour les durées hors-rounds (minutes/heures/jours/Instantanée) : l'appelant
  * NE DOIT PAS inventer un nombre de rounds dans ce cas (Livre de base : la durée est
  * celle indiquée par le sort, aucun défaut d'1 round).
  */
-export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
+export function durationRoundsFormula(duration: string | undefined): Formula | null {
   const lit = parseDurationRounds(duration);
   if (lit != null) return lit;
   if (!duration) return null;
   const f = duration.match(/\(Bonus d[e'’]\s*([^)]+)\)\s*Rounds?/i);
   if (f) {
     const key = CHAR_BY_LABEL[f[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
+    if (key) return { bonusOf: key };
   }
   return null;
+}
+
+/** Durée d'un buff en Rounds, résolue contre le lanceur (cf. durationRoundsFormula). */
+export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
+  const f = durationRoundsFormula(duration);
+  return f == null ? null : resolveFormula(f, caster);
 }
 
 export interface CastResult {
@@ -219,7 +378,10 @@ export function resolveCasting(
   }
   const value = castingValue(caster, info.skill, info.spec);
   const t = rollTest(value, difficulty, rng);
-  return evaluateCasting(caster, spell, t, focusedNI0);
+  // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
+  // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
+  const pen = armourCastDRPenalty(caster);
+  return evaluateCasting(caster, spell, pen ? { ...t, sl: t.sl - pen } : t, focusedNI0);
 }
 
 /**
@@ -233,6 +395,11 @@ export function evaluateCasting(
   focusedNI0 = false,
 ): CastResult {
   const info = castInfo(spell);
+  // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
+  // ne peut pas obtenir plus de 0 DR pendant la durée du contrecoup.
+  if (info.skill === 'Prière' && t.success && t.sl > 0 && prayerMaxZeroDR(caster)) {
+    t = { ...t, sl: 0 };
+  }
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const cast = t.success && (!info.requireNI || t.sl >= ni);
   const isCritical = t.isDouble && t.success;
@@ -284,7 +451,7 @@ export function evaluateMissile(
   const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'E'));
-  const ap = spellDmg?.ignorePA ? 0 : target.armour[loc] ?? 0;
+  const ap = spellDmg?.ignorePA ? 0 : effectiveArmourAt(target, loc); // PA portés + temporisés (Armure Aethyrique)
   const woundsLost = Math.max(1, damage - (tb + ap));
   const defeated = target.wounds.current - woundsLost <= 0;
   const mitLabel =
@@ -338,21 +505,30 @@ export interface FocusResult {
   log: string;
 }
 
-/** Un Round de Test étendu de Focalisation (FM + spécialisation). */
+/** Un Round de Test étendu de Focalisation (FM + spécialisation PAR VENT — le
+ *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.180-199). */
 export function resolveFocus(
   caster: Combatant,
   spell: SpellLike,
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
 ): FocusResult {
-  if (!knowsCastingSkill(caster, 'Focalisation')) {
-    return { dr: 0, isCritical: false, isFumble: false, roll: 0, log: `${caster.name} ne maîtrise pas Focalisation.` };
+  const sk = focusSkillFor(caster, spell);
+  if (!sk) {
+    const spec = focusSpecOf(spell);
+    return {
+      dr: 0, isCritical: false, isFumble: false, roll: 0,
+      log: `${caster.name} ne maîtrise pas Focalisation${spec ? ` (${spec})` : ''}.`,
+    };
   }
-  const value = castingValue(caster, 'Focalisation');
+  const value = castingValue(caster, 'Focalisation', sk.spec);
   const t = rollTest(value, difficulty, rng);
-  const dr = t.success ? Math.max(0, t.sl) : 0;
+  // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
+  const dr = t.success ? Math.max(0, t.sl - armourCastDRPenalty(caster)) : 0;
   const isCritical = t.isDouble && t.success;
-  const isFumble = t.isDouble && !t.success;
+  // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
+  // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.
+  const isFumble = !t.success && (t.isDouble || t.roll % 10 === 0);
   const log = t.success
     ? `${caster.name} focalise ${spell.label} (+${dr} DR).`
     : `${caster.name} échoue à focaliser ${spell.label}.`;

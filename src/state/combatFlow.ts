@@ -4,7 +4,7 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState, RevealEntry } from './store';
-import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
+import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { TEMPO } from './tempo';
@@ -43,13 +43,17 @@ import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './f
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
-  parseHeal,
-  parseConditionEffect,
-  parseCharBuffs,
-  buffDurationRounds,
+  prayerWrathTriggered,
+  castBlockedBy,
+  hasTalent,
+  evaluateMissile,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
+import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
+import { spellSpecFor } from '../data/spellspecs';
+import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
@@ -250,6 +254,55 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           return { party: s.party.map((h, i) => (i === target ? { ...h, nightmares: true } : h)) };
         });
         if (who) get().log(`${who} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+        break;
+      }
+      case 'giveSin': {
+        // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité.
+        // Cible : héros désigné, sinon le premier sachant Prier (le Péché vise un Bienheureux).
+        const amount = Math.max(1, e.amount ?? 1);
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
+          if (idx < 0) idx = s.party.findIndex((h) => h.skills.some((sk) => sk.name === 'Prière' && sk.advances >= 1));
+          if (idx < 0) idx = 0;
+          who = s.party[idx].name;
+          return { party: s.party.map((h, i) => (i === idx ? { ...h, sinPoints: (h.sinPoints ?? 0) + amount } : h)) };
+        });
+        if (who) get().log(`${who} a péché contre son dieu : +${amount} Point(s) de Péché.`);
+        break;
+      }
+      case 'corruptionExposure': {
+        // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
+        // (Lancer → Chance → Appliquer) ; le gain dépendra du niveau et du DR.
+        const hero = corruptionTarget(get(), e.heroId);
+        if (hero) set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill } });
+        break;
+      }
+      case 'giveCorruption': {
+        // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
+        const hero = corruptionTarget(get(), e.heroId);
+        if (hero) {
+          const lines = gainCorruption(get, set, hero, Math.max(1, e.amount ?? 1));
+          for (const l of lines) get().log(l);
+          set({ party: [...get().party] });
+        }
+        break;
+      }
+      case 'learnSpell': {
+        // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
+        // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
+        const sp = findSpell(e.spell);
+        if (!sp) break;
+        let who = '';
+        set((s: GameState) => {
+          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
+          if (idx < 0) idx = s.party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.label));
+          if (idx < 0) return {};
+          who = s.party[idx].name;
+          return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.label) ? { ...h, spells: [...(h.spells ?? []), sp.label] } : h)) };
+        });
+        if (who) get().log(`${who} apprend ${sp.label}.`);
         break;
       }
       case 'inflictDisease': {
@@ -1038,6 +1091,9 @@ export function applyAttackResult(
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
   if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
+  // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+  // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
+  if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
   if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
   set({ battle: { ...battle, acted: true, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
@@ -1048,6 +1104,29 @@ export function applyAttackResult(
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
   return false; // non suspendu : application complète terminée
+}
+
+/**
+ * Interruption de Focalisation (LDB 46 l.193-194) : « Si vous êtes perturbé par
+ * quelque chose — bruits forts, Dégâts subis… — vous devrez réussir un Test de
+ * Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre
+ * tous les DR accumulés au Test étendu de Focalisation. » Jet SUBI auto-résolu,
+ * révélé au joueur pour un héros (kind 'calme' — précédent : Calme de Fuite).
+ */
+export function checkFocusInterruption(get: () => GameState, set: any, target: Combatant): string[] {
+  if (!target.focus || target.focus.dr <= 0) return [];
+  const t = rollTest(testValue(target, 'Calme'), 'difficile', battleRng());
+  const lines = [
+    `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
+  ];
+  if (!t.success) {
+    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${target.focus.spell}.`);
+    target.focus = undefined;
+    lines.push(...applyMiscast(get, set, target, 'mineure'));
+  }
+  if (target.kind === 'hero')
+    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id });
+  return lines;
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
@@ -1688,49 +1767,35 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   return false;
 }
 
-/** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
- *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
-export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
-  target.activeEffects = target.activeEffects ?? [];
-  // On ne dédoublonne qu'entre effets de MÊME signe (bonus vs pénalité séparés) :
-  // un bonus et une pénalité sur la même caractéristique s'additionnent (effectiveChar).
-  const sameSign = (b: number) => b >= 0 === effect.bonus >= 0;
-  const idx = target.activeEffects.findIndex((e) => e.char === effect.char && effect.char != null && sameSign(e.bonus));
-  if (idx >= 0) {
-    const cur = target.activeEffects[idx].bonus;
-    const better = effect.bonus >= 0 ? effect.bonus >= cur : effect.bonus <= cur;
-    if (better) target.activeEffects[idx] = effect;
-  } else {
-    target.activeEffects.push(effect);
-  }
-  // Les Blessures dérivent de F/E/FM (LDB 85) → un buff de ces caractéristiques recale les PB max + courants.
-  if (effect.char === 'F' || effect.char === 'E' || effect.char === 'FM') refreshWounds(target);
-}
-
-/** Rounds attribués à un buff dont la durée (minutes/heures/jours) dépasse le combat. */
-export const COMBAT_PERSIST = 9999;
+// applyActiveEffect / COMBAT_PERSIST vivent désormais dans le moteur (engine/ops) —
+// partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).
 
 /**
  * Tire sur la table d'Incantation Imparfaite / Colère des dieux et applique au
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
+export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity): string[] {
+  // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
+  const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
   const m = rollMiscast(severity, battleRng(), sinPoints);
   const lines = [m.log];
-  for (const op of m.ops) {
-    if (op.reduceToZero) {
-      caster.wounds.current = 0;
-      addCondition(caster, 'Inconscient');
-      lines.push(`${caster.name} : Blessures réduites à 0 (Inconscient).`);
-    } else if (op.wounds != null) {
-      loseWounds(caster, op.wounds); // miscast : perte de PB centralisée (−Avantage + À Terre à 0)
-      lines.push(`${caster.name} subit ${op.wounds} Blessure(s) (ignorant BE et PA).`);
-    } else if (op.condition) {
-      addCondition(caster, op.condition.name, op.condition.value);
-      lines.push(`${caster.name} reçoit ${op.condition.value} État ${op.condition.name}.`);
-    }
+  // « Après le lancer et avoir appliqué le résultat, réduisez vos Points de Péché
+  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53).
+  if (severity === 'colere' && sinPoints > 0) {
+    caster.sinPoints = sinPoints - 1;
+    lines.push(`${caster.name} : 1 Point de Péché expié (reste ${caster.sinPoints}).`);
   }
+  // Ops de la table (États, Blessures ignorant BE+PA, Tests imbriqués, Corruption,
+  // pénalités/blocages d'incantation temporisés, réduction à 0) — applicateur unique.
+  lines.push(
+    ...applyOps(caster, m.ops, {
+      rng: battleRng(),
+      label: m.name,
+      now: get().gameTime,
+      onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+    }),
+  );
   // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
   if (caster.kind === 'hero')
     pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id });
@@ -1795,17 +1860,42 @@ export function castSpell(
   caster: Combatant,
   target: Combatant,
   label: string,
+  fromGrimoire = false,
 ) {
   const spell = findSpell(label);
   if (!spell) {
     get().log(`Sort « ${label} » introuvable.`);
     return;
   }
+  // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
+  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue');
+  if (blocked) {
+    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
+    return;
+  }
+  // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
+  if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
+    get().log(`${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
+    return;
+  }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
   set({
-    pendingCast: { casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell), focused: focusedNI0, result: null },
+    pendingCast: {
+      casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell),
+      focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
+    },
   });
 }
+
+/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
+export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
+  const spell = findSpell(pc.spellLabel);
+  if (!spell || !pc.grimoire || spell.cn == null) return spell;
+  return { ...spell, cn: spell.cn * 2 };
+}
+
+/** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
+export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
 /** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
 export function applyCast(
@@ -1817,21 +1907,92 @@ export function applyCast(
   res: CastResult & Partial<MissileResult>,
   missile: boolean,
   focusedNI0: boolean,
+  critChoice?: CastCritChoice,
+  extras?: { durationMult?: number; extraTargets?: Combatant[] },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
+  const durationMult = Math.max(1, extras?.durationMult ?? 1);
+  const extraTargets = extras?.extraTargets ?? [];
+
+  // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
+  // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
+  // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
+  const isSort = !castInfoIsPrayer(spell.type);
+  const crit = !!res.isCritical && isSort;
+  let choice = critChoice;
+  if (crit) {
+    // Défaut (IA / non choisi) : repêcher un DR insuffisant (Puissance totale), sinon
+    // Blessure Critique pour un Projectile, sinon Force inéluctable.
+    choice ??= !res.cast ? 'puissance' : missile ? 'critique' : 'ineluctable';
+    if (choice === 'puissance' && !res.cast) {
+      res = missile
+        ? evaluateMissile(caster, target, spell, { ...res, cast: true })
+        : { ...res, cast: true, log: `${caster.name} lance ${spell.label} (Puissance totale — Critique).` };
+    }
+  }
   const logLines: string[] = [res.log];
+  if (crit) {
+    logLines.push(
+      choice === 'critique'
+        ? 'Incantation Critique : le Projectile inflige une Blessure Critique.'
+        : choice === 'puissance'
+          ? 'Puissance totale : le sort est lancé quels que soient NI et DR (mais peut être Dissipé).'
+          : 'Force inéluctable : le sort ne peut pas être Dissipé.',
+    );
+    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    else logLines.push('Diction instinctive : aucune Imparfaite sur le double réussi.');
+  }
+  // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
+  // MÊME Domaine ce Round, le lanceur gagne +1 Avantage (le Vent converge). Sorts seulement.
+  if (battle && isSort && spell.subType && res.cast) {
+    const marks = battle.domainCasts ?? [];
+    if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
+      caster.advantage += 1;
+      caster.gainedAdvThisRound = true;
+      logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name} (LDB 46).`);
+    }
+    battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.subType! }))];
+  }
 
   if (missile) {
-    if (res.hit && res.woundsLost) {
-      const currentBefore = target.wounds.current;
-      const overkill = res.woundsLost - currentBefore;
-      target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
-      if (res.isCritical || overkill > 0) {
-        const lethal = applyCriticalToTarget(target, res.location ?? 'corps', !!res.isCritical, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
-        if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore);
-      } else if (target.wounds.current <= 0) {
-        applyZeroWounds(target);
+    // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
+    const missileSpec = spellSpecFor(spell);
+    const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
+      if (!mres.hit || !mres.woundsLost) return;
+      const currentBefore = t.wounds.current;
+      const overkill = mres.woundsLost - currentBefore;
+      t.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
+      // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
+      const critWound = crit && choice === 'critique';
+      if (critWound || overkill > 0) {
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label });
+        if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
+      } else if (t.wounds.current <= 0) {
+        applyZeroWounds(t);
       }
+      // Ops d'une spec CURÉE de Projectile (« Grands feux d'U'Zhul » : +2 En flammes, À Terre ;
+      // « Drain » : soigne le lanceur) — le repli regex n'en émet jamais ici (iso-POC : la
+      // branche missile du POC n'appliquait aucun effet parsé).
+      if (missileSpec.curated && missileSpec.ops.length) {
+        const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
+        logLines.push(...applyOps(t, missileSpec.ops, {
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime,
+          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
+        }));
+      }
+      // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
+      logLines.push(...checkFocusInterruption(get, set, t));
+      if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
+    };
+    applyMissileHit(target, res);
+    // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
+    for (const t2 of extraTargets) {
+      if (!res.cast) break;
+      const r2 = evaluateMissile(caster, t2, spell, res);
+      logLines.push(r2.log);
+      applyMissileHit(t2, r2);
+      if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
     }
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
@@ -1842,42 +2003,29 @@ export function applyCast(
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
     }
     bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
-    if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
-      const heal = parseHeal(spell.desc, caster);
-      const buffs = parseCharBuffs(spell.desc);
-      const condEff = parseConditionEffect(spell.desc);
-      if (heal != null) {
-        target.wounds.current = Math.min(target.wounds.max, target.wounds.current + heal);
-        logLines.push(`${target.name} regagne ${heal} Blessure(s).`);
-      } else if (buffs.length) {
-        const rounds = buffDurationRounds(spell.duration, caster);
-        // Durée hors-rounds (minutes/heures/jours) : elle dépasse l'échelle tactique
-        // → l'effet persiste pour ce combat. On n'invente PAS un nombre de rounds.
-        const roundsLeft = rounds ?? COMBAT_PERSIST;
-        for (const b of buffs) {
-          applyActiveEffect(target, { label: spell.label, char: b.char, bonus: b.bonus, roundsLeft });
-        }
-        const parts = buffs.map((b) => `${b.bonus >= 0 ? '+' : ''}${b.bonus} ${CHAR_LABELS[b.char]}`).join(', ');
+      // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
+      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours) : elle dépasse
+      // l'échelle tactique → l'effet persiste pour ce combat (COMBAT_PERSIST),
+      // on n'invente PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
+      const spec = spellSpecFor(spell);
+      const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
+      const rounds = baseRounds != null ? baseRounds * durationMult : null;
+      if (durationMult > 1 && baseRounds != null) logLines.push(`Surincantation : durée ×${durationMult} (${rounds} Rounds).`);
+      for (const t of [target, ...extraTargets]) {
+        if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
         logLines.push(
-          `${target.name} : ${spell.label} (${parts}, ${rounds != null ? rounds + ' rounds' : 'durée hors combat'}).`,
+          ...applyOps(t, spec.ops, {
+            rng: battleRng(),
+            caster,
+            label: spell.label,
+            now: get().gameTime,
+            defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+            onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
+          }),
         );
-      } else if (condEff) {
-        if (condEff.op === 'remove') {
-          const name = condEff.name ?? target.conditions[0]?.name;
-          if (name) {
-            removeCondition(target, name, condEff.value);
-            logLines.push(`${target.name} retire ${condEff.value} État ${name}.`);
-          } else {
-            logLines.push(`${target.name} n'a aucun État à retirer.`);
-          }
-        } else {
-          addCondition(target, condEff.name!, condEff.value);
-          logLines.push(`${target.name} reçoit ${condEff.value} État ${condEff.name}.`);
-        }
       }
-      // Sinon : l'effet du sort est purement narratif (déjà journalisé).
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
       logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
@@ -1893,6 +2041,14 @@ export function applyCast(
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!) } }));
     }
     if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
+  }
+
+  // Péché et Colère Divine (LDB 40 l.44-45) : à CHAQUE Test de Prière, si le dé des
+  // unités ≤ Points de Péché → Colère des dieux, MÊME si le Test est réussi (la
+  // Maladresse, elle, a déjà déclenché la sienne ci-dessus).
+  if (castInfoIsPrayer(spell.type) && !res.isFumble && res.roll > 0 && prayerWrathTriggered(res.roll, caster.sinPoints ?? 0)) {
+    logLines.push(`Le dé des unités (${res.roll % 10}) trahit les Péchés de ${caster.name} (${caster.sinPoints}) — Colère des dieux !`);
+    logLines.push(...applyMiscast(get, set, caster, 'colere'));
   }
 
   // Le sort focalisé est consommé après le lancement.
@@ -2092,6 +2248,8 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   decayEngagement(battle.combatants);
   // Fumée (Souffle (Fumée)) : un Round de blocage en moins ; les nuages épuisés se dissipent.
   if (battle.smoke?.length) battle.smoke = battle.smoke.map((s) => ({ ...s, rounds: s.rounds - 1 })).filter((s) => s.rounds > 0);
+  // « Avantages et Magie » : la convergence de Domaine ne vaut que DANS le Round (LDB 46 l.176).
+  if (battle.domainCasts?.length) battle.domainCasts = undefined;
   // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;

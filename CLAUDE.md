@@ -101,6 +101,9 @@ dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 Source/                     Livres WFRP4 en .md + all-data.json (source de vérité ; PDFs gitignorés)
 scripts/build-data.ts       Pipeline Source/all-data.json -> src/data (filtré LDB/ADE1/ADE2)
 src/data/                   NOTRE base générée (NE PAS éditer à la main) + index.ts (accès typé), pregens.ts
+                            EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
+                            mutations.ts (Tableaux de Corruption LDB 19), spellspecs/ (specs de sorts
+                            CURÉES par famille — repli regex iso-POC pour les sorts non curés)
 src/engine/                 Règles WFRP4, PUR + testé :
   types.ts                    Caractéristiques, Combatant, Weapon, ItemInstance, Difficulty…
   tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
@@ -116,7 +119,13 @@ src/engine/                 Règles WFRP4, PUR + testé :
   advancement.ts              coûts PX, complétion de Niveau, changement de carrière (validé)
   items.ts                    inventaire/équipement : itemFromTrapping, recomputeLoadout, encombrement
   skills.ts                   valeur d'un test de compétence (partyBest) hors combat
-  conditions.ts               États
+  conditions.ts               États (+ durées d'États de sort, États récurrents)
+  ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps
+  spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
+  magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
+  miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
+  corruption.ts               Corruption & mutations (LDB 19 : expositions, seuil, limites → damné)
+  grimoire.ts                 apprentissage/mémorisation des sorts (coûts par Talent) + lecture au livre
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
@@ -125,6 +134,7 @@ src/state/
   rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« un jet = une modale ») +
                               specs des 11 flux (trample/run/focus/psych/frenzy/reload/recover/test/
                               appraise/bargain/heal) — un nouveau jet = 1 spec + 1 xConfirm
+  corruptionFlow.ts           gainCorruption (seuil → mutation → damnation, révélation 🧬) + cibles
   pendings.ts                 types Pending* (ré-exportés par store.ts)
   partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
   merchantFlow.ts             marchand : réassort, panier, achat/vente/réparation, Marchandage, Évaluation

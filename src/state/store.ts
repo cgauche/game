@@ -12,7 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
-  finishPlayerAction, restPartyOvernight,
+  effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
@@ -36,7 +36,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -57,6 +57,10 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
+import { gainCorruption } from './corruptionFlow';
+import { corruptionGain } from '../engine/corruption';
+import { spellSpecFor } from '../data/spellspecs';
+import { resolveFormula } from '../engine/ops';
 import * as partyFlow from './partyFlow';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
@@ -64,7 +68,7 @@ import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingDefense,
-  PendingDisengage, PendingCast, PendingHeal,
+  PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -130,6 +134,9 @@ export interface BattleState {
   /** Nuages de fumée transitoires (Souffle (Fumée), Traits LDB) : chaque case bloque la Ligne de
    *  Vue ; `rounds` = Rounds restants (décrémenté à chaque frontière de Round, retiré à 0). */
   smoke?: { x: number; y: number; rounds: number }[];
+  /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
+   *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
+  domainCasts?: { targetId: string; domain: string }[];
   /** Instantané positionnel pris au PREMIER segment de Mouvement du Tour (R6/LOT 6) : permet
    *  d'ANNULER tout le déplacement tant qu'aucune Action n'a été prise (`cancelMove`). Restaure
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
@@ -178,6 +185,8 @@ export interface GameState {
   inventory: string[];
   money: Money;
   pendingTest: PendingTest | null;
+  /** Exposition à une Influence corruptrice en cours (LDB 19) — Test différé par modale. */
+  pendingCorruption: PendingCorruption | null;
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
@@ -257,6 +266,8 @@ export interface GameState {
   buyTalent: (heroId: string, talentName: string) => void;
   /** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante (LDB 09 l.38). */
   designateCareerSlot: (heroId: string, slotKey: string, label: string) => void;
+  /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
+  buySpell: (heroId: string, label: string) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -316,7 +327,15 @@ export interface GameState {
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
   testBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté (même déjà relancé). */
+  testDarkPact: () => void;
   resolveTest: () => void;
+  /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
+  corruptionRoll: () => void;
+  corruptionReroll: () => void;
+  corruptionBonusSL: () => void;
+  corruptionDarkPact: () => void;
+  resolveCorruption: () => void;
   closeDocument: () => void;
 
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
@@ -389,10 +408,18 @@ export interface GameState {
   castRoll: () => void;
   castReroll: () => void;
   castBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
+  castDarkPact: () => void;
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
+  castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
+  /** Surincantation (LDB 47 l.28-31) : alloue +2 DR du surplus à un axe (Durée / Cible). */
+  castAllocOvercast: (axis: 'duration' | 'targets') => void;
+  /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
+  castToggleExtraTarget: (id: string) => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
-  oocCastSpell: (casterId: string, label: string, targetId: string) => void;
+  oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt) => void;
   battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
@@ -432,6 +459,8 @@ export interface GameState {
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'attaque ratée (même déjà relancée). */
+  attackDarkPact: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
   /** Balayage (Frappe Mortelle, LDB 14 l.12) : enchaîne l'attaque sur une cible adjacente (ouvre une
@@ -602,6 +631,7 @@ export const useGame = create<GameState>((set, get) => ({
   inventory: [],
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
+  pendingCorruption: null,
   pendingBargain: null,
   pendingAppraise: null,
   pendingAttack: null,
@@ -647,6 +677,17 @@ export const useGame = create<GameState>((set, get) => ({
   buySkillAdvance: (heroId, skillName, spec) => partyFlow.buySkillAdvance(get, set, heroId, skillName, spec),
   buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
   designateCareerSlot: (heroId, slotKey, label) => partyFlow.designateCareerSlot(get, set, heroId, slotKey, label),
+  /** Mémorise un sort (PX selon le Talent, LDB 46/10) ; un sort du Chaos corrompt (+1, seuil → mutation). */
+  buySpell: (heroId, label) => {
+    const r = partyFlow.buySpell(get, set, heroId, label);
+    if (r.ok && r.chaos) {
+      const hero = get().party.find((h) => h.id === heroId);
+      if (hero) {
+        for (const l of gainCorruption(get, set, hero, 1)) get().log(l);
+        set({ party: [...get().party] });
+      }
+    }
+  },
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),
@@ -710,6 +751,7 @@ export const useGame = create<GameState>((set, get) => ({
       dialogue: null,
       battle: null,
       pendingTest: null,
+      pendingCorruption: null,
       pendingAttack: null,
       pendingReload: null,
       pendingStateRecovery: null,
@@ -1198,7 +1240,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell) return;
     const res = pc.missile
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
@@ -1212,7 +1254,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
     const res = pc.missile
@@ -1226,10 +1268,26 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
     const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
+    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
+  },
+  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une incantation dont le
+   *  jet propre est raté — même après la relance de Chance, répétable. */
+  castDarkPact: () => {
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
+    if (pc.result.roll > 0 && pc.result.roll <= pc.result.target) return; // jet propre réussi → rien à pactiser
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+    if (!caster || caster.kind !== 'hero' || !target || !spell) return;
+    for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
+    const res = pc.missile
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
     set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   castConfirm: () => {
@@ -1237,14 +1295,55 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     set({ pendingCast: null });
-    if (caster && target && spell) applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused);
+    if (caster && target && spell) {
+      // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
+      // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
+      const extras = (pc.extraTargetIds ?? [])
+        .map((id) => actorIn(get(), id))
+        .filter((x): x is NonNullable<typeof x> => !!x)
+        .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
+      applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
+        durationMult: 1 + (pc.overcast?.duration ?? 0),
+        extraTargets: extras,
+      });
+    }
+  },
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
+  castSetCritChoice: (choice) => {
+    const pc = get().pendingCast;
+    if (!pc || !pc.result?.isCritical) return;
+    set({ pendingCast: { ...pc, critChoice: choice } });
+  },
+  /** Surincantation : chaque allocation consomme +2 DR du surplus — Sorts : DR − NI (LDB 47
+   *  l.28-31) ; Bénédictions/Miracles : DR entier (LDB 41/42 « Degrés de Réussite » — Durée
+   *  +durée initiale, Cibles +1). */
+  castAllocOvercast: (axis) => {
+    const pc = get().pendingCast;
+    const spell = pc && findSpell(pc.spellLabel);
+    if (!pc || !pc.result?.cast || !spell) return;
+    const oc = pc.overcast ?? { duration: 0, targets: 0 };
+    const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
+    const budget = Math.floor(Math.max(0, pc.result.sl - ni) / 2);
+    if (oc.duration + oc.targets >= budget) return; // surplus épuisé
+    set({ pendingCast: { ...pc, overcast: { ...oc, [axis]: oc[axis] + 1 } } });
+  },
+  castToggleExtraTarget: (id) => {
+    const pc = get().pendingCast;
+    if (!pc || !pc.result?.cast) return;
+    const cur = pc.extraTargetIds ?? [];
+    const next = cur.includes(id)
+      ? cur.filter((x) => x !== id)
+      : cur.length < (pc.overcast?.targets ?? 0) && id !== pc.targetId
+        ? [...cur, id]
+        : cur;
+    set({ pendingCast: { ...pc, extraTargetIds: next } });
   },
   castCancel: () => set({ pendingCast: null }),
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
-  oocCastSpell: (casterId, label, targetId) => {
+  oocCastSpell: (casterId, label, targetId, fromGrimoire) => {
     const { battle, party } = get();
     if (battle) return; // en combat : l'incantation passe par l'action de combat
     const caster = party.find((c) => c.id === casterId);
@@ -1255,7 +1354,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     const target = party.find((c) => c.id === targetId) ?? caster;
-    castSpell(get, set, caster, target, label); // pose `pendingCast` (missile:false, focused selon caster.focus)
+    castSpell(get, set, caster, target, label, fromGrimoire); // pose `pendingCast` (missile:false, focused selon caster.focus)
   },
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
@@ -1267,6 +1366,12 @@ export const useGame = create<GameState>((set, get) => ({
     const spell = findSpell(label);
     if (!spell || !isArcaneSpell(spell)) {
       get().log('Ce sort ne peut pas être focalisé.');
+      return;
+    }
+    // Contrecoup bloquant la Focalisation (LDB 46/40), s'il y en a un d'actif.
+    const fblocked = castBlockedBy(active, 'Focalisation');
+    if (fblocked) {
+      get().log(`${active.name} ne peut pas focaliser : ${fblocked}.`);
       return;
     }
     // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
@@ -1288,8 +1393,19 @@ export const useGame = create<GameState>((set, get) => ({
     const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
     caster.focus = { spell: pf.spellLabel, dr: prev + res.dr };
     const ni = spell.cn ?? 0;
-    const logLines = [res.log, caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`];
-    // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.191).
+    const logLines = [res.log];
+    // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+    // QUEL QUE SOIT le DR accumulé — mais tant de magie si vite concentrée provoque un
+    // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique.
+    if (res.isCritical) {
+      caster.focus = { spell: pf.spellLabel, dr: Math.max(caster.focus.dr, ni) };
+      logLines.push(`${caster.name} — Focalisation CRITIQUE : ${spell.label} est lançable au prochain Round (NI 0) !`);
+      if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+      else logLines.push(`Harmonisation aethyrique : le contrecoup est maîtrisé (pas d'Imparfaite).`);
+    }
+    logLines.push(caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`);
+    // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
+    // tout double OU tout résultat en 0 au-delà de la Compétence).
     if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
     finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
   },
@@ -1303,6 +1419,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !spell) return;
     if (!isArcaneSpell(spell)) {
       get().log('Ce sort ne peut pas être focalisé.');
+      return;
+    }
+    const fblocked = castBlockedBy(caster, 'Focalisation');
+    if (fblocked) {
+      get().log(`${caster.name} ne peut pas focaliser : ${fblocked}.`);
       return;
     }
     set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
@@ -1400,6 +1521,38 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Sort à ZONE D'EFFET (LDB 47 l.44) : en mode incantation, un clic-CASE cible la zone —
+    // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
+    if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {
+      const spell = findSpell(battle.selectedSpell);
+      // Rayon : spec curée (zone décrite dans la desc — Feu de l'âme…) prioritaire sur le champ Cible.
+      const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
+      const radius = spell
+        ? specRadius != null
+          ? Math.max(0, Math.floor(resolveFormula(specRadius, active) / 2))
+          : zdeRadiusTiles(spell.target, active)
+        : null;
+      if (spell && radius != null) {
+        const range = spellRangeTiles(spell.range, active);
+        if (range != null && active.pos && chebyshev(active.pos, pt) > range) {
+          get().log(`${spell.label} : zone hors de portée (${range} cases).`);
+          return;
+        }
+        const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
+        if (!inZone.length) {
+          get().log(`${spell.label} : personne dans la zone.`);
+          return;
+        }
+        set({
+          pendingCast: {
+            casterId: active.id, targetId: inZone[0].id, spellLabel: spell.label,
+            missile: isMagicMissile(spell), focused: active.focus?.spell === spell.label && active.focus.dr >= (spell.cn ?? 0),
+            result: null, zone: { center: { ...pt }, radius }, extraTargetIds: inZone.slice(1).map((c) => c.id),
+          },
+        });
+        return;
+      }
+    }
     if (battle.action === 'move' && canMove(battle, active)) {
       const k = `${pt.x},${pt.y}`;
       if (!battle.reachable.has(k)) return;
@@ -1945,6 +2098,20 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
   },
+  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une attaque dont le jet
+   *  propre est raté — même après la relance de Chance, répétable (chaque usage corrompt). */
+  attackDarkPact: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result) return;
+    if (pa.dualSecond) return; // jet imposé (d100 inversé) — pas de relance possible
+    if (pa.result.attackerDetail?.success) return; // on ne pactise que sur un Test RATÉ
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || attacker.kind !== 'hero' || !target) return;
+    for (const l of gainCorruption(get, set, attacker, 1)) get().log(l);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
+    if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id }, battle: { ...get().battle! } });
+  },
   attackConfirm: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -2403,7 +2570,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc || !pc.result) return;
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
     caster.resilience = (caster.resilience ?? 0) - 1;
     const ni = pc.focused ? 0 : spell.cn ?? 0;
@@ -2504,6 +2671,29 @@ export const useGame = create<GameState>((set, get) => ({
   /** Chance : relance (LDB Destin) / « +1 DR » (LDB ch.17 l.26), cf. spec `test` de rollFlows. */
   testReroll: () => FLOWS.test.reroll(get, set),
   testBonusSL: () => FLOWS.test.bonusSL(get, set),
+  testDarkPact: () => FLOWS.test.darkPact(get, set),
+
+  /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
+  corruptionRoll: () => FLOWS.corruption.roll(get, set),
+  corruptionReroll: () => FLOWS.corruption.reroll(get, set),
+  corruptionBonusSL: () => FLOWS.corruption.bonusSL(get, set),
+  corruptionDarkPact: () => FLOWS.corruption.darkPact(get, set),
+  /** Acquitte l'exposition : Points de Corruption selon niveau + DR (puis seuil → mutation). */
+  resolveCorruption: () => {
+    const pc = get().pendingCorruption;
+    if (!pc || pc.roll == null) return;
+    set({ pendingCorruption: null });
+    const hero = actorIn(get(), pc.heroId);
+    if (!hero) return;
+    const gain = corruptionGain(pc.level, !!pc.success, pc.sl ?? 0);
+    if (gain <= 0) {
+      get().log(`${hero.name} repousse l'Influence corruptrice (${pc.skill} ${pc.roll}/${pc.target}).`);
+      return;
+    }
+    const lines = gainCorruption(get, set, hero, gain);
+    for (const l of lines) get().log(l);
+    set({ ...touchActors(get()) });
+  },
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {
@@ -2543,6 +2733,17 @@ export const useGame = create<GameState>((set, get) => ({
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
       }
     }
+    // Contrecoups d'incantation à durée d'HORLOGE (minutes/jours — Drain de puissance,
+    // « Pensez à vos actes »…) : purge à l'échéance (LDB 46/40).
+    const now = get().gameTime;
+    const expiredLog: string[] = [];
+    for (const h of get().party) {
+      const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
+      if (!exp.length) continue;
+      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
+      h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
+    }
+    if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => restPartyOvernight(get, set, days),

@@ -700,15 +700,15 @@ describe('Magie — Incantations Imparfaites & Colère des dieux', () => {
       }
     }
   });
-  it('les effets mécaniques (États / Blessures) sont structurés', () => {
+  it('les effets mécaniques (États / Blessures) sont structurés en GameOps', () => {
     // Balaye assez de graines pour observer au moins une entrée à effet.
     let sawCondition = false;
     let sawWounds = false;
     for (let seed = 0; seed < 200 && !(sawCondition && sawWounds); seed++) {
       const r = rollMiscast('majeure', makeRNG(seed));
       for (const op of r.ops) {
-        if (op.condition) sawCondition = true;
-        if (op.wounds != null) sawWounds = op.wounds >= 1;
+        if (op.op === 'condition') sawCondition = true;
+        if (op.op === 'wounds') sawWounds = true;
       }
     }
     expect(sawCondition).toBe(true);
@@ -719,7 +719,7 @@ describe('Magie — Incantations Imparfaites & Colère des dieux', () => {
     let sawReduce = false;
     for (let seed = 0; seed < 50 && !sawReduce; seed++) {
       const r = rollMiscast('colere', makeRNG(seed), 10); // +100 → jet 101-200
-      if (r.ops.some((o) => o.reduceToZero)) sawReduce = true;
+      if (r.ops.some((o) => o.op === 'reduceToZero')) sawReduce = true;
     }
     expect(sawReduce).toBe(true);
   });
