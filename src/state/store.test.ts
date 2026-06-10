@@ -785,7 +785,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.combatants.find((c) => c.id === E.id)!.engagedWith).toContain(H.id);
   });
 
-  it('Charge : se ruer au contact depuis 2 cases donne +2 Avantage et impose l’attaque (LDB 15-Dépl l.74-77)', () => {
+  it('Charge : se ruer au contact depuis 2 cases donne +1 Avantage (strict l.77) et impose l’attaque', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(7);
@@ -805,7 +805,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().battleClickEntity(E.id);
     st = useGame.getState();
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
-    expect(Ha.advantage).toBe(2); // chargé de 2 cases (M4, seuil 2) → +2
+    expect(Ha.advantage).toBe(1); // chargé de 2 cases (M4, seuil 2) → +1 (strict l.77)
     expect(mh(Ha.pos!, E.pos!)).toBe(1); // arrivé au contact
     expect(st.pendingAttack?.fromCharge).toBe(true);
     expect(st.battle!.action).toBe('attack'); // l'attaque doit suivre (l.75)

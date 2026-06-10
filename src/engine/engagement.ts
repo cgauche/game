@@ -84,19 +84,15 @@ export function decayEngagement(all: Combatant[]): void {
 }
 
 /**
- * Bonus d'Avantage d'une Charge, en CASES (distance manhattan départ→cible AVANT déplacement).
- * +1 base (LDB 13-Combat l.102) ; +1 additionnel si la cible était à « au moins une distance,
- * en mètres, égale à votre caractéristique de Mouvement » (15-Dépl l.77). 1 case = 2 m (l.55),
- * donc M mètres = M/2 cases → seuil = ceil(M/2) cases. Portée de Course = 2×Marche = 2M cases
- * (Tableau des Mouvements l.61-72). Hors de portée de Course, ou départ non distant, → 0.
+ * Bonus d'Avantage d'une Charge, en CASES (distance chebyshev départ→cible AVANT déplacement).
+ * Lecture STRICTE (décision utilisateur 2026-06-10) : +1 UNIQUEMENT si la cible était « au moins à
+ * une distance, en mètres, égale à votre caractéristique de Mouvement » (LDB 15-Dépl l.77), dans la
+ * portée de Course. 1 case = 2 m (l.55) → seuil = ceil(M/2) cases ; Course = 2M cases (Tableau des
+ * Mouvements l.61-72). La charge ARRIVE sur une case ADJACENTE à la cible : la case d'arrivée est à
+ * 1 de moins que la cible, donc une charge valide va jusqu'à une distance-cible de 2M+1.
  */
-export function chargeAdvantage(movementCases: number, distFromCases: number): 0 | 1 | 2 {
+export function chargeAdvantage(movementCases: number, distFromCases: number): 0 | 1 {
   const M = movementCases;
-  const courseTiles = M * 2; // Course = 2M cases
-  const farThreshold = Math.ceil(M / 2); // M mètres = M/2 cases, arrondi supérieur (« au moins »)
-  // La charge ARRIVE sur une case ADJACENTE à la cible : la case d'arrivée est à 1 de moins
-  // que la cible, donc une charge valide va jusqu'à une distance-cible de 2M+1 (arrivée à 2M,
-  // dans la portée de Course). Au-delà, aucune case d'arrivée n'est atteignable → 0.
-  if (distFromCases < 1 || distFromCases > courseTiles + 1) return 0;
-  return distFromCases >= farThreshold ? 2 : 1;
+  if (distFromCases < 1 || distFromCases > M * 2 + 1) return 0;
+  return distFromCases >= Math.ceil(M / 2) ? 1 : 0;
 }

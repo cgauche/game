@@ -1725,10 +1725,10 @@ export const useGame = create<GameState>((set, get) => ({
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      active.advantage += adv; // +1/+2 « en fonçant » (l.77,102), AVANT le jet (profite au toucher)
-      active.gainedAdvThisRound = true;
+      active.advantage += adv; // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
+      if (adv > 0) active.gainedAdvThisRound = true;
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
-      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name} (+${adv} Avantage).`, active.id, target.id)] } });
+      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${adv ? ` (+${adv} Avantage)` : ''}.`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
     }

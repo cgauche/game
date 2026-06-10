@@ -61,22 +61,21 @@ describe('Engagé — pose / levée (LDB 13-Combat l.174-175)', () => {
   });
 });
 
-describe('chargeAdvantage — +1 base, +1 si de loin (LDB 15-Dépl l.74-77 ; 1 case = 2 m)', () => {
-  it('M=4 (Course 8, seuil ceil(2)=2) : table de vérité', () => {
+describe('chargeAdvantage — +1 UNIQUEMENT si cible à ≥ M mètres (LDB 15-Dépl l.77 ; 1 case = 2 m)', () => {
+  it('M=4 : seuil ceil(4/2)=2 cases ; portée Course 2M=8 (arrivée adjacente → cible jusqu’à 9)', () => {
     expect(chargeAdvantage(4, 0)).toBe(0); // déjà au contact, pas de charge
-    expect(chargeAdvantage(4, 1)).toBe(1); // contact direct → +1
-    expect(chargeAdvantage(4, 2)).toBe(2); // ≥ seuil → +2
-    expect(chargeAdvantage(4, 8)).toBe(2); // pleine portée de Course → +2
-    expect(chargeAdvantage(4, 9)).toBe(2); // 2M+1 : case d'arrivée (à 2M=8) encore atteignable → +2
+    expect(chargeAdvantage(4, 1)).toBe(0); // contact direct : on n'a pas « foncé » → rien (l.77)
+    expect(chargeAdvantage(4, 2)).toBe(1); // ≥ seuil → +1
+    expect(chargeAdvantage(4, 8)).toBe(1); // pleine portée de Course → +1
+    expect(chargeAdvantage(4, 9)).toBe(1); // 2M+1 : case d'arrivée (à 2M=8) encore atteignable → +1
     expect(chargeAdvantage(4, 10)).toBe(0); // arrivée hors de portée de Course → 0
   });
-  it('M=3 (Course 6, seuil ceil(1.5)=2) et M=5 (Course 10, seuil ceil(2.5)=3)', () => {
-    expect(chargeAdvantage(3, 1)).toBe(1);
-    expect(chargeAdvantage(3, 2)).toBe(2);
-    expect(chargeAdvantage(3, 6)).toBe(2);
-    expect(chargeAdvantage(3, 7)).toBe(2); // 2M+1 : arrivée à 2M=6 → encore +2
+  it('M impair / autres valeurs', () => {
+    expect(chargeAdvantage(3, 1)).toBe(0);
+    expect(chargeAdvantage(3, 2)).toBe(1); // seuil ceil(3/2)=2
+    expect(chargeAdvantage(3, 7)).toBe(1); // 2M+1
     expect(chargeAdvantage(3, 8)).toBe(0);
-    expect(chargeAdvantage(5, 2)).toBe(1); // seuil 3 → dist 2 reste +1
-    expect(chargeAdvantage(5, 3)).toBe(2);
+    expect(chargeAdvantage(5, 2)).toBe(0); // seuil 3 → dist 2 : rien
+    expect(chargeAdvantage(5, 3)).toBe(1);
   });
 });
