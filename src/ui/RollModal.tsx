@@ -38,6 +38,7 @@ export function RollModal() {
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
+  const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
   // « Frisson » du lancer (R3) : beat de roulement PUREMENT cosmétique (état UI-local, RNG seedé intact —
   // le jet réel n'a lieu qu'à la fin du beat). Honore prefers-reduced-motion.
   const [rolling, setRolling] = useState(false);
@@ -205,6 +206,35 @@ export function RollModal() {
               event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
               combatants={battle.combatants}
             />
+            {pa.forced && res.attackerDetail && (() => {
+              // LDB 17 l.73 « vous choisissez le résultat » : plus haut double réussi (→ Coup Critique).
+              const maxRoll = Math.min(99, res.attackerDetail!.target);
+              const bestDouble = Math.floor(maxRoll / 11) * 11;
+              return (
+                <div className="rm-loc">
+                  <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>
+                  <div className="rm-loc-grid">
+                    <button className={`btn small ${res.attackerRoll === 1 ? 'btn-primary' : ''}`} title="DR maximum" onClick={() => setForcedRoll(1)}>
+                      01 · DR max
+                    </button>
+                    {bestDouble >= 11 && (
+                      <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique (LDB 17 l.75)" onClick={() => setForcedRoll(bestDouble)}>
+                        {String(bestDouble).padStart(2, '0')} · Critique
+                      </button>
+                    )}
+                    <input
+                      className="rm-die-input"
+                      type="number"
+                      min={1}
+                      max={maxRoll}
+                      value={res.attackerRoll}
+                      onChange={(e) => setForcedRoll(Number(e.target.value))}
+                      title={`Choisir librement la valeur du dé (1 à ${maxRoll})`}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
             {res.critical && pa.forced && (
               <div className="rm-loc">
                 {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}

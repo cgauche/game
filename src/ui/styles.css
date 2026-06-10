@@ -994,6 +994,18 @@ textarea:focus {
   gap: 6px;
   margin-top: 6px;
 }
+/* Saisie libre de la valeur du dé d'un succès forcé (« Je ne faillirai pas ! », LDB 17 l.73). */
+.rm-die-input {
+  width: 100%;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line, #555);
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
 .rm-pen {
   color: var(--gold);
   font-style: normal;

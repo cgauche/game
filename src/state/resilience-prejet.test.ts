@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 
 /**
- * Résilience « Je ne faillirai pas ! » = AVANT le jet uniquement (LDB 17 l.73, mode principal
- * « au lieu de lancer les dés » ; choix maison : on retire la concession après-échec).
+ * Résilience « Je ne faillirai pas ! » = AVANT le jet (LDB 17 l.73, mode principal « au lieu de
+ * lancer les dés ») ET après un Test échoué (« Vous pouvez même faire ce choix après un Test qui
+ * a échoué ») — les DEUX modes sont RAW et testés ici.
  */
 function setPendingTest(over: Partial<any> = {}) {
   useGame.setState({

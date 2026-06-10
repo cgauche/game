@@ -37,7 +37,7 @@ import {
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile } from '../engine/magic';
-import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
+import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
@@ -424,6 +424,10 @@ export interface GameState {
   attackSetHeldGround: (v: boolean) => void;
   /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
+  /** « Je ne faillirai pas ! » (LDB 17 l.73 : « vous choisissez le résultat ») : choisit la VALEUR du dé
+   *  d'un succès forcé (un double ≤ cible → Coup Critique, comme l'exemple Salundra l.75) et re-dérive
+   *  l'attaque. Refusé si la valeur ne serait pas une réussite. */
+  attackSetForcedRoll: (roll: number) => void;
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
@@ -2378,6 +2382,33 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // `forced` : sur un Coup Critique, le joueur pourra CHOISIR la localisation (RAW-2, LDB 17 l.73).
     set({ pendingAttack: { ...pa, result: res, forced: true }, battle: { ...battle } });
+  },
+  /** « vous choisissez le résultat » (LDB 17 l.73) : après le force, le joueur peut poser la valeur du
+   *  dé (ex. 44 → Coup Critique, cf. l'exemple Salundra l.75 ; 01 → DR max ; X9 nourrit Percutante).
+   *  Même Test → ne re-dépense PAS de Résilience ; l'attaque est re-dérivée avec le dé choisi. */
+  attackSetForcedRoll: (roll) => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.forced || !pa.result?.attackerDetail) return;
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || !target) return;
+    const ad = pa.result.attackerDetail;
+    const chosen = Math.floor(roll);
+    if (chosen < 1 || chosen > Math.min(99, ad.target)) return; // doit RESTER une réussite (jamais 00)
+    const defSL = pa.result.defenderDetail?.sl ?? 0;
+    // Test opposé : « vous l'emportez avec au moins DR +1 » (même plancher que le force initial).
+    const sl = Math.max(evaluateTest(chosen, ad.target).sl, defSL + 1, 1);
+    const atk2: TestResult = { roll: chosen, target: ad.target, success: true, sl, isDouble: isDoubleRoll(chosen) };
+    const weapon = firedWeapon(attacker, target, pa.weaponUid);
+    let res: AttackResult;
+    if (pa.result.defenderDetail) {
+      const dd = pa.result.defenderDetail;
+      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
+      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
+    } else {
+      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
+    }
+    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
   },
   defenseForceSuccess: () => {
     const { battle, pendingDefense: pd } = get();
