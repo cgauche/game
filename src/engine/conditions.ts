@@ -280,9 +280,12 @@ export function isOutOfAction(c: Combatant): boolean {
 }
 
 /** Condition de mort lente (LDB 18-Traumatisme l.48-49) : Inconscient + 0 PB + (Blessures
- *  critiques > Bonus d'Endurance), et pas déjà mort/éjecté. */
+ *  critiques > Bonus d'Endurance), et pas déjà mort/éjecté. Suffocation (LDB 18 l.425) :
+ *  « au bout d'un nombre de Rounds égal à votre BE, vous mourez » — compteur à 0 = mort
+ *  (même canal → un héros à Destin est suspendu, pendingFateSave). */
 export function inDeathCondition(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
+  if (c.suffocationCountdown != null && c.suffocationCountdown <= 0) return true;
   const be = bonus(effectiveChar(c, 'E'));
   return hasCondition(c, 'Inconscient') && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
 }

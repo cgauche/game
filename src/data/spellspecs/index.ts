@@ -8,14 +8,16 @@ import { SpellSpec, fallbackSpec } from '../../engine/spellspec';
 import { SpellLike } from '../../engine/magic';
 import { BENEDICTIONS } from './benedictions';
 import { DOMAINE_FEU } from './domaine-feu';
+import { DOMAINE_OMBRES } from './domaine-ombres';
+import { DOMAINE_METAL } from './domaine-metal';
 import { MAGIE_MINEURE } from './magie-mineure';
 import { ARCANES_COMMUNS } from './arcanes-communs';
 import { MIRACLES_SIGMAR } from './miracles-sigmar';
 import { MIRACLES_SHALLYA } from './miracles-shallya';
 
 const ALL: SpellSpec[] = [
-  ...BENEDICTIONS, ...DOMAINE_FEU, ...MAGIE_MINEURE, ...ARCANES_COMMUNS,
-  ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
+  ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...MAGIE_MINEURE,
+  ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
 ];
 
 /** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */

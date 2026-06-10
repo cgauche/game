@@ -82,6 +82,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
+import { suffocationTick } from '../engine/suffocation';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
@@ -3098,6 +3099,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
       brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
       for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) suffocationTick(c).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce

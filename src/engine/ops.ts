@@ -155,6 +155,11 @@ export type GameOp =
    *  dans les (BSoc) mètres subissent -20 aux Tests de Langue (Magick) » — aura portée par la cible
    *  (le prêtre), rayon élargi « +BSoc m par +2 DR » via `perSL.radiusFormula`. */
   | { op: 'castWard'; radius: Formula; perSL?: { every: number; radiusFormula: Formula } }
+  /** « Soumis aux règles de la Suffocation » (LDB 18 l.424-425 — Ombres étrangleuses,
+   *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
+  | { op: 'suffocate' }
+  /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
+  | { op: 'noBreath' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -493,6 +498,28 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           suppressedPsych: suppressed,
         });
         lines.push(`${target.name} : Traits psychologiques apaisés pour la durée (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'suffocate': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          suffocates: true,
+        });
+        lines.push(`${target.name} suffoque (${ctx.label ?? 'sort'}) — −1 PB par Round (LDB 18).`);
+        break;
+      }
+      case 'noBreath': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          noBreath: true,
+        });
+        lines.push(`${target.name} n'a plus besoin de respirer (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

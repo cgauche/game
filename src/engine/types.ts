@@ -203,6 +203,11 @@ export interface ActiveEffect {
   /** Aura « N'écoutez point la Sorcière » (LDB 42) : tout SORT (Langue (Magick)) ciblant quelqu'un
    *  à `radiusMeters` du porteur subit −20 au Test d'incantation. */
   castWard?: { radiusMeters: number };
+  /** Le porteur SUFFOQUE (Noyade et Suffocation, LDB 18 l.424-425 — Ombres étrangleuses,
+   *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
+  suffocates?: boolean;
+  /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
+  noBreath?: boolean;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une
@@ -438,6 +443,9 @@ export interface Combatant {
   actLastNextRound?: boolean;
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
+  /** Suffocation (LDB 18 l.425) : Rounds restants avant la MORT une fois Inconscient à 0 PB
+   *  en suffoquant (posé à BE, décrémenté par Round de suffocation continue ; 0 → mort). */
+  suffocationCountdown?: number;
   /** A déjà bénéficié d'un soin de Blessures (Guérison) cette rencontre (LDB 09-Compétences l.233).
    *  Réinitialisé au début de chaque combat (startCombat). N'affecte PAS l'arrêt d'Hémorragie. */
   soinRencontreUtilise?: boolean;

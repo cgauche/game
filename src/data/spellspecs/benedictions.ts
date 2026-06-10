@@ -97,7 +97,8 @@ export const BENEDICTIONS: SpellSpec[] = [
   },
   {
     label: 'Bénédiction de Souffle',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Souffle : la cible n’a pas besoin de respirer (ignore la suffocation).' }],
+    // Drapeau noBreath : immunité aux règles de Suffocation (LDB 18 l.424-425) pour la durée.
+    ops: [{ op: 'noBreath' }],
     durationRounds: 6,
     curated: true,
     source: '« Votre cible n’a pas besoin de respirer et ignore les règles de suffocation »',
