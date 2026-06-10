@@ -72,9 +72,12 @@ export function corruptionGain(level: ExposureLevel, success: boolean, dr: numbe
   return success ? (dr <= 1 ? 2 : dr <= 3 ? 1 : 0) : 3;
 }
 
-/** Seuil « Corrompu » (l.80) : plus de Points de Corruption que BFM + BE. */
+/** Seuil « Corrompu » (l.80) : plus de Points de Corruption que BFM + BE. Talent Âme pure (LDB 10) :
+ *  « Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme
+ *  pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu » → seuil +niveau. */
 export function corruptionThresholdExceeded(c: Combatant): boolean {
-  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E'));
+  const amePure = (c.talents ?? []).filter((t) => /^âme pure/i.test(t.name)).reduce((a, t) => a + (t.times ?? 1), 0);
+  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + amePure;
 }
 
 // ---------------------------------------------------------------------------

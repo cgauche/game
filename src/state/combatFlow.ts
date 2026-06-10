@@ -58,6 +58,7 @@ import {
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
@@ -2348,6 +2349,24 @@ export function finalizeBattle(get: () => GameState, set: any): void {
     c.woundedByInfected = false;
     c.woundedByRodent = false;
     c.diseaseExposure = undefined;
+  }
+  // Trait Corruption (Degré) (LDB 85 p.338 → LDB 19) : avoir AFFRONTÉ une créature corrompue est une
+  // EXPOSITION du Degré indiqué — Test de Résistance Intermédiaire auto-résolu en fin de combat,
+  // gain de Points selon le niveau et le DR (corruptionGain), puis seuil/mutation via gainCorruption.
+  const degrees = battle.combatants
+    .filter((c) => c.kind !== 'hero')
+    .flatMap((c) => (c.traits ?? []).map((t) => t.match(/^Corruption\s*\((Mineure|Modérée|Majeure)\)/i)?.[1]).filter(Boolean));
+  if (degrees.length) {
+    const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
+    const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
+    const level = worst.toLowerCase() === 'majeure' ? 'majeure' : worst.toLowerCase() === 'modérée' ? 'moderee' : 'mineure';
+    for (const c of battle.combatants) {
+      if (c.kind !== 'hero' || c.dead) continue;
+      const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+      const gain = corruptionGain(level, t.success, Math.max(0, t.sl));
+      infectLog.push(`${c.name} — exposition à la Corruption (${worst}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
+      if (gain > 0) infectLog.push(...gainCorruption(get, set, c, gain));
+    }
   }
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');

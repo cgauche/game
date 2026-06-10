@@ -58,7 +58,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
-import { gainCorruption } from './corruptionFlow';
+import { gainCorruption, resolveRenounce } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { spellSpecFor } from '../data/spellspecs';
 import { resolveFormula } from '../engine/ops';
@@ -68,7 +68,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
-  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingDefense,
+  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
@@ -199,6 +199,8 @@ export interface GameState {
   pendingDeviation: PendingDeviation | null;
   /** Piège-lame (LDB 62 l.292-294) : choix du héros défenseur — Coup Critique ou piéger la lame. */
   pendingBladeTrap: PendingBladeTrap | null;
+  /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
+  pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
   /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
   pendingInteract: string | null;
@@ -549,6 +551,8 @@ export interface GameState {
   deviationApply: (deviate: boolean) => void;
   /** Piège-lame (LDB 62 l.292-294) : résout le choix (true = piéger la lame, false = Coup Critique). */
   bladeTrapResolve: (trap: boolean) => void;
+  /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
+  renounceResolve: (renounce: boolean) => void;
   /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
    *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
   battleMount: () => void;
@@ -652,6 +656,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDeviation: null,
   pendingBladeTrap: null,
+  pendingRenounce: null,
   pendingMountTarget: null,
   pendingDisengage: null,
   pendingInteract: null,
@@ -2437,6 +2442,7 @@ export const useGame = create<GameState>((set, get) => ({
   // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
   // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
   bladeTrapResolve: (trap: boolean) => resolveBladeTrap(get, set, trap),
+  renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
   deviationApply: (deviate: boolean) => {
     const { battle, pendingDeviation: pdv } = get();
     if (!battle || !pdv) return;

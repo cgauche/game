@@ -2,9 +2,12 @@
  * Corruption & mutations — flux store (LDB 19, moteur pur : engine/corruption).
  *
  *  - `gainCorruption` : ajoute des Points, puis applique le SEUIL (l.80) — au-delà
- *    de BFM+BE, Test de Résistance Intermédiaire (auto-résolu, révélé au joueur) ;
- *    échec → MUTATION (−BFM Points, d100 corps/esprit par espèce, tirage sur le
- *    Tableau physique/mentale) ; puis LIMITES (l.95) → damné (hors-jeu définitif).
+ *    de BFM+BE (+ niveau d'Âme pure, LDB 10), Test de Résistance Intermédiaire (auto-résolu,
+ *    révélé au joueur) ; échec → MUTATION (−BFM Points, d100 corps/esprit par espèce, tirage
+ *    sur le Tableau physique/mentale) ; puis LIMITES (l.95) → damné (hors-jeu définitif).
+ *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
+ *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
+ *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
  *  - Sombre Pacte (l.16/41) : +1 Point volontaire pour RELANCER un Test raté, même
  *    après une relance de Chance — branché dans les modales de jet (ChanceButtons).
  *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) et
@@ -26,6 +29,7 @@ import { rollMutation } from '../data/mutations';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
+import { evLines } from './combatLog';
 
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
@@ -39,7 +43,7 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
   hero.corruption = (hero.corruption ?? 0) + n;
   lines.push(`${hero.name} : +${n} Point${n > 1 ? 's' : ''} de Corruption (total ${hero.corruption}).`);
 
-  // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE, Test de Résistance
+  // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE (+ Âme pure), Test de Résistance
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
   if (!corruptionThresholdExceeded(hero)) return lines;
   const t = rollTest(testValue(hero, 'Résistance'), 'intermediaire', rng);
@@ -50,10 +54,24 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
     return lines;
   }
 
-  // Dissolution du corps et de l'esprit (l.82-91) : −BFM Points, puis d100 corps/esprit
-  // selon l'espèce, puis tirage sur le Tableau de Corruption physique/mentale.
+  // « Je te renie ! » (LDB 17 l.71) : un héros avec de la Résilience peut refuser la mutation —
+  // choix par modale ; la mutation (applyMutation) n'est appliquée qu'à la résolution.
+  if (hero.kind === 'hero' && (hero.resilience ?? 0) > 0) {
+    lines.push(`${hero.name} échoue à contenir sa Corruption (Résistance ${t.roll}/${t.target}) — la mutation menace…`);
+    set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target } });
+    return lines;
+  }
+  lines.push(...applyMutation(set, hero, { roll: t.roll, target: t.target }));
+  return lines;
+}
+
+/** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
+ *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
+export function applyMutation(set: any, hero: Combatant, test?: { roll: number; target: number }): string[] {
+  const rng = battleRng();
+  const lines: string[] = [];
   const lost = bonus(effectiveChar(hero, 'FM'));
-  hero.corruption = Math.max(0, hero.corruption - lost);
+  hero.corruption = Math.max(0, (hero.corruption ?? 0) - lost);
   const kindRoll = d100(rng);
   const kind = mutationKindFor(hero.species, kindRoll);
   const m = rollMutation(kind, rng);
@@ -62,7 +80,7 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
   if (hero.items?.length) recomputeLoadout(hero);
   refreshWounds(hero);
   lines.push(
-    `${hero.name} MUTE (Résistance ${t.roll}/${t.target} ratée) : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}, table ${m.roll}).`,
+    `${hero.name} MUTE${test ? ` (Résistance ${test.roll}/${test.target} ratée)` : ''} : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}, table ${m.roll}).`,
   );
   if (m.note) lines.push(`${m.label} : ${m.note}`);
 
@@ -76,6 +94,27 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
   if (hero.kind === 'hero')
     pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id });
   return lines;
+}
+
+/** Résolution du choix « Je te renie ! » (LDB 17 l.71) : `renounce` → −1 Résilience, pas de
+ *  mutation NI de perte de Points de Corruption ; sinon la mutation s'applique. */
+export function resolveRenounce(get: () => GameState, set: any, renounce: boolean): void {
+  const pr = get().pendingRenounce;
+  if (!pr) return;
+  set({ pendingRenounce: null });
+  const hero = corruptionTarget(get(), pr.heroId);
+  if (!hero) return;
+  const lines: string[] = [];
+  if (renounce && (hero.resilience ?? 0) > 0) {
+    hero.resilience = (hero.resilience ?? 0) - 1;
+    lines.push(`${hero.name} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent, LDB 17 l.71).`);
+    pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id });
+  } else {
+    lines.push(...applyMutation(set, hero, { roll: pr.testRoll, target: pr.testTarget }));
+  }
+  const b = get().battle;
+  if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });
+  else set({ journal: [...get().journal.slice(-40), ...lines] });
 }
 
 /** Cible d'un effet de Corruption : héros désigné, sinon le premier vivant. */

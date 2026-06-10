@@ -68,6 +68,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     a.characteristics.E = 1;
     a.characteristics.FM = 30; // BFM 3
     a.corruption = 4; // seuil = BFM(3) + BE(0) = 3 → déjà au-delà au prochain gain
+    a.resilience = 0; // sans Résilience, pas de « Je te renie ! » (LDB 17 l.71) → mutation directe
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
     expect(a.mutations?.length).toBe(1);
@@ -82,8 +83,11 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     a.characteristics.E = 1; // BE 0 → 1 mutation physique suffit ; Résistance ~toujours ratée
     a.characteristics.FM = 1; // BFM 0 → 1 mutation mentale suffit ; perte de Corruption = 0
     a.corruption = 5; // seuil = 0 → dépassé
+    a.resilience = 1; // AVEC Résilience : la mutation est suspendue (« Je te renie ! ») → on choisit de SUBIR
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
+    expect(useGame.getState().pendingRenounce).toBeTruthy();
+    useGame.getState().renounceResolve(false); // subir la mutation
     expect(a.mutations?.length).toBe(1);
     expect(a.damned).toBe(true);
     expect(a.dead).toBe(true);
