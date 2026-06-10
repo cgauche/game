@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { CIBLE_TYPES } from '../engine/psychology';
 import { ResilienceButton } from './ResilienceButton';
-import { ModalSubject } from './ModalSubject';
+import { Modal } from './Modal';
 
 /** Libellés des Traits psy ciblés (LDB 21). */
 const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
@@ -49,10 +49,10 @@ export function EncounterPsychModal() {
   );
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>{cl ? `${cl.emoji} ${cl.label}${pe.cible ? ` (${pe.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pe.indice}`}</h3>
-        <ModalSubject c={hero} size={40} />
+    <Modal
+      title={cl ? `${cl.emoji} ${cl.label}${pe.cible ? ` (${pe.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pe.indice}`}
+      subject={hero}
+    >
         <p className="rm-vs">doit garder son sang-froid face à <strong>{pe.sourceName}</strong></p>
         {!r ? (
           <div className="modal-actions">
@@ -95,7 +95,6 @@ export function EncounterPsychModal() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

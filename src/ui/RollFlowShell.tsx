@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
+import { Modal } from './Modal';
 
 /** Affichage canonique d'un d100 (100 → « 00 », zéro-paddé). */
 export function Dice({ roll }: { roll: number }) {
@@ -79,7 +80,6 @@ export function RollFlowShell({
   confirmLabel?: string;
   onConfirm: () => void;
 }) {
-  const modalClass = variant === 'test' ? 'test-modal' : 'roll-modal';
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const cancelBtn = onCancel && (
     <button className="btn" onClick={onCancel}>
@@ -88,9 +88,7 @@ export function RollFlowShell({
   );
   const preCancelFirst = cancelFirst ?? variant === 'test';
   return (
-    <div className="modal-overlay">
-      <div className={`modal ${modalClass}`}>
-        <h3>{title}</h3>
+    <Modal title={title} variant={variant}>
         <p className={subClass}>{subtitle}</p>
         {extra}
         {!rolled ? (
@@ -125,7 +123,6 @@ export function RollFlowShell({
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

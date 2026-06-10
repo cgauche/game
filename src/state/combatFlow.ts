@@ -868,7 +868,7 @@ export function applyAttackResult(
   // pour résoudre instantanément (pas de modale imbriquée). Les sorts (applyCast) gèrent leurs Critiques
   // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
   const dloc = res.location ?? 'corps';
-  if (deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero' && (target.armour[dloc] ?? 0) > 0) {
+  if (deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero') {
     set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, resumeAfter: true } });
     return true; // suspendu — le caller NE doit PAS exécuter ses post-étapes (rejouées à la résolution)
   }

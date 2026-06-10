@@ -2897,3 +2897,19 @@ textarea:focus {
   font-weight: 600;
   margin-right: 2px;
 }
+
+/* Protection de la zone touchée dans la modale de Déviation Critique (#critique). */
+.dev-zone {
+  text-align: center;
+  font-size: 13px;
+  margin: 6px 0;
+  background: rgba(79, 143, 224, 0.12);
+  border: 1px solid rgba(79, 143, 224, 0.4);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+.dev-zone.bare {
+  background: rgba(192, 57, 43, 0.12);
+  border-color: rgba(224, 83, 58, 0.4);
+  color: #e8a39a;
+}

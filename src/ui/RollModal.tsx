@@ -7,6 +7,7 @@ import { firedWeapon, crowdEligible, previewAttack } from '../state/combatFlow';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
+import { Modal } from './Modal';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -97,9 +98,7 @@ export function RollModal() {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Attaque</h3>
+    <Modal title="Attaque">
         <div className="rm-vs">
           <CombatantBadge combatant={attacker} />
           <span className="rm-vs-arrow"><span className="rm-weapon">{weapon?.name ?? 'Mains nues'}</span><br />→</span>
@@ -232,7 +231,6 @@ export function RollModal() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

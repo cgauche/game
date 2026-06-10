@@ -1,13 +1,12 @@
 import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
-import { ModalSubject } from './ModalSubject';
+import { Modal } from './Modal';
 
 /**
- * Déviation Critique (Livre de base p.63 l.63-66) : quand un HÉROS encaisse un Coup Critique à une
- * localisation où il porte de la PA, il peut « Dévier » — sacrifier 1 Point d'Armure (la pièce perd
- * 1 de durabilité) pour IGNORER le Critique. Il subit alors les Blessures normales recalculées avec
- * la PA réduite (typiquement +1 Blessure), mais évite l'effet de la table des Critiques. Sinon il
- * « Subit » le Coup Critique. Les ennemis dévient automatiquement (résolu sans modale, combatFlow).
+ * Déviation Critique (LDB 63 l.63-66) : quand un HÉROS encaisse un Coup Critique, il peut « Dévier » —
+ * sacrifier 1 Point d'Armure (durabilité) à la localisation pour IGNORER l'effet critique (il subit alors
+ * les Blessures normales recalculées). La modale s'ouvre MÊME sans armure : on INFORME que la déviation
+ * existe, mais le bouton « Dévier » est grisé et la protection de la zone (PA) est affichée. Cadre `Modal`.
  */
 export function DeviationModal() {
   const pdv = useGame((s) => s.pendingDeviation);
@@ -15,32 +14,44 @@ export function DeviationModal() {
   const apply = useGame((s) => s.deviationApply);
   if (!pdv || !battle) return null;
   const target = battle.combatants.find((c) => c.id === pdv.targetId);
+  const attacker = battle.combatants.find((c) => c.id === pdv.attackerId);
   if (!target) return null;
   const loc = pdv.res.location ?? 'corps';
   const pa = target.armour[loc] ?? 0;
+  const canDeviate = pa > 0;
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Coup Critique — {HIT_LOCATION_LABELS[loc]}</h3>
-        <ModalSubject c={target} />
-        <p className="rm-log">
-          {target.name} encaisse un Coup Critique ({HIT_LOCATION_LABELS[loc]}). Sacrifier 1 PA
-          d'armure (PA {pa} → {Math.max(0, pa - 1)}) pour l'ignorer ? Le coup inflige alors ses
-          Blessures normales (un peu plus, PA réduite) mais sans effet critique.
-        </p>
-        <div className="modal-actions">
-          <button className="btn" onClick={() => apply(false)} title="Encaisser le Coup Critique (table des Critiques)">
-            Subir le critique
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => apply(true)}
-            title="Sacrifier 1 Point d'Armure pour ignorer le Coup Critique"
-          >
-            🛡️ Dévier (−1 PA)
-          </button>
-        </div>
+    <Modal title={`💥 Coup Critique — ${HIT_LOCATION_LABELS[loc]}`} subject={target} subjectPv>
+      <p className="rm-log">
+        {attacker ? `${attacker.name} inflige un Coup Critique à ${target.name}` : `${target.name} encaisse un Coup Critique`} ({HIT_LOCATION_LABELS[loc]}).
+      </p>
+      <div className={`dev-zone ${canDeviate ? '' : 'bare'}`}>
+        🛡️ {HIT_LOCATION_LABELS[loc]} —{' '}
+        {canDeviate ? (
+          <>
+            PA <b>{pa}</b> · dévier la réduirait à {pa - 1}
+          </>
+        ) : (
+          'aucune armure (zone non protégée)'
+        )}
       </div>
-    </div>
+      <p className="rm-log">
+        {canDeviate
+          ? "Sacrifier 1 Point d'Armure (durabilité) pour IGNORER l'effet critique ? Le coup inflige alors ses Blessures normales (un peu plus, PA réduite) mais pas de Blessure critique."
+          : "Sans armure à cette localisation, la déviation est impossible : le Coup Critique sera subi."}
+      </p>
+      <div className="modal-actions">
+        <button className="btn" onClick={() => apply(false)} title="Encaisser le Coup Critique (table des Critiques)">
+          Subir le critique
+        </button>
+        <button
+          className="btn btn-primary"
+          disabled={!canDeviate}
+          onClick={() => apply(true)}
+          title={canDeviate ? "Sacrifier 1 Point d'Armure pour ignorer le Coup Critique (LDB 63 l.63-66)" : 'Aucune armure à sacrifier à cette localisation'}
+        >
+          🛡️ Dévier (−1 PA)
+        </button>
+      </div>
+    </Modal>
   );
 }

@@ -7,6 +7,7 @@ import { canReroll } from '../engine/fortune';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { CombatantBadge, TeamPortrait } from './CombatantBadge';
+import { Modal } from './Modal';
 
 /** Libellé FR de la nature d'une attaque gratuite de créature (freeKind) pour le contexte de défense. */
 const FREE_LABEL: Record<string, string> = {
@@ -49,9 +50,7 @@ export function DefenseModal() {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Défense</h3>
+    <Modal title="Défense">
         <div className="rm-vs">
           <CombatantBadge combatant={attacker} />
           <span className="rm-vs-arrow"><span className="rm-weapon">{pd.weapon?.name ?? 'Mains nues'}</span><br />attaque →</span>
@@ -117,7 +116,6 @@ export function DefenseModal() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

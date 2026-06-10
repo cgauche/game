@@ -1,5 +1,5 @@
 import { useGame, type PendingFumble } from '../state/store';
-import { ModalSubject } from './ModalSubject';
+import { Modal } from './Modal';
 import type { Combatant } from '../engine/types';
 
 /** Vue pure de la modale de Maladresse (testable sans store). Pas de Chance : elle agit AVANT
@@ -20,10 +20,7 @@ export function FumbleModalView({
 }) {
   const r = pf.result;
   return (
-    <div className="modal-overlay">
-      <div className="modal test-modal">
-        <h3>Maladresse !</h3>
-        {combatant && <ModalSubject c={combatant} />}
+    <Modal title="🎲 Maladresse !" subject={combatant} variant="test">
         <p className="test-actor">
           <strong>{name}</strong> — Test de combat raté sur un double (Tableau des Oups !, LDB)
         </p>
@@ -47,8 +44,7 @@ export function FumbleModalView({
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }
 
