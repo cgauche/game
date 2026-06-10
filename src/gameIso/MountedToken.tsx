@@ -41,7 +41,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   // (idle/attaque) par-dessus. On n'utilise PAS la prise d'arme à pied (riderA.holdPose).
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
   const riderPose = addPose(mountedRest(view, mainWeapon), riderA.pose);
-  const riderBones = resolveRig(appearance, equip, riderPose, career, view, overlays, mountA.mirror);
+  const riderBones = resolveRig(appearance, equip, riderPose, career, view, overlays);
   // k (échelle relative dans la boîte monture) : RIDE_SCALE × échelle d'espèce du cavalier.
   const k = RIDE_SCALE * bipedSpeciesScale(rider.name);
   const merged = seatRiderOnMount(mountBones, riderBones, { view, mountScale: 1, riderScale: k });
