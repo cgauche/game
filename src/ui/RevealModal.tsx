@@ -14,21 +14,14 @@ const ICON: Record<RevealEntry['kind'], string> = {
 };
 
 /**
- * Modale de révélation témoin (jet subi / sur table / d'entretien) — cadre + sujet via `Modal`.
- * Pour un COUP CRITIQUE, panneau COMPLET au niveau de la modale d'attaque : qui inflige → arme →
- * victime (portraits), le dé de la table, la localisation (FR), les Blessures (ignorant BE+PA), les
- * États appliqués, et chaque effet (Amputation…) AVEC son explication RAW (plus de texte gris).
+ * Corps riche d'un Coup Critique (qui inflige → arme → victime, le dé, la localisation FR, les Blessures
+ * ignorant BE+PA, les États, et chaque effet AVEC son explication RAW). PARTAGÉ par la révélation témoin
+ * ET la modale de déviation (même rendu — la déviation fusionne choix Dévier/Subir et révélation).
  */
-export function RevealModalView({ entry, subject, actor, onDismiss }: {
-  entry: RevealEntry;
-  subject?: Combatant;
-  actor?: Combatant;
-  onDismiss: () => void;
-}) {
-  const isCrit = entry.kind === 'critical';
+export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; actor?: Combatant; subject?: Combatant }) {
   return (
-    <Modal title={<>{ICON[entry.kind]} {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
-      {isCrit && (actor || subject) && (
+    <>
+      {(actor || subject) && (
         <div className="rm-vs">
           {actor && <CombatantBadge combatant={actor} />}
           <span className="rm-vs-arrow">
@@ -44,7 +37,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
         <span className="verdict">{entry.lines[0] ?? ''}</span>
       </div>
 
-      {isCrit && entry.crit && (
+      {entry.crit && (
         <div className="crit-stats">
           <span className="crit-stat" title="Blessures du Coup Critique : elles ignorent l'Endurance ET l'Armure (LDB 18 l.30).">
             💥 {entry.crit.woundsLost} Blessure{entry.crit.woundsLost > 1 ? 's' : ''}
@@ -58,7 +51,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
         </div>
       )}
 
-      {isCrit && entry.details && entry.details.length > 0 ? (
+      {entry.details && entry.details.length > 0 ? (
         <div className="crit-effects">
           <div className="mini-title">Effets &amp; séquelles</div>
           {entry.details.map((d, i) => (
@@ -74,6 +67,38 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
             {l}
           </p>
         ))
+      )}
+    </>
+  );
+}
+
+/**
+ * Modale de révélation témoin (jet subi / sur table / d'entretien) — cadre + sujet via `Modal`.
+ * Pour un COUP CRITIQUE, panneau COMPLET via `CriticalBody`.
+ */
+export function RevealModalView({ entry, subject, actor, onDismiss }: {
+  entry: RevealEntry;
+  subject?: Combatant;
+  actor?: Combatant;
+  onDismiss: () => void;
+}) {
+  const isCrit = entry.kind === 'critical';
+  return (
+    <Modal title={<>{ICON[entry.kind]} {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
+      {isCrit ? (
+        <CriticalBody entry={entry} actor={actor} subject={subject} />
+      ) : (
+        <>
+          <div className="test-result fail">
+            {entry.dice != null && <span className="dice">{entry.dice === 100 ? '00' : String(entry.dice).padStart(2, '0')}</span>}
+            <span className="verdict">{entry.lines[0] ?? ''}</span>
+          </div>
+          {entry.lines.slice(1).map((l, i) => (
+            <p key={i} className="rm-log">
+              {l}
+            </p>
+          ))}
+        </>
       )}
 
       <div className="modal-actions">

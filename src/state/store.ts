@@ -40,7 +40,7 @@ import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isM
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES } from '../engine/psychology';
+import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo } from '../engine/items';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
@@ -446,6 +446,8 @@ export interface GameState {
   psychReroll: () => void;
   psychBonusSL: () => void;
   psychForceSuccess: () => void;
+  /** Détermination (LDB 17 l.62) : immunité Psychologie → passe la Peur/Terreur/trait sans risque. */
+  psychResolve: () => void;
   psychConfirm: () => void;
   /** Test de Psychologie à la rencontre, hors combat (couture C, LDB 21) : Lancer, Chance, Résilience, Appliquer. */
   encounterPsychRoll: () => void;
@@ -1271,6 +1273,18 @@ export const useGame = create<GameState>((set, get) => ({
   psychReroll: () => FLOWS.psych.reroll(get, set),
   psychBonusSL: () => FLOWS.psych.bonusSL(get, set),
   psychForceSuccess: () => FLOWS.psych.forceSuccess(get, set),
+  psychResolve: () => {
+    // Détermination (LDB 17 l.62) : immunité TEMPORAIRE à la Psychologie (ce Round + le prochain) — elle
+    // RETARDE/ignore la Peur, elle ne la SURMONTE PAS (l'Indice reste). On ferme donc le Test sans le
+    // résoudre comme « vaincu » : le héros agit, immunisé, et la Peur re-testera quand l'immunité expire.
+    const { battle, pendingPsych: pp } = get();
+    if (!battle || !pp) return;
+    const c = battle.combatants.find((x) => x.id === pp.combatantId);
+    if (!c) return;
+    const msg = spendResolveForPsychImmunity(c); // MÊME logique que la barre d'action (pas de duplication)
+    if (!msg) return;
+    set({ pendingPsych: null, battle: { ...battle, log: [...battle.log, ev('info', msg, c.id)] }, ...touchActors(get()) });
+  },
   psychConfirm: () => {
     const { battle, pendingPsych: pp } = get();
     if (!battle || !pp || !pp.result) return;
@@ -1724,10 +1738,10 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
-    active.resolve = (active.resolve ?? 0) - 1;
-    active.psychImmuneRoundsLeft = 2; // ce Round + le prochain (décompté au passage de Round) — ne fait que RETARDER
-    set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', `${active.name} puise dans sa Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round.`, active.id)] } });
+    if (!active || active.kind !== 'hero') return;
+    const msg = spendResolveForPsychImmunity(active); // SOURCE UNIQUE de l'immunité par Détermination
+    if (!msg) return;
+    set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', msg, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */
@@ -2118,7 +2132,8 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === pdv.targetId);
     set({ pendingDeviation: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
     if (attacker && target) {
-      applyAttackResult(get, set, attacker, target, pdv.weapon, pdv.res, deviate);
+      // « Subir » applique le Critique DÉJÀ montré (pdv.crit) sans re-tirer ni re-révéler ; « Dévier » l'ignore.
+      applyAttackResult(get, set, attacker, target, pdv.weapon, pdv.res, deviate, deviate ? undefined : pdv.crit);
       autoCleave(get, set, attacker, target, pdv.res); // balayage de l'ennemi plus grand sur les AUTRES héros
       // (attaques gratuites de créature : enchaînées à la reprise ci-dessous)
       // Maladresse du défenseur héros (défense active ratée sur un double, LDB 14 l.48-51) : `defenderFumbled`

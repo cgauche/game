@@ -55,33 +55,41 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     expect(useGame.getState().pendingReveals).toEqual([]); // file vidée
   });
 
-  // Intégration avec la Déviation Critique (feature session //) : un Critique sur un héros ARMÉ
-  // suspend pour le choix Dévier/Subir AVANT de révéler ; « Subir » applique → révèle ; « Dévier » non.
-  it('Déviation Critique → « Subir » révèle le Coup Critique ; « Dévier » ne le révèle pas', () => {
+  // Déviation Critique fusionnée : le Critique est PRÉ-TIRÉ et affiché SUR la modale de déviation (choix
+  // éclairé). « Subir » applique CE Critique sans 2ᵉ modale ; « Dévier » l'ignore (−1 PA).
+  it('Déviation Critique → « Subir » applique le Critique montré (sans 2ᵉ modale) ; « Dévier » l’ignore', () => {
     useGame.getState().seedRng(2);
     const { hero, enemy } = battle();
+    const heroNow = () => useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
     hero.armour.corps = 3; // PA au corps → la déviation est possible
     const res = {
       hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
       defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
     } as AttackResult;
 
-    // (1) Le Critique sur le héros armé SUSPEND (pas de révélation encore).
+    // (1) Le Critique sur le héros armé SUSPEND, en pré-affichant le Critique DANS la modale de déviation.
     useGame.setState({ pendingReveals: [], pendingDeviation: null });
     const suspended = applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
     expect(suspended).toBe(true);
-    expect(useGame.getState().pendingDeviation).toBeTruthy();
+    const pdv = useGame.getState().pendingDeviation;
+    expect(pdv).toBeTruthy();
+    expect(pdv!.reveal.kind).toBe('critical'); // la révélation est portée par la modale de déviation
     expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
 
-    // (2) « Subir » (deviate=false) applique le Critique → la révélation est poussée.
+    // (2) « Subir » (deviate=false) applique CE Critique — sans pousser une 2ᵉ révélation.
+    const cwBefore = heroNow().criticalWounds ?? 0;
     useGame.getState().deviationApply(false);
-    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeTruthy();
+    expect(heroNow().criticalWounds ?? 0).toBeGreaterThan(cwBefore);
+    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
 
-    // (3) « Dévier » (deviate=true) ignore le Critique → aucune révélation.
-    hero.wounds = { current: 20, max: 20, base: 20 } as never;
+    // (3) « Dévier » (deviate=true) ignore le Critique → aucune Blessure critique, aucune révélation.
+    const h = heroNow();
+    h.wounds = { current: 20, max: 20, base: 20 } as never;
+    h.criticalWounds = 0;
     useGame.setState({ pendingReveals: [], pendingDeviation: null });
     applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
     useGame.getState().deviationApply(true);
     expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
+    expect(heroNow().criticalWounds ?? 0).toBe(0); // pas de Blessure critique appliquée
   });
 });

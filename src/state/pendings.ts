@@ -7,6 +7,7 @@ import type { Difficulty, HitLocation, Weapon } from '../engine/types';
 import type { Effect } from './scene';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
+import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
 import type { CastResult, MissileResult, FocusResult } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
@@ -253,6 +254,12 @@ export interface PendingDeviation {
   targetId: string; // héros qui subit le Critique (= la cible réelle, victime d'un tir dévié comprise)
   weapon: Weapon;
   res: AttackResult;
+  /** Coup Critique PRÉ-TIRÉ (graine figée) : affiché sur la modale ET appliqué tel quel sur « Subir »
+   *  (pas de re-tirage → ce qu'on montre = ce qu'on subit). La déviation survit même à un Critique létal. */
+  crit: CriticalResolved;
+  /** Révélation du Critique (riche : qui → arme → victime, dé, localisation, Blessures, États, effets)
+   *  rendue DANS la modale de déviation — plus de modale de Critique séparée. */
+  reveal: RevealEntry;
   /** Reprendre le tour de l'IA après application (toujours vrai ici : la déviation survient pendant le tour ennemi). */
   resumeAfter: boolean;
 }

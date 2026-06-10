@@ -58,7 +58,7 @@ import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } f
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
-import { rollCritical, critLocationRoll } from '../engine/critical';
+import { rollCritical, critLocationRoll, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
@@ -770,6 +770,8 @@ export function applyCriticalToTarget(
   set: any,
   chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
   ctx?: { attackerId?: string; weapon?: string }, // qui inflige le coup + l'arme → modale de Critique enrichie
+  prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
+  suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
 ): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
@@ -780,8 +782,8 @@ export function applyCriticalToTarget(
   }
   // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
   // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
-  const loc = isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
-  const crit = rollCritical(target, loc, battleRng(), overkill);
+  const loc = prerolled ? prerolled.location : isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
+  const crit = prerolled ?? rollCritical(target, loc, battleRng(), overkill);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
   log.push(crit.log);
@@ -817,13 +819,39 @@ export function applyCriticalToTarget(
     }
   }
   // « Un jet = une modale » : modale de Coup Critique COMPLÈTE (qui inflige + arme + dé + localisation +
-  // Blessures + États + effets expliqués), au niveau de la modale d'attaque.
-  pushReveal(set, {
-    kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
+  // Blessures + États + effets expliqués), au niveau de la modale d'attaque. (Sautée si la modale de
+  // déviation l'a déjà affichée — la déviation fusionne choix ET révélation sur une seule modale.)
+  if (!suppressReveal) {
+    pushReveal(set, {
+      kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
+      actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
+      crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
+    });
+  }
+  return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
+}
+
+/** Construit la révélation d'affichage d'un Coup Critique PRÉ-TIRÉ, SANS muter la cible (pour la modale
+ *  de déviation : on montre le Critique qui menace avant le choix Dévier/Subir). Détails de base (sans la
+ *  consolidation des amputations multiples, calculée seulement à l'application). */
+export function previewCritEntry(target: Combatant, crit: CriticalResolved, ctx?: { attackerId?: string; weapon?: string }): RevealEntry {
+  const lines = [crit.log];
+  const details: { text: string; note?: string }[] = [];
+  for (const t of crit.traumas) {
+    const locLbl = HIT_LOCATION_LABELS[t.location];
+    const text = t.label.includes(locLbl) ? t.label : `${t.label} (${locLbl})`;
+    lines.push(`  ↳ ${text}.`);
+    details.push({ text, note: t.note });
+  }
+  if (!crit.lethal && crit.note) {
+    lines.push(`  ↳ ${crit.note}`);
+    details.push({ text: crit.note });
+  }
+  return {
+    kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines, subjectId: target.id,
     actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
     crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
-  });
-  return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
+  };
 }
 
 /** Déviation Critique (LDB 63 l.63-66) : sacrifie 1 PA à `loc` pour IGNORER le Critique ; la cible
@@ -854,6 +882,7 @@ export function applyAttackResult(
   weapon: Weapon,
   res: AttackResult,
   deviated?: boolean,
+  prerolledCrit?: CriticalResolved, // « Subir » après déviation : applique CE Critique (déjà montré) sans re-tirer
 ): boolean {
   // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
   // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
@@ -869,7 +898,13 @@ export function applyAttackResult(
   // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
   const dloc = res.location ?? 'corps';
   if (deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero') {
-    set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, resumeAfter: true } });
+    // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
+    // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
+    const overkill = Math.max(0, res.woundsLost - target.wounds.current);
+    const cloc = res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
+    const crit = rollCritical(target, cloc, battleRng(), overkill);
+    const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
+    set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true } });
     return true; // suspendu — le caller NE doit PAS exécuter ses post-étapes (rejouées à la résolution)
   }
   const battle = get().battle!;
@@ -888,7 +923,9 @@ export function applyAttackResult(
     if (res.critical && (autoDeviate || deviated === true)) {
       deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
     } else if (res.critical || overkill > 0) {
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name });
+      // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
+      // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name }, prerolledCrit, !!prerolledCrit);
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
