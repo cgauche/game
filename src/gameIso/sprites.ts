@@ -3,7 +3,7 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, tileCenter, depth, Dims } from './iso';
+import { TW, TH, tileCenter, depth, diamondPath, Dims } from './iso';
 import { propSvg } from './catalog/decor';
 
 const e = (cx: number, cy: number, r = 2) =>
@@ -40,6 +40,11 @@ export function terrainOverlay(id: string, x: number, y: number, dims: Dims): { 
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
+  if (dims.view === 'top') {
+    // Vue du dessus : un mur vu de dessus = un bloc plein sur sa case (pas d'extrusion iso, qui
+    // dessinait des faces orientées en losange → murs « mal orientés » sur la grille carrée).
+    return `<path d="${diamondPath(x, y, dims)}" fill="#9b8e72" stroke="rgba(0,0,0,0.4)" stroke-width="1"/>`;
+  }
   const H = TH * 1.6;
   const top = `M${cx},${cy - TH / 2 - H} L${cx + TW / 2},${cy - H} L${cx},${cy + TH / 2 - H} L${cx - TW / 2},${cy - H} Z`;
   const left = `M${cx - TW / 2},${cy - H} L${cx},${cy + TH / 2 - H} L${cx},${cy + TH / 2} L${cx - TW / 2},${cy} Z`;
