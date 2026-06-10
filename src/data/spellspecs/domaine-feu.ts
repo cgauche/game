@@ -42,11 +42,13 @@ export const DOMAINE_FEU: SpellSpec[] = [
   {
     label: 'Couronne de Flammes',
     // « Gagnez le Trait Peur 1 et +1 Talent Seigneur de guerre… +10 pour Focaliser et
-    //   Incanter avec Aqshy tant que le Sort est actif. » Trait Peur → causesPeur n'est
-    //   pas (encore) une op : journalisé ; le +10 d'incantation est un castPenalty positif.
+    //   Incanter avec Aqshy tant que le Sort est actif. » Peur 1 → op grantTrait (Jalon 2.6) ;
+    //   le +10 d'incantation est un castPenalty positif. L'option « +2 DR : +1 Peur OU
+    //   reprendre Seigneur de guerre » = un CHOIX → journalisée.
     ops: [
-      { op: 'narrative', text: 'Couronne de Flammes : Trait Peur 1 + Talent Seigneur de guerre tant que le Sort est actif (arbitrage MJ).' },
+      { op: 'grantTrait', trait: 'Peur', indice: 1 },
       { op: 'castPenalty', skill: 'all', mod: 10, rounds: { bonusOf: 'FM' } },
+      { op: 'narrative', text: 'Couronne de Flammes : +1 Talent Seigneur de guerre tant que le Sort est actif ; par +2 DR, +1 Peur OU Seigneur de guerre repris — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

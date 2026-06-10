@@ -1,5 +1,7 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
 import { Scene, isWalkable } from './scene';
+import { hasTrait } from '../engine/traits/dispatch';
+import type { Combatant } from '../engine/types';
 
 export interface Pt {
   x: number;
@@ -71,6 +73,18 @@ export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Se
       dist.set(key(nx, ny), Math.max(Math.abs(dx), Math.abs(dy)));
     }
   return dist;
+}
+
+/**
+ * Portée de déplacement d'un combattant : VOL (trait « Vol » — natif OU accordé par un sort,
+ * Envol Jalon 2.6) → `flyReachable` (survole murs/obstacles, l'atterrissage doit tenir) ; sinon
+ * BFS au sol. C'était réservé à l'IA (ai.ts) — les HÉROS volants passent désormais par ici.
+ */
+export function moveReachFor(
+  mover: Pick<Combatant, 'traits'>,
+  scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1,
+): Map<string, number> {
+  return (hasTrait(mover.traits, 'Vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
 }
 
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de

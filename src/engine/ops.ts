@@ -19,6 +19,7 @@ import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds } from './conditions';
 import { groupMatch } from './groups';
+import { grantTrait } from './grantedTraits';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -101,6 +102,11 @@ export type GameOp =
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
   | { op: 'castPenalty'; skill: 'Prière' | 'Langue' | 'Focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
+  /** Trait de créature TEMPORISÉ (Jalon 2.6 — « vous gagnez le Trait X tant que le Sort est
+   *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
+   *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
+   *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
+  | { op: 'grantTrait'; trait: string; indice?: Formula; indicePerSL?: PerSL }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -309,6 +315,20 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ? 'Tests de Prière plafonnés à 0 DR'
             : `${cp.mod} aux Tests de ${cp.skill === 'all' ? 'magie' : cp.skill}`;
         lines.push(`${target.name} : ${what}${dureeTxt ? ` pendant ${dureeTxt}` : ''} (${cp.label}).`);
+        break;
+      }
+      case 'grantTrait': {
+        const ind = o.indice != null ? resolveFormula(o.indice, ref, rng) + slBonus(ctx.sl, o.indicePerSL) : null;
+        const traitStr = ind != null ? `${o.trait} ${ind}` : o.trait;
+        grantTrait(target, traitStr);
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          grantedTrait: traitStr,
+        });
+        lines.push(`${target.name} gagne le Trait ${traitStr} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'reduceToZero': {

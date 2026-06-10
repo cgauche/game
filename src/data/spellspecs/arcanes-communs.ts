@@ -2,8 +2,9 @@
  * Sorts d'Arcane communs (LDB 47 p.242-245) — les 23, curés. Accessibles à tout
  * Domaine. Les Projectiles magiques (Carreau, Explosion, Attaques en chaîne,
  * Souffle) sont résolus par le moteur missile (ops = effets additionnels) ; les
- * sorts à Trait de créature temporisé (Effrayant, Terrifiant, Protection, Vol…)
- * et les utilitaires restent `narrative` (journal + arbitrage MJ, rien d'inventé).
+ * sorts à Trait de créature temporisé (Effrayant, Terrifiant, Protection, Envol,
+ * Perturbant, Sang corrosif, Vision dans l'obscurité) passent par l'op `grantTrait`
+ * (Jalon 2.6) ; les utilitaires hors grille restent `narrative` (rien d'inventé).
  */
 import { SpellSpec } from '../../engine/spellspec';
 
@@ -53,7 +54,14 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   },
   N("Déplacement d'objet", 'Déplacement d’objet : déplace un objet inanimé (Force = votre FM) de BFM mètres.', null),
   N('Dôme', 'Dôme : Protection (6+) contre les attaques magiques/à distance venant de l’extérieur, pour quiconque est dans la ZdE.'),
-  N('Effrayant', 'Effrayant : vous gagnez Peur 1 tant que le Sort est actif (+1 par +3 DR) — Trait temporisé, arbitrage MJ.'),
+  {
+    label: 'Effrayant',
+    // « Gagnez Peur 1. Pour chaque +3 DR, vous pouvez augmenter votre valeur de Peur de 1. »
+    ops: [{ op: 'grantTrait', trait: 'Peur', indice: 1, indicePerSL: { every: 3, amount: 1 } }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.243 « Effrayant »',
+  },
   {
     label: 'Enchevêtrement',
     type: 'Magie des Arcanes', // ≠ du miracle de Taal homonyme (Invocation)
@@ -69,7 +77,15 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     curated: true,
     source: 'LDB 47 p.243 « Enchevêtrement »',
   },
-  N('Envol', 'Envol : vous gagnez le Trait Vol (Agilité) tant que le Sort est actif (déplacement aérien — arbitrage MJ).'),
+  {
+    label: 'Envol',
+    // « Gagnez le Trait de créature Vol (Agilité) » — Indice = votre Agilité ; le héros
+    // SURVOLE les obstacles tant que le Sort dure (moveReachFor → flyReachable).
+    ops: [{ op: 'grantTrait', trait: 'Vol', indice: { charOf: 'Ag' } }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.243 « Envol »',
+  },
   {
     label: 'Explosion',
     ops: [], // Projectile magique +3 en ZdE — moteur missile + ciblage de zone (clic-case).
@@ -77,7 +93,14 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     curated: true,
     source: 'LDB 47 p.243 « Explosion »',
   },
-  N('Perturbant', 'Perturbant : vous gagnez le Trait Perturbant tant que le Sort est actif (−10 aux Tests sociaux adverses — arbitrage MJ).'),
+  {
+    label: 'Perturbant',
+    // « Vous gagnez le Trait de créature Perturbant » (aura −10, dispatch existant).
+    ops: [{ op: 'grantTrait', trait: 'Perturbant' }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.244 « Perturbant »',
+  },
   N('Pont', 'Pont : pont d’énergie de BFM mètres (long./larg.), +BFM mètres par +2 DR (arbitrage MJ).'),
   {
     label: 'Poussée',
@@ -93,8 +116,22 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     curated: true,
     source: 'LDB 47 p.244 « Poussée »',
   },
-  N('Protection', 'Protection : vous gagnez le Trait Protection (9+) tant que le Sort est actif (arbitrage MJ).'),
-  N('Sang corrosif', 'Sang corrosif : vous gagnez le Trait Sang corrosif tant que le Sort est actif (arbitrage MJ).'),
+  {
+    label: 'Protection',
+    // « Gagnez le Trait de créature Protection (9+) » — sauvegarde 1d10 ≥ 9 (dispatch existant).
+    ops: [{ op: 'grantTrait', trait: 'Protection', indice: 9 }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.244 « Protection »',
+  },
+  {
+    label: 'Sang corrosif',
+    // « Vous gagnez le Trait de créature Sang corrosif » (riposte corrosive, dispatch existant).
+    ops: [{ op: 'grantTrait', trait: 'Sang corrosif' }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.244 « Sang corrosif »',
+  },
   {
     label: 'Souffle',
     ops: [{ op: 'narrative', text: 'Souffle : attaque de Souffle (type selon votre Domaine) — Projectile magique de Dégâts = votre Bonus d’Endurance.' }],
@@ -103,6 +140,20 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     source: 'LDB 47 p.244 « Souffle »',
   },
   N('Téléportation', 'Téléportation : vous vous téléportez de BFM mètres (+BFM par +2 DR) — déplacement hors grille, arbitrage MJ.', null),
-  N('Terrifiant', 'Terrifiant : vous gagnez le Trait Terreur 1 tant que le Sort est actif (arbitrage MJ).'),
-  N("Vision dans l'obscurité", 'Vision dans l’obscurité : vous gagnez le Trait Infravision tant que le Sort est actif.'),
+  {
+    label: 'Terrifiant',
+    // « Vous gagnez le Trait de créature Terreur 1. »
+    ops: [{ op: 'grantTrait', trait: 'Terreur', indice: 1 }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.245 « Terrifiant »',
+  },
+  {
+    label: "Vision dans l'obscurité",
+    // « Vous gagnez le Trait de créature Infravision » (vision de la chaleur, dispatch existant).
+    ops: [{ op: 'grantTrait', trait: 'Infravision' }],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: "LDB 47 p.245 « Vision dans l'obscurité »",
+  },
 ];

@@ -92,7 +92,7 @@ import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction } from './ai';
 import { bus, EVT } from './bus';
 
@@ -889,7 +889,7 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover);
-    set({ battle: { ...battle, action: 'move', reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
+    set({ battle: { ...battle, action: 'move', reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
@@ -943,7 +943,7 @@ export function computeMoveReach(get: () => GameState): Map<string, number> {
   if (isEngaged(active) || !canMove(battle, active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
-  let reach = reachable(scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+  let reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
   // Brisé (LDB 16 l.55) : fuir seulement — aucune case qui RAPPROCHE d'un ennemi.
   if (hasCondition(active, 'Brisé')) {
     const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);

@@ -170,6 +170,9 @@ export interface ActiveEffect {
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;
+  /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : la chaîne
+   *  exacte posée dans `c.traits`, retirée (une instance) à l'expiration (engine/grantedTraits). */
+  grantedTrait?: string;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

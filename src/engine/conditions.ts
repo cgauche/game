@@ -7,6 +7,7 @@ import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
 import { rollTest, isDoubleRoll } from './tests';
+import { dropExpiredGrantedTraits } from './grantedTraits';
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -205,6 +206,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     const expired = c.activeEffects.filter((e) => e.roundsLeft <= 0);
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
+    dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.
   if (c.conditions.some((x) => x.roundsLeft != null)) {

@@ -73,8 +73,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   },
   {
     label: 'Vaincre les impies',
+    // « Tous les alliés affectés reçoivent le Trait Psychologique Haine à l'égard des
+    //   peaux-vertes, des morts-vivants et de tout ce qui est associé au Chaos. »
+    //   — trois Haine ciblées (op grantTrait → parsePsychTraits → +1 DR vs le groupe haï).
     ops: [
-      { op: 'narrative', text: 'Vaincre les impies : les alliés désignés gagnent le Trait psychologique Haine (peaux-vertes, morts-vivants, créatures du Chaos) pour la durée (arbitrage MJ).' },
+      { op: 'grantTrait', trait: 'Haine (Peaux-Vertes)' },
+      { op: 'grantTrait', trait: 'Haine (Morts-vivants)' },
+      { op: 'grantTrait', trait: 'Haine (Démons)' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

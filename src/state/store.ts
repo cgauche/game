@@ -90,7 +90,7 @@ import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
-import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
@@ -1093,7 +1093,7 @@ export const useGame = create<GameState>((set, get) => ({
       // Déplacement DÉCOMPOSABLE : la portée du segment courant = Mouvement RESTANT (Marche − déjà parcouru).
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
-      reach = reachable(scene, active.pos!, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+      reach = moveReachFor(geom, scene, active.pos!, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
       // Brisé (LDB 16 l.55) : on ne peut FUIR que vers une case qui ne RAPPROCHE d'aucun ennemi.
       if (hasCondition(active, 'Brisé')) {
         const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
@@ -1111,7 +1111,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (a === 'charge' && battle.movementUsed === 0 && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
       const geom = mountOf(battle, active) ?? active;
       const blocked = occupied(battle, geom);
-      reach = reachable(scene, active.pos!, mountMovement(battle, active) * 2, blocked, sizeFootprint(geom.size));
+      reach = moveReachFor(geom, scene, active.pos!, mountMovement(battle, active) * 2, blocked, sizeFootprint(geom.size));
     }
     // Quitter le mode incantation oublie le sort sélectionné.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
@@ -1743,7 +1743,7 @@ export const useGame = create<GameState>((set, get) => ({
       const charM = mountMovement(battle, active);
       // Bond ×2 / Foulée ×1,5 (LDB 85) : multiplicateur de COURSE/CHARGE de la créature qui porte le
       // déplacement (la monture en combat monté).
-      const reach = reachable(scene, active.pos!, Math.floor(charM * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size)); // portée de Course
+      const reach = moveReachFor(geom, scene, active.pos!, Math.floor(charM * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size)); // portée de Course
       const dest = bestAdjacentReachable(reach, target.pos!);
       if (!dest) {
         get().log('Cible hors de portée de Charge.');
@@ -2373,7 +2373,7 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, geom);
     const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
     const log = [...battle.log, ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`, c.id)];
-    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
+    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: moveReachFor(geom, scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),
@@ -2596,7 +2596,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: {
         ...battle,
         action: 'move', // mouvement libre rouvert, sans pénalité (l.87) ; Action préservée
-        reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
+        reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
         log: [...battle.log, ev('flee', `${mover.name} se désengage en sacrifiant son Avantage.`, mover.id)],
       },
     });
@@ -2744,7 +2744,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, mover);
       log.push(ev('flee', `${mover.name} se désengage (Esquive réussie, +1 Avantage).`, mover.id, foe.id));
       set({
-        battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
+        battle: { ...battle, acted: true, action: 'move', reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
       });
     } else if (pd.result === 'tie') {
       // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
