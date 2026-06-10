@@ -4,7 +4,7 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState, RevealEntry } from './store';
-import { Combatant, ItemInstance, ActiveEffect, CHAR_LABELS, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
+import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { TEMPO } from './tempo';
@@ -43,13 +43,12 @@ import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './f
 import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
-  parseHeal,
-  parseConditionEffect,
-  parseCharBuffs,
-  buffDurationRounds,
+  prayerWrathTriggered,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
+import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
+import { spellSpecFor } from '../data/spellspecs';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
@@ -250,6 +249,22 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           return { party: s.party.map((h, i) => (i === target ? { ...h, nightmares: true } : h)) };
         });
         if (who) get().log(`${who} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+        break;
+      }
+      case 'giveSin': {
+        // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité.
+        // Cible : héros désigné, sinon le premier sachant Prier (le Péché vise un Bienheureux).
+        const amount = Math.max(1, e.amount ?? 1);
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
+          if (idx < 0) idx = s.party.findIndex((h) => h.skills.some((sk) => sk.name === 'Prière' && sk.advances >= 1));
+          if (idx < 0) idx = 0;
+          who = s.party[idx].name;
+          return { party: s.party.map((h, i) => (i === idx ? { ...h, sinPoints: (h.sinPoints ?? 0) + amount } : h)) };
+        });
+        if (who) get().log(`${who} a péché contre son dieu : +${amount} Point(s) de Péché.`);
         break;
       }
       case 'inflictDisease': {
@@ -1688,36 +1703,25 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
   return false;
 }
 
-/** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
- *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
-export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
-  target.activeEffects = target.activeEffects ?? [];
-  // On ne dédoublonne qu'entre effets de MÊME signe (bonus vs pénalité séparés) :
-  // un bonus et une pénalité sur la même caractéristique s'additionnent (effectiveChar).
-  const sameSign = (b: number) => b >= 0 === effect.bonus >= 0;
-  const idx = target.activeEffects.findIndex((e) => e.char === effect.char && effect.char != null && sameSign(e.bonus));
-  if (idx >= 0) {
-    const cur = target.activeEffects[idx].bonus;
-    const better = effect.bonus >= 0 ? effect.bonus >= cur : effect.bonus <= cur;
-    if (better) target.activeEffects[idx] = effect;
-  } else {
-    target.activeEffects.push(effect);
-  }
-  // Les Blessures dérivent de F/E/FM (LDB 85) → un buff de ces caractéristiques recale les PB max + courants.
-  if (effect.char === 'F' || effect.char === 'E' || effect.char === 'FM') refreshWounds(target);
-}
-
-/** Rounds attribués à un buff dont la durée (minutes/heures/jours) dépasse le combat. */
-export const COMBAT_PERSIST = 9999;
+// applyActiveEffect / COMBAT_PERSIST vivent désormais dans le moteur (engine/ops) —
+// partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).
 
 /**
  * Tire sur la table d'Incantation Imparfaite / Colère des dieux et applique au
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity, sinPoints = 0): string[] {
+export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity): string[] {
+  // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
+  const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
   const m = rollMiscast(severity, battleRng(), sinPoints);
   const lines = [m.log];
+  // « Après le lancer et avoir appliqué le résultat, réduisez vos Points de Péché
+  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53).
+  if (severity === 'colere' && sinPoints > 0) {
+    caster.sinPoints = sinPoints - 1;
+    lines.push(`${caster.name} : 1 Point de Péché expié (reste ${caster.sinPoints}).`);
+  }
   for (const op of m.ops) {
     if (op.reduceToZero) {
       caster.wounds.current = 0;
@@ -1845,39 +1849,20 @@ export function applyCast(
     if (isOutOfAction(target)) logLines.push(`${target.name} est mis hors de combat !`);
   } else {
     if (res.cast) {
-      const heal = parseHeal(spell.desc, caster);
-      const buffs = parseCharBuffs(spell.desc);
-      const condEff = parseConditionEffect(spell.desc);
-      if (heal != null) {
-        target.wounds.current = Math.min(target.wounds.max, target.wounds.current + heal);
-        logLines.push(`${target.name} regagne ${heal} Blessure(s).`);
-      } else if (buffs.length) {
-        const rounds = buffDurationRounds(spell.duration, caster);
-        // Durée hors-rounds (minutes/heures/jours) : elle dépasse l'échelle tactique
-        // → l'effet persiste pour ce combat. On n'invente PAS un nombre de rounds.
-        const roundsLeft = rounds ?? COMBAT_PERSIST;
-        for (const b of buffs) {
-          applyActiveEffect(target, { label: spell.label, char: b.char, bonus: b.bonus, roundsLeft });
-        }
-        const parts = buffs.map((b) => `${b.bonus >= 0 ? '+' : ''}${b.bonus} ${CHAR_LABELS[b.char]}`).join(', ');
-        logLines.push(
-          `${target.name} : ${spell.label} (${parts}, ${rounds != null ? rounds + ' rounds' : 'durée hors combat'}).`,
-        );
-      } else if (condEff) {
-        if (condEff.op === 'remove') {
-          const name = condEff.name ?? target.conditions[0]?.name;
-          if (name) {
-            removeCondition(target, name, condEff.value);
-            logLines.push(`${target.name} retire ${condEff.value} État ${name}.`);
-          } else {
-            logLines.push(`${target.name} n'a aucun État à retirer.`);
-          }
-        } else {
-          addCondition(target, condEff.name!, condEff.value);
-          logLines.push(`${target.name} reçoit ${condEff.value} État ${condEff.name}.`);
-        }
-      }
-      // Sinon : l'effet du sort est purement narratif (déjà journalisé).
+      // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
+      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours) : elle dépasse
+      // l'échelle tactique → l'effet persiste pour ce combat (COMBAT_PERSIST),
+      // on n'invente PAS un nombre de rounds.
+      const spec = spellSpecFor(spell);
+      const rounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
+      logLines.push(
+        ...applyOps(target, spec.ops, {
+          rng: battleRng(),
+          caster,
+          label: spell.label,
+          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+        }),
+      );
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
       logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
@@ -1893,6 +1878,14 @@ export function applyCast(
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!) } }));
     }
     if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: target.id, result: res, kind: 'spell', spell: spell.label, defense: 'none' });
+  }
+
+  // Péché et Colère Divine (LDB 40 l.44-45) : à CHAQUE Test de Prière, si le dé des
+  // unités ≤ Points de Péché → Colère des dieux, MÊME si le Test est réussi (la
+  // Maladresse, elle, a déjà déclenché la sienne ci-dessus).
+  if (castInfoIsPrayer(spell.type) && !res.isFumble && res.roll > 0 && prayerWrathTriggered(res.roll, caster.sinPoints ?? 0)) {
+    logLines.push(`Le dé des unités (${res.roll % 10}) trahit les Péchés de ${caster.name} (${caster.sinPoints}) — Colère des dieux !`);
+    logLines.push(...applyMiscast(get, set, caster, 'colere'));
   }
 
   // Le sort focalisé est consommé après le lancement.

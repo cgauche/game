@@ -26,6 +26,7 @@ export function carryOverState(c: Combatant): {
   traumas: Trauma[];
   diseases?: Disease[];
   items?: ItemInstance[];
+  sinPoints?: number;
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
@@ -43,6 +44,8 @@ export function carryOverState(c: Combatant): {
     // (qty) entre combats (LDB 62 l.177-180). roundsAtZero N'est PAS persisté : l'horloge de mort
     // lente repart à neuf au combat suivant (cohérent avec startCombat).
     ...(c.items ? { items: c.items.map((i) => ({ ...i })) } : {}),
+    // Points de Péché (LDB 40) : la Colère des dieux en expie 1 par jet — le solde suit le héros.
+    ...(c.sinPoints != null ? { sinPoints: c.sinPoints } : {}),
   };
 }
 

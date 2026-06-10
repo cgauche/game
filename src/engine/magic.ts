@@ -20,6 +20,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest, TestResult } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
+import { Formula, resolveFormula } from './ops';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -99,19 +100,28 @@ export function parseSpellDamage(
 }
 
 /**
- * Soin apporté par un sort/prière : « N Points de Blessure » (littéral) ou
- * « Guérir (Bonus de X) Blessures » (paramétré, ex. Caresse de Rhya = Bonus de
- * Sociabilité). Retourne le nombre de Blessures rendues, ou null si aucun soin.
+ * Soin apporté par un sort/prière, au niveau FORMULE : « N Points de Blessure »
+ * (littéral) ou « Guérir (Bonus de X) Blessures » (paramétré, ex. Caresse de
+ * Rhya = Bonus de Sociabilité — résolu contre le lanceur à l'application).
  */
-export function parseHeal(desc: string, caster: Combatant): number | null {
+export function parseHealFormula(desc: string): Formula | null {
   const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
   if (lit) return parseInt(lit[1], 10);
   const bon = desc.match(/Gu[ée]ri(?:r|ssez)?[^.]*?\(Bonus d[e'’]\s*([^)]+)\)\s*Blessure/i);
   if (bon) {
     const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
+    if (key) return { bonusOf: key };
   }
   return null;
+}
+
+/**
+ * Soin apporté par un sort/prière : formule résolue contre le lanceur.
+ * Retourne le nombre de Blessures rendues, ou null si aucun soin.
+ */
+export function parseHeal(desc: string, caster: Combatant): number | null {
+  const f = parseHealFormula(desc);
+  return f == null ? null : resolveFormula(f, caster);
 }
 
 /**
@@ -154,6 +164,19 @@ export function isMagicMissile(spell: SpellLike): boolean {
   return /projectile magique/i.test(spell.desc);
 }
 
+/**
+ * Péché et Colère Divine (LDB 40 l.44-45) : « Chaque fois que vous effectuez un
+ * Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel
+ * de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière
+ * est réussi. » La règle ne mord que si l'on A péché (section « Il est risqué de
+ * faire appel à votre divinité quand vous avez agi de façon contraire à sa
+ * volonté ») : à 0 Péché, aucun déclenchement. Le dé des unités d'un 100 (00) est 0.
+ */
+export function prayerWrathTriggered(roll: number, sinPoints: number): boolean {
+  if (sinPoints <= 0) return false;
+  return roll % 10 <= sinPoints;
+}
+
 /** Durée d'un sort exprimée en Rounds (« 6 rounds »), sinon null. */
 export function parseDurationRounds(duration?: string): number | null {
   if (!duration) return null;
@@ -162,22 +185,28 @@ export function parseDurationRounds(duration?: string): number | null {
 }
 
 /**
- * Durée d'un buff en Rounds : « N rounds » (littéral) ou « (Bonus de X) Rounds »
- * (formule, résolue via le lanceur — ex. +20 Endurance pendant BFM rounds). Retourne
+ * Durée d'un sort en Rounds, au niveau FORMULE : « N rounds » (littéral) ou
+ * « (Bonus de X) Rounds » (résolu contre le lanceur à l'application). Retourne
  * null pour les durées hors-rounds (minutes/heures/jours/Instantanée) : l'appelant
  * NE DOIT PAS inventer un nombre de rounds dans ce cas (Livre de base : la durée est
  * celle indiquée par le sort, aucun défaut d'1 round).
  */
-export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
+export function durationRoundsFormula(duration: string | undefined): Formula | null {
   const lit = parseDurationRounds(duration);
   if (lit != null) return lit;
   if (!duration) return null;
   const f = duration.match(/\(Bonus d[e'’]\s*([^)]+)\)\s*Rounds?/i);
   if (f) {
     const key = CHAR_BY_LABEL[f[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
+    if (key) return { bonusOf: key };
   }
   return null;
+}
+
+/** Durée d'un buff en Rounds, résolue contre le lanceur (cf. durationRoundsFormula). */
+export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
+  const f = durationRoundsFormula(duration);
+  return f == null ? null : resolveFormula(f, caster);
 }
 
 export interface CastResult {

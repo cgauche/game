@@ -28,6 +28,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'restoreFortune',
   'inflictNightmares',
   'inflictDisease',
+  'giveSin',
   'rest',
   'startCombat',
   'transition',
@@ -50,6 +51,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
   inflictDisease: 'Infliger une maladie (LDB 20)',
+  giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   rest: 'Repos (Dormir / Se reposer N jours)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
@@ -96,6 +98,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'inflictNightmares', heroId: '' };
     case 'inflictDisease':
       return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
+    case 'giveSin':
+      return { type: 'giveSin', amount: 1, heroId: '' };
     case 'rest':
       return { type: 'rest', days: 1 };
     case 'setTime':
@@ -170,6 +174,12 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'rest' && (
           <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        )}
+        {effect.type === 'giveSin' && (
+          <>
+            <label>Péchés (1-3 selon gravité) <input type="number" min={1} max={3} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <input placeholder="id du héros (vide = premier sachant Prier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">

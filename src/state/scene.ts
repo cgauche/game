@@ -205,6 +205,11 @@ export type Effect =
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
+  /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
+   *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
+   *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
+   *  chaque jet de Colère en expie 1 (l.53). */
+  | { type: 'giveSin'; amount?: number; heroId?: string }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

@@ -286,6 +286,10 @@ export interface Combatant {
   activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
+  /** Points de Péché (LDB 40 l.30-36) — Bienheureux ayant violé les commandements de
+   *  son dieu. Octroyés par le MJ/l'auteur (Effet `giveSin`), jamais inventés ; pas de
+   *  maximum ; chaque jet de Colère des dieux en retire 1 (l.53). Persisté entre combats. */
+  sinPoints?: number;
   /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */
   activeEffects?: ActiveEffect[];
   /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
