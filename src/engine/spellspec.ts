@@ -55,6 +55,11 @@ export interface SpellSpec {
    *  Dégâts égaux à votre Bonus d'Endurance. » — délégué à l'attaque de ZONE du trait
    *  (applyAreaAttack), centrée sur la cible du sort ; Type selon le Domaine du lanceur. */
   breathAttack?: true;
+  /** Attaques en chaîne (LDB 47 — L13) : « Si [le Projectile] réduit la cible à 0 Blessure, il
+   *  rebondit sur une autre cible dans la portée initiale du Sort, et à une distance en mètres
+   *  de la cible précédente égale à votre BFM, infligeant de nouveau les mêmes Dégâts. Il peut
+   *  rebondir un nombre maximum de fois égal à votre BFM. » */
+  chainOnKill?: { maxBounces: Formula; hopMeters: Formula };
   /** ZONE PERSISTANTE posée par le sort (L11 — Mur de feu : « Quiconque traverse le mur » ;
    *  Grands feux d'U'Zhul : « le feu continue de brûler dans la ZdE pour la durée […] au début
    *  d'un Round ») : forme + effets, durée = celle du sort. Le mur est tracé PERPENDICULAIRE à

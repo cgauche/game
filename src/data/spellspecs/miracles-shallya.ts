@@ -73,9 +73,11 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: 'Martyr',
-    ops: [
-      { op: 'narrative', text: 'Martyr : le prêtre reçoit les Dégâts subis par la cible (BE doublé pour ces Dégâts) — redirection non modélisée, arbitrage MJ.' },
-    ],
+    // « Vous recevez tous les Dégâts subis en principe par vos cibles. Si vous prenez des Dégâts
+    //   à cause de ce Miracle, votre Bonus d'Endurance est doublé pour le calcul des Points de
+    //   Blessure subis à cause de ces Dégâts. » — op martyr : l'effet (id du prêtre) est posé
+    //   sur la CIBLE protégée ; transfert aux points de mitigation (attaques + Projectiles).
+    ops: [{ op: 'martyr' }],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: 'LDB 42 « Martyr »',

@@ -41,8 +41,13 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   },
   {
     label: 'Attaques en chaîne',
-    ops: [{ op: 'narrative', text: 'Attaques en chaîne : si la cible tombe à 0 Blessure, le Projectile rebondit sur une cible à BFM mètres (arbitrage MJ).' }],
-    durationRounds: null, // Projectile magique +4 (moteur missile)
+    // « Si Attaques en chaîne réduit la cible à 0 Blessure, il rebondit sur une autre cible dans
+    //   la portée initiale du Sort, et à une distance en mètres de la cible précédente égale à
+    //   votre BFM, infligeant de nouveau les mêmes Dégâts. Il peut rebondir un nombre maximum de
+    //   fois égal à votre BFM. » — rebond mécanique (chainOnKill) ; Projectile +4 (moteur missile).
+    ops: [],
+    chainOnKill: { maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } },
+    durationRounds: null,
     curated: true,
     source: 'LDB 47 p.242 « Attaques en chaîne »',
   },

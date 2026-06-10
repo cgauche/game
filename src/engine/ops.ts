@@ -164,6 +164,13 @@ export type GameOp =
   /** Dôme (LDB 47 — L11) : « Quiconque dans la ZdE gagne Protection (6+) contre les Attaques
    *  magiques ou à distance provenant de l'extérieur du dôme ». Aura sur la cible. */
   | { op: 'domeWard'; radius: Formula }
+  /** Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM
+   *  Accessible (+20) pour attaquer votre cible ». Drapeau lu à la déclaration d'attaque. */
+  | { op: 'attackWardFM' }
+  /** Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles.
+   *  […] votre Bonus d'Endurance est doublé pour le calcul des PB subis à cause de ces Dégâts. »
+   *  — l'effet est posé sur LA CIBLE protégée, avec l'id du prêtre (ctx.caster). */
+  | { op: 'martyr' }
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   | { op: 'noBreath' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -566,6 +573,32 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           domeWard: { radiusMeters: radius },
         });
         lines.push(`${target.name} : un dôme (${radius} m) protège la zone — Protection (6+) contre les attaques extérieures à distance/magiques (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'attackWardFM': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          attackWardFM: true,
+        });
+        lines.push(`${target.name} : l'attaquer exige un Test de Force Mentale Accessible (+20) (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'martyr': {
+        if (!ctx.caster) {
+          lines.push(`${target.name} : Martyr sans prêtre identifié — arbitrage MJ.`);
+          break;
+        }
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          martyrGuard: ctx.caster.id,
+        });
+        lines.push(`${ctx.caster.name} recevra les Dégâts subis par ${target.name} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'narrative':

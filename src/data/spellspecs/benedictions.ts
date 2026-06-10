@@ -81,7 +81,10 @@ export const BENEDICTIONS: SpellSpec[] = [
   },
   {
     label: 'Bénédiction de Protection',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Protection : les ennemis doivent réussir un Test de Force Mentale Accessible (+20) pour attaquer la cible — arbitrage MJ.' }],
+    // « Les ennemis doivent effectuer un Test de Force Mentale Accessible (+20) pour attaquer
+    //   votre cible à cause de la honte ressentie […]. Sur un échec, ils doivent choisir une
+    //   cible ou une Action différente. » — gate joué à la DÉCLARATION d'attaque (attackWardGate).
+    ops: [{ op: 'attackWardFM' }],
     durationRounds: 6,
     curated: true,
     source: '« Les ennemis doivent effectuer un Test de Force Mentale Accessible (+20) pour attaquer votre cible… »',

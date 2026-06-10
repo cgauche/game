@@ -635,6 +635,32 @@ export function crowdEligible(battle: BattleState, attacker: Combatant, target: 
 /** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */
 export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zones);
 
+/** Bénédiction de Protection (LDB 41 — L13) : si la cible est bénie, l'attaquant doit réussir un
+ *  Test de FM Accessible (+20) pour OSER attaquer — joué à la DÉCLARATION ; sur un échec, « ils
+ *  doivent choisir une cible ou une Action différente » (rien n'est consommé). */
+export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG = battleRng()): { allowed: boolean; lines: string[] } {
+  if (!hasActiveFlag(target, 'attackWardFM')) return { allowed: true, lines: [] };
+  const t = rollTest(effectiveChar(attacker, 'FM'), 'accessible', rng);
+  if (t.success) {
+    return { allowed: true, lines: [`${attacker.name} surmonte sa honte (FM 🎲 ${t.roll}/${t.target}) et attaque ${target.name} malgré la Bénédiction de Protection.`] };
+  }
+  return {
+    allowed: false,
+    lines: [
+      `${attacker.name} — Test de Force Mentale Accessible (+20) : 🎲 ${t.roll}/${t.target} → échec.`,
+      `${attacker.name} ne peut se résoudre à frapper ${target.name} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.`,
+    ],
+  };
+}
+
+/** Martyr (LDB 42 — L13) : le prêtre (vivant, présent) qui encaisse à la place de `target`, ou null. */
+export function martyrGuardOf(battle: BattleState, target: Combatant): Combatant | null {
+  const id = (target.activeEffects ?? []).find((e) => e.martyrGuard)?.martyrGuard;
+  if (!id || id === target.id) return null;
+  const priest = battle.combatants.find((c) => c.id === id);
+  return priest && !isOutOfAction(priest) && !priest.dead ? priest : null;
+}
+
 /** Aura portée (L11 — Bouclier anti-flèches / Dôme) : vrai si la CIBLE est dans le rayon d'un
  *  porteur vivant de l'aura `field` ET l'attaquant HORS de ce rayon (« provenant de l'extérieur » /
  *  « s'ils entrent dans la Zone d'Effet »). */
@@ -1338,6 +1364,22 @@ export function applyAttackResult(
     const d = d10(battleRng());
     if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
   }
+  // Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles » —
+  // le prêtre encaisse les Dégâts BRUTS de la frappe, mitigés par 2×SON BE + ses PA à la
+  // localisation touchée ; la cible ne perd rien (les États de la touche restent sur elle).
+  if (res.hit && res.woundsLost) {
+    const priest = martyrGuardOf(get().battle!, target);
+    if (priest) {
+      const loc = res.location ?? 'corps';
+      const raw = res.damage ?? res.woundsLost;
+      const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'E')) - Math.max(0, priest.armour[loc] ?? 0));
+      if (taken > 0) {
+        loseWounds(priest, taken);
+        if (priest.wounds.current <= 0) applyZeroWounds(priest);
+      }
+      res = { ...res, woundsLost: 0, log: `${res.log} Martyr : ${priest.name} reçoit les Dégâts à la place de ${target.name}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.` };
+    }
+  }
   // Perturbante (LDB 62 l.275-276) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
   // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
   if (attacker.pushbackMode && weapon.type === 'melee' && canPushback(weapon)) {
@@ -1809,6 +1851,12 @@ export function maybeOpenDefense(
 /** Attaque de l'IA : ouvre la modale de défense (→ true, tour SUSPENDU) si la cible
  *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
 export function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
+  // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) pour oser attaquer le
+  // béni ; échec → l'IA renonce à CE coup (simplification : pas de re-ciblage, documentée).
+  const ward = attackWardGate(attacker, target);
+  const b0 = get().battle;
+  if (ward.lines.length && b0) set({ battle: { ...b0, log: [...b0.log, ...evLines(ward.lines, 'info', attacker.id)] } });
+  if (!ward.allowed) return false;
   if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   // Tir ennemi : l'annoncer dans le journal de COMBAT (battle.log → fil + tiroir) DÈS la décision — un tir
   // n'ouvre pas de modale de défense, donc « on ne savait jamais sur qui il tirait » (#12d). Avant, l'annonce
@@ -2681,6 +2729,21 @@ export function applyCast(
           return;
         }
       }
+      // Martyr (LDB 42 — L13) : les Dégâts du Projectile vont au prêtre (BE doublé pour ces Dégâts).
+      if (mres.hit && mres.woundsLost && battle) {
+        const priest = martyrGuardOf(battle, t);
+        if (priest) {
+          const raw = mres.damage ?? mres.woundsLost;
+          const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'E')) - Math.max(0, priest.armour[mres.location ?? 'corps'] ?? 0));
+          if (taken > 0) {
+            loseWounds(priest, taken);
+            if (priest.wounds.current <= 0) applyZeroWounds(priest);
+          }
+          logLines.push(`Martyr : ${priest.name} reçoit les Dégâts à la place de ${t.name}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.`);
+          logLines.push(...checkFocusInterruption(get, set, priest));
+          return;
+        }
+      }
       if (!mres.hit || !mres.woundsLost) return;
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;
@@ -2725,6 +2788,32 @@ export function applyCast(
       logLines.push(r2.log);
       applyMissileHit(t2, r2);
       if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
+    }
+    // Attaques en chaîne (LDB 47 — L13) : « Si [le Projectile] réduit la cible à 0 Blessure, il
+    // rebondit sur une autre cible » — ennemi du lanceur le plus proche de la cible précédente
+    // (≤ BFM m), dans la portée INITIALE du sort, jamais re-touché ; mêmes Dégâts (même jet) ;
+    // max BFM rebonds. S'arrête dès qu'une cible survit.
+    if (missileSpec.chainOnKill && res.cast && battle && caster.pos) {
+      const maxBounces = Math.max(0, resolveFormula(missileSpec.chainOnKill.maxBounces, caster, battleRng()));
+      const hopTiles = Math.max(1, Math.ceil(Math.max(0, resolveFormula(missileSpec.chainOnKill.hopMeters, caster, battleRng())) / 2));
+      const initialRange = spellRangeTiles(spell.range, caster);
+      const hitIds = new Set([target.id, ...extraTargets.map((t) => t.id)]);
+      let prev = target;
+      for (let bounce = 0; bounce < maxBounces; bounce++) {
+        if (!(prev.wounds.current <= 0 || prev.dead)) break; // « réduit la cible à 0 Blessure »
+        const next = battle.combatants
+          .filter((c) => c.kind !== caster.kind && !hitIds.has(c.id) && !isOutOfAction(c) && c.pos
+            && combatDistance(prev, c) <= hopTiles
+            && (initialRange == null || combatDistance(caster, c) <= initialRange))
+          .sort((a, b) => combatDistance(prev, a) - combatDistance(prev, b))[0];
+        if (!next) break;
+        const r2 = evaluateMissile(caster, next, spell, res);
+        logLines.push(`${spell.label} rebondit sur ${next.name} !`, r2.log);
+        applyMissileHit(next, r2);
+        bus.emit(EVT.ANIM_ATTACK, { from: prev.id, to: next.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
+        hitIds.add(next.id);
+        prev = next;
+      }
     }
     // Zone persistante d'un Projectile (Grands feux d'U'Zhul : « le feu continue de brûler
     // dans la Zone d'Effet pour la durée du Sort ») — posée autour de la cible touchée.

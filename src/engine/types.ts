@@ -214,6 +214,13 @@ export interface ActiveEffect {
   /** Dôme (LDB 47 — L11) : quiconque dans la zone gagne Protection (6+) contre les attaques
    *  magiques ou à distance provenant de l'EXTÉRIEUR du dôme. */
   domeWard?: { radiusMeters: number };
+  /** Bénédiction de Protection (LDB 41 — L13) : « Les ennemis doivent effectuer un Test de FM
+   *  Accessible (+20) pour attaquer votre cible. Sur un échec, ils doivent choisir une cible ou
+   *  une Action différente. » — Test joué à la DÉCLARATION d'attaque (rien n'est consommé). */
+  attackWardFM?: boolean;
+  /** Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles »
+   *  — id du PRÊTRE qui encaisse à la place du porteur (BE doublé pour ces Dégâts). */
+  martyrGuard?: string;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
-  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, applyZoneCrossings,
+  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
@@ -1857,6 +1857,20 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
     if (battle.preview) set({ battle: { ...get().battle!, preview: null } });
+    // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) AVANT d'engager quoi
+    // que ce soit (charge comprise) ; échec → « choisir une cible ou une Action différente » —
+    // rien n'est consommé, le jet est montré (file de révélation, « un jet = une modale »).
+    {
+      const ward = attackWardGate(active, target);
+      if (ward.lines.length) {
+        const b1 = get().battle!;
+        set({ battle: { ...b1, log: [...b1.log, ...evLines(ward.lines, 'info', active.id)] } });
+        if (!ward.allowed) {
+          pushReveal(set, { kind: 'round', title: 'Bénédiction de Protection', lines: ward.lines });
+          return;
+        }
+      }
+    }
     if (plan.kind === 'charge') {
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
       // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
