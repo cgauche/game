@@ -153,15 +153,25 @@ Séquence :
 Implémentation via la file de modales existante (arbitre R2) : 1ʳᵉ attaque → (si touche) sélection de la 2ᵉ cible
 → 2ᵉ attaque. Pur autant que possible (le d100 inversé est dérivé, pas re-tiré → déterminisme intact).
 
-### 5.7 Lâcher / amputation ↔ loadout (Maladresse, Critique)
+### 5.7 Amputation ↔ loadout (RÉVISÉ après audit RAW — LIVRÉ commit `5da4a34`)
 
-Le slot de main du loadout est le substrat des effets ciblant un bras (mapping `main`↔brasD, `off`↔brasG, §4.1) :
-- **Maladresse « lâche l'arme »** (Tableau des Oups!, LDB 14 l.53-54) : vide le slot de la main concernée →
-  l'arme tombe au sol (objet ramassable) ou retourne à l'inventaire non tenu. `recomputeLoadout` re-dérive.
-- **Critique au bras → amputation** (LDB 18) : la main est perdue → slot vidé définitivement ; arme à 2 mains
-  inutilisable (`cannotWieldTwoHanded`, déjà géré). **Main PRINCIPALE perdue** → l'arme secondaire restante se
-  joue désormais à la **pénalité de main secondaire** (`offHandPenalty`/Ambidextre) — ce qui **unifie** le -20
-  forfaitaire actuel de `critical.ts` (`charPenalty CC/CT -20`) avec le modèle off-hand de ce chantier.
+> **Audit RAW VF (2026-06-10) :** deux des trois idées initiales étaient sans fondement et ont été ÉCARTÉES.
+> - ❌ **Maladresse « lâche l'arme »** : le Tableau des Oups ! VF (LDB 14 l.14-46, `src/data/oups.ts`) n'a AUCUN
+>   résultat « lâcher l'arme ». Le 71-80 fait perdre la prochaine **Action** (`loseAction`), pas l'arme. Le seul
+>   cas où une arme quitte la main est l'**Incident de Tir** (l.56-57, Poudre noire, jet pair) : l'arme est
+>   **détruite** (`it.destroyed`, déjà retirée par `recomputeLoadout`). → rien à câbler.
+> - ❌ **« Unification off-hand » du −20 d'amputation** : le RAW (LDB 18) modélise la perte de la main directrice
+>   comme un −20 CC/CT FORFAITAIRE (`charPenalty`, `critical.ts`), l'arme étant CONSERVÉE (adaptation). Reframer
+>   en off-hand = invention + double comptage potentiel. L'existant est déjà correct (−20, sans pénalité off-hand
+>   ajoutée car l'arme reste taguée `hand:'main'`). → on n'y touche pas.
+
+**Ce qui EST livré (vrai bug trouvé via une question de l'utilisateur « le bouclier reste-t-il dans une main
+amputée ? »)** : `recomputeLoadout` ne bloquait que les armes à DEUX mains sur amputation — un **bouclier / 2ᵉ
+arme dans une main amputée restait dérivé** (défense gratuite d'un bras absent). Fix : `handAmputated(c, 'main'|
+'off')` (`trauma.ts` ; brasD/brasG, hors prothèse « tout ») piloté par `recomputeLoadout` :
+- **Arme directrice CONSERVÉE** tant qu'il reste UNE main (adaptation ; le −20 CC/CT de l'amputation s'applique déjà) ;
+- **objet de main secondaire (bouclier / 2ᵉ arme) LÂCHÉ** dès qu'une main manque (la main restante tient l'arme directrice) ;
+- **les DEUX mains perdues → Mains nues**.
 
 ### 5.6 Bornage Frénésie / attaques gratuites
 L'attaque gratuite de Frénésie (et toute attaque gratuite) reste **mono-arme** : le mode « Des deux armes »
