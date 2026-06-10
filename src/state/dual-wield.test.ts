@@ -129,16 +129,16 @@ describe('chaînage de l’Action « des deux armes »', () => {
   });
 });
 
-describe('Avantage : seulement si les DEUX frappes touchent (LDB 10 l.638)', () => {
-  it('les deux touchent → +2 Avantage (1 par frappe)', () => {
+describe('Avantage : +1 UNIQUE et seulement si les DEUX frappes touchent (LDB 10 l.638)', () => {
+  it('les deux touchent → +1 Avantage (pas +1 par frappe)', () => {
     const { h } = setupBattle();
     h.advantage = 0;
     useGame.setState({
-      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30, mainAdvantage: true } as any,
+      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any,
       pendingAttack: { attackerId: 'h', targetId: 'f2', location: 'corps', result: hitRes(), dualSecond: true, weaponUid: 'o' } as any,
     });
     useGame.getState().attackConfirm();
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.advantage).toBe(2);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.advantage).toBe(1);
     expect(useGame.getState().pendingDualStrike).toBeNull();
   });
 
@@ -146,7 +146,7 @@ describe('Avantage : seulement si les DEUX frappes touchent (LDB 10 l.638)', () 
     const { h } = setupBattle();
     h.advantage = 0;
     useGame.setState({
-      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30, mainAdvantage: true } as any,
+      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any,
       pendingAttack: { attackerId: 'h', targetId: 'f2', location: 'corps', result: hitRes({ hit: false, advantageTo: 'defender' }), dualSecond: true, weaponUid: 'o' } as any,
     });
     useGame.getState().attackConfirm();

@@ -1973,16 +1973,14 @@ export const useGame = create<GameState>((set, get) => ({
         if (pa.result.hit && mainRoll != null && off?.uid) {
           // Exception Critique : la 2ᵉ frappe utilise la valeur du tableau des Critiques (révélation poussée par applyAttackResult).
           const critValue = pa.result.critical ? get().pendingReveals.find((r) => r.kind === 'critical')?.dice : undefined;
-          set({ pendingDualStrike: { attackerId: attacker.id, offWeaponUid: off.uid, mainRoll, critValue, mainAdvantage: pa.result.advantageTo === 'attacker' } });
+          set({ pendingDualStrike: { attackerId: attacker.id, offWeaponUid: off.uid, mainRoll, critValue } });
         }
         set({ battle: { ...get().battle! } });
       }
-      // 2ᵉ frappe résolue : Avantage accordé seulement si LES DEUX ont touché (dualBefore n'existe que si la 1ʳᵉ a touché).
+      // 2ᵉ frappe résolue (LDB 10 l.638) : +1 Avantage UNIQUE si LES DEUX frappes touchent (pas +1 par frappe).
+      // `dualBefore` n'existe que si la 1ʳᵉ a touché ; `pa.result.hit` = la 2ᵉ touche → les deux touchent.
       if (isDualSecond) {
-        if (dualBefore && pa.result.hit) {
-          if (dualBefore.mainAdvantage) { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
-          if (pa.result.advantageTo === 'attacker') { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
-        }
+        if (dualBefore && pa.result.hit) { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
         set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
       // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du

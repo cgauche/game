@@ -182,14 +182,13 @@ export interface PendingCleave {
 }
 /** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.638), après une 1ʳᵉ frappe RÉUSSIE.
  *  Calqué sur PendingCleave : le joueur clique une cible (ou renonce via `dualStrikeSkip`). `mainRoll` = jet
- *  conservé de la 1ʳᵉ frappe ; `critValue` = valeur du tableau des Critiques si la 1ʳᵉ était un Critique ;
- *  `mainAdvantage` = l'Avantage différé de la 1ʳᵉ frappe (accordé seulement si la 2ᵉ touche aussi). */
+ *  conservé de la 1ʳᵉ frappe ; `critValue` = valeur du tableau des Critiques si la 1ʳᵉ était un Critique.
+ *  Avantage : +1 UNIQUE accordé si les DEUX frappes touchent (l.638) — son existence prouve que la 1ʳᵉ a touché. */
 export interface PendingDualStrike {
   attackerId: string;
   offWeaponUid: string;
   mainRoll: number;
   critValue?: number;
-  mainAdvantage: boolean;
 }
 /** Piétinement en attente (LDB 85 l.320-321) : modale interactive — Lancer (resolveTrample) →
  *  Chance → Appliquer (dépense 1 Avantage, action gratuite). */
