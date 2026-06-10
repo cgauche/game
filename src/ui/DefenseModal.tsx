@@ -27,6 +27,7 @@ export function DefenseModal() {
   const pd = useGame((s) => s.pendingDefense);
   const battle = useGame((s) => s.battle);
   const setMode = useGame((s) => s.defenseSetMode);
+  const setParry = useGame((s) => s.defenseSetParryWeapon);
   const roll = useGame((s) => s.defenseRoll);
   const reroll = useGame((s) => s.defenseReroll);
   const bonusSL = useGame((s) => s.defenseBonusSL);
@@ -41,7 +42,10 @@ export function DefenseModal() {
   const res = pd.result;
   const fortune = defender.fortune ?? 0; // Chance DU DÉFENSEUR (le héros)
   const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
-  const paradeVal = defenseValue(defender, 'parade');
+  // Armes pouvant parer (hors Mains nues) ; arme de parade choisie (défaut = main principale).
+  const parryPickable = defender.weapons.filter((w) => w.name !== 'Mains nues' && !!w.uid);
+  const chosenParry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0];
+  const paradeVal = defenseValue(defender, 'parade', chosenParry); // valeur affichée = arme de parade choisie
   const esquiveVal = defenseValue(defender, 'esquive');
   const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const doRoll = () => {
@@ -76,6 +80,21 @@ export function DefenseModal() {
                   Esquive ({esquiveVal})
                 </button>
               </div>
+              {pd.mode === 'parade' && parryPickable.length >= 2 && (
+                <div className="rm-loc-inline" style={{ marginTop: 6 }}>
+                  <span className="mini-title">Parer avec</span>
+                  <select
+                    className="rm-loc-select"
+                    value={pd.parryWeaponUid ?? chosenParry?.uid ?? ''}
+                    onChange={(e) => setParry(e.target.value || null)}
+                    title="Avec quelle arme parer ? La main secondaire subit -20 (sauf Corps à corps (Parade) + arme Défensive)."
+                  >
+                    {parryPickable.map((w) => (
+                      <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde)' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             {rolling ? (
               <div className="rm-rolling"><span className="rm-die">🎲</span></div>
