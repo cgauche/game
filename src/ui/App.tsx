@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { useGame } from '../state/store';
 import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
-import { CharacterCreator } from './CharacterCreator';
+import { CharacterCreator } from './creator/CharacterCreator';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour

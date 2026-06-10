@@ -15,6 +15,9 @@ import qualitiesJson from './qualities.json';
 import trappingsJson from './trappings.json';
 import creaturesJson from './creatures.json';
 import spellsJson from './spells.json';
+import eyesJson from './eyes.json';
+import hairsJson from './hairs.json';
+import detailsJson from './details.json';
 import { CharKey } from '../engine/types';
 
 export interface SpeciesData {
@@ -42,6 +45,9 @@ export interface ClassData {
 export interface CareerData {
   label: string;
   class: string;
+  /** Tableau des Classes et Carrières aléatoires (LDB 05 l.197+) : borne haute d100 par colonne
+   *  d'espèce (`SpeciesData.refCareer`). null = carrière INDISPONIBLE pour cette espèce (l.360). */
+  rand: Record<string, number | null>;
   desc: string;
   source: { book: string; page: number };
 }
@@ -65,9 +71,18 @@ export interface SkillData {
 }
 export interface TalentData {
   label: string;
-  max: string | null;
+  /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : 1, « Bonus de X », « Aucun » ou null. */
+  max: string | number | null;
   test: string | null;
   desc: string;
+  /** Compétence ajoutée à « n'importe quelle Carrière que vous entamez » (LDB 10 : Maître
+   *  artisan, Oreille absolue, Sorcier !, Voyageur aguerri, Artiste). */
+  addSkill?: string | null;
+  /** Caractéristique/attribut modifié à l'acquisition (LDB 10 : « +5 à votre Caractéristique de
+   *  départ », Blessure, Chance, Détermination, Mouvement, Corruption). Libellé long. */
+  addCharacteristic?: string | null;
+  /** Talent conféré (LDB 10 : Flagellant → Frénésie). */
+  addTalent?: string | null;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
@@ -108,6 +123,33 @@ export interface EtatData {
   desc: string;
   source: { book: string; page: number };
 }
+/** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
+export interface DetailColorData {
+  label: string;
+  /** Borne haute 2d10 (incluse). */
+  rand: number;
+  color: Record<string, string>;
+}
+/** Texte d'aide (LDB 05 « Détails ») : global + par colonne refChar (HTML léger des données). */
+export interface DetailText {
+  all: string;
+  bySpecies: Record<string, string>;
+}
+/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne refChar —
+ *  + textes d'aide (conventions de noms, espérance de vie, tailles moyennes, Ambitions). */
+export interface DetailsData {
+  ageBase: Record<string, number>;
+  ageRoll: Record<string, number>;
+  heightBase: Record<string, number>;
+  heightRoll: Record<string, number>;
+  texts: {
+    nom: DetailText;
+    age: DetailText;
+    taille: DetailText;
+    ambitionShort: DetailText;
+    ambitionLong: DetailText;
+  };
+}
 export interface SpellData {
   label: string;
   type: string;
@@ -134,14 +176,24 @@ export const qualities = qualitiesJson as any[];
 export const trappings = trappingsJson as TrappingData[];
 export const creatures = creaturesJson as CreatureData[];
 export const spells = spellsJson as SpellData[];
+export const eyes = eyesJson as DetailColorData[];
+export const hairs = hairsJson as DetailColorData[];
+export const details = detailsJson as DetailsData;
 
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);
 }
-export function careersForSpecies(refCareer: string): CareerData[] {
-  // Toutes les carrières du Livre de base sont accessibles ; le tirage aléatoire
-  // d'espèce (refCareer) sert aux tables, mais on autorise le choix libre.
-  return careers;
+/**
+ * Carrières accessibles à une espèce (Tableau des Classes et Carrières aléatoires, LDB 05
+ * l.197+ : « certaines ont des restrictions liées à la Race », l.360). `ignoreRestrictions`
+ * = option « Mais je veux jouer un elfe sylvain Flagellant ! » (l.362, accord du MJ).
+ */
+export function careersForSpecies(refCareer: string, ignoreRestrictions = false): CareerData[] {
+  if (ignoreRestrictions) return careers;
+  return careers.filter((c) => c.rand?.[refCareer] != null);
+}
+export function findCareer(label: string): CareerData | undefined {
+  return careers.find((c) => c.label === label);
 }
 export function levelsForCareer(career: string): CareerLevelData[] {
   return careerLevels.filter((c) => c.career === career).sort((a, b) => a.level - b.level);
@@ -151,6 +203,9 @@ export function firstLevel(career: string): CareerLevelData | undefined {
 }
 export function findSkill(label: string): SkillData | undefined {
   return skills.find((s) => s.label === label);
+}
+export function findTalent(label: string): TalentData | undefined {
+  return talents.find((t) => t.label === label);
 }
 export function findTrapping(label: string): TrappingData | undefined {
   return trappings.find((t) => t.label.toLowerCase() === label.toLowerCase());

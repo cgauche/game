@@ -22,8 +22,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -72,8 +71,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -122,8 +120,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -172,8 +169,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Corps à corps (Base)",
@@ -223,8 +219,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -272,8 +267,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -324,8 +318,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -376,8 +369,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -428,8 +420,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Corps à corps (Bagarre)",
@@ -481,8 +472,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Corps à corps (Base)",
@@ -532,8 +522,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Chevaucher (Au choix)",
@@ -583,8 +572,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -634,8 +622,7 @@
       "Dex": 20,
       "Int": 20,
       "FM": 20,
-      "Soc": 20,
-      "M": 4
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -684,8 +671,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -736,8 +722,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -788,8 +773,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -840,8 +824,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -892,8 +875,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -944,8 +926,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -996,8 +977,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1048,8 +1028,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1100,8 +1079,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1152,8 +1130,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1204,8 +1181,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1256,8 +1232,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1308,8 +1283,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 30,
-      "Soc": 30,
-      "M": 3
+      "Soc": 30
     },
     "skills": [
       "Charme",
@@ -1359,8 +1333,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 40,
-      "Soc": 10,
-      "M": 3
+      "Soc": 10
     },
     "skills": [
       "Calme",
@@ -1411,8 +1384,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 40,
-      "Soc": 10,
-      "M": 3
+      "Soc": 10
     },
     "skills": [
       "Calme",
@@ -1463,8 +1435,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 40,
-      "Soc": 10,
-      "M": 3
+      "Soc": 10
     },
     "skills": [
       "Calme",
@@ -1515,8 +1486,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 40,
-      "Soc": 10,
-      "M": 3
+      "Soc": 10
     },
     "skills": [
       "Calme",
@@ -1567,8 +1537,7 @@
       "Dex": 30,
       "Int": 20,
       "FM": 40,
-      "Soc": 10,
-      "M": 3
+      "Soc": 10
     },
     "skills": [
       "Calme",
@@ -1604,8 +1573,8 @@
     "desc": "Pour la majeure partie des habitants de l'Empire, les gnomes ne sont qu'un mythe, que l'on ne retrouve que dans les plus invraisemblables romances bretonniennes ou dans les feuilletons horrifiques à un sou qui se vendent dans les rues d'Altdorf. Ils y sont fréquemment décrits comme des êtres espiègles doués de magie. Cependant, toutes ces légendes ont leur part de vérité. Non seulement les gnomes existent ; mais en plus, ils vivent dans l'Empire.<br><br>Les gnomes (ou « gnommi », comme ils se nomment dans leur propre langue, le ghassalli) ont quelques colonies à l'intérieur des frontières de l'Empire, mais ne se mêlent que très peu à la société humaine. Les gnomes sont si rares que les gens ignorants les prennent souvent pour des halflings mal nourris.<br><br>Pour cette raison, les gnomes qui cherchent à passer incognito dans la société impériale se rasent souvent la barbe et les moustaches et portent des vêtements volumineux ou rembourrés afin de cacher leur relative minceur. Même si un tel « déguisement » ne tromperait jamais un halfling, cela suffit généralement à convaincre les personnes des autres races.<br><br>Les gnomes sont des êtres de petite taille et filiformes. Ils ont un nez bulbeux, de grandes oreilles arrondies, des cheveux épais et des doigts habiles. Leurs voix bourrues sont étonnamment graves pour des êtres aussi petits. La société des gnomes repose sur d'étroits rapports claniques ; pour eux, la loyauté familiale et personnelle passe avant la plupart des autres préoccupations. Les gnomes font d'ailleurs preuve à cet égard d'une ténacité opiniâtre, capable d'étonner même le plus intraitable des nains. Tout comme le suggèrent les légendes, les gnomes sont des êtres magiques, qui ont une affinité particulière pour Ulgu, le Vent gris du Domaine des Ombres, des illusions et de la tromperie.<br><br>Glimdwarrow est la plus grande cité gnome de l'Empire. D'après certaines rumeurs, d'autres existeraient sous les Montagnes Grises dans le Reikland, sous les Monts du Milieu dans le Middenland et dans les collines de Kölsa du Talabecland. Glimdwarrow est une ville souterraine qui s'étend sous les Landes miroitantes, dans le sud du Middenland. Ses galeries et ses salles sont dissimulées par de puissantes illusions et surveillées par la vigilante Garde du Dwarrow, une unité d'élite de sorciers-guerriers. Glimdwarrow se vantait autrefois d'être un lieu très animé, avec une population forte de plusieurs milliers de personnes. Malheureusement, il y a cent ans, les hordes de peaux-vertes de Grom la Panse ont ravagé les Landes miroitantes et massacré presque tous les gnomes qui s'y cachaient. Aujourd'hui, les galeries en ruine de Glimdwarrow sont en grande partie désertes, et seuls huit clans gnomes y vivent encore. Dirigés par Merawidda Frayne, la perturbée Reine des Cendres, les chefs des clans restants se vouent une haine déclarée, chacun tenant les autres pour responsables des horreurs infligées par les peaux-vertes de Grom.<br><br><h3>Points de vue</h3><i>Sur les nains...</i><br>« La grand-mère Tegen se croit têtue, toujours à ressasser tout ce qu'elle reproche au clan Landweth, qui serait la cause de tous nos problèmes, clamant que jamais on ne la persuadera du contraire. Mais, Mabyn peut en témoigner, ce n'est rien par rapport aux nains. Je connais des montagnes qui seraient moins inflexibles en ce qui concerne l'or. »<br>– Aelyn Thorne, négociant de Glimdwarrow<br><br><i>Sur les elfes sylvains...</i><br>« J'en ai jamais rencontré, et je ne pense pas que j'en verrai un jour. Mais ils ne valent sans doute guère mieux que ces autres elfes arrogants qui viennent de l'autre côté de l'eau. »<br>– Morkam « Rotules », fermier des Landes miroitantes<br><br><i>Sur les hauts elfes...</i><br>« Même 200 ans après, je suis toujours en colère contre les elfes. Sans ces idiots, nous serions toujours les bienvenus dans tout l'Empire. Mais non, ils imposent partout leur façon de faire, et malheureusement, l'empereur Magnus a cru à toutes leurs balivernes sur la magie. Et depuis, nous sommes là à nous cacher, sursautant au moindre bruit. »<br>– Kywere Hawken, illusionniste de Glimdwarrow<br><br><i>Sur les halflings...</i><br>« Ces petits trublions ! J'en ai rencontré toute une famille sur la route de Nomenfast. Pendant que l'un d'entre eux, campé devant moi, marchandait le prix d'un assortiment d'épingles, les autres étaient occupés à farfouiller dans mes marchandises, à tenter de chiper tout ce qu'ils pouvaient. Par la barbe de Ringil, je parie qu'ils ont eu un choc quand, une fois rentrés au camp, ils se sont aperçus que leurs besaces avaient disparu ! »<br>– Durngarth Peddlar, vagabond<br><br><i>Sur les humains...</i><br>« Quand ç'est pas leurs répurgateurs qui nous poursuivent à tout bout de champ, ou leurs seigneurs qui se défoulent sur nous, ce sont leurs commerçants qui cherchent à nous dérober ce qui nous appartient. Mais ce sont nos voisins, on ne peut rien y faire : à nous de nous débrouiller. Moi je dis, mieux vaut faire profil bas. Très bas. »<br>– La vieille Demelza « Renoncule », pêcheuse des Landes miroitantes<br><br><i>Sur les ogres...</i><br>« Alors, elle me dit “Vous n'avez pas l'air très en chair, hein ?” Mais ça ne l'a pas empêchée d'essayer de me boulotter ! Elle m'a poursuivie à travers la lande. Pendant deux jours ! Pas moyen de lui faire lâcher prise ! Je n'ai jamais rencontré un ogre qui ne m'ait pas regardée de la même façon que je regarde une des tartes de Rumster. Dès que je vois l'un de ces grands crétins, je prends mes jambes à mon cou. C'est plus sûr ! »<br>– Jowanet Scantleburn, herboriste des Marais Midden ",
     "movement": 3,
     "fate": {
-      "fate": 0,
-      "resilience": 2,
+      "fate": 2,
+      "resilience": 0,
       "extra": 2
     },
     "small": true,
@@ -1619,8 +1588,7 @@
       "Dex": 30,
       "Int": 30,
       "FM": 40,
-      "Soc": 15,
-      "M": 3
+      "Soc": 15
     },
     "skills": [
       "Charme",
@@ -1658,8 +1626,8 @@
     "movement": 6,
     "fate": {
       "fate": 0,
-      "resilience": 0,
-      "extra": 3
+      "resilience": 3,
+      "extra": 1
     },
     "small": false,
     "baseChar": {
@@ -1672,8 +1640,7 @@
       "Dex": 10,
       "Int": 10,
       "FM": 20,
-      "Soc": 10,
-      "M": 6
+      "Soc": 10
     },
     "skills": [
       "Athlétisme",
@@ -1726,8 +1693,7 @@
       "Dex": 30,
       "Int": 30,
       "FM": 30,
-      "Soc": 20,
-      "M": 5
+      "Soc": 20
     },
     "skills": [
       "Calme",
@@ -1778,8 +1744,7 @@
       "Dex": 30,
       "Int": 30,
       "FM": 30,
-      "Soc": 20,
-      "M": 5
+      "Soc": 20
     },
     "skills": [
       "Athlétisme",

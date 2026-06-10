@@ -71,13 +71,14 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
     expect(ragot.nextCost).toBe(10);
   });
 
-  it('Talents in-carrière non possédés : acquérables (coût 100)', () => {
+  it('Talents in-carrière non possédés : un rang par EMPLACEMENT, acquérables (coût 100)', () => {
     const v = buildAdvancementView(hero());
-    const sociable = v.talents.find((t) => t.name === 'Sociable')!;
+    const sociable = v.talents.find((t) => t.label === 'Sociable')!;
     expect(sociable).toBeTruthy();
     expect(sociable.times).toBe(0);
-    expect(sociable.inCareer).toBe(true);
     expect(sociable.nextCost).toBe(100);
+    // Pamphlétaire (Niveau 1) : 4 emplacements de talents, tous explicites.
+    expect(v.talents).toHaveLength(4);
   });
 
   it('complétion : héros frais NON complété → coût de changement 200', () => {
@@ -86,11 +87,35 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
     expect(v.changeCost).toBe(200);
   });
 
-  it('cible de progression : le Niveau suivant de la carrière (« Agitateur », niv. 2)', () => {
+  it('cible de progression : le Niveau suivant exige la complétion (LDB 07 l.137)', () => {
     const v = buildAdvancementView(hero());
     const next = v.targets.find((t) => t.level === 2);
     expect(next).toBeTruthy();
     expect(next!.career).toBe('Agitateur');
     expect(next!.label).toBe('Agitateur'); // libellé du Niveau 2
+    expect(next!.ok).toBe(false); // niveau 1 non complété
+  });
+
+  it('niveau 2 : Compétences cumulatives (l.78), Talents du niveau courant seul (l.100)', () => {
+    const v = buildAdvancementView(hero({ careerLevel: 2 }));
+    // « Charme » (Niveau 1) reste in-carrière au Niveau 2.
+    expect(v.skills.find((s) => s.name === 'Charme')!.inCareer).toBe(true);
+    // « Sociable » (talent du Niveau 1) n'est PLUS proposé au Niveau 2.
+    expect(v.talents.some((t) => t.label === 'Sociable')).toBe(false);
+    expect(v.talents.length).toBeGreaterThan(0);
+  });
+
+  it('changeCostFor : +100 PX vers une carrière d\'une autre Classe (LDB 08 l.9)', () => {
+    const v = buildAdvancementView(hero());
+    // Agitateur = Citadins ; Artisan = Citadins (même Classe) ; Soldat = Guerriers.
+    expect(v.changeCostFor('Artisan')).toBe(v.changeCost);
+    expect(v.changeCostFor('Soldat')).toBe(v.changeCost + 100);
+  });
+
+  it('emplacement « (Au choix) » : Érudit propose un choix de spec de Savoir', () => {
+    const v = buildAdvancementView(hero({ career: 'Érudit' }));
+    const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
+    expect(open).toBeTruthy();
+    expect(open!.options.length).toBeGreaterThan(0);
   });
 });

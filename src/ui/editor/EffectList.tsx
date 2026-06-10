@@ -28,6 +28,10 @@ const EFFECT_TYPES: Effect['type'][] = [
   'restoreFortune',
   'inflictNightmares',
   'inflictDisease',
+  'giveSin',
+  'corruptionExposure',
+  'giveCorruption',
+  'learnSpell',
   'rest',
   'startCombat',
   'transition',
@@ -50,6 +54,10 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
   inflictDisease: 'Infliger une maladie (LDB 20)',
+  giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
+  corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
+  giveCorruption: 'Points de Corruption directs (LDB 19)',
+  learnSpell: 'Apprendre un sort (trouvaille, sans PX)',
   rest: 'Repos (Dormir / Se reposer N jours)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
@@ -96,6 +104,14 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'inflictNightmares', heroId: '' };
     case 'inflictDisease':
       return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
+    case 'giveSin':
+      return { type: 'giveSin', amount: 1, heroId: '' };
+    case 'corruptionExposure':
+      return { type: 'corruptionExposure', level: 'mineure', skill: 'Résistance', heroId: '' };
+    case 'giveCorruption':
+      return { type: 'giveCorruption', amount: 1, heroId: '' };
+    case 'learnSpell':
+      return { type: 'learnSpell', spell: '', heroId: '' };
     case 'rest':
       return { type: 'rest', days: 1 };
     case 'setTime':
@@ -170,6 +186,38 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'rest' && (
           <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        )}
+        {effect.type === 'giveSin' && (
+          <>
+            <label>Péchés (1-3 selon gravité) <input type="number" min={1} max={3} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <input placeholder="id du héros (vide = premier sachant Prier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'corruptionExposure' && (
+          <>
+            <select value={e.level ?? 'mineure'} onChange={(ev) => upd({ level: ev.target.value })}>
+              <option value="mineure">Exposition mineure (échec : +1)</option>
+              <option value="moderee">Exposition modérée (+2 / +1 si DR 0-1)</option>
+              <option value="majeure">Exposition majeure (+3 / +2 / +1 selon DR)</option>
+            </select>
+            <select value={e.skill ?? 'Résistance'} onChange={(ev) => upd({ skill: ev.target.value })}>
+              <option value="Résistance">Résistance (Influence physique)</option>
+              <option value="Calme">Calme (Corruption spirituelle)</option>
+            </select>
+            <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'giveCorruption' && (
+          <>
+            <label>Points de Corruption <input type="number" min={1} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'learnSpell' && (
+          <>
+            <input placeholder="Libellé exact du sort (spells.json), ex. Fléchette" value={e.spell ?? ''} onChange={(ev) => upd({ spell: ev.target.value })} />
+            <input placeholder="id du héros (vide = premier au Talent éligible)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">

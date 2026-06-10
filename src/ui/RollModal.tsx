@@ -32,6 +32,7 @@ export function RollModal() {
   const roll = useGame((s) => s.attackRoll);
   const reroll = useGame((s) => s.attackReroll);
   const bonusSL = useGame((s) => s.attackBonusSL);
+  const darkPact = useGame((s) => s.attackDarkPact);
   const forceSuccess = useGame((s) => s.attackForceSuccess);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
@@ -249,7 +250,14 @@ export function RollModal() {
               </div>
             )}
             <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ChanceButtons
+                fortune={fortune}
+                rerollable={rerollable}
+                onReroll={reroll}
+                onBonusSL={bonusSL}
+                darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
+                onDarkPact={darkPact}
+              />
               <ResilienceButton resilience={attacker.resilience ?? 0} show={!!res && !res.hit} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer

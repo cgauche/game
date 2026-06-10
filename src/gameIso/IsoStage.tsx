@@ -10,6 +10,10 @@ import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
 import { rangeBandModifier, rangeBandName } from '../engine/combat';
+import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { resolveFormula } from '../engine/ops';
+import { spellSpecFor } from '../data/spellspecs';
+import { findSpell } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction } from '../engine/conditions';
 import { Combatant } from '../engine/types';
@@ -102,6 +106,7 @@ export function IsoStage() {
   const enemyAim = useGame((s) => s.enemyAim);
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
+  const pendingCast = useGame((s) => s.pendingCast);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
@@ -746,6 +751,30 @@ export function IsoStage() {
             );
           })}
         <FxLayer dims={dims} floats={floats} projs={projs} auras={auras} aoes={aoes} />
+        {/* Gabarit de ZONE D'EFFET (LDB 47 l.44) au survol : sort ZdE sélectionné → halo du
+            diamètre autour de la case visée + portée respectée (vert = OK, gris = hors de portée). */}
+        {battle?.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && activeC.pos && hover && !pendingCast &&
+          (() => {
+            const spell = findSpell(battle.selectedSpell!);
+            // Même calcul que battleClickTile : rayon de spec curée prioritaire sur le champ Cible.
+            const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
+            const radius = spell
+              ? specRadius != null
+                ? Math.max(0, Math.floor(resolveFormula(specRadius, activeC) / 2))
+                : zdeRadiusTiles(spell.target, activeC)
+              : null;
+            if (spell == null || radius == null) return null;
+            const range = spellRangeTiles(spell.range, activeC);
+            const ok = range == null || cheb(activeC.pos!, hover) <= range;
+            const tiles: JSX.Element[] = [];
+            for (let dy = -radius; dy <= radius; dy++)
+              for (let dx = -radius; dx <= radius; dx++) {
+                const x = hover.x + dx, y = hover.y + dy;
+                if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+                tiles.push(<path key={`zde${x}-${y}`} d={diamondPath(x, y, dims)} fill={ok ? '#8e54c8' : '#666'} opacity={0.35} pointerEvents="none" />);
+              }
+            return <g pointerEvents="none">{tiles}</g>;
+          })()}
         {/* Infobulle de ciblage au survol (mode attaque, R4) — UNIFIÉE mêlée + tir :
             • sur un ENNEMI → toucher % + dégâts probables (previewAttack), avec états « hors de portée » /
               « pas de ligne de vue » ;

@@ -1,33 +1,42 @@
 /**
- * Création de personnage (héros) — Livre de base, chapitre Personnage.
+ * Création de personnage (héros) — Livre de base, chapitres 04/05 « Personnage ».
  *
  * Étapes implémentées :
- *  3) Attributs : Caractéristique = base d'espèce + 2d10 (ou saisie manuelle).
- *  4) Compétences/Talents de carrière : 8 compétences, 40 augmentations
- *     réparties (par défaut +5 chacune), 1 talent au choix.
- *  5) Possessions : équipement de classe + de carrière.
- *  Blessures, Mouvement, Destin/Résilience selon le Tableau des Attributs.
+ *  3) Attributs : Caractéristique = base d'espèce + 2d10 (ou saisie manuelle / répartition de
+ *     100 Points — cf. engine/creation.ts) ; 5 Augmentations gratuites réparties sur les
+ *     3 Caractéristiques de carrière (l.488) ; Destin/Résilience + points supplémentaires.
+ *  4) Compétences/Talents : 3 Compétences d'espèce à +5 et 3 à +3 (l.510) ; Talents d'espèce
+ *     (choix « A ou B », fixes, « N Talent aléatoire » sur la table d100) ; 8 Compétences de
+ *     carrière, 40 augmentations (max 10), 1 Talent de carrière — qui peut être un talent
+ *     d'espèce déjà possédé → times 2 (l.502), dans la limite du Maxi (LDB 10).
+ *  5) Possessions : équipement de classe + de carrière (la Richesse initiale est créditée au
+ *     groupe par l'appelant — cf. engine/creation.rollInitialWealth).
+ *  6) Détails : âge/taille/yeux/cheveux/ambitions (cosmétique).
+ *  Blessures (+ Dur à cuire), Mouvement (+ Véloce), Chance/Détermination (Chanceux/Obstiné) et
+ *  « +5 Caractéristique de départ » appliqués via engine/talentEffects.
  *
- * Les compétences/talents *raciaux* sont appliqués (Livre de base, étape 4,
- * l.510) : 3 Compétences d'espèce à +5 et 3 à +3 ; Talents d'espèce résolus
- * (choix « A ou B », fixes, et « N Talent aléatoire » tirés sur le Tableau des
- * Talents aléatoires d100 — données issues de Source/all-data.json).
+ * Spécialisations : identité (name, spec) partout ; les libellés stockés sont CONCRETS (jamais
+ * de « (Au choix) » résiduel) ; les emplacements de carrière utilisés sont DÉSIGNÉS dans
+ * `careerSlotChoices` (cf. engine/careerSlots.ts).
  */
 import { RNG, defaultRNG, roll } from './dice';
-import { maxWounds } from './characteristics';
 import { buildInventory, recomputeLoadout, emptyArmour } from './items';
 import { groupsFor } from './groups';
-import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation } from './types';
+import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation, HeroDetails } from './types';
 import {
   SpeciesData,
   findSpecies,
   firstLevel,
+  levelsForCareer,
   findSkill,
+  findTalent,
   findTrapping,
   classes,
   careers,
   talents as talentTable,
 } from '../data';
+import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached } from './careerSlots';
+import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 
 const SKILL_CHAR: Record<string, CharKey> = {
   'Capacité de Combat': 'CC',
@@ -77,29 +86,55 @@ function randomTalentTable() {
   return talentTable.filter((t) => t.rand != null).sort((a, b) => (a.rand as number) - (b.rand as number));
 }
 
+/** Motif « N Talent(s) aléatoire(s) » / « Talent aléatoire » des listes d'espèce. */
+const RANDOM_ENTRY_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
+
 /**
- * Tire un Talent sur le Tableau des Talents aléatoires (1d100). Relance si le
- * talent est déjà possédé (Livre de base : « vous pouvez relancer »).
+ * Tire un Talent sur le Tableau des Talents aléatoires (1d100). Le tirage est FIGÉ : si le
+ * talent tiré est groupé (« un au choix » — Sens aiguisé, Résistance, Maître artisan, Artiste),
+ * on CHOISIT une Spécialisation non possédée (via `pickSpec`, défaut : la première libre) au
+ * lieu de relancer ; on ne relance que si le talent est déjà possédé sur toutes ses specs
+ * (Livre de base l.510 : « vous pouvez relancer »).
  */
-export function rollRandomTalent(rng: RNG, owned: Set<string>): string | null {
+export function rollRandomTalent(
+  rng: RNG,
+  owned: Set<string>,
+  pickSpec?: (base: string, options: string[]) => string | null,
+): string | null {
   const table = randomTalentTable();
   if (!table.length) return null;
   for (let attempt = 0; attempt < 100; attempt++) {
     const r = roll(1, 100, rng);
     const entry = table.find((t) => r <= (t.rand as number));
-    if (entry && !owned.has(entry.label)) return entry.label;
+    if (!entry) continue;
+    const specs = entry.specs ?? [];
+    if (specs.length) {
+      const free = specs.filter((s) => !owned.has(concreteLabel(entry.label, s)));
+      if (!free.length) continue; // toutes les specs possédées → relance
+      const spec = pickSpec?.(entry.label, free) ?? free[0];
+      return concreteLabel(entry.label, spec);
+    }
+    if (!owned.has(entry.label)) return entry.label;
   }
   return null;
 }
 
 /**
- * Résout les Talents d'espèce : « A ou B » → choix (défaut : le 1er), Talents
- * fixes ajoutés tels quels, « N Talent aléatoire » → N tirages distincts sur
- * le Tableau des Talents aléatoires.
+ * Résout les Talents d'espèce : « A ou B » → choix (défaut : le 1er — découpe à profondeur 0,
+ * pour préserver « Savoir-vivre (Criminel ou Guilde) ») ; Talents fixes tels quels ; « N Talent
+ * aléatoire » → N tirages FIGÉS sur le Tableau des Talents aléatoires — y compris comme branche
+ * d'un choix mixte (« Destinée ou Talent aléatoire »). Les options à spec ouverte (« Maître
+ * artisan (Au choix) », « Savoir-vivre (Criminel ou Guilde) ») sont résolues via `choices`
+ * (clé = entrée brute) ou par défaut la première spec proposée.
  */
 export function resolveSpeciesTalents(
   sp: SpeciesData,
-  opts: { rng?: RNG; choices?: Record<string, string>; owned?: Iterable<string> } = {},
+  opts: {
+    rng?: RNG;
+    choices?: Record<string, string>;
+    owned?: Iterable<string>;
+    pickSpec?: (base: string, options: string[]) => string | null;
+  } = {},
 ): string[] {
   const rng = opts.rng ?? defaultRNG;
   const owned = new Set<string>(opts.owned ?? []);
@@ -108,23 +143,38 @@ export function resolveSpeciesTalents(
     result.push(name);
     owned.add(name);
   };
+  const rollN = (n: number) => {
+    for (let i = 0; i < n; i++) {
+      const t = rollRandomTalent(rng, owned, opts.pickSpec);
+      if (t) add(t);
+    }
+  };
+  /** Résout une option en libellé concret (spec choisie si « au choix » / « A ou B »). */
+  const resolveOption = (entryKey: string, opt: string): string => {
+    if (!isUnresolvedChoice(opt)) return opt;
+    const chosen = opts.choices?.[entryKey];
+    if (chosen && !isUnresolvedChoice(chosen)) return chosen;
+    const { name, spec } = splitLabel(opt);
+    const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : findTalent(name)?.specs ?? [];
+    const free = specOptions.find((s) => !owned.has(concreteLabel(name, s))) ?? specOptions[0];
+    return free ? concreteLabel(name, free) : name;
+  };
   for (const entry of sp.talents) {
     const e = entry.trim();
-    const mRand = e.match(/^(\d+)\s+Talents?\s+al[ée]atoires?$/i);
+    const mRand = e.match(RANDOM_ENTRY_RE);
     if (mRand) {
-      const n = parseInt(mRand[1], 10);
-      for (let i = 0; i < n; i++) {
-        const t = rollRandomTalent(rng, owned);
-        if (t) add(t);
-      }
+      rollN(parseInt(mRand[1] ?? '1', 10));
       continue;
     }
-    if (/\sou\s/i.test(e)) {
-      const options = e.split(/\s+ou\s+/i).map((s) => s.trim());
-      add(opts.choices?.[e] ?? options[0]);
+    const options = splitTopLevelOu(e);
+    if (options.length > 1) {
+      const choice = opts.choices?.[e] ?? options[0];
+      const mChoiceRand = choice.match(RANDOM_ENTRY_RE);
+      if (mChoiceRand) rollN(parseInt(mChoiceRand[1] ?? '1', 10));
+      else add(resolveOption(e, choice));
       continue;
     }
-    add(e);
+    add(resolveOption(e, e));
   }
   return result;
 }
@@ -135,16 +185,30 @@ export interface CreateHeroOptions {
   name: string;
   /** Caractéristiques saisies manuellement (sinon tirage base + 2d10). */
   manualChars?: Partial<Characteristics>;
-  /** Talent de carrière choisi (sinon le premier proposé). */
+  /** Talent de carrière choisi — libellé CONCRET (spec résolue) ; peut être un talent d'espèce
+   *  déjà possédé (→ times 2, l.502). Défaut : 1re entrée du Niveau (résolue). */
   careerTalent?: string;
-  /** Répartition des 40 augmentations (sinon +5 par compétence). */
+  /** Répartition des 40 augmentations, clé = entrée BRUTE de la liste de carrière ou ajoutée
+   *  par un talent (sinon +5 sur les 8 entrées du Niveau). */
   skillAdvances?: Record<string, number>;
-  /** Compétences d'espèce recevant +5/+3 (défaut : 3 premières / 3 suivantes de la liste). */
+  /** Compétences d'espèce recevant +5/+3, entrées BRUTES (défaut : 3 premières / 3 suivantes). */
   speciesSkillAdvances?: { plus5: string[]; plus3: string[] };
-  /** Pour les Talents d'espèce « A ou B » : le talent choisi, par entrée. */
+  /** Pour les Talents d'espèce « A ou B » : le talent choisi (concret), par entrée brute. */
   speciesTalentChoices?: Record<string, string>;
+  /** Talents d'espèce DÉJÀ résolus par l'assistant (tirages aléatoires figés inclus) — court-
+   *  circuite resolveSpeciesTalents pour ne pas re-tirer. */
+  speciesTalentsResolved?: string[];
+  /** Résolution des entrées « (Au choix) » : entrée brute → libellé concret
+   *  (ex. « Métier (Au choix) » → « Métier (Forgeron) »). */
+  specChoices?: Record<string, string>;
+  /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
+   *  l.488). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
+  charAdvancesAlloc?: Partial<Record<CharKey, number>>;
   /** Répartition des points supplémentaires Destin/Résilience. */
   fateSplit?: { fate: number; resilience: number };
+  /** PX bonus gagnés pendant la création (choix aléatoires acceptés, LDB 04/05). */
+  xpBonus?: number;
+  details?: HeroDetails;
   motivation?: string;
   rng?: RNG;
   id?: string;
@@ -161,56 +225,109 @@ export function rollCharacteristics(sp: SpeciesData, rng: RNG = defaultRNG): Cha
   return chars;
 }
 
+/** Résout une entrée brute en libellé concret : `specChoices`, sinon 1re spec proposée par les
+ *  données (skills.json / talents.json / liste restreinte « (A ou B) »). */
+function resolveEntry(raw: string, specChoices?: Record<string, string>): string {
+  const choice = specChoices?.[raw];
+  if (choice && !isUnresolvedChoice(choice)) return choice;
+  if (!isUnresolvedChoice(raw)) return raw;
+  const { name, spec } = splitLabel(raw);
+  const options = /\sou\s/i.test(spec!)
+    ? spec!.split(/\s+ou\s+/i).map((s) => s.trim())
+    : findSkill(name)?.specs ?? findTalent(name)?.specs ?? [];
+  const concrete = options.filter((o) => !/au choix/i.test(o));
+  return concrete.length ? concreteLabel(name, concrete[0]) : name;
+}
+
 export function createHero(opts: CreateHeroOptions): Combatant {
   const rng = opts.rng ?? defaultRNG;
   const sp = findSpecies(opts.speciesLabel);
   if (!sp) throw new Error(`Espèce inconnue : ${opts.speciesLabel}`);
-  const level = firstLevel(opts.careerLabel);
+  const levels = levelsForCareer(opts.careerLabel);
+  const level = levels.find((l) => l.level === 1) ?? firstLevel(opts.careerLabel);
 
-  // 3) Attributs
+  // 3) Attributs : base d'espèce + 2d10, ou saisie manuelle (réassignation / 100 Points).
   const chars = rollCharacteristics(sp, rng);
   if (opts.manualChars) for (const k of CHAR_KEYS) if (opts.manualChars[k] != null) chars[k] = opts.manualChars[k]!;
 
-  // 4) Compétences de carrière : 40 augmentations, +5 par défaut sur 8.
-  const skills: SkillInstance[] = (level?.skills ?? []).map((raw) => {
-    const { name, spec } = parseSkillRef(raw);
-    const adv = opts.skillAdvances?.[raw] ?? 5;
-    return { name, spec, characteristic: skillCharacteristic(name), advances: adv };
-  });
-
-  // 4b) Compétences d'espèce (Livre de base l.510) : 3 à +5, 3 à +3 ; les
-  // augmentations s'ajoutent à celles de carrière si la compétence est partagée.
-  for (const [raw, adv] of Object.entries(speciesSkillAdvanceMap(sp, opts.speciesSkillAdvances))) {
-    const { name, spec } = parseSkillRef(raw);
-    const existing = skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
-    if (existing) existing.advances += adv;
-    else skills.push({ name, spec, characteristic: skillCharacteristic(name), advances: adv });
+  // 3b) 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488).
+  const careerCharKeys = (level?.characteristics ?? []).map((label) => skillCharByLabel(label)).filter((k): k is CharKey => !!k);
+  const alloc: Partial<Record<CharKey, number>> = opts.charAdvancesAlloc ?? autoCharAlloc(careerCharKeys);
+  const charAdvances: Partial<Record<CharKey, number>> = {};
+  for (const [k, n] of Object.entries(alloc) as [CharKey, number][]) {
+    if (!n) continue;
+    charAdvances[k] = n;
+    chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.491)
   }
 
-  // Talents : un seul de carrière au choix à la création.
-  const talentChoices = level?.talents ?? [];
-  const chosenTalent = opts.careerTalent ?? talentChoices[0];
-  const talents: TalentInstance[] = chosenTalent ? [{ name: chosenTalent, times: 1 }] : [];
-
-  // 4c) Talents d'espèce : choix « A ou B », fixes, et « N Talent aléatoire ».
-  for (const name of resolveSpeciesTalents(sp, {
-    rng,
-    choices: opts.speciesTalentChoices,
-    owned: talents.map((t) => t.name),
-  })) {
-    const existing = talents.find((t) => t.name === name);
+  // 4a) Talents : 1 Talent de carrière (libellé concret) + Talents d'espèce. Le talent de
+  // carrière peut être un talent d'espèce → times 2 (l.502), Maxi respecté.
+  const speciesTalents = opts.speciesTalentsResolved
+    ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices });
+  const talents: TalentInstance[] = [];
+  const addTalent = (label: string) => {
+    const existing = talents.find((t) => t.name === label);
     if (existing) existing.times += 1;
-    else talents.push({ name, times: 1 });
+    else talents.push({ name: label, times: 1 });
+  };
+  for (const t of speciesTalents) addTalent(t);
+
+  const talentEntries = level?.talents ?? [];
+  let chosenTalent = opts.careerTalent;
+  if (!chosenTalent) {
+    // Défaut : 1re entrée du Niveau dont le Maxi n'est pas atteint (les Maxi 1 déjà possédés
+    // via l'espèce sont sautés — cas Nain Lire/Écrire + Agitateur).
+    for (const raw of talentEntries) {
+      const candidate = resolveEntry(raw, opts.specChoices);
+      const probe: Combatant = { characteristics: chars, talents } as Combatant;
+      if (!talentMaxReached(probe, candidate)) {
+        chosenTalent = candidate;
+        break;
+      }
+    }
+  }
+  if (chosenTalent) addTalent(chosenTalent);
+
+  for (const t of talents) {
+    if (isUnresolvedChoice(t.name)) throw new Error(`Talent non résolu : ${t.name}`);
+  }
+
+  // 4b) Compétences de carrière : 40 augmentations (+5 par défaut sur les 8 entrées du Niveau),
+  // + entrées ajoutées par les talents (« Ajoutez X à n'importe quelle Carrière », LDB 10).
+  const heroSoFar: Combatant = { characteristics: chars, talents } as Combatant;
+  const skills: SkillInstance[] = [];
+  const addSkill = (label: string, adv: number) => {
+    const { name, spec } = splitLabel(label);
+    if (isUnresolvedChoice(label)) throw new Error(`Compétence non résolue : ${label}`);
+    const existing = skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
+    if (existing) existing.advances += adv; // même (name, spec) = même Compétence (LDB 09 l.42)
+    else skills.push({ name, spec, characteristic: skillCharacteristic(name), advances: adv });
+  };
+  const advancedEntries: { raw: string; label: string }[] = [];
+  for (const raw of level?.skills ?? []) {
+    const adv = opts.skillAdvances?.[raw] ?? 5;
+    const label = resolveEntry(raw, opts.specChoices);
+    addSkill(label, adv);
+    if (adv > 0) advancedEntries.push({ raw, label });
+  }
+  for (const raw of careerSkillAdditions(heroSoFar)) {
+    const adv = opts.skillAdvances?.[raw] ?? 0; // les compétences ajoutées ne reçoivent rien par défaut
+    addSkill(resolveEntry(raw, opts.specChoices), adv);
+  }
+
+  // 4c) Compétences d'espèce (l.510) : 3 à +5, 3 à +3 ; cumul si même (name, spec) qu'une
+  // Compétence de carrière, Compétence séparée sinon.
+  for (const [raw, adv] of Object.entries(speciesSkillAdvanceMap(sp, opts.speciesSkillAdvances))) {
+    addSkill(resolveEntry(raw, opts.specChoices), adv);
   }
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
   const classTrappings = classForCareer(opts.careerLabel)?.trappings ?? [];
-  const trappingNames = [...classTrappings, ...(level?.trappings ?? [])];
+  const trappingNames = [...classTrappings, ...(level?.trappings ?? [])].map((t) => resolveEntry(t, opts.specChoices));
   const items = buildInventory(trappingNames);
 
   // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
   const size: import('./size').SizeCategory = sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne';
-  const wmax = maxWounds(chars, size);
 
   // Destin / Résilience
   const fateBase = sp.fate;
@@ -228,7 +345,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     groups: groupsFor({ species: sp.label, career: opts.careerLabel }), // racial + carrière (Traits psy ciblés, LDB 21, P3)
     size,
     characteristics: chars,
-    wounds: { current: wmax, max: wmax, base: wmax },
+    wounds: { current: 0, max: 0, base: 0 }, // posé après les effets de talents (Dur à cuire)
     advantage: 0,
     conditions: [],
     weapons: [],
@@ -242,14 +359,54 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     resilience,
     resolve: resilience,
     motivation: opts.motivation,
-    // Avancement : aucune Augmentation de Caractéristique à la création (création = espèce + 2d10) ;
-    // les PX sont attribués en jeu, on démarre Niveau de Carrière 1.
-    xp: 0,
-    charAdvances: {},
+    details: opts.details,
+    // Avancement : les 5 Augmentations gratuites de la création (l.488) sont comptées dans
+    // charAdvances ; les PX bonus des choix aléatoires (LDB 04/05) restent à dépenser.
+    xp: opts.xpBonus ?? 0,
+    charAdvances,
     careerLevel: 1,
   };
+
+  // Effets d'acquisition des Talents (+5 Caractéristique de départ, Véloce) — une fois par
+  // acquisition —, puis attributs dérivés (Blessures + Dur à cuire, Chance, Détermination).
+  for (const t of hero.talents) for (let i = 0; i < t.times; i++) applyTalentAcquisition(hero, t.name);
+  const wmax = heroMaxWounds(hero);
+  hero.wounds = { current: wmax, max: wmax, base: wmax };
+  hero.fortune = fortuneMax(hero);
+  hero.resolve = resolveMax(hero);
+
+  // Désignations des emplacements de carrière utilisés à la création (cf. careerSlots) :
+  // compétences « (Au choix) » ayant reçu des augmentations + talent de carrière à choix.
+  const sSlots = skillSlots(levels, 1);
+  const tSlots = talentSlots(levels, 1);
+  for (const { raw, label } of advancedEntries) {
+    const slot = sSlots.find((s) => s.needsChoice && s.entry === raw);
+    if (slot) designateSlot(hero, opts.careerLabel, slot, label, sSlots);
+  }
+  if (chosenTalent) {
+    const { name, spec } = splitLabel(chosenTalent);
+    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerLabel), name, spec);
+    if (slot) designateSlot(hero, opts.careerLabel, slot, chosenTalent, [...sSlots, ...tSlots]);
+  }
+
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)
   return hero;
+}
+
+/** Répartition automatique des 5 Augmentations gratuites (2/2/1) sur les Caractéristiques de
+ *  carrière — utilisée quand l'appelant (pré-tirés) ne fournit pas de répartition. */
+function autoCharAlloc(careerChars: CharKey[]): Partial<Record<CharKey, number>> {
+  const out: Partial<Record<CharKey, number>> = {};
+  const parts = [2, 2, 1];
+  careerChars.slice(0, 3).forEach((k, i) => {
+    out[k] = parts[i] ?? 0;
+  });
+  return out;
+}
+
+/** Libellé long de Caractéristique (« Capacité de Tir ») → clé courte, sinon null. */
+function skillCharByLabel(label: string): CharKey | null {
+  return (SKILL_CHAR as Record<string, CharKey>)[label] ?? null;
 }
 
 function autoFateSplit(extra: number): { fate: number; resilience: number } {

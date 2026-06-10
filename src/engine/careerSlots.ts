@@ -1,0 +1,282 @@
+/**
+ * Emplacements de carrière & spécialisations — RAW :
+ *
+ *  - Compétences groupées (LDB 09 l.33-43) : chaque Spécialisation est UNE Compétence distincte
+ *    (l.42, ex. Sigrid). Quand l'entrée de carrière porte « (Au choix) », le joueur choisit la
+ *    Spécialisation AU MOMENT où il alloue une Augmentation (l.38, ex. Théodora).
+ *  - Talents (LDB 10 l.13-21) : la parenthèse est une « utilisation » distincte — Sens aiguisé
+ *    (Vue) ≠ Sens aiguisé (Goût) ; le Maxi (1 ou « Bonus de X ») se compte par spécialisation.
+ *  - Disponibilité (LDB 07) : Compétences cumulatives sur les niveaux ≤ courant (l.78),
+ *    Talents du niveau courant uniquement (l.100).
+ *
+ * Modèle des emplacements « (Au choix) » (RAW + arbitrage table là où le livre est muet) :
+ * chaque entrée de liste d'un Niveau de Carrière est un EMPLACEMENT (slot). Un slot à choix se
+ * « désigne » sur une spec concrète — gratuitement (la désignation ne donne rien, elle déclare
+ * ce que le slot couvre, éventuellement un talent déjà possédé via l'espèce) ; acheter via un
+ * slot libre le désigne automatiquement. Au sein d'une MÊME carrière, deux slots ne peuvent pas
+ * désigner le même libellé concret ; les désignations sont PAR carrière (un changement de
+ * carrière rouvre tous les choix). Cas réels en données : Érudit a « Savoir (Au choix) » aux
+ * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
+ * « Guide fluvial ou Bonnes jambes ».
+ */
+import { Combatant } from './types';
+import { bonus } from './characteristics';
+import { findTalent, CareerLevelData } from '../data';
+
+/** Une possibilité concrète ou ouverte couverte par un slot. */
+export interface SlotOption {
+  /** Nom de groupe (« Sens aiguisé ») ou libellé simple (« Baratiner »). */
+  name: string;
+  /** Spécialisation explicite (« Vue ») — absente si non groupé ou joker. */
+  spec?: string;
+  /** Joker : toute spec du groupe est désignable (« Au choix »). */
+  wildcard: boolean;
+  /** Joker RESTREINT : specs autorisées (« Fléau ou À deux mains »). */
+  specOptions?: string[];
+}
+
+export interface CareerSlot {
+  /** Clé stable de désignation : `${level}:${kind}:${index}:${résumé}`. */
+  key: string;
+  level: number;
+  kind: 'skill' | 'talent';
+  /** Libellé brut de l'entrée de carrière. */
+  entry: string;
+  options: SlotOption[];
+  /** Le slot exige une désignation (joker, joker restreint, ou « A ou B »). */
+  needsChoice: boolean;
+}
+
+/** Marqueurs « au choix » des données (Au choix / un au choix / une au choix). */
+const CHOICE_RE = /^(au choix|une? au choix)$/i;
+
+/** Sépare « A ou B » à profondeur 0 (préserve « Savoir-vivre (Criminel ou Guilde) »). */
+export function splitTopLevelOu(s: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let cur = '';
+  const tokens = s.split(/(\s+ou\s+|\(|\))/);
+  for (const tok of tokens) {
+    if (tok === '(') depth++;
+    if (tok === ')') depth--;
+    if (depth === 0 && /^\s+ou\s+$/.test(tok)) {
+      if (cur.trim()) out.push(cur.trim());
+      cur = '';
+    } else cur += tok;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/** Parse une possibilité « Nom », « Nom (Spec) », « Nom (Au choix) », « Nom (A ou B) ». */
+export function parseOption(raw: string): SlotOption {
+  const m = raw.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  if (!m) return { name: raw.trim(), wildcard: false };
+  const name = m[1].trim();
+  const inner = m[2].trim();
+  if (CHOICE_RE.test(inner)) return { name, wildcard: true };
+  if (/\sou\s/i.test(inner)) {
+    return { name, wildcard: true, specOptions: inner.split(/\s+ou\s+/i).map((x) => x.trim()) };
+  }
+  return { name, spec: inner, wildcard: false };
+}
+
+/** Parse une entrée de liste de carrière (gère le « A ou B » de premier niveau). */
+export function parseEntry(raw: string): SlotOption[] {
+  return splitTopLevelOu(raw).map(parseOption);
+}
+
+/** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». */
+export function concreteLabel(name: string, spec?: string): string {
+  return spec ? `${name} (${spec})` : name;
+}
+
+/** Décompose un libellé concret en (name, spec). */
+export function splitLabel(label: string): { name: string; spec?: string } {
+  const m = label.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  return m ? { name: m[1].trim(), spec: m[2].trim() } : { name: label.trim() };
+}
+
+/** Le libellé est-il encore « au choix » (non résolu) ? */
+export function isUnresolvedChoice(label: string): boolean {
+  const { spec } = splitLabel(label);
+  return spec != null && (CHOICE_RE.test(spec) || /\sou\s/i.test(spec));
+}
+
+function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerSlot[] {
+  const entries = kind === 'skill' ? level.skills : level.talents;
+  return entries.map((entry, i) => {
+    const options = parseEntry(entry);
+    const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
+    const summary = options.map((o) => o.name).join('|');
+    return { key: `${level.level}:${kind}:${i}:${summary}`, level: level.level, kind, entry, options, needsChoice };
+  });
+}
+
+/** Slots de COMPÉTENCES disponibles au niveau `level` : cumul des niveaux ≤ courant (LDB 07 l.78). */
+export function skillSlots(levels: CareerLevelData[], level: number): CareerSlot[] {
+  return levels.filter((l) => l.level <= level).flatMap((l) => slotsOfLevel(l, 'skill'));
+}
+
+/** Slots de TALENTS achetables : niveau courant UNIQUEMENT (LDB 07 l.100). */
+export function talentSlots(levels: CareerLevelData[], level: number): CareerSlot[] {
+  const cur = levels.find((l) => l.level === level);
+  return cur ? slotsOfLevel(cur, 'talent') : [];
+}
+
+/** TOUS les slots de talents des niveaux ≤ courant (pour l'unicité des désignations). */
+export function talentSlotsUpTo(levels: CareerLevelData[], level: number): CareerSlot[] {
+  return levels.filter((l) => l.level <= level).flatMap((l) => slotsOfLevel(l, 'talent'));
+}
+
+/** Caractéristiques de carrière disponibles : cumul des niveaux ≤ courant (LDB 07 l.67). */
+export function availableChars(levels: CareerLevelData[], level: number): string[] {
+  return levels.filter((l) => l.level <= level).flatMap((l) => l.characteristics);
+}
+
+/** Une spec concrète est-elle couverte par CE slot (désignations ignorées) ? */
+export function slotCovers(slot: CareerSlot, name: string, spec?: string): boolean {
+  return slot.options.some((o) => {
+    if (o.name !== name) return false;
+    if (!o.wildcard) return (o.spec ?? '') === (spec ?? '');
+    if (o.specOptions) return spec != null && o.specOptions.includes(spec);
+    return true; // joker plein : toute spec du groupe (y compris sans spec)
+  });
+}
+
+/** Désignations d'un héros pour une carrière : slotKey → libellé concret. */
+export function designationsFor(hero: Combatant, career: string): Record<string, string> {
+  return hero.careerSlotChoices?.[career] ?? {};
+}
+
+/**
+ * Libellés concrets déjà « pris » par les slots d'une carrière (désignations + entrées
+ * explicites) — un nouveau slot ne peut pas reprendre l'un d'eux (arbitrage : au niveau 2, un
+ * nouveau « Sens aiguisé (Au choix) » ne peut pas re-désigner la spec du slot du niveau 1).
+ */
+export function takenLabels(slots: CareerSlot[], designations: Record<string, string>): Set<string> {
+  const taken = new Set<string>(Object.values(designations));
+  for (const s of slots) {
+    if (!s.needsChoice) {
+      const o = s.options[0];
+      taken.add(concreteLabel(o.name, o.spec));
+    }
+  }
+  return taken;
+}
+
+export type InCareerStatus = 'explicit' | 'designated' | 'free' | null;
+
+/**
+ * Statut in-carrière d'un libellé concret vis-à-vis d'un ensemble de slots :
+ *  - 'explicit'   : une entrée sans choix le couvre exactement ;
+ *  - 'designated' : un slot à choix lui est désigné ;
+ *  - 'free'       : un slot à choix NON désigné peut le couvrir (l'achat désignera) et le
+ *                   libellé n'est pas déjà pris par un autre slot de la carrière ;
+ *  - null         : hors carrière.
+ */
+export function inCareerStatus(
+  slots: CareerSlot[],
+  designations: Record<string, string>,
+  name: string,
+  spec?: string,
+  allSlotsForUniqueness: CareerSlot[] = slots,
+): InCareerStatus {
+  const label = concreteLabel(name, spec);
+  for (const s of slots) {
+    if (!s.needsChoice && slotCovers(s, name, spec)) return 'explicit';
+  }
+  for (const s of slots) {
+    if (s.needsChoice && designations[s.key] === label) return 'designated';
+  }
+  const taken = takenLabels(allSlotsForUniqueness, designations);
+  if (taken.has(label)) return null; // pris par un AUTRE slot (sinon retourné ci-dessus)
+  for (const s of slots) {
+    if (s.needsChoice && !designations[s.key] && slotCovers(s, name, spec)) return 'free';
+  }
+  return null;
+}
+
+/** Premier slot à choix non désigné pouvant couvrir (name, spec) — pour l'auto-désignation. */
+export function freeSlotFor(
+  slots: CareerSlot[],
+  designations: Record<string, string>,
+  name: string,
+  spec?: string,
+): CareerSlot | undefined {
+  return slots.find((s) => s.needsChoice && !designations[s.key] && slotCovers(s, name, spec));
+}
+
+/**
+ * Désigne un slot sur un libellé concret (mute le héros). Gratuit — déclare seulement ce que le
+ * slot couvre. Refuse : libellé non couvert par le slot, ou déjà pris par un autre slot de la
+ * carrière (désignation OU entrée explicite).
+ */
+export function designateSlot(
+  hero: Combatant,
+  career: string,
+  slot: CareerSlot,
+  label: string,
+  allSlots: CareerSlot[],
+): { ok: boolean; reason?: string } {
+  const { name, spec } = splitLabel(label);
+  if (!slotCovers(slot, name, spec)) return { ok: false, reason: `« ${label} » n'est pas couvert par cet emplacement` };
+  const designations = designationsFor(hero, career);
+  if (designations[slot.key] && designations[slot.key] !== label) {
+    return { ok: false, reason: 'emplacement déjà désigné' };
+  }
+  const others = { ...designations };
+  delete others[slot.key];
+  if (takenLabels(allSlots, others).has(label)) {
+    return { ok: false, reason: `« ${label} » est déjà pris par un autre emplacement de cette carrière` };
+  }
+  hero.careerSlotChoices = {
+    ...(hero.careerSlotChoices ?? {}),
+    [career]: { ...designations, [slot.key]: label },
+  };
+  return { ok: true };
+}
+
+/**
+ * Maxi d'un Talent (LDB 10 « Schéma des Talents ») : 1, « Bonus de X » (recalculé sur les
+ * Caractéristiques courantes) ou illimité (« Aucun »/absent). Le Maxi se compte PAR
+ * spécialisation (le libellé concret porte la spec).
+ */
+export function talentMax(hero: Combatant, label: string): number | null {
+  const data = findTalent(splitLabel(label).name);
+  if (!data || data.max == null || data.max === 'Aucun') return null;
+  if (typeof data.max === 'number') return data.max;
+  const m = String(data.max).match(/^Bonus (?:de |d')(.*)$/i);
+  if (!m) return null;
+  const charLabel = m[1].trim();
+  const entry = (Object.entries(CHAR_LABEL_TO_KEY) as [string, keyof Combatant['characteristics']][]).find(
+    ([l]) => l.toLowerCase() === charLabel.toLowerCase(),
+  );
+  if (!entry) return null;
+  return bonus(hero.characteristics[entry[1]]);
+}
+
+/** Le héros a-t-il atteint le Maxi de ce Talent (libellé concret) ? */
+export function talentMaxReached(hero: Combatant, label: string): boolean {
+  const max = talentMax(hero, label);
+  if (max == null) return false;
+  const times = hero.talents.find((t) => t.name === label)?.times ?? 0;
+  return times >= max;
+}
+
+// Libellés longs (et abréviations historiques CC/CT utilisées par certains Maxi) → clé.
+const CHAR_LABEL_TO_KEY: Record<string, keyof Combatant['characteristics']> = {
+  'Capacité de Combat': 'CC',
+  'Capacité de Tir': 'CT',
+  CC: 'CC',
+  CT: 'CT',
+  Force: 'F',
+  Endurance: 'E',
+  Initiative: 'I',
+  Agilité: 'Ag',
+  Dextérité: 'Dex',
+  Intelligence: 'Int',
+  'Force Mentale': 'FM',
+  FM: 'FM',
+  Sociabilité: 'Soc',
+};

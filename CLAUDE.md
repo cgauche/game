@@ -25,6 +25,10 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 3. **Le moteur de règles (`src/engine`) reste pur et testé.** Le store, l'UI et le rendu en
    dépendent, jamais l'inverse.
 4. **UI en français**, et qui **scale** : dès qu'un panneau dépasse ~2 sections → onglets.
+   **Tout nouvel écran est responsive dès sa création** (utilisable à 360px) : composer les
+   primitives globales de `styles.css` — `.layout-sidebar` (colonne latérale, s'empile ≤900px),
+   `.panel-grid` (1 colonne ≤700px), `.bar` (s'enroule ≤700px), cibles tactiles via
+   `pointer: coarse`. Breakpoints canon : 900 / 700 / 560 px.
 
 ## Sources VF (NE PAS chercher — c'est ici)
 
@@ -97,15 +101,31 @@ dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 Source/                     Livres WFRP4 en .md + all-data.json (source de vérité ; PDFs gitignorés)
 scripts/build-data.ts       Pipeline Source/all-data.json -> src/data (filtré LDB/ADE1/ADE2)
 src/data/                   NOTRE base générée (NE PAS éditer à la main) + index.ts (accès typé), pregens.ts
+                            EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
+                            mutations.ts (Tableaux de Corruption LDB 19), spellspecs/ (specs de sorts
+                            CURÉES par famille — repli regex iso-POC pour les sorts non curés)
 src/engine/                 Règles WFRP4, PUR + testé :
   types.ts                    Caractéristiques, Combatant, Weapon, ItemInstance, Difficulty…
   tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
   combat.ts                   touche/localisation inversée/dégâts/critique/initiative
   characteristics.ts          bonus, Blessures (BF+2×BE+BFM)
-  character.ts                création de personnage (espèce+2d10, 40 augmentations…)
+  character.ts                création de personnage (espèce+2d10, 40 augmentations, talents…)
+  creation.ts                 tables de création LDB 04/05 : d100 espèce/carrière, bonus PX,
+                              100 Points, Richesse initiale, âge/taille/yeux/cheveux
+  careerSlots.ts              spécialisations & emplacements « (Au choix) » des carrières :
+                              parsing, désignations par carrière, Maxi des talents
+  talentEffects.ts            talents à effet création/attributs (+5 carac de départ, addSkill,
+                              Dur à cuire/Chanceux/Obstiné/Véloce)
+  advancement.ts              coûts PX, complétion de Niveau, changement de carrière (validé)
   items.ts                    inventaire/équipement : itemFromTrapping, recomputeLoadout, encombrement
   skills.ts                   valeur d'un test de compétence (partyBest) hors combat
-  conditions.ts               États
+  conditions.ts               États (+ durées d'États de sort, États récurrents)
+  ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps
+  spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
+  magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
+  miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
+  corruption.ts               Corruption & mutations (LDB 19 : expositions, seuil, limites → damné)
+  grimoire.ts                 apprentissage/mémorisation des sorts (coûts par Talent) + lecture au livre
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
@@ -114,6 +134,7 @@ src/state/
   rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« un jet = une modale ») +
                               specs des 11 flux (trample/run/focus/psych/frenzy/reload/recover/test/
                               appraise/bargain/heal) — un nouveau jet = 1 spec + 1 xConfirm
+  corruptionFlow.ts           gainCorruption (seuil → mutation → damnation, révélation 🧬) + cibles
   pendings.ts                 types Pending* (ré-exportés par store.ts)
   partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
   merchantFlow.ts             marchand : réassort, panier, achat/vente/réparation, Marchandage, Évaluation
@@ -126,7 +147,9 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   IsoStage.tsx                composant de rendu (caméra, clics, tokens, surbrillances)
   fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
                               zones) + FxLayer (rendu) + useWalkAnim (marche animée)
-src/ui/                     React : menus, créateur, CampaignView (HUD), CharacterSheet, modales
+src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
+  creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
+                              (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
   RollFlowShell.tsx           coquille PARTAGÉE des modales de jet (Lancer→Chance→Résilience→Appliquer)
                               + <Dice> — pendant UI de state/rollFlow
   editor/                     Éditeur : Editor.tsx (sélection + outils + canvas), Palette.tsx (volet

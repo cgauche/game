@@ -12,6 +12,7 @@ const ICON: Record<RevealEntry['kind'], string> = {
   backstab: '🗡️',
   calme: '😱',
   round: '⏳',
+  mutation: '🧬',
 };
 
 /**

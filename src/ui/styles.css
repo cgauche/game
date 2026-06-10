@@ -29,6 +29,115 @@ body {
 }
 .app {
   height: 100%;
+  height: 100dvh; /* mobile : suit la barre d'adresse dynamique (fallback 100% au-dessus) */
+}
+
+/* Scrollbars fines, discrètes et thémées partout (la barre système claire jure sur le
+   thème sombre) ; pouce renforcé au survol. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Défilement SANS scrollbar visible (rangées de puces, carrousels tactiles). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ══════════════════ RESPONSIVE — STRUCTURE GLOBALE ══════════════════
+   Breakpoints canon du projet : 900px (empilement des colonnes latérales),
+   700px (mobile large), 560px (téléphone étroit). RÈGLE : tout NOUVEL écran
+   doit être utilisable à 360px de large, en composant ces primitives :
+
+   .layout-sidebar   grille « colonne latérale + contenu » (fiche vivante,
+                     inspecteurs…) → s'empile en une colonne ≤ 900px ;
+   .panel-grid       grille de .panel en auto-fit → 1 colonne ≤ 700px ;
+   .bar              barre d'écran : s'enroule ≤ 700px, marges safe-area ;
+   pointer: coarse   cibles tactiles ≥ 40px (boutons, champs, selects).      */
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto; /* UN SEUL défilement (pas de scrollbars imbriquées) */
+  max-width: 1480px; /* écrans larges : contenu compact et centré, pas étalé */
+  margin: 0 auto;
+  width: 100%;
+}
+.layout-sidebar > aside {
+  position: sticky; /* la fiche reste visible pendant que le contenu défile */
+  top: 0;
+  align-self: start;
+}
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.panel-grid > .panel {
+  align-self: start;
+}
+.panel-grid > .span-2 {
+  grid-column: 1 / -1; /* panneau pleine largeur (cartes de sélection) */
+}
+@media (max-width: 900px) {
+  .layout-sidebar {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+  .layout-sidebar > aside {
+    position: static;
+  }
+}
+@media (max-width: 700px) {
+  .bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
+  }
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 12px;
+  }
+  .panel h3 {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+@media (pointer: coarse) {
+  .btn {
+    min-height: 40px;
+  }
+  .btn.small {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+  input,
+  select {
+    min-height: 38px;
+  }
 }
 
 /* Buttons */
@@ -145,10 +254,10 @@ body {
   margin-left: auto;
 }
 
-/* Party screen */
+/* Party screen — auto-fit : 4 colonnes en desktop large, empilement mobile. */
 .party-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
   gap: 16px;
   padding: 18px;
   flex: 1;
@@ -307,6 +416,566 @@ body {
   padding: 16px;
   flex: 1;
   overflow: auto;
+}
+/* ══ Créateur de personnage — composition 3 ZONES bord à bord ══
+   rail (choix) | détail (travail de l'étape) | fiche vivante. Pas de panneaux flottants :
+   colonnes pleine hauteur séparées par des bordures, sections internes à séparateurs. */
+.wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+.step-chip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.step-chip.active {
+  border-color: var(--accent2);
+  color: var(--text);
+  font-weight: 600;
+}
+.step-chip.done {
+  color: var(--ok);
+}
+.step-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+/* Indicateur d'étape compact (mobile) — remplace les puces, AUCUN défilement. */
+.steps-progress {
+  display: none;
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+.steps-progress b {
+  color: var(--gold);
+}
+.steps-bar {
+  height: 4px;
+  background: var(--bg2);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.steps-bar i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+}
+/* Puces d'une entrée « A ou B » : chaque option garde SA règle au survol. */
+.entry-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.chip-ou {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+/* Onglets internes d'une zone de détail (Profil / Carrières / Description / Détails). */
+.zone-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.zone-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.zone-tab:hover {
+  color: var(--text);
+}
+.zone-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+.lore-text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 70ch;
+}
+.lore-text b {
+  color: var(--gold);
+}
+.creator-shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr) 290px;
+  overflow: hidden;
+  min-height: 0;
+}
+.creator-rail {
+  border-right: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.16);
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+.creator-main {
+  overflow-y: auto;
+  padding: 16px 26px 26px;
+}
+/* Lisibilité écran large : le contenu central garde une largeur de lecture. */
+.creator-main > * {
+  max-width: 900px;
+}
+/* En-tête du détail : grande figurine + titre + description. */
+.main-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.main-head h2 {
+  margin: 0 0 6px;
+  color: var(--gold);
+}
+.main-head .hint {
+  margin: 0;
+  line-height: 1.45;
+}
+.main-figure {
+  width: 86px;
+  height: 128px;
+  flex: 0 0 auto;
+  background: #1d2230;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+/* Sections à séparateurs (remplacent les boîtes flottantes). */
+.zone-section {
+  margin-bottom: 20px;
+}
+.zone-section > h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.zone-section > h3 .sect-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.ok-text {
+  color: var(--ok);
+}
+.warn-text {
+  color: var(--gold);
+}
+/* Listes de sélection (rail) façon BG3 : rangées pleine largeur, liseré doré. */
+.pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pick-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.pick-row.selected {
+  border-left-color: var(--gold);
+  background: rgba(255, 224, 102, 0.08);
+}
+.pick-row .row-figure {
+  width: 30px;
+  height: 44px;
+  flex: 0 0 auto;
+  background: #1d2230;
+  border-radius: 5px;
+}
+.pick-row .row-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pick-row .row-body strong {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pick-row .row-body em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.rail-group {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin: 10px 0 4px;
+}
+/* Ligne de rail : libellé + contrôle (stepper, cases) alignés. */
+.rail-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+.rail-line > span:first-child {
+  min-width: 0;
+}
+.row-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.form-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0 18px;
+}
+/* Fiche vivante : 3ᵉ colonne pleine hauteur (plus une carte flottante). */
+.creator-shell > .creator-summary {
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  max-height: none;
+}
+.creator-summary {
+  background: var(--panel);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.creator-figure {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+}
+.creator-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.creator-id strong {
+  font-size: 16px;
+  color: var(--gold);
+}
+.creator-summary .stat-val.boost {
+  color: var(--ok);
+}
+.creator-derived {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.creator-derived b {
+  color: var(--text);
+}
+.creator-xp {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.creator-xp b {
+  color: var(--gold);
+}
+/* Steppers +/− */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.stepper b {
+  min-width: 22px;
+  text-align: center;
+}
+.stepper .btn {
+  padding: 2px 9px;
+}
+/* Grille d'allocation des Caractéristiques */
+.char-alloc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.char-alloc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.char-alloc .char-key {
+  width: 32px;
+  font-weight: 700;
+}
+.char-alloc em {
+  font-size: 11px;
+  color: var(--muted);
+}
+.char-alloc .char-roll {
+  color: var(--accent2);
+}
+.char-alloc .char-total {
+  margin-left: auto;
+  color: var(--gold);
+  font-size: 16px;
+}
+.xp-badge {
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 12px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.talent-option {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--bg2);
+}
+.talent-option.selected {
+  border-color: var(--gold);
+}
+.talent-desc {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+}
+.talent-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px;
+}
+/* Données d'aide au choix : profil d'espèce, plan de carrière, annotations */
+.base-char-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.base-char {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+.base-char .char-key {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 11px;
+}
+.base-char em.up {
+  color: var(--ok);
+  font-style: normal;
+  font-size: 11px;
+}
+.base-char em.down {
+  color: var(--danger);
+  font-style: normal;
+  font-size: 11px;
+}
+.tag-char {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--accent2);
+  margin-left: 4px;
+}
+.tag.char {
+  border-color: var(--gold);
+  color: var(--gold);
+  font-size: 10.5px;
+}
+.career-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.path-node {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.path-node.current {
+  border-color: var(--gold);
+}
+.path-node em {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.trapping-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.item-meta {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-style: normal;
+}
+.char-alloc .char-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.char-alloc .char-total em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: 3px;
+}
+/* ── Créateur : mobile/tablette ──
+   ≤ 1100px : la fiche vivante passe en bandeau compact AU-DESSUS (order -1) ;
+   ≤ 900px : tout s'empile (rail puis détail), un seul défilement de page. */
+@media (max-width: 1100px) {
+  .creator-shell {
+    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow-y: auto;
+  }
+  .creator-shell > .creator-summary {
+    order: -1;
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px 14px;
+    overflow: visible;
+  }
+  .creator-rail,
+  .creator-main {
+    overflow: visible;
+  }
+  .creator-figure {
+    width: 76px;
+    max-height: 104px;
+  }
+  .creator-summary .creator-id {
+    flex: 1;
+    min-width: 130px;
+  }
+  .creator-summary .char-stats {
+    flex: 1 1 100%;
+  }
+  .creator-summary .creator-derived {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .creator-summary .char-skills {
+    display: none;
+  }
+  .creator-xp {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+@media (max-width: 900px) {
+  .creator-shell {
+    display: flex;
+    flex-direction: column;
+  }
+  .creator-shell > .creator-summary {
+    order: -1;
+  }
+  .creator-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}
+@media (max-width: 700px) {
+  /* Étapes : PAS de rangée défilante sur mobile (scrollbar disgracieuse) — les puces
+     laissent place à l'indicateur compact .steps-progress (barre de progression). */
+  .bar .wizard-steps {
+    display: none;
+  }
+  .steps-progress {
+    display: block;
+  }
+  .char-alloc-grid {
+    grid-template-columns: 1fr;
+  }
+  .base-char-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .char-alloc .char-name {
+    display: none; /* mobile : l'abréviation + l'infobulle suffisent */
+  }
+  .creator-main {
+    padding: 12px;
+  }
+  .creator-rail {
+    padding: 12px;
+  }
 }
 .panel {
   background: var(--panel);

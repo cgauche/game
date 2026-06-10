@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T04:52:44.210Z",
+  "generatedAt": "2026-06-10T15:23:47.727Z",
   "allowedBooks": [
     "LDB",
     "ADE1",
@@ -30,6 +30,9 @@
     "qualities": 32,
     "trappings": 270,
     "creatures": 58,
-    "spells": 221
+    "spells": 221,
+    "eyes": 10,
+    "hairs": 10,
+    "details": 5
   }
 }

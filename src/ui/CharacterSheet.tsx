@@ -6,7 +6,10 @@ import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
-import { careers, findSpell } from '../data';
+import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
+import { spellSupport } from '../engine/spellspec';
+import { spellSpecFor } from '../data/spellspecs';
+import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { LoadoutSection } from './LoadoutSection';
@@ -113,10 +116,23 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const spells = (hero.spells ?? [])
     .map((label) => findSpell(label))
     .filter((s): s is NonNullable<ReturnType<typeof findSpell>> => !!s);
-  if (!spells.length) return null;
+  // Lecture au grimoire (LDB 47 l.34) : sorts NON mémorisés de son Domaine, lançables à
+  // deux mains depuis le livre porté — au NI DOUBLÉ.
+  const grimoireSpells = carriedGrimoire(hero)
+    ? allSpells.filter((s) => canCastFromGrimoire(hero, s))
+    : [];
+  if (!spells.length && !grimoireSpells.length) return null;
   return (
     <div className="sc-block sheet-spells">
       <span className="mini-title">Sorts — incantation hors combat</span>
+      {(hero.sinPoints ?? 0) > 0 && (
+        <span
+          className="muted"
+          title="Points de Péché (LDB 40) : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
+        >
+          ⚖️ Péché : {hero.sinPoints}
+        </span>
+      )}
       <label className="spell-target">
         Cible :{' '}
         <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
@@ -130,11 +146,13 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
+          const support = spellSupport(spellSpecFor(sp), offensive);
           return (
-            <div className="spell-row" key={sp.label} title={sp.desc}>
+            <div className="spell-row" key={sp.label} title={sp.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : '')}>
               <span className="spell-name">
                 {sp.label}
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
+                {support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
@@ -159,6 +177,23 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             </div>
           );
         })}
+        {grimoireSpells.map((sp) => (
+          <div className="spell-row" key={`g-${sp.label}`} title={`${sp.desc}\n\nLecture au grimoire (LDB 47) : sort non mémorisé de votre Domaine — NI doublé, deux mains.`}>
+            <span className="spell-name">
+              📖 {sp.label}
+              {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
+            </span>
+            {isMagicMissile(sp) ? (
+              <span className="muted">en combat</span>
+            ) : (
+              <span className="spell-actions">
+                <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.label, targetId, true)}>
+                  📖 Lancer (grimoire)
+                </button>
+              </span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -307,10 +342,26 @@ function FicheBody({ hero }: { hero: Combatant }) {
         )}
       </div>
 
-      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0) && (
+      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
         <div className="sheet-afflictions">
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
+            {(hero.corruption ?? 0) > 0 && (
+              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption (LDB 19) : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
+                <span className="ir-name">🕯️ Corruption</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
+                </span>
+              </div>
+            )}
+            {(hero.mutations ?? []).map((m, i) => (
+              <div key={`m${i}`} className="inv-row" title={m.note} style={{ alignItems: 'center' }}>
+                <span className="ir-name">🧬 {m.label}</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
+                </span>
+              </div>
+            ))}
             {(hero.traumas ?? []).map((t, i) => (
               <div key={`t${i}`} className="inv-row" title={t.note} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🩼 {t.label}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
@@ -454,16 +505,60 @@ function FicheBody({ hero }: { hero: Combatant }) {
   );
 }
 
+/** Ligne d'un emplacement à choix (compétence ou talent) : sélecteur d'option + Désigner/Acquérir.
+ *  Une option DÉJÀ possédée (via l'espèce…) se DÉSIGNE gratuitement — elle devient le choix de
+ *  carrière de l'emplacement et donc montable en PX ; une nouvelle option s'achète. */
+function SlotChoiceRow({
+  entry,
+  options,
+  acquireCost,
+  afford,
+  onPick,
+}: {
+  entry: string;
+  options: { label: string; owned: boolean; hint?: string }[];
+  acquireCost: number;
+  afford: (c: number) => boolean;
+  onPick: (label: string, owned: boolean) => void;
+}) {
+  const [choice, setChoice] = useState('');
+  const opt = options.find((o) => o.label === choice);
+  const cost = opt?.owned ? 0 : acquireCost;
+  return (
+    <div className="adv-row acquire">
+      <span className="adv-name">
+        {entry} <span className="acquire-tag">au choix</span>
+      </span>
+      <select value={choice} onChange={(e) => setChoice(e.target.value)}>
+        <option value="">— choisir —</option>
+        {options.map((o) => (
+          <option key={o.label} value={o.label}>
+            {o.label}
+            {o.hint ? ` ${o.hint}` : ''}
+            {o.owned ? ' (possédé)' : ''}
+          </option>
+        ))}
+      </select>
+      <button className="btn small" disabled={!opt || !afford(cost)} onClick={() => opt && onPick(opt.label, opt.owned)}>
+        {opt?.owned ? 'Désigner · 0 PX' : `Acquérir · ${acquireCost} PX`}
+      </button>
+    </div>
+  );
+}
+
 export function AdvancementPanel({ hero }: { hero: Combatant }) {
   const buyCharAdvance = useGame((s) => s.buyCharAdvance);
   const buySkillAdvance = useGame((s) => s.buySkillAdvance);
   const buyTalent = useGame((s) => s.buyTalent);
+  const designateCareerSlot = useGame((s) => s.designateCareerSlot);
+  const buySpell = useGame((s) => s.buySpell);
   const changeCareer = useGame((s) => s.changeCareer);
   const [target, setTarget] = useState('');
 
   const v = buildAdvancementView(hero);
   const afford = (c: number) => v.xp >= c;
   const pill = (inC: boolean) => <span className={`career-pill ${inC ? 'in' : 'out'}`}>{inC ? 'carrière' : '×2'}</span>;
+  const skillLabel = (name: string, spec?: string) => (spec ? `${name} (${spec})` : name);
 
   return (
     <div className="adv-panel">
@@ -493,35 +588,102 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
       <div className="mini-title">Compétences</div>
       <div className="adv-grid">
         {v.skills.map((s) => (
-          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={s.name}>
+          <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={skillLabel(s.name, s.spec)}>
             <span className="adv-name">
-              {s.name} <em>{(hero.characteristics[s.characteristic] ?? 0) + s.advances}</em> {pill(s.inCareer)}
+              {skillLabel(s.name, s.spec)} <em>{(hero.characteristics[s.characteristic] ?? 0) + s.advances}</em> {pill(s.inCareer)}
               {s.known ? '' : <span className="acquire-tag">à apprendre</span>}
             </span>
             <span className="adv-meta">+{s.advances}</span>
-            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.name)}>
+            <button className="btn small" disabled={!afford(s.nextCost)} onClick={() => buySkillAdvance(hero.id, s.name, s.spec)}>
               {s.known ? '+1' : 'Apprendre'} · {s.nextCost} PX
             </button>
           </div>
         ))}
-      </div>
-
-      <div className="mini-title">Talents</div>
-      <div className="adv-grid">
-        {v.talents.length === 0 && <span className="muted">Aucun Talent de carrière disponible.</span>}
-        {v.talents.map((t) => (
-          <div className={`adv-row ${t.times > 0 ? '' : 'acquire'}`} key={t.name}>
-            <span className="adv-name">
-              {t.name}
-              {t.times > 0 ? ` ×${t.times}` : ''} {pill(t.inCareer)}
-            </span>
-            <span className="adv-meta" />
-            <button className="btn small" disabled={!afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.name)}>
-              {t.times > 0 ? '+1' : 'Acquérir'} · {t.nextCost} PX
-            </button>
-          </div>
+        {/* Emplacements de Compétence « (Au choix) » non désignés (LDB 09 l.38) */}
+        {v.skillSlotsOpen.map((slot) => (
+          <SlotChoiceRow
+            key={slot.slotKey}
+            entry={slot.entry}
+            acquireCost={slot.nextCost}
+            afford={afford}
+            options={slot.options.map((o) => ({
+              label: `${slot.group} (${o.spec})`,
+              owned: o.ownedAdvances > 0,
+              hint: o.ownedAdvances > 0 ? `+${o.ownedAdvances}` : undefined,
+            }))}
+            onPick={(label, owned) => {
+              if (owned) designateCareerSlot(hero.id, slot.slotKey, label);
+              else {
+                // Acheter la 1re Augmentation désigne l'emplacement (LDB 09 l.38).
+                const spec = label.slice(slot.group.length).replace(/^\s*\(/, '').replace(/\)\s*$/, '');
+                buySkillAdvance(hero.id, slot.group, spec);
+              }
+            }}
+          />
         ))}
       </div>
+
+      <div className="mini-title">Talents du niveau {v.careerLevel}</div>
+      <div className="adv-grid">
+        {v.talents.length === 0 && <span className="muted">Aucun Talent de carrière disponible.</span>}
+        {v.talents.map((t) =>
+          t.label ? (
+            <div className={`adv-row ${t.times > 0 ? '' : 'acquire'}`} key={t.slotKey}>
+              <span className="adv-name">
+                {t.label}
+                {t.times > 0 ? ` ×${t.times}` : ''} {pill(true)}
+              </span>
+              <span className="adv-meta">{t.maxReached ? 'Maxi atteint' : ''}</span>
+              <button className="btn small" disabled={t.maxReached || !afford(t.nextCost)} onClick={() => buyTalent(hero.id, t.label!)}>
+                {t.times > 0 ? '+1' : 'Acquérir'} · {t.nextCost} PX
+              </button>
+            </div>
+          ) : (
+            <SlotChoiceRow
+              key={t.slotKey}
+              entry={t.entry}
+              acquireCost={t.nextCost}
+              afford={afford}
+              options={t.options ?? []}
+              onPick={(label, owned) => {
+                if (owned) designateCareerSlot(hero.id, t.slotKey, label);
+                else buyTalent(hero.id, label);
+              }}
+            />
+          ),
+        )}
+      </div>
+
+      {(() => {
+        // Sorts apprenables (LDB 46 « Mémoriser des Sorts » + Talents LDB 10) : visibles dès
+        // qu'un Talent de lanceur est possédé. Bénédictions du culte = incluses (0 PX) ;
+        // un sort du Chaos coûte AUSSI 1 Point de Corruption (l'achat l'applique).
+        const learnable = learnableSpells(hero);
+        if (!learnable.length) return null;
+        return (
+          <>
+            <div className="mini-title">Sorts — mémorisation ({learnable.length})</div>
+            <div className="adv-grid">
+              {learnable.map(({ spell, cost }) => {
+                const support = spellSupport(spellSpecFor(spell), isMagicMissile(spell));
+                return (
+                <div className="adv-row acquire" key={spell.label} title={spell.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : '')}>
+                  <span className="adv-name">
+                    {spell.label}{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
+                    <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
+                  </span>
+                  <span className="adv-meta" />
+                  <button className="btn small" disabled={cost > 0 && !afford(cost)} onClick={() => buySpell(hero.id, spell.label)}>
+                    {cost > 0 ? `Mémoriser · ${cost} PX` : 'Inclus au Talent'}
+                    {spell.type === 'Magie du Chaos' ? ' · +1 Corruption' : ''}
+                  </button>
+                </div>
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
 
       <div className="mini-title">Carrière</div>
       <div className="adv-career">
@@ -530,28 +692,37 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <span className={`career-status ${v.completed ? 'done' : ''}`}>{v.completed ? '✓ niveau complété' : 'niveau en cours'}</span>
         </div>
         {v.targets.map((t) => (
-          <button key={t.level} className="btn small" disabled={!afford(t.cost)} onClick={() => changeCareer(hero.id, t.career, t.level)}>
-            Monter : {t.label} (niv. {t.level}) · {t.cost} PX
+          <button
+            key={t.level}
+            className="btn small"
+            disabled={!t.ok || !afford(t.cost)}
+            title={t.reason}
+            onClick={() => changeCareer(hero.id, t.career, t.level)}
+          >
+            {t.level > v.careerLevel ? 'Monter' : 'Redescendre'} : {t.label} (niv. {t.level}) · {t.cost} PX
+            {!t.ok && t.reason ? ` — ${t.reason}` : ''}
           </button>
         ))}
         <div className="adv-change">
           <select value={target} onChange={(e) => setTarget(e.target.value)}>
-            <option value="">— changer de carrière —</option>
-            {careers.map((c) => (
-              <option key={c.label} value={c.label}>
-                {c.label}
-              </option>
-            ))}
+            <option value="">— changer de carrière (niv. 1) —</option>
+            {careers
+              .filter((c) => c.label !== v.career)
+              .map((c) => (
+                <option key={c.label} value={c.label}>
+                  {c.label} ({c.class}) · {v.changeCostFor(c.label)} PX
+                </option>
+              ))}
           </select>
           <button
             className="btn small"
-            disabled={!target || !afford(v.changeCost)}
+            disabled={!target || !afford(target ? v.changeCostFor(target) : v.changeCost)}
             onClick={() => {
               if (target) changeCareer(hero.id, target, 1);
               setTarget('');
             }}
           >
-            Changer · {v.changeCost} PX
+            Changer{target ? ` · ${v.changeCostFor(target)} PX` : ''}
           </button>
         </div>
       </div>

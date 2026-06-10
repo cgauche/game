@@ -236,7 +236,7 @@ export interface PendingFrenzy {
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
  *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
 export interface RevealEntry {
-  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round';
+  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round' | 'mutation';
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
@@ -253,6 +253,20 @@ export interface RevealEntry {
   /** Données du Coup Critique pour une modale COMPLÈTE : localisation (FR), Blessures infligées (ignore
    *  Endurance + Armure), États appliqués. */
   crit?: { location: string; woundsLost: number; conditions?: { name: string; value: number }[] };
+}
+/** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence
+ *  physique) ou de Calme (spirituelle), Intermédiaire (+0) ; Points de Corruption selon le
+ *  niveau et le DR (mineure 0/1 · modérée 0/1/2 · majeure 0/1/2/3). Lancer → Chance
+ *  (+1 DR utile : les seuils de DR réduisent le gain) → Appliquer (gainCorruption). */
+export interface PendingCorruption {
+  heroId: string;
+  level: import('../engine/corruption').ExposureLevel;
+  skill: 'Résistance' | 'Calme';
+  roll?: number;
+  target?: number;
+  sl?: number;
+  success?: boolean;
+  rerolled?: boolean;
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
@@ -335,6 +349,23 @@ export interface PendingCast {
   result: (CastResult & Partial<MissileResult>) | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix du lanceur — Blessure Critique
+   *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
+   *  Force inéluctable (indissipable). Défaut auto à l'application. */
+  critChoice?: 'critique' | 'puissance' | 'ineluctable';
+  /** Surincantation (LDB 47 l.28-31) : « pour chaque +2 DR [au-delà du NI], ajouter une
+   *  valeur de Portée/ZdE/Durée/Cible égale à la valeur initiale », cumulable. Allocation
+   *  du surplus dans la modale — `duration` = ×(1+n) sur la durée ; `targets` = n cibles
+   *  SUPPLÉMENTAIRES (`extraTargetIds`, choisies dans la modale). Sorts seulement. */
+  overcast?: { duration: number; targets: number };
+  extraTargetIds?: string[];
+  /** Sort à Zone d'Effet (LDB 47 l.44) ciblé sur une CASE : tous les combattants dans le
+   *  rayon (cases, Chebyshev) sont visés — `extraTargetIds` porte les cibles au-delà de la
+   *  première (résolution multi-cibles du même jet). Cibles figées au ciblage. */
+  zone?: { center: { x: number; y: number }; radius: number };
+  /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
+   *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
+  grimoire?: boolean;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

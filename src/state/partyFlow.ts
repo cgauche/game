@@ -7,7 +7,6 @@
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
 import { recomputeLoadout, addItemToHero, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from '../engine/items';
-import { maxWounds } from '../engine/characteristics';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -15,32 +14,65 @@ import {
   changeCareer as engineChangeCareer,
   isCareerLevelComplete,
   inCareerChar,
-  inCareerSkill,
-  inCareerTalent,
 } from '../engine/advancement';
+import {
+  skillSlots,
+  talentSlots,
+  availableChars,
+  designationsFor,
+  inCareerStatus,
+  freeSlotFor,
+  designateSlot,
+  talentMaxReached,
+  splitLabel,
+} from '../engine/careerSlots';
+import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
 import { itemUse, applyItemUse } from '../engine/consumables';
-import { levelsForCareer, findSkill } from '../data/index';
+import { add as moneyAdd, Money, formatMoney } from '../engine/money';
+import { spellCost } from '../engine/grimoire';
+import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData } from '../data/index';
 import { bus, EVT } from './bus';
 
 type Get = () => GameState;
 type Set = (s: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
 
-/** Données du Niveau de Carrière COURANT d'un héros (depuis careerLevels.json), pour la
- *  détection in-carrière et la complétion. `undefined` si la carrière est hors base. */
-function currentCareerLevel(hero: Combatant) {
-  return levelsForCareer(hero.career ?? '').find((l) => l.level === (hero.careerLevel ?? 1));
-}
-
-/** Recalcule les Blessures max (BF + 2·BE + BFM, LDB Attributs) après une Augmentation de
- *  Caractéristique ; un gain de max augmente aussi le courant d'autant (mute le héros). */
+/** Recalcule les Blessures max (BF + 2·BE + BFM × Taille + Dur à cuire) après une Augmentation
+ *  de Caractéristique ou un nouveau Talent ; un gain de max augmente aussi le courant (mute). */
 function recomputeWounds(hero: Combatant) {
   // Augmentation permanente de Caractéristique → recalcul de la BASE (formule × Taille de l'espèce).
-  const newMax = maxWounds(hero.characteristics, hero.size ?? 'moyenne');
+  const newMax = heroMaxWounds(hero);
   const delta = newMax - hero.wounds.max;
   hero.wounds.base = newMax;
   hero.wounds.max = newMax;
   if (delta > 0) hero.wounds.current += delta;
   if (hero.wounds.current > newMax) hero.wounds.current = newMax;
+}
+
+/** Contexte carrière d'un héros : niveaux + slots cumulés/courants + désignations (LDB 07). */
+function careerCtx(hero: Combatant) {
+  const career = hero.career ?? '';
+  const level = hero.careerLevel ?? 1;
+  const levels = levelsForCareer(career);
+  return {
+    career,
+    level,
+    levels,
+    sSlots: skillSlots(levels, level), // Compétences : cumul niveaux ≤ courant (l.78)
+    tSlots: talentSlots(levels, level), // Talents : niveau courant seul (l.100)
+    careerChars: availableChars(levels, level), // Caractéristiques : cumul (l.67)
+    designations: designationsFor(hero, career),
+  };
+}
+
+function isCompleted(hero: Combatant): boolean {
+  const ctx = careerCtx(hero);
+  if (!ctx.levels.some((l) => l.level === ctx.level)) return false;
+  return isCareerLevelComplete(hero, ctx.level, {
+    skillSlots: ctx.sSlots,
+    talentSlots: ctx.tSlots,
+    careerChars: ctx.careerChars,
+    designations: ctx.designations,
+  });
 }
 
 /** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. */
@@ -151,7 +183,7 @@ export function buyCharAdvance(get: Get, set: Set, heroId: string, char: CharKey
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
-      const inC = inCareerChar(currentCareerLevel(clone)?.characteristics ?? [], char);
+      const inC = inCareerChar(careerCtx(clone).careerChars, char);
       const r = engineBuyCharAdvance(clone, char, inC);
       if (!r.ok) {
         msg = `${clone.name} : ${CHAR_LABELS[char]} — ${r.reason}.`;
@@ -165,56 +197,165 @@ export function buyCharAdvance(get: Get, set: Set, heroId: string, char: CharKey
   if (msg) get().log(msg);
 }
 
-export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: string): void {
+/** Libellé d'affichage d'une Compétence/Talent concret. */
+function lbl(name: string, spec?: string): string {
+  return spec ? `${name} (${spec})` : name;
+}
+
+/** Achète une Augmentation de Compétence — identité (name, spec), LDB 09 l.42. L'achat via un
+ *  emplacement « (Au choix) » libre DÉSIGNE l'emplacement (LDB 09 l.38 : la Spécialisation se
+ *  choisit à l'allocation). Remise −5 PX si la Compétence est ajoutée par un talent ET déjà
+ *  dans la carrière (LDB 10 Maître artisan…). */
+export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: string, spec?: string): void {
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
-      const known = clone.skills.some((sk) => sk.name === skillName);
-      const inC = inCareerSkill(currentCareerLevel(clone)?.skills ?? [], skillName);
+      const ctx = careerCtx(clone);
+      const known = clone.skills.some((sk) => sk.name === skillName && (sk.spec ?? '') === (spec ?? ''));
+      const status = inCareerStatus(ctx.sSlots, ctx.designations, skillName, spec);
+      const additions = careerSkillAdditions(clone);
+      const added = additions.some((a) => {
+        const p = splitLabel(a);
+        return p.name === skillName && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (spec ?? ''));
+      });
+      const inC = status != null || added;
       if (!known) {
         if (!inC) {
-          msg = `${clone.name} : « ${skillName} » hors carrière, non acquérable.`;
+          msg = `${clone.name} : « ${lbl(skillName, spec)} » hors carrière, non acquérable.`;
           return h;
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
         const characteristic = CHAR_BY_LABEL[findSkill(skillName)?.characteristic ?? ''] ?? 'Int';
-        clone.skills.push({ name: skillName, characteristic, advances: 0 });
+        clone.skills.push({ name: skillName, spec, characteristic, advances: 0 });
       }
-      const r = engineBuySkillAdvance(clone, skillName, inC);
+      const discount = added && status != null ? 5 : 0;
+      const r = engineBuySkillAdvance(clone, skillName, spec, inC, discount);
       if (!r.ok) {
-        msg = `${clone.name} : ${skillName} — ${r.reason}.`;
+        msg = `${clone.name} : ${lbl(skillName, spec)} — ${r.reason}.`;
         return h;
       }
-      msg = `${clone.name} : ${skillName} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+      // Première allocation via un slot joker libre → désignation automatique (LDB 09 l.38).
+      if (status === 'free') {
+        const slot = freeSlotFor(ctx.sSlots, ctx.designations, skillName, spec);
+        if (slot) designateSlot(clone, ctx.career, slot, lbl(skillName, spec), [...ctx.sSlots, ...ctx.tSlots]);
+      }
+      msg = `${clone.name} : ${lbl(skillName, spec)} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
       return clone;
     }),
   }));
   if (msg) get().log(msg);
 }
 
+/** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante sur un libellé
+ *  concret (éventuellement déjà possédé via l'espèce) — il devient in-carrière et montable en
+ *  PX. Arbitrage RAW : specs distinctes par carrière, désignations par carrière. */
+export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey: string, label: string): void {
+  let msg = '';
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const ctx = careerCtx(clone);
+      const all = [...ctx.sSlots, ...ctx.tSlots];
+      const slot = all.find((sl) => sl.key === slotKey);
+      if (!slot) {
+        msg = `${clone.name} : emplacement de carrière inconnu.`;
+        return h;
+      }
+      const r = designateSlot(clone, ctx.career, slot, label, all);
+      if (!r.ok) {
+        msg = `${clone.name} : désignation refusée (${r.reason}).`;
+        return h;
+      }
+      msg = `${clone.name} : « ${label} » devient le choix de carrière de l'emplacement (0 PX).`;
+      return clone;
+    }),
+  }));
+  if (msg) get().log(msg);
+}
+
+/** Achète une Augmentation de Talent (libellé CONCRET). In-carrière = un emplacement du niveau
+ *  COURANT le couvre (explicite, désigné, ou libre → désignation automatique) ; hors carrière
+ *  interdit (LDB 07 l.97) ; Maxi respecté (LDB 10). Applique les effets d'acquisition
+ *  (+5 Caractéristique de départ, Véloce) et recale Blessures/Chance/Détermination. */
 export function buyTalent(get: Get, set: Set, heroId: string, talentName: string): void {
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
-      const inC = inCareerTalent(currentCareerLevel(clone)?.talents ?? [], talentName);
-      if (!inC) {
+      const ctx = careerCtx(clone);
+      const { name, spec } = splitLabel(talentName);
+      const status = inCareerStatus(ctx.tSlots, ctx.designations, name, spec, [...ctx.sSlots, ...ctx.tSlots]);
+      if (!status) {
         msg = `${clone.name} : Talent « ${talentName} » hors carrière (LDB l.97).`;
         return h;
       }
+      if (talentMaxReached(clone, talentName)) {
+        msg = `${clone.name} : ${talentName} — Maxi atteint (LDB 10).`;
+        return h;
+      }
+      const fortuneBefore = fortuneMax(clone);
+      const resolveBefore = resolveMax(clone);
       const r = engineBuyTalent(clone, talentName);
       if (!r.ok) {
         msg = `${clone.name} : ${talentName} — ${r.reason}.`;
         return h;
       }
+      if (status === 'free') {
+        const slot = freeSlotFor(ctx.tSlots, ctx.designations, name, spec);
+        if (slot) designateSlot(clone, ctx.career, slot, talentName, [...ctx.sSlots, ...ctx.tSlots]);
+      }
+      // Effets d'acquisition (+5 Caractéristique de départ, Véloce) + attributs dérivés.
+      applyTalentAcquisition(clone, talentName);
+      recomputeWounds(clone); // Dur à cuire / Très résistant (BE)
+      clone.fortune = (clone.fortune ?? 0) + (fortuneMax(clone) - fortuneBefore); // Chanceux
+      clone.resolve = (clone.resolve ?? 0) + (resolveMax(clone) - resolveBefore); // Obstiné
       msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
       return clone;
     }),
   }));
   if (msg) get().log(msg);
+}
+
+/** Apprend/mémorise un sort (LDB 46 l.44-47 + Talents LDB 10) : coût en PX selon la
+ *  famille (engine/grimoire.spellCost) ; un sort de Magie du Chaos inflige AUSSI
+ *  +1 Point de Corruption (« le Sort s'insinue dans votre esprit ») — appliqué par
+ *  l'appelant store (seuil → mutation). */
+export function buySpell(get: Get, set: Set, heroId: string, label: string): { ok: boolean; chaos?: boolean } {
+  let msg = '';
+  let result: { ok: boolean; chaos?: boolean } = { ok: false };
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const sp = findSpellData(label);
+      if (!sp) {
+        msg = `Sort « ${label} » introuvable.`;
+        return h;
+      }
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const cost = spellCost(clone, sp);
+      if (cost == null) {
+        msg = `${clone.name} ne peut pas apprendre ${label} (déjà connu ou Talent manquant).`;
+        return h;
+      }
+      if ((clone.xp ?? 0) < cost) {
+        msg = `${clone.name} : ${cost} PX requis pour mémoriser ${label} (reste ${clone.xp ?? 0}).`;
+        return h;
+      }
+      clone.xp = (clone.xp ?? 0) - cost;
+      clone.spells = [...(clone.spells ?? []), label];
+      msg = cost > 0
+        ? `${clone.name} mémorise ${label} (−${cost} PX).`
+        : `${clone.name} reçoit ${label} (inclus au Talent).`;
+      result = { ok: true, chaos: sp.type === 'Magie du Chaos' };
+      return clone;
+    }),
+  }));
+  if (msg) get().log(msg);
+  return result;
 }
 
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {
@@ -248,9 +389,11 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
-      const lvl = currentCareerLevel(clone);
-      const completed = lvl ? isCareerLevelComplete(clone, clone.careerLevel ?? 1, lvl.skills, lvl.talents) : false;
-      const r = engineChangeCareer(clone, newCareer, newLevel, completed);
+      // Validation LDB 07 l.137 + LDB 08 l.7-11 : complétion, niveau cible, surcoût de Classe.
+      const completed = isCompleted(clone);
+      const sameClass = findCareer(clone.career ?? '')?.class === findCareer(newCareer)?.class;
+      const targetLevelExists = levelsForCareer(newCareer).some((l) => l.level === newLevel);
+      const r = engineChangeCareer(clone, newCareer, newLevel, { completed, sameClass, targetLevelExists });
       if (!r.ok) {
         msg = `${clone.name} : changement de carrière refusé (${r.reason}).`;
         return h;
@@ -260,6 +403,12 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
     }),
   }));
   if (msg) get().log(msg);
+}
+
+/** Crédite la bourse du GROUPE (Richesse initiale de la création, LDB 05 l.578-583). */
+export function creditPartyMoney(get: Get, set: Set, m: Money, note?: string): void {
+  set((s) => ({ money: moneyAdd(s.money, m) }));
+  if (note) get().log(`${note} : +${formatMoney(m)}.`);
 }
 
 /** Écran de victoire : assigne un objet du butin de groupe à un héros (même flux que le marchand). */

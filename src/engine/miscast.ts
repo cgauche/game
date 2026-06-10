@@ -1,30 +1,21 @@
 /**
  * Incantations Imparfaites & Colère des dieux — Livre de base, « Les règles
  * magiques » (Tableaux des Incantations Imparfaites Mineures p.234 / Majeures
- * p.235) et « Les prières » (Tableau de la Colère des dieux p.221).
+ * p.235, LDB 46 l.61-136) et « Les prières » (Tableau de la Colère des dieux
+ * p.221, LDB 40 l.58-138).
  *
  * Conception : table-driven et FIDÈLE. Le moteur tire la bonne table (d100, +10
  * par Point de Péché pour la Colère, relances « cascade » et « multiplication »),
- * puis applique UNIQUEMENT les effets que le jeu modélise réellement — États
- * nommés, Blessures ignorant le Bonus d'Endurance et les PA, réduction à 0 PV +
- * Inconscient. Tout le reste (Corruption, Pénitence, perte de Talents, invocation,
- * mutations, Traits psy…) n'est PAS inventé : son texte canonique est journalisé
- * et laissé à l'arbitrage du MJ. Les entrées dont le texte source est dégradé par
- * la conversion PDF ne portent que les effets mécaniques certains.
+ * puis émet des `GameOp` (engine/ops) — États nommés, Blessures ignorant BE+PA,
+ * Tests imbriqués (« Résistance ou Sonné »), Points de Corruption, pénalités/
+ * blocages d'incantation temporisés, réduction à 0 PB + Inconscient. Tout le
+ * reste (Pénitence, perte de Talents, invocation, lévitation…) n'est PAS
+ * inventé : son texte canonique est journalisé et laissé à l'arbitrage du MJ.
  */
-import { RNG, defaultRNG, d100, d10, roll as rollDice } from './dice';
+import { RNG, defaultRNG, d100 } from './dice';
+import { GameOp } from './ops';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';
-
-/** Opération mécanique applicable au lanceur (le store l'exécute). */
-export interface MiscastOp {
-  /** Ajoute un État nommé (value points). */
-  condition?: { name: string; value: number };
-  /** Blessures subies (déjà tirées) — toujours en ignorant BE et PA (auto-infligées). */
-  wounds?: number;
-  /** Réduit les PV à 0 puis ajoute l'État Inconscient (Châtiment, Tonnerre et foudre…). */
-  reduceToZero?: boolean;
-}
 
 export interface MiscastResult {
   severity: MiscastSeverity;
@@ -32,8 +23,8 @@ export interface MiscastResult {
   rolls: number[];
   /** Nom canonique de l'entrée. */
   name: string;
-  /** Effets mécaniques à appliquer au lanceur. */
-  ops: MiscastOp[];
+  /** Effets mécaniques à appliquer au lanceur (applyOps). */
+  ops: GameOp[];
   /** Ligne de journal prête à l'affichage. */
   log: string;
 }
@@ -42,93 +33,118 @@ interface Row {
   min: number;
   max: number;
   name: string;
-  /** Effets auto-applicables (sinon : entrée narrative, arbitrage MJ). */
-  effect?: (rng: RNG, sin: number) => MiscastOp[];
+  /** Ops auto-applicables, closées sur les Points de Péché (sinon : entrée narrative, MJ). */
+  ops?: (sin: number) => GameOp[];
   /** Relance : sur le Tableau Majeur (cascade) ou deux fois sur le Mineur (multiplication). */
   reroll?: 'majeure' | 'mineure-x2';
 }
 
-const cond = (name: string, value = 1): MiscastOp => ({ condition: { name, value } });
+const cond = (name: string, value: number | { dice: { n: number; sides: number; plus?: number } } = 1): GameOp =>
+  ({ op: 'condition', name, value });
+const d = (n: number, sides: number, plus = 0) => ({ dice: { n, sides, plus } });
 
-// --- Tableau des Incantations Imparfaites Mineures (source propre) -----------
+// --- Tableau des Incantations Imparfaites Mineures (LDB 46 l.61-92) ----------
 const MINOR: Row[] = [
   { min: 1, max: 5, name: 'Signe de Sorcière' },
   { min: 6, max: 10, name: 'Lait caillé' },
   { min: 11, max: 15, name: 'Mildiou' },
-  { min: 16, max: 20, name: 'Cérumen', effect: () => [cond('Assourdi')] },
+  // « Gagnez 1 État Assourdi, qui ne peut être retiré [que par] Guérison » (l.66).
+  { min: 16, max: 20, name: 'Cérumen', ops: () => [cond('Assourdi')] },
   { min: 21, max: 25, name: 'Lueur occulte' },
-  { min: 26, max: 30, name: 'Murmures mortels' }, // Test FM ou 1 Corruption → MJ
-  { min: 31, max: 35, name: 'Rupture', effect: (rng) => [cond('Hémorragique', d10(rng))] },
-  { min: 36, max: 40, name: 'Secousse spirituelle', effect: () => [cond('À Terre')] },
+  // « Réussissez un Test de FM Accessible (+20) ou gagnez 1 Point de Corruption » (l.70).
+  { min: 26, max: 30, name: 'Murmures mortels', ops: () => [{ op: 'test', skill: 'Force Mentale', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }] },
+  // « Gagnez 1d10 États Hémorragique » (l.71).
+  { min: 31, max: 35, name: 'Rupture', ops: () => [cond('Hémorragique', d(1, 10))] },
+  { min: 36, max: 40, name: 'Secousse spirituelle', ops: () => [cond('À Terre')] },
   { min: 41, max: 45, name: 'Délié' },
-  { min: 46, max: 50, name: 'Tenue indisciplinée', effect: () => [cond('Enchevêtré')] },
+  { min: 46, max: 50, name: 'Tenue indisciplinée', ops: () => [cond('Enchevêtré')] },
   { min: 51, max: 55, name: 'Malédiction de la sobriété' },
-  { min: 56, max: 60, name: "Drain de l'âme", effect: () => [cond('Exténué')] },
-  { min: 61, max: 65, name: 'Distraction', effect: () => [cond('Surpris')] }, // si Engagé
-  { min: 66, max: 70, name: 'Visions impies', effect: () => [cond('Aveuglé')] }, // 1er Aveuglé inconditionnel
-  { min: 71, max: 75, name: 'Langue maladroite' }, // -10 Tests de Langue 1d10 Rounds → MJ
-  { min: 76, max: 80, name: "L'horreur !" }, // Test Calme ou Brisé → MJ
-  { min: 81, max: 85, name: 'Malédiction de corruption' }, // 1 Corruption → MJ
+  { min: 56, max: 60, name: "Drain de l'âme", ops: () => [cond('Exténué')] },
+  { min: 61, max: 65, name: 'Distraction', ops: () => [cond('Surpris')] }, // si Engagé
+  // « Recevez l'État Aveuglé ; réussissez un Test de Calme Intermédiaire (+0) ou gagnez-en un autre » (l.83).
+  { min: 66, max: 70, name: 'Visions impies', ops: () => [cond('Aveuglé'), { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [cond('Aveuglé')] }] },
+  // « Tous les Tests de Langue (y compris d'Incantation) subissent −10 pendant 1d10 Rounds » (l.85).
+  { min: 71, max: 75, name: 'Langue maladroite', ops: () => [{ op: 'castPenalty', skill: 'Langue', mod: -10, rounds: d(1, 10) }] },
+  // « Réussissez un Test de Calme Difficile (−20) ou gagnez 1 État Brisé » (l.86).
+  { min: 76, max: 80, name: "L'horreur !", ops: () => [{ op: 'test', skill: 'Calme', difficulty: 'difficile', onFail: [cond('Brisé')] }] },
+  // « Gagnez 1 Point de Corruption » (l.87).
+  { min: 81, max: 85, name: 'Malédiction de corruption', ops: () => [{ op: 'corruption', amount: 1 }] },
   { min: 86, max: 90, name: 'Double problème' },
   { min: 91, max: 95, name: "Multiplication d'infortune", reroll: 'mineure-x2' },
   { min: 96, max: 100, name: 'Chaos en cascade', reroll: 'majeure' },
 ];
 
-// --- Tableau des Incantations Imparfaites Majeures ----------------------------
-// (source dégradée par le PDF : seules les entrées mécaniques certaines portent un effet)
+// --- Tableau des Incantations Imparfaites Majeures (LDB 46 l.96-136) ----------
 const MAJOR: Row[] = [
-  { min: 1, max: 5, name: 'Voix fantomatiques' }, // Test Calme ou Corruption → MJ
-  { min: 6, max: 10, name: 'Regard maudit', effect: () => [cond('Aveuglé')] },
-  { min: 11, max: 15, name: 'Choc aethyrique', effect: (rng) => [{ wounds: d10(rng) }] },
+  // « Test de Calme Accessible (+20) ou 1 Point de Corruption » (l.100).
+  { min: 1, max: 5, name: 'Voix fantomatiques', ops: () => [{ op: 'test', skill: 'Calme', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }] },
+  { min: 6, max: 10, name: 'Regard maudit', ops: () => [cond('Aveuglé')] },
+  // « 1d10 Blessures ignorant BE et PA. Résistance Accessible (+20) ou 1 État Sonné » (l.104).
+  { min: 11, max: 15, name: 'Choc aethyrique', ops: () => [{ op: 'wounds', amount: d(1, 10) }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
   { min: 16, max: 20, name: 'Marche de la mort' },
-  { min: 21, max: 25, name: 'Rébellion intestinale', effect: () => [cond('Exténué')] },
-  { min: 26, max: 30, name: "Feu de l'âme", effect: () => [cond('Enflammé')] },
-  { min: 31, max: 35, name: 'Propos ésotériques' }, // pas d'incantation 1d10 Rounds → MJ
+  { min: 21, max: 25, name: 'Rébellion intestinale', ops: () => [cond('Exténué')] },
+  { min: 26, max: 30, name: "Feu de l'âme", ops: () => [cond('Enflammé')] },
+  // « Vous ne pouvez pas effectuer de Test d'Incantation [pendant] 1d10 Rounds » (l.112).
+  { min: 31, max: 35, name: 'Propos ésotériques', ops: () => [{ op: 'castPenalty', skill: 'Langue', blocked: true, rounds: d(1, 10) }] },
   { min: 36, max: 40, name: 'Essaim' },
-  { min: 41, max: 45, name: 'Poupée de chiffon', effect: (rng) => [{ wounds: d10(rng) }, cond('À Terre')] },
+  { min: 41, max: 45, name: 'Poupée de chiffon', ops: () => [{ op: 'wounds', amount: d(1, 10) }, cond('À Terre')] },
   { min: 46, max: 50, name: 'Membre gelé' },
-  { min: 51, max: 55, name: 'Vue assombrie' },
+  // « Les Tests de Focalisation subissent −20 pour la durée de l'effet [1d10 heures] » (l.120).
+  { min: 51, max: 55, name: 'Vue assombrie', ops: () => [{ op: 'castPenalty', skill: 'Focalisation', mod: -20, hours: d(1, 10) }] },
   { min: 56, max: 60, name: 'Lévitation' },
   { min: 61, max: 65, name: 'Lévitation (suite)' },
-  { min: 66, max: 70, name: 'Régurgitation', effect: () => [cond('Sonné')] },
+  // « Gagnez l'État Sonné, qui dure 1d10 Rounds » (l.126).
+  { min: 66, max: 70, name: 'Régurgitation', ops: () => [{ op: 'condition', name: 'Sonné', durationRounds: d(1, 10) }] },
   { min: 71, max: 75, name: 'Cœur de traître' },
   { min: 76, max: 80, name: 'Cœur de traître (suite)' },
-  { min: 81, max: 85, name: 'Terrible affaiblissement', effect: () => [cond('À Terre'), cond('Exténué')] },
+  // « Gagnez 1 Point de Corruption, 1 État À Terre et 1 État Exténué » (l.132).
+  { min: 81, max: 85, name: 'Terrible affaiblissement', ops: () => [{ op: 'corruption', amount: 1 }, cond('À Terre'), cond('Exténué')] },
   { min: 86, max: 90, name: 'Puanteur infernale' },
-  { min: 91, max: 95, name: 'Drain de puissance' },
+  // « Incapable d'utiliser le Talent vous permettant de lancer des Sorts pendant 1d10 minutes » (l.134).
+  { min: 91, max: 95, name: 'Drain de puissance', ops: () => [{ op: 'castPenalty', skill: 'Langue', blocked: true, minutes: d(1, 10) }] },
   { min: 96, max: 100, name: 'Contre-réaction aethyrique' }, // affecte les autres / tête explose → MJ
 ];
 
-// --- Tableau de la Colère des dieux ------------------------------------------
-// (le jet peut dépasser 100 via +10 par Point de Péché ; les entrées >100 ne sont
-//  atteignables qu'avec des Points de Péché, non encore modélisés.)
+// --- Tableau de la Colère des dieux (LDB 40 l.58-138) -------------------------
+// (le jet peut dépasser 100 via +10 par Point de Péché.)
 const WRATH: Row[] = [
-  { min: 1, max: 5, name: 'Visions sacrées' }, // Test Résistance ou Sonné → MJ
-  { min: 6, max: 10, name: 'Pensez à vos actes' },
-  { min: 11, max: 15, name: 'Tenez compte de mes enseignements' },
-  { min: 16, max: 20, name: 'Prouvez votre dévotion', effect: () => [cond('À Terre')] },
-  { min: 21, max: 25, name: 'Vous abusez de ma patience' },
-  { min: 26, max: 30, name: 'Vous ne comprenez pas ma volonté' },
-  { min: 31, max: 35, name: 'Je trouve inquiétant votre manque de foi' },
-  { min: 36, max: 40, name: 'Partagez ma douleur', effect: (_r, sin) => [{ wounds: 1 + sin }] },
+  // « Résistance Accessible (+20). Sur un échec, 1 État Sonné » (l.60).
+  { min: 1, max: 5, name: 'Visions sacrées', ops: () => [{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
+  // « Tout Test de Prière réussi ne peut pas obtenir plus de 0 DR pour la semaine suivante » (l.63).
+  { min: 6, max: 10, name: 'Pensez à vos actes', ops: () => [{ op: 'castPenalty', skill: 'Prière', maxZeroDR: true, days: 7 }] },
+  // « −10 à votre Compétence Prière pour les 1d10 + Péchés prochains Rounds » (l.64).
+  { min: 11, max: 15, name: 'Tenez compte de mes enseignements', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', mod: -10, rounds: d(1, 10, sin) }] },
+  { min: 16, max: 20, name: 'Prouvez votre dévotion', ops: () => [cond('À Terre')] },
+  // « Vous ne pouvez pas effectuer de Tests de Prière pendant 1d10 Rounds » (l.68).
+  { min: 21, max: 25, name: 'Vous abusez de ma patience', ops: () => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(1, 10) }] },
+  { min: 26, max: 30, name: 'Vous ne comprenez pas ma volonté' }, // compétences choisies par le MJ
+  // « Pas de Tests de Prière pendant 1d10 + Péchés Rounds » (l.72).
+  { min: 31, max: 35, name: 'Je trouve inquiétant votre manque de foi', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(1, 10, sin) }] },
+  // « 1 + Péchés Blessures ignorant BE et PA. Résistance Accessible (+20) ou Sonné » (l.75).
+  { min: 36, max: 40, name: 'Partagez ma douleur', ops: (sin) => [{ op: 'wounds', amount: 1 + sin }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
   { min: 41, max: 45, name: 'Votre cause est indigne' },
-  { min: 46, max: 50, name: 'Cessez vos babillages' },
-  { min: 51, max: 55, name: 'Ressentez ma colère', effect: (rng, sin) => [{ wounds: d10(rng) + sin }] },
-  { min: 56, max: 60, name: 'Je ne vous aiderai pas' },
-  { min: 61, max: 65, name: 'Blessures divines', effect: (_r, sin) => [cond('Hémorragique', 1 + sin)] },
-  { min: 66, max: 70, name: 'Frappé de cécité', effect: (_r, sin) => [cond('À Terre'), cond('Aveuglé', 1 + sin)] },
-  { min: 71, max: 75, name: 'Quallez-vous sacrifier ?', effect: (rng, sin) => [{ wounds: d10(rng) + sin }] },
-  { min: 76, max: 80, name: 'Vous avez péché contre moi' },
-  { min: 81, max: 87, name: 'Purifier la chair', effect: (rng, sin) => [{ wounds: rollDice(2, 10, rng) + sin }] },
+  // « Pas de Tests de Prière pendant 2d10 + Péchés Rounds » (l.79).
+  { min: 46, max: 50, name: 'Cessez vos babillages', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(2, 10, sin) }] },
+  // « 1d10 + Péchés Blessures. Résistance Intermédiaire (+0) ou Sonné » (l.86).
+  { min: 51, max: 55, name: 'Ressentez ma colère', ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [cond('Sonné')] }] },
+  { min: 56, max: 60, name: 'Je ne vous aiderai pas' }, // compétence choisie par le MJ
+  { min: 61, max: 65, name: 'Blessures divines', ops: (sin) => [cond('Hémorragique', 1 + sin)] },
+  { min: 66, max: 70, name: 'Frappé de cécité', ops: (sin) => [cond('À Terre'), cond('Aveuglé', 1 + sin)] },
+  // « 1d10 + Péchés Blessures ignorant BE/PA. Résistance Complexe (−10) ou Sonné » (l.95).
+  { min: 71, max: 75, name: "Qu'allez-vous sacrifier ?", ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'complexe', onFail: [cond('Sonné')] }] },
+  { min: 76, max: 80, name: 'Vous avez péché contre moi' }, // Tests de Prière forcés → MJ
+  // « 2d10 + Péchés Blessures ignorant BE/PA. Résistance Difficile (−20) ou Sonné ;
+  //   échec à −4 DR ou moins → 1 État Inconscient (min 1d10 Rounds) » (l.99-101).
+  { min: 81, max: 87, name: 'Purifier la chair', ops: (sin) => [{ op: 'wounds', amount: d(2, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [cond('Sonné')], onFailHard: { dr: -4, ops: [cond('Inconscient')] } }] },
   { min: 88, max: 88, name: 'Interférences démoniaques' },
-  { min: 89, max: 95, name: 'Redoutez ma colère', effect: (_r, sin) => [cond('Brisé', 1 + sin)] },
+  { min: 89, max: 95, name: 'Redoutez ma colère', ops: (sin) => [cond('Brisé', 1 + sin)] },
   { min: 96, max: 100, name: 'Faites pénitence' },
-  { min: 101, max: 105, name: 'Châtiment', effect: () => [{ reduceToZero: true }] },
-  { min: 106, max: 110, name: 'Ne prononcez pas mon nom en vain' },
+  { min: 101, max: 105, name: 'Châtiment', ops: () => [{ op: 'reduceToZero' }] },
+  { min: 106, max: 110, name: 'Ne prononcez pas mon nom en vain' }, // perte de Talents 1d10+Péchés jours → MJ
   { min: 111, max: 115, name: 'Ne vous attachez pas aux futilités' },
   { min: 116, max: 120, name: 'Vous abusez de ma miséricorde' },
   { min: 121, max: 125, name: 'Contemplez votre cruauté' },
-  { min: 126, max: 130, name: 'Tonnerre et foudre', effect: () => [{ reduceToZero: true }, cond('Enflammé')] },
+  { min: 126, max: 130, name: 'Tonnerre et foudre', ops: () => [{ op: 'reduceToZero' }, cond('Enflammé')] },
   { min: 131, max: 135, name: 'Souffrez comme je souffre' },
   { min: 136, max: 140, name: 'Excommunication' },
   { min: 141, max: 145, name: 'Prouvez votre valeur' },
@@ -148,7 +164,7 @@ function pick(table: Row[], roll: number): Row {
 
 /**
  * Effectue un jet sur la table d'Incantation Imparfaite / Colère des dieux et
- * renvoie les effets mécaniques + un journal fidèle. `sinPoints` ajoute +10 par
+ * renvoie les ops mécaniques + un journal fidèle. `sinPoints` ajoute +10 par
  * point au jet de Colère (Livre de base, Péché et Colère Divine).
  */
 export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, sinPoints = 0): MiscastResult {
@@ -170,7 +186,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
   }
   // Multiplication : 91-95 Mineure → deux lancers (en relançant les 91-00).
   if (row.reroll === 'mineure-x2') {
-    const ops: MiscastOp[] = [];
+    const ops: GameOp[] = [];
     const rolls: number[] = [roll];
     const names: string[] = [];
     for (let i = 0; i < 2; i++) {
@@ -179,7 +195,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
       const sub = pick(MINOR, r);
       rolls.push(r);
       names.push(`${sub.name} (${r})`);
-      if (sub.effect) ops.push(...sub.effect(rng, 0));
+      if (sub.ops) ops.push(...sub.ops(0));
     }
     return {
       severity,
@@ -190,7 +206,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     };
   }
 
-  const ops = row.effect ? row.effect(rng, sinPoints) : [];
+  const ops = row.ops ? row.ops(sinPoints) : [];
   const applied = ops.length ? ` [appliqué]` : ` [arbitrage MJ]`;
   return {
     severity,

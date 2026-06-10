@@ -7,6 +7,7 @@
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
 import { bonus } from './characteristics';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
+import { mutationArmourBonus } from './corruption';
 import { findTrapping } from '../data';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
@@ -196,6 +197,9 @@ export function recomputeLoadout(c: Combatant): void {
     const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
     for (const l of it.locs) armour[l] = Math.max(armour[l], net);
   }
+  // Mutations de Corruption (LDB 19) : PA NATURELS additifs (Peau d'acier +2 partout,
+  // Écailles épineuses +1 partout, Cornes asymétriques +1 Tête) — par-dessus l'armure portée.
+  for (const l of Object.keys(armour) as (keyof typeof armour)[]) armour[l] += mutationArmourBonus(c, l);
 
   c.weapons = weapons;
   c.armour = armour;

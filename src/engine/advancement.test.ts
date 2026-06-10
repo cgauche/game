@@ -10,10 +10,11 @@ import {
   isCareerLevelComplete,
   careerChangeCost,
   changeCareer,
+  validateCareerChange,
   inCareerChar,
-  inCareerSkill,
-  inCareerTalent,
 } from './advancement';
+import { skillSlots, talentSlots } from './careerSlots';
+import { CareerLevelData } from '../data';
 
 const hero = (xp: number): Combatant =>
   ({
@@ -68,14 +69,6 @@ describe('Détection in-carrière (LDB 07-Carrières l.95 : hors-carrière → c
     expect(inCareerChar(chars, 'CC')).toBe(false);
     expect(inCareerChar(chars, 'F')).toBe(false);
   });
-  it('inCareerSkill : appartenance par nom exact', () => {
-    expect(inCareerSkill(['Charme', 'Ragot', 'Subornation'], 'Charme')).toBe(true);
-    expect(inCareerSkill(['Charme', 'Ragot', 'Subornation'], 'Esquive')).toBe(false);
-  });
-  it('inCareerTalent : appartenance par nom exact', () => {
-    expect(inCareerTalent(['Baratiner', 'Sociable'], 'Sociable')).toBe(true);
-    expect(inCareerTalent(['Baratiner', 'Sociable'], 'Orateur')).toBe(false);
-  });
 });
 
 describe('talentCost — 100 + 100 × déjà achetées (l.102)', () => {
@@ -112,13 +105,24 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
     expect(h.characteristics.F).toBe(30); // inchangé
     expect(h.xp).toBe(10);
   });
-  it('buySkillAdvance : +1 avance, coût selon avances déjà prises', () => {
+  it('buySkillAdvance : +1 avance, coût selon avances déjà prises ; identité (name, spec)', () => {
     const h = hero(1000);
-    const r = buySkillAdvance(h, 'Discrétion'); // 0 avance → 10 PX
+    const r = buySkillAdvance(h, 'Discrétion', undefined); // 0 avance → 10 PX
     expect(r).toEqual({ ok: true, cost: 10 });
     expect(h.skills.find((s) => s.name === 'Discrétion')!.advances).toBe(1);
     expect(h.xp).toBe(990);
-    expect(buySkillAdvance(h, 'Inconnue').ok).toBe(false); // compétence non connue
+    expect(buySkillAdvance(h, 'Inconnue', undefined).ok).toBe(false); // compétence non connue
+    // Une AUTRE spec du même groupe est une Compétence distincte (LDB 09 l.42).
+    h.skills.push({ name: 'Discrétion', spec: 'Urbaine', characteristic: 'Ag', advances: 0 });
+    expect(buySkillAdvance(h, 'Discrétion', 'Rurale').ok).toBe(false); // (Rurale) non connue
+    expect(buySkillAdvance(h, 'Discrétion', 'Urbaine')).toEqual({ ok: true, cost: 10 });
+    expect(h.skills.find((s) => s.spec === 'Urbaine')!.advances).toBe(1);
+    expect(h.skills.find((s) => !s.spec && s.name === 'Discrétion')!.advances).toBe(1); // inchangée
+  });
+  it('buySkillAdvance : remise −5 PX (talent Maître artisan…, LDB 10) in-carrière seulement', () => {
+    const h = hero(1000);
+    expect(buySkillAdvance(h, 'Discrétion', undefined, true, 5)).toEqual({ ok: true, cost: 5 });
+    expect(buySkillAdvance(h, 'Discrétion', undefined, false, 5).cost).toBe(20); // ×2, pas de remise
   });
   it('buyTalent : crée à times 1 (100 PX), puis +1 (200 PX)', () => {
     const h = hero(1000);
@@ -130,16 +134,46 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
   });
 });
 
-describe('Changer de Carrière (LDB 07-Carrières l.108-137)', () => {
-  const CAREER_SKILLS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'];
-  const CAREER_TALENTS = ['T1', 'T2'];
+describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08 l.7-11)', () => {
+  // Carrière factice à 2 niveaux : 9 compétences au Niveau 1 (dont un joker), 2 talents.
+  const LEVELS: CareerLevelData[] = [
+    {
+      label: 'Niv1',
+      career: 'Test',
+      level: 1,
+      skills: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'],
+      talents: ['T1', 'T2'],
+      trappings: [],
+      characteristics: ['Capacité de Combat', 'Force', 'Endurance'],
+      status: 'Bronze 1',
+    },
+    {
+      label: 'Niv2',
+      career: 'Test',
+      level: 2,
+      skills: ['S10', 'S11'],
+      talents: ['T3'],
+      trappings: [],
+      characteristics: ['Agilité'],
+      status: 'Bronze 2',
+    },
+  ];
+  const completionOpts = (level: number) => ({
+    skillSlots: skillSlots(LEVELS, level),
+    talentSlots: talentSlots(LEVELS, level),
+    careerChars: LEVELS.filter((l) => l.level <= level).flatMap((l) => l.characteristics),
+    designations: {},
+  });
 
-  // Héros qui COMPLÈTE le Niveau 1 : 10 caracs à 5 Augmentations, 8 compétences à 5, 1 talent du Niveau.
+  // Héros qui COMPLÈTE le Niveau 1 : les 3 caracs DE CARRIÈRE à 5 Augmentations (et pas les
+  // 7 autres — l.125 : « toutes les Caractéristiques… disponibles à votre Niveau »),
+  // 8 compétences du Niveau à 5, 1 talent du Niveau.
   const completedHero = (xp: number): Combatant =>
     ({
       ...hero(xp),
-      charAdvances: { CC: 5, CT: 5, F: 5, E: 5, I: 5, Ag: 5, Dex: 5, Int: 5, FM: 5, Soc: 5 },
-      skills: CAREER_SKILLS.slice(0, 8).map((name) => ({ name, characteristic: 'Ag', advances: 5 })),
+      career: 'Test',
+      charAdvances: { CC: 5, F: 5, E: 5 },
+      skills: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'].map((name) => ({ name, characteristic: 'Ag', advances: 5 })),
       talents: [{ name: 'T1', times: 1 }],
       careerLevel: 1,
     }) as unknown as Combatant;
@@ -149,38 +183,74 @@ describe('Changer de Carrière (LDB 07-Carrières l.108-137)', () => {
     expect(careerCompletionAdvances(2)).toBe(10);
     expect(careerCompletionAdvances(4)).toBe(20);
   });
-  it('isCareerLevelComplete : vrai si 10 caracs + 8 compétences + 1 talent au seuil', () => {
-    const h = completedHero(0);
-    expect(isCareerLevelComplete(h, 1, CAREER_SKILLS, CAREER_TALENTS)).toBe(true);
+  it('isCareerLevelComplete : vrai avec les 3 caracs DE CARRIÈRE + 8 compétences + 1 talent', () => {
+    expect(isCareerLevelComplete(completedHero(0), 1, completionOpts(1))).toBe(true);
   });
-  it('isCareerLevelComplete : faux si une caractéristique sous le seuil', () => {
+  it('isCareerLevelComplete : faux si une caractéristique DE CARRIÈRE sous le seuil', () => {
     const h = completedHero(0);
-    h.charAdvances!.Soc = 4; // une carac à 4 < 5
-    expect(isCareerLevelComplete(h, 1, CAREER_SKILLS, CAREER_TALENTS)).toBe(false);
+    h.charAdvances!.E = 4;
+    expect(isCareerLevelComplete(h, 1, completionOpts(1))).toBe(false);
+  });
+  it('isCareerLevelComplete : les caracs HORS carrière ne comptent pas', () => {
+    const h = completedHero(0);
+    h.charAdvances = { ...h.charAdvances, Soc: 0 }; // Soc hors carrière à 0 → sans effet
+    expect(isCareerLevelComplete(h, 1, completionOpts(1))).toBe(true);
   });
   it('isCareerLevelComplete : faux si moins de 8 compétences au seuil', () => {
     const h = completedHero(0);
-    h.skills = CAREER_SKILLS.slice(0, 7).map((name) => ({ name, characteristic: 'Ag', advances: 5 })) as never;
-    expect(isCareerLevelComplete(h, 1, CAREER_SKILLS, CAREER_TALENTS)).toBe(false);
+    h.skills = h.skills.slice(0, 7);
+    expect(isCareerLevelComplete(h, 1, completionOpts(1))).toBe(false);
   });
   it('isCareerLevelComplete : faux sans aucun talent du Niveau', () => {
     const h = completedHero(0);
     h.talents = [];
-    expect(isCareerLevelComplete(h, 1, CAREER_SKILLS, CAREER_TALENTS)).toBe(false);
+    expect(isCareerLevelComplete(h, 1, completionOpts(1))).toBe(false);
+  });
+  it('niveau 2 : seuil 10, compétences CUMULATIVES (l.78) mais talent du niveau COURANT (l.100)', () => {
+    const h = completedHero(0);
+    h.careerLevel = 2;
+    h.charAdvances = { CC: 10, F: 10, E: 10, Ag: 10 };
+    h.skills = h.skills.map((s) => ({ ...s, advances: 10 })); // 8 compétences du Niveau 1 à 10
+    expect(isCareerLevelComplete(h, 2, completionOpts(2))).toBe(false); // T1 n'est PAS du niveau 2
+    h.talents = [{ name: 'T3', times: 1 }];
+    expect(isCareerLevelComplete(h, 2, completionOpts(2))).toBe(true);
   });
   it('careerChangeCost : 100 si complété, 200 sinon (l.120)', () => {
     expect(careerChangeCost(true)).toBe(100);
     expect(careerChangeCost(false)).toBe(200);
   });
+  it('validateCareerChange : niveau suivant EXIGE la complétion (l.137) ; pas de saut', () => {
+    const h = completedHero(500);
+    expect(validateCareerChange(h, 'Test', 2, { completed: true, sameClass: true, targetLevelExists: true }).ok).toBe(true);
+    expect(validateCareerChange(h, 'Test', 2, { completed: false, sameClass: true, targetLevelExists: true })).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining('non complété'),
+    });
+    expect(validateCareerChange(h, 'Test', 3, { completed: true, sameClass: true, targetLevelExists: true }).ok).toBe(false); // saut
+  });
+  it('validateCareerChange : autre carrière → niveau 1 imposé (LDB 08 l.9), +100 hors Classe', () => {
+    const h = completedHero(500);
+    expect(validateCareerChange(h, 'Érudit', 2, { completed: true, sameClass: true, targetLevelExists: true }).ok).toBe(false);
+    expect(validateCareerChange(h, 'Érudit', 1, { completed: true, sameClass: true, targetLevelExists: true }).cost).toBe(100);
+    expect(validateCareerChange(h, 'Érudit', 1, { completed: true, sameClass: false, targetLevelExists: true }).cost).toBe(200);
+    expect(validateCareerChange(h, 'Érudit', 1, { completed: false, sameClass: false, targetLevelExists: true }).cost).toBe(300);
+  });
+  it('validateCareerChange : redescendre à un niveau inférieur de la même carrière', () => {
+    const h = completedHero(500);
+    h.careerLevel = 2;
+    expect(validateCareerChange(h, 'Test', 1, { completed: false, sameClass: true, targetLevelExists: true })).toMatchObject({ ok: true, cost: 200 });
+  });
   it('changeCareer : déduit le coût et met à jour carrière + niveau ; refus si PX insuffisants', () => {
     const h = completedHero(150);
-    const r = changeCareer(h, 'Érudit', 1, true);
+    const r = changeCareer(h, 'Érudit', 1, { completed: true, sameClass: true, targetLevelExists: true });
     expect(r).toEqual({ ok: true, cost: 100 });
     expect(h.career).toBe('Érudit');
     expect(h.careerLevel).toBe(1);
     expect(h.xp).toBe(50);
-    const poor = changeCareer(hero(50), 'Soldat', 2, false); // 200 PX requis, 50 dispo
-    expect(poor.ok).toBe(false);
-    expect(poor.reason).toBe('PX insuffisants');
+    const poor = hero(50);
+    poor.career = 'Test';
+    const refused = changeCareer(poor, 'Soldat', 1, { completed: false, sameClass: true, targetLevelExists: true }); // 200 PX requis
+    expect(refused.ok).toBe(false);
+    expect(refused.reason).toBe('PX insuffisants');
   });
 });

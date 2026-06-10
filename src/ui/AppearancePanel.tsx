@@ -23,7 +23,7 @@ export function AppearancePanel({
 }) {
   const set = (patch: Partial<Appearance>) => onChange({ ...value, ...patch });
   return (
-    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
       <svg viewBox="0 0 120 150" width={108} height={135} style={{ flex: '0 0 auto', borderRadius: 6 }}>
         <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
         <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />

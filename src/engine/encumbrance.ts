@@ -20,6 +20,7 @@ import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { hasCondition } from './conditions';
 import { traumaMovementHalved } from './trauma';
+import { mutationMovementDelta } from './corruption';
 
 export interface EncumbrancePenalties {
   /** Palier de surcharge : 0 (aucune) à 3 (immobilisé). */
@@ -60,7 +61,9 @@ export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
   // Empêtré (LDB 16-États l.85) / Surpris (l.132 « ni Mouvement ni Action ») : Mouvement = 0.
   if (p.immobile || hasCondition(c, 'Empêtré') || hasCondition(c, 'Surpris')) return 0;
-  const base = p.tier === 0 ? c.movement : Math.min(c.movement, Math.max(c.movement - p.movePenalty, p.moveFloor));
+  // Mutations (LDB 19) : ±1 Mouvement PERMANENT (Pattes d'animaux / Corpulent / Court sur pattes).
+  const mv = Math.max(0, c.movement + mutationMovementDelta(c));
+  const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - p.movePenalty, p.moveFloor));
   // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
   // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).
   return (hasCondition(c, 'Sonné') || hasCondition(c, 'À Terre') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;

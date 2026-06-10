@@ -10,7 +10,7 @@ describe('pickBackend — view top', () => {
   it('héros bipède : flat=true + portraitBox + corps en vue de face (tête)', () => {
     const r = pickBackend({ kind: 'combatant', combatant: hero }, 'top');
     expect(r.flat).toBe(true);
-    expect(r.portraitBox).toMatch(/^[\d.\-]+ [\d.\-]+ [\d.\-]+ [\d.\-]+$/);
+    expect(r.portraitBox).toMatch(/^[\d.-]+ [\d.-]+ [\d.-]+ [\d.-]+$/);
     const html = renderToStaticMarkup(<svg>{r.body}</svg>);
     expect(html).toContain('data-bone="tete"');
   });
