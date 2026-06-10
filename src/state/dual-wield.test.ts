@@ -96,6 +96,65 @@ describe('−10 à toutes les défenses du dual-wield (LDB 10 l.638)', () => {
   });
 });
 
+const hitRes = (over: Partial<AttackResult> = {}): AttackResult => ({
+  hit: true, attackerRoll: 30, netSL: 2, critical: false, advantageTo: 'attacker', defenderDefeated: false,
+  woundsLost: 0, location: 'corps', attackerDetail: { roll: 30, target: 50, success: true, sl: 2 }, log: 'touche', ...over,
+} as unknown as AttackResult);
+
+describe('chaînage de l’Action « des deux armes »', () => {
+  it('main touche → pendingDualStrike ouvert + −10 défense posé ; dualStrikeAttack → 2ᵉ frappe pré-résolue ; confirm → fermé', () => {
+    setupBattle();
+    useGame.setState({ pendingAttack: { attackerId: 'h', targetId: 'f1', location: 'corps', result: hitRes(), dualMode: true } as any });
+    useGame.getState().attackConfirm();
+    const ds = useGame.getState().pendingDualStrike;
+    expect(ds).not.toBeNull();
+    expect(ds!.offWeaponUid).toBe('o');
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.dualStrikeDefensePenalty).toBe(true);
+
+    useGame.getState().dualStrikeAttack('f2');
+    const pa = useGame.getState().pendingAttack;
+    expect(pa?.dualSecond).toBe(true);
+    expect(pa?.result).not.toBeNull();
+
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().pendingDualStrike).toBeNull();
+  });
+
+  it('main MANQUE → pas de 2ᵉ frappe (pendingDualStrike reste null), mais −10 défense quand même posé', () => {
+    setupBattle();
+    useGame.setState({ pendingAttack: { attackerId: 'h', targetId: 'f1', location: 'corps', result: hitRes({ hit: false, advantageTo: 'defender' }), dualMode: true } as any });
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().pendingDualStrike).toBeNull();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.dualStrikeDefensePenalty).toBe(true);
+  });
+});
+
+describe('Avantage : seulement si les DEUX frappes touchent (LDB 10 l.638)', () => {
+  it('les deux touchent → +2 Avantage (1 par frappe)', () => {
+    const { h } = setupBattle();
+    h.advantage = 0;
+    useGame.setState({
+      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30, mainAdvantage: true } as any,
+      pendingAttack: { attackerId: 'h', targetId: 'f2', location: 'corps', result: hitRes(), dualSecond: true, weaponUid: 'o' } as any,
+    });
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.advantage).toBe(2);
+    expect(useGame.getState().pendingDualStrike).toBeNull();
+  });
+
+  it('la 2ᵉ manque → 0 Avantage (pas « les deux »)', () => {
+    const { h } = setupBattle();
+    h.advantage = 0;
+    useGame.setState({
+      pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30, mainAdvantage: true } as any,
+      pendingAttack: { attackerId: 'h', targetId: 'f2', location: 'corps', result: hitRes({ hit: false, advantageTo: 'defender' }), dualSecond: true, weaponUid: 'o' } as any,
+    });
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h')!.advantage).toBe(0);
+    expect(useGame.getState().pendingDualStrike).toBeNull();
+  });
+});
+
 describe('purge du −10 au début du prochain Tour du porteur', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });

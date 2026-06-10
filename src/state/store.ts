@@ -15,7 +15,7 @@ import {
   finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
-  autoCleave, maybeHeroCleave, cleaveTargets,
+  autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise,
 } from './combatFlow';
@@ -42,6 +42,7 @@ import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
+import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -61,7 +62,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingTrample, PendingRun, PendingFocus,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingDefense,
   PendingDisengage, PendingCast, PendingHeal,
 } from './pendings';
@@ -196,6 +197,8 @@ export interface GameState {
   pendingHeal: PendingHeal | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
+  /** Maniement de deux armes : sélection de la 2ᵉ cible (après une 1ʳᵉ frappe réussie). */
+  pendingDualStrike: PendingDualStrike | null;
   /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
   pendingReveals: RevealEntry[];
   /** Piétinement en cours (modale interactive). */
@@ -429,6 +432,10 @@ export interface GameState {
   cleaveAttack: (targetId: string) => void;
   /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */
   cleaveEnd: () => void;
+  /** Maniement de deux armes (LDB 10 l.638) : 2ᵉ frappe (main secondaire) contre la cible choisie. */
+  dualStrikeAttack: (targetId: string) => void;
+  /** Renonce à la 2ᵉ frappe (« peut viser » = optionnel) → pas de 2ᵉ attaque, pas d'Avantage. */
+  dualStrikeSkip: () => void;
   /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
    *  plus petit. Ne consomme pas l'Action. */
   battleTrample: (targetId: string) => void;
@@ -602,6 +609,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCast: null,
   pendingHeal: null,
   pendingCleave: null,
+  pendingDualStrike: null,
   pendingReveals: [],
   pendingTrample: null,
   pendingRun: null,
@@ -700,6 +708,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDisengage: null,
       pendingInteract: null,
       pendingCleave: null,
+      pendingDualStrike: null,
       pendingReveals: [],
       pendingTrample: null,
       pendingRun: null,
@@ -1887,6 +1896,7 @@ export const useGame = create<GameState>((set, get) => ({
   attackReroll: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
+    if (pa.dualSecond) return; // 2ᵉ frappe du Maniement : jet imposé (d100 inversé / tableau des Critiques) — pas de relance
     // Relance si le jet d'attaque propre est raté (succès du d100 de l'attaquant), 1× max.
     if (!canReroll(!pa.result.attackerDetail?.success, !!pa.rerolled)) return;
     const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
@@ -1926,21 +1936,48 @@ export const useGame = create<GameState>((set, get) => ({
     // Tir dévié dans la mêlée (LDB 14 l.136) : la touche est appliquée à l'allié intercalé, pas à la cible.
     const victim = pa.victimId ? battle.combatants.find((c) => c.id === pa.victimId) ?? target : target;
     const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
+    const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
     set({ pendingAttack: null });
     if (attacker && target && victim) {
       const weapon = firedWeapon(attacker, target, pa.weaponUid);
       const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
-      applyAttackResult(get, set, attacker, victim, weapon, pa.result);
+      const isDualMain = !!pa.dualMode && !pa.dualSecond && attacker.kind === 'hero'; // main directrice d'un dual
+      const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)
+      // Maniement de deux armes (LDB 10 l.638) : l'Avantage des deux frappes est différé — accordé seulement
+      // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
+      applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result)) {
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
-      } else {
-        // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand.
+      } else if (!isDualMain && !isDualSecond) {
+        // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
+        // (jamais en mode dual : un Maniement de deux armes ne balaie pas).
         maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
+      }
+      // Action « des deux armes » (LDB 10 l.638) : on a CHOISI d'attaquer des deux → −10 à toutes ses défenses
+      // jusqu'à son prochain Tour ; si la main directrice TOUCHE, on ouvre la sélection de la 2ᵉ cible.
+      if (isDualMain) {
+        attacker.dualStrikeDefensePenalty = true;
+        const off = attacker.weapons.find((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1);
+        const mainRoll = pa.result.attackerDetail?.roll;
+        if (pa.result.hit && mainRoll != null && off?.uid) {
+          // Exception Critique : la 2ᵉ frappe utilise la valeur du tableau des Critiques (révélation poussée par applyAttackResult).
+          const critValue = pa.result.critical ? get().pendingReveals.find((r) => r.kind === 'critical')?.dice : undefined;
+          set({ pendingDualStrike: { attackerId: attacker.id, offWeaponUid: off.uid, mainRoll, critValue, mainAdvantage: pa.result.advantageTo === 'attacker' } });
+        }
+        set({ battle: { ...get().battle! } });
+      }
+      // 2ᵉ frappe résolue : Avantage accordé seulement si LES DEUX ont touché (dualBefore n'existe que si la 1ʳᵉ a touché).
+      if (isDualSecond) {
+        if (dualBefore && pa.result.hit) {
+          if (dualBefore.mainAdvantage) { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
+          if (pa.result.advantageTo === 'attacker') { attacker.advantage += 1; attacker.gainedAdvThisRound = true; }
+        }
+        set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
       // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du
       // héros frénétique ne consomme PAS l'Action (il pourra réattaquer normalement ensuite).
-      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain) {
+      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain && !isDualSecond) {
         attacker.frenzyFreeUsed = true;
         set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, ev('frenzy', `${attacker.name} : attaque libre de Frénésie (Action préservée).`, attacker.id)] } });
       }
@@ -1955,6 +1992,7 @@ export const useGame = create<GameState>((set, get) => ({
   attackCancel: () => {
     const pa = get().pendingAttack;
     if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
+    if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
     if (pa?.cleave) return get().cleaveEnd(); // annuler un enchaînement = terminer le balayage
     set({ pendingAttack: null });
   },
@@ -1969,6 +2007,19 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
   },
   cleaveEnd: () => set({ pendingCleave: null }),
+  dualStrikeAttack: (targetId) => {
+    const { battle, pendingDualStrike: ds } = get();
+    if (!battle || !ds) return;
+    const attacker = battle.combatants.find((c) => c.id === ds.attackerId);
+    const target = battle.combatants.find((c) => c.id === targetId);
+    if (!attacker || !target || isOutOfAction(target)) return;
+    const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
+    if (!off) { set({ pendingDualStrike: null }); return; }
+    // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.638).
+    const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
+    set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });
+  },
+  dualStrikeSkip: () => set({ pendingDualStrike: null }), // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.638)
   dismissReveal: () => {
     set((s) => ({ pendingReveals: s.pendingReveals.slice(1) }));
     // File vidée alors qu'un tour d'IA était suspendu par les révélations → reprendre l'avancement.
