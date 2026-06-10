@@ -12,7 +12,7 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
-import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveWeapon, enchantedWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
@@ -644,7 +644,9 @@ function applyHit(
   dmgProxy?: AttackOptions['dmgProxy'],
   extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.306)
 ): AttackResult {
-  weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
+  // Arme usée à +0 → improvisée (LDB 62 l.178), puis enchantements actifs du porteur (Jalon 2.6 —
+  // Magique/Dégâts/Atouts de B. de Droiture, Marteau ardent, Épée ardente fusionnés à la résolution).
+  weapon = enchantedWeapon(attacker, effectiveWeapon(weapon));
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
   // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
   // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.

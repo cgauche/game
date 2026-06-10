@@ -78,7 +78,7 @@ import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -1354,6 +1354,15 @@ export function applyAttackResult(
         addCondition(target, oh.condition);
         assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
         pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id }); // « un jet = une modale » (Test opposé)
+      }
+    }
+    // États « à la touche » des ENCHANTEMENTS d'arme actifs du porteur (Jalon 2.6 — Marteau
+    // ardent : « toute cible frappée reçoit En flammes et À Terre » ; Épée ardente de Rhuin :
+    // « quiconque est frappé gagne +1 En flammes »). RAW : sans Test, à la touche.
+    if (weapon.type === 'melee') {
+      for (const cond of enchantOnHitConditions(attacker)) {
+        addCondition(target, cond.name, cond.value ?? 1);
+        assommanteLog = `${target.name} reçoit ${cond.value ?? 1} État ${cond.name} (arme enchantée).`;
       }
     }
   }

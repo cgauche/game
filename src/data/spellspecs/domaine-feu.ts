@@ -83,8 +83,17 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: "L'Épée ardente de Rhuin",
+    // « L'arme possède Dégâts +6 et l'Atout Percutante, et quiconque est frappé par la lame
+    //   gagne +1 État En flammes. » — op enchantWeapon ; le volet « Maladresse d'un porteur
+    //   sans Magie des Arcanes (Feu) » reste journalisé.
     ops: [
-      { op: 'narrative', text: 'Épée ardente de Rhuin : l’arme gagne Dégâts +6, l’Atout Percutante, et inflige +1 En flammes à la touche (arbitrage MJ — enchantement d’arme non modélisé).' },
+      {
+        op: 'enchantWeapon',
+        addQualities: ['Percutante'],
+        damageBonus: 6,
+        onHitConditions: [{ name: 'En flammes' }],
+      },
+      { op: 'narrative', text: 'Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

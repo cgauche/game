@@ -18,6 +18,7 @@ export const QUALITY_DESC: Record<string, string> = {
   'Dévastatrice': 'Dégâts = le plus haut entre le DR et le dé des unités (annulée par Inoffensive).', // 62 l.279
   'Empaleuse': "Coup Critique sur tout multiple de 10 ou double réussi ; à distance, la munition reste fichée (retrait : Guérison/Chirurgie).", // 62 l.282
   'Incassable': 'Quasiment jamais brisée, corrodée ni émoussée.', // 62 l.310
+  'Magique': "Arme considérée comme Magique : ses attaques blessent l'Éthéré.", // 85 p.339 ; posée par un enchantement (41/42/47)
   'Percutante': "Sur une touche, ajoute le dé des unités du jet d'attaque aux Dégâts (annulée par Inoffensive).", // 62 l.313
   'Perforante': "Ignore les PA non métalliques et le premier point de toute autre armure.", // 62 l.316
   'Pistolet': 'Peut être utilisée pour attaquer en Combat rapproché.', // 62 l.298

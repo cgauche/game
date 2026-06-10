@@ -177,6 +177,17 @@ export interface ActiveEffect {
    *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
    *  la fiche/avancement ne voient que les talents possédés). */
   grantedTalent?: string;
+  /** Enchantement d'ARME temporisé (op `enchantWeapon` — B. de Droiture, Marteau ardent, Épée
+   *  ardente de Rhuin, Arme aethyrique) : porté par le PORTEUR (pas l'objet — `recomputeLoadout`
+   *  l'écraserait), fusionné à l'arme au moment de la résolution (`enchantedWeapon`). */
+  weaponEnchant?: {
+    /** Atouts ajoutés (« Magique » → touche l'Éthéré ; « Percutante »…). */
+    addQualities?: string[];
+    /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6). */
+    damageBonus?: number;
+    /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre). */
+    onHitConditions?: { name: string; value?: number }[];
+  };
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

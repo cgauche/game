@@ -17,7 +17,20 @@ const N = (label: string, text: string, durationRounds: SpellSpec['durationRound
 });
 
 export const ARCANES_COMMUNS: SpellSpec[] = [
-  N('Arme aethyrique', 'Arme aethyrique : arme de Corps à corps MAGIQUE de Dégâts = BFM, toute Compétence de CC utilisable (arbitrage MJ — enchantement d’arme non modélisé).'),
+  {
+    label: 'Arme aethyrique',
+    // « Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre BFM… L'arme est
+    //   considérée comme Magique. » — approximation : l'Atout Magique est posé sur l'arme TENUE
+    //   (op enchantWeapon) ; la création d'une arme dédiée (Dégâts = BFM seuls, toute Compétence
+    //   de CC) reste journalisée.
+    ops: [
+      { op: 'enchantWeapon', addQualities: ['Magique'] },
+      { op: 'narrative', text: 'Arme aethyrique : arme créée de Dégâts = BFM (sans Bonus de Force), maniable avec n’importe quelle Compétence de Corps à corps — arbitrage MJ.' },
+    ],
+    durationRounds: { bonusOf: 'FM' },
+    curated: true,
+    source: 'LDB 47 p.242 « Arme aethyrique »',
+  },
   {
     label: 'Armure Aethyrique',
     // « Vous gagnez +1 PA à toutes les Localisations » — PA temporisés, lus à la mitigation.

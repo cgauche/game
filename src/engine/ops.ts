@@ -111,6 +111,11 @@ export type GameOp =
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
    *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet. */
   | { op: 'grantTalent'; talent: string }
+  /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
+   *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
+   *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
+   *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
+  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; onHitConditions?: { name: string; value?: number }[] }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -333,6 +338,27 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           grantedTrait: traitStr,
         });
         lines.push(`${target.name} gagne le Trait ${traitStr} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'enchantWeapon': {
+        const dmg = o.damageBonus != null ? Math.max(0, resolveFormula(o.damageBonus, ref, rng)) : undefined;
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          weaponEnchant: {
+            ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
+            ...(dmg ? { damageBonus: dmg } : {}),
+            ...(o.onHitConditions?.length ? { onHitConditions: o.onHitConditions } : {}),
+          },
+        });
+        const parts = [
+          ...(o.addQualities ?? []),
+          ...(dmg ? [`+${dmg} Dégâts`] : []),
+          ...(o.onHitConditions ?? []).map((x) => `${x.name} à la touche`),
+        ];
+        lines.push(`${target.name} : son arme est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'grantTalent': {
