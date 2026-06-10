@@ -218,8 +218,9 @@ export function escalateSensoryLoss(c: Combatant): string[] {
 }
 
 /** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.352) — sauf
- *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` (armes de mêlée
- *  du Groupe « Deux-mains »). NB : les armes à distance bimanuelles ne sont pas marquées → non couvertes. */
+ *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` via `weaponHands`
+ *  — le marqueur « (2M) » de la donnée est UNIFORME mêlée ET distance (Arc/Arbalète/Arquebuse/Tromblon),
+ *  donc les armes à distance bimanuelles SONT couvertes. */
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
   if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;

@@ -71,7 +71,7 @@ import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } f
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill } from '../engine/healing';
-import { rollCritical, critLocationRoll, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
@@ -332,6 +332,33 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.label) ? { ...h, spells: [...(h.spells ?? []), sp.label] } : h)) };
         });
         if (who) get().log(`${who} apprend ${sp.label}.`);
+        break;
+      }
+      case 'inflictTrauma': {
+        // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via la
+        // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
+        // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
+        let who = '';
+        set((s: GameState) => {
+          if (!s.party.length) return {};
+          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
+          const target = idx >= 0 ? idx : 0;
+          return {
+            party: s.party.map((h, i) => {
+              if (i !== target) return h;
+              who = h.name;
+              const be = Math.floor(effectiveChar(h, 'E') / 10);
+              // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
+              // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
+              const ampNote = e.location === 'tete' ? 'Perte de l’œil — Amputation (Intermédiaire)' : 'Main/bras inutilisable — Amputation (Intermédiaire)';
+              const traumas = e.kind === 'amputation'
+                ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
+                : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
+              return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
+            }),
+          };
+        });
+        if (who) get().log(`${who} subit une Blessure Critique (${e.kind}, ${e.location}).`);
         break;
       }
       case 'inflictDisease': {
