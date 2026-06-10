@@ -965,6 +965,42 @@ export function displayedReach(get: () => GameState): Map<string, number> {
   return battle.reachable.size > 0 ? battle.reachable : computeMoveReach(get);
 }
 
+export type AttackPlan =
+  | { kind: 'attack' }
+  | { kind: 'charge'; dest: Pt; path: Pt[]; adv: 0 | 1 }
+  | { kind: 'moveAttack'; dest: Pt; path: Pt[]; cost: number }
+  | { kind: 'blocked'; reason: string };
+
+/** Ce qu'un clic sur CET ennemi ferait : attaque directe (Allonge / tir), Charge implicite
+ *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.74-77), ou
+ *  rejoindre-et-attaquer dans la Marche restante (pas une Charge → pas de bonus). Pure-store. */
+export function attackPlan(get: () => GameState, active: Combatant, target: Combatant): AttackPlan {
+  const battle = get().battle!;
+  const scene = get().scene!;
+  if (combatDistance(active, target) <= meleeReachTiles(active.weapons)) return { kind: 'attack' };
+  // L'arme du SET ACTIF décide : une arme à distance présente → tir (les messages rechargement/
+  // munitions restent gérés au commit par la logique d'attaque existante).
+  if (attackWeapon(active.weapons, false).type === 'ranged') return { kind: 'attack' };
+  // Mêlée hors d'Allonge :
+  if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
+  const geom = mountOf(battle, active) ?? active;
+  const blocked = occupied(battle, geom);
+  if (battle.movementUsed === 0 && !hasCondition(active, 'À Terre')) {
+    // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
+    // adjacente la moins chère.
+    const M = mountMovement(battle, active);
+    const reach = reachable(scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
+    const dest = bestAdjacentReachable(reach, target.pos!);
+    if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
+    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)), adv: chargeAdvantage(M, chebyshev(active.pos!, target.pos!)) };
+  }
+  // Mouvement entamé (ou À Terre) : rejoindre dans la Marche restante.
+  const reach = displayedReach(get);
+  const dest = bestAdjacentReachable(reach, target.pos!);
+  if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de mêlée.' };
+  return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)), cost: reach.get(`${dest.x},${dest.y}`)! };
+}
+
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
  *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal. */
 export function finalizeHeroDeath(get: () => GameState, set: any, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number): void {

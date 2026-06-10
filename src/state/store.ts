@@ -18,7 +18,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
-  displayedReach,
+  displayedReach, attackPlan,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
@@ -441,7 +441,7 @@ export interface GameState {
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
-  battleClickEntity: (id: string, skipMountChoice?: boolean) => void;
+  battleClickEntity: (id: string, skipMountChoice?: boolean, opts?: { confirm?: boolean }) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
@@ -1703,7 +1703,7 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
 
-  battleClickEntity: (id, skipMountChoice) => {
+  battleClickEntity: (id, skipMountChoice, opts) => {
     const { battle, scene } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1715,7 +1715,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
     // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
-    const freeFrenzyAttack = battle.action === 'attack' && active.frenzied && !active.frenzyFreeUsed;
+    const neutralOrLegacy = battle.action === null || battle.action === 'attack' || battle.action === 'charge';
+    const freeFrenzyAttack = neutralOrLegacy && !!active.frenzied && !active.frenzyFreeUsed;
     if (battle.acted && !freeFrenzyAttack) return;
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
@@ -1724,9 +1725,32 @@ export const useGame = create<GameState>((set, get) => ({
       castSpell(get, set, active, target, battle.selectedSpell);
       return;
     }
-    // Combat monté (LDB 14 l.219) : frapper un couple cavalier+monture → choisir lequel (le cavalier OU
-    // la monture). On n'ouvre la modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
-    if (!skipMountChoice && (battle.action === 'attack' || battle.action === 'charge')) {
+    // Clic-ennemi IMPLICITE (mode neutre ; les modes legacy attack/charge committent direct).
+    if (!neutralOrLegacy || !scene) return;
+    if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
+    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
+    const plan = attackPlan(get, active, target);
+    // Frénésie libre post-Action : attaque DIRECTE seulement (pas de déplacement combiné).
+    if (battle.acted && plan.kind !== 'attack') return;
+    if (plan.kind === 'blocked') {
+      get().log(plan.reason);
+      if (battle.preview) set({ battle: { ...battle, preview: null } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+    // Tap 1 : APERÇU — sauf confirmation (tests), ré-entrée du choix cavalier/monture, mode legacy,
+    // ou re-tap de la même cible avec le même plan.
+    const prev = battle.preview;
+    const samePreview = !!prev && 'targetId' in prev && prev.targetId === id && prev.kind === plan.kind;
+    const legacyMode = battle.action === 'attack' || battle.action === 'charge';
+    if (!opts?.confirm && !skipMountChoice && !legacyMode && !samePreview) {
+      set({ battle: { ...battle, preview: plan.kind === 'attack' ? { kind: 'attack', targetId: id } : { ...plan, targetId: id } } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+    // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.219) AVANT toute résolution — on n'ouvre la
+    // modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
+    if (!skipMountChoice) {
       const rider = target.mountId ? target : battle.combatants.find((c) => c.id === target.riderId);
       const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
       if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
@@ -1734,40 +1758,50 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
     }
-    if (battle.action === 'charge') {
-      // Charge (LDB 15-Dépl l.74-77) : se ruer au contact d'un ennemi (portée de Course) puis attaquer.
-      if (!scene || target.kind === 'hero' || isEngaged(active)) return; // pas de Charge si déjà Engagé (l.74)
-      // Combat monté : on charge à la portée de Course de la MONTURE, sous son empreinte (couple solidaire).
+    if (battle.preview) set({ battle: { ...get().battle!, preview: null } });
+    if (plan.kind === 'charge') {
+      // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
+      // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
       const geom = mountOf(battle, active) ?? active;
-      const blocked = occupied(battle, geom);
-      const charM = mountMovement(battle, active);
-      // Bond ×2 / Foulée ×1,5 (LDB 85) : multiplicateur de COURSE/CHARGE de la créature qui porte le
-      // déplacement (la monture en combat monté).
-      const reach = reachable(scene, active.pos!, Math.floor(charM * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size)); // portée de Course
-      const dest = bestAdjacentReachable(reach, target.pos!);
-      if (!dest) {
-        get().log('Cible hors de portée de Charge.');
-        return;
-      }
-      const distFrom = chebyshev(active.pos!, target.pos!); // distance de combat AVANT déplacement (l.77 ; ≤ 2M+1 pour toute charge valide)
-      const adv = chargeAdvantage(charM, distFrom);
-      const path = pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size));
-      active.pos = { ...dest };
-      if (geom !== active) geom.pos = { ...dest }; // la monture charge sous le cavalier
+      const path = plan.path;
+      active.pos = { ...plan.dest };
+      if (geom !== active) geom.pos = { ...plan.dest }; // la monture charge sous le cavalier
       displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
       get().faceFromPath(active.id, path);
       if (geom !== active) get().faceFromPath(geom.id, path);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      gainAdvantage(active, adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
-      if (adv > 0) active.gainedAdvThisRound = true;
+      gainAdvantage(active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
+      if (plan.adv > 0) active.gainedAdvThisRound = true;
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
-      set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: 'attack', log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${adv ? ` (+${adv} Avantage)` : ''}.`, active.id, target.id)] } });
+      set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${plan.adv ? ` (+${plan.adv} Avantage)` : ''}.`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
       return;
     }
-    if (battle.action !== 'attack') return;
-    if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis
+    if (plan.kind === 'moveAttack') {
+      // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
+      // MÊMES mutations qu'un segment de battleClickTile (snapshot d'annulation compris).
+      const b = get().battle!;
+      const snapshot =
+        (b.movementUsed ?? 0) === 0
+          ? {
+              pos: Object.fromEntries(b.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+              facing: { ...get().facing },
+              movedPreAction: b.movedPreAction,
+            }
+          : b.moveSnapshot ?? null;
+      const geom = mountOf(b, active) ?? active;
+      active.pos = { ...plan.dest };
+      if (geom !== active) geom.pos = { ...plan.dest };
+      displaceSmaller(get, geom);
+      get().faceFromPath(active.id, plan.path);
+      if (geom !== active) get().faceFromPath(geom.id, plan.path);
+      bus.emit(EVT.ANIM_MOVE, { id: active.id, path: plan.path });
+      if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: plan.path });
+      set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
+      bus.emit(EVT.SCENE_DIRTY);
+      // … puis on enchaîne sur la queue d'attaque (la cible est désormais à portée d'Allonge).
+    }
     // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
     // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
     // Armes l.297-298). Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213), footprint inclus.

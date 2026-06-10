@@ -80,6 +80,84 @@ describe('clic-sol implicite — tap 1 aperçu, tap 2 déplace', () => {
   });
 });
 
+describe('clic-ennemi implicite', () => {
+  beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingDisengage: null }); });
+
+  it('cible adjacente : tap 1 aperçu attack, tap 2 ouvre la modale (pas de Charge → pas d’Avantage)', () => {
+    const { H } = setup();
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 1, y: h.pos!.y };
+    h.advantage = 0;
+    useGame.getState().battleClickEntity(e.id);
+    expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'attack', targetId: e.id });
+    expect(useGame.getState().pendingAttack).toBeNull();
+    useGame.getState().battleClickEntity(e.id);
+    const st = useGame.getState();
+    expect(st.pendingAttack?.targetId).toBe(e.id);
+    expect(st.pendingAttack?.fromCharge).toBeUndefined();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0);
+  });
+
+  it('cible à 2 cases, Mouvement intact : Charge implicite (+1 Av strict, M4 seuil 2)', () => {
+    const { H } = setup();
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 2, y: h.pos!.y };
+    h.advantage = 0;
+    useGame.getState().battleClickEntity(e.id);
+    expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'charge', targetId: e.id, adv: 1 });
+    useGame.getState().battleClickEntity(e.id);
+    const st = useGame.getState();
+    const hh = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(hh.advantage).toBe(1);
+    expect(Math.max(Math.abs(hh.pos!.x - e.pos!.x), Math.abs(hh.pos!.y - e.pos!.y))).toBe(1); // au contact
+    expect(st.pendingAttack?.fromCharge).toBe(true);
+  });
+
+  it('Mouvement entamé : pas de Charge — rejoindre dans la Marche restante puis attaquer, sans bonus', () => {
+    const { H } = setup();
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 1, movedPreAction: true } });
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 2, y: h.pos!.y };
+    h.advantage = 0;
+    useGame.getState().battleClickEntity(e.id);
+    expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'moveAttack', targetId: e.id });
+    useGame.getState().battleClickEntity(e.id);
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0);
+    expect(st.pendingAttack?.targetId).toBe(e.id);
+    expect(st.pendingAttack?.fromCharge).toBeUndefined();
+    expect(st.battle!.movementUsed).toBe(2); // 1 (déjà fait) + 1 (rejoindre)
+  });
+
+  it('hors de portée de Charge (> 2M+1) : message, pas d’aperçu', () => {
+    const { H } = setup();
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 12, y: h.pos!.y }; // M4 → 2M+1 = 9
+    useGame.getState().battleClickEntity(e.id);
+    const st = useGame.getState();
+    expect(st.battle!.preview ?? null).toBeNull();
+    expect(st.pendingAttack).toBeNull();
+    void H;
+  });
+
+  it('Action déjà prise (sans Frénésie) : le clic-ennemi est inerte', () => {
+    const { H } = setup();
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
+    const e = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
+    useGame.getState().battleClickEntity(e.id);
+    expect(useGame.getState().pendingAttack).toBeNull();
+    void H;
+  });
+});
+
 describe('computeMoveReach / displayedReach — portée de Marche dérivée (mode neutre)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null }); });
 

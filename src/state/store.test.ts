@@ -807,8 +807,7 @@ describe('Boucle de jeu (store)', () => {
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ha.advantage).toBe(1); // chargé de 2 cases (M4, seuil 2) → +1 (strict l.77)
     expect(mh(Ha.pos!, E.pos!)).toBe(1); // arrivé au contact
-    expect(st.pendingAttack?.fromCharge).toBe(true);
-    expect(st.battle!.action).toBe('attack'); // l'attaque doit suivre (l.75)
+    expect(st.pendingAttack?.fromCharge).toBe(true); // l'attaque doit suivre (l.75) — modale non annulable
   });
 
   it('Charge interdite si déjà Engagé (LDB 15-Dépl l.74)', () => {
