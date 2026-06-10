@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { maxEncumbrance } from '../engine/items';
+import { maxEncumbrance, isWeaponActive } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
@@ -342,14 +342,17 @@ function FicheBody({ hero }: { hero: Combatant }) {
           {items.map((it) => {
             const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
             const equipable = it.kind === 'armor' || isProsthesis; // armes = via les loadouts (cf. LoadoutSection)
-            const inLoadout = (it.kind === 'melee' || it.kind === 'ranged') && (hero.loadouts ?? []).some((l) => l.main === it.uid || l.off === it.uid);
+            const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
+            const inLoadout = isWeaponItem && (hero.loadouts ?? []).some((l) => l.main === it.uid || l.off === it.uid);
+            // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
+            const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
             const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
             const open = isSkinnable && skinFor === it.uid;
             return (
               <div key={it.uid}>
-                <div className={`inv-row kind-${it.kind} ${it.equipped ? 'equipped' : ''}`}>
+                <div className={`inv-row kind-${it.kind} ${highlighted ? 'equipped' : ''}`}>
                   <div className="ir-main">
                     <span className="ir-name">
                       {it.name}{skinned && ' ✨'}

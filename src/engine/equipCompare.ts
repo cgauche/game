@@ -50,9 +50,12 @@ const protectrice = (q: string[]): number => {
 
 export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
   const items = hero.items ?? [];
+  // « Actuellement équipé » pour une ARME = l'arme tenue dans le set actif (les Weapon dérivés `hero.weapons`),
+  // plus `it.equipped` (devenu le seul seed du loadout par défaut). L'armure, elle, reste pilotée par `equipped`.
+  const wielded = (hero.weapons ?? []).filter((w) => w.name !== 'Mains nues');
 
   if (isShieldItem(item)) {
-    const cur = items.find((i) => i.equipped && isShieldItem(i) && i.uid !== item.uid);
+    const cur = wielded.find((w) => isShieldItem(w) && w.uid !== item.uid);
     const cp = protectrice(cur?.qualities ?? []);
     const np = protectrice(item.qualities);
     return {
@@ -63,7 +66,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
   }
 
   if (item.kind === 'melee' || item.kind === 'ranged') {
-    const cur = items.find((i) => i.equipped && i.kind === item.kind && !isShieldItem(i) && i.uid !== item.uid);
+    const cur = wielded.find((w) => w.type === item.kind && !isShieldItem(w) && w.uid !== item.uid);
     const baseline = item.kind === 'melee' ? '+BF-2' : undefined; // mêlée : mains nues (LDB) ; distance : pas d'arme
     const curDmg = cur?.damage ?? baseline;
     const rows: CompareRow[] = [

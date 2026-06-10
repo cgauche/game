@@ -27,7 +27,7 @@ export const isShield = (x: { name: string; qualities?: string[] }) =>
 export function equipFromCombatant(c: Combatant): EquipCtx {
   const weapons = c.weapons ?? [];
   const armour = (c.items ?? []).filter((i) => i.kind === 'armor' && i.equipped && (i.locs?.length ?? 0) > 0);
-  const shield = weapons.find(isShield) ?? (c.items ?? []).find((i) => i.equipped && isShield(i));
+  const shield = weapons.find(isShield); // un bouclier tenu est dans le set actif → présent dans c.weapons
   return { weapons, armour, shield };
 }
 

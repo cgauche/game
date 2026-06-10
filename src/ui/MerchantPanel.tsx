@@ -6,7 +6,7 @@ import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
-import { itemFromTrapping } from '../engine/items';
+import { itemFromTrapping, isWeaponActive } from '../engine/items';
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -151,6 +151,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   // Bloc de comparaison d'un héros (info : la neuve vs l'équipement actuel). Pas de bouton d'équipement (cart).
   const heroCompareBlock = (item: ItemInstance, h: Combatant) => {
     const cmp = compareEquip(item, h);
+    const isWeapon = item.kind === 'melee' || item.kind === 'ranged' || isShieldItem(item);
     return (
       <div className="mc-hero" key={h.id}>
         <div className="mc-hero-head">
@@ -171,6 +172,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             </tbody>
           </table>
         )}
+        {isWeapon && <p className="mc-hint">🗡 à ranger dans un set d’armes (fiche du perso) pour la tenir.</p>}
       </div>
     );
   };
@@ -383,7 +385,11 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     const sellHeroes = party.filter((h) => (h.items ?? []).length > 0);
     if (!sellHeroes.length) return <p className="empty">— rien à vendre —</p>;
     const activeSellId = (sellHero && sellHeroes.some((h) => h.id === sellHero) ? sellHero : sellHeroes[0]?.id) ?? '';
-    const heroItems = party.find((h) => h.id === activeSellId)?.items ?? [];
+    const sellHeroObj = party.find((h) => h.id === activeSellId);
+    const heroItems = sellHeroObj?.items ?? [];
+    // « équipé » = armure portée (`equipped`) OU arme tenue dans le set actif (loadout) — plus de flag d'arme.
+    const isEquippedForSell = (it: ItemInstance) =>
+      it.kind === 'melee' || it.kind === 'ranged' ? !!sellHeroObj && isWeaponActive(sellHeroObj, it.uid) : !!it.equipped;
     return (
       <>
         <div className="cart-bar">
@@ -402,7 +408,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           <div className="merch-row sell" key={it.uid}>
             <span className="merch-name">
               {it.name}
-              {it.equipped && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
+              {isEquippedForSell(it) && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
               {it.identified === false ? ' (non identifié)' : ''}
             </span>
             <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>

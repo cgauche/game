@@ -127,6 +127,13 @@ export function activeLoadout(c: Combatant): WeaponLoadout | null {
   return c.loadouts.find((l) => l.id === c.activeLoadoutId) ?? c.loadouts[0];
 }
 
+/** Une arme (par `uid` d'ItemInstance) est-elle ACTIVE dans le loadout courant ? Source de vérité = les
+ *  armes DÉRIVÉES `c.weapons` (elles gèrent déjà contrainte 2 mains, amputation, destruction). Remplace la
+ *  lecture de `it.equipped` pour les ARMES : « équipé » d'une arme = « tenue dans le set actif ». */
+export function isWeaponActive(c: Combatant, uid?: string): boolean {
+  return uid != null && (c.weapons ?? []).some((w) => w.uid === uid);
+}
+
 /** Recalcule armes/armure actives + encombrement. Les ARMES viennent du loadout actif (contrainte 2 mains,
  *  tag `hand`) ; sans loadout = comportement historique (toutes armes équipées, `hand:'main'`). */
 export function recomputeLoadout(c: Combatant): void {
@@ -158,14 +165,14 @@ export function recomputeLoadout(c: Combatant): void {
     const mainW = mainIt ? toWeapon(mainIt, 'main') : null;
     if (mainW) weapons.push(mainW);
     const mainTwoHanded = mainW?.hands === 2;
-    let offUid: string | undefined;
     if (!mainTwoHanded && lo.off) {
       const offIt = items.find((i) => i.uid === lo.off && (i.kind === 'melee' || i.kind === 'ranged'));
       const offW = offIt ? toWeapon(offIt, 'off') : null;
-      if (offW) { weapons.push(offW); offUid = offIt!.uid; }
+      if (offW) weapons.push(offW);
     }
-    // Synchronise `equipped` des ARMES sur le loadout (lecteurs de weapon.equipped : marchand, etc.).
-    for (const it of items) if (it.kind === 'melee' || it.kind === 'ranged') it.equipped = it.uid === lo.main || it.uid === offUid;
+    // Pas de resync `it.equipped` sur les ARMES : « équipé » d'une arme = « tenue dans ce set actif », ce que
+    // `c.weapons` (dérivé ici) exprime déjà → les lecteurs passent par `isWeaponActive`. `it.equipped` ne sert
+    // plus que pour l'armure (port) et de seed du loadout par défaut (ensureDefaultLoadout).
   }
 
   // Crochet PORTÉ (prothèse, LDB 73) : « en Combat rapproché, considéré comme une Dague ». Arme dérivée.
