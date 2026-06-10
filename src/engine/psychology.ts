@@ -147,9 +147,9 @@ export function isFrenzyCapable(c: Combatant): boolean {
 }
 
 /** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */
-export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success: boolean; roll: number } {
+export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success: boolean; roll: number; target: number; sl: number } {
   const t = rollTest(fm, 'intermediaire', rng);
-  return { success: t.success, roll: t.roll };
+  return { success: t.success, roll: t.roll, target: t.target, sl: t.sl };
 }
 
 /** Valeur de Calme : Force Mentale effective + avances de la compétence Calme (« Sang-froid »). */

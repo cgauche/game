@@ -50,6 +50,7 @@ describe('Psychologie (pur)', () => {
     const r = resolveFrenzyEntry(80, makeRNG(2));
     expect(typeof r.success).toBe('boolean');
     expect(typeof r.roll).toBe('number');
+    expect(r.target).toBe(80); // cible exposée pour la RollLine : FM, Intermédiaire +0
   });
   it('targetedTrigger : Animosité (Elfes) se déclenche sur un ENNEMI du groupe Elfe visible', () => {
     const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: 'Elfes' }], psychState: [] } as unknown as Combatant;

@@ -1,6 +1,10 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { effectiveChar } from '../engine/characteristics';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /**
  * Modale d'entrée en Frénésie (LDB 21 l.32) : « Lancer » jette le Test de Force Mentale,
@@ -31,17 +35,14 @@ export function FrenzyModal() {
       rolled={!!r}
       onRoll={roll}
       onCancel={cancel}
-      resultOk={!!r?.success}
-      result={
-        r && (
-          <>
-            <span className="dice">
-              <Dice roll={r.roll} />
-            </span>
-            <span className="verdict">{r.success ? 'Réussi ! +1 BF, immunité psy, attaque obligatoire' : 'Échec — le sang ne monte pas ce tour'}</span>
-          </>
-        )
-      }
+      breakdown={r ? testBreakdown('Force Mentale', effectiveChar(c, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined}
+      outcome={r && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('frenzy', r.success ? `${c.name} entre en Frénésie : +1 BF, immunité psy, attaque obligatoire.` : `${c.name} reste de marbre — le sang ne monte pas ce tour.`, c.id)}
+          combatants={battle.combatants}
+        />
+      )}
       fortune={c.fortune ?? 0}
       rerollable={!!r && !r.success && canReroll(true, !!pf.rerolled)}
       onReroll={reroll}

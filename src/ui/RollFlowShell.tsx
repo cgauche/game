@@ -17,8 +17,9 @@ export function Dice({ roll }: { roll: number }) {
  *   overlay → titre → sous-titre → [pré-jet : Lancer · Résilience (LDB 17 l.73, AVANT le jet) ·
  *   Annuler] | [post-jet : bloc résultat · Chance (relance / +1 DR) · Résilience · Appliquer · Annuler]
  *
- * La modale concrète ne fournit QUE sa partie spécifique : titre, sous-titre, contenu du bloc
- * résultat, et les handlers du flux. Variantes couvertes par props :
+ * La modale concrète ne fournit QUE sa partie spécifique : titre, sous-titre, ligne(s) de jet
+ * (`breakdown` → RollLine) + issue style journal (`outcome`), et les handlers du flux.
+ * Variantes couvertes par props :
  * - `variant` : famille de classes ('roll' = roll-modal/rm-vs ; 'test' = test-modal/test-actor) ;
  * - `onBonusSL` absent : Test binaire → bouton « 🍀 Relancer » simple au lieu de `ChanceButtons` ;
  * - `onForce` absent : pas de Résilience (flux sans « Réussite garantie ») ;
@@ -37,8 +38,6 @@ export function RollFlowShell({
   onCancel,
   cancelFirst,
   cancelAfterRoll = false,
-  resultOk,
-  result,
   breakdown,
   outcome,
   determination,
@@ -66,12 +65,9 @@ export function RollFlowShell({
   /** « Annuler » avant « Lancer » (défaut : oui pour la famille 'test'). */
   cancelFirst?: boolean;
   cancelAfterRoll?: boolean;
-  /** Verdict du bloc résultat (classe ok/fail) — pour le rendu legacy `result`. */
-  resultOk: boolean;
-  /** Contenu (spans) du bloc `.test-result` (rendu legacy, si pas de `breakdown`). */
-  result?: ReactNode;
-  /** Ligne de jet riche (base = cible · d100 · DR), façon Attaque/Défense. Prioritaire sur `result`. */
-  breakdown?: RollBreakdown;
+  /** Ligne(s) de jet riche(s) (base = cible · d100 · DR), façon Attaque/Défense — un tableau pour
+   *  les Tests opposés (acteur puis opposant). */
+  breakdown?: RollBreakdown | RollBreakdown[];
   /** Ligne d'issue style journal sous la ligne de jet (le « log » de l'action). */
   outcome?: ReactNode;
   /** Détermination (LDB 17 l.62) : bouton 1ʳᵉ classe — immunité Psychologie. Affiché pré-jet et après échec. */
@@ -120,14 +116,12 @@ export function RollFlowShell({
           </div>
         ) : (
           <>
-            {breakdown ? (
-              <>
-                <div className="rm-rolls"><RollLine d={breakdown} /></div>
-                {outcome}
-              </>
-            ) : (
-              <div className={`test-result ${resultOk ? 'ok' : 'fail'}`}>{result}</div>
+            {breakdown && (
+              <div className="rm-rolls">
+                {(Array.isArray(breakdown) ? breakdown : [breakdown]).map((d, i) => <RollLine key={i} d={d} />)}
+              </div>
             )}
+            {outcome}
             <div className="modal-actions">
               {onBonusSL ? (
                 <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />

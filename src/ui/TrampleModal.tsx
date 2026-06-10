@@ -1,6 +1,8 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /**
  * Modale de Piétinement (LDB 85 - Traits de créature.md l.320-321) : action gratuite à 1 Avantage.
@@ -34,17 +36,8 @@ export function TrampleModal() {
       onRoll={roll}
       onCancel={cancel}
       cancelAfterRoll
-      resultOk={!!r?.hit}
-      result={
-        r && (
-          <>
-            <span className="dice">
-              <Dice roll={r.attackerRoll} />
-            </span>
-            <span className="verdict">{r.log}</span>
-          </>
-        )
-      }
+      breakdown={r?.attackerDetail}
+      outcome={r && <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} />}
       fortune={attacker.fortune ?? 0}
       rerollable={!!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled)}
       onReroll={reroll}

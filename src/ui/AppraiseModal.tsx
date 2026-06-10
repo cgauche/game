@@ -1,6 +1,9 @@
 import { useGame, type PendingAppraise } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /** Vue pure de la modale d'Évaluation (testable sans store). */
 export function AppraiseModalView({
@@ -33,21 +36,13 @@ export function AppraiseModalView({
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      resultOk={pa.success}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={pa.roll!} />
-            </span>
-            <span className="vs">/ {pa.target}</span>
-            <span className="verdict">
-              {pa.success ? 'Réussite' : 'Échec'} ({pa.sl >= 0 ? '+' : ''}
-              {pa.sl} DR) → {pa.success ? 'révélé ✓' : 'inchangé'}
-            </span>
-          </>
-        )
-      }
+      breakdown={rolled ? testBreakdown('Évaluation', pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
+      outcome={rolled && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('info', pa.success ? `${pa.actorName} jauge ${pa.itemName} : révélé ✓.` : `${pa.actorName} n'en tire rien — ${pa.itemName} reste inchangé.`)}
+        />
+      )}
       fortune={fortune}
       rerollable={rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled)}
       onReroll={onReroll}

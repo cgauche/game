@@ -2,7 +2,10 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 import { TeamPortrait } from './CombatantBadge';
 import { ModalSubject } from './ModalSubject';
 import { DrBar } from './DrBar';
@@ -103,6 +106,15 @@ export function HealModal() {
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
   const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : null;
+  const outcomeText = ph.success
+    ? wounds
+      ? `${ph.targetName} récupère ${preview} PB.`
+      : trauma
+        ? `Convalescence de ${ph.targetName} raccourcie de ${1 + Math.max(0, ph.sl)} jour(s).`
+        : `${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s) sur ${ph.targetName}.`
+      : wounds && ph.intBonus + ph.sl < 0
+        ? `Le soin blesse ${ph.targetName} (${ph.intBonus + ph.sl} PB).`
+        : `Le soin de ${ph.targetName} reste sans effet.`;
   return (
     <RollFlowShell
       title={wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}
@@ -122,27 +134,8 @@ export function HealModal() {
       onRoll={roll}
       onCancel={cancel}
       cancelFirst
-      resultOk={ph.success}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={ph.roll!} />
-            </span>
-            <span className="verdict">
-              {ph.success
-                ? wounds
-                  ? `Réussi (+${ph.sl} DR) — +${preview} PB`
-                  : trauma
-                    ? `Réussi (+${ph.sl} DR) — convalescence raccourcie de ${1 + Math.max(0, ph.sl)} jour(s)`
-                    : `Réussi (+${ph.sl} DR) — ${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s)`
-                : wounds && ph.intBonus + ph.sl < 0
-                  ? `Échec — le soin blesse (${ph.intBonus + ph.sl} PB)`
-                  : 'Échec — sans effet'}
-            </span>
-          </>
-        )
-      }
+      breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
       fortune={fortune}
       rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && fortune > 0}
       onReroll={reroll}

@@ -1,7 +1,12 @@
 import { useGame } from '../state/store';
 import { findSpell } from '../data/index';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { castingValue } from '../engine/magic';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
+import { DrBar } from './DrBar';
 
 /**
  * Modale de Focalisation (LDB — Test étendu de Focalisation) : « Lancer » accumule du DR vers le NI,
@@ -33,23 +38,20 @@ export function FocusModal() {
           <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellLabel}</strong> ({prev}/{ni} DR)
         </>
       }
+      /* Test ÉTENDU (#23) : barre de DR cumulé vers le NI du sort. */
+      extra={<DrBar cum={Math.min(ni, prev + (r?.dr ?? 0))} target={ni} />}
       rolled={!!r}
       onRoll={roll}
       onCancel={cancel}
       cancelAfterRoll
-      resultOk={!!r && r.dr > 0}
-      result={
-        r && (
-          <>
-            <span className="dice">
-              <Dice roll={r.roll} />
-            </span>
-            <span className="verdict">
-              {r.log} → {prev + r.dr}/{ni} DR{prev + r.dr >= ni ? ' (NI 0 atteint !)' : ''}
-            </span>
-          </>
-        )
-      }
+      breakdown={r ? testBreakdown('Focalisation', castingValue(caster, 'Focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined}
+      outcome={r && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('focus', `${r.log} → ${prev + r.dr}/${ni} DR${prev + r.dr >= ni ? ' (NI 0 atteint !)' : ''}`, caster.id)}
+          combatants={battle?.combatants ?? party}
+        />
+      )}
       fortune={caster.fortune ?? 0}
       rerollable={!!r && canReroll(r.dr === 0, !!pf.rerolled)}
       onReroll={reroll}

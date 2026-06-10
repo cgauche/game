@@ -102,7 +102,7 @@ export const FLOWS = {
         const m = mountMovement(s.battle, actor); // à cheval : Mouvement de la monture (LDB 14 l.215)
         const base = p.result;
         // RAW LDB 17 l.73 : avant le jet (result==null → on choisit 01) OU après un échec.
-        return { result: { success: true, roll: base?.roll ?? 1, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } };
+        return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } };
       },
     },
   }),
@@ -125,7 +125,7 @@ export const FLOWS = {
       derive: (_s, p, actor) => {
         const base = p.result;
         // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-        return { result: { dr: Math.max(base?.dr ?? 0, 1), isCritical: base?.isCritical ?? false, isFumble: false, roll: base?.roll ?? 1, log: `${actor.name} force la focalisation (Résilience).` } };
+        return { result: { dr: Math.max(base?.dr ?? 0, 1), isCritical: base?.isCritical ?? false, isFumble: false, roll: base?.roll ?? 1, target: base?.target, sl: Math.max(base?.sl ?? 1, 1), log: `${actor.name} force la focalisation (Résilience).` } };
       },
     },
   }),
@@ -174,7 +174,7 @@ export const FLOWS = {
     force: {
       guard: (p) => !p.result?.success,
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-      derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1 } }),
+      derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target } }),
     },
   }),
 

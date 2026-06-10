@@ -1,6 +1,9 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /**
  * Test de compétence interactif (brique « tests », hors combat). On clique
@@ -18,6 +21,11 @@ export function TestModal() {
   if (!pt) return null;
   const rolled = pt.roll != null;
   const actor = party.find((c) => c.id === pt.actorId);
+  const outcomeText = pt.forced
+    ? `${pt.actorName} ne faillit pas (Résilience) : réussite garantie.`
+    : pt.success
+      ? `${pt.actorName} réussit.`
+      : `${pt.actorName} échoue.`;
 
   return (
     <RollFlowShell
@@ -36,21 +44,8 @@ export function TestModal() {
       }
       rolled={rolled}
       onRoll={roll}
-      resultOk={pt.success}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={pt.roll!} />
-            </span>
-            <span className="vs">/ {pt.target}</span>
-            <span className="verdict">
-              {pt.success ? 'Réussite' : 'Échec'} ({pt.sl >= 0 ? '+' : ''}
-              {pt.sl} DR)
-            </span>
-          </>
-        )
-      }
+      breakdown={rolled ? testBreakdown(pt.label, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pt.actorId)} combatants={party} />}
       fortune={actor?.fortune ?? 0}
       rerollable={rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled)}
       onReroll={reroll}

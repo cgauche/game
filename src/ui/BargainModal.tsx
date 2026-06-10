@@ -1,6 +1,9 @@
 import { useGame, type PendingBargain } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /** Vue pure de la modale de Marchandage (Test opposé, testable sans store). */
 export function BargainModalView({
@@ -50,22 +53,14 @@ export function BargainModalView({
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      resultOk={won}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={pb.roll!.roll} />
-            </span>
-            <span className="vs">/ {pb.roll!.target}</span>
-            <span className="verdict">
-              vous {pb.roll!.sl >= 0 ? '+' : ''}
-              {pb.roll!.sl} DR · marchand <Dice roll={pb.merchantRoll!.roll} /> ({pb.merchantRoll!.sl >= 0 ? '+' : ''}
-              {pb.merchantRoll!.sl} DR) → {verdictText}
-            </span>
-          </>
-        )
-      }
+      breakdown={rolled ? testBreakdown('Marchandage', pb.playerSkill, pb.roll!) : undefined}
+      /* Le jet du marchand reste opaque (on ne révèle ni sa valeur ni sa cible) : dé + DR seulement. */
+      outcome={rolled && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('info', `Marchand : 🎲 ${pb.merchantRoll!.roll === 100 ? '00' : String(pb.merchantRoll!.roll).padStart(2, '0')} (${pb.merchantRoll!.sl >= 0 ? '+' : ''}${pb.merchantRoll!.sl} DR) — ${verdictText}.`)}
+        />
+      )}
       fortune={fortune}
       rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
       onReroll={onReroll}

@@ -335,6 +335,10 @@ export interface FocusResult {
   isCritical: boolean;
   isFumble: boolean;
   roll: number;
+  /** Cible effective du Test (affichage RollLine) — absente sur un résultat synthétique (Résilience pré-jet). */
+  target?: number;
+  /** DR brut du jet (peut être négatif, contrairement à `dr` clampé ≥ 0). */
+  sl?: number;
   log: string;
 }
 
@@ -356,5 +360,5 @@ export function resolveFocus(
   const log = t.success
     ? `${caster.name} focalise ${spell.label} (+${dr} DR).`
     : `${caster.name} échoue à focaliser ${spell.label}.`;
-  return { dr, isCritical, isFumble, roll: t.roll, log };
+  return { dr, isCritical, isFumble, roll: t.roll, target: t.target, sl: t.sl, log };
 }

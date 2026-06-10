@@ -1,6 +1,10 @@
 import { useGame, type PendingReload } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
+import { DrBar } from './DrBar';
 
 /** Vue pure de la modale de rechargement (testable sans store). */
 export function ReloadModalView({
@@ -33,24 +37,18 @@ export function ReloadModalView({
           <strong>{pr.actorName}</strong> — Projectiles, cible {pr.target} · {pr.progressBefore}/{pr.reload} DR
         </>
       }
+      /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
+      extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      resultOk={pr.success}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={pr.roll!} />
-            </span>
-            <span className="vs">/ {pr.target}</span>
-            <span className="verdict">
-              {pr.success ? 'Réussite' : 'Échec'} ({pr.sl >= 0 ? '+' : ''}
-              {pr.sl} DR) → {done ? 'rechargé ✓' : `${after}/${pr.reload} DR`}
-            </span>
-          </>
-        )
-      }
+      breakdown={rolled ? testBreakdown('Projectiles', pr.skillValue, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty) : undefined}
+      outcome={rolled && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('reload', done ? `${pr.weaponName} rechargé ✓` : `${pr.actorName} recharge ${pr.weaponName} (${after}/${pr.reload} DR).`, pr.actorId)}
+        />
+      )}
       fortune={fortune}
       rerollable={rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled)}
       onReroll={onReroll}

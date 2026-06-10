@@ -18,8 +18,8 @@ export function resolveRun(
   athletics: number,
   movement: number,
   rng: RNG = defaultRNG,
-): { success: boolean; roll: number; dr: number; bonusCases: number } {
+): { success: boolean; roll: number; target: number; dr: number; bonusCases: number } {
   const t = rollTest(athletics, 'accessible', rng); // Athlétisme Accessible (+20)
   const bonusCases = Math.max(0, 2 * movement + Math.round(t.sl / 2));
-  return { success: t.success, roll: t.roll, dr: t.sl, bonusCases };
+  return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, bonusCases };
 }

@@ -202,7 +202,8 @@ export interface PendingTrample {
  *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
 export interface PendingRun {
   combatantId: string;
-  result: { success: boolean; roll: number; dr: number; bonusCases: number } | null;
+  /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
+  result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
 }
 /** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
@@ -228,7 +229,8 @@ export interface PendingPsych {
 /** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
 export interface PendingFrenzy {
   combatantId: string;
-  result: { success: boolean; roll: number } | null;
+  /** `target`/`sl` absents sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
+  result: { success: boolean; roll: number; target?: number; sl?: number } | null;
   rerolled?: boolean;
 }
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat

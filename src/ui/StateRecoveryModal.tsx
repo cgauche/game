@@ -1,6 +1,9 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { RollFlowShell, Dice } from './RollFlowShell';
+import { RollFlowShell } from './RollFlowShell';
+import { testBreakdown } from './breakdown';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
 
 /** Vue pure de la modale « se libérer » (Empêtré) / « se rouler » (En flammes). Testable sans store. */
 export function StateRecoveryModalView({
@@ -38,25 +41,21 @@ export function StateRecoveryModalView({
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      resultOk={sr.success}
-      result={
-        rolled && (
-          <>
-            <span className="dice">
-              <Dice roll={sr.roll!.roll} />
-            </span>
-            {sr.opposed && sr.opponentRoll && (
-              <span className="vs">
-                vs <Dice roll={sr.opponentRoll.roll} />
-              </span>
-            )}
-            <span className="verdict">
-              {sr.success ? 'Réussite' : 'Échec'} ({sr.netSL >= 0 ? '+' : ''}
-              {sr.netSL} DR) → {removed > 0 ? `${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'aucun'}
-            </span>
-          </>
-        )
-      }
+      /* Test opposé : deux lignes de jet (acteur puis source), comme Attaque/Défense. */
+      breakdown={rolled
+        ? [
+            testBreakdown(sr.skillLabel, sr.skillValue, sr.roll!),
+            ...(sr.opposed && sr.opponentRoll && sr.opponentValue != null
+              ? [testBreakdown(`${sr.opponentName ?? 'Source'} — Force`, sr.opponentValue, sr.opponentRoll)]
+              : []),
+          ]
+        : undefined}
+      outcome={rolled && (
+        <JournalLine
+          className="rm-journal"
+          event={ev('condition', `${sr.actorName} ${sr.success ? `se dégage (${sr.netSL >= 0 ? '+' : ''}${sr.netSL} DR net) : ${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'n’y parvient pas — aucun pion retiré'}.`, sr.actorId)}
+        />
+      )}
       fortune={fortune}
       rerollable={rolled && canReroll(!sr.success, !!sr.rerolled)}
       onReroll={onReroll}
