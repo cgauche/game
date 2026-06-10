@@ -173,6 +173,14 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
   }
+  // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40) —
+  // l'entretien hors combat rejoue endOfRound (couture A) → ils tickent aussi hors combat.
+  if (c.castPenalties?.some((p) => p.roundsLeft != null)) {
+    for (const p of c.castPenalties) if (p.roundsLeft != null) p.roundsLeft -= 1;
+    const done = c.castPenalties.filter((p) => p.roundsLeft != null && p.roundsLeft <= 0);
+    for (const p of done) log.push(`${c.name} : ${p.label} se dissipe.`);
+    c.castPenalties = c.castPenalties.filter((p) => !(p.roundsLeft != null && p.roundsLeft <= 0));
+  }
   return log;
 }
 

@@ -27,6 +27,7 @@ export function carryOverState(c: Combatant): {
   diseases?: Disease[];
   items?: ItemInstance[];
   sinPoints?: number;
+  castPenalties?: import('./types').CastPenalty[];
   corruption?: number;
   mutations?: import('./corruption').Mutation[];
   damned?: boolean;
@@ -51,6 +52,9 @@ export function carryOverState(c: Combatant): {
     ...(c.items ? { items: c.items.map((i) => ({ ...i })) } : {}),
     // Points de Péché (LDB 40) : la Colère des dieux en expie 1 par jet — le solde suit le héros.
     ...(c.sinPoints != null ? { sinPoints: c.sinPoints } : {}),
+    // Contrecoups d'incantation (LDB 46/40) : les durées d'horloge (jours/minutes) et les blocages
+    // de Prière survivent au combat ; les durées en Rounds restantes continuent de ticker hors combat.
+    ...(c.castPenalties?.length ? { castPenalties: c.castPenalties.map((p) => ({ ...p })) } : {}),
     // Corruption & mutations (LDB 19) : la DONNÉE persiste (les effets — caracs permanentes,
     // Mouvement, PA naturels, Traits — sont relus à la volée). `damned` = hors-jeu définitif.
     ...(c.corruption != null ? { corruption: c.corruption } : {}),

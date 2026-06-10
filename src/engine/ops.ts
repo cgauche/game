@@ -66,8 +66,17 @@ export type GameOp =
    *  contexte (sort) ou persistance hors-échelle (COMBAT_PERSIST). */
   | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
   /** Test imbriqué (« Test de Résistance Accessible (+20) ou … ») : résolu
-   *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`. */
-  | { op: 'test'; skill: string; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[] }
+   *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`.
+   *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
+   *  moins… », Purifier la chair LDB 40) — appliqué EN PLUS d'`onFail`. */
+  | { op: 'test'; skill: string; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
+  /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
+   *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
+  | { op: 'corruption'; amount: number }
+  /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
+   *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
+   *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
+  | { op: 'castPenalty'; skill: 'Prière' | 'Langue' | 'Focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -81,6 +90,11 @@ export interface OpsCtx {
   label?: string;
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
   defaultDurationRounds?: number;
+  /** Horloge de jeu (minutes) — base des `castPenalty` à durée en minutes/jours. */
+  now?: number;
+  /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
+   *  store, l'op `corruption` incrémente simplement le compteur. */
+  onCorruption?: (n: number) => string[];
 }
 
 /** Rounds attribués à un effet dont la durée (minutes/heures/jours) dépasse le combat. */
@@ -170,6 +184,51 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           `${target.name} — Test de ${o.skill} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
         );
         lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, ctx));
+        // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
+        if (!t.success && o.onFailHard && t.sl <= o.onFailHard.dr) lines.push(...applyOps(target, o.onFailHard.ops, ctx));
+        break;
+      }
+      case 'corruption': {
+        if (ctx.onCorruption) {
+          lines.push(...ctx.onCorruption(o.amount));
+        } else {
+          target.corruption = (target.corruption ?? 0) + o.amount;
+          lines.push(`${target.name} : +${o.amount} Point${o.amount > 1 ? 's' : ''} de Corruption (total ${target.corruption}).`);
+        }
+        break;
+      }
+      case 'castPenalty': {
+        const cp: NonNullable<Combatant['castPenalties']>[number] = {
+          label: ctx.label ?? 'Contrecoup',
+          skill: o.skill,
+          ...(o.mod != null ? { mod: o.mod } : {}),
+          ...(o.blocked ? { blocked: true } : {}),
+          ...(o.maxZeroDR ? { maxZeroDR: true } : {}),
+        };
+        let dureeTxt = '';
+        if (o.rounds != null) {
+          cp.roundsLeft = Math.max(1, resolveFormula(o.rounds, ref, rng));
+          dureeTxt = `${cp.roundsLeft} Round${cp.roundsLeft > 1 ? 's' : ''}`;
+        } else if (o.minutes != null) {
+          const min = Math.max(1, resolveFormula(o.minutes, ref, rng));
+          cp.untilTime = (ctx.now ?? 0) + min;
+          dureeTxt = `${min} min`;
+        } else if (o.hours != null) {
+          const h = Math.max(1, resolveFormula(o.hours, ref, rng));
+          cp.untilTime = (ctx.now ?? 0) + h * 60;
+          dureeTxt = `${h} heure${h > 1 ? 's' : ''}`;
+        } else if (o.days != null) {
+          const d = Math.max(1, resolveFormula(o.days, ref, rng));
+          cp.untilTime = (ctx.now ?? 0) + d * 24 * 60;
+          dureeTxt = `${d} jour${d > 1 ? 's' : ''}`;
+        }
+        target.castPenalties = [...(target.castPenalties ?? []), cp];
+        const what = cp.blocked
+          ? `Tests de ${cp.skill === 'all' ? 'magie' : cp.skill} interdits`
+          : cp.maxZeroDR
+            ? 'Tests de Prière plafonnés à 0 DR'
+            : `${cp.mod} aux Tests de ${cp.skill === 'all' ? 'magie' : cp.skill}`;
+        lines.push(`${target.name} : ${what}${dureeTxt ? ` pendant ${dureeTxt}` : ''} (${cp.label}).`);
         break;
       }
       case 'reduceToZero': {

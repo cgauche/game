@@ -57,9 +57,33 @@ export function isArcaneSpell(spell: SpellLike): boolean {
   return !PRAYER_TYPES.includes(spell.type) && spell.type !== 'Magie mineure';
 }
 
+/** La pénalité `p` vise-t-elle la compétence de magie `skill` ? */
+function penaltyMatches(p: { skill: string }, skill: 'Prière' | 'Langue' | 'Focalisation'): boolean {
+  return p.skill === 'all' || p.skill === skill;
+}
+
+/** Somme des modificateurs d'incantation actifs (contrecoups : « Langue maladroite −10 »…). */
+export function castPenaltyMod(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): number {
+  let m = 0;
+  for (const p of c.castPenalties ?? []) if (penaltyMatches(p, skill) && p.mod != null) m += p.mod;
+  return m;
+}
+
+/** Libellé du contrecoup qui INTERDIT les Tests de `skill`, ou null si rien ne bloque.
+ *  (Les pénalités expirées sont purgées par l'entretien — fin de Round / horloge.) */
+export function castBlockedBy(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): string | null {
+  return (c.castPenalties ?? []).find((p) => penaltyMatches(p, skill) && p.blocked)?.label ?? null;
+}
+
+/** « Pensez à vos actes » (Colère, LDB 40) : tout Test de Prière réussi plafonné à 0 DR. */
+export function prayerMaxZeroDR(c: Combatant): boolean {
+  return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'Prière') && p.maxZeroDR);
+}
+
 /**
  * Valeur d'un test d'incantation : Caractéristique de la compétence + avances de
- * celle-ci (si le personnage la possède), sinon la Caractéristique seule.
+ * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
+ * modulée par les contrecoups actifs (castPenalties).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
   const charKey = skillName === 'Prière' ? 'Soc' : skillName === 'Focalisation' ? 'FM' : 'Int';
@@ -67,7 +91,10 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
   const sk = c.skills.find(
     (s) => s.name === skillName && (spec == null || s.spec === spec),
   );
-  return base + (sk?.advances ?? 0);
+  const penalty = skillName === 'Prière' || skillName === 'Langue' || skillName === 'Focalisation'
+    ? castPenaltyMod(c, skillName)
+    : 0;
+  return base + (sk?.advances ?? 0) + penalty;
 }
 
 /**
@@ -262,6 +289,11 @@ export function evaluateCasting(
   focusedNI0 = false,
 ): CastResult {
   const info = castInfo(spell);
+  // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
+  // ne peut pas obtenir plus de 0 DR pendant la durée du contrecoup.
+  if (info.skill === 'Prière' && t.success && t.sl > 0 && prayerMaxZeroDR(caster)) {
+    t = { ...t, sl: 0 };
+  }
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const cast = t.success && (!info.requireNI || t.sl >= ni);
   const isCritical = t.isDouble && t.success;

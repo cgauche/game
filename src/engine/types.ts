@@ -114,6 +114,23 @@ export interface ConditionInstance {
   sourceId?: string;
 }
 
+/** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
+ *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.58-138). Une seule des deux durées :
+ *  `roundsLeft` (échelle tactique) ou `untilTime` (minutes d'horloge `gameTime`). */
+export interface CastPenalty {
+  label: string;
+  /** Compétence visée ; 'all' = toute magie (Prière + Langue + Focalisation). */
+  skill: 'Prière' | 'Langue' | 'Focalisation' | 'all';
+  /** Modificateur (négatif) à la valeur de Test (« Langue maladroite −10 »). */
+  mod?: number;
+  /** Tests interdits (« Vous abusez de ma patience », « Propos ésotériques »…). */
+  blocked?: boolean;
+  /** « Pensez à vos actes » : tout Test de Prière réussi est plafonné à 0 DR. */
+  maxZeroDR?: boolean;
+  roundsLeft?: number;
+  untilTime?: number;
+}
+
 /**
  * Effet magique actif et temporisé (Bénédiction, Sort de bonus…).
  * Les bonus ne se cumulent pas : le meilleur l'emporte par caractéristique
@@ -292,6 +309,11 @@ export interface Combatant {
   sinPoints?: number;
   /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */
   activeEffects?: ActiveEffect[];
+  /** Pénalités/blocages d'incantation temporisés (contrecoups des tables d'Imparfaites/Colère,
+   *  LDB 46/40) : « Langue maladroite −10 », « pas de Test de Prière N Rounds », « DR de Prière
+   *  plafonné à 0 une semaine »… `roundsLeft` décrémenté en fin de Round (combat + entretien hors
+   *  combat) ; `untilTime` purgé par l'horloge (advanceTime). Persisté. */
+  castPenalties?: CastPenalty[];
   /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
   focus?: { spell: string; dr: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */

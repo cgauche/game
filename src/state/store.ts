@@ -36,7 +36,7 @@ import {
   AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, castBlockedBy } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -1296,6 +1296,12 @@ export const useGame = create<GameState>((set, get) => ({
       get().log('Ce sort ne peut pas être focalisé.');
       return;
     }
+    // Contrecoup bloquant la Focalisation (LDB 46/40), s'il y en a un d'actif.
+    const fblocked = castBlockedBy(active, 'Focalisation');
+    if (fblocked) {
+      get().log(`${active.name} ne peut pas focaliser : ${fblocked}.`);
+      return;
+    }
     // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
@@ -1330,6 +1336,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !spell) return;
     if (!isArcaneSpell(spell)) {
       get().log('Ce sort ne peut pas être focalisé.');
+      return;
+    }
+    const fblocked = castBlockedBy(caster, 'Focalisation');
+    if (fblocked) {
+      get().log(`${caster.name} ne peut pas focaliser : ${fblocked}.`);
       return;
     }
     set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
@@ -2609,6 +2620,17 @@ export const useGame = create<GameState>((set, get) => ({
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
       }
     }
+    // Contrecoups d'incantation à durée d'HORLOGE (minutes/jours — Drain de puissance,
+    // « Pensez à vos actes »…) : purge à l'échéance (LDB 46/40).
+    const now = get().gameTime;
+    const expiredLog: string[] = [];
+    for (const h of get().party) {
+      const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
+      if (!exp.length) continue;
+      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
+      h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
+    }
+    if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => restPartyOvernight(get, set, days),

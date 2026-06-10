@@ -44,6 +44,7 @@ import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities
 import {
   isMagicMissile,
   prayerWrathTriggered,
+  castBlockedBy,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -1740,19 +1741,16 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
     caster.sinPoints = sinPoints - 1;
     lines.push(`${caster.name} : 1 Point de Péché expié (reste ${caster.sinPoints}).`);
   }
-  for (const op of m.ops) {
-    if (op.reduceToZero) {
-      caster.wounds.current = 0;
-      addCondition(caster, 'Inconscient');
-      lines.push(`${caster.name} : Blessures réduites à 0 (Inconscient).`);
-    } else if (op.wounds != null) {
-      loseWounds(caster, op.wounds); // miscast : perte de PB centralisée (−Avantage + À Terre à 0)
-      lines.push(`${caster.name} subit ${op.wounds} Blessure(s) (ignorant BE et PA).`);
-    } else if (op.condition) {
-      addCondition(caster, op.condition.name, op.condition.value);
-      lines.push(`${caster.name} reçoit ${op.condition.value} État ${op.condition.name}.`);
-    }
-  }
+  // Ops de la table (États, Blessures ignorant BE+PA, Tests imbriqués, Corruption,
+  // pénalités/blocages d'incantation temporisés, réduction à 0) — applicateur unique.
+  lines.push(
+    ...applyOps(caster, m.ops, {
+      rng: battleRng(),
+      label: m.name,
+      now: get().gameTime,
+      onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+    }),
+  );
   // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
   if (caster.kind === 'hero')
     pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id });
@@ -1821,6 +1819,12 @@ export function castSpell(
   const spell = findSpell(label);
   if (!spell) {
     get().log(`Sort « ${label} » introuvable.`);
+    return;
+  }
+  // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
+  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue');
+  if (blocked) {
+    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
     return;
   }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
