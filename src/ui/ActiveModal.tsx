@@ -6,6 +6,7 @@ import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
 import { DefenseModal } from './DefenseModal';
 import { DeviationModal } from './DeviationModal';
+import { BladeTrapModal } from './BladeTrapModal';
 import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
 import { DisengageModal } from './DisengageModal';
@@ -25,13 +26,13 @@ import { CorruptionModal } from './CorruptionModal';
 
 /** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire (R2 du diagnostic). */
 export type ModalKey =
-  | 'fateSave' | 'fumble' | 'deviation' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
+  | 'fateSave' | 'fumble' | 'deviation' | 'bladeTrap' | 'cleave' | 'trample' | 'reveal' | 'dualStrike' | 'defense'
   | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
   | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
 
 /** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
 export interface ModalPendings {
-  pendingFateSave?: unknown; pendingFumble?: unknown; pendingDeviation?: unknown;
+  pendingFateSave?: unknown; pendingFumble?: unknown; pendingDeviation?: unknown; pendingBladeTrap?: unknown;
   pendingCleave?: unknown; pendingDualStrike?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
   pendingDefense?: unknown; pendingPsych?: unknown; pendingEncounterPsych?: unknown;
   pendingDisengage?: unknown; pendingMountTarget?: unknown;
@@ -55,6 +56,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
     [!!s.pendingFateSave, 'fateSave'],
     [!!s.pendingFumble, 'fumble'],
     [!!s.pendingDeviation, 'deviation'],
+    [!!s.pendingBladeTrap, 'bladeTrap'],
     // Frappe Mortelle : le jet d'enchaînement (pendingAttack) prend la main — sinon CleaveModal rend `null`.
     [!!s.pendingCleave && !s.pendingAttack, 'cleave'],
     [!!s.pendingTrample, 'trample'],
@@ -82,7 +84,7 @@ export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
 }
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
-  fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, cleave: CleaveModal,
+  fateSave: FateSaveModal, fumble: FumbleModal, deviation: DeviationModal, bladeTrap: BladeTrapModal, cleave: CleaveModal,
   trample: TrampleModal, reveal: RevealModal, dualStrike: DualStrikeModal, defense: DefenseModal, psych: PsychModal,
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, run: RunModal, focus: FocusModal,

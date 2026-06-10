@@ -17,7 +17,9 @@ export interface ResolvedQuality {
   indice?: number;
 }
 
-/** Qualités du registre présentes sur l'objet (normalisées, avec Indice). Chaînes inconnues ignorées. */
+/** Qualités du registre présentes sur l'objet (normalisées, avec Indice). Chaînes inconnues ignorées.
+ *  Applique la PRÉSÉANCE `beats` : une qualité vaincue par une autre présente est retirée
+ *  (« Imprécise prend le dessus » sur Précise, LDB 63 l.20 ; Lente sur Rapide, LDB 62 l.321). */
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
@@ -25,7 +27,8 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
     const p = parseQuality(raw);
     if (p) out.push({ def: QUALITIES[p.key], indice: p.indice });
   }
-  return out;
+  const beaten = new Set(out.flatMap((r) => r.def.beats ?? []));
+  return beaten.size ? out.filter((r) => !beaten.has(r.def.key)) : out;
 }
 
 /** L'objet possède-t-il la qualité canonique `key` ? (remplace l'ancien `hasQ` startsWith). */
@@ -83,11 +86,83 @@ export function qualitySocMod(w: QualityCarrier | undefined): number {
   return resolveQualities(w).reduce((s, r) => s + (r.def.socMod ?? 0), 0);
 }
 
+/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. */
+export function attackDRAdjust(w: QualityCarrier | undefined): number {
+  return resolveQualities(w).reduce((s, r) => s + (r.def.attackDR ?? 0), 0);
+}
+
+/** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
+export function vsDefenseDRAdjust(attackerWeapon: QualityCarrier | undefined): number {
+  return resolveQualities(attackerWeapon).reduce((s, r) => s + (r.def.vsDefenseDR ?? 0), 0);
+}
+
+/** Rapide (LDB 62 l.320-321) : −10 à la PARADE contre une arme Rapide si l'arme de parade n'est
+ *  pas Rapide elle-même. 0 sinon (l'Esquive et les autres Compétences défendent normalement). */
+export function rapideParryMod(attackerWeapon: QualityCarrier | undefined, parryWeapon: QualityCarrier | undefined): number {
+  if (!resolveQualities(attackerWeapon).some((r) => r.def.fastStrike)) return 0;
+  return resolveQualities(parryWeapon).some((r) => r.def.fastStrike) ? 0 : -10;
+}
+
+/** Lente (LDB 63 l.25) : le porteur d'une arme Lente (active) frappe en dernier dans le Round. */
+export function strikesLast(weapons: QualityCarrier[] | undefined): boolean {
+  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.def.slowStrike));
+}
+
+/** Rapide (LDB 62 l.318-319) : le porteur peut attaquer hors de l'ordre d'Initiative (pré-emption gratuite). */
+export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
+  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.def.fastStrike));
+}
+
+/** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ? */
+export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
+  if (success || !resolveQualities(w).some((r) => r.def.fumbleOn9)) return false;
+  return roll % 10 === 9 || Math.floor(roll / 10) % 10 === 9;
+}
+
+/** À Répétition (Indice) : taille du chargeur (LDB 62 l.264), ou undefined si l'arme n'en a pas. */
+export function magazineSize(w: QualityCarrier | undefined): number | undefined {
+  const r = resolveQualities(w).find((x) => x.def.magazine);
+  return r ? r.indice ?? 1 : undefined;
+}
+
+/** Immobilisante (LDB 62 l.289-290) : toute touche inflige l'État Empêtré (source = l'attaquant). */
+export function entanglesOnHit(w: QualityCarrier | undefined): boolean {
+  return resolveQualities(w).some((r) => r.def.onHitEntangle);
+}
+
+/** Protectrice (Indice) : PA conférés à TOUTES les localisations quand on OPPOSE l'attaque avec
+ *  cette arme (LDB 62 l.306). 0 si la qualité est absente. */
+export function protectriceAP(parryWeapon: QualityCarrier | undefined): number {
+  const r = resolveQualities(parryWeapon).find((x) => x.def.parryAP);
+  return r ? r.indice ?? 1 : 0;
+}
+
+/** Protectrice ≥ 2 : permet d'OPPOSER les projectiles tirés en Ligne de Vue (LDB 62 l.307).
+ *  Renvoie l'arme protectrice utilisable, ou undefined. */
+export function rangedOpposeWeapon(weapons: Weapon[] | undefined): Weapon | undefined {
+  return (weapons ?? []).find((w) => {
+    const r = resolveQualities(w).find((x) => x.def.parryAP);
+    return r && (r.indice ?? 1) >= 2;
+  });
+}
+
+/** Perturbante (LDB 62 l.275-276) : l'arme peut repousser au lieu de blesser. */
+export function canPushback(w: QualityCarrier | undefined): boolean {
+  return resolveQualities(w).some((r) => r.def.pushback);
+}
+
+/** Piège-lame (LDB 62 l.292-294) : l'arme peut piéger une lame sur un Critique défensif. */
+export function hasBladeTrap(w: QualityCarrier | undefined): boolean {
+  return resolveQualities(w).some((r) => r.def.bladeTrap);
+}
+
 export interface DamageStepCtx {
   /** DR-pour-dégâts de base (déjà augmenté de Pointue). */
   effDR: number;
   /** Dé des unités du jet de toucher (LDB 62 l.279/313). */
   units: number;
+  /** L'attaquant a Chargé ce Tour (gating Épuisante, LDB 63 l.16-17). */
+  charged?: boolean;
 }
 export interface DamageStep {
   /** DR-dégâts effectif (Dévastatrice : max(DR, unités)). */
@@ -98,9 +173,14 @@ export interface DamageStep {
 
 /** Ajustement de Dégâts dû aux qualités : Dévastatrice (DR = max(DR, dé des unités)), Percutante
  *  (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` = qualités
- *  conférées hors arme (ex. par la Taille, LDB 85 l.295). Pur. */
+ *  conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (LDB 63 l.16-17) : les Atouts
+ *  de Dégâts DE L'ARME ne valent qu'en Charge (`ctx.charged`) — pas ceux conférés par la Taille. Pur. */
 export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStepCtx, extra: string[] = []): DamageStep {
-  const defs = resolveQualities(w);
+  // Épuisante : hors Charge, Percutante/Dévastatrice portées par l'ARME sont inertes (LDB 63 l.16-17).
+  const tiring = resolveQualities(w).some((r) => r.def.chargeGatedDamageAtouts) && !ctx.charged;
+  const defs = tiring
+    ? resolveQualities(w).filter((r) => r.def.dmgDRMode !== 'maxUnits' && !r.def.damageBonusUnits)
+    : resolveQualities(w);
   for (const raw of extra) {
     const p = parseQuality(raw);
     if (p) defs.push({ def: QUALITIES[p.key], indice: p.indice });

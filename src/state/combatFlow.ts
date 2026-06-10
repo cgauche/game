@@ -40,7 +40,7 @@ import {
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, entanglesOnHit, magazineSize, hasBladeTrap, canPushback, strikesLast } from '../engine/qualities/dispatch';
 import {
   isMagicMissile,
   prayerWrathTriggered,
@@ -55,7 +55,7 @@ import { spellSpecFor } from '../data/spellspecs';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
@@ -114,6 +114,29 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
     for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
   }
   return s;
+}
+
+/** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction
+ *  opposée à l'attaquant (cases praticables et libres seulement). Renvoie les cases reculées. */
+export function pushBackTiles(get: () => GameState, attacker: Combatant, target: Combatant, tiles: number): number {
+  const { scene, battle } = get();
+  if (!scene || !battle || !attacker.pos || !target.pos || tiles <= 0) return 0;
+  let pos = target.pos;
+  const dx = Math.sign(pos.x - attacker.pos.x);
+  const dy = Math.sign(pos.y - attacker.pos.y);
+  if (!dx && !dy) return 0;
+  const blocked = occupied(battle, target);
+  let moved = 0;
+  for (let i = 0; i < tiles; i++) {
+    const next = { x: pos.x + dx, y: pos.y + dy };
+    const foot = footprintTiles(next, target.size);
+    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(`${t.x},${t.y}`))) break;
+    pos = next;
+    moved++;
+  }
+  target.pos = pos;
+  if (moved) bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...target.pos }] });
+  return moved;
 }
 
 export function findFreeTile(scene: Scene): Pt {
@@ -705,7 +728,7 @@ export function resolveDualSecond(
   const atk = evaluateTest(atkRoll, toHit); // { roll, target, success, sl, isDouble }
   const mode = cannotDefend(target) ? 'none' : bestDefenseMode(target);
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
-  const def = rollMeleeDefender(target, mode, battleRng()); // NOUVEAU jet de défense (LDB 10 l.638)
+  const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
   return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
 }
 
@@ -967,6 +990,37 @@ function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): v
   log.push(`L'armure Bâclée de ${target.name} (${loc}) se brise sous le Coup Critique.`);
 }
 
+/** « Arme possédant une lame » (Piège-lame, LDB 62 l.292) — la source ne liste pas les armes :
+ *  approximation par mots-clés du nom (épées/dagues/haches/armes d'hast à fer tranchant). */
+export function weaponHasBlade(w: Weapon | undefined): boolean {
+  if (!w || w.type !== 'melee') return false;
+  return /épée|epee|dague|lame|rapière|rapiere|cimeterre|couteau|sabre|fauchon|hache|hallebarde|glaive|estoc|faux|coutille|vouge/i.test(w.name);
+}
+
+/** Blessure critique « sèche » d'un Test opposé (LDB 14 l.7) : un double réussi inflige une Blessure
+ *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation dérivée du jet
+ *  critique inversé (comme une touche). Un ENNEMI avec de la PA à la zone dévie toujours (−1 PA,
+ *  Critique ignoré — parité avec la Déviation auto de l'IA, LDB 63 l.63-66) ; un HÉROS victime le
+ *  subit directement (pas de modale de déviation sur ce chemin secondaire — limitation documentée). */
+function applyOpposedCritical(
+  get: () => GameState,
+  set: any,
+  victim: Combatant,
+  roll: number,
+  ctx: { attackerId?: string; weapon?: string },
+  log: string[],
+): void {
+  const loc = hitLocationByShape(reverseRoll(roll), victim.bodyShape);
+  if (victim.kind === 'enemy' && (victim.armour[loc] ?? 0) > 0) {
+    damageArmour(victim, loc);
+    log.push(`${victim.name} dévie le Critique sur son armure (−1 PA, Critique ignoré).`);
+    return;
+  }
+  const currentBefore = victim.wounds.current;
+  const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined, ctx);
+  if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
+}
+
 export function applyAttackResult(
   get: () => GameState,
   set: any,
@@ -984,6 +1038,20 @@ export function applyAttackResult(
   // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
   // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
   if (deviated === undefined && hasCondition(target, 'Surpris')) removeCondition(target, 'Surpris', 1);
+  // Perturbante (LDB 62 l.275-276) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
+  // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
+  if (attacker.pushbackMode && weapon.type === 'melee' && canPushback(weapon)) {
+    attacker.pushbackMode = false; // consommé par cette attaque (réussie ou non)
+    if (res.hit) {
+      const meters = Math.max(0, res.netSL);
+      const wanted = Math.floor(meters / 2);
+      const moved = pushBackTiles(get, attacker, target, wanted);
+      res = {
+        ...res, woundsLost: 0, damage: 0, critical: false,
+        log: `${attacker.name} repousse ${target.name} de ${meters} m (Perturbante${moved < wanted ? ' — recul bloqué' : ''}).`,
+      };
+    }
+  }
   // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
   // résolution (deviationApply) rappelle cette fonction avec `deviated` défini (early-return sauté →
@@ -1033,6 +1101,30 @@ export function applyAttackResult(
       clearPsychOf(get().battle?.combatants ?? [], target.id);
     }
   }
+  // Critiques du Test opposé (LDB 14 l.7) : « Si vous obtenez un Critique, votre adversaire reçoit
+  // immédiatement une Blessure critique […] le DR est calculé comme d'habitude, tout comme la
+  // détermination du vainqueur. » Un double RÉUSSI inflige donc un Critique même sans gagner l'échange.
+  // (Pas de garde `deviated` : une 1ʳᵉ entrée qui SUSPEND (déviation) fait son early-return AVANT ce
+  // bloc — la reprise « Dévier »/« Subir » l'exécute donc UNE seule fois, comme les sous-attaques.)
+  if (weapon.type === 'melee' && res.defenderDetail) {
+    const ad = res.attackerDetail;
+    const dd = res.defenderDetail;
+    // (a) Attaquant : Critique au jet mais échange PERDU (pas de touche) → le défenseur subit un Critique sec.
+    if (ad && ad.success && isDoubleRoll(ad.roll) && !res.hit && !isOutOfAction(target)) {
+      critLog.push(`${attacker.name} place un Critique malgré l'échange perdu (LDB 14).`);
+      applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
+    }
+    // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec. Un HÉROS qui PARE
+    // avec une arme Piège-lame face à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → modale.
+    if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker)) {
+      if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
+        set({ pendingBladeTrap: { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll } });
+      } else {
+        critLog.push(`${target.name} place un Critique sur sa défense (LDB 14).`);
+        applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
+      }
+    }
+  }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
@@ -1043,8 +1135,15 @@ export function applyAttackResult(
       if (used.qty <= 0) attacker.items = (attacker.items ?? []).filter((i) => i.uid !== used.uid);
     }
     if ((weapon.reload ?? 0) > 0) {
-      attacker.loaded = false; // déchargé après le tir
-      attacker.reloadProgress = 0;
+      // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
+      // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
+      const mag = magazineSize(weapon);
+      if (mag != null) attacker.chambered = (attacker.chambered ?? mag) - 1;
+      if (mag == null || (attacker.chambered ?? 0) <= 0) {
+        attacker.chambered = undefined;
+        attacker.loaded = false; // déchargé après le tir
+        attacker.reloadProgress = 0;
+      }
     }
   }
   // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
@@ -1091,6 +1190,13 @@ export function applyAttackResult(
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
   if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
+  // Immobilisante (LDB 62 l.289-290) : toute touche réussie → État Empêtré, source = l'attaquant
+  // (le Test opposé de Force pour se libérer vise sa Force — LDB 16 l.61, comme Constricteur).
+  if (res.hit && entanglesOnHit(weapon) && !hasCondition(target, 'Empêtré')) {
+    addCondition(target, 'Empêtré');
+    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
+    log.push(ev('condition', `${target.name} est Empêtré (${weapon.name} — Immobilisante).`, target.id));
+  }
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
@@ -1100,7 +1206,7 @@ export function applyAttackResult(
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
   // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.48-51) : sa Parade/Esquive ratée sur un double.
-  if (target.kind === 'enemy' && defenderFumbled(res) && !isOutOfAction(target) && target.weapons[0]) {
+  if (target.kind === 'enemy' && defenderFumbled(res, target.weapons[0]) && !isOutOfAction(target) && target.weapons[0]) {
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
   return false; // non suspendu : application complète terminée
@@ -1129,14 +1235,20 @@ export function checkFocusInterruption(get: () => GameState, set: any, target: C
   return lines;
 }
 
-/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53). */
-export function attackerFumbled(res: AttackResult): boolean {
-  return !!res.attackerDetail && isFumble(res.attackerDetail.roll, res.attackerDetail.success);
+/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
+ *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+export function attackerFumbled(res: AttackResult, weapon?: Weapon): boolean {
+  if (!res.attackerDetail) return false;
+  const { roll, success } = res.attackerDetail;
+  return isFumble(roll, success) || dangerousNine(weapon, roll, success);
 }
 
-/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51). */
-export function defenderFumbled(res: AttackResult): boolean {
-  return !!res.defenderDetail && isFumble(res.defenderDetail.roll, res.defenderDetail.success);
+/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51 ;
+ *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 63 l.13-14). */
+export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon): boolean {
+  if (!res.defenderDetail) return false;
+  const { roll, success } = res.defenderDetail;
+  return isFumble(roll, success) || dangerousNine(parryWeapon, roll, success);
 }
 
 /** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à
@@ -1248,7 +1360,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
 
 /** Maladresse d'un ENNEMI : résolue instantanément (IA abstraite). No-op si pas un ennemi/pas de fumble. */
 export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
-  if (enemy.kind !== 'enemy' || !attackerFumbled(res)) return;
+  if (enemy.kind !== 'enemy' || !attackerFumbled(res, weapon)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
 
@@ -2140,17 +2252,66 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   return false;
 }
 
+/** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
+ *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
+ *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
+export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean): void {
+  const { battle, pendingBladeTrap: pbt } = get();
+  if (!battle || !pbt) return;
+  set({ pendingBladeTrap: null });
+  const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
+  const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
+  if (!defender || !attacker) return;
+  const lines: string[] = [];
+  if (!trap) {
+    lines.push(`${defender.name} place un Critique sur sa défense (LDB 14).`);
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: pbt.parryWeaponName }, lines);
+  } else if (!isOutOfAction(attacker)) {
+    // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).
+    const dT = rollTest(effectiveChar(defender, 'F'), 'intermediaire', battleRng());
+    const aT = rollTest(effectiveChar(attacker, 'F'), 'intermediaire', battleRng());
+    const opp = resolveOpposed({ ...dT, sl: dT.sl + pbt.defSL }, aT);
+    lines.push(`Test opposé de Force : ${defender.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}+${pbt.defSL}) contre ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}).`);
+    if (opp.winner === 'attacker') {
+      const drop = attacker.weapons.find((w) => (pbt.weapon.uid && w.uid === pbt.weapon.uid) || w.name === pbt.weapon.name);
+      if (drop && opp.netSL >= 6) {
+        // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.294).
+        wearActiveWeapon(attacker, drop, true);
+        lines.push(drop.destroyed
+          ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
+          : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
+        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+      } else if (drop) {
+        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+        lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
+      }
+    } else {
+      lines.push(`${attacker.name} libère sa lame et peut combattre normalement.`);
+    }
+  }
+  const b = get().battle!;
+  set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
+  pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  resumeEnemyTurn(get, set);
+}
+
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: () => GameState, set: any): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
 export function advanceTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
+  // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
+  // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
+  const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;
@@ -2164,7 +2325,8 @@ export function advanceTurn(get: () => GameState, set: any) {
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
       const base = battle.baseOrder ?? battle.order;
-      const lastIds = battle.combatants.filter((c) => c.actLastNextRound).map((c) => c.id);
+      // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 63 l.25, permanent).
+      const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', `${c.name} agira en dernier ce Round (Maladresse).`, c.id)); }
       const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
@@ -2263,7 +2425,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: () => GameState, set: any) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

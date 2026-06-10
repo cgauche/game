@@ -17,7 +17,7 @@ import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP } from './qualities/dispatch';
 import { offHandPenalty } from './combatFeatures/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -159,6 +159,9 @@ export interface AttackResult {
   /** Frappe Mortelle (LDB 14 l.12 / 85 l.299) : touche de mêlée réussie d'un attaquant plus grand
    *  → balayage possible vers un autre adversaire à portée. Orchestré par le store/combatFlow. */
   cleave?: boolean;
+  /** Arme avec laquelle le défenseur a PARÉ (mode parade uniquement) — sert aux Critiques du Test
+   *  opposé (Piège-lame, LDB 62 l.292) et à la Maladresse défensive d'une arme Dangereuse. */
+  parryWeapon?: Weapon;
   log: string;
 }
 
@@ -328,10 +331,11 @@ export interface AttackOptions {
  * 13-Combat l.165 : une touche réussie coûte au moins 1 PB). Source unique partagée par
  * `applyHit` et les touches de Maladresse (touche d'allié / Incident de Tir, LDB 14).
  */
-export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number): number {
+export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLocation, totalDamage: number, extraAP = 0): number {
   const tb = bonus(effectiveChar(target, 'E'));
-  // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47).
-  const ap = Math.max(0, effectiveArmourAt(target, location) - qualitySum(weapon, 'armourReduction'));
+  // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47)
+  // + PA conférés par l'arme d'opposition (Protectrice, LDB 62 l.306 — `extraAP`).
+  const ap = Math.max(0, effectiveArmourAt(target, location) + extraAP - qualitySum(weapon, 'armourReduction'));
   return Math.max(1, totalDamage - (tb + ap));
 }
 
@@ -374,14 +378,18 @@ export function rollMeleeDefender(
   rng: RNG = defaultRNG,
   dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + pénalité main 2nde)
+  vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.320-321)
 ): TestResult {
   const defVal = defenseValue(defender, mode, parryWeapon);
   const snow = mode === 'esquive' ? dodgeMod : 0;
   // Pénalité de main secondaire à la PARADE (LDB 62 l.192 ; 0 si Parade+Défensive ou main principale) —
   // appliquée au JET, pas seulement affichée. (Esquive : aucune arme → pas de pénalité d'arme.)
   const offHand = mode === 'parade' ? parryPenalty(defender, parryWeapon) : 0;
+  // Rapide (LDB 62 l.320-321) : −10 aux Tests de Corps à corps (Parade) contre une arme Rapide,
+  // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
+  const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
   const dualPen = defender.dualStrikeDefensePenalty ? -10 : 0; // Maniement de deux armes : −10 à TOUTES ses défenses (LDB 10 l.638)
-  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand + dualPen);
+  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand + rapide + dualPen);
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
@@ -422,13 +430,16 @@ export function finishMelee(
   // Pratique (+1) / Peu Fiable (-1) sur un Test RATÉ utilisant l'arme (LDB 60 l.59/88) : modifie le DR
   // du jet → l'issue du Test opposé ET les Dégâts (via le DR net). L'attaque utilise toujours l'arme ;
   // la parade utilise l'arme du défenseur (pas l'esquive — l'esquive ne « teste » pas l'arme).
-  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success);
-  const defSL = def.sl - parrySizePenalty
+  // Imprécise : −1 DR au Test d'attaque avec l'arme (LDB 63 l.19) — réussi ou raté.
+  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon);
+  // Lente : +1 DR à TOUT Test de défense contre cette arme — Parade ET Esquive (LDB 63 l.26).
+  const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon));
 
+  const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
   if (opp.winner === 'defender') {
     return {
       hit: false,
@@ -440,6 +451,7 @@ export function finishMelee(
       defenderDefeated: false,
       attackerDetail: atkBd,
       defenderDetail: defBd,
+      parryWeapon: usedParry,
       log: `${attacker.name} rate son attaque ; ${defender.name} gagne +1 Avantage.`,
     };
   }
@@ -455,13 +467,16 @@ export function finishMelee(
       defenderDefeated: false,
       attackerDetail: atkBd,
       defenderDetail: defBd,
+      parryWeapon: usedParry,
       log: `Échange neutre : ni ${attacker.name} ni ${defender.name} ne prend l'avantage.`,
     };
   }
   const critical = atk.isDouble && atk.success;
-  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy);
+  // Protectrice (LDB 62 l.306) : opposer l'attaque avec l'arme → Indice PA à toutes les localisations.
+  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0);
   res.defenderRoll = def.roll;
   res.defenderDetail = defBd;
+  res.parryWeapon = usedParry;
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -492,7 +507,7 @@ export function resolveMeleePassive(
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location, dmgProxy);
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon), atk.isDouble && atk.success, location, dmgProxy); // Imprécise : −1 DR à l'attaque (LDB 63 l.19)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -510,7 +525,7 @@ export function resolveMelee(
   let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
   if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'melee'); // auto-réussite + critique (LDB 16 l.112)
   if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
-  const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod);
+  const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
   return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
 }
 
@@ -571,7 +586,7 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location);
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19)
 }
 
 /**
@@ -614,6 +629,7 @@ function applyHit(
   critical: boolean,
   forcedLoc?: HitLocation,
   dmgProxy?: AttackOptions['dmgProxy'],
+  extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.306)
 ): AttackResult {
   weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
@@ -626,11 +642,12 @@ function applyHit(
   // Dévastatrice (max(DR, unités)) / Percutante (+unités), annulés par Inoffensive ; Atouts conférés
   // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
+  // Épuisante (LDB 63 l.16-17) : Percutante/Dévastatrice de l'arme inertes hors Charge (`charged`).
   const noSize = !!attacker.swarm || !!defender.swarm;
-  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
+  const { dmgDR, bonus: dmgBonus } = qualityDamageStep(weapon, { effDR, units, charged: !!attacker.chargedThisTurn }, noSize ? [] : sizeGrantedQualities(dmgSize, defender.size));
   let damage = weaponDmg + Math.max(0, dmgDR) + dmgBonus;
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
-  const woundsLost = woundsFromHit(weapon, defender, loc, damage);
+  const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP);
   const newWounds = defender.wounds.current - woundsLost;
   const defeated = newWounds <= 0;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de

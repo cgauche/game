@@ -405,6 +405,12 @@ export interface Combatant {
   loaded?: boolean;
   /** DR cumulés du Test étendu de Projectiles vers `Weapon.reload` (Indice DR), pas un compteur d'Actions. */
   reloadProgress?: number;
+  /** À Répétition (Indice) (LDB 62 l.264-265) : munitions restantes dans le chargeur de l'arme à
+   *  distance équipée (auto-rechargées entre les coups) ; undefined = pas de chargeur / vide. */
+  chambered?: number;
+  /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
+   *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
+  pushbackMode?: boolean;
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;
