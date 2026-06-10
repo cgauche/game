@@ -314,6 +314,16 @@ export interface Combatant {
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  /** Points de Corruption (LDB 19) — dérive de l'âme vers le Chaos. Gagnés par expositions/
+   *  Sombres Pactes/contrecoups magiques ; au-delà de BFM+BE, chaque gain impose un Test de
+   *  Résistance ou MUTATION. Persisté. */
+  corruption?: number;
+  /** Mutations subies (LDB 19, Tableaux p.184-185) — DONNÉE persistée ; les effets (caracs
+   *  permanentes, Mouvement, PA naturels, mods de Tests, Traits) sont lus à la volée. */
+  mutations?: import('./corruption').Mutation[];
+  /** Damné (LDB 19 l.95) : plus de mutations physiques que BE ou mentales que BFM — l'âme
+   *  appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort, affiché « Damné »). */
+  damned?: boolean;
   /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou
    *  Exténué. Posé par l'Effet d'éditeur `inflictNightmares` (assigné par l'auteur, jamais inventé). */
   nightmares?: boolean;

@@ -46,6 +46,8 @@ export function RollFlowShell({
   rerollable,
   onReroll,
   onBonusSL,
+  darkPactable,
+  onDarkPact,
   resilience = 0,
   onForce,
   preRollForce,
@@ -81,6 +83,9 @@ export function RollFlowShell({
   onReroll: () => void;
   /** Absent → Test binaire : bouton « 🍀 Relancer » simple (pas de « +1 DR »). */
   onBonusSL?: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté, même déjà relancé. */
+  darkPactable?: boolean;
+  onDarkPact?: () => void;
   resilience?: number;
   /** Absent → pas de Résilience sur ce flux. */
   onForce?: () => void;
@@ -130,7 +135,7 @@ export function RollFlowShell({
             )}
             <div className="modal-actions">
               {onBonusSL ? (
-                <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} />
+                <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} onBonusSL={onBonusSL} darkPactable={darkPactable} onDarkPact={onDarkPact} />
               ) : (
                 rerollable &&
                 fortune > 0 && (

@@ -235,7 +235,7 @@ export interface PendingFrenzy {
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
  *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
 export interface RevealEntry {
-  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round';
+  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round' | 'mutation';
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
@@ -252,6 +252,20 @@ export interface RevealEntry {
   /** Données du Coup Critique pour une modale COMPLÈTE : localisation (FR), Blessures infligées (ignore
    *  Endurance + Armure), États appliqués. */
   crit?: { location: string; woundsLost: number; conditions?: { name: string; value: number }[] };
+}
+/** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence
+ *  physique) ou de Calme (spirituelle), Intermédiaire (+0) ; Points de Corruption selon le
+ *  niveau et le DR (mineure 0/1 · modérée 0/1/2 · majeure 0/1/2/3). Lancer → Chance
+ *  (+1 DR utile : les seuils de DR réduisent le gain) → Appliquer (gainCorruption). */
+export interface PendingCorruption {
+  heroId: string;
+  level: import('../engine/corruption').ExposureLevel;
+  skill: 'Résistance' | 'Calme';
+  roll?: number;
+  target?: number;
+  sl?: number;
+  success?: boolean;
+  rerolled?: boolean;
 }
 /** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
  *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */

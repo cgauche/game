@@ -13,6 +13,7 @@ import type {
   GameState,
   PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
+  PendingCorruption,
 } from './store';
 import type { Combatant } from '../engine/types';
 import { makeRollFlow } from './rollFlow';
@@ -234,6 +235,23 @@ export const FLOWS = {
       // RAW LDB 17 l.73 : AVANT le jet (« au lieu de lancer les dés » → on choisit 01) OU après un échec.
       derive: (_s, p) => ({ roll: p.roll ?? 1, success: true, sl: Math.max(p.sl, p.requireSL, 1), forced: true }),
     },
+  }),
+
+  /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme
+   *  Intermédiaire (+0) ; le gain de Points dépend du niveau ET du DR (cf. corruptionGain) —
+   *  la Chance « +1 DR » peut donc réduire le gain d'une exposition modérée/majeure. */
+  corruption: makeRollFlow<PendingCorruption>({
+    key: 'pendingCorruption',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.heroId),
+    resolve: (s, p) => {
+      const actor = actorIn(s, p.heroId);
+      if (!actor) return null;
+      const t = rollTest(testValue(actor, p.skill), 'intermediaire', battleRng());
+      return { roll: t.roll, target: t.target, sl: t.sl, success: t.success };
+    },
+    failed: (p) => (p.roll ?? 0) > (p.target ?? 0),
+    bonus: { derive: (_s, p) => ({ sl: (p.sl ?? 0) + 1, success: (p.roll ?? 0) <= (p.target ?? 0) }) },
   }),
 
   /** Évaluation (LDB 60 l.10) : révèle la qualité cachée + estime le prix. */

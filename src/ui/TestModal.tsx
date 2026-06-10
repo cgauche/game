@@ -13,6 +13,7 @@ export function TestModal() {
   const roll = useGame((s) => s.testRoll);
   const reroll = useGame((s) => s.testReroll);
   const bonusSL = useGame((s) => s.testBonusSL);
+  const darkPact = useGame((s) => s.testDarkPact);
   const forceSuccess = useGame((s) => s.testForceSuccess);
   const resolve = useGame((s) => s.resolveTest);
   if (!pt) return null;
@@ -55,6 +56,8 @@ export function TestModal() {
       rerollable={rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}
+      darkPactable={rolled && pt.roll! > pt.target}
+      onDarkPact={darkPact}
       resilience={actor?.resilience ?? 0}
       onForce={forceSuccess}
       forceShow={rolled && !pt.success}

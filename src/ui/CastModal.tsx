@@ -18,6 +18,7 @@ export function CastModal() {
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
+  const darkPact = useGame((s) => s.castDarkPact);
   const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
@@ -95,7 +96,14 @@ export function CastModal() {
             </div>
             <p className="rm-log">{res.log}</p>
             <div className="modal-actions">
-              <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={reroll} onBonusSL={bonusSL} />
+              <ChanceButtons
+                fortune={fortune}
+                rerollable={rerollable}
+                onReroll={reroll}
+                onBonusSL={bonusSL}
+                darkPactable={caster.kind === 'hero' && res.roll > 0 && res.roll > res.target}
+                onDarkPact={darkPact}
+              />
               <ResilienceButton resilience={caster.resilience ?? 0} show={!!res && !res.cast} onForce={forceSuccess} />
               <button className="btn btn-primary" onClick={confirm}>
                 Appliquer

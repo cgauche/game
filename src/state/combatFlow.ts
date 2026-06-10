@@ -49,6 +49,7 @@ import {
 } from '../engine/magic';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
+import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
@@ -265,6 +266,23 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
           return { party: s.party.map((h, i) => (i === idx ? { ...h, sinPoints: (h.sinPoints ?? 0) + amount } : h)) };
         });
         if (who) get().log(`${who} a péché contre son dieu : +${amount} Point(s) de Péché.`);
+        break;
+      }
+      case 'corruptionExposure': {
+        // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
+        // (Lancer → Chance → Appliquer) ; le gain dépendra du niveau et du DR.
+        const hero = corruptionTarget(get(), e.heroId);
+        if (hero) set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill } });
+        break;
+      }
+      case 'giveCorruption': {
+        // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
+        const hero = corruptionTarget(get(), e.heroId);
+        if (hero) {
+          const lines = gainCorruption(get, set, hero, Math.max(1, e.amount ?? 1));
+          for (const l of lines) get().log(l);
+          set({ party: [...get().party] });
+        }
         break;
       }
       case 'inflictDisease': {

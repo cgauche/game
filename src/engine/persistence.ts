@@ -27,6 +27,11 @@ export function carryOverState(c: Combatant): {
   diseases?: Disease[];
   items?: ItemInstance[];
   sinPoints?: number;
+  corruption?: number;
+  mutations?: import('./corruption').Mutation[];
+  damned?: boolean;
+  traits?: string[];
+  psychTraits?: import('./psychology').PsychTrait[];
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
@@ -46,6 +51,14 @@ export function carryOverState(c: Combatant): {
     ...(c.items ? { items: c.items.map((i) => ({ ...i })) } : {}),
     // Points de Péché (LDB 40) : la Colère des dieux en expie 1 par jet — le solde suit le héros.
     ...(c.sinPoints != null ? { sinPoints: c.sinPoints } : {}),
+    // Corruption & mutations (LDB 19) : la DONNÉE persiste (les effets — caracs permanentes,
+    // Mouvement, PA naturels, Traits — sont relus à la volée). `damned` = hors-jeu définitif.
+    ...(c.corruption != null ? { corruption: c.corruption } : {}),
+    ...(c.mutations ? { mutations: c.mutations.map((m) => ({ ...m })) } : {}),
+    ...(c.damned ? { damned: true } : {}),
+    // Traits gagnés par mutation (Tentacules, Frénésie…) : un héros n'en change pas autrement.
+    ...(c.mutations?.length && c.traits ? { traits: [...c.traits] } : {}),
+    ...(c.mutations?.length && c.psychTraits ? { psychTraits: c.psychTraits.map((t) => ({ ...t })) } : {}),
   };
 }
 

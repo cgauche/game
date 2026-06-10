@@ -22,7 +22,11 @@ export function charBonus(chars: Characteristics, key: CharKey): number {
  * p.220). Ex. +20, +10 et -10 sur la même Caractéristique → +20 - 10 = +10 net.
  */
 export function effectiveChar(c: Combatant, key: CharKey): number {
-  const base = c.characteristics[key];
+  let base = c.characteristics[key];
+  // Mutations de Corruption (LDB 19) : modifications PERMANENTES de la caractéristique
+  // (« +5 Force », « -10 Sociabilité »…) — s'ajoutent à la BASE, hors pool de non-cumul
+  // (un corps transformé n'est pas un bonus magique). Sommé inline (cycle d'import évité).
+  for (const m of c.mutations ?? []) base += m.charMods?.[key] ?? 0;
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
   mods.push(...traumaCharPenalties(c, key));

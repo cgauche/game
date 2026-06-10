@@ -315,10 +315,26 @@ function FicheBody({ hero }: { hero: Combatant }) {
         )}
       </div>
 
-      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0) && (
+      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
         <div className="sheet-afflictions">
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
+            {(hero.corruption ?? 0) > 0 && (
+              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption (LDB 19) : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
+                <span className="ir-name">🕯️ Corruption</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
+                </span>
+              </div>
+            )}
+            {(hero.mutations ?? []).map((m, i) => (
+              <div key={`m${i}`} className="inv-row" title={m.note} style={{ alignItems: 'center' }}>
+                <span className="ir-name">🧬 {m.label}</span>
+                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                  mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
+                </span>
+              </div>
+            ))}
             {(hero.traumas ?? []).map((t, i) => (
               <div key={`t${i}`} className="inv-row" title={t.note} style={{ alignItems: 'center' }}>
                 <span className="ir-name">🩼 {t.label}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>

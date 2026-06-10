@@ -57,6 +57,8 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
+import { gainCorruption } from './corruptionFlow';
+import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
@@ -64,7 +66,7 @@ import type {
   Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingDefense,
-  PendingDisengage, PendingCast, PendingHeal,
+  PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -178,6 +180,8 @@ export interface GameState {
   inventory: string[];
   money: Money;
   pendingTest: PendingTest | null;
+  /** Exposition à une Influence corruptrice en cours (LDB 19) — Test différé par modale. */
+  pendingCorruption: PendingCorruption | null;
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
@@ -311,7 +315,15 @@ export interface GameState {
   testReroll: () => void;
   /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
   testBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté (même déjà relancé). */
+  testDarkPact: () => void;
   resolveTest: () => void;
+  /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
+  corruptionRoll: () => void;
+  corruptionReroll: () => void;
+  corruptionBonusSL: () => void;
+  corruptionDarkPact: () => void;
+  resolveCorruption: () => void;
   closeDocument: () => void;
 
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
@@ -384,6 +396,8 @@ export interface GameState {
   castRoll: () => void;
   castReroll: () => void;
   castBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
+  castDarkPact: () => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -427,6 +441,8 @@ export interface GameState {
   attackRoll: () => void;
   attackReroll: () => void;
   attackBonusSL: () => void;
+  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'attaque ratée (même déjà relancée). */
+  attackDarkPact: () => void;
   attackConfirm: () => void;
   attackCancel: () => void;
   /** Balayage (Frappe Mortelle, LDB 14 l.12) : enchaîne l'attaque sur une cible adjacente (ouvre une
@@ -597,6 +613,7 @@ export const useGame = create<GameState>((set, get) => ({
   inventory: [],
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
+  pendingCorruption: null,
   pendingBargain: null,
   pendingAppraise: null,
   pendingAttack: null,
@@ -703,6 +720,7 @@ export const useGame = create<GameState>((set, get) => ({
       dialogue: null,
       battle: null,
       pendingTest: null,
+      pendingCorruption: null,
       pendingAttack: null,
       pendingReload: null,
       pendingStateRecovery: null,
@@ -1223,6 +1241,22 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
     caster.fortune = (caster.fortune ?? 0) - 1;
     const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
+    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
+  },
+  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une incantation dont le
+   *  jet propre est raté — même après la relance de Chance, répétable. */
+  castDarkPact: () => {
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.result) return;
+    if (pc.result.roll > 0 && pc.result.roll <= pc.result.target) return; // jet propre réussi → rien à pactiser
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || caster.kind !== 'hero' || !target || !spell) return;
+    for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
+    const res = pc.missile
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
     set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   castConfirm: () => {
@@ -1938,6 +1972,20 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
   },
+  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une attaque dont le jet
+   *  propre est raté — même après la relance de Chance, répétable (chaque usage corrompt). */
+  attackDarkPact: () => {
+    const { battle, pendingAttack: pa } = get();
+    if (!battle || !pa || !pa.result) return;
+    if (pa.dualSecond) return; // jet imposé (d100 inversé) — pas de relance possible
+    if (pa.result.attackerDetail?.success) return; // on ne pactise que sur un Test RATÉ
+    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+    const target = battle.combatants.find((c) => c.id === pa.targetId);
+    if (!attacker || attacker.kind !== 'hero' || !target) return;
+    for (const l of gainCorruption(get, set, attacker, 1)) get().log(l);
+    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
+    if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id }, battle: { ...get().battle! } });
+  },
   attackConfirm: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -2499,6 +2547,29 @@ export const useGame = create<GameState>((set, get) => ({
   /** Chance : relance (LDB Destin) / « +1 DR » (LDB ch.17 l.26), cf. spec `test` de rollFlows. */
   testReroll: () => FLOWS.test.reroll(get, set),
   testBonusSL: () => FLOWS.test.bonusSL(get, set),
+  testDarkPact: () => FLOWS.test.darkPact(get, set),
+
+  /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
+  corruptionRoll: () => FLOWS.corruption.roll(get, set),
+  corruptionReroll: () => FLOWS.corruption.reroll(get, set),
+  corruptionBonusSL: () => FLOWS.corruption.bonusSL(get, set),
+  corruptionDarkPact: () => FLOWS.corruption.darkPact(get, set),
+  /** Acquitte l'exposition : Points de Corruption selon niveau + DR (puis seuil → mutation). */
+  resolveCorruption: () => {
+    const pc = get().pendingCorruption;
+    if (!pc || pc.roll == null) return;
+    set({ pendingCorruption: null });
+    const hero = actorIn(get(), pc.heroId);
+    if (!hero) return;
+    const gain = corruptionGain(pc.level, !!pc.success, pc.sl ?? 0);
+    if (gain <= 0) {
+      get().log(`${hero.name} repousse l'Influence corruptrice (${pc.skill} ${pc.roll}/${pc.target}).`);
+      return;
+    }
+    const lines = gainCorruption(get, set, hero, gain);
+    for (const l of lines) get().log(l);
+    set({ ...touchActors(get()) });
+  },
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */
   resolveTest: () => {
