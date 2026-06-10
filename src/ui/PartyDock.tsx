@@ -8,9 +8,11 @@ import type { Combatant } from '../engine/types';
  * du champ), PV chiffrés DANS le portrait, états à droite ; tap = fiche perso (CharacterSheet).
  * En combat, passer la version « vivante » des héros (battle.combatants). Pur à props.
  */
-export function PartyDock({ heroes, activeId, onOpen }: {
+export function PartyDock({ heroes, activeId, targeting, onOpen }: {
   heroes: Combatant[];
   activeId: string | null;
+  /** Action de CIBLAGE en cours (#21) : le clic sur une tuile CIBLE ce héros (titre adapté). */
+  targeting?: boolean;
   onOpen: (id: string) => void;
 }) {
   return (
@@ -24,7 +26,7 @@ export function PartyDock({ heroes, activeId, onOpen }: {
           active={c.id === activeId}
           showPv
           onClick={() => onOpen(c.id)}
-          title={`${c.name} — fiche du personnage`}
+          title={targeting ? `${c.name} — cibler` : `${c.name} — fiche du personnage`}
         />
       ))}
     </div>

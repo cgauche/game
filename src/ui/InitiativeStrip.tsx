@@ -22,6 +22,8 @@ export interface InitiativeStripProps {
   /** Ids des combattants pouvant « agir en premier » (canActFirst, calculé par CampaignView). */
   canFirstIds: string[];
   inspectEnabled: boolean;
+  /** Action de CIBLAGE en cours (#21) : le clic sur une tuile CIBLE ce combattant (titre adapté). */
+  targeting?: boolean;
   onToggleInspect: () => void;
   onInspect?: (id: string) => void;
   onPromote: (id: string) => void;
@@ -43,7 +45,7 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                 size={40}
                 active={!p.over && i === p.turn}
                 onClick={p.onInspect ? () => p.onInspect!(id) : undefined}
-                title={p.onInspect ? `${c.name} — inspecter` : c.name}
+                title={p.targeting ? `${c.name} — cibler` : p.onInspect ? `${c.name} — inspecter` : c.name}
               />
               {p.canFirstIds.includes(id) && (
                 <button

@@ -88,6 +88,7 @@ export function CampaignView() {
             pendingRound={pendingRoundStart?.round ?? null}
             canFirstIds={canFirstIds}
             inspectEnabled={inspectEnabled}
+            targeting={isTargeting}
             onToggleInspect={toggleInspect}
             onInspect={isTargeting || inspectEnabled ? onStripPortrait : undefined}
             onPromote={roundStartPromote}
@@ -95,7 +96,7 @@ export function CampaignView() {
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} />
-        <PartyDock heroes={dockHeroes} activeId={activeId} onOpen={onDockPortrait} />
+        <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls
           zoom={zoom}
