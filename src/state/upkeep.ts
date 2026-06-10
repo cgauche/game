@@ -30,6 +30,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
+import { restoreSuppressedPsych } from '../engine/psychology';
 import { tickTraumaRecovery } from '../engine/trauma';
 import { bus, EVT } from './bus';
 
@@ -60,6 +61,7 @@ export function purgeClockEffects(get: Get, set: Set): void {
       for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe.`);
       h.activeEffects = h.activeEffects!.filter((e) => !(e.untilTime != null && e.untilTime <= now));
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
+      restoreSuppressedPsych(h, fx); // Traits psy suspendus (Baume, LDB 42) restitués
     }
   }
   if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });

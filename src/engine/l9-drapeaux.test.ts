@@ -3,7 +3,7 @@ import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
 import { hasActiveFlag, consumeActiveFlag } from './activeFlags';
 import { applyOps } from './ops';
-import { addCondition, hasCondition, combatTestPenalty, testStatePenalty } from './conditions';
+import { addCondition, hasCondition, combatTestPenalty, testStatePenalty, endOfRound } from './conditions';
 import { rollCritical } from './critical';
 import { MIRACLES_SHALLYA } from '../data/spellspecs/miracles-shallya';
 import { BENEDICTIONS } from '../data/spellspecs/benedictions';
@@ -128,6 +128,59 @@ describe('Bénédiction de Sauvagerie — « deux lancers, choisissez le meilleu
   it('spec curée : Bénédiction de Chance porte l’op freeReroll', () => {
     const spec = BENEDICTIONS.find((s) => s.label === 'Bénédiction de Chance')!;
     expect(spec.ops.some((o) => o.op === 'freeReroll')).toBe(true);
+  });
+});
+
+describe('Baume pour un esprit blessé — « Tous les Traits Psychologiques sont retirés pour la durée » (LDB 42)', () => {
+  it('op suppressPsych : déplace psychTraits dans l’effet porteur et purge psychState', () => {
+    const c = mk({
+      psychTraits: [{ type: 'animosite', cible: 'Elfes' }, { type: 'phobie', cible: 'Serpents', indice: 1 }],
+      psychState: [{ type: 'animosite', cible: 'Elfes', active: true }],
+    });
+    const lines = applyOps(c, [{ op: 'suppressPsych' }], { label: 'Baume pour un esprit blessé', defaultDurationRounds: 9999, defaultUntilTime: 120 });
+    expect(c.psychTraits).toEqual([]);
+    expect(c.psychState).toEqual([]);
+    const eff = c.activeEffects?.find((e) => e.suppressedPsych);
+    expect(eff?.suppressedPsych).toHaveLength(2);
+    expect(eff?.untilTime).toBe(120);
+    expect(lines.join(' ')).toMatch(/Traits? psychologiques?/i);
+  });
+  it('expiration en fin de Round : les Traits psy suspendus sont restitués', () => {
+    const c = mk({ psychTraits: [{ type: 'haine', cible: 'Skavens' }] });
+    applyOps(c, [{ op: 'suppressPsych' }], { label: 'Baume', defaultDurationRounds: 1 });
+    expect(c.psychTraits).toEqual([]);
+    endOfRound(c); // l'effet expire (1 round) → restitution
+    expect(c.psychTraits).toEqual([{ type: 'haine', cible: 'Skavens' }]);
+    expect(c.activeEffects?.some((e) => e.suppressedPsych)).toBe(false);
+  });
+  it('cible sans Trait psy : journal honnête, pas d’effet porteur', () => {
+    const c = mk();
+    const lines = applyOps(c, [{ op: 'suppressPsych' }], { label: 'Baume', defaultDurationRounds: 3 });
+    expect(c.activeEffects?.some((e) => e.suppressedPsych) ?? false).toBe(false);
+    expect(lines.join(' ')).toMatch(/aucun Trait/i);
+  });
+  it('spec curée : Baume porte l’op suppressPsych', () => {
+    const spec = MIRACLES_SHALLYA.find((s) => s.label === 'Baume pour un esprit blessé')!;
+    expect(spec.ops.some((o) => o.op === 'suppressPsych')).toBe(true);
+  });
+});
+
+describe("N'écoutez point la Sorcière — « −20 aux Tests de Langue (Magick) […] dans les (BSoc) mètres » (LDB 42)", () => {
+  it('op castWard : pose l’aura au rayon BSoc, élargie de +BSoc par +2 DR', () => {
+    const priest = mk({ id: 'p', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 40 } as Combatant['characteristics'] });
+    applyOps(priest, [
+      { op: 'castWard', radius: { bonusOf: 'Soc' }, perSL: { every: 2, radiusFormula: { bonusOf: 'Soc' } } },
+    ], { caster: priest, label: 'N’écoutez point la Sorcière', defaultDurationRounds: 4, sl: 4 });
+    const eff = priest.activeEffects?.find((e) => e.castWard);
+    expect(eff?.castWard?.radiusMeters).toBe(4 + 2 * 4); // BSoc 4 + 2 paliers (+2 DR) × BSoc
+    expect(eff?.roundsLeft).toBe(4);
+  });
+  it('sans DR excédentaire : rayon de base seul', () => {
+    const priest = mk({ id: 'p', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 40 } as Combatant['characteristics'] });
+    applyOps(priest, [
+      { op: 'castWard', radius: { bonusOf: 'Soc' }, perSL: { every: 2, radiusFormula: { bonusOf: 'Soc' } } },
+    ], { caster: priest, label: 'N’écoutez point la Sorcière', defaultDurationRounds: 4, sl: 0 });
+    expect(priest.activeEffects?.find((e) => e.castWard)?.castWard?.radiusMeters).toBe(4);
   });
 });
 

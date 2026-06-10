@@ -422,6 +422,9 @@ export function resolveCasting(
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
   focusedNI0 = false,
+  /** Modificateur ponctuel au Test, calculé par l'ÉTAT qui connaît la géométrie (ex.
+   *  « N'écoutez point la Sorcière », LDB 42 : −20 si le Sort cible la zone du prêtre). */
+  extraMod = 0,
 ): CastResult {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) {
@@ -436,7 +439,7 @@ export function resolveCasting(
       log: `${caster.name} ne maîtrise pas ${skill} et ne peut pas incanter ${spell.label}.`,
     };
   }
-  const value = castingValue(caster, info.skill, info.spec);
+  const value = castingValue(caster, info.skill, info.spec) + extraMod;
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
   // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
@@ -540,8 +543,9 @@ export function resolveMagicMissile(
   spell: SpellLike,
   rng: RNG = defaultRNG,
   focusedNI0 = false,
+  extraMod = 0,
 ): MissileResult {
-  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0);
+  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod);
   return evaluateMissile(caster, target, spell, cr);
 }
 

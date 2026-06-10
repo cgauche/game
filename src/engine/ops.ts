@@ -23,6 +23,7 @@ import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
 import { damageLeatherArmour } from './items';
+import { suppressPsychTraits } from './psychology';
 import {
   ActiveEffect,
   CHAR_LABELS,
@@ -147,6 +148,13 @@ export type GameOp =
   /** Putréfaction (LDB 47) : « le cuir se racornit (perdant 1 PA à 1 Localisation) » — seule la
    *  matière `cuir` est mécanisée (pièce d'armure portée) ; le reste (denrées, vêtements) reste MJ. */
   | { op: 'damageArmour'; material: 'cuir' }
+  /** Baume pour un esprit blessé (LDB 42) : « Tous les Traits Psychologiques sont retirés pour la
+   *  durée du Miracle » — Traits psy SUSPENDUS (portés par l'effet), restitués à l'expiration. */
+  | { op: 'suppressPsych' }
+  /** N'écoutez point la Sorcière (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou quelqu'un
+   *  dans les (BSoc) mètres subissent -20 aux Tests de Langue (Magick) » — aura portée par la cible
+   *  (le prêtre), rayon élargi « +BSoc m par +2 DR » via `perSL.radiusFormula`. */
+  | { op: 'castWard'; radius: Formula; perSL?: { every: number; radiusFormula: Formula } }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -469,6 +477,38 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(loc
           ? `${target.name} : le cuir de son armure se racornit — −1 PA (${HIT_LOCATION_LABELS[loc]}).`
           : `${target.name} ne porte pas de cuir à pourrir (autres matières organiques : arbitrage MJ).`);
+        break;
+      }
+      case 'suppressPsych': {
+        const suppressed = suppressPsychTraits(target);
+        if (!suppressed) {
+          lines.push(`${target.name} n'a aucun Trait psychologique à apaiser.`);
+          break;
+        }
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          suppressedPsych: suppressed,
+        });
+        lines.push(`${target.name} : Traits psychologiques apaisés pour la durée (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'castWard': {
+        let radius = Math.max(0, resolveFormula(o.radius, ref, rng));
+        if (o.perSL) {
+          radius += Math.floor(Math.max(0, ctx.sl ?? 0) / Math.max(1, o.perSL.every))
+            * Math.max(0, resolveFormula(o.perSL.radiusFormula, ref, rng));
+        }
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          castWard: { radiusMeters: radius },
+        });
+        lines.push(`${target.name} : les Sorts visant la zone (${radius} m) subissent −20 en Langue (Magick) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'narrative':

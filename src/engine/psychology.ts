@@ -109,6 +109,25 @@ export function parsePsychTraits(traits: string[]): { causesPeur?: number; cause
   return out;
 }
 
+/** Baume pour un esprit blessé (LDB 42) : « Tous les Traits Psychologiques sont retirés pour la
+ *  durée du Miracle » — les Traits psy de `c` sont DÉPLACÉS hors de la fiche (à porter par
+ *  l'ActiveEffect `suppressedPsych`) ; les afflictions actives (`psychState`), dérivées des
+ *  Traits, sont apaisées avec eux. Retourne les Traits suspendus, ou null s'il n'y en a aucun. */
+export function suppressPsychTraits(c: Combatant): PsychTrait[] | null {
+  const traits = c.psychTraits ?? [];
+  if (!traits.length) return null;
+  c.psychTraits = [];
+  c.psychState = [];
+  return traits;
+}
+
+/** Restitue les Traits psy suspendus par les effets EXPIRÉS (fin de Round OU échéance d'horloge). */
+export function restoreSuppressedPsych(c: Combatant, expired: { suppressedPsych?: PsychTrait[] }[]): void {
+  for (const e of expired) {
+    if (e.suppressedPsych?.length) c.psychTraits = [...(c.psychTraits ?? []), ...e.suppressedPsych];
+  }
+}
+
 /** Peur/Terreur inspirée par la Taille (LDB 85 l.317-318), du point de vue de `self` face à `foe` :
  *  écart ≥ 1 cat. → Peur (Indice = écart) ; ≥ 2 → Terreur. `foe` plus petit/égal → rien. */
 export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { kind: 'peur' | 'terreur'; indice: number } | null {

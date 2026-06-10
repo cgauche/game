@@ -22,10 +22,13 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: 'Baume pour un esprit blessé',
+    // « Tous les Traits Psychologiques sont retirés pour la durée du Miracle » — op suppressPsych
+    // (Traits suspendus, restitués à l'échéance d'horloge : (BSoc) minutes via untilTime, #T3).
     ops: [
-      { op: 'narrative', text: 'Baume pour un esprit blessé : Traits psychologiques retirés pour la durée, puis sommeil réparateur jusqu’à l’aube (cible non volontaire : Test de Calme +0 pour résister) — arbitrage MJ.' },
+      { op: 'suppressPsych' },
+      { op: 'narrative', text: 'Baume pour un esprit blessé : sommeil réparateur jusqu’à l’aube si non dérangé (cible non volontaire : Test de Calme +0 pour résister) — arbitrage MJ.' },
     ],
-    durationRounds: null, // (Bonus de Sociabilité) minutes — hors échelle tactique
+    durationRounds: null, // (Bonus de Sociabilité) minutes — durée d'horloge (cascade #T3)
     curated: true,
     source: 'LDB 42 « Baume pour un esprit blessé »',
   },

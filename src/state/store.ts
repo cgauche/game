@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
-  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast,
+  disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty,
   effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
@@ -1295,9 +1295,11 @@ export const useGame = create<GameState>((set, get) => ({
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell) return;
+    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
     const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
-      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
+    if (ward) get().log(`${caster.name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).`);
     // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
     // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
     const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
@@ -1335,9 +1337,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!caster || !target || !spell || (!free && (caster.fortune ?? 0) <= 0)) return;
     if (free) consumeActiveFlag(caster, 'freeReroll');
     else caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
+    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
     const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
-      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
     set({ pendingCast: { ...pc, result: res, rerolled: true }, ...touchActors(get()) });
   },
   /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
@@ -1363,9 +1366,10 @@ export const useGame = create<GameState>((set, get) => ({
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || caster.kind !== 'hero' || !target || !spell) return;
     for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
+    const ward = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
     const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused)
-      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused);
+      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
+      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
     set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   castConfirm: () => {

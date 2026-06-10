@@ -72,11 +72,12 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   },
   {
     label: "N'écoutez point la Sorcière",
-    // « Tous les Sorts qui ciblent quelque chose dans les (BSoc) mètres subissent −20 aux
-    //   Tests de Langue (Magick). » — aura anti-magie : non modélisable par cible (la pénalité
-    //   frappe les LANCEURS adverses selon leur cible) → journalisé fidèlement.
+    // « Tous les Sorts qui ciblent quelque chose ou quelqu'un dans les (BSoc) mètres subissent une
+    //   pénalité de -20 aux Tests de Langue (Magick) […] Pour chaque +2 DR, vous pouvez augmenter
+    //   la zone d'effet d'un nombre de mètres égal à votre Bonus de Sociabilité. » — aura castWard
+    //   portée par le prêtre, consommée au calcul du Test d'incantation (castWardPenalty).
     ops: [
-      { op: 'narrative', text: 'N’écoutez point la Sorcière : −20 aux Tests de Langue (Magick) de tout Sort ciblant la zone de BSoc mètres autour du prêtre (+BSoc m / −10 par +2 DR) — arbitrage MJ.' },
+      { op: 'castWard', radius: { bonusOf: 'Soc' }, perSL: { every: 2, radiusFormula: { bonusOf: 'Soc' } } },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

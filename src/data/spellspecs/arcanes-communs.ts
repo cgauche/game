@@ -145,7 +145,13 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   },
   {
     label: 'Souffle',
-    ops: [{ op: 'narrative', text: 'Souffle : attaque de Souffle (type selon votre Domaine) — Projectile magique de Dégâts = votre Bonus d’Endurance.' }],
+    // « Vous effectuez immédiatement une attaque de Souffle, comme si vous aviez dépensé 2 Avantages
+    //   pour activer le Trait de créature Souffle (voir page 341). Souffle est un Projectile magique
+    //   dont les Dégâts sont égaux à votre Bonus d'Endurance. Le MJ détermine quel type d'attaque de
+    //   Souffle correspond le mieux à votre Talent Magie des Arcanes. » — délégué à l'attaque de
+    //   ZONE du Trait (breathAttack), Type mappé du Domaine (Feu/Cieux/Métal/Ombres ; sinon Dégâts purs).
+    breathAttack: true,
+    ops: [],
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.244 « Souffle »',

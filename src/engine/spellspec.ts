@@ -49,6 +49,11 @@ export interface SpellSpec {
    *  en ligne (direction lanceur→cible) jusqu'à l'obstacle ; la collision est journalisée
    *  (Dégâts = distance restante, arbitrage MJ — rien d'inventé). */
   pushMeters?: Formula;
+  /** Sort « Souffle » (LDB 47 p.244) : « Vous effectuez immédiatement une attaque de Souffle,
+   *  comme si vous aviez dépensé 2 Avantages pour activer le Trait de créature Souffle. […]
+   *  Dégâts égaux à votre Bonus d'Endurance. » — délégué à l'attaque de ZONE du trait
+   *  (applyAreaAttack), centrée sur la cible du sort ; Type selon le Domaine du lanceur. */
+  breathAttack?: true;
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */

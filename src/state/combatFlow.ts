@@ -2026,7 +2026,7 @@ function emitCreatureAttackAnim(attacker: Combatant, kind: string): void {
  *  cible : Dégâts (mitigés BE+PA, sauf ignore-PA des Types Feu/Électricité/Poison) + effet de Type
  *  (Enflammé/Sonné/Empoisonné) ou Sonné (Vomi) + corrosion (Armure/Arme −1). Instantané (pas de modale
  *  IA), résolution opposée auto. Ne consomme pas l'Action. RAW : LDB 85 Souffle / Vomissement. */
-export function applyAreaAttack(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack): void {
+export function applyAreaAttack(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos) return;
   attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
@@ -2034,8 +2034,14 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
   const be = bonus(effectiveChar(attacker, 'E'));
   const rangeTiles = Math.max(1, Math.ceil((isVomi ? be : be + 20) / 2)); // 1 case = 2 m
   const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= rangeTiles);
-  if (!foes.length) return;
-  const center = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+  // Centre IMPOSÉ (sort « Souffle », LDB 47 : la cible du sort est le point d'impact) si valide ;
+  // sinon comportement trait : cible visible la plus proche.
+  const center = centerOverride && centerOverride.pos && !isOutOfAction(centerOverride) && chebyshev(attacker.pos, centerOverride.pos) <= rangeTiles
+    ? centerOverride
+    : foes.length
+      ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c))
+      : null;
+  if (!center) return;
   const blast = isVomi ? 1 : Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)); // Souffle : BF de la cible ; Vomi : 2 m
   const affected = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(center.pos!, c.pos) <= blast);
   const type = (a.type ?? '').toLowerCase();
@@ -2388,10 +2394,15 @@ export function castSpell(
     get().log(`${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
     return;
   }
+  // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
+  // TRAIT (BE+20 m, LDB 85), pas le champ Portée du sort ; résolu comme zone, pas comme Projectile.
+  const breathSpell = !!spellSpecFor(spell).breathAttack;
   // Portée (LDB 47) : cible directe hors de portée du sort → refus AVANT la modale (parité ZdE/tir).
   // `range` null = portée non chiffrable (« le lanceur », « au toucher », spécial) → pas de gate.
   if (get().battle && caster.pos && target.pos && caster.id !== target.id) {
-    const range = spellRangeTiles(spell.range, caster);
+    const range = breathSpell
+      ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'E')) + 20) / 2))
+      : spellRangeTiles(spell.range, caster);
     if (range != null && combatDistance(caster, target) > range) {
       get().log(`${spell.label} : cible hors de portée (${range} cases).`);
       return;
@@ -2400,7 +2411,7 @@ export function castSpell(
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
   set({
     pendingCast: {
-      casterId: caster.id, targetId: target.id, spellLabel: label, missile: isMagicMissile(spell),
+      casterId: caster.id, targetId: target.id, spellLabel: label, missile: breathSpell ? false : isMagicMissile(spell),
       focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
     },
   });
@@ -2712,6 +2723,22 @@ export function applyCast(
           if (r.collided) logLines.push(`${t.name} percute un obstacle (Dégâts = distance restante — arbitrage MJ).`);
         }
       }
+      // Sort « Souffle » (LDB 47 p.244) : « comme si vous aviez dépensé 2 Avantages pour activer
+      // le Trait Souffle » — délégué à l'attaque de ZONE du Trait, centrée sur la CIBLE du sort,
+      // Dégâts = Bonus d'Endurance du lanceur, Type mappé du Domaine. Sans coût d'Avantage (le
+      // sort EST l'activation). Hors combat : pas de grille → journalisé.
+      if (spec.breathAttack) {
+        if (battle && caster.pos) {
+          const type = domainBreathType(caster);
+          applyAreaAttack(get, set, caster, {
+            kind: 'souffle', label: 'Souffle', bonus: bonus(effectiveChar(caster, 'E')),
+            trigger: 'free', avantage: 0, aoe: true, magic: true, ...(type ? { type } : {}),
+          }, target);
+          if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (LDB 47 : « Le MJ détermine quel type… »).');
+        } else {
+          logLines.push(`${caster.name} crache un Souffle — hors combat, effet narratif (arbitrage MJ).`);
+        }
+      }
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
       // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
@@ -2767,6 +2794,37 @@ export function applyCast(
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
 export function castInfoIsPrayer(type: string): boolean {
   return type === 'Béni' || type === 'Invocation';
+}
+
+/** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :
+ *  « Le MJ détermine quel type d'attaque de Souffle correspond le mieux à votre Talent Magie des
+ *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
+ *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
+function domainBreathType(caster: Combatant): string | undefined {
+  const m = caster.talents.map((t) => t.name.match(/^Magie des Arcanes \(([^)]+)\)$/)).find(Boolean);
+  const domain = (m?.[1] ?? '').toLowerCase();
+  if (/feu/.test(domain)) return 'Feu';
+  if (/cieux/.test(domain)) return 'Électricité';
+  if (/m[ée]tal/.test(domain)) return 'Corrosif';
+  if (/ombre/.test(domain)) return 'Fumée';
+  return undefined;
+}
+
+/** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou
+ *  quelqu'un dans les (BSoc) mètres subissent une pénalité de -20 aux Tests de Langue (Magick),
+ *  en plus de toute autre pénalité. » — −20 si la CIBLE du Sort est dans le rayon d'un porteur
+ *  de l'aura (`ActiveEffect.castWard`) encore en état de combattre. Sorts seulement (les Prières
+ *  passent par Prière, pas Langue). Une fois, même sous plusieurs auras (toutes à −20). Hors
+ *  combat (pas de géométrie), l'aura ne s'applique pas — limitation documentée. */
+export function castWardPenalty(s: GameState, target: Combatant, spell: { type: string }): number {
+  if (castInfoIsPrayer(spell.type)) return 0;
+  if (!target.pos) return 0;
+  const warded = (s.battle?.combatants ?? []).some(
+    (w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some(
+      (e) => e.castWard && combatDistance(w, target) <= Math.max(1, Math.ceil(e.castWard.radiusMeters / 2)),
+    ),
+  );
+  return warded ? -20 : 0;
 }
 
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
