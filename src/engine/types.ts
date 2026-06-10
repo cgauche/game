@@ -160,12 +160,34 @@ export interface ActiveEffect {
   bonus: number;
   /** Rounds restants avant dissipation. */
   roundsLeft: number;
+  /** Échéance d'HORLOGE (minutes `gameTime`) d'un buff à durée en minutes/heures/jours (LDB 47 —
+   *  « (Bonus de FM) heures », « Jusqu'au lever du soleil »…) : purgé par la cascade #T3
+   *  (`purgeClockEffects`) ; `roundsLeft` reste à COMBAT_PERSIST en attendant. */
+  untilTime?: number;
   /** État RÉCURRENT (« la cible gagne 1 État X par Round ») : ré-appliqué à chaque fin de
    *  Round tant que l'effet dure (sorts à État récurrent — specs curées). */
   condPerRound?: { name: string; value: number };
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;
+  /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : la chaîne
+   *  exacte posée dans `c.traits`, retirée (une instance) à l'expiration (engine/grantedTraits). */
+  grantedTrait?: string;
+  /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : lu par
+   *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
+   *  la fiche/avancement ne voient que les talents possédés). */
+  grantedTalent?: string;
+  /** Enchantement d'ARME temporisé (op `enchantWeapon` — B. de Droiture, Marteau ardent, Épée
+   *  ardente de Rhuin, Arme aethyrique) : porté par le PORTEUR (pas l'objet — `recomputeLoadout`
+   *  l'écraserait), fusionné à l'arme au moment de la résolution (`enchantedWeapon`). */
+  weaponEnchant?: {
+    /** Atouts ajoutés (« Magique » → touche l'Éthéré ; « Percutante »…). */
+    addQualities?: string[];
+    /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6). */
+    damageBonus?: number;
+    /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre). */
+    onHitConditions?: { name: string; value?: number }[];
+  };
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

@@ -90,7 +90,7 @@ import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
-import { reachable, fleeReachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
 import { sizeFootprint, combatDistance } from './footprint';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
@@ -120,8 +120,9 @@ export interface BattleState {
   turn: number;
   round: number;
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
-   *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null;
+   *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
+   *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -1565,6 +1566,22 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // TÉLÉPORTATION (Jalon 2.6 — sort « Téléportation », LDB 47) : après l'Appliquer, le lanceur
+    // choisit sa case d'arrivée parmi les cases en surbrillance (survol des obstacles).
+    if (battle.action === 'teleport') {
+      const k = `${pt.x},${pt.y}`;
+      if (!battle.reachable.has(k)) return;
+      const from = { ...active.pos! };
+      const mount = mountOf(battle, active);
+      active.pos = { ...pt };
+      if (mount) mount.pos = { ...pt }; // couple cavalier↔monture solidaire (comme le déplacement)
+      get().faceFromPath(active.id, [from, pt]);
+      bus.emit(EVT.ANIM_MOVE, { id: active.id, path: [{ ...pt }] });
+      if (mount) bus.emit(EVT.ANIM_MOVE, { id: mount.id, path: [{ ...pt }] });
+      set({ battle: { ...battle, action: null, reachable: new Map(), preview: null, log: [...battle.log, ev('move', `${active.name} se téléporte.`, active.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
     // Sort à ZONE D'EFFET (LDB 47 l.44) : en mode incantation, un clic-CASE cible la zone —
     // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
     if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {
@@ -2719,7 +2736,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: {
         ...battle,
         action: null, // mouvement libre rouvert (clic-sol), sans pénalité (l.87) ; Action préservée
-        reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
+        reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
         log: [...battle.log, ev('flee', `${mover.name} se désengage en sacrifiant son Avantage.`, mover.id)],
       },
     });
@@ -2867,7 +2884,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, mover);
       log.push(ev('flee', `${mover.name} se désengage (Esquive réussie, +1 Avantage).`, mover.id, foe.id));
       set({
-        battle: { ...battle, acted: true, action: null, reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
+        battle: { ...battle, acted: true, action: null, reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
       });
     } else if (pd.result === 'tie') {
       // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
@@ -2992,18 +3009,8 @@ export const useGame = create<GameState>((set, get) => ({
         if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
       }
     }
-    // Contrecoups d'incantation à durée d'HORLOGE (minutes/jours — Drain de puissance,
-    // « Pensez à vos actes »…) : purge à l'échéance (LDB 46/40).
-    const now = get().gameTime;
-    const expiredLog: string[] = [];
-    for (const h of get().party) {
-      const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
-      if (!exp.length) continue;
-      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
-      h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
-    }
-    if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
-    // Entretien quotidien (#T2 — rations/faim) : traite les éventuels franchissements de jour.
+    // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à
+    // durée d'horloge (contrecoups LDB 46/40) : traite les éventuels franchissements de jour.
     runDailyUpkeep(get, set);
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).

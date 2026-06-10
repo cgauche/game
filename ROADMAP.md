@@ -438,7 +438,7 @@ spec : `…/specs/2026-06-07-taille-combat-design.md` ; plan : `…/plans/2026-0
   *(Queue/Langue : ✅ attaques de créature, Jalon 1. Immunité Psychologie : ✅ T5. Mécanique ET rendu en selle = complets et testés. Seul reste sur ce poste : les **clips d'attaque montés** (différés, coût tokens) + la **recette navigateur**.)*
 - **Limites documentées du lot livré** (assumées, pas des bugs) : Frappe Mortelle « à portée » = **adjacent** (Allonge/reach non modélisée) ; Frappe Mortelle de **base** (tuer-en-un-coup, combattants de même Taille) hors-périmètre — seul l'**écart** de Taille déclenche le balayage ; **Force opposée** = helper pur **sans consommateur** (pas de système de lutte/empoignade modélisé).
 
-## 🎯 Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(quasi complet — #1 Qualité ✓ ; Temps #T1 + #T1c + **#T2 Voyage & Nourriture** ✓ ; #2 Marchand ✓ (v1 + lot 2 + prix paramétrables + re-stock) ; #3 Arène ✓ ; reste #T3 Cascade EN SUSPENS)*
+## ✅ Jalon 1.6 — Qualité d'objet, Temps & Voyage, Marchand & Arène *(COMPLET — #1 Qualité ✓ ; Temps #T1 + #T1c + #T2 ✓ ; **#T3 Cascade ✓ (2026-06-10)** ; #2 Marchand ✓ ; #3 Arène ✓)*
 
 Spec de conception : `docs/superpowers/specs/2026-06-07-qualite-objet-fabrication-design.md`.
 Né d'une demande de **scénario d'arène** (vagues + loot + marchand entre les vagues) qui a fait
@@ -471,7 +471,7 @@ Ordre : **Qualité ✓ → Temps #T1 + #T1c ✓ → Marchand ✓ → (#T2 / #T3 
   - **✅ #T1 — Horloge & Calendrier impérial LIVRÉ** (2026-06-07) : module pur `clock.ts` (**calendrier impérial vérifié source FR + canon web** — EiS Annexe 3 l.20/68 « 400 j » + Fandom/Lexicanum ; 12 mois (2×32 + 10×33 = 394) + 6 intercalaires **hors semaine** + semaine de 8 jours ; **année = 400 j**), granularité **date impériale + heures**, **« tout est horodaté »** (chaque action appelle `advanceTime`), état `gameTime` + table `TIME_COST` + HUD. Départ campagne = **fin Jahrdrung 2512 CI, 08:00**. `EVT.TIME_ADVANCED` = seam #T3.
   - **✅ #T1c — Cycle jour/nuit piloté par l'horloge LIVRÉ** (2026-06-07, specs+plans `2026-06-07-cycle-jour-nuit-*`) : le jour/nuit vient de l'**heure**, plus de la scène (`ambiance` = Intérieur/Extérieur) ; **7 phases d'affichage** + obscurité binaire paramétrable (`NIGHT_WINDOW`) ; **`sceneIsDark` unique** câblé au combat (−20 tir nuit, LDB 14 l.107) + rendu ; Effet **`setTime`** (forcer une scène de nuit via trigger) ; HUD jour-de-semaine + phase + heure ; exposition éditeur (ambiance + builder `setTime`).
   - **✅ #T2 — Voyage & Nourriture LIVRÉ** *(2026-06-10)* : **carte du monde** (`state/worldMap.ts` — lieux/routes au niveau PROJET, 100 % donnée, **onglet « Monde » de l'éditeur** : lieux par glisser, routes, km, modes, prix, vitesses, péripéties — **tout paramétrable**) ; **voyage RAW** (`engine/travel.ts` + `state/travelFlow.ts`, source section « Voyage » LDB : vitesse = Mouvement le plus lent en km/h l.222, **6 h/jour sans Test** l.224, **marche forcée** (Résistance ou Exténué, +1 si Encombré), **diligence M6 / barge M8 + prix par km** l.207-219, `travelFatigue` d'Encombrement p.295 **enfin appliqué**, nuits de camp = repos RAW) ; **péripéties** (table d10 **verbatim** `data/peripeties.ts`, seuil 8 paramétrable + **péripéties d'AUTEUR par route** ; « Attaqués ! » → embuscade configurée, interruption + **« Reprendre le voyage »**) ; **NOURRITURE** (`engine/provisions.ts` — **Rations consommées par jour** (entretien `state/upkeep.ts`, anti-double-comptage), **Faim RAW LDB 18 l.417-422** : Tests −10 cumulatif, −10 F/E puis toutes caracs + 1d10 dégâts ignorant PA, **récup naturelle bloquée si affamé** (dette `rest.ts` levée), talent **Brouet**, effet éditeur **`mealParty`**) ; UI `WorldMapView` (🗺️) + badge « Affamé » ; **projet v2** (`{ scenes, worldMap }`, rétro-compat) ; carte Tome 1 + scénario de test **15-voyage** ; ~60 tests.
-  - **⏸️ #T3 — Cascade RAW** *(EN SUSPENS, sauf re-stock)* : ce que le temps déclenche sur `EVT.TIME_ADVANCED` — guérison (LDB 18), Fatigue/Exténué, maladies (LDB 20), Corruption. **Le re-stock marchand est LIVRÉ par anticipation** (branché direct sur l'horloge `gameTime`, sans la cascade complète — cf. #2 Marchand).
+  - **✅ #T3 — Cascade RAW LIVRÉ** *(2026-06-10)* : l'entretien quotidien (`state/upkeep.ts`, couture unique appelée par advanceTime/repos/voyage, anti-double-comptage `lastUpkeepDay`) décompte désormais par jour franchi — repos OU PAS : **maladies** (LDB 20 : incubation/durée en jours CALENDAIRES, `dailyDiseaseUpkeep` extrait de `restRecovery` + soins d'un soignant au repos) et **convalescence des Blessures critiques** (LDB 18 l.317 : « 30 − BE jours », calendaire). `purgeClockEffects` (à CHAQUE passage d'horloge) dissipe les contrecoups `castPenalties.untilTime` **et** les buffs de sort à durée d'horloge — **bug corrigé** : la purge ne vivait que dans `advanceTime`, un contrecoup expiré restait actif après un voyage/repos. **Corruption : vérifié à la source (LDB 19) — aucun déclencheur temporel, rien à câbler** ; Fatigue/Exténué déjà couverts (#T2 voyage + repos) ; re-stock marchand déjà livré (cf. #2).
 - **✅ #2 — Marchand COMPLET (v1 + lot 2 + prix paramétrables)** *(2026-06-08, suite verte, RAW cité, cf. mémoire `game-marchand-v1`)* (étend **Jalon 5** « achats/marchandage, fabrication ») :
   - **v1 transactionnel** : achat/vente, **Disponibilité RAW** (LDB 59 : Commune toujours ; Limitée 30/60/90, Rare 15/30/45 par Village/Ville/Cité), **monnaie canon** (`money.ts` — CO/pa/sc), **archétype = 7ᵉ famille `defs/`** (scopé par catégorie : herboriste ≠ arquebuses), `MerchantPanel` (vue à props testable + connecté), exposition éditeur.
   - **Marchandage** (LDB 60 l.12) = Test **opposé** (gagner −10 % / **−20 % si Succès Stupéfiant DR≥6 ou talent Négociateur**) ; **achat et vente = 2 négociations distinctes** (B), **1 jet/visite chacune** ; **botch** = perdre par net DR≥6 → **marchand méfiant** (plus de marchandage la visite, C).
@@ -737,6 +737,68 @@ def, couverte ailleurs (raison documentée) ou allowlistée MJ **en conscience**
   proposée sur les Critiques « secs » du Test opposé ; Battement/Feinte/Désarmer/Assaut féroce =
   manœuvres d'Action dédiées différées (allowlist en conscience) ; Vol = IA seulement (pas de vol héros).
 
+## ✅ Jalon 2.6 — Intégration sorts ↔ systèmes : le substrat 2.5 irrigue la curation *(livré partiel — 2026-06-10)*
+
+**Origine** : audit d'intégration des 4 gros lots parallèles (Magie / #T2 Voyage / 2.5 règles
+manquantes / créateur) — la curation des sorts (Jalon 2) avait été figée AVANT que les registres
+de 2.5 n'existent : des familles entières restaient « 📜 arbitrage MJ » alors que leur substrat
+moteur était livré à côté. Relevé EXHAUSTIF des 157 sorts 📜/🟡 catégorisé à 100 % (66 curés à
+résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sorts-implementation.md`).
+
+**Livré (suite verte + commit par lot)** :
+- **Enablers d'ops** : `PerSL`/`OpsCtx.sl` (échelle « +1 par +2 DR » — applyCast fournit le DR du
+  jet) ; filtre `onlyGroups` par Groupe de la CIBLE (engine/groups) ; **buffs à durée d'HORLOGE**
+  (`ActiveEffect.untilTime` — « 1 heure », « (BFM) jours », « Jusqu'au lever du soleil » expirent
+  à l'échéance via la cascade #T3, plus à 9999 Rounds). Curés : Comète à Deux Queues (1d10+DR),
+  Enchevêtrement, Innocence immaculée, Purification (+DR En flammes, LDB 48 vérifié), Feu de l'âme
+  (En flammes aux Morts-vivants/Démons).
+- **Op `grantTrait`** (trait posé dans `c.traits` → TOUS les consommateurs existants ; psy dérivée
+  re-synchronisée, retrait d'UNE instance à l'expiration — fin de Round ET horloge) + **VOL HÉROS**
+  (`moveReachFor` route `flyReachable` sur les 8 sites de déplacement joueur — était IA-seulement).
+  Curés : Envol (Vol Agilité), Effrayant (Peur+DR), Terrifiant, Protection (9+), Perturbant, Sang
+  corrosif, Vision dans l'obscurité, Vaincre les impies (3 Haine ciblées), Couronne de Flammes.
+- **Op `grantTalent`** (porté par l'ActiveEffect, lu par `featuresOf` — la fiche ne change pas) +
+  **talent « Sans peur » MÉCANISÉ** (LDB 10 l.859, sorti de l'allowlist : immunité Peur/Terreur vs
+  l'Ennemi spécifié — `fearImmuneVs`, consommé par `fearSourceFor` + `attackModifiers`). Curés :
+  Flambeau de Vertu, Cœurs ardents (Sans peur + Cœur vaillant ; Coude-à-coude = MJ).
+- **Op `enchantWeapon`** (demande utilisateur — qualités d'objet TEMPORAIRES) : porté par le
+  PORTEUR, fusionné à l'arme à la résolution (`enchantedWeapon`) ; **nouvel Atout « Magique »**
+  au registre (→ `isMagicWeapon` → blesse l'Éthéré, LDB 85). Curés : B. de Droiture, Marteau
+  ardent de Sigmar (+BSoc + En flammes/À Terre à la touche), Épée ardente de Rhuin (+6,
+  Percutante, En flammes), Arme aethyrique (volet création d'arme = MJ).
+- **Ops maladies/soins** (croisent les moteurs 2.5 Lot D / Jalon 5) : `cureDisease` (Amère
+  catharsis, purge 1+DR/2, Exténué du malaise rendu), `reduceDiseaseDays` (B. de Convalescence,
+  1×/maladie), `preventInfection` (Cautériser → `woundDressed`), `cureCriticalWound` (Larmes de
+  Shallya — jamais une amputation).
+- **Déplacements forcés** : `SpellSpec.teleportMeters` (Téléportation — choix de case post-
+  Appliquer, mode `action:'teleport'`, survol des obstacles) + `pushMeters`/`pushAway` (Poussée —
+  recul en ligne jusqu'à l'obstacle, collision journalisée).
+- **Fix UX relevé** (question utilisateur Fléchette) : le ciblage AVANT le jet est RAW (la
+  Surincantation dépense le DR excédentaire, inconnu avant de lancer) ; petit reste UI : masquer
+  le bouton « +Durée » pour les sorts Instantanés.
+
+**Reste tracé (designs validés au plan 2026-06-10, prochaine session)** :
+- **L9 résiduel — drapeaux** : B. de Chance (`rerollNextFailed` au point de relance rollFlow),
+  B. de Sauvagerie (2 lancers de critique — passer l'attaquant à `rollCritical`), Endurance de
+  l'anachorète (ignore `testStatePenalty`), Sommeil (À Terre → Inconscient — gate d'op
+  `onlyIfCondition`), Putréfaction (−1 PA via `damageArmour`), Souffle-sort (déléguer à
+  `creatureAttacks.breath`), N'écoutez point la Sorcière (castPenalty aux lanceurs visant la
+  zone), Baume pour un esprit blessé (suspension `psychTraits` temporisée).
+- **L10 — Suffocation** (RAW LDB 18 l.424-425 : −1 PB/Round, 0 PB → Inconscient, mort après BE
+  Rounds — patron mort-lente/hémorragie) : B. de Souffle (immunité) + 2 sorts Métal/Ombres
+  (LDB 48 l.397/534) en démo de curation.
+- **L11 — Zones persistantes** : généraliser `battle.smoke[]` (TTL + LoS existants) en
+  `battle.zones[]` {tiles, rounds, blocksLoS?, onEnter?, perRound?, blocksProjectiles?} → Mur de
+  feu, Grands feux d'U'Zhul, Bouclier anti-flèches, Dôme, volet zone de Purification ; Pont
+  (walkability) si budget.
+- **L12 — Dissipation** (LDB 46 l.201-207) : contre-sort réactif (Test opposé Langue (Magick),
+  1/Round — patron `pendingDefense`) + dissiper un sort durable (Test ÉTENDU, DR ≥ NI — patron
+  Focalisation) ; Bouclier magique (+BFM DR) devient mécanique.
+- **L13 — Gates & redirections** : B. de Protection (Test de FM imposé à l'attaquant), Martyr
+  (redirection des dégâts vers le prêtre, BE doublé), Attaques en chaîne (rebond de Projectile).
+- **Différé réel assumé** : ~20 utilitaires narratifs hors grille (Bruits, Repères, Serrure
+  ouverte…), volet « Commandements divins » de B. de Conscience, contre-sort par l'IA.
+
 ## 🎯 Jalon 3 — Création de personnage complète
 
 - ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce
@@ -752,7 +814,10 @@ def, couverte ailleurs (raison documentée) ou allowlistée MJ **en conscience**
   une compétence de carrière non connue, `buyTalent` refusé hors-carrière l.97, `changeCareer`),
   **Effet de scène `giveXp`** (octroi groupe, éditable) et **fiche en onglets Fiche / Avancement**
   (`CharacterSheet.tsx` : PX, achat in/hors-carrière, complétion de niveau, changement de carrière).
-  Restent : richesse initiale, détails physiques, noms (création) ; octroi auto d'XP par victoire/jalon.
+  ✅ Richesse initiale (`rollInitialWealth` → bourse du groupe) et détails physiques (âge/taille/
+  yeux/cheveux) sont câblés dans le créateur (`creator/draft.ts`) — relevé d'audit 2026-06-10.
+  ✅ **Béni (Culte concret) octroie AUTOMATIQUEMENT les six Bénédictions du culte** (LDB 10/41
+  « reçoit les SIX » — `applyTalentAcquisition`, création + achat PX, Jalon 2.6).
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
 

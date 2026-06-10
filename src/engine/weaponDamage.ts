@@ -3,7 +3,7 @@
  * reçu réduit les Dégâts de l'arme de 1 ; à +0 (ou BF +0) l'arme est improvisée. L'Atout Incassable
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
-import { Weapon } from './types';
+import { Combatant, Weapon } from './types';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 
 /** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
@@ -26,6 +26,31 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
   const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.64)
   const reduced = flat >= 0 ? Math.max(0, flat - dt) : flat;
   return Math.max(0, (usesBF ? strengthBonus : 0) + reduced);
+}
+
+/**
+ * Arme ENCHANTÉE (Jalon 2.6 — op `enchantWeapon`) : fusionne les enchantements actifs du PORTEUR
+ * (B. de Droiture : Magique ; Marteau ardent : Magique +BSoc Dégâts ; Épée ardente de Rhuin :
+ * +6 + Percutante) à l'arme au moment de la résolution. Les Atouts ajoutés passent par le registre
+ * de qualités existant (Magique → `isMagicWeapon` → touche l'Éthéré) ; le bonus de Dégâts s'appose
+ * à la formule (sommée par `flatDamage`). Renvoie l'arme telle quelle sans enchantement.
+ */
+export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Weapon): Weapon {
+  const enchants = (bearer.activeEffects ?? []).map((e) => e.weaponEnchant).filter((x): x is NonNullable<typeof x> => !!x);
+  if (!enchants.length) return w;
+  const out: Weapon = { ...w, qualities: [...(w.qualities ?? [])] };
+  let dmgPlus = 0;
+  for (const e of enchants) {
+    for (const q of e.addQualities ?? []) if (!out.qualities.includes(q)) out.qualities.push(q);
+    dmgPlus += e.damageBonus ?? 0;
+  }
+  if (dmgPlus > 0) out.damage = `${out.damage ?? '+BF'}+${dmgPlus}`;
+  return out;
+}
+
+/** États « à la touche » des enchantements actifs du porteur (Marteau ardent : En flammes + À Terre). */
+export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>): { name: string; value?: number }[] {
+  return (bearer.activeEffects ?? []).flatMap((e) => e.weaponEnchant?.onHitConditions ?? []);
 }
 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */

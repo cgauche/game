@@ -44,8 +44,12 @@ describe('couverture de curation', () => {
     expect(spellSupport(spellSpecFor(choc), isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
     expect(spellSupport(spellSpecFor(lumiere), false)).toBe('narratif');
+    // Cautériser est devenu 100 % mécanique (op preventInfection, Jalon 2.6) — l'exemple
+    // « partiel » est désormais Couronne de Flammes (grantTrait + volet talent journalisé).
     const cauteriser = findSpell('Cautériser')!;
-    expect(spellSupport(spellSpecFor(cauteriser), false)).toBe('partiel');
+    expect(spellSupport(spellSpecFor(cauteriser), false)).toBe('mecanique');
+    const couronne = findSpell('Couronne de Flammes')!;
+    expect(spellSupport(spellSpecFor(couronne), false)).toBe('partiel');
   });
 });
 

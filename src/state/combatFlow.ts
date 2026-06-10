@@ -56,6 +56,7 @@ import {
   hasTalent,
   evaluateMissile,
   spellRangeTiles,
+  durationClockMinutes,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -78,7 +79,7 @@ import { hasHealSkill } from '../engine/healing';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -92,7 +93,7 @@ import { lineOfSightCover, coverModifier, smokeZone } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, pathTo, chebyshev, Pt } from './path';
+import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
 import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -891,7 +892,7 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover);
-    set({ battle: { ...battle, action: null, reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
+    set({ battle: { ...battle, action: null, reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
@@ -945,7 +946,7 @@ export function computeMoveReach(get: () => GameState): Map<string, number> {
   if (isEngaged(active) || !canMove(battle, active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
-  const reach = reachable(scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
+  const reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
   return briseFleeFilter(battle, active, reach);
 }
 
@@ -974,7 +975,7 @@ export function computeRunReach(get: () => GameState): Map<string, number> {
   const blocked = occupied(battle, geom);
   const M = mountMovement(battle, active);
   if (M <= 0) return new Map();
-  const reach = reachable(scene, active.pos, M * 3, blocked, sizeFootprint(geom.size));
+  const reach = moveReachFor(geom, scene, active.pos, M * 3, blocked, sizeFootprint(geom.size));
   return briseFleeFilter(battle, active, reach);
 }
 
@@ -1078,7 +1079,7 @@ export function attackPlan(get: () => GameState, active: Combatant, target: Comb
     // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
-    const reach = reachable(scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
+    const reach = moveReachFor(geom, scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
     const dest = bestAdjacentReachable(reach, target.pos!);
     if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
     return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], adv: chargeAdvantage(M, chebyshev(active.pos!, target.pos!)) };
@@ -1478,6 +1479,15 @@ export function applyAttackResult(
         addCondition(target, oh.condition);
         assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
         pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id }); // « un jet = une modale » (Test opposé)
+      }
+    }
+    // États « à la touche » des ENCHANTEMENTS d'arme actifs du porteur (Jalon 2.6 — Marteau
+    // ardent : « toute cible frappée reçoit En flammes et À Terre » ; Épée ardente de Rhuin :
+    // « quiconque est frappé gagne +1 En flammes »). RAW : sans Test, à la touche.
+    if (weapon.type === 'melee') {
+      for (const cond of enchantOnHitConditions(attacker)) {
+        addCondition(target, cond.name, cond.value ?? 1);
+        assommanteLog = `${target.name} reçoit ${cond.value ?? 1} État ${cond.name} (arme enchantée).`;
       }
     }
   }
@@ -2292,16 +2302,17 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   // stabilisés ; restRecovery refuse d'ailleurs le repos d'un héros encore Hémorragique/En flammes/Empoisonné.
   set({ gameTime: before + minutes });
   bus.emit(EVT.TIME_ADVANCED, { minutes });
-  // Entretien quotidien (#T2) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
-  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418).
-  runDailyUpkeep(get, set);
-  const party = get().party;
   // Soin des maladies (LDB 09-Compétences) : si un soignant apte (Guérison) veille le groupe, la durée
   // des maladies des patients est réduite plus vite (−1 j/jour de soins, min 1). Test de Guérison supposé
   // réussi sur des soins prolongés (abstraction, comme le soin de Blessures hors combat).
-  const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  // Entretien quotidien (#T2/#T3) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
+  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418) ; les
+  // maladies/convalescences des jours franchis avancent ici (cascade ; `caredFor` réduit les durées).
+  runDailyUpkeep(get, set, { caredFor });
+  const party = get().party;
   const lines: string[] = [];
-  for (const h of party) lines.push(...restRecovery(h, battleRng(), n, caredFor));
+  for (const h of party) lines.push(...restRecovery(h, battleRng(), n));
   // Contagion (LDB 20 l.185, « Toux et Éternuements ») : un malade contagieux expose son entourage —
   // un Test de Contraction par JOUR de promiscuité pour chaque autre membre (approximation de
   // l'exposition horaire, échelle du repos).
@@ -2389,6 +2400,7 @@ export function applyCast(
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
+  let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
   // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
@@ -2459,9 +2471,11 @@ export function applyCast(
       // branche missile du POC n'appliquait aucun effet parsé).
       if (missileSpec.curated && missileSpec.ops.length) {
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
+        const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...applyOps(t, missileSpec.ops, {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime,
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
@@ -2497,13 +2511,17 @@ export function applyCast(
   } else {
     if (res.cast) {
       // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
-      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours) : elle dépasse
-      // l'échelle tactique → l'effet persiste pour ce combat (COMBAT_PERSIST),
-      // on n'invente PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
+      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours, LDB 47) : l'effet est posé à
+      // COMBAT_PERSIST (échelle tactique) AVEC son échéance d'HORLOGE `untilTime` (cascade #T3 —
+      // « 1 heure » expire en 60 min de gameTime, plus au bout de 9999 Rounds) ; on n'invente
+      // PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spellSpecFor(spell);
       const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
+      const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+      const clockMin = baseClockMin != null ? baseClockMin * durationMult : null;
       if (durationMult > 1 && baseRounds != null) logLines.push(`Surincantation : durée ×${durationMult} (${rounds} Rounds).`);
+      if (durationMult > 1 && baseClockMin != null) logLines.push(`Surincantation : durée ×${durationMult}.`);
       for (const t of [target, ...extraTargets]) {
         if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
         logLines.push(
@@ -2512,10 +2530,45 @@ export function applyCast(
             caster,
             label: spell.label,
             now: get().gameTime,
+            sl: res.sl,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+            ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );
+      }
+      // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
+      // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
+      // l'obstacle ; la collision est journalisée (Dégâts = distance restante, MJ).
+      if (spec.pushMeters != null && battle && caster.pos) {
+        const pushTiles = Math.max(1, Math.floor(resolveFormula(spec.pushMeters, caster, battleRng()) / 2));
+        for (const t of [target, ...extraTargets]) {
+          if (t.id === caster.id || !t.pos || isOutOfAction(t)) continue;
+          const r = pushAway(get().scene!, caster.pos, t.pos, pushTiles, occupied(battle, t));
+          if (r.pushed > 0) {
+            t.pos = { ...r.dest };
+            bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
+            logLines.push(`${t.name} est repoussé de ${r.pushed * 2} m.`);
+          }
+          if (r.collided) logLines.push(`${t.name} percute un obstacle (Dégâts = distance restante — arbitrage MJ).`);
+        }
+      }
+      // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
+      // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
+      // cases = survol des obstacles, atterrissage libre — battleClickTile).
+      if (spec.teleportMeters != null && res.cast) {
+        let meters = Math.max(0, resolveFormula(spec.teleportMeters, caster, battleRng()));
+        if (spec.teleportPerSL) {
+          meters += Math.floor(Math.max(0, res.sl) / Math.max(1, spec.teleportPerSL.every))
+            * Math.max(0, resolveFormula(spec.teleportPerSL.metersFormula, caster, battleRng()));
+        }
+        if (battle && caster.pos) {
+          const tpTiles = Math.max(1, Math.floor(meters / 2));
+          teleportReach = flyReachable(get().scene!, caster.pos, tpTiles, occupied(battle, caster), sizeFootprint(caster.size));
+          logLines.push(`${caster.name} peut se téléporter (${meters} m) — choisir la case d'arrivée.`);
+        } else {
+          logLines.push(`${caster.name} se téléporte (${meters} m) — repositionnement libre hors combat.`);
+        }
       }
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
@@ -2545,6 +2598,11 @@ export function applyCast(
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
   finishPlayerAction(get, set, logLines, 'cast'); // sortie commune combat (log+conso Action) / hors combat (journal)
+  // Téléportation (Jalon 2.6) : le choix de case suit la clôture du cast (qui remet action: null).
+  if (teleportReach && get().battle) {
+    set({ battle: { ...get().battle!, action: 'teleport', reachable: teleportReach } });
+    bus.emit(EVT.SCENE_DIRTY);
+  }
 }
 
 /** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */

@@ -34,6 +34,7 @@ describe('Approche sous Peur (store)', () => {
     E.pos = { x: 15, y: 10 };
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 2, calmeDR: 0 }];
     const turn = b.order.indexOf(H.id);
+    // Clic-sol implicite : mode NEUTRE (action: null), portée dérivée (displayedReach).
     useGame.setState({
       battle: { ...b, turn, action: null, movementUsed: 0, acted: false, movedPreAction: false, reachable: new Map([['11,10', 1], ['9,10', 1]]) },
       pendingReveals: [],

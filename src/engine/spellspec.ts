@@ -40,6 +40,15 @@ export interface SpellSpec {
   /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
    *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
   zdeExcludesCaster?: boolean;
+  /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
+   *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
+   *  obstacles, atterrissage libre). `teleportPerSL` : « +BFM par +2 DR ». */
+  teleportMeters?: Formula;
+  teleportPerSL?: { every: number; metersFormula: Formula };
+  /** POUSSÉE (Jalon 2.6 — « repoussées de BFM mètres ») : chaque cible affectée est repoussée
+   *  en ligne (direction lanceur→cible) jusqu'à l'obstacle ; la collision est journalisée
+   *  (Dégâts = distance restante, arbitrage MJ — rien d'inventé). */
+  pushMeters?: Formula;
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */

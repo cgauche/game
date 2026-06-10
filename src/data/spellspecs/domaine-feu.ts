@@ -19,7 +19,7 @@ export const DOMAINE_FEU: SpellSpec[] = [
     ops: [
       { op: 'heal', amount: { dice: { n: 1, sides: 10 } } },
       { op: 'removeCondition', name: 'Hémorragique', value: 99 },
-      { op: 'narrative', text: 'Cautériser : les Blessures ne s’infecteront pas.' },
+      { op: 'preventInfection' }, // « De plus, les Blessures ne s'infecteront pas. » (→ woundDressed, LDB 18 l.382)
       { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [{ op: 'narrative', text: 'La cible hurle de douleur (Aqshy brûle en guérissant).' }], onFailHard: { dr: -6, ops: [{ op: 'condition', name: 'Inconscient' }] } },
     ],
     durationRounds: null,
@@ -29,11 +29,15 @@ export const DOMAINE_FEU: SpellSpec[] = [
   {
     label: 'Cœurs ardents',
     // « Les alliés affectés perdent tout État Brisé et État Exténué, et gagnent +1 Talent
-    //   Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif. »
+    //   Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif. » Sans peur
+    //   (immunité Peur/Terreur) et Cœur vaillant (Calme anti-Brisé même Engagé) = op
+    //   grantTalent (mécaniques) ; Coude-à-coude (surnombre coopératif) reste arbitrage MJ.
     ops: [
       { op: 'removeCondition', name: 'Brisé', value: 99 },
       { op: 'removeCondition', name: 'Exténué', value: 99 },
-      { op: 'narrative', text: 'Cœurs ardents : +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif (arbitrage MJ).' },
+      { op: 'grantTalent', talent: 'Sans peur' },
+      { op: 'grantTalent', talent: 'Cœur vaillant' },
+      { op: 'narrative', text: 'Cœurs ardents : +1 Talent Coude-à-coude tant que le Sort est actif (arbitrage MJ).' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
@@ -42,11 +46,13 @@ export const DOMAINE_FEU: SpellSpec[] = [
   {
     label: 'Couronne de Flammes',
     // « Gagnez le Trait Peur 1 et +1 Talent Seigneur de guerre… +10 pour Focaliser et
-    //   Incanter avec Aqshy tant que le Sort est actif. » Trait Peur → causesPeur n'est
-    //   pas (encore) une op : journalisé ; le +10 d'incantation est un castPenalty positif.
+    //   Incanter avec Aqshy tant que le Sort est actif. » Peur 1 → op grantTrait (Jalon 2.6) ;
+    //   le +10 d'incantation est un castPenalty positif. L'option « +2 DR : +1 Peur OU
+    //   reprendre Seigneur de guerre » = un CHOIX → journalisée.
     ops: [
-      { op: 'narrative', text: 'Couronne de Flammes : Trait Peur 1 + Talent Seigneur de guerre tant que le Sort est actif (arbitrage MJ).' },
+      { op: 'grantTrait', trait: 'Peur', indice: 1 },
       { op: 'castPenalty', skill: 'all', mod: 10, rounds: { bonusOf: 'FM' } },
+      { op: 'narrative', text: 'Couronne de Flammes : +1 Talent Seigneur de guerre tant que le Sort est actif ; par +2 DR, +1 Peur OU Seigneur de guerre repris — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
@@ -77,8 +83,17 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: "L'Épée ardente de Rhuin",
+    // « L'arme possède Dégâts +6 et l'Atout Percutante, et quiconque est frappé par la lame
+    //   gagne +1 État En flammes. » — op enchantWeapon ; le volet « Maladresse d'un porteur
+    //   sans Magie des Arcanes (Feu) » reste journalisé.
     ops: [
-      { op: 'narrative', text: 'Épée ardente de Rhuin : l’arme gagne Dégâts +6, l’Atout Percutante, et inflige +1 En flammes à la touche (arbitrage MJ — enchantement d’arme non modélisé).' },
+      {
+        op: 'enchantWeapon',
+        addQualities: ['Percutante'],
+        damageBonus: 6,
+        onHitConditions: [{ name: 'En flammes' }],
+      },
+      { op: 'narrative', text: 'Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
@@ -95,11 +110,11 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: 'Purification',
-    // « toutes les créatures dans la zone gagnent +DR État En flammes » — l'op `value`
-    // ne connaît pas le DR du jet : on applique 1 (plancher fidèle) + journal du +DR.
+    // « toutes les créatures dans la zone gagnent +DR État Enflammé » (LDB 48 p.229) —
+    // total = DR du jet, mécanique via `valuePerSL` (base 0 + 1/DR, plancher 1 de l'op).
     ops: [
-      { op: 'condition', name: 'En flammes' },
-      { op: 'narrative', text: 'Purification : chaque créature de la zone gagne +DR État En flammes (au-delà du 1er appliqué) ; consume les Influences corruptrices — arbitrage MJ.' },
+      { op: 'condition', name: 'En flammes', value: 0, valuePerSL: { every: 1, amount: 1 } },
+      { op: 'narrative', text: 'Purification : consume les Influences corruptrices de la zone (malepierre, objets du Chaos) — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

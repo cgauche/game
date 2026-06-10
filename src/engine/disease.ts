@@ -75,6 +75,9 @@ export interface Disease {
   gangreneFails?: number;
   /** Gangrène : la Localisation est devenue inutilisable (Amputation requise — journalisé). */
   gangreneLost?: boolean;
+  /** Bénédiction de Convalescence reçue (LDB 41 : « une fois par maladie et par personne ») —
+   *  approximation : une fois par maladie. */
+  convalescenceBlessed?: boolean;
 }
 
 function rollDice(dc: Dice, rng: RNG): number {

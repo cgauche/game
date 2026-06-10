@@ -21,6 +21,7 @@ import { rollTest, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
+import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -337,6 +338,37 @@ export function durationRoundsFormula(duration: string | undefined): Formula | n
 export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
   const f = durationRoundsFormula(duration);
   return f == null ? null : resolveFormula(f, caster);
+}
+
+/**
+ * Durée d'un sort à l'échelle de l'HORLOGE (LDB 47), en minutes à partir de `now` — pour les
+ * durées hors-rounds : « 1 heure », « (Bonus de Force Mentale) jours », « (Intelligence)
+ * minutes », « Jusqu'au (prochain) lever du soleil » (= prochaine aube ; à l'aube pile, un
+ * cycle entier — même convention que le repos). Renvoie null si la durée n'est pas une durée
+ * d'horloge (Rounds / Instantanée / Spécial) — l'appelant n'invente RIEN.
+ */
+export function durationClockMinutes(duration: string | undefined, caster: Combatant, now: number): number | null {
+  if (!duration) return null;
+  if (durationRoundsFormula(duration) != null) return null; // échelle tactique : gérée en Rounds
+  const UNIT: Record<string, number> = { minute: 1, heure: 60, jour: MINUTES_PER_DAY };
+  const unitOf = (s: string) => UNIT[s.toLowerCase().replace(/s$/, '')];
+  // « Jusqu'au (prochain) lever du soleil » (Tour de guet, LDB 47).
+  if (/jusqu.au\s+(prochain\s+)?lever\s+d[eu]\s*soleil/i.test(duration)) {
+    const toDawn = minutesUntilNext(now, DAWN_MINUTE);
+    return toDawn === 0 ? MINUTES_PER_DAY : toDawn;
+  }
+  // Littéral : « 1 heure », « 3 jours ».
+  const lit = duration.match(/^(\d+)\s*(minutes?|heures?|jours?)/i);
+  if (lit) return parseInt(lit[1], 10) * unitOf(lit[2]);
+  // « (Bonus de X) unités » ou « (X) unités » — valeur du lanceur.
+  const f = duration.match(/^\((Bonus d[e'’]\s*)?([^)]+)\)\s*(minutes?|heures?|jours?)/i);
+  if (f) {
+    const key = CHAR_BY_LABEL[f[2].trim()];
+    if (!key) return null;
+    const val = f[1] ? bonus(effectiveChar(caster, key)) : effectiveChar(caster, key);
+    return Math.max(1, val) * unitOf(f[3]);
+  }
+  return null;
 }
 
 export interface CastResult {

@@ -61,14 +61,19 @@ export const BENEDICTIONS: SpellSpec[] = [
   },
   {
     label: 'Bénédiction de Convalescence',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Convalescence : réduit d’1 journée la durée d’une maladie (une seule fois par maladie et par personne).' }],
+    // « Réduire la durée d'une maladie dont elle est affligée d'une journée. Cette Prière ne
+    //   peut être tentée qu'une fois par maladie et par personne. » — op reduceDiseaseDays
+    //   (marqueur 1×/maladie sur l'instance).
+    ops: [{ op: 'reduceDiseaseDays', days: 1 }],
     durationRounds: null,
     curated: true,
     source: '« …réduire la durée d’une maladie dont elle est affligée d’une 1 journée. »',
   },
   {
     label: 'Bénédiction de Droiture',
-    ops: [{ op: 'narrative', text: 'Bénédiction de Droiture : l’arme de la cible est considérée comme Magique.' }],
+    // « L'arme de votre cible est considérée comme Magique. » — Atout Magique temporisé
+    // (op enchantWeapon → isMagicWeapon → touche l'Éthéré, LDB 85).
+    ops: [{ op: 'enchantWeapon', addQualities: ['Magique'] }],
     durationRounds: 6,
     curated: true,
     source: '« L’arme de votre cible est considérée comme Magique. »',

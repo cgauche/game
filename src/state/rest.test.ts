@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { restRecovery } from '../engine/rest';
+import { restRecovery, dailyDiseaseUpkeep } from '../engine/rest';
 import { traumaFromKind } from '../engine/trauma';
 import { contractDisease } from '../engine/disease';
 import { hasCondition, stacks } from '../engine/conditions';
@@ -74,11 +74,8 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(hasCondition(c, 'À Terre')).toBe(false);
   });
 
-  it('le repos fait avancer la convalescence des traumas (guéri quand les jours sont écoulés)', () => {
-    const c = hero({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
-    restRecovery(c, { int: () => 30 }, 3); // 3 jours ≥ 2 → guéri
-    expect(c.traumas!.length).toBe(0);
-  });
+  // (Convalescence des traumas : décomptée par l'ENTRETIEN quotidien — #T3, jours calendaires —
+  //  testée sur le chemin store « restParty » ci-dessous et dans upkeep-cascade.test.ts.)
 
   it('un mort ne se repose pas', () => {
     const c = hero({ dead: true, conditions: [{ name: 'Exténué', value: 1 }] });
@@ -86,19 +83,21 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(hasCondition(c, 'Exténué')).toBe(true);
   });
 
-  it('maladie : l’incubation se déclare au repos et le malaise impose un Exténué « collant » (LDB 20 l.153)', () => {
+  it('maladie : l’incubation se déclare à l’entretien quotidien et le malaise impose un Exténué « collant » (LDB 20 l.153)', () => {
     // Infection Mineure : incubation 1 j, durée 5 j. E 40 → blessé Accessible (cible 60) réussi avec d100=10.
     const c = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 1, duration: 5 })!] });
-    restRecovery(c, { int: () => 10 }, 2); // jour 1 → symptômes déclarés ; jour 2 → malaise garde l’Exténué
+    dailyDiseaseUpkeep(c, { int: () => 10 }); // jour 1 (cascade #T3) → symptômes déclarés → +1 Exténué (malaise)
     expect(c.diseases![0].phase).toBe('active');
-    expect(stacks(c, 'Exténué')).toBe(1); // le malaise garde 1 Exténué malgré la nuit de sommeil
+    expect(stacks(c, 'Exténué')).toBe(1);
+    restRecovery(c, { int: () => 10 }); // la nuit de sommeil ne dissipe PAS l'Exténué du malaise
+    expect(stacks(c, 'Exténué')).toBe(1);
   });
 
   it('maladie : les soins d’un soignant raccourcissent la durée (−1 j/jour en plus, LDB 09-Compétences)', () => {
     const cared = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
     const alone = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
-    restRecovery(cared, { int: () => 10 }, 1, true);  // soigné : tick naturel −1 + soins −1
-    restRecovery(alone, { int: () => 10 }, 1, false); // seul : tick naturel −1
+    dailyDiseaseUpkeep(cared, { int: () => 10 }, true);  // soigné : tick naturel −1 + soins −1
+    dailyDiseaseUpkeep(alone, { int: () => 10 }, false); // seul : tick naturel −1
     expect(cared.diseases![0].daysLeft).toBe(alone.diseases![0].daysLeft - 1);
   });
 
@@ -142,6 +141,13 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
     expect(after.gameTime - t0).toBeGreaterThanOrEqual(2 * 24 * 60); // au moins 2 jours pleins + la 1re nuit
     expect(after.party[0].wounds.current).toBeGreaterThan(2 + 4); // bien plus qu’un seul +BE
     expect(after.journal.some((l) => /se repose 3 jours/i.test(l))).toBe(true);
+  });
+
+  it('le repos fait avancer la convalescence des traumas (cascade #T3 — via l’entretien quotidien)', () => {
+    const c = hero({ id: 'a', traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
+    useGame.setState({ party: [c], gameTime: 12 * 60, lastUpkeepDay: 0 });
+    useGame.getState().restParty(3); // 3 jours franchis ≥ 2 → guéri
+    expect(useGame.getState().party[0].traumas!.length).toBe(0);
   });
 
   it('ne fait rien en plein combat', () => {

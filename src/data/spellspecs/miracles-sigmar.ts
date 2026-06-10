@@ -9,12 +9,11 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: 'Comète à Deux Queues',
     // « Tout ce qui se trouve dans un rayon de (BSoc) mètres subit 1d10 + DR Dégâts qui
-    //   ignorent BE et PA, et gagne l'État En flammes. » (le +DR exact des Dégâts :
-    //   journalisé — l'op ne connaît pas le DR ; le 1d10 plancher est appliqué.)
+    //   ignorent BE et PA, et gagne l'État En flammes. » — 1d10 + DR mécanique via `perSL`.
     ops: [
-      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
+      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } }, perSL: { every: 1, amount: 1 } },
       { op: 'condition', name: 'En flammes' },
-      { op: 'narrative', text: 'Comète à Deux Queues : +DR Dégâts supplémentaires (ignorant BE/PA) — à ajouter selon le jet ; cible les ennemis de Sigmar, à l’extérieur seulement.' },
+      { op: 'narrative', text: 'Comète à Deux Queues : cible les ennemis de Sigmar, à l’extérieur seulement — arbitrage MJ.' },
     ],
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'Soc' },
@@ -25,10 +24,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: "Feu de l'âme",
     // « Toutes les cibles dans la ZdE subissent 1d10 Blessures qui ignorent BE et PA.
-    //   Morts-vivants/Démoniaques : aussi En flammes (conditionnel au Trait → journalisé). »
+    //   Les cibles possédant les Traits Mort-vivant et Démoniaque gagnent aussi En flammes. »
+    //   — gate par Groupe (`onlyGroups`, engine/groups : folder bestiaire → Mort-vivant/Démon).
+    //   L'option « +2 DR : étendre la ZdE OU +2 Dégâts aux impies » = un CHOIX → journalisée.
     ops: [
       { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
-      { op: 'narrative', text: 'Feu de l’âme : les Morts-vivants et Démons gagnent aussi En flammes ; +2 Dégâts aux impies par +2 DR (arbitrage MJ).' },
+      { op: 'condition', name: 'En flammes', onlyGroups: ['Mort-vivant', 'Démon'] },
+      { op: 'narrative', text: 'Feu de l’âme : par +2 DR, étendre la ZdE de +BSoc mètres OU +2 Dégâts aux peaux-vertes/morts-vivants/serviteurs de la Ruine — au choix, arbitrage MJ.' },
     ],
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'Soc' },
@@ -39,10 +41,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: 'Flambeau de Vertu',
     // « Tous les alliés dans votre Ligne de Vue retirent instantanément tout État Brisé,
-    //   et gagnent le Talent Sans peur pendant que le Miracle est actif. »
+    //   et gagnent le Talent Sans peur pendant que le Miracle est actif. » Sans peur = op
+    //   grantTalent (immunité Peur/Terreur mécanique) ; la condition de MAINTIEN « reste en
+    //   Ligne de Vue » et la Psychologie imposée aux peaux-vertes restent arbitrage MJ.
     ops: [
       { op: 'removeCondition', name: 'Brisé', value: 99 },
-      { op: 'narrative', text: 'Flambeau de Vertu : Talent Sans peur tant que le Miracle est actif et que la cible reste en Ligne de Vue ; les peaux-vertes en LdV doivent tester leur Psychologie (arbitrage MJ).' },
+      { op: 'grantTalent', talent: 'Sans peur' },
+      { op: 'narrative', text: 'Flambeau de Vertu : le Talent tient tant que la cible reste en Ligne de Vue du prêtre ; les peaux-vertes en LdV doivent tester leur Psychologie — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
@@ -50,8 +55,16 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   },
   {
     label: 'Marteau ardent de Sigmar',
+    // « Si vous portez un marteau, il est considéré comme Magique, inflige +(BSoc) Dégâts et
+    //   toute cible frappée reçoit l'État En flammes et l'État À Terre. » — op enchantWeapon
+    //   (approximation : enchante l'arme TENUE, la nature « marteau » n'est pas vérifiée).
     ops: [
-      { op: 'narrative', text: 'Marteau ardent : votre marteau devient Magique, +BSoc Dégâts, et chaque cible frappée reçoit En flammes + À Terre (enchantement d’arme — arbitrage MJ).' },
+      {
+        op: 'enchantWeapon',
+        addQualities: ['Magique'],
+        damageBonus: { bonusOf: 'Soc' },
+        onHitConditions: [{ name: 'En flammes' }, { name: 'À Terre' }],
+      },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
@@ -71,8 +84,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   },
   {
     label: 'Vaincre les impies',
+    // « Tous les alliés affectés reçoivent le Trait Psychologique Haine à l'égard des
+    //   peaux-vertes, des morts-vivants et de tout ce qui est associé au Chaos. »
+    //   — trois Haine ciblées (op grantTrait → parsePsychTraits → +1 DR vs le groupe haï).
     ops: [
-      { op: 'narrative', text: 'Vaincre les impies : les alliés désignés gagnent le Trait psychologique Haine (peaux-vertes, morts-vivants, créatures du Chaos) pour la durée (arbitrage MJ).' },
+      { op: 'grantTrait', trait: 'Haine (Peaux-Vertes)' },
+      { op: 'grantTrait', trait: 'Haine (Morts-vivants)' },
+      { op: 'grantTrait', trait: 'Haine (Démons)' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

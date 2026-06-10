@@ -4,6 +4,9 @@ import type { Combatant } from '../types';
 export interface CombatFeatureCtx {
   combatant: Combatant;
   level: number;
+  /** Spécialisation du talent (« Sans Peur (Vampires) » → « Vampires ») — absente sur un
+   *  talent accordé par sort (op grantTalent) ou non spécialisé. */
+  spec?: string;
 }
 
 /**
@@ -76,6 +79,10 @@ export interface CombatFeature {
   stunSave?: boolean;
   /** Cœur vaillant : tente de retirer le Brisé même Engagé (Calme en fin de Round). */
   braveheart?: boolean;
+  /** Sans peur (LDB 10 l.859) : ignore Peur/Terreur de l'Ennemi spécifié (`ctx.spec` ; sans
+   *  spec — talent ACCORDÉ par Flambeau de Vertu/Cœurs ardents — toutes sources). Le Test de
+   *  Calme Accessible (+20) d'activation est supposé réussi (simplification documentée). */
+  fearImmune?: boolean;
   /** Endurci : ignore niveau Points de Blessure perdus par l'État Hémorragique. */
   bleedIgnore?: boolean;
   // ── Magie / psychologie ────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
 import { Scene, isWalkable } from './scene';
+import { hasTrait } from '../engine/traits/dispatch';
+import type { Combatant } from '../engine/types';
 
 export interface Pt {
   x: number;
@@ -71,6 +73,43 @@ export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Se
       dist.set(key(nx, ny), Math.max(Math.abs(dx), Math.abs(dy)));
     }
   return dist;
+}
+
+/**
+ * Portée de déplacement d'un combattant : VOL (trait « Vol » — natif OU accordé par un sort,
+ * Envol Jalon 2.6) → `flyReachable` (survole murs/obstacles, l'atterrissage doit tenir) ; sinon
+ * BFS au sol. C'était réservé à l'IA (ai.ts) — les HÉROS volants passent désormais par ici.
+ */
+export function moveReachFor(
+  mover: Pick<Combatant, 'traits'>,
+  scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1,
+): Map<string, number> {
+  return (hasTrait(mover.traits, 'Vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
+}
+
+/**
+ * POUSSÉE en ligne (Jalon 2.6 — Poussée, LDB 47 : « repoussées de BFM mètres ») : la cible
+ * recule de `tiles` cases dans la direction OPPOSÉE à `from` (pas de Tchebychev — signe de
+ * dx/dy), en s'arrêtant devant la première case non franchissable/occupée. Renvoie la case
+ * d'arrivée, le nombre de cases parcourues et s'il y a eu COLLISION (cases restantes > 0).
+ */
+export function pushAway(
+  scene: Scene, from: Pt, target: Pt, tiles: number, blocked: Set<string>,
+): { dest: Pt; pushed: number; collided: boolean } {
+  const sx = Math.sign(target.x - from.x);
+  const sy = Math.sign(target.y - from.y);
+  if ((!sx && !sy) || tiles <= 0) return { dest: { ...target }, pushed: 0, collided: false };
+  let cur = { ...target };
+  let pushed = 0;
+  for (let i = 0; i < tiles; i++) {
+    const next = { x: cur.x + sx, y: cur.y + sy };
+    if (!isWalkable(scene, next.x, next.y) || blocked.has(key(next.x, next.y))) {
+      return { dest: cur, pushed, collided: true };
+    }
+    cur = next;
+    pushed++;
+  }
+  return { dest: cur, pushed, collided: false };
 }
 
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de

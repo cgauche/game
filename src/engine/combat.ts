@@ -12,7 +12,7 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
-import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveWeapon, enchantedWeapon } from './weaponDamage';
 import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
@@ -20,7 +20,7 @@ import { ignoredArmourAP, impenetrableAt } from './items';
 import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, isMagicWeapon } from './qualities/dispatch';
-import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
+import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -221,7 +221,8 @@ export function attackModifiers(
     const psy = attacker.psychState ?? [];
     const groups = target.groups ?? [];
     const hatesTarget = psy.some((p) => p.type === 'haine' && p.active && p.cible && groupMatch(p.cible, groups));
-    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active); // Haine (du groupe) / Amour → immunité Peur
+    // Haine (du groupe) / Amour → immunité Peur ; Sans peur (LDB 10, possédé ciblé ou accordé) aussi.
+    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active) || fearImmuneVs(attacker, target);
     if (!peurImmune && psy.some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
     if (hatesTarget || psy.some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) out.push({ label: 'Haine/Animosité', value: 10 });
     if (psy.some((p) => (p.type === 'amour' || p.type === 'camaraderie') && p.active)) out.push({ label: 'Amour/Camaraderie', value: 10 });
@@ -643,7 +644,9 @@ function applyHit(
   dmgProxy?: AttackOptions['dmgProxy'],
   extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.306)
 ): AttackResult {
-  weapon = effectiveWeapon(weapon); // arme usée à +0 → Arme improvisée (BF+1, sans Atout, LDB 62 l.178)
+  // Arme usée à +0 → improvisée (LDB 62 l.178), puis enchantements actifs du porteur (Jalon 2.6 —
+  // Magique/Dégâts/Atouts de B. de Droiture, Marteau ardent, Épée ardente fusionnés à la résolution).
+  weapon = enchantedWeapon(attacker, effectiveWeapon(weapon));
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
   // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
   // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.

@@ -6,12 +6,15 @@ import { SpellSpec } from '../../engine/spellspec';
 export const MIRACLES_SHALLYA: SpellSpec[] = [
   {
     label: 'Amère catharsis',
-    // « Aspire un poison, ou une maladie, de la cible » : l'État Empoisonné est purgé ;
-    // les maladies (cycle LDB 20) + l'auto-Blessure du prêtre (1d10 − BSoc par purge,
-    // non mitigée) restent journalisées (montant lié au nombre de purges choisies).
+    // « Aspire un poison, ou une maladie, de la cible, le retirant complètement de son
+    //   organisme. Pour chaque +2 DR, vous pouvez purger un autre poison ou maladie. » —
+    //   États Empoisonné purgés + maladies retirées (op cureDisease, 1 + ⌊DR/2⌋) ;
+    //   l'auto-Blessure du prêtre (1d10 − BSoc par purge, non mitigée) reste journalisée
+    //   (le prêtre n'est pas la cible de l'op).
     ops: [
       { op: 'removeCondition', name: 'Empoisonné', value: 99 },
-      { op: 'narrative', text: 'Amère catharsis : une maladie peut être retirée (+1 purge par +2 DR) ; le prêtre subit 1d10 − BSoc Blessures NON mitigées par purge — arbitrage MJ.' },
+      { op: 'cureDisease', count: 1, countPerSL: { every: 2, amount: 1 } },
+      { op: 'narrative', text: 'Amère catharsis : le prêtre subit 1d10 − BSoc Blessures NON mitigées par poison/maladie purgé — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,
@@ -37,11 +40,12 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: 'Innocence immaculée',
-    // « La cible perd 1 Point de Corruption (+1 par +2 DR). » Maladresse : 1d10 Corruption
-    // pour les deux — la Maladresse de Prière déclenche déjà la Colère ; le 1d10 reste MJ.
+    // « La cible perd 1 Point de Corruption (+1 par +2 DR). » — −1/+2 DR mécanique via `perSL`.
+    // Maladresse : 1d10 Corruption pour les deux — la Maladresse de Prière déclenche déjà la
+    // Colère ; le 1d10 reste MJ.
     ops: [
-      { op: 'corruption', amount: -1 },
-      { op: 'narrative', text: 'Innocence immaculée : −1 Point de Corruption supplémentaire par +2 DR ; sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ.' },
+      { op: 'corruption', amount: -1, perSL: { every: 2, amount: -1 } },
+      { op: 'narrative', text: 'Innocence immaculée : sur Maladresse, prêtre ET cible gagnent 1d10 Corruption — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,
@@ -49,8 +53,13 @@ export const MIRACLES_SHALLYA: SpellSpec[] = [
   },
   {
     label: 'Larmes de Shallya',
+    // « Vous priez pendant 10 − BSoc rounds, et vous guérissez la cible d'1 Blessure
+    //   Critique. Pour chaque +2 DR, +1 — jamais une amputation. » — op cureCriticalWound
+    //   (retire un trauma de convalescence + criticalWounds−−) ; le CANAL de Prière
+    //   ininterrompue (10 − BSoc Rounds) reste journalisé.
     ops: [
-      { op: 'narrative', text: 'Larmes de Shallya : après 10 − BSoc Rounds de Prière ininterrompue, guérit 1 Blessure Critique (+1 par +2 DR ; jamais une amputation) — appliquer via la convalescence, arbitrage MJ.' },
+      { op: 'cureCriticalWound', count: 1, countPerSL: { every: 2, amount: 1 } },
+      { op: 'narrative', text: 'Larmes de Shallya : exige 10 − BSoc Rounds de Prière ininterrompue — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,
