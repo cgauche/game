@@ -29,11 +29,15 @@ export const DOMAINE_FEU: SpellSpec[] = [
   {
     label: 'Cœurs ardents',
     // « Les alliés affectés perdent tout État Brisé et État Exténué, et gagnent +1 Talent
-    //   Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif. »
+    //   Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif. » Sans peur
+    //   (immunité Peur/Terreur) et Cœur vaillant (Calme anti-Brisé même Engagé) = op
+    //   grantTalent (mécaniques) ; Coude-à-coude (surnombre coopératif) reste arbitrage MJ.
     ops: [
       { op: 'removeCondition', name: 'Brisé', value: 99 },
       { op: 'removeCondition', name: 'Exténué', value: 99 },
-      { op: 'narrative', text: 'Cœurs ardents : +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif (arbitrage MJ).' },
+      { op: 'grantTalent', talent: 'Sans peur' },
+      { op: 'grantTalent', talent: 'Cœur vaillant' },
+      { op: 'narrative', text: 'Cœurs ardents : +1 Talent Coude-à-coude tant que le Sort est actif (arbitrage MJ).' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

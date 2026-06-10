@@ -54,7 +54,7 @@ const NARRATIF_MJ = new Set([
   'Magnum Opus', 'Mains agiles', 'Maître en déguisement', 'Maîtrise des dés', 'Marinier',
   'Menteur', 'Nageur endurant', 'Nanti', 'Noblesse', 'Nomade', 'Numismate', 'Œil du chasseur',
   'Orateur', 'Pas de côté', 'Perception de la magie', 'Persévérant', 'Pêcheur', 'Pied marin',
-  'Pilote', 'Présence imposante', 'Prévoyant', "Rat d'égout", 'Résistance', 'Sans peur',
+  'Pilote', 'Présence imposante', 'Prévoyant', "Rat d'égout", 'Résistance',
   'Saut carpé', 'Savant', 'Savoir-vivre', 'Seconde vue', 'Seigneur de guerre', 'Sens aiguisé',
   "Sens de l'orientation", 'Sixième sens', 'Souplesse féline', 'Suborneur', 'Tour des souvenirs',
   'Trappeur', 'Travailleur qualifié', 'Tricheur', 'Vice', 'Visions sacrées', 'Volonté de fer',

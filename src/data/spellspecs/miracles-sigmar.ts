@@ -41,10 +41,13 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: 'Flambeau de Vertu',
     // « Tous les alliés dans votre Ligne de Vue retirent instantanément tout État Brisé,
-    //   et gagnent le Talent Sans peur pendant que le Miracle est actif. »
+    //   et gagnent le Talent Sans peur pendant que le Miracle est actif. » Sans peur = op
+    //   grantTalent (immunité Peur/Terreur mécanique) ; la condition de MAINTIEN « reste en
+    //   Ligne de Vue » et la Psychologie imposée aux peaux-vertes restent arbitrage MJ.
     ops: [
       { op: 'removeCondition', name: 'Brisé', value: 99 },
-      { op: 'narrative', text: 'Flambeau de Vertu : Talent Sans peur tant que le Miracle est actif et que la cible reste en Ligne de Vue ; les peaux-vertes en LdV doivent tester leur Psychologie (arbitrage MJ).' },
+      { op: 'grantTalent', talent: 'Sans peur' },
+      { op: 'narrative', text: 'Flambeau de Vertu : le Talent tient tant que la cible reste en Ligne de Vue du prêtre ; les peaux-vertes en LdV doivent tester leur Psychologie — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

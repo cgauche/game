@@ -11,6 +11,7 @@ import { effectiveChar } from './characteristics';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
 import { bellicosePsychImmune } from './traits/dispatch';
+import { fearImmuneVs } from './combatFeatures/dispatch';
 
 export type PsychType =
   | 'peur'
@@ -56,6 +57,9 @@ export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
  *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur. */
 export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' | 'terreur'; indice: number } | null {
+  // Sans peur (LDB 10 l.859, talent possédé ciblé OU accordé par Flambeau de Vertu/Cœurs
+  // ardents) : la Peur/Terreur de cet adversaire est ignorée — aucune source.
+  if (fearImmuneVs(self, foe)) return null;
   const cands: { kind: 'peur' | 'terreur'; indice: number }[] = [];
   const size = peurTerreurFromSize(foe.size, self.size);
   if (size) cands.push(size);

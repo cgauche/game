@@ -107,6 +107,10 @@ export type GameOp =
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
   | { op: 'grantTrait'; trait: string; indice?: Formula; indicePerSL?: PerSL }
+  /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
+   *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
+   *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet. */
+  | { op: 'grantTalent'; talent: string }
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
   | { op: 'reduceToZero' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
@@ -329,6 +333,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           grantedTrait: traitStr,
         });
         lines.push(`${target.name} gagne le Trait ${traitStr} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'grantTalent': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          grantedTalent: o.talent,
+        });
+        lines.push(`${target.name} gagne le Talent ${o.talent} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'reduceToZero': {

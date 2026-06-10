@@ -173,6 +173,10 @@ export interface ActiveEffect {
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : la chaîne
    *  exacte posée dans `c.traits`, retirée (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: string;
+  /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : lu par
+   *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
+   *  la fiche/avancement ne voient que les talents possédés). */
+  grantedTalent?: string;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

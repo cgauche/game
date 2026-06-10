@@ -6,16 +6,33 @@
 import type { Combatant, Weapon } from '../types';
 import { COMBAT_FEATURES } from './registry';
 import { featureKey } from './normalize';
+import { groupMatch } from '../groups';
 import type { CombatFeature, CombatFeatureCtx } from './types';
 
-/** Capacités du registre présentes sur le combattant (talents), avec niveau. */
+/** Capacités du registre présentes sur le combattant : talents POSSÉDÉS (niveau = times) +
+ *  talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1 tant que l'effet
+ *  dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */
 export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatureCtx }[] {
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
+  const specOf = (name: string) => name.match(/\(([^)]+)\)\s*$/)?.[1]?.trim();
   for (const t of c.talents ?? []) {
     const k = featureKey(t.name);
-    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: t.times ?? 1 } });
+    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: t.times ?? 1, spec: specOf(t.name) } });
+  }
+  for (const e of c.activeEffects ?? []) {
+    if (!e.grantedTalent) continue;
+    const k = featureKey(e.grantedTalent);
+    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: 1, spec: specOf(e.grantedTalent) } });
   }
   return out;
+}
+
+/** Sans peur (LDB 10 l.859) : `c` ignore la Peur/Terreur que `foe` inspire — talent possédé
+ *  (vs l'Ennemi spécifié, par Groupes) ou ACCORDÉ par un sort sans spec (toutes sources). */
+export function fearImmuneVs(c: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
+  return featuresOf(c).some(
+    ({ def, ctx }) => def.fearImmune && (ctx.spec == null || groupMatch(ctx.spec, foe.groups ?? [])),
+  );
 }
 
 /** Somme des niveaux des capacités vérifiant `pred` (0 si aucune). */

@@ -100,3 +100,33 @@ describe('moveReachFor — Vol héros (Envol, Jalon 2.6)', () => {
     expect(air.has('2,1')).toBe(false); // mais n'ATTERRIT pas sur le mur
   });
 });
+
+describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ardents, Jalon 2.6)', () => {
+  it('Sans peur accordé : featuresOf le voit, fearImmuneVs ignore la Peur de TOUTE source ; expire', async () => {
+    const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
+    const { fearSourceFor } = await import('../engine/psychology');
+    const c = dummy({});
+    const ogre = dummy({ id: 'o', causesPeur: 2, groups: ['Ogre'] });
+    expect(fearSourceFor(c, ogre)?.kind).toBe('peur'); // avant le sort : la Peur mord
+    applyOps(c, [{ op: 'grantTalent', talent: 'Sans peur' }], { label: 'Flambeau de Vertu', defaultDurationRounds: 1 });
+    expect(fearImmuneVs(c, ogre)).toBe(true);
+    expect(fearSourceFor(c, ogre)).toBeNull(); // plus aucune source de Peur/Terreur
+    expect(c.talents).toHaveLength(0); // PAS posé dans les talents possédés (fiche intacte)
+    endOfRound(c);
+    expect(fearImmuneVs(c, ogre)).toBe(false); // dissipé avec l'effet
+  });
+
+  it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
+    const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
+    const c = dummy({ talents: [{ name: 'Sans peur (Morts-vivants)', times: 1 }] });
+    expect(fearImmuneVs(c, { groups: ['Mort-vivant'] })).toBe(true);
+    expect(fearImmuneVs(c, { groups: ['Ogre'] })).toBe(false); // pas l'Ennemi du talent
+  });
+
+  it('Cœur vaillant accordé (Cœurs ardents) : la capacité braveheart est active via featuresOf', async () => {
+    const { featuresOf } = await import('../engine/combatFeatures/dispatch');
+    const c = dummy({});
+    applyOps(c, [{ op: 'grantTalent', talent: 'Cœur vaillant' }], { label: 'Cœurs ardents', defaultDurationRounds: 3 });
+    expect(featuresOf(c).some(({ def }) => def.braveheart)).toBe(true);
+  });
+});
