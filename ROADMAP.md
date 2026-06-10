@@ -1,8 +1,9 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-08. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-06-10. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
-les sources. Rendu **isométrique SVG** (React), pas de Phaser. Dépôt : `cgauche/game`.
+les sources. Rendu **isométrique SVG** (React), pas de Phaser, **+ bascule vue du dessus
+(grille carrée) en jeu et éditeur** (Jalon 0.15). Dépôt : `cgauche/game`.
 
 ---
 
@@ -306,6 +307,32 @@ structurelle accumulée par l'empilement des jalons. Tout est committé par phas
 - **Nettoyage** : lint projet à **0 erreur** (5 erreurs préexistantes corrigées), imports morts purgés,
   alias `@deprecated carryPose` retiré (scripts QC migrés sur `weaponRest`), warnings de `src/state` purgés.
 - **1962 tests verts, typecheck 0, lint 0 erreur.** Carte d'architecture de `CLAUDE.md` mise à jour.
+
+## ✅ Jalon 0.15 — Vue du dessus (mode bascule) + caméra tactique libre *(fait — 2026-06-10)*
+
+**Vue du dessus** orthogonale (grille **carrée**) en **mode bascule** à côté de l'iso, en **jeu ET
+éditeur** — pour la lisibilité tactique. Spec/plan : `docs/superpowers/{specs,plans}/2026-06-10-vue-du-dessus*`.
+
+- **2ᵉ axe de projection `view: 'iso' | 'top'` sur `Dims`** (exactement comme `rot`, Jalon 0.9) — couture
+  **unique** dans `gameIso/iso.ts` : `tileCenter`/`diamondCorners`/`screenToTile`/`stageSize`/`depth`/`originX`
+  branchent dessus (cases carrées `CELL=56`, picking carré, profondeur par rangée). Jeu **et** éditeur en
+  héritent ; **`rot` + zoom continuent de marcher**. Purs + testés (`iso.test.ts`, les 2 modes × 4 rotations).
+- **Acteurs → pion-portrait** (disque façon VTT) : `pickBackend(subject, view)` rend en `top` la **vue de
+  face cadrée sur le visage** (`faceFrame` typé) + `flat:true` ; `BodyToken` gagne un **mode `flat`** (disque
+  clippé centré, anneau circulaire, mort estompée), badges PV/icônes **partagés** avec l'iso (zéro dup). Le
+  décor reste billboard. **`RigPortrait` (HUD) consomme la même `pickBackend(_, 'top')`** → cadrage visage
+  **dé-dupliqué**. Monté en `top` = cavalier+monture en 2 pions distincts (composite iso seulement).
+- **Décor iso-extrudé rendu à plat** en `top` (sinon « mal orienté / illisible » sur la grille carrée) :
+  **murs** (`wallBlock`) = bloc plein aligné sur la case ; **bâtiments** (`buildingObj`) = plan toit + **contour
+  de murs épais + porte + NOM du bâtiment** au centre du toit → il se lit comme une structure, pas des tuiles.
+- **Bascule par surface** (comme zoom/rot) : store **`viewMode`/`toggleViewMode`** (jeu, préservé au reset),
+  **`useEditorView.viewMode`** (éditeur) ; **bouton dans `ViewControls`** (partagé jeu↔éditeur), à droite du `+`.
+- **Caméra tactique libre** (retour live) : **dézoom élargi** (plancher zoom 1 → **0.4**) ; **panoramique au
+  glisser** (`camPan` au store ; seuil 6 px → le clic est **différé au relâchement** : tap = clic, glisser =
+  pan) ; **refocus auto sur l'unité active** au changement de tour (`resetCamPan`). Retrait de la `date-chip`
+  HUD (doublon du menu).
+- **~2065 tests verts, typecheck 0** ; vérifié au navigateur (combat + éditeur en `top` : grille carrée,
+  pions-portraits, murs/bâtiment alignés, dézoom, 0 erreur console). Committé sur `feat/wfrp4-rpg-foundation`.
 
 ---
 
