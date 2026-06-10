@@ -15,7 +15,7 @@
  */
 import { RNG, defaultRNG, roll } from './dice';
 import { maxWounds } from './characteristics';
-import { buildInventory, recomputeLoadout, emptyArmour } from './items';
+import { buildInventory, recomputeLoadout, ensureDefaultLoadout, emptyArmour } from './items';
 import { groupsFor } from './groups';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation } from './types';
 import {
@@ -249,6 +249,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     careerLevel: 1,
   };
   recomputeLoadout(hero); // dérive weapons/armour/encombrement de l'équipement
+  ensureDefaultLoadout(hero); // un set d'armes par défaut (Mêlée / Distance) — LDB : 2 mains
+  recomputeLoadout(hero); // re-dérive depuis le loadout actif
   return hero;
 }
 

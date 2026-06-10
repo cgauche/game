@@ -1,9 +1,130 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon } from './items';
 import { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'misc', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
+
+describe('weaponHands (latéralité)', () => {
+  const it_ = (p: Partial<ItemInstance>): ItemInstance =>
+    ({ uid: 'w', name: 'X', kind: 'melee', qualities: [], enc: 0, equipped: false, ...p } as ItemInstance);
+
+  it('`hands` posé fait foi', () => {
+    expect(weaponHands(it_({ name: 'Hallebarde', subType: "Armes d'hast", hands: 2 }))).toBe(2);
+    expect(weaponHands(it_({ name: 'Epee', subType: 'Base', hands: 1 }))).toBe(1);
+  });
+  it('fallback sans `hands` : marqueur (2M) dans le nom, ou Groupe Deux-mains', () => {
+    expect(weaponHands(it_({ name: '(2M) Lance', subType: "Armes d'hast" }))).toBe(2);
+    expect(weaponHands(it_({ name: 'Espadon', subType: 'Deux-mains' }))).toBe(2);
+    expect(weaponHands(it_({ name: 'Epee', subType: 'Base' }))).toBe(1);
+  });
+  it('itemFromTrapping pose `hands` depuis le marqueur (2M) — mêlée ET distance', () => {
+    expect(itemFromTrapping('Arc')?.hands).toBe(2);
+    expect(itemFromTrapping('Arbalète de poing')?.hands).toBe(1);
+    expect(itemFromTrapping('Pistolet')?.hands).toBe(1);
+    expect(itemFromTrapping('Hallebarde')?.hands).toBe(2);
+  });
+});
+
+describe('unarmedWeapon (Mains nues canoniques, LDB 62 l.75)', () => {
+  it('dérivées du trapping : +BF+0, Personnelle, Inoffensive (pas +BF-2)', () => {
+    const u = unarmedWeapon();
+    expect(u.damage).toBe('+BF+0');
+    expect(u.reach).toBe('Personnelle');
+    expect(u.qualities).toContain('Inoffensive');
+    expect(u.hand).toBe('main');
+  });
+});
+
+describe('activeLoadout', () => {
+  const base = (over: Partial<Combatant>): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', items: [], ...over } as unknown as Combatant);
+
+  it('aucun loadout → null (chemin legacy)', () => {
+    expect(activeLoadout(base({}))).toBeNull();
+  });
+  it('renvoie le loadout actif par id', () => {
+    const c = base({ loadouts: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], activeLoadoutId: 'b' });
+    expect(activeLoadout(c)?.id).toBe('b');
+  });
+  it('id inconnu → 1er loadout (repli)', () => {
+    const c = base({ loadouts: [{ id: 'a', name: 'A' }], activeLoadoutId: 'zzz' });
+    expect(activeLoadout(c)?.id).toBe('a');
+  });
+});
+
+describe('recomputeLoadout piloté par loadout', () => {
+  const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+       talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
+  const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, ...p } as ItemInstance);
+
+  it('loadout 1 main + bouclier → 2 armes taguées main/off + Mains nues', () => {
+    const epee = w('e', 'Epee', { subType: 'Base', hands: 1 });
+    const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1, qualities: ['Défensive'] });
+    const c = heroWith([epee, bouc], { loadouts: [{ id: 'l1', name: 'EB', main: 'e', off: 'b' }], activeLoadoutId: 'l1' });
+    recomputeLoadout(c);
+    expect(c.weapons.map((x) => [x.name, x.hand])).toEqual([
+      ['Epee', 'main'], ['Bouclier', 'off'], ['Mains nues', 'main'],
+    ]);
+  });
+
+  it('loadout arme 2 mains → slot off ignoré', () => {
+    const halle = w('h', 'Hallebarde', { subType: "Armes d'hast", hands: 2 });
+    const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1 });
+    const c = heroWith([halle, bouc], { loadouts: [{ id: 'l', name: 'H', main: 'h', off: 'b' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.map((x) => x.name)).toEqual(['Hallebarde', 'Mains nues']);
+  });
+
+  it('aucun loadout → legacy : toutes armes équipées, hand main', () => {
+    const a = w('a', 'A', { subType: 'Base', hands: 1 });
+    const b = w('b', 'B', { subType: 'Base', hands: 1 });
+    const c = heroWith([a, b]);
+    recomputeLoadout(c);
+    expect(c.weapons.map((x) => x.name)).toEqual(['A', 'B', 'Mains nues']);
+    expect(c.weapons.every((x) => x.hand !== 'off')).toBe(true);
+  });
+});
+
+describe('ensureDefaultLoadout', () => {
+  const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, damage: '+BF+4', ...p } as ItemInstance);
+  const hero = (items: ItemInstance[]): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', items } as unknown as Combatant);
+
+  it('crée « Mêlée » = meilleure arme de mêlée en main, bouclier en secondaire', () => {
+    const c = hero([
+      w('e', 'Epee', { subType: 'Base', hands: 1, damage: '+BF+4' }),
+      w('b', 'Bouclier', { subType: 'Base', hands: 1, damage: '+BF', qualities: ['Défensive'] }),
+    ]);
+    ensureDefaultLoadout(c);
+    const lo = c.loadouts!.find((l) => l.name === 'Mêlée')!;
+    expect(lo.main).toBe('e');
+    expect(lo.off).toBe('b');
+    expect(c.activeLoadoutId).toBe(lo.id);
+  });
+
+  it('arme distance présente → loadout « Distance » en plus', () => {
+    const c = hero([
+      w('e', 'Epee', { subType: 'Base', hands: 1 }),
+      w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: '+9' }),
+    ]);
+    ensureDefaultLoadout(c);
+    expect(c.loadouts!.map((l) => l.name).sort()).toEqual(['Distance', 'Mêlée']);
+    expect(c.loadouts!.find((l) => l.name === 'Distance')!.main).toBe('arc');
+  });
+
+  it('idempotent : ne recrée pas si loadouts déjà présents', () => {
+    const c = hero([w('e', 'Epee', { subType: 'Base', hands: 1 })]);
+    c.loadouts = [{ id: 'x', name: 'Custom', main: 'e' }];
+    c.activeLoadoutId = 'x';
+    ensureDefaultLoadout(c);
+    expect(c.loadouts).toHaveLength(1);
+    expect(c.activeLoadoutId).toBe('x');
+  });
+});
 
 describe('items — recomputeLoadout / encombrement', () => {
   it('recomputeLoadout dérive armes ET armure actives des objets ÉQUIPÉS', () => {
@@ -54,8 +175,8 @@ describe('items — recomputeLoadout / encombrement', () => {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasD', noTwoHanded: true, note: '' }],
       items: [
-        item({ name: 'Arc long', kind: 'ranged', subType: 'Arc', equipped: true }),
-        item({ name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', equipped: true }),
+        item({ name: 'Arc long', kind: 'ranged', subType: 'Arc', hands: 2, equipped: true }),
+        item({ name: 'Arbalète de poing', kind: 'ranged', subType: 'Arbalète', hands: 1, equipped: true }),
       ],
     } as unknown as Combatant;
     recomputeLoadout(c);

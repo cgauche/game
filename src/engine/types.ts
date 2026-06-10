@@ -87,6 +87,10 @@ export interface Weapon {
   qualities: string[];
   /** Famille d'arme (pour la compatibilité des munitions). */
   subType?: string;
+  /** Nombre de mains requises (1 ou 2). Dérivé de `(2M)` / arc / arbalète. */
+  hands?: 1 | 2;
+  /** Main qui tient l'arme dans le loadout actif ('off' → pénalité de main secondaire). */
+  hand?: 'main' | 'off';
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
   /** Dégâts subis par l'arme (LDB 62 l.178) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
@@ -185,6 +189,8 @@ export interface ItemInstance {
   desc?: string | null;
   /** Munition : famille compatible (Arc/Arbalète/Poudre noire) — correspond à `Weapon.subType`. */
   subType?: string;
+  /** Nombre de mains requises (1 ou 2), posé à la création par itemFromTrapping (marqueur `(2M)`). */
+  hands?: 1 | 2;
   /** Quantité (paquet de munitions, ex. « (12) » → 12). */
   qty?: number;
   /** Dégâts subis par l'arme (LDB 62 l.178), persistés sur le trapping ; propagé au Weapon actif. */
@@ -200,6 +206,14 @@ export interface ItemInstance {
   /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
    *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
   prosthesisTrained?: boolean;
+}
+
+/** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */
+export interface WeaponLoadout {
+  id: string;
+  name: string;
+  main?: string;
+  off?: string;
 }
 
 export interface Combatant {
@@ -265,6 +279,9 @@ export interface Combatant {
   encumbrance?: number;
   skills: SkillInstance[];
   talents: TalentInstance[];
+  /** Sets d'armes du héros (les ennemis n'en ont pas → chemin legacy = toutes armes équipées). */
+  loadouts?: WeaponLoadout[];
+  activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
   /** Effets magiques actifs et temporisés (buffs de Bénédiction/Sort). */

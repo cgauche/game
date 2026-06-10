@@ -4,7 +4,7 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
 import { bonus } from './characteristics';
 import { cannotWieldTwoHanded } from './trauma';
 import { findTrapping } from '../data';
@@ -47,6 +47,7 @@ export function itemFromTrapping(label: string): ItemInstance | null {
           .flatMap((p) => ARMOUR_LOC[p] ?? [])
       : undefined;
   const qtyMatch = (t.prefix ?? '').match(/\((\d+)\)/); // « (12) » → 12 (taille du paquet de munitions)
+  const twoHandMark = /\(2m\)/i.test(t.prefix ?? '') || /\(2m\)/i.test(t.label); // marqueur « (2M) » = 2 mains
   return {
     uid: newUid(),
     name: t.label,
@@ -61,6 +62,7 @@ export function itemFromTrapping(label: string): ItemInstance | null {
     equipped: false,
     desc: t.desc,
     subType: t.subType ?? undefined,
+    hands: kind === 'melee' || kind === 'ranged' ? (twoHandMark ? 2 : 1) : undefined, // marqueur (2M), uniforme
     qty: kind === 'ammo' ? (qtyMatch ? parseInt(qtyMatch[1], 10) : 1) : undefined,
   };
 }
@@ -91,38 +93,83 @@ export function emptyArmour(ap = 0): ArmourPoints {
   return { tete: ap, brasG: ap, brasD: ap, corps: ap, jambeG: ap, jambeD: ap };
 }
 
-/** Arme exigeant DEUX mains (LDB 62) : mêlée du Groupe « Deux-mains », arc (tous), arbalète SAUF « de poing ».
- *  Pistolets/arquebuses (Poudre noire/Ingénierie) partagent un subType ambigu (1 vs 2 mains) → non classés. */
-export function isTwoHandedWeapon(it: ItemInstance): boolean {
-  const st = (it.subType ?? '').toLowerCase();
-  if (it.kind === 'melee') return st === 'deux-mains';
-  if (it.kind === 'ranged') return st === 'arc' || (st === 'arbalète' && !/poing/i.test(it.name));
-  return false;
+/** Latéralité d'une arme. La donnée canonique marque le 2-mains par le préfixe `(2M)` — UNIFORME mêlée ET
+ *  distance (Arc/Arbalète/Arquebuse/Tromblon = (2M) ; Arbalète de poing/Pistolet/Fronde = 1 main).
+ *  itemFromTrapping pose `hands` depuis ce marqueur → il fait foi ici. Fallback (objets legacy sans `hands`) :
+ *  marqueur `(2M)` dans le nom, ou Groupe « Deux-mains ». */
+export function weaponHands(it: { hands?: 1 | 2; name: string; subType?: string }): 1 | 2 {
+  if (it.hands === 1 || it.hands === 2) return it.hands;
+  if (/\(2m\)/i.test(it.name) || (it.subType ?? '').toLowerCase() === 'deux-mains') return 2;
+  return 1;
 }
 
-/** Recalcule armes/armure actives + encombrement depuis l'équipement porté. */
+/** Arme exigeant DEUX mains (LDB 62). Pistolets/arquebuses (Poudre noire/Ingénierie) : 1 main par défaut. */
+export function isTwoHandedWeapon(it: ItemInstance): boolean {
+  return weaponHands(it) === 2;
+}
+
+let _unarmed: Weapon | null = null;
+/** Arme « Mains nues » canonique, DÉRIVÉE du trapping (LDB 62 l.75 : +BF+0, Personnelle, Inoffensive) —
+ *  plus de valeur codée en dur. Lazy + mémoïsé (data chargée au 1ᵉʳ appel). Copie fraîche à chaque appel. */
+export function unarmedWeapon(): Weapon {
+  if (!_unarmed) {
+    const it = itemFromTrapping('Mains nues');
+    _unarmed = it
+      ? { name: it.name, type: 'melee', damage: it.damage ?? '+BF+0', reach: it.reach, qualities: it.qualities, subType: it.subType, hands: 1 }
+      : { name: 'Mains nues', type: 'melee', damage: '+BF+0', reach: 'Personnelle', qualities: ['Inoffensive'], subType: 'Bagarre', hands: 1 };
+  }
+  return { ..._unarmed, hand: 'main' };
+}
+
+/** Loadout actif d'un combattant, ou null si aucun (chemin legacy = toutes armes équipées). */
+export function activeLoadout(c: Combatant): WeaponLoadout | null {
+  if (!c.loadouts?.length) return null;
+  return c.loadouts.find((l) => l.id === c.activeLoadoutId) ?? c.loadouts[0];
+}
+
+/** Recalcule armes/armure actives + encombrement. Les ARMES viennent du loadout actif (contrainte 2 mains,
+ *  tag `hand`) ; sans loadout = comportement historique (toutes armes équipées, `hand:'main'`). */
 export function recomputeLoadout(c: Combatant): void {
   const items = c.items ?? [];
+  const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
+    if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
+    const hands = weaponHands(it);
+    if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
+    const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
+    return { name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
+      range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
+      skin: it.skin, hands, hand };
+  };
+
   const weapons: Weapon[] = [];
-  for (const it of items) {
-    if (!it.equipped) continue;
-    if (it.kind === 'melee' || it.kind === 'ranged') {
-      if (it.destroyed) continue; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
-      // Amputation de main/bras (LDB 18 l.352) : pas d'arme à DEUX mains → repli mains nues. Mêlée = Groupe
-      // « Deux-mains » ; distance = arcs (tous) et arbalètes (sauf « de poing »). Poudre noire/ingénierie = ambigu
-      // (pistolet 1 main vs arquebuse 2 mains, même subType) → non bloqué.
-      if (isTwoHandedWeapon(it) && cannotWieldTwoHanded(c)) continue;
-      // Recharge (Indice) = Indice DR à cumuler par un Test étendu de Projectiles (LDB 63-Armures l.28-29).
-      const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
-      weapons.push({ name: it.name, type: it.kind, damage: it.damage ?? '+BF', reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken, skin: it.skin });
+  const lo = activeLoadout(c);
+  if (lo) {
+    const mainIt = lo.main ? items.find((i) => i.uid === lo.main && (i.kind === 'melee' || i.kind === 'ranged')) : undefined;
+    const mainW = mainIt ? toWeapon(mainIt, 'main') : null;
+    if (mainW) weapons.push(mainW);
+    const mainTwoHanded = mainW?.hands === 2;
+    let offUid: string | undefined;
+    if (!mainTwoHanded && lo.off) {
+      const offIt = items.find((i) => i.uid === lo.off && (i.kind === 'melee' || i.kind === 'ranged'));
+      const offW = offIt ? toWeapon(offIt, 'off') : null;
+      if (offW) { weapons.push(offW); offUid = offIt!.uid; }
+    }
+    // Synchronise `equipped` des ARMES sur le loadout (lecteurs legacy de weapon.equipped : marchand, etc.).
+    for (const it of items) if (it.kind === 'melee' || it.kind === 'ranged') it.equipped = it.uid === lo.main || it.uid === offUid;
+  } else {
+    for (const it of items) {
+      if (!it.equipped || (it.kind !== 'melee' && it.kind !== 'ranged')) continue;
+      const w = toWeapon(it, 'main');
+      if (w) weapons.push(w);
     }
   }
+
   // Crochet PORTÉ (prothèse, LDB 73) : « en Combat rapproché, considéré comme une Dague ». Arme dérivée.
   if (items.some((i) => i.equipped && i.name === 'Crochet')) {
-    weapons.push({ name: 'Crochet', type: 'melee', damage: '+BF+2', reach: 'Très courte', qualities: [], subType: 'Base' });
+    weapons.push({ name: 'Crochet', type: 'melee', damage: '+BF+2', reach: 'Très courte', qualities: [], subType: 'Base', hands: 1, hand: 'main' });
   }
-  // Mains nues toujours disponibles en dernier recours.
-  weapons.push({ name: 'Mains nues', type: 'melee', damage: '+BF-2', reach: 'Très courte', qualities: [] });
+  // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
+  weapons.push(unarmedWeapon());
 
   const armour = emptyArmour();
   for (const it of items) {
@@ -134,6 +181,30 @@ export function recomputeLoadout(c: Combatant): void {
   c.weapons = weapons;
   c.armour = armour;
   c.encumbrance = totalEncumbrance(c);
+}
+
+let loadoutCounter = 0;
+/** Génère les loadouts par défaut d'un héros qui n'en a pas : « Mêlée » (meilleure arme de mêlée + bouclier/
+ *  2e arme à 1 main en secondaire) et « Distance » (1re arme à distance) si présentes. Idempotent. */
+export function ensureDefaultLoadout(c: Combatant): void {
+  if (c.loadouts?.length) return;
+  const items = (c.items ?? []).filter((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged'));
+  const melee = items.filter((i) => i.kind === 'melee');
+  const ranged = items.filter((i) => i.kind === 'ranged');
+  const loadouts: WeaponLoadout[] = [];
+
+  if (melee.length) {
+    const main = [...melee].sort((a, b) => damageScore(b.damage) - damageScore(a.damage))[0];
+    let off: ItemInstance | undefined;
+    if (weaponHands(main) === 1) off = melee.find((i) => i.uid !== main.uid && weaponHands(i) === 1);
+    loadouts.push({ id: `lo-${++loadoutCounter}`, name: 'Mêlée', main: main.uid, off: off?.uid });
+  }
+  if (ranged.length) {
+    loadouts.push({ id: `lo-${++loadoutCounter}`, name: 'Distance', main: ranged[0].uid });
+  }
+  if (!loadouts.length) return; // aucune arme équipée : pas de loadout (Mains nues suffisent via recompute)
+  c.loadouts = loadouts;
+  c.activeLoadoutId = loadouts[0].id;
 }
 
 /**

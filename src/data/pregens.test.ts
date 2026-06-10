@@ -46,7 +46,8 @@ describe('makeArenaParty — couverture des règles', () => {
   });
 
   it('porte une arme à DISTANCE (Projectiles : bandes de portée / munitions / rechargement)', () => {
-    expect(party.filter((h) => h.weapons.some((w) => w.type === 'ranged')).length).toBeGreaterThanOrEqual(1);
+    // L'arme à distance est PORTÉE (inventaire / loadout « Distance ») même si le loadout actif est « Mêlée ».
+    expect(party.filter((h) => (h.items ?? []).some((i) => i.kind === 'ranged')).length).toBeGreaterThanOrEqual(1);
   });
 
   it('embarque un lanceur de sorts (couche magie arcanique + Incident)', () => {
