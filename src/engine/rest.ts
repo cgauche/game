@@ -12,9 +12,11 @@
  *  - volet a : « une fois par jour… Test de Résistance Accessible (+20)… DR + Bonus d'Endurance » ;
  *  - volet b : « pour chaque journée de repos, vous guérissez ÉGALEMENT le Bonus d'Endurance » (inconditionnel).
  *
+ * Faim & Soif (18-Traumatisme l.418) : « sans nourriture ni boisson… ne peuvent pas récupérer de PB
+ * ni se débarrasser de l'Exténué » — un héros AFFAMÉ (`isStarving`, suivi des rations par
+ * `engine/provisions.ts`) ne regagne ni PB ni Exténué par le repos (dette levée, #T2).
+ *
  * DETTE ASSUMÉE (hors périmètre, sourcée pour mémoire) :
- *  - Faim & Soif (18-Traumatisme l.418) : « sans nourriture ni boisson… ne peuvent pas récupérer de PB
- *    ni se débarrasser de l'Exténué ». Pas de suivi des provisions → récup toujours autorisée (raccourci).
  *  - Blessures CRITIQUES (l.386-403) : piste de guérison SÉPARÉE (jours de convalescence, accélérée par
  *    la Compétence Guérison / Chirurgie) — le repos soigne les PB mais JAMAIS les critiques. Lot distinct.
  */
@@ -25,6 +27,7 @@ import { effectiveChar, bonus } from './characteristics';
 import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
 import { tickTraumaRecovery } from './trauma';
 import { tickDisease, activeMalaiseCount, diseaseBlesseCount } from './disease';
+import { isStarving } from './provisions';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
@@ -53,21 +56,25 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, care
   const diseaseLog: string[] = [];
 
   for (let d = 0; d < Math.max(1, days); d++) {
+    // Faim & Soif (18 l.418) : un héros AFFAMÉ « ne peut pas récupérer de Points de Blessure ou se
+    // débarrasser de l'État Exténué de manière naturelle » → pas de dissipation ni de soin ce jour
+    // (les maladies/cauchemars/convalescence suivent leur cours).
+    const starving = isStarving(c);
     // Maladies (LDB 20) : nombre de symptômes au DÉBUT de la journée (avant que la maladie n'avance).
     const malaiseStart = activeMalaiseCount(c); // Exténué « collant » du malaise (l.153) — non dissipé par le sommeil
     const blesse = diseaseBlesseCount(c); // chaque « blessé » bloque la guérison d'1 PB (l.110)
     // Sommeil : dissipe les Exténué de FATIGUE, mais garde ceux imposés par un malaise actif.
     const fat = stacks(c, 'Exténué');
-    const removable = Math.max(0, fat - malaiseStart);
+    const removable = starving ? 0 : Math.max(0, fat - malaiseStart);
     if (removable > 0) removeCondition(c, 'Exténué', removable);
     const dayStartPB = c.wounds.current;
     // volet a (l.380) : Test de Résistance Accessible (+20) → DR + BE PB (une fois par jour).
-    if (c.wounds.current < c.wounds.max) {
+    if (!starving && c.wounds.current < c.wounds.max) {
       const res = rollTest(resVal, 'accessible', rng); // Accessible = +20
       if (res.success) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, res.sl) + be);
     }
     // volet b (l.380) : +BE par journée de repos, INCONDITIONNEL (même Test raté).
-    if (c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
+    if (!starving && c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
     // Symptôme « blessé » (l.110) : bloque la guérison d'1 PB par symptôme (la plaie reste ouverte).
     if (blesse > 0) c.wounds.current = Math.max(dayStartPB, c.wounds.current - blesse);
     // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
@@ -107,6 +114,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, care
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
+  if (isStarving(c)) log.push(`${c.name} est affamé — pas de récupération naturelle (Faim & Soif, LDB 18).`);
   if (hadFatigue && stacks(c, 'Exténué') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
   if (nightmareNights > 0) log.push(`${c.name} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
   return log;

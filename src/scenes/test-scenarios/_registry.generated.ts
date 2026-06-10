@@ -15,5 +15,6 @@ import { scenario as e10 } from './11-deux-marchands';
 import { scenario as e11 } from './12-monture';
 import { scenario as e12 } from './13-maniement-deux-armes';
 import { scenario as e13 } from './14-magie-jalon2';
+import { scenario as e14 } from './15-voyage';
 
-export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13];
+export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14];

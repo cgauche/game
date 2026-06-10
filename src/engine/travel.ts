@@ -1,0 +1,136 @@
+/**
+ * Voyage entre lieux (#T2) — Livre de base, section « Voyage » (fichier source
+ * `51 - Magie du Chaos.md`, découpage OCR — le contenu est le chapitre MJ « Voyage », l.183-256).
+ *
+ * RAW modélisé :
+ *  - « Utilisez le Déplacement pour déterminer la vitesse du voyage en kilomètre par heure »
+ *    (l.222 ; cf. aussi 05 l.479 « combien de kilomètres par heure vous pouvez aisément parcourir ») ;
+ *    à pied, c'est le Mouvement « le plus lent d'un groupe » (l.222) — Mouvement EFFECTIF
+ *    (Encombrement compris, `effectiveMovement`).
+ *  - « un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de
+ *    Résistance. S'il voyage plus rapidement ou plus loin, donnez un État Exténué à ceux échouant
+ *    à ce Test, et un État Exténué supplémentaire si le Personnage est Encombré » (l.224).
+ *  - Coûts de trajet (l.207-219) : « par kilomètre parcouru », diligence Déplacement 6
+ *    (Intérieur 2 sous / Extérieur 1 sou par km), barge Déplacement 8 (Cabine 5 / Pont 2 sous
+ *    par km) ; « modèles plus rapides/lents : prix ×2 / ÷2, Mouvement ±1 » → paramétrable.
+ *  - Fatigue d'Encombrement (LDB p.295, déjà codée) : `encumbrancePenalties().travelFatigue`
+ *    États Exténué « par journée de voyage » (paliers de surcharge) — enfin consommée ici.
+ *
+ * Tout est PARAMÉTRABLE par la donnée (carte du monde / route, éditeur) ; les défauts ci-dessous
+ * sont les valeurs RAW citées, ou des choix documentés quand le canon est muet.
+ */
+import { Combatant } from './types';
+import { RNG, defaultRNG } from './dice';
+import { rollTest } from './tests';
+import { testValue } from './skills';
+import { addCondition } from './conditions';
+import { effectiveMovement, encumbrancePenalties } from './encumbrance';
+import { Money, fromBrass } from './money';
+
+export type TravelMode = 'pied' | 'diligence' | 'barge';
+
+export const TRAVEL_MODE_LABEL: Record<TravelMode, string> = {
+  pied: 'À pied',
+  diligence: 'Diligence',
+  barge: 'Barge',
+};
+
+/** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */
+export const TRAVEL_DEFAULTS = {
+  /** Heures de voyage par jour sans Test de Résistance (RAW l.224). */
+  hoursPerDay: 6,
+  /** Plafond de marche forcée (heures/jour) — canon muet, paramétrable. */
+  forcedMaxHours: 10,
+  /** Seuil du d10 quotidien de péripétie : « événement sur un résultat de 8 » (l.237). 0 = désactivé. */
+  perilDie: 8,
+} as const;
+
+/** Classe d'un transport payant : prix RAW en sous (PA) par kilomètre ET par passager (l.207-219). */
+export interface TransportClass { key: string; label: string; brassPerKm: number; }
+
+/** Transports payants RAW (l.210-219). `movement` = Déplacement du véhicule (km/h, l.222). */
+export const TRANSPORTS: Record<Exclude<TravelMode, 'pied'>, { movement: number; classes: TransportClass[] }> = {
+  diligence: {
+    movement: 6,
+    classes: [
+      { key: 'interieur', label: 'Intérieur', brassPerKm: 2 },
+      { key: 'exterieur', label: 'Extérieur', brassPerKm: 1 },
+    ],
+  },
+  barge: {
+    movement: 8,
+    classes: [
+      { key: 'cabine', label: 'Cabine', brassPerKm: 5 },
+      { key: 'pont', label: 'Pont', brassPerKm: 2 },
+    ],
+  },
+};
+
+/** Vitesse du groupe à pied = Mouvement EFFECTIF le plus lent (l.222), en km/h. */
+export function partyWalkSpeed(party: Combatant[]): number {
+  const alive = party.filter((c) => !c.dead);
+  if (!alive.length) return 0;
+  return Math.max(0, Math.min(...alive.map((c) => effectiveMovement(c))));
+}
+
+/** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, l.208). */
+export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number): number {
+  if (mode === 'pied') return movementOverride ?? partyWalkSpeed(party);
+  return movementOverride ?? TRANSPORTS[mode].movement;
+}
+
+export interface TravelPlanCalc {
+  /** Journées de voyage entamées. */
+  days: number;
+  /** Heures de marche du DERNIER jour (≤ heures/jour ; les autres jours sont pleins). */
+  hoursLastDay: number;
+  /** Durée totale en minutes (heures de déplacement uniquement). */
+  travelMinutes: number;
+}
+
+/** Découpe un trajet en journées : `km` à `kmh` km/h, `hoursPerDay` heures de route par jour. */
+export function travelPlanCalc(km: number, kmh: number, hoursPerDay: number): TravelPlanCalc | null {
+  if (km <= 0 || kmh <= 0 || hoursPerDay <= 0) return null;
+  const totalHours = km / kmh;
+  const fullDays = Math.floor(totalHours / hoursPerDay);
+  const rest = totalHours - fullDays * hoursPerDay;
+  const days = rest > 1e-9 ? fullDays + 1 : Math.max(1, fullDays);
+  const hoursLastDay = rest > 1e-9 ? rest : hoursPerDay;
+  return { days, hoursLastDay, travelMinutes: Math.round(totalHours * 60) };
+}
+
+/** Coût d'un transport payant : prix/km × km × passagers (l.207 « par kilomètre parcouru »).
+ *  `brassPerKmOverride` = prix d'auteur sur la route (défaut : classe RAW). */
+export function transportCost(
+  km: number,
+  mode: Exclude<TravelMode, 'pied'>,
+  classKey: string,
+  passengers: number,
+  brassPerKmOverride?: number,
+): Money {
+  const cls = TRANSPORTS[mode].classes.find((c) => c.key === classKey) ?? TRANSPORTS[mode].classes[0];
+  const perKm = brassPerKmOverride ?? cls.brassPerKm;
+  return fromBrass(Math.ceil(perKm * km) * Math.max(1, passengers));
+}
+
+/** Marche forcée (l.224) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
+ *  échec = +1 Exténué (+1 de plus si Surchargé/Encombré, p.293). Mute `c`, renvoie le journal. */
+export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): string[] {
+  if (c.dead) return [];
+  const t = rollTest(testValue(c, 'Résistance', 'E'), 'intermediaire', rng);
+  if (t.success) return [`${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → il tient l'allure.`];
+  const overloaded = encumbrancePenalties(c).tier > 0;
+  const n = overloaded ? 2 : 1;
+  addCondition(c, 'Exténué', n);
+  return [`${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`];
+}
+
+/** Fatigue d'Encombrement d'une journée de voyage à pied (LDB p.295 — `travelFatigue` enfin
+ *  appliqué) : États Exténué selon le palier de surcharge. Mute `c`, renvoie le journal. */
+export function applyTravelFatigue(c: Combatant): string[] {
+  if (c.dead) return [];
+  const n = encumbrancePenalties(c).travelFatigue;
+  if (n <= 0) return [];
+  addCondition(c, 'Exténué', n);
+  return [`${c.name} termine la journée fourbu sous sa charge : +${n} Exténué (Encombrement).`];
+}

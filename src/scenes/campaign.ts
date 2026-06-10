@@ -3,9 +3,11 @@
  *  d'entrée, et toutes ses scènes (hub + zones) sont enregistrées → les transitions résolvent. Les
  *  scènes du Tome 1 restent enregistrées (sceneRegistry : éditeur/tests) mais ne sont plus le départ. */
 import { Scene } from '../state/scene';
+import { WorldMap } from '../state/worldMap';
 import { tome1Intro } from './tome1-intro';
 import { tome1Auberge } from './tome1-auberge';
 import { tome1Route } from './tome1-route';
+import { tome1Carte } from './tome1-carte';
 import areneProjet from './arene/arene-projet.json';
 
 export interface CampaignChapter {
@@ -23,3 +25,6 @@ export const campaign: CampaignChapter[] = [
   { id: 'tome1-auberge-interieur', tome: 1, title: 'Tome 1 — La Diligence : la Grande Salle', scene: tome1Auberge },
   { id: 'tome1-route', tome: 1, title: "Tome 1 — La route d'Altdorf", scene: tome1Route },
 ];
+
+/** Carte du monde de la campagne (#T2 Voyage) — lieux/routes du Tome 1 (donnée, éditable). */
+export const campaignWorldMap: WorldMap = tome1Carte;

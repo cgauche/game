@@ -33,6 +33,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'giveCorruption',
   'learnSpell',
   'rest',
+  'mealParty',
   'startCombat',
   'transition',
   'transitionBack',
@@ -59,6 +60,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   giveCorruption: 'Points de Corruption directs (LDB 19)',
   learnSpell: 'Apprendre un sort (trouvaille, sans PX)',
   rest: 'Repos (Dormir / Se reposer N jours)',
+  mealParty: 'Repas (nourrit le groupe sans ration — faim à zéro)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -114,6 +116,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'learnSpell', spell: '', heroId: '' };
     case 'rest':
       return { type: 'rest', days: 1 };
+    case 'mealParty':
+      return { type: 'mealParty' };
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
     default:

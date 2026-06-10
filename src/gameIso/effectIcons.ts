@@ -91,11 +91,16 @@ export interface EffectFlags {
   aiming?: boolean;
   /** DR de Focalisation cumulé (undefined = pas de Focalisation en cours). */
   focusDr?: number;
+  /** Faim (#T2, LDB 18 l.417-422) : jours sans manger + échecs (malus de caracs actifs). */
+  hunger?: { days: number; failures: number };
 }
 
 /** Extrait les états-drapeaux affichables d'un Combatant (source unique pour tous les affichages). */
 export function combatantFlags(c: Combatant): EffectFlags {
-  return { frenzied: c.frenzied, defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr };
+  return {
+    frenzied: c.frenzied, defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr,
+    hunger: (c.hunger?.days ?? 0) >= 1 ? { days: c.hunger!.days, failures: c.hunger!.failures } : undefined,
+  };
 }
 
 function flagChips(flags?: EffectFlags): EffectChip[] {
@@ -104,6 +109,13 @@ function flagChips(flags?: EffectFlags): EffectChip[] {
   if (flags?.defensiveStance) out.push({ key: 'f-def', icon: '🛡️', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
   if (flags?.aiming) out.push({ key: 'f-aim', icon: '🎯', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
   if (flags?.focusDr != null) out.push({ key: 'f-focus', icon: '🔮', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
+  if (flags?.hunger) {
+    const h = flags.hunger;
+    out.push({
+      key: 'f-hunger', icon: '🍽️', kind: 'state', severity: 62,
+      label: `Affamé (${h.days} j sans manger${h.failures >= 2 ? ' — −10 à toutes les Caractéristiques' : h.failures === 1 ? ' — −10 Force/Endurance' : ''}) : pas de récupération naturelle`,
+    });
+  }
   return out;
 }
 

@@ -376,6 +376,9 @@ export interface Combatant {
   /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes lus par
    *  `diseaseCharPenalties` (fièvre) / `rest.ts` (malaise→Exténué, blessé bloque la guérison). */
   diseases?: import('./disease').Disease[];
+  /** Faim (LDB 18 l.417-422) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
+   *  caracs lus par `hungerCharPenalties`). Absent = nourri. Entretien quotidien : `dailyFoodUpkeep`. */
+  hunger?: import('./provisions').HungerState;
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
   nextActionPenalty?: number;

@@ -19,6 +19,8 @@ import { InitiativeStrip } from './InitiativeStrip';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { GameMenu } from './GameMenu';
+import { WorldMapView } from './WorldMapView';
+import { placeOfScene } from '../state/worldMap';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -35,6 +37,10 @@ export function CampaignView() {
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
   const gameTime = useGame((s) => s.gameTime);
+  const worldMap = useGame((s) => s.worldMap);
+  const worldMapOpen = useGame((s) => s.worldMapOpen);
+  const openWorldMap = useGame((s) => s.openWorldMap);
+  const travelPlan = useGame((s) => s.travelPlan);
   const setScreen = useGame((s) => s.setScreen);
   const startScene = useGame((s) => s.startScene);
   const party = useGame((s) => s.party);
@@ -96,6 +102,18 @@ export function CampaignView() {
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} />
+        {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
+            qu'un voyage interrompu attend sa reprise. */}
+        {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
+          <button
+            type="button"
+            className={`worldmap-btn ${travelPlan?.interrupted ? 'attention' : ''}`}
+            onClick={openWorldMap}
+            title={travelPlan?.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
+          >
+            🗺️
+          </button>
+        )}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls
@@ -110,6 +128,7 @@ export function CampaignView() {
         />
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
+        {worldMapOpen && mode === 'exploration' && <WorldMapView />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
         {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). */}

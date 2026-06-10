@@ -23,6 +23,8 @@ import { useSceneHistory } from './useSceneHistory';
 import { useEditorView } from './useEditorView';
 import { Palette } from './Palette';
 import { Inspector } from './Inspector';
+import { WorldMapEditor } from './WorldMapEditor';
+import { WorldMap, parseProject } from '../../state/worldMap';
 import { Tool, Rect, Layers, KIND_LABEL, rectFrom } from './tools';
 
 /**
@@ -45,6 +47,8 @@ export function Editor() {
   const [encTarget, setEncTarget] = useState<string>(''); // rencontre cible pour le placement
   const [encRef, setEncRef] = useState<string>(''); // créature à placer
   const [otherScenes, setOtherScenes] = useState<Scene[]>([]); // projet : scènes ≠ active
+  const [worldMap, setWorldMap] = useState<WorldMap | null>(null); // projet : carte du monde (#T2)
+  const [worldOpen, setWorldOpen] = useState(false);
   const [painting, setPainting] = useState(false);
   const [clip, setClip] = useState<SceneEntity | null>(null); // presse-papier (copier/coller)
   const hoverRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // dernière case survolée (cible de Ctrl+V)
@@ -367,8 +371,9 @@ export function Editor() {
     });
 
   function exportJson() {
-    // Exporte le PROJET (toutes les scènes) ; la première est la scène d'entrée.
-    const project = [scene, ...otherScenes];
+    // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
+    // L'import accepte toujours le format legacy (tableau de scènes) — cf. parseProject.
+    const project = { schema: 2 as const, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}) };
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -381,9 +386,11 @@ export function Editor() {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const scenes: Scene[] = Array.isArray(data) ? data : [data]; // projet OU scène unique
+        // Projet v2 ({ scenes, worldMap? }), legacy (tableau) OU scène unique — cf. parseProject.
+        const { scenes, worldMap: wm } = parseProject(data);
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1));
+        setWorldMap(wm ?? null);
         resetScene(scenes[0]);
         setSelected(null);
       } catch {
@@ -396,7 +403,7 @@ export function Editor() {
       alert('Ajoutez d\'abord au moins un aventurier au groupe (menu Nouvelle partie) pour tester.');
       return;
     }
-    loadProject([scene, ...otherScenes], scene.id);
+    loadProject([scene, ...otherScenes], scene.id, worldMap);
     setScreen('campaign');
   }
   function openAdvanced() {
@@ -445,6 +452,9 @@ export function Editor() {
           </label>
           <button className="btn small" onClick={exportJson}>
             Exporter JSON
+          </button>
+          <button className="btn small" onClick={() => setWorldOpen(true)} title="Carte du monde du projet : lieux, routes, voyage (#T2)">
+            🗺️ Monde{worldMap ? ` (${worldMap.places.length})` : ''}
           </button>
           <button className="btn small btn-primary" onClick={test}>
             ▶ Tester
@@ -766,6 +776,15 @@ export function Editor() {
           dialogues={scene.dialogues}
           onSave={(e) => setScene({ ...scene, encounters: e })}
           onClose={() => setEncOpen(false)}
+        />
+      )}
+
+      {worldOpen && (
+        <WorldMapEditor
+          map={worldMap}
+          setMap={setWorldMap}
+          scenes={[scene, ...otherScenes]}
+          onClose={() => setWorldOpen(false)}
         />
       )}
 

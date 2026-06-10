@@ -126,8 +126,11 @@ src/engine/                 Règles WFRP4, PUR + testé :
   miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
   corruption.ts               Corruption & mutations (LDB 19 : expositions, seuil, limites → damné)
   grimoire.ts                 apprentissage/mémorisation des sorts (coûts par Talent) + lecture au livre
+  travel.ts                   voyage RAW (#T2) : vitesses km/h, 6 h/jour, marche forcée, coûts diligence/barge
+  provisions.ts               rations & Faim (LDB 18 l.417-422) : consommation/jour, Tests, malus, Brouet
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
+  worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
                             effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
   combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat)
@@ -138,6 +141,8 @@ src/state/
   pendings.ts                 types Pending* (ré-exportés par store.ts)
   partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
   merchantFlow.ts             marchand : réassort, panier, achat/vente/réparation, Marchandage, Évaluation
+  travelFlow.ts               voyage jour par jour (temps, fatigue, péripéties d10+auteur, interruption/reprise)
+  upkeep.ts                   entretien QUOTIDIEN (rations/faim) sur franchissement de jour — anti-double-comptage
   spawn.ts / path.ts / bus.ts
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)
