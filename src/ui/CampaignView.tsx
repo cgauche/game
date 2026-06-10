@@ -41,6 +41,7 @@ export function CampaignView() {
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
   const rotateCam = useGame((s) => s.rotateCam);
+  const battleClickEntity = useGame((s) => s.battleClickEntity);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [inspectId, setInspectId] = useState<string | null>(null);
   const clockDate = toDate(gameTime);
@@ -58,6 +59,18 @@ export function CampaignView() {
         return !!c && canActFirst(c, battle);
       })
     : [];
+  // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
+  // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
+  const targetingAction = battle && !battle.over ? battle.action : null;
+  const isTargeting = !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
+  const onStripPortrait = (id: string) => {
+    if (isTargeting) { battleClickEntity(id); return; }
+    if (inspectEnabled) setInspectId(id);
+  };
+  const onDockPortrait = (id: string) => {
+    if (isTargeting) { battleClickEntity(id); return; }
+    setSheetId(id);
+  };
 
   return (
     <div className="screen campaign-view">
@@ -75,7 +88,7 @@ export function CampaignView() {
             canFirstIds={canFirstIds}
             inspectEnabled={inspectEnabled}
             onToggleInspect={toggleInspect}
-            onInspect={inspectEnabled ? setInspectId : undefined}
+            onInspect={isTargeting || inspectEnabled ? onStripPortrait : undefined}
             onPromote={roundStartPromote}
           />
         )}
@@ -84,7 +97,7 @@ export function CampaignView() {
         {mode === 'exploration' && (
           <div className="date-chip" title={dateLine}>{phase.icon} {dateShort}</div>
         )}
-        <PartyDock heroes={dockHeroes} activeId={activeId} onOpen={setSheetId} />
+        <PartyDock heroes={dockHeroes} activeId={activeId} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls
           zoom={zoom}
