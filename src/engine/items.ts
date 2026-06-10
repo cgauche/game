@@ -207,6 +207,45 @@ export function ensureDefaultLoadout(c: Combatant): void {
   c.activeLoadoutId = loadouts[0].id;
 }
 
+/** Id de loadout unique (réutilise le compteur d'ensureDefaultLoadout). */
+export function newLoadoutId(): string {
+  return `lo-${++loadoutCounter}`;
+}
+
+/** Crée un loadout vide nommé, le rend actif, et renvoie son id. */
+export function loadoutCreate(c: Combatant, name: string): string {
+  const id = newLoadoutId();
+  c.loadouts = [...(c.loadouts ?? []), { id, name }];
+  c.activeLoadoutId = id;
+  return id;
+}
+
+export function loadoutRename(c: Combatant, id: string, name: string): void {
+  const lo = c.loadouts?.find((l) => l.id === id);
+  if (lo) lo.name = name;
+}
+
+/** Supprime un loadout ; si c'était l'actif, bascule sur le 1ᵉʳ restant (ou undefined). */
+export function loadoutDelete(c: Combatant, id: string): void {
+  c.loadouts = (c.loadouts ?? []).filter((l) => l.id !== id);
+  if (c.activeLoadoutId === id) c.activeLoadoutId = c.loadouts[0]?.id;
+}
+
+export function loadoutSetActive(c: Combatant, id: string): void {
+  if (c.loadouts?.some((l) => l.id === id)) c.activeLoadoutId = id;
+}
+
+/** Assigne (ou retire si `uid` null) une arme à un slot. Une arme à 2 mains en `main` vide le slot `off`. */
+export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', uid: string | null): void {
+  const lo = c.loadouts?.find((l) => l.id === id);
+  if (!lo) return;
+  lo[slot] = uid ?? undefined;
+  if (slot === 'main' && uid) {
+    const it = (c.items ?? []).find((i) => i.uid === uid);
+    if (it && weaponHands(it) === 2) lo.off = undefined; // 2 mains → pas de secondaire
+  }
+}
+
 /**
  * Ajoute l'objet `label` à l'inventaire PERSONNEL d'un héros et re-dérive son équipement actif. Retourne
  * un NOUVEAU combattant (cloné). SOURCE UNIQUE du « donner un objet à un héros » : utilisée par l'achat

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from './items';
 import { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
@@ -23,6 +23,62 @@ describe('weaponHands (latéralité)', () => {
     expect(itemFromTrapping('Arbalète de poing')?.hands).toBe(1);
     expect(itemFromTrapping('Pistolet')?.hands).toBe(1);
     expect(itemFromTrapping('Hallebarde')?.hands).toBe(2);
+  });
+});
+
+describe('mutateurs de loadout (purs)', () => {
+  const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, ...p } as ItemInstance);
+  const hero = (items: ItemInstance[]): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', items, loadouts: [], activeLoadoutId: undefined } as unknown as Combatant);
+
+  it('loadoutCreate ajoute un loadout vide et le rend actif', () => {
+    const c = hero([w('e', 'Epee')]);
+    const id = loadoutCreate(c, 'Test');
+    const lo = c.loadouts!.find((l) => l.id === id)!;
+    expect(lo.name).toBe('Test');
+    expect(lo.main).toBeUndefined();
+    expect(lo.off).toBeUndefined();
+    expect(c.activeLoadoutId).toBe(id);
+  });
+
+  it('loadoutSetSlot pose une arme ; une arme 2 mains en main vide le slot off', () => {
+    const c = hero([w('h2', 'Hallebarde', { hands: 2 }), w('b', 'Bouclier')]);
+    const id = loadoutCreate(c, 'L');
+    loadoutSetSlot(c, id, 'off', 'b');
+    loadoutSetSlot(c, id, 'main', 'h2'); // 2 mains → off effacé
+    const lo = c.loadouts!.find((l) => l.id === id)!;
+    expect(lo.main).toBe('h2');
+    expect(lo.off).toBeUndefined();
+  });
+
+  it('loadoutSetSlot(slot, null) vide le slot', () => {
+    const c = hero([w('e', 'Epee')]);
+    const id = loadoutCreate(c, 'L');
+    loadoutSetSlot(c, id, 'main', 'e');
+    loadoutSetSlot(c, id, 'main', null);
+    expect(c.loadouts!.find((l) => l.id === id)!.main).toBeUndefined();
+  });
+
+  it('loadoutRename / loadoutSetActive (ignore un id invalide)', () => {
+    const c = hero([w('e', 'Epee')]);
+    const id = loadoutCreate(c, 'L');
+    loadoutRename(c, id, 'Garde');
+    expect(c.loadouts!.find((l) => l.id === id)!.name).toBe('Garde');
+    loadoutCreate(c, 'L2');
+    loadoutSetActive(c, id);
+    expect(c.activeLoadoutId).toBe(id);
+    loadoutSetActive(c, 'inconnu');
+    expect(c.activeLoadoutId).toBe(id);
+  });
+
+  it('loadoutDelete : supprime ; si actif, bascule sur le 1er restant', () => {
+    const c = hero([w('e', 'Epee')]);
+    const a = loadoutCreate(c, 'A');
+    const b = loadoutCreate(c, 'B'); // actif = b
+    loadoutDelete(c, b);
+    expect(c.loadouts!.map((l) => l.id)).toEqual([a]);
+    expect(c.activeLoadoutId).toBe(a);
   });
 });
 

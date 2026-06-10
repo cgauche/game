@@ -6,7 +6,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
-import { recomputeLoadout, addItemToHero } from '../engine/items';
+import { recomputeLoadout, addItemToHero, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from '../engine/items';
 import { maxWounds } from '../engine/characteristics';
 import {
   buyCharAdvance as engineBuyCharAdvance,
@@ -57,6 +57,35 @@ export function toggleEquip(_get: Get, set: Set, heroId: string, uid: string): v
       return clone;
     }),
   }));
+}
+
+/** Applique une mutation de loadout à un héros (clone + recompute), même pattern que toggleEquip. */
+function mutLoadout(set: Set, heroId: string, fn: (c: Combatant) => void): void {
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      fn(clone);
+      recomputeLoadout(clone);
+      return clone;
+    }),
+  }));
+}
+
+export function createLoadout(_get: Get, set: Set, heroId: string, name: string): void {
+  mutLoadout(set, heroId, (c) => loadoutCreate(c, name));
+}
+export function renameLoadout(_get: Get, set: Set, heroId: string, id: string, name: string): void {
+  mutLoadout(set, heroId, (c) => loadoutRename(c, id, name));
+}
+export function deleteLoadout(_get: Get, set: Set, heroId: string, id: string): void {
+  mutLoadout(set, heroId, (c) => loadoutDelete(c, id));
+}
+export function setActiveLoadout(_get: Get, set: Set, heroId: string, id: string): void {
+  mutLoadout(set, heroId, (c) => loadoutSetActive(c, id));
+}
+export function setLoadoutSlot(_get: Get, set: Set, heroId: string, id: string, slot: 'main' | 'off', uid: string | null): void {
+  mutLoadout(set, heroId, (c) => loadoutSetSlot(c, id, slot, uid));
 }
 
 export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string, toHeroId: string): void {
