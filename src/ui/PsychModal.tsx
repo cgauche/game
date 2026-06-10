@@ -64,7 +64,6 @@ export function PsychModal() {
       rolled={!!r}
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
-      resultOk={ok}
       breakdown={r ? calmeBreakdown(calmeValue(c), r) : undefined}
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, c.id, source?.id)} combatants={battle.combatants} /> : undefined}
       determination={{ resolve: c.resolve ?? 0, onResolve: determine }}

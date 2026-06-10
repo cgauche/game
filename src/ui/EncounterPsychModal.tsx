@@ -53,7 +53,6 @@ export function EncounterPsychModal() {
       rolled={!!r}
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
-      resultOk={ok}
       breakdown={r ? calmeBreakdown(calmeValue(hero), r) : undefined}
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, hero.id, pe.sourceId)} combatants={lite} /> : undefined}
       determination={{ resolve: hero.resolve ?? 0, onResolve: determine }}
