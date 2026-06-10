@@ -312,6 +312,19 @@ export function IsoStage() {
     for (const s of battle.smoke ?? []) {
       hl.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, d)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
     }
+    // Portée du SORT sélectionné (mode incantation) : cases à portée teintées — parité avec le tir.
+    // (`range` null = portée non chiffrable — le lanceur/au toucher — → rien.)
+    if (battle.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && activeC.pos) {
+      const spell = findSpell(battle.selectedSpell);
+      const range = spell ? spellRangeTiles(spell.range, activeC) : null;
+      if (range != null)
+        for (let y = 0; y < d.h; y++)
+          for (let x = 0; x < d.w; x++) {
+            const dist = cheb(activeC.pos, { x, y });
+            if (dist === 0 || dist > range) continue;
+            hl.push(<path key={`sr${x}-${y}`} d={diamondPath(x, y, d)} fill="#8e54c8" opacity={0.14} pointerEvents="none" />);
+          }
+    }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
     // (attaque implicite), tant que l'Action est disponible (ou attaque libre de Frénésie).
     if (battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || (activeC.frenzied && !activeC.frenzyFreeUsed))) {

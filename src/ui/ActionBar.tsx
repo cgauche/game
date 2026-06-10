@@ -329,9 +329,12 @@ export function ActionBar() {
           />
           <div className="ab-actor-side">
             {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}
-            {assailliN >= 2 && (
+            {(assailliN >= 2 || (isHero && battle.fearGate === 'failed')) && (
               <div className="ab-actor-top">
-                <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>
+                {assailliN >= 2 && <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>}
+                {isHero && battle.fearGate === 'failed' && (
+                  <span className="ab-assailli" title="Test de Calme d'approche raté : impossible de se rapprocher de la source de sa Peur ce Tour (LDB 21 l.29)">😨 Cloué</span>
+                )}
               </div>
             )}
             {/* Commutateur de set d'armes (1 switch gratuit/tour, même Engagé — LDB 13 l.116). */}

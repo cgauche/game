@@ -55,6 +55,7 @@ import {
   castBlockedBy,
   hasTalent,
   evaluateMissile,
+  spellRangeTiles,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -2327,6 +2328,15 @@ export function castSpell(
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
     get().log(`${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
     return;
+  }
+  // Portée (LDB 47) : cible directe hors de portée du sort → refus AVANT la modale (parité ZdE/tir).
+  // `range` null = portée non chiffrable (« le lanceur », « au toucher », spécial) → pas de gate.
+  if (get().battle && caster.pos && target.pos && caster.id !== target.id) {
+    const range = spellRangeTiles(spell.range, caster);
+    if (range != null && combatDistance(caster, target) > range) {
+      get().log(`${spell.label} : cible hors de portée (${range} cases).`);
+      return;
+    }
   }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
   set({
