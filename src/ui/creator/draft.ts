@@ -34,7 +34,7 @@ import {
 import { createHero, resolveSpeciesTalents } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached } from '../../engine/careerSlots';
 import { careerSkillAdditions } from '../../engine/talentEffects';
-import { findSpecies, findSkill, findTalent, careers, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
+import { findSpecies, findSkill, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -93,11 +93,18 @@ export interface CreatorDraft {
   parts?: Appearance['parts'];
 }
 
+/** Défauts DÉRIVÉS des données (rien en dur) : première espèce du Livre de base, et la
+ *  première carrière qui lui est accessible. */
+function defaultSpecies(): SpeciesData {
+  return allSpecies.find((s) => s.source.book === 'LDB') ?? allSpecies[0];
+}
+
 export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff) | 0)): CreatorDraft {
+  const sp = defaultSpecies();
   return {
     seed,
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesLabel: sp.label,
+    careerLabel: careersForSpecies(sp.refCareer)[0]?.label ?? careers[0].label,
     ignoreRestrictions: false,
     careerRolls: [],
     careerFreeRolls: 0,

@@ -30,9 +30,10 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
-    const html = renderToStaticMarkup(<CreatorSummary d={newDraft(42)} step={0} />);
+    const d = newDraft(42);
+    const html = renderToStaticMarkup(<CreatorSummary d={d} step={0} />);
     expect(html).toContain('Aventurier');
-    expect(html).toContain('Soldat'); // carrière par défaut
+    expect(html).toContain(d.careerLabel); // carrière par défaut dérivée des données
     expect(html).toContain('Mouvement');
     expect(html).toContain('Destin');
     expect(html).toContain('Bourse');
