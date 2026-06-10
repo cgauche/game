@@ -119,7 +119,9 @@ export interface BattleState {
   baseOrder?: string[];
   turn: number;
   round: number;
-  action: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null;
+  /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
+   *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity. */
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -360,7 +362,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'move' | 'attack' | 'cast' | 'focus' | 'charge' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
+  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** Guérison HORS COMBAT : le meilleur soigneur du groupe soigne `targetId`. */
@@ -441,7 +443,7 @@ export interface GameState {
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
-  battleClickEntity: (id: string, skipMountChoice?: boolean, opts?: { confirm?: boolean }) => void;
+  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean }) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
@@ -1060,62 +1062,24 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
-    // offensive. Seuls « move » (fuir), « resolve » (Détermination, qui peut retirer le Brisé) et la
-    // fermeture (null) sont permis. (« Se cacher » par Discrétion = pas de système de furtivité en
-    // combat ; approximé par « rester hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
-    if (hasCondition(active, 'Brisé') && a !== 'move' && a !== 'resolve' && a !== null) {
+    // offensive. Le déplacement (fuite) passe par le clic-sol implicite (filtre dans computeMoveReach) ;
+    // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
+    // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
+    // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
+    if (hasCondition(active, 'Brisé') && a !== 'resolve' && a !== null) {
       get().log(`${active.name} est Brisé : il ne peut que fuir (LDB 16) ou puiser dans sa Détermination.`);
       return;
     }
-    // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement, Détermination et l'ouverture des
-    // conteneurs (Mouvement/Tir/Objets, simples panneaux dont les feuilles portent leur propre `disabled`)
+    // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement (clic-sol), Détermination et l'ouverture
+    // des conteneurs (Mouvement/Tir/Objets, simples panneaux dont les feuilles portent leur propre `disabled`)
     // restent possibles (la Détermination ne coûte pas l'Action et peut retirer le Sonné, LDB ch.17 l.62-66).
     const containerMode = a === 'mvt' || a === 'tir' || a === 'objets';
-    if (a !== 'move' && a !== 'resolve' && !containerMode && a !== null && !canTakeAction(active)) return;
-    let reach = new Map<string, number>();
-    if (a === 'move' && movementRemaining(battle, active) > 0) {
-      // Engagé : déplacement libre interdit (LDB 15-Dépl l.84) → on entre dans le Désengagement.
-      if (isEngaged(active)) {
-        // Engagé : ouvre le Désengagement MÊME si l'Action est dépensée — seule l'option A
-        // « Sacrifier l'Avantage » (sans coût d'Action) reste dispo (canEsquive=false), ce qui rouvre
-        // le mouvement après une attaque SANS permettre de re-tenter l'Esquive (anti-boucle).
-        startDisengage(get, set, active);
-        return;
-      }
-      // M-A-M interdit (règle maison) : pas de Mouvement libre une fois l'Action prise si on avait DÉJÀ bougé
-      // avant elle. Reach reste vide → aucun déplacement (« Action puis Mouvement » reste, lui, permis).
-      if (battle.acted && battle.movedPreAction) {
-        set({ battle: { ...battle, action: a, reachable: new Map(), selectedSpell: null } });
-        return;
-      }
-      // Combat monté (LDB 14 l.215) : le cavalier se déplace au Mouvement de sa MONTURE et porte
-      // l'empreinte de la monture (géométrie de plateau = la monture, le cavalier la chevauche).
-      // Déplacement DÉCOMPOSABLE : la portée du segment courant = Mouvement RESTANT (Marche − déjà parcouru).
-      const geom = mountOf(battle, active) ?? active;
-      const blocked = occupied(battle, geom);
-      reach = reachable(scene, active.pos!, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
-      // Brisé (LDB 16 l.55) : on ne peut FUIR que vers une case qui ne RAPPROCHE d'aucun ennemi.
-      if (hasCondition(active, 'Brisé')) {
-        const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
-        if (foes.length) {
-          const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
-          reach = new Map([...reach].filter(([k]) => {
-            const [x, y] = k.split(',').map(Number);
-            return Math.min(...foes.map((e) => chebyshev({ x, y }, e.pos!))) >= distNow;
-          }));
-        }
-      }
-    }
-    // Charge : action COMBINÉE non décomposable → exige le PLEIN Mouvement (movementUsed === 0), pas déjà
-    // Engagé, pas À Terre (LDB 16 l.37) et arme de mêlée prête ; portée = Course (2×Mouvement, LDB 15-Dépl l.61,77).
-    if (a === 'charge' && battle.movementUsed === 0 && !isEngaged(active) && !hasCondition(active, 'À Terre') && active.weapons[0]?.type === 'melee') {
-      const geom = mountOf(battle, active) ?? active;
-      const blocked = occupied(battle, geom);
-      reach = reachable(scene, active.pos!, mountMovement(battle, active) * 2, blocked, sizeFootprint(geom.size));
-    }
-    // Quitter le mode incantation oublie le sort sélectionné.
+    if (a !== 'resolve' && !containerMode && a !== null && !canTakeAction(active)) return;
+    // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
+    // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
+    // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.
     const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
-    set({ battle: { ...battle, action: a, reachable: reach, selectedSpell, preview: null } });
+    set({ battle: { ...battle, action: a, selectedSpell, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1653,7 +1617,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
     const prev = battle.preview;
     if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === pt.x && prev.tile.y === pt.y)) {
-      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size));
+      const path = pathTo(scene, active.pos!, pt, blocked, sizeFootprint(geom.size)) ?? [];
       set({ battle: { ...battle, preview: { kind: 'move', tile: { ...pt }, path, cost: stepCost } } });
       bus.emit(EVT.SCENE_DIRTY);
       return;
@@ -1703,7 +1667,7 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
 
-  battleClickEntity: (id, skipMountChoice, opts) => {
+  battleClickEntity: (id, opts) => {
     const { battle, scene } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1715,8 +1679,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
     // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
-    const neutralOrLegacy = battle.action === null || battle.action === 'attack' || battle.action === 'charge';
-    const freeFrenzyAttack = neutralOrLegacy && !!active.frenzied && !active.frenzyFreeUsed;
+    const freeFrenzyAttack = battle.action === null && !!active.frenzied && !active.frenzyFreeUsed;
     if (battle.acted && !freeFrenzyAttack) return;
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
@@ -1725,8 +1688,8 @@ export const useGame = create<GameState>((set, get) => ({
       castSpell(get, set, active, target, battle.selectedSpell);
       return;
     }
-    // Clic-ennemi IMPLICITE (mode neutre ; les modes legacy attack/charge committent direct).
-    if (!neutralOrLegacy || !scene) return;
+    // Clic-ennemi IMPLICITE (mode neutre uniquement — les autres modes ont leur sémantique propre).
+    if (battle.action !== null || !scene) return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
     if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
     const plan = attackPlan(get, active, target);
@@ -1738,19 +1701,18 @@ export const useGame = create<GameState>((set, get) => ({
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
-    // Tap 1 : APERÇU — sauf confirmation (tests), ré-entrée du choix cavalier/monture, mode legacy,
+    // Tap 1 : APERÇU — sauf confirmation (tests), ré-entrée du choix cavalier/monture,
     // ou re-tap de la même cible avec le même plan.
     const prev = battle.preview;
     const samePreview = !!prev && 'targetId' in prev && prev.targetId === id && prev.kind === plan.kind;
-    const legacyMode = battle.action === 'attack' || battle.action === 'charge';
-    if (!opts?.confirm && !skipMountChoice && !legacyMode && !samePreview) {
+    if (!opts?.confirm && !opts?.skipMountChoice && !samePreview) {
       set({ battle: { ...battle, preview: plan.kind === 'attack' ? { kind: 'attack', targetId: id } : { ...plan, targetId: id } } });
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
     // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.219) AVANT toute résolution — on n'ouvre la
     // modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
-    if (!skipMountChoice) {
+    if (!opts?.skipMountChoice) {
       const rider = target.mountId ? target : battle.combatants.find((c) => c.id === target.riderId);
       const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
       if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
@@ -2407,7 +2369,7 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, geom);
     const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
     const log = [...battle.log, ev('move', `${c.name} prend sa Course (${skill} ${pr.result.roll === 100 ? '00' : pr.result.roll}) : déplacement jusqu'à ${range} cases.`, c.id)];
-    set({ battle: { ...get().battle!, action: 'move', acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
+    set({ battle: { ...get().battle!, action: null, acted: true, reachable: reachable(scene, c.pos!, range, blocked, sizeFootprint(geom.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   runCancel: () => set({ pendingRun: null }),
@@ -2601,7 +2563,7 @@ export const useGame = create<GameState>((set, get) => ({
   mountTargetSelect: (id) => {
     if (!get().pendingMountTarget) return;
     set({ pendingMountTarget: null });
-    get().battleClickEntity(id, true);
+    get().battleClickEntity(id, { skipMountChoice: true });
   },
   mountTargetCancel: () => set({ pendingMountTarget: null }),
 
@@ -2629,7 +2591,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingDisengage: null,
       battle: {
         ...battle,
-        action: 'move', // mouvement libre rouvert, sans pénalité (l.87) ; Action préservée
+        action: null, // mouvement libre rouvert (clic-sol), sans pénalité (l.87) ; Action préservée
         reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)),
         log: [...battle.log, ev('flee', `${mover.name} se désengage en sacrifiant son Avantage.`, mover.id)],
       },
@@ -2778,7 +2740,7 @@ export const useGame = create<GameState>((set, get) => ({
       const blocked = occupied(battle, mover);
       log.push(ev('flee', `${mover.name} se désengage (Esquive réussie, +1 Avantage).`, mover.id, foe.id));
       set({
-        battle: { ...battle, acted: true, action: 'move', reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
+        battle: { ...battle, acted: true, action: null, reachable: reachable(scene, mover.pos!, effectiveMovement(mover), blocked, sizeFootprint(mover.size)), log },
       });
     } else if (pd.result === 'tie') {
       // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
@@ -2830,7 +2792,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
     // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
     // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
-    set({ battle: { ...battle, action: 'move', reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
+    set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   },

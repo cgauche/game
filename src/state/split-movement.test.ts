@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame, movementRemaining, canMove } from './store';
-import { computeMoveReach } from './combatFlow';
+import { computeMoveReach, attackPlan } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
@@ -124,15 +124,17 @@ describe('Mouvement décomposable', () => {
     }
   });
 
-  it('Charge : exige le plein Mouvement — indisponible après un Mvt partiel, dispo à movementUsed 0', () => {
-    setup();
-    // Après un Mouvement partiel, la Charge ne se prépare pas (aucune case de charge).
+  it('Charge : exige le plein Mouvement — moveAttack après un Mvt partiel, charge à movementUsed 0', () => {
+    const { H } = setup();
+    const st0 = useGame.getState();
+    const h = st0.battle!.combatants.find((c) => c.id === H.id)!;
+    const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    e.pos = { x: h.pos!.x + 3, y: h.pos!.y };
+    // Après un Mouvement partiel, le plan n'est PAS une Charge (rejoindre-et-attaquer, sans bonus).
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 1, action: null } });
-    useGame.getState().battleSelectAction('charge');
-    expect(useGame.getState().battle!.reachable.size).toBe(0);
-    // Au plein Mouvement, la Charge propose des cases.
+    expect(attackPlan(useGame.getState, h, e).kind).toBe('moveAttack');
+    // Au plein Mouvement, le plan est une Charge (manœuvre pleine, portée de Course).
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0, action: null } });
-    useGame.getState().battleSelectAction('charge');
-    expect(useGame.getState().battle!.reachable.size).toBeGreaterThan(0);
+    expect(attackPlan(useGame.getState, h, e).kind).toBe('charge');
   });
 });

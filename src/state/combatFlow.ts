@@ -888,7 +888,7 @@ export function startDisengage(get: () => GameState, set: any, mover: Combatant)
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover);
-    set({ battle: { ...battle, action: 'move', reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
+    set({ battle: { ...battle, action: null, reachable: reachable(get().scene!, mover.pos!, effectiveMovement(mover), blocked) } });
     return;
   }
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
@@ -992,13 +992,13 @@ export function attackPlan(get: () => GameState, active: Combatant, target: Comb
     const reach = reachable(scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), blocked, sizeFootprint(geom.size));
     const dest = bestAdjacentReachable(reach, target.pos!);
     if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
-    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)), adv: chargeAdvantage(M, chebyshev(active.pos!, target.pos!)) };
+    return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], adv: chargeAdvantage(M, chebyshev(active.pos!, target.pos!)) };
   }
   // Mouvement entamé (ou À Terre) : rejoindre dans la Marche restante.
   const reach = displayedReach(get);
   const dest = bestAdjacentReachable(reach, target.pos!);
   if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de mêlée.' };
-  return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)), cost: reach.get(`${dest.x},${dest.y}`)! };
+  return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, blocked, sizeFootprint(geom.size)) ?? [], cost: reach.get(`${dest.x},${dest.y}`)! };
 }
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir

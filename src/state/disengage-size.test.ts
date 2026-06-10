@@ -53,7 +53,7 @@ describe('Désengagement & Taille (store)', () => {
 
     const st = useGame.getState();
     expect(st.pendingDisengage).toBeNull(); // court-circuité : aucun menu de Désengagement
-    expect(st.battle!.action).toBe('move'); // déplacement libre rouvert
+    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // déplacement libre rouvert (budget posé)
     expect(st.battle!.reachable.size).toBeGreaterThan(0);
     const h = st.battle!.combatants.find((c) => c.id === H.id)!;
     const e = st.battle!.combatants.find((c) => c.id === E.id)!;

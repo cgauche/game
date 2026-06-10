@@ -36,7 +36,7 @@ describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () =
 
     useGame.getState().disengageConfirmA();
     st = useGame.getState();
-    expect(st.battle!.action).toBe('move'); // mouvement libre rouvert
+    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // mouvement libre rouvert (budget posé)
     expect(st.battle!.acted).toBe(true); // l'option A NE consomme PAS l'Action (préservée)
     expect(st.pendingDisengage).toBeNull();
   });

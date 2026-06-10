@@ -114,7 +114,8 @@ export function ActionBar() {
   const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
   const entangled = isHero && hasCondition(active, 'Empêtré'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'En flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
-  const canCharge = isHero && !engaged && !prone && !broken && active.weapons[0]?.type === 'melee';
+  // Déplacement, Attaque et Charge n'ont PLUS de bouton : implicites au clic (sol/ennemi), la Charge
+  // se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77).
   // Course (LDB 15-Dépl l.79-82) : Action + Test d'Athlétisme (+20) → déplacement étendu.
   const canRun = isHero && !engaged && !prone && !moveStarted && !battle.acted && !stunned;
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
@@ -181,7 +182,7 @@ export function ActionBar() {
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
   // Catégories repliables : on n'affiche le bouton conteneur que si ≥1 enfant existe.
-  const hasMvt = canCharge || canRun || canStandUp || engaged || mounted || !!mountCandidate;
+  const hasMvt = canRun || canStandUp || engaged || mounted || !!mountCandidate;
   const hasTir = !!rangedW;
   const hasObjets = usableGroups.length > 0 || groundItems.length > 0;
   // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
@@ -237,11 +238,6 @@ export function ActionBar() {
       {battle.action === 'mvt' && (
         <div className="ab-spells">
           {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
-          {canCharge && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={moveStarted || (battle.acted && !freeFrenzy) || stunned} onClick={() => selectAction('charge')} title="Se ruer au contact (jusqu'à 2× le Mouvement) puis attaquer (LDB Charge)">🏃 Charger</button>
-            </div>
-          )}
           {canRun && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" onClick={run} title="Courir : Action + Test d'Athlétisme (+20) → déplacement étendu (LDB 15)">💨 Courir</button>
@@ -385,16 +381,10 @@ export function ActionBar() {
 
         {isHero ? (
           <div className="ab-slots">
-            {/* ── Primaires directs ── */}
-            <button
-              className={`ab-slot ${battle.action === 'move' ? 'on' : ''}`}
-              disabled={engaged ? (battle.acted && !canFreeDisengage) : !canMoveNow}
-              onClick={() => selectAction(battle.action === 'move' ? null : 'move')}
-              title={engaged ? 'Engagé : « Déplacer » lance un Désengagement (Esquive ou sacrifice d’Avantage)' : (battle.acted && battle.movedPreAction) ? 'Mouvement déjà fait avant l’Action : pas de Mouvement → Action → Mouvement' : moveStarted ? `Mouvement décomposable : ${moveLeft} case${moveLeft > 1 ? 's' : ''} restante${moveLeft > 1 ? 's' : ''}` : undefined}
-            >
-              <span className="ab-ico">🦶</span>
-              <span className="ab-lbl">Déplacer{moveStarted ? (moveLeft > 0 ? ` (${moveLeft})` : ' ✓') : ''}</span>
-            </button>
+            {/* ── Implicite : clic case = se déplacer · clic ennemi = attaquer (Charge auto) ── */}
+            <span className="ab-hint-implicit" title="Le déplacement et l'attaque sont directs : cliquer une case (aperçu puis confirmation), cliquer un ennemi (mêlée, tir ou Charge selon la situation).">
+              🦶 clic case · ⚔️ clic ennemi
+            </span>
             {/* Annuler le déplacement (R6/LOT 6) : tant qu'aucune Action n'est prise, revenir au point de départ. */}
             {moveStarted && !battle.acted && (
               <button
@@ -406,15 +396,6 @@ export function ActionBar() {
                 <span className="ab-lbl">Annuler dépl.</span>
               </button>
             )}
-            <button
-              className={`ab-slot ${battle.action === 'attack' ? 'on' : ''}`}
-              disabled={(battle.acted && !freeFrenzy) || stunned || broken}
-              onClick={() => selectAction(battle.action === 'attack' ? null : 'attack')}
-              title={freeFrenzy && battle.acted ? 'Attaque GRATUITE de Frénésie (ne consomme pas l’Action)' : 'Attaquer une cible : mêlée à portée d’Allonge, ou tir selon la distance — coûte l’Action'}
-            >
-              <span className="ab-ico">⚔️</span>
-              <span className="ab-lbl">Attaquer{freeFrenzy && battle.acted ? ' 🐗 libre' : battle.acted ? ' ✓' : ''}</span>
-            </button>
             {hasSpells && (
               <button
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}

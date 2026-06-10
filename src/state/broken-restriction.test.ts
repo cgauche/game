@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
+import { computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
 import type { Combatant } from '../engine/types';
 
@@ -16,16 +17,16 @@ function setup(broken: boolean, enemyPos = { x: 9, y: 5 }) {
 describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
   beforeEach(() => useGame.setState({ battle: null }));
 
-  it('Brisé : sélectionner « Attaquer » est REFUSÉ (aucune action offensive)', () => {
+  it('Brisé : le clic-ennemi est REFUSÉ (aucune action offensive)', () => {
     setup(true);
-    useGame.getState().battleSelectAction('attack');
-    expect(useGame.getState().battle!.action).toBeNull();
+    useGame.getState().battleClickEntity('e', { confirm: true });
+    expect(useGame.getState().pendingAttack).toBeNull();
   });
 
-  it('non Brisé : « Attaquer » fonctionne (régression)', () => {
+  it('non Brisé : le clic-ennemi attaque (régression)', () => {
     setup(false);
-    useGame.getState().battleSelectAction('attack');
-    expect(useGame.getState().battle!.action).toBe('attack');
+    useGame.getState().battleClickEntity('e', { confirm: true });
+    expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 
   it('Brisé : « Détermination » (resolve) reste permis — pour pouvoir retirer le Brisé', () => {
@@ -36,8 +37,7 @@ describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
 
   it('Brisé : le déplacement ne propose QUE des cases qui ne rapprochent pas d\'un ennemi (fuir)', () => {
     setup(true); // héros (5,5), ennemi (9,5)
-    useGame.getState().battleSelectAction('move');
-    const r = useGame.getState().battle!.reachable;
+    const r = computeMoveReach(useGame.getState);
     expect(r.has('4,5')).toBe(true); // s\'éloigne → permis
     expect(r.has('6,5')).toBe(false); // se rapproche de l\'ennemi → exclu
   });

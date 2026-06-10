@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applySurprise } from './combatFlow';
+import { applySurprise, computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
 import { effectiveMovement } from '../engine/encumbrance';
 import { seedBattleRng } from './battleRng';
@@ -34,12 +34,11 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
     expect(chooseEnemyAction({ enemy: e, heroes: [h], scene: scene(), blocked: new Set(), movement: 4 } as never).kind).toBe('end');
   });
 
-  it('battleSelectAction : un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
+  it('un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
     const hero = C({ id: 'h', kind: 'hero', conditions: [{ name: 'Surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never, resolve: 1 });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
-    useGame.getState().battleSelectAction('move');
-    expect(useGame.getState().battle!.action).toBeNull(); // Mouvement bloqué
-    useGame.getState().battleSelectAction('attack');
+    expect(computeMoveReach(useGame.getState).size).toBe(0); // Mouvement bloqué (effectiveMovement = 0)
+    useGame.getState().battleSelectAction('cast');
     expect(useGame.getState().battle!.action).toBeNull(); // Action bloquée
     useGame.getState().battleSelectAction('resolve');
     expect(useGame.getState().battle!.action).toBe('resolve'); // Détermination permise (LDB 13 l.81)

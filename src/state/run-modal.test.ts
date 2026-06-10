@@ -47,7 +47,7 @@ describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)',
     const st = useGame.getState();
     expect(st.pendingRun).toBeNull();
     expect(st.battle!.acted).toBe(true); // l'Action est consommée par la Course
-    expect(st.battle!.action).toBe('move');
+    expect(st.battle!.action).toBeNull(); // budget de Course posé dans reachable
     expect(st.battle!.reachable.size).toBeGreaterThan(0); // déplacement étendu ouvert
   });
 

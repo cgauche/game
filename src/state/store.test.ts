@@ -586,9 +586,9 @@ describe('Boucle de jeu (store)', () => {
     heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y };
     const order = st.battle!.order;
     const turn = order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });
     const before = enemy.wounds.current;
-    useGame.getState().battleClickEntity(enemy.id); // ouvre la modale d'attaque
+    useGame.getState().battleClickEntity(enemy.id, { confirm: true }); // ouvre la modale d'attaque
     useGame.getState().attackRoll(); // lance le jet
     useGame.getState().attackConfirm(); // applique le résultat
     st = useGame.getState();
@@ -647,8 +647,8 @@ describe('Boucle de jeu (store)', () => {
     heroC.advantage = 0;
     heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y }; // adjacent
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
-    useGame.getState().battleClickEntity(enemy.id); // ouvre la modale
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });
+    useGame.getState().battleClickEntity(enemy.id, { confirm: true }); // ouvre la modale
     useGame.getState().attackRoll(); // le +1 Sonné s'applique AVANT le jet
     st = useGame.getState();
     const heroAfter = st.battle!.combatants.find((c) => c.id === heroC.id)!;
@@ -727,12 +727,13 @@ describe('Boucle de jeu (store)', () => {
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     H.conditions.push({ name: 'Sonné', value: 1 });
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent : seul le Sonné bloque l'attaque
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
-    useGame.getState().battleSelectAction('attack');
-    expect(useGame.getState().battle!.action).toBeNull(); // Action refusée (Sonné)
-    useGame.getState().battleSelectAction('move'); // le déplacement reste permis
-    expect(useGame.getState().battle!.action).toBe('move');
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    expect(useGame.getState().pendingAttack).toBeNull(); // Action refusée (Sonné)
+    expect(computeMoveReach(useGame.getState).size).toBeGreaterThan(0); // le déplacement reste permis (à demi-Mouvement)
   });
 
   it('Sonné : un ennemi renonce à son Action — pas d’attaque, pas de modale de défense', () => {
@@ -776,8 +777,8 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y };
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
-    useGame.getState().battleClickEntity(E.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();
     st = useGame.getState();
@@ -801,8 +802,7 @@ describe('Boucle de jeu (store)', () => {
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
-    useGame.getState().battleSelectAction('charge');
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // Charge implicite (mêlée + non Engagé + Mvt intact)
     st = useGame.getState();
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ha.advantage).toBe(1); // chargé de 2 cases (M4, seuil 2) → +1 (strict l.77)
@@ -824,8 +824,7 @@ describe('Boucle de jeu (store)', () => {
     E.pos = { x: 8, y: 10 };
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
-    useGame.getState().battleSelectAction('charge');
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // Engagé → pas de Charge (plan blocked)
     st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0); // pas de charge
     expect(st.pendingAttack).toBeNull();
@@ -862,9 +861,9 @@ describe('Boucle de jeu (store)', () => {
     rider.mountId = mount.id; // #1 = cavalier (sur #0)
     for (const c of enemies.slice(2)) c.wounds.current = 0; // neutralise les autres
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 0, movedPreAction: false, acted: false } });
-    // Clic sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
-    useGame.getState().battleClickEntity(mount.id);
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
+    // Clic confirmé sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
+    useGame.getState().battleClickEntity(mount.id, { confirm: true });
     st = useGame.getState();
     expect(st.pendingMountTarget).toEqual({ riderId: rider.id, mountId: mount.id });
     expect(st.pendingAttack).toBeNull();
@@ -899,7 +898,7 @@ describe('Boucle de jeu (store)', () => {
     expect(Ha.advantage).toBe(0); // Avantage sacrifié (l.87)
     expect(Ha.engagedWith).toEqual([]); // libéré de tous
     expect(st.battle!.acted).toBe(false); // « Sacrifier » NE consomme PAS l'Action
-    expect(st.battle!.action).toBe('move'); // mouvement libre rouvert
+    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // mouvement libre rouvert (budget posé)
     expect(st.pendingDisengage).toBeNull();
   });
 
@@ -965,7 +964,7 @@ describe('Boucle de jeu (store)', () => {
     expect(Ha.advantage).toBe(1); // +1 Avantage (l.89)
     expect(Ha.engagedWith).not.toContain(E.id); // libéré du foe testé
     expect(st.battle!.acted).toBe(true); // Action consommée
-    expect(st.battle!.action).toBe('move'); // Mouvement rouvert
+    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // Mouvement rouvert (budget posé)
   });
 
   it('Désengagement B : la Chance relance l’Esquive (le jet du foe reste figé)', () => {
@@ -1010,10 +1009,10 @@ describe('Boucle de jeu (store)', () => {
     E.advantage = 1; // force l'option B (Avantage non supérieur)
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
-    useGame.getState().battleSelectAction('move');
+    useGame.getState().battleClickTile({ x: H.pos!.x - 1, y: H.pos!.y }, { confirm: true });
     st = useGame.getState();
     expect(st.pendingDisengage).not.toBeNull(); // routé vers le Désengagement
-    expect(st.pendingDisengage!.phase).toBe('choice'); // « Déplacer » Engagé ouvre le menu de désengagement
+    expect(st.pendingDisengage!.phase).toBe('choice'); // clic-sol Engagé ouvre le menu de désengagement
   });
 
   it('Désengagement B égalité parfaite : statu quo — ni fuite, ni Avantage à l’adversaire', () => {
@@ -1090,10 +1089,11 @@ describe('Boucle de jeu (store)', () => {
     const turn = st.battle!.order.indexOf(H.id);
     // État après une tentative d'Esquive RATÉE : Action consommée (acted), héros toujours Engagé.
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: true }, pendingDisengage: null });
-    useGame.getState().battleSelectAction('move'); // re-clic « Déplacer »
+    const posBefore = { ...H.pos! };
+    useGame.getState().battleClickTile({ x: posBefore.x - 1, y: posBefore.y }, { confirm: true }); // re-clic sol
     st = useGame.getState();
     expect(st.pendingDisengage).toBeNull(); // pas de NOUVELLE Esquive (l'Action est déjà dépensée)
-    expect(st.battle!.action).toBeNull(); // ni déplacement libre
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(posBefore); // ni déplacement libre
   });
 
   it('Désengagement — Fuir : adversaire +1 Avantage + attaque dans le dos, puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
@@ -1119,7 +1119,7 @@ describe('Boucle de jeu (store)', () => {
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 1); // +1 immédiat (l.101), +1 de plus si touché
     expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
-    expect(st.battle!.action).toBe('move'); // peut courir (Mouvement de Course)
+    expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // peut courir (budget de Course posé)
     expect(st.pendingDisengage).toBeNull();
   });
 
@@ -1135,8 +1135,8 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y - 1 }; // DIAGONALE : Chebyshev 1, mais manhattan 2
     const turn = st.battle!.order.indexOf(H.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'attack', movementUsed: 99, movedPreAction: false, acted: false } });
-    useGame.getState().battleClickEntity(E.id); // doit ouvrir la modale (avant : « hors de portée »)
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // doit ouvrir la modale (avant : « hors de portée »)
     st = useGame.getState();
     expect(st.pendingAttack).not.toBeNull(); // attaque en diagonale autorisée
     expect(st.pendingAttack!.targetId).toBe(E.id);
@@ -1956,7 +1956,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     E.items = [];
     E.weapons = [{ name: 'Mains nues', type: 'melee', damage: '+BF', qualities: [] }];
     const battle: BattleState = {
-      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: 'attack', selectedSpell: null,
+      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpell: null,
       reachable: new Map(), movementUsed: 99, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8), pendingReload: null, pendingAttack: null });
@@ -1966,7 +1966,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   it('tirer consomme 1 munition et décharge une arme à Recharge', () => {
     const { H, E } = archer();
     useGame.getState().seedRng(2);
-    useGame.getState().battleClickEntity(E.id); // ouvre la modale d'attaque (chargé + munition OK)
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // ouvre la modale d'attaque (chargé + munition OK)
     expect(useGame.getState().pendingAttack).not.toBeNull();
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();
@@ -1978,7 +1978,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   it('arme déchargée : tir refusé (modale non ouverte)', () => {
     const { H, E } = archer();
     H.loaded = false;
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
@@ -2044,7 +2044,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   it('plus de munitions : tir refusé', () => {
     const { H, E } = archer();
     (H.items![0] as ItemInstance).qty = 0;
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
@@ -2064,7 +2064,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     H.items = [{ uid: 'fl1', name: 'Flèche', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance];
     H.loaded = true;
     H.ammoUid = 'fl1';
-    useGame.getState().battleClickEntity(E.id); // E à (4,0) → l'Arc (weapons[1]) doit s'employer, pas « hors de portée de mêlée »
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // E à (4,0) → l'Arc (weapons[1]) doit s'employer, pas « hors de portée de mêlée »
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 
@@ -2092,9 +2092,9 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingReload).toBeNull(); // « pas de Test exigé pour viser »
     // Tirer : le détail du jet inclut « Viser +20 », puis aiming est consommée.
-    useGame.setState({ battle: { ...useGame.getState().battle!, acted: false, action: 'attack' } });
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: false, action: null } });
     useGame.getState().seedRng(2);
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
     useGame.getState().attackRoll();
     const pa = useGame.getState().pendingAttack!;
     expect((pa.result!.attackerDetail!.mods ?? []).some((m) => m.label === 'Viser' && m.value === 20)).toBe(true);

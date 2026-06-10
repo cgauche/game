@@ -244,8 +244,9 @@ export function IsoStage() {
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const hl: JSX.Element[] = [];
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+    // Bandes de portée du tireur : toujours informatives en mode neutre (l'attaque est implicite au clic).
     const aimWeapon =
-      battle.action === 'attack' && activeC?.kind === 'hero' && activeC.pos
+      battle.action === null && !battle.preview && activeC?.kind === 'hero' && activeC.pos
         ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
         : undefined;
     // Bandes de portée concentriques autour du tireur (peintes SOUS les tokens).
@@ -279,8 +280,9 @@ export function IsoStage() {
     for (const s of battle.smoke ?? []) {
       hl.push(<path key={`smoke-${s.x}-${s.y}`} d={diamondPath(s.x, s.y, d)} fill="#9aa0a6" opacity={0.5} pointerEvents="none" />);
     }
-    // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer ».
-    if (battle.action === 'attack' && activeC?.kind === 'hero' && !pendingAttack) {
+    // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
+    // (attaque implicite), tant que l'Action est disponible (ou attaque libre de Frénésie).
+    if (battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || (activeC.frenzied && !activeC.frenzyFreeUsed))) {
       const eligible = eligibleAttackTargetIds(useGame.getState);
       for (const c of battle.combatants) {
         if (!c.pos || !eligible.has(c.id)) continue;
@@ -366,7 +368,7 @@ export function IsoStage() {
   // distance → on peint les bandes de portée + une infobulle au survol (lisibilité du tir).
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
   const aimWeapon =
-    mode === 'battle' && battle && battle.action === 'attack' && activeC?.kind === 'hero' && activeC.pos
+    mode === 'battle' && battle && battle.action === null && activeC?.kind === 'hero' && activeC.pos
       ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
       : undefined;
 
@@ -777,11 +779,11 @@ export function IsoStage() {
               }
             return <g pointerEvents="none">{tiles}</g>;
           })()}
-        {/* Infobulle de ciblage au survol (mode attaque, R4) — UNIFIÉE mêlée + tir :
+        {/* Infobulle de ciblage au survol (mode neutre — l'attaque est implicite, R4) — UNIFIÉE mêlée + tir :
             • sur un ENNEMI → toucher % + dégâts probables (previewAttack), avec états « hors de portée » /
               « pas de ligne de vue » ;
             • sur une case VIDE avec une arme à distance → bande de portée (aide au positionnement). */}
-        {battle?.action === 'attack' && activeC?.kind === 'hero' && activeC.pos && hover && !pendingAttack &&
+        {battle?.action === null && activeC?.kind === 'hero' && activeC.pos && hover && !pendingAttack &&
           (() => {
             const enemy = battle.combatants.find((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, c.size, hover.x, hover.y));
             let label: string;
