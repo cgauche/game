@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, diamondPath, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -96,6 +96,68 @@ describe('depth rot-aware', () => {
   it('le tri depth suit la position écran (cy) pour les 4 rotations', () => {
     for (const rot of [0, 1, 2, 3] as const) {
       const dims: Dims = { w: 5, h: 5, rot };
+      const tiles: { d: number; cy: number }[] = [];
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++)
+          tiles.push({ d: depth(x, y, dims), cy: tileCenter(x, y, dims).cy });
+      const byDepth = [...tiles].sort((a, b) => a.d - b.d).map((t) => t.cy);
+      for (let i = 1; i < byDepth.length; i++) expect(byDepth[i]).toBeGreaterThanOrEqual(byDepth[i - 1]);
+    }
+  });
+});
+
+describe('projection vue du dessus (view: top)', () => {
+  const ROTS = [0, 1, 2, 3] as const;
+
+  it('screenToTile inverse tileCenter (grille carrée) pour les 4 rotations', () => {
+    for (const rot of ROTS) {
+      const dims: Dims = { w: 6, h: 4, rot, view: 'top' };
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++) {
+          const { cx, cy } = tileCenter(x, y, dims);
+          expect(screenToTile(cx, cy, dims)).toEqual({ x, y });
+        }
+    }
+  });
+
+  it('les cases voisines sont espacées de CELL (pas de skew iso)', () => {
+    const dims: Dims = { w: 5, h: 5, view: 'top' };
+    const a = tileCenter(2, 2, dims);
+    const bx = tileCenter(3, 2, dims);
+    const by = tileCenter(2, 3, dims);
+    expect(bx.cx - a.cx).toBe(CELL);
+    expect(bx.cy - a.cy).toBe(0); // même rangée → même cy (orthogonal, pas diagonal)
+    expect(by.cy - a.cy).toBe(CELL);
+    expect(by.cx - a.cx).toBe(0);
+  });
+
+  it('diamondPath est un carré axis-aligné de côté CELL', () => {
+    const dims: Dims = { w: 3, h: 3, view: 'top' };
+    const { cx, cy } = tileCenter(1, 1, dims);
+    const h = CELL / 2;
+    expect(diamondPath(1, 1, dims)).toBe(
+      `M${cx - h},${cy - h} L${cx + h},${cy - h} L${cx + h},${cy + h} L${cx - h},${cy + h} Z`,
+    );
+  });
+
+  it('toutes les cases tiennent dans stageSize (4 rotations)', () => {
+    for (const rot of ROTS) {
+      const dims: Dims = { w: 6, h: 4, rot, view: 'top' };
+      const stage = stageSize(dims);
+      for (let x = 0; x < dims.w; x++)
+        for (let y = 0; y < dims.h; y++) {
+          const { cx, cy } = tileCenter(x, y, dims);
+          expect(cx).toBeGreaterThanOrEqual(0);
+          expect(cx).toBeLessThanOrEqual(stage.w);
+          expect(cy).toBeGreaterThanOrEqual(0);
+          expect(cy).toBeLessThanOrEqual(stage.h);
+        }
+    }
+  });
+
+  it('depth suit la position écran (cy) en top-mode (4 rotations)', () => {
+    for (const rot of ROTS) {
+      const dims: Dims = { w: 5, h: 5, rot, view: 'top' };
       const tiles: { d: number; cy: number }[] = [];
       for (let x = 0; x < dims.w; x++)
         for (let y = 0; y < dims.h; y++)

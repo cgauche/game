@@ -6,9 +6,11 @@
 export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
 export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
+export const CELL = 56; // côté d'une case carrée (vue du dessus)
 
 /** Marge à gauche pour que la tuile la plus à gauche reste visible (dimensions effectives). */
 export function originX(dims: Dims) {
+  if (dims.view === 'top') return CELL; // marge gauche = 1 case
   const ed = effDims(dims);
   return (ed.h - 1) * (TW / 2) + TW / 2;
 }
@@ -22,6 +24,7 @@ export interface Dims {
   w: number;
   h: number;
   rot?: Rot; // orientation caméra (cran de 90° horaire) ; absent ⇒ 0
+  view?: 'iso' | 'top'; // projection ; absent ⇒ 'iso' (losange). 'top' = grille carrée vue du dessus
 }
 
 /** Dimensions effectives à l'écran : pour rot impair, une grille W×H tournée occupe H×W. */
@@ -61,9 +64,12 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
   }
 }
 
-/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra. */
+/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra et de la projection. */
 export function tileCenter(x: number, y: number, dims: Dims): { cx: number; cy: number } {
   const r = rotTile(x, y, dims);
+  if (dims.view === 'top') {
+    return { cx: originX(dims) + r.x * CELL, cy: originY() + r.y * CELL };
+  }
   return {
     cx: originX(dims) + (r.x - r.y) * (TW / 2),
     cy: originY() + (r.x + r.y) * (TH / 2),
@@ -73,6 +79,9 @@ export function tileCenter(x: number, y: number, dims: Dims): { cx: number; cy: 
 /** Taille totale du canvas SVG pour une carte donnée (dimensions effectives). */
 export function stageSize(dims: Dims): { w: number; h: number } {
   const ed = effDims(dims);
+  if (dims.view === 'top') {
+    return { w: ed.w * CELL + 2 * CELL, h: ed.h * CELL + SPRITE_HEADROOM + CELL };
+  }
   return {
     w: (ed.w + ed.h) * (TW / 2) + TW,
     h: (ed.w + ed.h) * (TH / 2) + SPRITE_HEADROOM + TH,
@@ -81,6 +90,11 @@ export function stageSize(dims: Dims): { w: number; h: number } {
 
 /** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières (dé-tourne). */
 export function screenToTile(px: number, py: number, dims: Dims): { x: number; y: number } {
+  if (dims.view === 'top') {
+    const rx = Math.round((px - originX(dims)) / CELL);
+    const ry = Math.round((py - originY()) / CELL);
+    return unrotTile(rx, ry, dims);
+  }
   const dx = px - originX(dims);
   const dy = py - originY();
   const a = dx / (TW / 2);
@@ -90,10 +104,22 @@ export function screenToTile(px: number, py: number, dims: Dims): { x: number; y
   return unrotTile(rx, ry, dims);
 }
 
-/** Les 4 sommets (et le centre) du losange d'une tuile — source unique de la
- *  géométrie TW/TH, partagée par diamondPath et le raccord d'arêtes (ground.ts). */
+/** Les 4 sommets (et le centre) d'une tuile — source unique de la géométrie, partagée par
+ *  diamondPath et le raccord d'arêtes (ground.ts). Losange (TW/TH) en iso ; carré (CELL) en
+ *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath). */
 export function diamondCorners(x: number, y: number, dims: Dims) {
   const { cx, cy } = tileCenter(x, y, dims);
+  if (dims.view === 'top') {
+    const h = CELL / 2;
+    return {
+      cx,
+      cy,
+      top: [cx - h, cy - h] as [number, number],
+      right: [cx + h, cy - h] as [number, number],
+      bot: [cx + h, cy + h] as [number, number],
+      left: [cx - h, cy + h] as [number, number],
+    };
+  }
   return {
     cx,
     cy,
@@ -111,8 +137,10 @@ export function diamondPath(x: number, y: number, dims: Dims): string {
 }
 
 /** Profondeur de tri (plus grand = devant), dans l'orientation courante.
+ *  iso : diagonale écran (r.x+r.y) ; top : par rangée écran (r.y prime, r.x départage).
  *  `dims` optionnel : absent ⇒ rot 0 (rétro-compat des appelants non encore migrés). */
 export function depth(x: number, y: number, dims?: Dims) {
   const r = dims ? rotTile(x, y, dims) : { x, y };
+  if (dims?.view === 'top') return r.y * (dims.w + dims.h) + r.x;
   return r.x + r.y;
 }
