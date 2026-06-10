@@ -39,8 +39,10 @@ Exemples-cibles du registre (hors périmètre, vérifiés pour valider les seams
 
 1. **Loadouts multiples nommés**, pas de slot « 2 mains + projectile » figé. Le distant est un contenu de
    loadout comme un autre (rare en carrière ; plusieurs Groupes offrent 1M et 2M).
-2. **Commutation en combat = 1 switch gratuit par tour, interdit si Engagé** (LDB 13 l.116 ; le MJ plafonne →
-   défaut sensé). Un seul vrai choix : finir son tour épée/bouclier **ou** arc, pas les deux.
+2. **Commutation en combat = 1 switch gratuit par tour, autorisé même Engagé.** LDB 13 l.116 : l'Engagé
+   *peut* interdire une action gratuite — c'est de la discrétion, pas une interdiction. On l'autorise : un
+   archer chargé DOIT pouvoir dégainer pour passer au corps à corps (il ne peut pas tirer utilement en mêlée).
+   Le MJ plafonne le nombre → défaut 1/tour. Seul vrai choix : finir son tour épée/bouclier **ou** arc.
 3. **En combat, seul le switch de loadout change l'équipement.** Armure et brassage d'inventaire =
    **hors combat uniquement** (corrige le comportement permissif actuel).
 4. **Héros uniquement.** Les ennemis gardent l'auto-choix de leur statbloc (un ennemi qui dual-wield est rare ;
@@ -123,9 +125,9 @@ choix (défaut = main principale au contact / distance sinon — RAW-correct pou
 `PendingDefense` gagne `parryWeaponUid?` ; `defenseValue('parade', weapon)` utilise l'arme choisie.
 
 ### 5.3 Commutation de loadout
-Commutateur dans l'ActionBar : liste des loadouts du héros, **actif quand libre, grisé si Engagé** (infobulle
-RAW). 1 switch gratuit/tour (`battle.loadoutSwapped` réinitialisé au changement de tour). Le switch ne consomme
-ni Action ni Mouvement. `recomputeLoadout` ré-exécuté ; `c.weapons` change.
+Commutateur dans l'ActionBar : liste des loadouts du héros, **toujours actif (même Engagé)**. 1 switch
+gratuit/tour (`battle.loadoutSwapped` réinitialisé au changement de tour). Le switch ne consomme ni Action ni
+Mouvement. `recomputeLoadout` ré-exécuté ; `c.weapons` change.
 
 ### 5.4 Verrou d'équipement en combat
 Pendant `battle` : la fiche perso / UI d'équipement passe en **lecture seule** sauf le commutateur de loadout
@@ -181,7 +183,7 @@ n'est pas proposé. Le **choix d'arme mono** (avec -20 si main secondaire) s'y a
 - Maniement : 2ᵉ jet = inversion du 1ᵉʳ + pénalité ; pas de 2ᵉ si 1ʳᵉ manque ; exception Critique = jet de la
   table ; -10 défense jusqu'au prochain tour ; Avantage seulement si les deux touchent ; **interdit sur attaque
   gratuite**.
-- Commutation : 1/tour, bloquée si Engagé, réinitialisée au changement de tour ; verrou équipement en combat.
+- Commutation : 1/tour, autorisée même Engagé, réinitialisée au changement de tour ; verrou équipement en combat.
 - Registre : `featuresOf` agrège talents+traits ; ajout d'une entrée n'altère pas les autres (golden).
 
 ## 9. Hors périmètre (terrain préparé, pas implémenté)
@@ -198,6 +200,6 @@ n'est pas proposé. Le **choix d'arme mono** (avec -20 si main secondaire) s'y a
 1. **Modèle mains + contrainte 2 mains** : `hands`, `hand`, `recomputeLoadout` borné, `offHandPenalty` /
    `parryPenalty` câblés en attaque ET parade.
 2. **Constructeur de loadouts** (fiche perso) + migration loadout par défaut.
-3. **Combat** : choix arme attaque + choix arme parade + commutateur loadout (1/tour, libre, hors engagement)
+3. **Combat** : choix arme attaque + choix arme parade + commutateur loadout (1/tour, libre, même engagé)
    + verrou d'équipement en combat.
 4. **Maniement de deux armes** (mode d'attaque via Ph.0 ; flux complet §5.5).
