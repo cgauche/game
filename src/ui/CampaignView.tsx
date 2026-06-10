@@ -107,9 +107,6 @@ export function CampaignView() {
           onRotateLeft={() => rotateCam(-1)}
           onRotateRight={() => rotateCam(1)}
         />
-        {mode === 'exploration' && !dialogue && (
-          <div className="stage-hint">Cliquez sur une case pour vous déplacer · sur un personnage/objet pour interagir</div>
-        )}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
