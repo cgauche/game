@@ -394,21 +394,37 @@ export function IsoStage() {
   // stables → React saute ces sous-arbres ; chaque créature continue de s'auto-animer via SON rAF
   // (usePlanAnim/useRigClip), indépendamment du re-rendu d'IsoStage.
   const entityObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
-    if (!scene || mode === 'battle') return [];
+    if (!scene) return [];
+    const inBattle = mode === 'battle' && !!battle;
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const isTop = viewMode === 'top';
     const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
     const out: { d: number; el: JSX.Element }[] = [];
+    // En combat, les FIGURANTS (PNJ d'ambiance : spectateurs, prisonnier en cage…) ne « dépop »
+    // plus — ils restent visibles, estompés et NON interactifs ; on ne les dessine pas si un
+    // combattant occupe leur case (pas d'empilement de corps).
+    const covered = (x: number, y: number) =>
+      inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, x, y));
+    const wrap = (key: string, el: JSX.Element) =>
+      inBattle ? (
+        <g key={`fig-${key}`} opacity={0.7} pointerEvents="none">
+          {el}
+        </g>
+      ) : (
+        el
+      );
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
+      if (covered(ent.pos.x, ent.pos.y)) continue;
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
         out.push({
           d: depth(ent.pos.x, ent.pos.y, d),
-          el: (
+          el: wrap(
+            r.id,
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
-            </BodyToken>
+            </BodyToken>,
           ),
         });
       } else {
@@ -418,16 +434,17 @@ export function IsoStage() {
         const ex = ent.pos.x + off, ey = ent.pos.y + off;
         out.push({
           d: depth(ex, ey, d) + dBoost,
-          el: (
+          el: wrap(
+            r.id,
             <BodyToken key={r.id} x={ex} y={ey} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
-            </BodyToken>
+            </BodyToken>,
           ),
         });
       }
     }
     return out;
-  }, [scene, shownRot, viewMode, mode]);
+  }, [scene, shownRot, viewMode, mode, battle]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
@@ -540,6 +557,9 @@ export function IsoStage() {
   const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
 
   if (mode === 'battle' && battle) {
+    // Figurants de scène (PNJ d'ambiance) : maintenus en combat — estompés, cases libres seulement
+    // (cf. entityObjs). Plus de spectateurs qui « dépop » dès l'Initiative.
+    objs.push(...entityObjs);
     let hi = 0;
     for (const c of battle.combatants) {
       if (!c.pos) continue;
