@@ -1146,13 +1146,15 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   Whiptongue→esthétique slaaneshi canon (LDB 84 l.49-53), Pieuvre violette→camouflage marais
   canon. Outil pérenne `scripts/qc/render-creature.mts` (rendu PNG par créature + --list).
 - **Lot 5 — reliquat STRUCTUREL (art des plans, remonté par les juges aveugles)** :
-  (a) les plans exotiques (spectral/amorphous/jabberslythe/squig/cephalopod/arachnid) n'ont
-  **pas de vraie vue profil** (face = profil pixel-identique) — le défaut n°1 unanime ;
-  (b) pieds quad « bottes/godets » (art `patte`/`serre` à refaire : doigts griffus ancrés) ;
-  (c) cohérence face↔profil des têtes (basilic/manticore/loup lisent une autre bête de face) ;
-  (d) ailes repliées de FACE lisent « oreilles d'âne » ; (e) cous/anneaux serpentins rigides
-  (« pile de pneus » serpent/sangsue, tubes parallèles hydre) ; (f) visages « emoji-jouet »
-  des exotiques (yeux googly squig/jabber/spectraux) ; (g) éthérés : aucune transparence.
+  ✅ **5a** *(b9a2200)* : pieds quad (patte = membre couleur du corps + doigts/griffes ; serre
+  = doigts pleins), ailes pliées de face le long du flanc (fini « oreilles d'âne »), spectraux
+  (fondu de transparence, regard sans pupille, hurlement déchiré, VRAIE vue profil).
+  ✅ **5b** *(9677d16)* : squig (gueule = moitié du corps, yeux excentrés, profil), jabber
+  (ailes couchées arrière/éventail, langue ancrée pendant devant, pupilles fendues, cou en S,
+  profil), serpentins (boucles décalées + queue émergente, cou fuselé).
+  **Reste 5c** : profils amorphous/cephalopod/arachnid ; cohérence face↔profil des têtes QUAD
+  (basilic/manticore/loup lisent une autre bête de face) ; pattes d'araignée coudées + crochets
+  courbés ; brancher le catalogue d'yeux sur les ancres data-eye quad.
 
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
