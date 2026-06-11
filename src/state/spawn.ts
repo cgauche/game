@@ -313,13 +313,14 @@ export function spawnEnemy(
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique :
   // parts monstrueux (mutant modulaire) + couleurs (palette) + arme équipée.
-  if (opts?.appearance?.monster || opts?.appearance?.colors || opts?.appearance?.parts) {
+  if (opts?.appearance?.monster || opts?.appearance?.colors || opts?.appearance?.parts || opts?.appearance?.eyes) {
     c.appearance = riggedAppearance(c.name, opts.appearance.seed ?? hashSeed(id), {
       monster: opts.appearance.monster,
       colors: opts.appearance.colors,
       parts: opts.appearance.parts,
       sex: opts.appearance.sex,
       build: opts.appearance.build,
+      eyes: opts.appearance.eyes,
     });
   }
   if (opts?.weapon) {

@@ -4,6 +4,7 @@
  * l'inspecteur de spawn de rencontre → mêmes contrôles, séparation apparence↔stats.
  */
 import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '../../gameIso/rig/parts/monstrous';
+import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
 import { tenueCareerNames } from '../../gameIso/rig/parts/career';
@@ -20,6 +21,7 @@ export function MonsterPartsFields({
   build,
   parts,
   career,
+  eyes,
   onMonster,
   onWeapon,
   onColors,
@@ -27,6 +29,7 @@ export function MonsterPartsFields({
   onBuild,
   onParts,
   onCareer,
+  onEyes,
 }: {
   monster?: MonsterPartsSel;
   weapon?: string;
@@ -35,6 +38,7 @@ export function MonsterPartsFields({
   build?: number;
   parts?: { cheveux?: number; visage?: number };
   career?: string;
+  eyes?: { G?: string; D?: string };
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
   onWeapon: (w: string | undefined) => void;
   onColors: (patch: Partial<ColorsSel>) => void;
@@ -42,6 +46,7 @@ export function MonsterPartsFields({
   onBuild?: (b: number) => void;
   onParts?: (patch: { cheveux?: number; visage?: number }) => void;
   onCareer?: (c: string | undefined) => void;
+  onEyes?: (patch: { G?: string; D?: string }) => void;
 }) {
   return (
     <>
@@ -93,6 +98,21 @@ export function MonsterPartsFields({
           <input type="checkbox" checked={!!monster?.queue} onChange={(e) => onMonster({ queue: e.target.checked || undefined })} />
           Queue
         </label>
+        <label className="ed-subfield">
+          <input type="checkbox" checked={!!monster?.ailes} onChange={(e) => onMonster({ ailes: e.target.checked || undefined })} />
+          Ailes
+        </label>
+        {onEyes && ([['Œil gauche', 'G'], ['Œil droit', 'D']] as const).map(([lbl, side]) => (
+          <label key={side} className="ed-subfield">
+            {lbl}
+            <select value={eyes?.[side] ?? ''} onChange={(e) => onEyes({ [side]: e.target.value || undefined })}>
+              <option value="">— normal —</option>
+              {Object.entries(EYE_OPTIONS).map(([key, o]) => (
+                <option key={key} value={key}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+        ))}
       </div>
       <label className="ed-field">
         Arme équipée

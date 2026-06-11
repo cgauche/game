@@ -195,6 +195,8 @@ export function Inspector({
               onBuild={(b) => updateSpawn({ appearance: { ...spawn.appearance, build: b } })}
               onParts={(patch) => updateSpawn({ appearance: { ...spawn.appearance, parts: { ...(spawn.appearance?.parts ?? {}), ...patch } } })}
               onCareer={(c) => updateSpawn({ appearance: { ...spawn.appearance, career: c } })}
+              eyes={spawn.appearance?.eyes}
+              onEyes={(patch) => updateSpawn({ appearance: { ...spawn.appearance, eyes: { ...(spawn.appearance?.eyes ?? {}), ...patch } } })}
             />
             <label className="ed-field">
               X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
@@ -388,6 +390,8 @@ export function Inspector({
                   onBuild={(b) => updateSel({ appearance: { ...sel.appearance, build: b } })}
                   onParts={(patch) => updateSel({ appearance: { ...sel.appearance, parts: { ...(sel.appearance?.parts ?? {}), ...patch } } })}
                   onCareer={(c) => updateSel({ appearance: { ...sel.appearance, career: c } })}
+                  eyes={sel.appearance?.eyes}
+                  onEyes={(patch) => updateSel({ appearance: { ...sel.appearance, eyes: { ...(sel.appearance?.eyes ?? {}), ...patch } } })}
                 />
                 <label className="ed-field">
                   Dialogue / quête

@@ -64,6 +64,7 @@ export interface MonsterPartsSel {
   jambes?: string;     // 'chevre' | …
   cornes?: boolean;
   queue?: boolean;
+  ailes?: boolean;     // ailes emplumées repliées dans le dos (harpie, démon ailé)
 }
 
 /** Personnalisation couleur (emplacements sémantiques ; résolus par le rig). */

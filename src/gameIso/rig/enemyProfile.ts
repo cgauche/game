@@ -12,6 +12,7 @@ import type { RigOverlay } from './bones';
 import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
 import { randomMutationOverlays } from './parts/mutations';
+import { EYE_OPTIONS } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
@@ -98,12 +99,18 @@ export interface RiggedOpts {
   parts?: Appearance['parts']; // coiffure/visage épinglés (idx)
   sex?: 'M' | 'F'; // surcharge le sexe dérivé du seed
   build?: number; // surcharge la carrure dérivée du seed
+  /** yeux personnalisés (CLÉS du catalogue EYE_OPTIONS, donnée éditeur) → art résolu ici. */
+  eyes?: { G?: string; D?: string };
 }
+const eyeArt = (k?: string): string | undefined => (k ? EYE_OPTIONS[k]?.art : undefined);
 export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = {}): Appearance {
   const n = norm(name);
   const sex: 'M' | 'F' = opts.sex ?? (seed % 7 < 2 ? 'F' : 'M');
   const build = opts.build ?? +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
-  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, colors: opts.colors, parts: opts.parts };
+  const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
+    ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
+    : undefined;
+  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, colors: opts.colors, parts: opts.parts, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -165,7 +172,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number },
+  opts?: { career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
@@ -177,7 +184,7 @@ export function entityRigProfile(
   const appearance: Appearance = riggedAppearance(name, seed, {
     monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? perso?.parts ?? race.parts,
-    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build,
+    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes,
   });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).
