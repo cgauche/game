@@ -1163,6 +1163,29 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   carrure (fin de la croupe-bulle), queue reptile qui traîne au sol derrière.
   **→ Jalon 8.5 CLOS.** Reste : recette navigateur en jeu quand Playwright libre.
 
+## 🎯 Jalon 8.6 — Peupler le Tome 1 : Skavens différenciés, créatures du Compagnon, PNJ nommés *(demande utilisateur 2026-06-11)*
+
+Source SCÉNARIO : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` (stats des
+créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
+
+- **Lot A — Skavens différenciés** (« tous identiques » aujourd'hui : une seule race rendue) :
+  data LDB n'a que Vermine de choc / Rat ogre / Rat géant — différencier par VARIANTE visuelle
+  (tenue/équipement/posture par nom : vermine de choc en armure + hallebarde, guerrier de clan,
+  esclave en haillons, coureur d'égout encapuchonné, prophète gris à cornes en robe…) ;
+  inventorier les variantes réellement utilisées (Tome 1 + Compagnon + ADE).
+- **Lot B — créatures du Chaos du Compagnon SANS modèle** : ch.12 Carnaval du Pandémonium —
+  la ménagerie (Urzo, Rassarak, les Jumeaux, la Bête Impériale, la « basse-cour » = hommes-bêtes
+  à têtes de chèvre/vache/POULET cracheurs de venin l.154) ; ch.11 — le **Happeur Carnivore** ;
+  ch.9 Main pourpre — cultistes/acolytes/magus/sorciers de Tzeentch. Mécanisme : defs créatures
+  + nouvelles TÊTES de monster parts + statblocks custom dans les scènes.
+- **Lot C — PNJ nommés avec leur tenue et leur tête** : ch.12 — Wolfgang Hollseher (Doktor),
+  Magnus Bugman (Maître du savoir nain), Benbow (vieux loup de mer), « Mamie » Haller, le
+  personnel (Grand/Petit Anders, Bertoldo, Ivan, Magda, Mikhail) ; ch.11 — Lauengram, Wolfgang
+  Kellerman, Bruno (roi des bandits), Amadeus, le Comte, Manchettes (domestique halfling).
+  Mécanisme proposé : registre de PRESETS de PNJ nommés (nom → carrière/tenue, sexe, tête
+  épinglée, couleurs, yeux) exposé comme préréglage dans l'éditeur, TOUT restant surchargeable
+  (compatible « contenu = donnée éditeur »).
+
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
 Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —
