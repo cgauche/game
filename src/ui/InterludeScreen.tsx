@@ -57,10 +57,14 @@ function HeroCard({ hero }: { hero: Combatant }) {
   const craftStart = useGame((s) => s.interludeCraftStart);
   const craftRoll = useGame((s) => s.interludeCraftRoll);
   const bankDeposit = useGame((s) => s.interludeBank);
+  const learn = useGame((s) => s.interludeLearn);
+  const order = useGame((s) => s.interludeOrder);
   const [trapping, setTrapping] = useState('');
   const [atouts, setAtouts] = useState<string[]>([]);
   const [defauts, setDefauts] = useState<string[]>([]);
   const [amountPa, setAmountPa] = useState(10);
+  const [talent, setTalent] = useState('');
+  const [orderLabel, setOrderLabel] = useState('');
   const st = interlude.perHero[hero.id];
   if (!st) return null;
   const ev = interludeEventFor(st.eventRoll);
@@ -107,6 +111,28 @@ function HeroCard({ hero }: { hero: Combatant }) {
             </button>
           </details>
         )}
+        <details className="interlude-craft">
+          <summary>📚 Apprentissage particulier…</summary>
+          <label className="ed-field">
+            Talent (hors carrière)
+            <input value={talent} onChange={(e) => setTalent(e.target.value)} placeholder="Chanceux, Sens aiguisé (Vue)…" />
+          </label>
+          <button className="btn small" disabled={none || !talent.trim()} onClick={() => learn(hero.id, talent.trim())}
+            title="Test Difficile (−20) — tuteur 2d10 pa/100 PX ; PX et argent perdus sur un échec (+10 par tentative ratée)">
+            Trouver un tuteur
+          </button>
+        </details>
+        <details className="interlude-craft">
+          <summary>📦 Passer commande…</summary>
+          <label className="ed-field">
+            Objet Exotique
+            <input value={orderLabel} onChange={(e) => setOrderLabel(e.target.value)} placeholder="Long fusil de Hochland…" />
+          </label>
+          <button className="btn small" disabled={none || !orderLabel.trim()} onClick={() => order(hero.id, orderLabel.trim())}
+            title="Payé maintenant, livré après la prochaine aventure (LDB 23)">
+            Commander
+          </button>
+        </details>
         <details className="interlude-bank">
           <summary>🏦 Banque…</summary>
           <label className="ed-field">

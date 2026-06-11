@@ -18,10 +18,13 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrapping, recomputeLoadout } from '../engine/items';
 import { restPartyOvernight } from './combatFlow';
-import { craftTarget, statusIncome, bankWithdrawOutcome, bankPayout, type PriceTier, type Availability } from '../engine/activities';
+import { craftTarget, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
 import { testValue } from '../engine/skills';
-import { findCareer, levelsForCareer, findTrapping } from '../data';
-import type { Combatant, Difficulty } from '../engine/types';
+import { effectiveChar } from '../engine/characteristics';
+import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
+import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
+import { findCareer, levelsForCareer, findTrapping, findTalent } from '../data';
+import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
 type Get = () => GameState;
@@ -124,7 +127,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
 /** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
-  kind: 'revenus' | 'craft';
+  kind: 'revenus' | 'craft' | 'learn';
   label: string;
   skillLabel: string;
   skillValue: number;
@@ -136,6 +139,10 @@ export interface PendingActivity extends PendingBase {
   /** Artisanat : progression du Test étendu (avant ce jet) et cible. */
   drBefore?: number;
   drTarget?: number;
+  /** Apprentissage particulier (ch.23 l.58-63) : talent visé + coûts (débités MÊME sur échec). */
+  talent?: string;
+  xpCost?: number;
+  tutorBrass?: number;
 }
 
 /** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
@@ -244,6 +251,71 @@ export function openCraftRoll(get: Get, set: Set, heroId: string): void {
   });
 }
 
+/** Apprentissage particulier (ch.23 l.58-63) : Talent HORS carrière — « le prix pour apprendre le
+ *  Talent est de 2D10 pistoles d'argent par 100PX » + le coût PX du Talent ; « Tentez un Test
+ *  Difficile (-20) en utilisant la Caractéristique […] la plus pertinente » (V1 : celle du Maxi du
+ *  Talent, sinon Int) ; « gagnez un modificateur de +10 pour chaque tentative ratée ». PX et
+ *  argent sont dépensés MÊME sur un échec (« dépensant en vain des PX et de l'argent »). */
+export function openLearn(get: Get, set: Set, heroId: string, talentLabel: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  const t = findTalent(talentLabel);
+  if (!t) {
+    get().log(`Talent inconnu : « ${talentLabel} ».`);
+    return;
+  }
+  const xpCost = talentCost(h.talents.find((k) => k.name === talentLabel)?.times ?? 0);
+  if ((h.xp ?? 0) < xpCost) {
+    get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${talentLabel}).`);
+    return;
+  }
+  const tutorBrass = toBrass(apprenticeshipTutorCost(xpCost, battleRng()));
+  if (toBrass(get().money) < tutorBrass) {
+    get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
+    return;
+  }
+  const m = typeof t.max === 'string' ? t.max.match(/Bonus d[e'’]\s*(.+)/i) : null;
+  const ck: CharKey = (m && CHAR_BY_LABEL[m[1].trim()]) || 'Int';
+  const fails = st.learnFails?.[talentLabel] ?? 0;
+  set({
+    pendingActivity: {
+      heroId, kind: 'learn', label: `Apprentissage particulier — ${talentLabel}`,
+      skillLabel: `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`,
+      skillValue: effectiveChar(h, ck) + 10 * fails, difficulty: 'difficile',
+      roll: null, target: 0, sl: 0, success: false,
+      talent: talentLabel, xpCost, tutorBrass,
+    },
+  });
+}
+
+/** Passer commande (ch.23 l.167-172) : objet de rareté Exotique payé MAINTENANT, « achevé après
+ *  votre prochaine aventure » (livré à l'ouverture du prochain interlude). 1 objet par Activité. */
+export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  const t = findTrapping(trappingLabel);
+  if (!t) {
+    get().log(`Équipement inconnu : « ${trappingLabel} ».`);
+    return;
+  }
+  if (t.availability !== 'Exotique' && t.availability !== 'ND') {
+    get().log(`${t.label} (${t.availability ?? '?'}) s'achète chez un marchand — Passer commande sert aux objets Exotiques (LDB 23).`);
+    return;
+  }
+  const price = toBrass({ gold: t.price.gold, silver: t.price.silver, brass: t.price.bronze });
+  if (toBrass(get().money) < price) {
+    get().log(`Commande trop chère (${formatMoney(fromBrass(price))}).`);
+    return;
+  }
+  set({ money: fromBrass(toBrass(get().money) - price), pendingOrders: [...(get().pendingOrders ?? []), { heroId, trapping: t.label }] });
+  const itl = get().interlude!;
+  itl.perHero[heroId] = { ...st, left: st.left - 1 };
+  set({ interlude: { ...itl } });
+  get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure (LDB 23).`);
+}
+
 /** Applique le jet d'Activité confirmé (consomme l'Activité). */
 export function confirmActivity(get: Get, set: Set): void {
   const pa = get().pendingActivity;
@@ -266,6 +338,29 @@ export function confirmActivity(get: Get, set: Set): void {
     }
     itl.perHero[pa.heroId] = { ...st, left: st.left - 1, didRevenus: true, revenueBrass: st.revenueBrass + brass };
     lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
+  } else if (pa.kind === 'learn' && pa.talent) {
+    // RAW ch.23 l.59-63 : argent du tuteur et PX dépensés MÊME sur un échec (« en vain »).
+    set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.tutorBrass ?? 0))) });
+    if (pa.success) {
+      const fortuneBefore = fortuneMax(h);
+      const resolveBefore = resolveMax(h);
+      const r = engineBuyTalent(h, pa.talent); // débite les PX + acquiert le Talent
+      if (r.ok) {
+        applyTalentAcquisition(h, pa.talent);
+        h.wounds.max = heroMaxWounds(h); // Dur à cuire & co
+        h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
+        h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
+        h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
+        lines.push(`${h.name} apprend ${pa.talent} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`);
+      }
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
+    } else {
+      h.xp = Math.max(0, (h.xp ?? 0) - (pa.xpCost ?? 0)); // PX perdus en vain
+      const learnFails = { ...(st.learnFails ?? {}) };
+      learnFails[pa.talent] = (learnFails[pa.talent] ?? 0) + 1;
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, learnFails };
+      lines.push(`${h.name} échoue à apprendre ${pa.talent} — PX et argent dépensés en vain ; +10 à la prochaine tentative (LDB 23).`);
+    }
   } else if (pa.kind === 'craft' && st.craft) {
     const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
     if (drDone >= st.craft.drTarget) {

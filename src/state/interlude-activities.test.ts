@@ -10,6 +10,7 @@ import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
 import { findTrapping } from '../data';
 import { tome1Intro } from '../scenes/tome1-intro';
+// (les tests Apprentissage/commande utilisent les actions store et les données réelles)
 
 describe('Activités d’interlude (LDB 23)', () => {
   beforeEach(() => {
@@ -96,6 +97,55 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(useGame.getState().bank).toHaveLength(1);
     expect(toBrass(useGame.getState().money)).toBe(before - 120);
     expect(st().left).toBe(1);
+  });
+
+  it('Apprentissage particulier : échec = PX et argent perdus + compteur d’acharnement ; succès = Talent acquis', () => {
+    const h = hero();
+    h.xp = 300;
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl }, money: fromBrass(5000) });
+    useGame.getState().interludeLearn(h.id, 'Chanceux');
+    const pa = useGame.getState().pendingActivity!;
+    expect(pa.kind).toBe('learn');
+    expect(pa.xpCost).toBe(100);
+    const moneyBefore = toBrass(useGame.getState().money);
+    useGame.getState().activityRoll();
+    // Échec forcé : PX/argent dépensés en vain, +10 cumulé.
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 99, success: false, sl: -2 } });
+    useGame.getState().activityConfirm();
+    expect(hero().xp).toBe(200);
+    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0));
+    expect(st().learnFails?.['Chanceux']).toBe(1);
+    expect(hero().talents.some((t) => t.name === 'Chanceux')).toBe(false);
+    // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement était affiché).
+    useGame.getState().interludeLearn(h.id, 'Chanceux');
+    expect(useGame.getState().pendingActivity!.skillValue).toBeGreaterThan(pa.skillValue);
+    useGame.getState().activityRoll();
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 1 } });
+    useGame.getState().activityConfirm();
+    expect(hero().talents.some((t) => t.name === 'Chanceux')).toBe(true);
+    expect(hero().xp).toBe(100);
+  });
+
+  it('Passer commande : non-Exotique refusé ; Exotique payé maintenant, livré à l’interlude SUIVANT', () => {
+    const h = hero();
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl }, money: fromBrass(999999) });
+    useGame.getState().interludeOrder(h.id, 'Dague'); // Commune → refus
+    expect(useGame.getState().pendingOrders).toHaveLength(0);
+    expect(useGame.getState().journal.join('\n')).toMatch(/Passer commande sert aux objets Exotiques/);
+    const exotic = findTrapping('Long fusil de Hochland'); // l'exemple du LDB (Exotique)
+    if (!exotic || exotic.availability !== 'Exotique') return; // garde : données absentes → couvert par le refus ci-dessus
+    useGame.getState().interludeOrder(h.id, exotic.label);
+    expect(useGame.getState().pendingOrders).toEqual([{ heroId: h.id, trapping: exotic.label }]);
+    expect(st().left).toBe(2);
+    // Clôture + nouvel interlude : la commande est livrée.
+    useGame.getState().interludeEnd();
+    useGame.getState().startInterlude(1);
+    expect(hero().items?.some((i) => i.name === exotic.label)).toBe(true);
+    expect(useGame.getState().pendingOrders).toHaveLength(0);
   });
 
   it('Banque : le retrait d’une planque rend l’argent (ou la perd sur 🎲 ≤ 10) et vide le dépôt', () => {

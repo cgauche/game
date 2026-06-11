@@ -310,6 +310,9 @@ export interface GameState {
   interludeCraftRoll: (heroId: string) => void;
   interludeBank: (heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
+  /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
+  interludeLearn: (heroId: string, talent: string) => void;
+  interludeOrder: (heroId: string, trapping: string) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
@@ -797,6 +800,8 @@ export const useGame = create<GameState>((set, get) => ({
   interludeCraftRoll: (heroId) => interludeFlow.openCraftRoll(get, set, heroId),
   interludeBank: (heroId, kind, amountBrass, rate) => interludeFlow.bankDeposit(get, set, heroId, kind, amountBrass, rate),
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
+  interludeLearn: (heroId, talent) => interludeFlow.openLearn(get, set, heroId, talent),
+  interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {
