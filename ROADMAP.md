@@ -860,7 +860,20 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   (scène + date impériale + horodatage) via le menu ☰ en exploration + « Charger une partie » au
   menu principal. La scène vivante, flags, horloge, groupe, marchands, voyage voyagent dans la save.
   *(Reste : recette navigateur — Playwright à repasser.)*
-- **Entre deux aventures** : achats/marchandage ✅ (Marchand, Jalon 1.6), fabrication, activités, soins/maladies.
+- ✅ **Entre deux aventures** *(2026-06-11, commits `3cf37b0`→`59b49ad` — spec/plan
+  `docs/superpowers/*/2026-06-11-entre-deux-aventures*`)* : achats/marchandage ✅ (Marchand,
+  Jalon 1.6) ; **système d'interlude complet (LDB 22-23)** — Effet d'éditeur `interlude{weeks}`,
+  Événement d100 par héros (table verbatim, fx mécaniques appliqués, narratif journalisé),
+  min(3, semaines) Activités, **Argent à gaspiller** (bourse dilapidée sauf banque/Revenus),
+  « Avec le pouvoir » (Niveaux 3-4 sans Revenus rétrogradés), le temps passe (repos/convalescence).
+  **Activités jouables** : Revenus (LDB 08, Statut × événements), **Artisanat = la « fabrication »**
+  (Test étendu de Métier, matériaux ¼ prix, Atouts/Défauts choisis → objet réel), Opérations
+  bancaires (invest/planque, faillite), Apprentissage particulier (Talents hors carrière — seule
+  voie RAW, LDB 07 l.97 vérifié), Passer commande (Exotique, livré à l'interlude suivant).
+  *Différés documentés* : Entraînement (remise de coût — le ×2 hors-carrière actuel est RAW-conforme
+  sans Activité), Changement de carrière (déjà offert par la fiche), Entraînement au combat
+  (inversion de Test), Consulter un expert/Invention/Dressage/Activités de Classe (narratifs).
+  *(Reste : recette navigateur + scénario de test dédié.)*
 - ✅ **Repos & récupération naturelle** (Jalon 1.8) : « Dormir / Se reposer N jours » — Exténué dissipé,
   Blessures soignées (Résistance +20 → DR+BE, +BE/jour, LDB 18 l.380), cauchemars.
 - ✅ **Guérison des Blessures critiques** *(2026-06-08, `c10bcf4`→`b16a45f`)* : chaque trauma porte `recoveryDays`
