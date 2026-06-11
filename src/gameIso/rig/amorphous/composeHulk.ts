@@ -38,14 +38,23 @@ function blob(p: HulkProps, view: View): string {
     `<circle cx="${W(-9)}" cy="13" r="5" fill="@corpsO" opacity="0.4"/><circle cx="${W(14)}" cy="11" r="6" fill="@corpsO" opacity="0.32"/><circle cx="${W(2)}" cy="-18" r="3.4" fill="@corpsO" opacity="0.3"/>`;
   const drips = `<path d="M${W(-15)} 25 q-1 7 1 11 q2 -1 2 -5 q1 5 3 6 q1 -2 0 -7 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` +
     `<path d="M${W(9)} 26 q1 8 -1 12 q-2 -1 -2 -6 q-1 4 -3 5 q-1 -3 1 -8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`;
-  if (view === 'back') return `<g>${drips}${mass}${lumps}<path d="M0 -22 Q3 0 0 24" stroke="@corpsO" stroke-width="1" opacity="0.35" fill="none"/></g>`;
-  // visage : 3 yeux asymétriques (luisants jaunâtres) + gueule édentée
-  const eyes = `<circle cx="-8" cy="-5" r="3.6" fill="#e8e0c8"/><circle cx="-7.4" cy="-4" r="1.9" fill="#1a0e08"/>` +
+  // « Vaguement humanoïde » (canon) : BOSSE DE TÊTE émergeant de la masse + épaulements —
+  // l'ovale uniforme lisait « blob-patate » (verdict des juges aveugles, lot 4).
+  const dome = `<path d="M${W(-9)} -24 Q${W(-7)} -33 ${W(1)} -33.5 Q${W(9)} -33 ${W(10)} -24 Q${W(4)} -27.5 ${W(-3)} -27.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+    `<path d="M${W(-20)} -19 q-3 -4 -1 -7 M${W(20)} -18 q3 -4 1 -7" stroke="@corpsO" stroke-width="1.4" fill="none" opacity="0.6"/>`; // épaulements de boue
+  if (view === 'back') return `<g>${drips}${mass}${dome}${lumps}<path d="M0 -22 Q3 0 0 24" stroke="@corpsO" stroke-width="1" opacity="0.35" fill="none"/></g>`;
+  // visage : 3 yeux asymétriques (luisants jaunâtres) + gueule édentée — décalés vers l'AVANT
+  // (+x) au profil pour donner une lecture d'orientation.
+  const fx = view === 'profile' ? 6 : 0;
+  const eyes = `<g transform="translate(${fx},0)"><circle cx="-8" cy="-5" r="3.6" fill="#e8e0c8"/><circle cx="-7.4" cy="-4" r="1.9" fill="#1a0e08"/>` +
     `<circle cx="8" cy="-7" r="3" fill="#e8e0c8"/><circle cx="8.6" cy="-6" r="1.5" fill="#1a0e08"/>` +
-    `<circle cx="2" cy="1" r="2.3" fill="#e8e0c8"/><circle cx="2" cy="1.6" r="1.1" fill="#1a0e08"/>`;
-  const maw = `<path d="M-11 13 Q0 18 12 12 Q7 20 0 20 Q-7 20 -11 13 Z" fill="#190d08"/>` +
-    `<path d="M-7 13.6 l1 3.4 l1.6 -3 M-1 14.6 l0.8 3.6 l1.6 -3.4 M5 13.8 l1 3.2 l1.4 -3" stroke="#cabfa8" stroke-width="0.6" fill="none"/>`;
-  return `<g>${drips}${mass}${lumps}${eyes}${maw}</g>`;
+    `<circle cx="2" cy="1" r="2.3" fill="#e8e0c8"/><circle cx="2" cy="1.6" r="1.1" fill="#1a0e08"/></g>`;
+  const maw = view === 'profile'
+    ? `<path d="M0 13 Q8 17 ${W(17)} 11 Q${W(13)} 19 4 19 Q0 17 0 13 Z" fill="#190d08"/>` + // gueule fendue vers l'avant
+      `<path d="M4 14 l1 3 l1.6 -2.8 M10 14.4 l0.9 3 l1.5 -2.8" stroke="#cabfa8" stroke-width="0.6" fill="none"/>`
+    : `<path d="M-11 13 Q0 18 12 12 Q7 20 0 20 Q-7 20 -11 13 Z" fill="#190d08"/>` +
+      `<path d="M-7 13.6 l1 3.4 l1.6 -3 M-1 14.6 l0.8 3.6 l1.6 -3.4 M5 13.8 l1 3.2 l1.4 -3" stroke="#cabfa8" stroke-width="0.6" fill="none"/>`;
+  return `<g>${drips}${mass}${dome}${lumps}${eyes}${maw}</g>`;
 }
 function arm(sx: number): string {
   // moignon grumeleux qui pend (repère épaule)

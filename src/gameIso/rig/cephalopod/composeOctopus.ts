@@ -35,7 +35,21 @@ function arm(sx: number, x0: number, ctrlX: number, ctrlY: number, tipX: number,
     `<path d="${d}" fill="none" stroke="@corpsO" stroke-width="${(w * 0.45).toFixed(1)}" opacity="0.4" stroke-linecap="round"/>` +
     `<path d="${d}" fill="none" stroke="@corpsH" stroke-width="1.1" opacity="0.45" stroke-dasharray="1.1 3.4"/>`;
 }
-function tentacles(): string {
+function tentacles(view: View): string {
+  if (view === 'profile') {
+    // PROFIL directionnel : les bras AVANT (+x) tendus en éclaireurs, les arrière en traîne
+    // courte — l'éventail symétrique identique à la face tuait l'orientation. Courbes variées
+    // (un bras s'enroule en crosse) pour casser le « rayons de roue ».
+    return `<g>` +
+      arm(1, 6, 26, 10, 44, -2, 5.4) + // bras de tête, tendu loin devant
+      arm(1, 8, 22, 24, 36, 26, 5.6) +
+      arm(1, 5, 12, 30, 16, 44, 5) +
+      `<path d="M40 6 q6 -7 1 -11 q-4 -2 -5 2 q3 0 3 3 q0 3 -3 4 z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` + // crosse enroulée
+      arm(-1, 4, 10, 24, 8, 45, 5.2) +
+      arm(-1, 7, 18, 16, 24, 36, 5) +
+      arm(-1, 9, 22, 8, 30, 14, 4.4) +
+      `</g>`;
+  }
   // 4 par côté : intérieurs courts/avant, extérieurs longs/écartés ; courbures alternées (writhe)
   const L = arm(-1, 4, 8, 22, 4, 46, 5.2) + arm(-1, 7, 20, 18, 26, 40, 5.6) + arm(-1, 9, 26, 30, 34, 22, 5) + arm(-1, 10, 30, 14, 40, 4, 4.4);
   const R = arm(1, 4, 8, 22, 4, 46, 5.2) + arm(1, 7, 20, 18, 26, 40, 5.6) + arm(1, 9, 26, 30, 34, 22, 5) + arm(1, 10, 30, 14, 40, 4, 4.4);
@@ -48,6 +62,13 @@ function mantle(p: OctopusProps, view: View): string {
   const sheen = `<ellipse cx="-4" cy="${(-ry * 0.4).toFixed(1)}" rx="${(rx * 0.45).toFixed(1)}" ry="${(ry * 0.4).toFixed(1)}" fill="@corpsH" opacity="0.3"/>`;
   const blotch = `<circle cx="6" cy="-6" r="2.4" fill="@corpsO" opacity="0.5"/><circle cx="-7" cy="-12" r="1.8" fill="@corpsO" opacity="0.45"/><circle cx="3" cy="-15" r="1.5" fill="@corpsO" opacity="0.4"/>`;
   if (view === 'back') return `<g>${body}${sheen}${blotch}<path d="M0 ${-ry + 3} L0 14" stroke="@corpsO" stroke-width="0.7" opacity="0.4"/></g>`;
+  if (view === 'profile') {
+    // PROFIL : UN seul œil saillant côté avant (+x), manteau incliné vers l'avant
+    const eye = `<ellipse cx="${(rx * 0.55).toFixed(1)}" cy="3" rx="4.2" ry="3.6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+      `<ellipse cx="${(rx * 0.55).toFixed(1)}" cy="3" rx="2.7" ry="2.3" fill="#e8d44a"/>` +
+      `<rect x="${(rx * 0.55 - 1.7).toFixed(1)}" y="2.2" width="3.4" height="1.5" rx="0.6" fill="#0a0603"/>`;
+    return `<g transform="rotate(-6)">${body}${sheen}${blotch}${eye}</g>`;
+  }
   // yeux saillants à pupille HORIZONTALE (tell céphalopode)
   const eyes = `<ellipse cx="-6.5" cy="4" rx="4" ry="3.4" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><ellipse cx="6.5" cy="4" rx="4" ry="3.4" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
     `<ellipse cx="-6.5" cy="4" rx="2.6" ry="2.2" fill="#e8d44a"/><ellipse cx="6.5" cy="4" rx="2.6" ry="2.2" fill="#e8d44a"/>` +
@@ -79,7 +100,7 @@ export function resolveOctopusFromProps(
   const sk = buildSkeleton();
   const world = worldTransformsG(sk, pose) as Record<OctoBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
-  const art: Record<OctoBoneId, string> = { tentacules: tentacles(), corps: mantle(p, view) };
+  const art: Record<OctoBoneId, string> = { tentacules: tentacles(view), corps: mantle(p, view) };
   return (Object.keys(sk) as OctoBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,

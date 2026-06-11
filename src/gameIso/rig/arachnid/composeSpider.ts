@@ -28,12 +28,16 @@ function buildSkeleton(): Record<SpiderBoneId, SBone> {
   };
 }
 
-// une patte arquée (genou relevé) d'un côté (sx=±1) : coxa au corps → genou haut → pied au sol
-function leg(sx: number, ay: number, kneeX: number, footX: number, footY: number): string {
-  const d = `M${sx * 9} ${ay} Q${sx * kneeX} ${ay - 13} ${sx * footX} ${footY}`;
-  return `<path d="${d}" fill="none" stroke="@corps" stroke-width="3.1" stroke-linecap="round"/>` +
+// une patte ARTICULÉE d'un côté (sx=±1) : coxa au corps → GENOU HAUT marqué (pli anguleux,
+// fini la courbe molle « méduse ») → tibia qui plonge au pied. dx = biais directionnel (profil).
+function leg(sx: number, ay: number, kneeX: number, footX: number, footY: number, dx = 0): string {
+  const kx = sx * kneeX + dx, fx = sx * footX + dx * 1.6;
+  const ky = ay - 15;
+  const d = `M${sx * 9} ${ay} Q${(sx * 9 + (kx - sx * 9) * 0.7).toFixed(1)} ${ay - 12} ${kx.toFixed(1)} ${ky} Q${(kx + (fx - kx) * 0.3).toFixed(1)} ${(ky + (footY - ky) * 0.55).toFixed(1)} ${fx.toFixed(1)} ${footY}`;
+  return `<path d="${d}" fill="none" stroke="@corps" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>` +
     `<path d="${d}" fill="none" stroke="@corpsO" stroke-width="0.9" opacity="0.45" stroke-linecap="round"/>` +
-    `<circle cx="${sx * footX}" cy="${footY}" r="1.1" fill="@corpsO"/>`;
+    `<circle cx="${kx.toFixed(1)}" cy="${ky}" r="1.7" fill="@corps" stroke="@corpsO" stroke-width="0.4"/>` + // genou
+    `<circle cx="${fx.toFixed(1)}" cy="${footY}" r="1.1" fill="@corpsO"/>`;
 }
 const LEGS = [
   { ay: -8, kneeX: 24, footX: 23, footY: 16 },
@@ -42,28 +46,39 @@ const LEGS = [
   { ay: 8, kneeX: 25, footX: 21, footY: 48 },
 ];
 function cephalo(view: View): string {
-  const legs = LEGS.map((l) => leg(1, l.ay, l.kneeX, l.footX, l.footY) + leg(-1, l.ay, l.kneeX, l.footX, l.footY)).join('');
+  // PROFIL : sprawl DIRECTIONNEL (les paires avant tendues vers +x, les arrière en arrière)
+  // + face décalée vers l'avant — la roue radiale identique à la face tuait l'orientation.
+  const prof = view === 'profile';
+  const legs = LEGS.map((l, i) => {
+    const bias = prof ? (i < 2 ? 6 : -6) : 0;
+    return leg(1, l.ay, l.kneeX, l.footX, l.footY, bias) + leg(-1, l.ay, l.kneeX * (prof ? 0.8 : 1), l.footX * (prof ? 0.78 : 1), l.footY, bias);
+  }).join('');
+  // chélicères ÉPAISSES + crochets COURBÉS vers l'intérieur (les bâtonnets droits lisaient inoffensifs)
+  const chelicerae = `<path d="M-3.2 14 Q-5 18 -2.8 20.6 M3.2 14 Q5 18 2.8 20.6" fill="none" stroke="@corpsO" stroke-width="2.7" stroke-linecap="round"/>` +
+    `<path d="M-2.8 20 Q-3.6 23.4 -0.8 24.6 Q-2.8 22.8 -1.7 20.2 Z" fill="#e8e0c8" stroke="#9a8f78" stroke-width="0.3"/>` +
+    `<path d="M2.8 20 Q3.6 23.4 0.8 24.6 Q2.8 22.8 1.7 20.2 Z" fill="#e8e0c8" stroke="#9a8f78" stroke-width="0.3"/>`;
+  const eyeCluster = `<circle cx="-3.4" cy="9" r="1.5" fill="#9a1818"/><circle cx="3.4" cy="9" r="1.5" fill="#9a1818"/>` +
+    `<circle cx="-1.4" cy="11" r="1" fill="#b83030"/><circle cx="1.4" cy="11" r="1" fill="#b83030"/>` +
+    `<circle cx="-4.6" cy="11.4" r="0.8" fill="#7a1010"/><circle cx="4.6" cy="11.4" r="0.8" fill="#7a1010"/>` +
+    `<circle cx="-2.4" cy="13" r="0.7" fill="#7a1010"/><circle cx="2.4" cy="13" r="0.7" fill="#7a1010"/>`;
   const face = view === 'back'
     ? '' // de dos : pas d'yeux/chélicères (on voit la nuque)
-    : `<g>` + // yeux (grappe de 8, AMR rougeoyants) + chélicères à crochets
-      `<circle cx="-3.4" cy="9" r="1.5" fill="#9a1818"/><circle cx="3.4" cy="9" r="1.5" fill="#9a1818"/>` +
-      `<circle cx="-1.4" cy="11" r="1" fill="#b83030"/><circle cx="1.4" cy="11" r="1" fill="#b83030"/>` +
-      `<circle cx="-4.6" cy="11.4" r="0.8" fill="#7a1010"/><circle cx="4.6" cy="11.4" r="0.8" fill="#7a1010"/>` +
-      `<circle cx="-2.4" cy="13" r="0.7" fill="#7a1010"/><circle cx="2.4" cy="13" r="0.7" fill="#7a1010"/>` +
-      `<path d="M-3 14 Q-4 18 -2 20 M3 14 Q4 18 2 20" fill="none" stroke="@corpsO" stroke-width="2" stroke-linecap="round"/>` +
-      `<path d="M-2 19.6 l-0.6 2.2 M2 19.6 l0.6 2.2" stroke="#e8e0c8" stroke-width="0.8" stroke-linecap="round"/></g>`;
+    : prof
+      ? `<g transform="translate(5,0)">${eyeCluster}${chelicerae}</g>`
+      : `<g>${eyeCluster}${chelicerae}</g>`;
   return `<g>${legs}` +
-    `<ellipse cx="0" cy="3" rx="11" ry="13" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<ellipse cx="0" cy="0" rx="7" ry="8" fill="@corpsH" opacity="0.3"/>` +
+    `<ellipse cx="${prof ? 2 : 0}" cy="3" rx="11" ry="13" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<ellipse cx="${prof ? 1 : 0}" cy="0" rx="7" ry="8" fill="@corpsH" opacity="0.3"/>` +
     face + `</g>`;
 }
 function abdomen(p: SpiderProps, view: View): string {
   const g = p.girth, rx = 15 * g, ry = 17 * g;
+  const off = view === 'profile' ? -5 : 0; // profil : l'abdomen TRAÎNE derrière (-x)
   const mark = view === 'back'
     ? `<path d="M0 ${-ry + 4} L0 ${ry - 4}" stroke="@corpsO" stroke-width="1.2" opacity="0.6"/>` // sillon dorsal
-    : `<path d="M0 ${-8} l-3 5 l3 4 l-3 5 M0 -8 l3 5 l-3 4 l3 5" stroke="@corpsH" stroke-width="1.2" fill="none" opacity="0.6"/>`; // chevrons pâles (sablier)
+    : `<path d="M${off} ${-8} l-3 5 l3 4 l-3 5 M${off} -8 l3 5 l-3 4 l3 5" stroke="@corpsH" stroke-width="1.2" fill="none" opacity="0.6"/>`; // chevrons pâles (sablier)
   return `<g>` +
-    `<ellipse cx="0" cy="0" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<ellipse cx="${off}" cy="0" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
     `<ellipse cx="-3" cy="-4" rx="${(rx * 0.5).toFixed(1)}" ry="${(ry * 0.5).toFixed(1)}" fill="@corpsH" opacity="0.28"/>` +
     mark +
     // pilosité (petits poils dressés sur le pourtour)

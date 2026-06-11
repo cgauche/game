@@ -334,11 +334,14 @@ function headFront(p: QuadProps): string {
       `<ellipse cx="4.4" cy="-0.4" rx="1.9" ry="2.1" fill="#e8b820"/><circle cx="4.4" cy="-0.2" r="0.95" fill="#0a0603"/>` +
       `<path d="M-7.4 -3.4 Q-4.4 -5.4 -1.6 -3.2 M7.4 -3.4 Q4.4 -5.4 1.6 -3.2" stroke="@corpsO" stroke-width="1.3" fill="none"/>` +
       `<path d="M-8 -10 l-2.6 -3 M8 -10 l2.6 -3 M-6 -13 l-1.2 -3.4 M6 -13 l1.2 -3.4 M0 -14 l0 -3.4" stroke="@corpsO" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/></g>`;
-  if (p.head === 'dragon') // face reptilienne large + cornes + 2 yeux fendus + museau à dents
-    return `<g><path d="M-7 -10 q-3 -9 -10 -11 q4 6 6 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/><path d="M7 -10 q3 -9 10 -11 q-4 6 -6 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` +
-      `<path d="M-9 -10 Q-11 5 -4 13 Q0 16 4 13 Q11 5 9 -10 Q0 -14 -9 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
-      `<ellipse cx="0" cy="12" rx="5" ry="3.4" fill="@corpsO"/><ellipse cx="-2" cy="11.4" rx="0.9" ry="0.6" fill="#1a0e08"/><ellipse cx="2" cy="11.4" rx="0.9" ry="0.6" fill="#1a0e08"/>` +
-      `<path d="M-4 14.4 l0.6 2 M0 15 l0 2.2 M4 14.4 l-0.6 2" stroke="#e8e0c8" stroke-width="0.7"/>` +
+  if (p.head === 'dragon') // face reptilienne : cornes FINES balayées (les larges lisaient « oreilles
+    // d'âne ») + MUSEAU ALLONGÉ à dents débordantes et naseaux en fente (fini le groin de cochon) —
+    // raccord avec le profil (même gueule longue, mêmes dents, même œil fendu).
+    return `<g><path d="M-5.5 -11 q-1.6 -8.5 -7 -12.5 q1.2 7 3.2 13.5 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/><path d="M5.5 -11 q1.6 -8.5 7 -12.5 q-1.2 7 -3.2 13.5 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` +
+      `<path d="M-9 -10 Q-11 3 -5 9 Q0 12 5 9 Q11 3 9 -10 Q0 -14 -9 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-4.6 7 Q-5.4 15 -3 19.5 Q0 21.6 3 19.5 Q5.4 15 4.6 7 Q0 9.5 -4.6 7 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // museau long
+      `<path d="M-4.6 10.5 l1.1 2 l1.2 -1.8 M4.6 10.5 l-1.1 2 l-1.2 -1.8 M-3.8 14.5 l1 1.9 l1.1 -1.7 M3.8 14.5 l-1 1.9 l-1.1 -1.7" stroke="#e8e0c8" stroke-width="0.7" fill="none"/>` + // dents débordantes
+      `<path d="M-2.2 18.6 l1.1 -1.8 M2.2 18.6 l-1.1 -1.8" stroke="#1a0e08" stroke-width="0.8" stroke-linecap="round"/>` + // naseaux en fente
       `<ellipse cx="-5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="-5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
       `<ellipse cx="5" cy="-2" rx="1.8" ry="2.3" fill="#d8b820"/><ellipse cx="5" cy="-2" rx="0.5" ry="2.1" fill="#0a0603"/>` +
       `<path d="M0 -13 l0 -3.4 M-3 -12 l-0.6 -3.4 M3 -12 l0.6 -3.4" stroke="@corpsO" stroke-width="1.3" stroke-linecap="round"/></g>`;
@@ -350,8 +353,14 @@ function headFront(p: QuadProps): string {
       `<circle cx="-3" cy="2" r="1" fill="@corpsO"/><circle cx="3" cy="3" r="0.9" fill="@corpsO"/><circle cx="0" cy="-1" r="0.8" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g>${ears}<path d="M-7 -14 Q-9 6 -4 16 Q0 19 4 16 Q9 6 7 -14 Q0 -17 -7 -14 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M-2 -15 Q0 -17 2 -15 L1.5 12 Q0 14 -1.5 12 Z" fill="@cheveux" opacity="0.6"/><ellipse cx="0" cy="13" rx="4.2" ry="3.2" fill="@corpsO"/><ellipse cx="-1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/><ellipse cx="1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/>${eyeF(-5, -2)}${eyeF(5, -2)}</g>`;
-  if (p.head === 'loup' )
-    return `<g>${ears}<path d="M-9 -13 Q-11 0 -6 8 Q-2 13 0 14 Q2 13 6 8 Q11 0 9 -13 Q0 -16 -9 -13 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M-5 -2 Q0 0 5 -2 L4 9 Q0 12 -4 9 Z" fill="@corpsH" opacity="0.45"/><ellipse cx="0" cy="12" rx="2.6" ry="2.1" fill="@corpsO"/><ellipse cx="0" cy="11.5" rx="1.5" ry="1.1" fill="#120a06"/>${eyeF(-5, -3)}${eyeF(5, -3)}</g>`;
+  if (p.head === 'loup') // bajoues de fourrure + museau CUNÉIFORME long + crocs — raccord avec le
+    // profil (le crâne rond sans museau lisait « ours/rat » de face).
+    return `<g>${ears}<path d="M-9 -13 Q-11 0 -6 8 Q-2 13 0 14 Q2 13 6 8 Q11 0 9 -13 Q0 -16 -9 -13 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-8.6 -2 l-3.6 1.4 l3.2 1.8 l-3 1.6 l3.6 1 M8.6 -2 l3.6 1.4 l-3.2 1.8 l3 1.6 l-3.6 1" stroke="@corps" stroke-width="1.6" fill="none" stroke-linejoin="round"/>` + // bajoues hirsutes
+      `<path d="M-4 -1 Q0 -2.5 4 -1 L2.8 11.5 Q0 14.5 -2.8 11.5 Z" fill="@corpsH" opacity="0.45"/>` +
+      `<ellipse cx="0" cy="13.5" rx="2.5" ry="2" fill="#120a06"/>` +
+      `<path d="M-2.4 15 l0.7 2.6 l1.1 -2.3 M2.4 15 l-0.7 2.6 l-1.1 -2.3" stroke="#e8e0c8" stroke-width="0.7" fill="none"/>` + // crocs
+      `${eyeF(-5, -4, 1.5)}${eyeF(5, -4, 1.5)}</g>`;
   if (p.head === 'rat')
     return `<g>${ears}<path d="M-7 -11 Q-9 2 -3 11 Q0 16 3 11 Q9 2 7 -11 Q0 -14 -7 -11 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="0" cy="13" rx="1.8" ry="1.5" fill="#d8a0a0"/><path d="M-2 13 q-5 1 -7 -1 M2 13 q5 1 7 -1 M-2 14 q-5 2 -8 1 M2 14 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.55"/>${eyeF(-4, -3, 1.4)}${eyeF(4, -3, 1.4)}</g>`;
   if (p.head === 'ours')
