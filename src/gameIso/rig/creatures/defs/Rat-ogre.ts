@@ -14,10 +14,6 @@ const OV_FOURRURE_COL = POILS('M-12 -28 Q0 -32 12 -28 L11.5 -18 L9 -20.5 L7.5 -1
 const OV_COUTURE =
   `<path d="M-6 -8 Q0 -5 6 -9" stroke="#8a4a3a" stroke-width="0.9" fill="none"/>`
   + `<path d="M-4.5 -9.5 l1 3 M-1.5 -8.4 l0.6 3 M1.8 -8.6 l0.4 3 M4.6 -10 l0 3" stroke="#8a4a3a" stroke-width="0.6" fill="none"/>`;
-// Pagne-tablier loqueteux (zone basse du torse).
-const OV_PAGNE =
-  `<path d="M-9 8 Q0 10.5 9 8 L8.5 14 L10 23 L6.5 20 L4.5 25 L1.5 21 L-0.5 26 L-3 21.5 L-5.5 24.5 L-7.5 20 L-10 22.5 Z" fill="#9a8a6a" stroke="#5a503c" stroke-width="0.7" stroke-linejoin="round"/>`
-  + `<path d="M-9 7.4 Q0 9.8 9 7.4 L9 10 Q0 12.2 -9 10 Z" fill="#4a3a28" stroke="#2c2014" stroke-width="0.5"/>`;
 // Épines dorsales implantées : de FACE/PROFIL quelques pointes dépassent au-dessus des
 // épaules (derrière le corps) ; de DOS la rangée court le long de l'échine.
 const EPINE = (x: number, y: number, s: number, a = 0) =>
@@ -33,7 +29,9 @@ export const creature: CreatureDef = {
   match: 'rat.?ogre',
   race: 'Skaven',
   perso: {
-    career: 'Nu',
+    // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier
+    // sanglé par les Molder) = tenue de carrière « Rat ogre » (registre, bareFoot).
+    career: 'Rat ogre',
     gabarit: 'brute-bras-longs',
     sex: 'M',
     colors: { peau: '#b5876e', cheveux: '#3c362c' }, // chair rosée cousue + fourrure sombre
@@ -44,7 +42,6 @@ export const creature: CreatureDef = {
       { bone: 'epauleG', svg: OV_FOURRURE_EPAULE, scale: 'bone', layer: 60 },
       { bone: 'epauleD', svg: OV_FOURRURE_EPAULE, scale: 'bone', layer: 60 },
       { bone: 'torse', svg: OV_COUTURE, scale: 'bone', layer: 61, view: 'front' },
-      { bone: 'torse', svg: OV_PAGNE, scale: 'bone', layer: 62 },
       { bone: 'torse', svg: OV_EPINES_FRONT, scale: 'bone', layer: -2, view: 'front' },
       { bone: 'torse', svg: OV_EPINES_BACK, scale: 'bone', layer: 70, view: 'back' },
       { bone: 'torse', svg: OV_EPINES_PROFILE, scale: 'bone', layer: -2, view: 'profile' },

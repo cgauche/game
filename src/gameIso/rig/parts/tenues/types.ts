@@ -20,5 +20,9 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part
  * sans perte + recoloriage cohérent, comme `CAREER_PALETTES` pour les tenues de carrière.
  * Résolue par `tenuePaletteFor` (carrière dédiée > def `career` > archétype de classe).
  * Absente pour 'Nu' (la peau suit la palette d'espèce).
+ *
+ * `bareFoot` : tenue de MONSTRE qui ne chausse pas (pagne du Sanguinaire, corset de la
+ * Démonette…) — le pied reste nu griffu (CLAWFOOT) et les silhouettes dos/profil substituées
+ * restent en chair, comme pour 'Nu'. Sans ce flag, toute carrière ≠ Nu reçoit des bottes.
  */
-export type TenueDef = { name: string; set: TenueSet; palette?: StoredPalette; career?: boolean };
+export type TenueDef = { name: string; set: TenueSet; palette?: StoredPalette; career?: boolean; bareFoot?: boolean };

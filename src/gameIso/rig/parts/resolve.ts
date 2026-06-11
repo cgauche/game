@@ -4,6 +4,7 @@ import type { View } from '../facing';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { careerTenueFor } from './career';
+import { CAREER_TENUE_BAREFOOT } from './tenues';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
@@ -117,6 +118,9 @@ export function resolveParts(
   view: View = 'front',
 ): Record<Slot, Part | null> {
   const tenue = careerTenueFor(career);
+  // Corps non chaussé : 'Nu'/'Squelette' + tenues de MONSTRE (flag bareFoot du def) — pieds
+  // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu.
+  const bareFoot = career === 'Nu' || career === 'Squelette' || CAREER_TENUE_BAREFOOT.has(career ?? '');
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 
@@ -140,7 +144,7 @@ export function resolveParts(
   // fournit déjà une vue `profile` détaillée). Suit le recoloriage de carrière.
   if (view === 'profile') {
     if (!hasProfileView(tenue.torse) && out.torse?.svg) out.torse = { svg: PROFILE_TORSE(dominantCloth(out.torse.svg)) };
-    if (!hasProfileView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: PROFILE_JAMBE(dominantCloth(out.jambes.svg), career === 'Nu' ? 'peau' : 'cuir') };
+    if (!hasProfileView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: PROFILE_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
     // Couvre-chef : silhouette de profil seulement s'il y en a un de face (sinon tête nue +
     // cheveux de profil cosmétiques). Évite l'art de face plaqué qui « s'enfonce » dans le crâne.
     if (!hasProfileView(tenue.tete) && out.tete?.svg) out.tete = { svg: PROFILE_TETE(dominantCloth(out.tete.svg)) };
@@ -150,13 +154,11 @@ export function resolveParts(
   // talons de botte) ; les 64 tenues de carrière générées ont leur vrai dos (prioritaire).
   if (view === 'back') {
     if (!hasBackView(tenue.torse) && out.torse?.svg) out.torse = { svg: BACK_TORSE(dominantCloth(out.torse.svg)) };
-    if (!hasBackView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: BACK_JAMBE(dominantCloth(out.jambes.svg), career === 'Nu' ? 'peau' : 'cuir') };
+    if (!hasBackView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: BACK_JAMBE(dominantCloth(out.jambes.svg), bareFoot ? 'peau' : 'cuir') };
     if (!hasBackView(tenue.tete) && out.tete?.svg) out.tete = { svg: BACK_TETE(dominantCloth(out.tete.svg)) };
   }
 
-  // Pieds : botte de cuir (habillés) ou pied nu (monstres sans chaussure : « Nu » + squelette
-  // osseux) → CLAWFOOT en @peau (chair/os) à griffes/orteils sombres.
-  const bareFoot = career === 'Nu' || career === 'Squelette';
+  // Pieds : botte de cuir (habillés) ou pied nu griffu (bareFoot, calculé plus haut).
   out.pied = P(bareFoot ? CLAWFOOT : FOOT);
 
   // Mains : petit poing à chaque poignet → agrippe l'arme/le bouclier (sinon l'arme

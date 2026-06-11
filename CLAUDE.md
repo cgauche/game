@@ -171,6 +171,8 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)
   sprites.ts                  décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
   rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
+                              AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
+                              corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)
   pickBackend.tsx             classifieur unique : rig humanoïde / gabarit animé / sprite décor
   IsoStage.tsx                composant de rendu (caméra, clics, tokens, surbrillances)
   fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
