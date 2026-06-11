@@ -921,11 +921,13 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   rectangle** · **calques masquables** (Zones/Ennemis/Bâtiments — débloque le clic dessous). Modules
   purs : `nextEntityId`, `validateScene` (10 tests). Reportés (mineurs, justifiés) : resize-confirm
   (déjà couvert par la validation), fit-to-view (≡ bouton reset).
-- 🎯 **Décor interactif (spec+plan écrits, à dérouler)** : dissoudre le kind `objet` dans `prop` —
-  **tout décor fouillable/ramassable** via un canal `interact: { effects, consume }` (le système
-  d'Effets fournit déjà vrais objets/lettres/argent/XP), affordance (halo + clic-à-distance →
-  déplacement → fouille), migration `objet→prop`. Cf. `docs/superpowers/{specs,plans}/2026-06-07-decor-interactif*`.
-  Sous-projet 2 : sprites manquants (lettre / coffre / étagère / clé / bourse).
+- ✅ **Décor interactif** *(constaté livré 2026-06-11 — exécuté en session parallèle)* : le kind
+  `objet` est dissous dans `prop` (`interact: { effects, consume }`, migration `sceneMigrate`
+  appliquée au chargement), interaction exploration + « Ramasser » en combat re-ciblés, **halo
+  d'affordance** (`interact-halo`), **clic-à-distance → déplacement → fouille** (`pendingInteract`),
+  bloc « Interactif » dans l'éditeur + **auto-suggestion à la pose** (`propDefaults` : un décor
+  `searchable` pré-arme `interact`). Sous-projet 2 livré aussi : sprites lettre/coffre/étagère/
+  clé/bourse (+ cercle runique) au catalogue.
 
 ## 🎯 Jalon 7 — Coop en ligne
 
