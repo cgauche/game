@@ -1,4 +1,5 @@
-import { useGame } from '../state/store';
+import { useGame, type GameState } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import type { JSX } from 'react';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
@@ -95,14 +96,63 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   attack: RollModal, test: TestModal, corruption: CorruptionModal,
 };
 
+/** Combattant CONCERNÉ par chaque modale (gating coop : « chacun voit SES modales », spec §4bis).
+ *  `undefined` = pas d'acteur joueur → seul l'HÔTE la voit (exploration miroir, entretiens…). */
+const OWNER_OF: Record<ModalKey, (s: GameState) => string | undefined> = {
+  fateSave: (s) => s.pendingFateSave?.heroId,
+  fumble: (s) => s.pendingFumble?.combatantId,
+  deviation: (s) => s.pendingDeviation?.targetId,
+  bladeTrap: (s) => s.pendingBladeTrap?.defenderId,
+  renounce: (s) => s.pendingRenounce?.heroId,
+  trample: (s) => s.pendingTrample?.attackerId,
+  reveal: (s) => s.pendingReveals[0]?.subjectId, // sans sujet (entretien) → hôte
+  defense: (s) => s.pendingDefense?.defenderId,
+  psych: (s) => s.pendingPsych?.combatantId,
+  encounterPsych: (s) => s.pendingEncounterPsych?.heroId,
+  disengage: (s) => s.pendingDisengage?.moverId,
+  mountTarget: (s) => (s.battle ? s.battle.order[s.battle.turn] : undefined), // l'attaquant actif qui a cliqué le couple
+  frenzy: (s) => s.pendingFrenzy?.combatantId,
+  approach: (s) => s.pendingApproach?.combatantId,
+  run: (s) => s.pendingRun?.combatantId,
+  focus: (s) => s.pendingFocus?.casterId,
+  heal: (s) => s.pendingHeal?.healerId,
+  // Sort d'un ENNEMI : modale chez TOUT LE MONDE (moment partagé + Contre-sort multi — chacun
+  // n'engage que SES contre-lanceurs, filtrés dans CastModal) ; sort d'un héros : son propriétaire.
+  cast: (s) => {
+    const casterId = s.pendingCast?.casterId;
+    const caster = casterId && s.battle ? s.battle.combatants.find((c) => c.id === casterId) : undefined;
+    return caster?.kind === 'enemy' ? '*' : casterId;
+  },
+  reload: (s) => s.pendingReload?.actorId,
+  stateRecovery: (s) => s.pendingStateRecovery?.actorId,
+  attack: (s) => s.pendingAttack?.attackerId,
+  test: (s) => s.pendingTest?.actorId,
+  corruption: (s) => s.pendingCorruption?.heroId,
+};
+
+/** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */
+function SpectatorChip({ name }: { name: string }) {
+  return <div className="spectator-chip">⏳ {name} joue…</div>;
+}
+
 /**
  * Arbitre de modales (R2) : ne monte QUE la modale de combat la plus prioritaire active — au lieu de ~20
  * modales montées côte à côte dont l'empilement dépendait de l'ordre JSX. Les modales HORS combat
  * (Marchand, Document) ne passent pas par l'arbitre (contexte exclusif).
+ * EN COOP : la modale ne s'affiche que chez le PROPRIÉTAIRE du combattant concerné ('*' = tous) ;
+ * les autres voient la scène + une puce « X joue… ».
  */
 export function ActiveModal(): JSX.Element | null {
-  const key = pickActiveModalKey(useGame());
+  const s = useGame();
+  const key = pickActiveModalKey(s);
   if (!key) return null;
+  if (s.net.mode !== 'local') {
+    const ownerId = OWNER_OF[key](s);
+    if (ownerId !== '*' && !ownsLocally(s, ownerId)) {
+      const seat = ownerId ? s.net.ownership[ownerId] ?? 0 : 0;
+      return <SpectatorChip name={s.net.seatNames[seat] ?? 'L’hôte'} />;
+    }
+  }
   const Comp = COMPONENT[key];
   return <Comp />;
 }

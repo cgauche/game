@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import { counterspellCandidates, overcastTargetCandidates } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
@@ -191,7 +192,11 @@ export function CastModal() {
           {(() => {
             if (caster.kind !== 'enemy' || !res.cast || res.dispelled || isPrayer) return null;
             if (res.isCritical && !pc.missile) return null; // inéluctable (défaut IA)
-            const cands = counterspellCandidates(battle ?? null, scene, caster, target).filter((c) => c.kind === 'hero');
+            // COOP : chacun n'engage que SES contre-lanceurs (le sort ennemi s'affiche chez tous —
+            // Contre-sort à plusieurs sur le même sort, RAW LDB 46 + arbitrage).
+            const state = useGame.getState();
+            const cands = counterspellCandidates(battle ?? null, scene, caster, target)
+              .filter((c) => c.kind === 'hero' && ownsLocally(state, c.id));
             if (!cands.length) return null;
             return (
               <div className="rm-overcast rm-options">

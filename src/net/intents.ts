@@ -51,7 +51,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'encounterPsychForceSuccess', 'encounterPsychConfirm', 'encounterPsychResolve',
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'deviationApply', 'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
-  'roundStartPromote', 'confirmRoundStart', 'renounceResolve', 'corruptionRoll',
+  'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
   'bladeTrapResolve', 'dismissVictory',
 ]);

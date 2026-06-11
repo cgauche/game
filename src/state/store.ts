@@ -278,7 +278,9 @@ export interface GameState {
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
   pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
-  pendingRoundStart: { round: number } | null;
+  pendingRoundStart: { round: number; readyBySeat?: Record<number, boolean> } | null;
+  /** Coop : marque le siège PRÊT au ready-check d'ouverture (round 1) ; l'hôte lance quand tous ✓. */
+  roundStartReady: (seat: number) => void;
   /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
   pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number } | null;
   /** Récompenses de victoire capturées (écran de fin de combat) ; null hors victoire. */
@@ -2130,6 +2132,22 @@ export const useGame = create<GameState>((set, get) => ({
     const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
     set({ battle: { ...battle, order, log: [...battle.log, ev('info', `${hero.name} choisit d'agir en premier (${free ? 'arme Rapide' : 'Chance'}).`, hero.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
+  },
+  roundStartReady: (seat) => {
+    const prs = get().pendingRoundStart;
+    if (!prs) return;
+    const readyBySeat = { ...(prs.readyBySeat ?? {}), [seat]: true };
+    set({ pendingRoundStart: { ...prs, readyBySeat } });
+    // L'HÔTE lance quand TOUS les sièges requis ont validé (sièges possédant ≥1 héros vivant + l'hôte).
+    const s = get();
+    if (s.net.mode === 'guest') return; // l'invité ne fait que marquer (l'intent porte son siège)
+    const required = new Set<number>([0]);
+    for (const h of s.party) {
+      if (h.dead || h.outOfRencontre) continue;
+      const owner = s.net.ownership[h.id] ?? 0;
+      if (s.net.seatNames[owner] != null) required.add(owner);
+    }
+    if ([...required].every((st) => readyBySeat[st])) get().confirmRoundStart();
   },
   confirmRoundStart: () => {
     const battle = get().battle;

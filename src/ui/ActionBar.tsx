@@ -11,10 +11,11 @@ import { compatibleAmmo } from '../engine/items';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
+import { ownsLocally } from '../state/netFlow';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
-import { ActiveFrame } from './ActiveFrame';
 import { TeamPortrait } from './CombatantBadge';
+import { ActiveFrame } from './ActiveFrame';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -56,6 +57,8 @@ export function ActionBar() {
   const flags = useGame((s) => s.flags);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
+  const net = useGame((s) => s.net);
+  const roundStartReady = useGame((s) => s.roundStartReady);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -66,6 +69,31 @@ export function ActionBar() {
   // (canActFirst) avant de lancer. Au Round 1 c'est l'ouverture du combat (« Commencer le combat »).
   if (pendingRoundStart) {
     const first = pendingRoundStart.round <= 1;
+    // COOP : ready-check d'ouverture — chaque joueur valide ; portraits + ✓ au-dessus de la barre
+    // (spec §4bis). L'hôte lance automatiquement quand tous les sièges requis ont validé.
+    if (net.mode !== 'local') {
+      const ready = pendingRoundStart.readyBySeat ?? {};
+      const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
+      const firstHeroOf = (seat: number) => party.find((h) => !h.dead && (net.ownership[h.id] ?? 0) === seat);
+      return (
+        <div className="action-bar establishing-bar coop-ready">
+          <div className="ready-row">
+            {seats.map(({ seat, name }) => {
+              const h = firstHeroOf(seat);
+              return (
+                <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
+                  {h ? <TeamPortrait combatant={h} size={28} /> : <span className="ready-noportrait">👤</span>}
+                  {ready[seat] ? '✓' : '…'}
+                </span>
+              );
+            })}
+          </div>
+          <button className="btn btn-primary commencer-btn" disabled={!!ready[net.mySeat]} onClick={() => roundStartReady(net.mySeat)}>
+            {ready[net.mySeat] ? '⏳ En attente des autres…' : '⚔️ Prêt'}
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="action-bar establishing-bar">
         <button className="btn btn-primary commencer-btn" onClick={confirmRoundStart}>
@@ -76,6 +104,16 @@ export function ActionBar() {
   }
   const active = activeCombatant(battle);
   if (!active) return null;
+
+  // COOP : le combattant actif appartient à un AUTRE joueur → barre spectateur (pas de contrôles).
+  if (net.mode !== 'local' && active.kind === 'hero' && !ownsLocally(useGame.getState(), active.id)) {
+    const seat = net.ownership[active.id] ?? 0;
+    return (
+      <div className="action-bar establishing-bar">
+        <span className="ready-chip">⏳ {net.seatNames[seat] ?? 'L’hôte'} joue {active.name}…</span>
+      </div>
+    );
+  }
 
   const isHero = active.kind === 'hero';
   const loadouts = active.loadouts ?? []; // sets d'armes basculables en combat (≥2 → commutateur)

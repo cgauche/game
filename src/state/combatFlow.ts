@@ -3444,8 +3444,16 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   // (5) Pause de DÉBUT DE ROUND (LDB ch.17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
   //     l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ; futurs Atouts/talents).
   //     L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf. garde de maybeRunEnemyTurn.
+  //     EN COOP (arbitrage 2026-06-11) : seul le round 1 est gaté (ready-check de tous) — les rounds
+  //     suivants S'ENCHAÎNENT sans pause (le ✋ « ouvrir la fenêtre Chance » volontaire = P3).
   const b = get().battle!;
-  set({ battle: { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null }, pendingRoundStart: { round: b.round } });
+  const reset = { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
+  if (get().net.mode !== 'local' && b.round > 1) {
+    set({ battle: reset, pendingRoundStart: null });
+    get().confirmRoundStart();
+    return;
+  }
+  set({ battle: reset, pendingRoundStart: { round: b.round } });
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */

@@ -1187,6 +1187,49 @@ body {
   flex: 1;
 }
 
+/* ── Coop : puce spectateur + ready-check ── */
+.spectator-chip {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 16, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  z-index: 40;
+  pointer-events: none;
+}
+.coop-ready {
+  flex-direction: column;
+  gap: 8px;
+}
+.ready-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.ready-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  font-size: 13px;
+  color: var(--muted);
+}
+.ready-chip.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.ready-noportrait {
+  font-size: 18px;
+}
+
 /* ── Lobby coop (Jalon 7) ── */
 .coop-lobby .coop-body {
   flex: 1;
