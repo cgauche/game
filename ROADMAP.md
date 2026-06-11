@@ -1057,14 +1057,23 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   hors gabarit (serpent, araignée, pieuvre, hydre…).
 - **Reste (fin)** : ✅ vues **dos/profil héros** (visage + cheveux par archétype — `cosmetic.ts` ;
   nuque/profil corrects, plus de « visage à l'arrière du crâne » ; vérifié `_qc-hero-views`/`_qc-head-views`),
-  reste les tenues/armes héros partielles en fallback front ; ✅ **tintage arcane/divin** des sorts
+  ✅ **tenues dos** *(2026-06-11 : les 64 tenues de carrière ont leur vrai dos (E·7) ; les archétypes
+  de classe/Nu/carrières sans art reçoivent une silhouette dorsale générique substituée —
+  `BACK_TORSE/JAMBE/TETE` dans `resolve.ts`, même principe que le profil)* ; ✅ **armes en vue
+  dos** *(re-QC 2026-06-11 : le repli front est lisible — arc/arbalète/hast gardent leur
+  silhouette de dos ; chantier « 48 arts directionnels » NON justifié, clos sur constat)* ;
+  ✅ **tintage arcane/divin** des sorts
   (`spell: label` sur `ANIM_ATTACK` → `spellFx`/`spellFxForLabel`, gradients `g_arcane`/`g_divine` ;
   projectile + halo de canalisation du lanceur + aura de bénédiction tintés ; sorts de soutien animés ;
-  vérifié navigateur) ; proportions Mutant homme-chien/tentacule perfectibles ; ✅ **UI d'override
+  vérifié navigateur) ; ✅ **proportions Mutant** *(re-QC 2026-06-11 après la refonte mutations :
+  tête chien et bras tentacule corrects — clos)* ; ✅ **UI d'override
   cosmétique** dans l'éditeur *(vérifié livré 2026-06-11 : Inspector → « 🎲 Relancer » (seed) +
   `MonsterPartsFields` — Sexe, Carrure, Coiffure (slot-picker `HAIRSTYLES`), mutations par slot,
-  couleurs, carrière, arme — branché spawns ET entités)* ; **galeries QC** (rig/anim/armes/bestiaire)
-  à finaliser et committer (itération visuelle — différée).
+  couleurs, carrière, arme, **yeux du catalogue + ailes** — branché spawns ET entités)* ;
+  ✅ **galeries QC** *(2026-06-11 : les 11 galeries régénérées et committées, + galerie Mutations
+  au hub)*. **Le volet rig du Jalon 8 est CLOS** — voir aussi : visuels d'état (mutations LDB 19,
+  amputations/prothèses, traits → cornes/queue/ailes/tentacule, yeux adressables `parts/eyes.ts`,
+  appendices dorsaux `parts/dorsal.ts`), gestes par bras porteur (`mirrorClip`).
 - ✅ **Sons (SFX)** *(2026-06-11)* : 19 échantillons **CC0 Kenney** (`public/audio/`, ~220 Ko) ; registre
   `SOUND_DEFS` (`src/audio/defs/` — 11 défs : dés, impact, tranche, parade, critique, sort, pas, gong de
   victoire, pièces, portes — nouvelle famille du gen-registry : **ajouter un son = 1 fichier def**) ;
