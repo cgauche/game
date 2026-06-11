@@ -269,21 +269,21 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
     <>
       {section === 'profil' && (<>
         <div className="sheet-vitals">
-          <div className="vital pv">
-            <span className="vital-lbl">Blessures</span>
-            <b>{hero.wounds.current}/{hero.wounds.max}</b>
+          <div className="stat-chip pv">
+            <span className="sc-label">Blessures</span>
+            <span className="sc-value">{hero.wounds.current}/{hero.wounds.max}</span>
           </div>
-          <div className="vital">
-            <span className="vital-lbl">Mouvement</span>
-            <b>{hero.movement}</b>
+          <div className="stat-chip">
+            <span className="sc-label">Mouvement</span>
+            <span className="sc-value">{hero.movement}</span>
           </div>
-          <div className={`vital ${over ? 'enc-over' : ''}`}>
-            <span className="vital-lbl">Encombrement</span>
-            <b>{enc}/{maxEnc}{over ? ' ⚠' : ''}</b>
+          <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
+            <span className="sc-label">Encombrement</span>
+            <span className="sc-value">{enc}/{maxEnc}{over ? ' ⚠' : ''}</span>
           </div>
         </div>
         {canSoigner && (
-          <div className="sheet-heal">
+          <div className="row-flex">
             {availableHealModes(hero).filter((m) => m !== 'surgery' || hasSurgeon).map((m) => (
               <button key={m} className="btn small" onClick={() => healAlly(hero.id, m)}
                 title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)">
@@ -294,10 +294,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         )}
         {hero.fate != null && (
           <div className="sheet-resources">
-            <div className="res" title="Points de Destin — permanents (« Meurs un autre jour »)"><span>Destin</span><b>{hero.fate}</b></div>
-            <div className="res" title="Points de Chance — réserve par session, relances"><span>Chance</span><b>{hero.fortune ?? 0}</b></div>
-            <div className="res" title="Résilience — permanente (« Je ne faillirai pas »)"><span>Résilience</span><b>{hero.resilience ?? 0}</b></div>
-            <div className="res" title="Détermination — par session, retire un État"><span>Détermination</span><b>{hero.resolve ?? 0}</b></div>
+            <div className="stat-chip" title="Points de Destin — permanents (« Meurs un autre jour »)"><span className="sc-label">Destin</span><span className="sc-value">{hero.fate}</span></div>
+            <div className="stat-chip" title="Points de Chance — réserve par session, relances"><span className="sc-label">Chance</span><span className="sc-value">{hero.fortune ?? 0}</span></div>
+            <div className="stat-chip" title="Résilience — permanente (« Je ne faillirai pas »)"><span className="sc-label">Résilience</span><span className="sc-value">{hero.resilience ?? 0}</span></div>
+            <div className="stat-chip" title="Détermination — par session, retire un État"><span className="sc-label">Détermination</span><span className="sc-value">{hero.resolve ?? 0}</span></div>
           </div>
         )}
         <div className="mini-title">Caractéristiques</div>
@@ -312,7 +312,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       </>)}
 
       {section === 'combat' && (<>
-      <div className="sheet-combat">
+      <div className="panel stack">
         <div className="sc-block">
           <span className="mini-title">Défense — Points d'Armure</span>
           <div className="ap-row">

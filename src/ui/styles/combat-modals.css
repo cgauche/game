@@ -909,62 +909,25 @@
   flex-direction: column;
   min-width: 0;
 }
-/* Vitalité (PV / Mvt / Encombrement) en cartouches. */
+/* Vitalité + ressources : cartouches = primitive .stat-chip (components.css) ; ici, juste les grilles
+   et les accents propres à la fiche. */
 .sheet-vitals {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
-.sheet-vitals .vital {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 4px;
-}
-.sheet-vitals .vital-lbl {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-.sheet-vitals .vital b {
-  font-size: 16px;
-  color: var(--text);
-}
-.sheet-vitals .vital.pv b {
+.sheet-vitals .stat-chip.pv .sc-value {
   color: var(--gold2);
 }
-.sheet-vitals .vital.enc-over b {
+.sheet-vitals .stat-chip.enc-over .sc-value {
   color: var(--danger);
-}
-.sheet-heal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 .sheet-resources {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
-.sheet-resources .res {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 12px;
-}
-.sheet-resources .res span {
-  color: var(--muted);
-}
-.sheet-resources .res b {
+.sheet-resources .stat-chip .sc-value {
   color: var(--gold);
   font-size: 14px;
 }
@@ -993,14 +956,8 @@
     height: 72px;
   }
 }
-.sheet-combat {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
+/* Onglet Combat de la fiche : la surface = primitive .panel.stack (components.css). */
+.sheet-main > .panel {
   margin-bottom: 14px;
 }
 .ap-row {
