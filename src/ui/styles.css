@@ -4376,13 +4376,24 @@ textarea:focus {
 .save-error { color: #e36c6c; font-size: 13px; margin: 6px 0 0; }
 
 /* ── Entre deux aventures (Jalon 5) ────────────────────────────────────────── */
-.interlude-card { max-width: min(720px, 94vw); }
+.interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
 .interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }
 .interlude-hero { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
 .interlude-hero h3 { margin: 0 0 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
 .interlude-event { margin: 0; font-size: 13px; }
-.interlude-warning { font-size: 12px; color: var(--muted); }
+.interlude-warning { font-size: 12px; color: var(--muted); margin: 0; cursor: help; }
+.interlude-close {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.interlude-close .btn { margin-left: auto; }
 .interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
 .interlude-craft, .interlude-bank { font-size: 13px; }
 .interlude-craft summary, .interlude-bank summary { cursor: pointer; }

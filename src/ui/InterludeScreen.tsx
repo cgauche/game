@@ -25,8 +25,9 @@ export function InterludeScreen() {
       <div className="menu-card interlude-card">
         <h1 className="title">Entre deux aventures</h1>
         <p className="subtitle">
-          {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} — Bourse du groupe : {formatMoney(money)}
+          {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} · Bourse du groupe {formatMoney(money)}
         </p>
+        <div className="rule-fleur" aria-hidden>⚜</div>
         <div className="interlude-heroes">
           {party.filter((h) => !h.dead).map((h) => (
             <HeroCard key={h.id} hero={h} />
@@ -38,11 +39,10 @@ export function InterludeScreen() {
             <BankList />
           </section>
         )}
-        <p className="interlude-warning">
-          À la clôture, l'argent restant du groupe sera dépensé en totalité (« Argent à gaspiller », LDB 23) —
-          seuls les dépôts et les Revenus survivent.
-        </p>
-        <div className="menu-buttons">
+        <div className="interlude-close">
+          <p className="interlude-warning" title="« Argent à gaspiller » (LDB 23) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
+            💸 L'or non déposé est dilapidé à la clôture.
+          </p>
           <button className="btn btn-primary" onClick={end}>Clore l'interlude</button>
         </div>
       </div>
