@@ -1015,6 +1015,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   partagé** (ils roulaient leur propre overlay sans `role=dialog`). Aria-labels des boutons-icônes
   (menu ☰, carte) livrés au commit précédent. Recette navigateur : Tab boucle dans les deux sens,
   Échap ferme Sauvegarde/Attaque/Ciblage monté, Échap IGNORÉ sur la Défense réactive, 0 erreur console.
+  **Suite** : comportement extrait en hook `useModalA11y` (réutilisable par les dialogues au markup
+  spécifique) → **DocumentModal converti** (variant `plain` + `backdropClose` — clic-voile préservé),
+  **Fiche de personnage** et **Inspection** câblés (role=dialog + piège + Échap) ; focusables filtrés
+  aux VISIBLES. Restent à convertir (coquilles main sans `role=dialog`, mécanique) : Cleave/Disengage/
+  FateSave/DualStrike/Heal + dialogues de l'éditeur.
 
 ---
 

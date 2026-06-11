@@ -2649,7 +2649,7 @@ textarea:focus {
   border: 1px solid #b8a677;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
-.doc-title {
+.document-modal h3 {
   font-family: 'Georgia', 'Times New Roman', serif;
   text-align: center;
   color: #5a2018;

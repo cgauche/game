@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import type { Combatant, HitLocation, CharKey } from '../engine/types';
 import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../engine/types';
+import { useModalA11y } from './Modal';
 import { RigPortrait } from './RigPortrait';
 import { hpColor, ENEMY_RING, HERO_RING } from '../gameIso/teamColors';
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
@@ -27,6 +29,8 @@ function traitDesc(t: string): string | undefined {
 }
 
 export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onClose: () => void }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  useModalA11y(boxRef, onClose); // dialogue au markup spécifique (tête portrait+PV) → hook a11y partagé
   const c = combatant;
   const isHero = c.kind === 'hero';
   const ratio = c.wounds.max > 0 ? c.wounds.current / c.wounds.max : 0;
@@ -36,7 +40,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal inspect-panel" onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} role="dialog" aria-modal="true" className="modal inspect-panel" onClick={(e) => e.stopPropagation()}>
         <div className="insp-head">
           <RigPortrait combatant={c} size={48} ring={isHero ? HERO_RING[0] : ENEMY_RING} />
           <div className="insp-id">

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
+import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
@@ -74,11 +75,13 @@ const SHORT: Record<CharKey, string> = {
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
   const hero = useGame((s) => s.party.find((h) => h.id === heroId));
   const [tab, setTab] = useState<'fiche' | 'avancement'>('fiche');
+  const boxRef = useRef<HTMLDivElement>(null);
+  useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
   if (!hero) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
             <h3>{hero.name}</h3>
