@@ -20,9 +20,11 @@ const BTN: React.CSSProperties = {
   width: 42,
   height: 42,
   borderRadius: 9,
-  background: '#1c2230',
-  border: '1.5px solid #3a4660',
-  color: '#cfe6ff',
+  background: 'var(--panel2)',
+  borderWidth: 1.5,
+  borderStyle: 'solid',
+  borderColor: 'var(--border)',
+  color: 'var(--text)',
   fontSize: 20,
   lineHeight: 1,
   cursor: 'pointer',
@@ -60,7 +62,7 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
         <button
           type="button"
           title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
-          style={{ ...BTN, fontSize: 22, background: view === 'top' ? '#2a3550' : '#1c2230', borderColor: view === 'top' ? '#6f86c0' : '#3a4660' }}
+          style={{ ...BTN, fontSize: 22, borderColor: view === 'top' ? 'var(--gold)' : 'var(--border)' }}
           onPointerDown={stop(onToggleView)}
         >
           {view === 'top' ? '◇' : '▦'}
