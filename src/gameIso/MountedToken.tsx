@@ -2,7 +2,7 @@ import { useRigAnim } from './useRigAnim';
 import { usePlanAnim } from './usePlanAnim';
 import { resolveRig } from './rig/composeRig';
 import { bonesToSvg } from './rig/renderBones';
-import { seatRiderOnMount, mountedRest } from './rig/mountedRig';
+import { seatRiderOnMount, mountedRest, mountTackBones } from './rig/mountedRig';
 import { addPose } from './rig/poses';
 import { enemyRigProfile } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
@@ -48,6 +48,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   // Fin de l'ex-RIDE_SCALE 0.78 codé en dur : un cheval recalibré ou une autre monture (loup
   // funeste…) garde un couple proportionné gratuitement.
   const k = bipedSpeciesScale(rider.name) / (creatureSpeciesScale(mount.name) * sizeTokenScale(mount.size));
-  const merged = seatRiderOnMount(mountBones, riderBones, { view, mountScale: 1, riderScale: k });
+  // Monture montée = monture HARNACHÉE (selle/sangle/rênes — os synthétiques z-calés).
+  const merged = seatRiderOnMount([...mountBones, ...mountTackBones(mountBones, view)], riderBones, { view, mountScale: 1, riderScale: k });
   return <g transform={mountA.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: bonesToSvg(merged) }} />;
 }

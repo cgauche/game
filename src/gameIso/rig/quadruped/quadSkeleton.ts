@@ -26,6 +26,9 @@ export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'fe
 export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'crapaud' | 'hydre';
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
 export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'sans';
+/** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
+ *  sanglier), sans. Défaut historique : dérivée de `tail==='crin'` (rétro-compat). */
+export type QuadMane = 'crin' | 'hirsute' | 'sans';
 export interface QuadProps {
   sl: number; // échelle globale (taille)
   build: QuadBuild; // SILHOUETTE du corps (équin level / canin svelte / suidé bossu / rongeur arqué / ursin massif / félin / draconique)
@@ -40,6 +43,7 @@ export interface QuadProps {
   foot: QuadFoot; // pied ARRIÈRE (et avant par défaut)
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
+  mane?: QuadMane; // crinière d'encolure (défaut : 'crin' si tail==='crin', sinon 'sans')
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
 }
 
@@ -53,13 +57,18 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
   const bl = p.bodyLen, ll = p.legLen;
   const leg = (
     haut: QuadBoneId, bas: QuadBoneId, pied: QuadBoneId,
-    parent: QuadBoneId, px: number, py: number, far: boolean,
+    parent: QuadBoneId, px: number, py: number, far: boolean, rear = false,
   ): Partial<QuadSkeleton> => {
     const z = far ? 1 : 9;
+    // ARRIÈRE-main angulée (cuisse portée en avant, JARRET cassé en arrière, canon qui revient
+    // d'aplomb) — 4 pattes verticales parallèles = silhouette « table ». L'avant reste ~d'aplomb.
+    const aHaut = rear ? (far ? -4 : -7) : far ? 3 : -1;
+    const aBas = rear ? (far ? 13 : 16) : far ? 6 : 8;
+    const aPied = rear ? -9 : far ? -5 : -7;
     return {
-      [haut]: { parent, pivot: { x: px, y: py }, angle: far ? 3 : -1, length: 30 * ll, thickness: 9, z },
-      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: far ? 6 : 8, length: 22 * ll, thickness: 7, z }, // pli de genou/jarret
-      [pied]: { parent: bas, pivot: { x: 0, y: 22 * ll }, angle: far ? -5 : -7, length: 9, thickness: 7, z }, // sabot ramené à la verticale
+      [haut]: { parent, pivot: { x: px, y: py }, angle: aHaut, length: 30 * ll, thickness: 9, z },
+      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: aBas, length: 22 * ll, thickness: 7, z }, // pli de genou/jarret
+      [pied]: { parent: bas, pivot: { x: 0, y: 22 * ll }, angle: aPied, length: 9, thickness: 7, z }, // sabot ramené à la verticale
     } as Partial<QuadSkeleton>;
   };
   const sk: Partial<QuadSkeleton> = {
@@ -71,9 +80,9 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle, length: 18, thickness: 14, z: 7 },
     queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: 3 },
     ...leg('hautAvG', 'basAvG', 'piedAvG', 'tronc', 24 * bl + 6, 8, true),
-    ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true),
+    ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true, true),
     ...leg('hautAvD', 'basAvD', 'piedAvD', 'tronc', 24 * bl, 10, false),
-    ...leg('hautArD', 'basArD', 'piedArD', 'croupe', -6 * bl, 10, false),
+    ...leg('hautArD', 'basArD', 'piedArD', 'croupe', -6 * bl, 10, false, true),
   };
   // Ailes (gabarit AILÉ) : attachées au garrot (haut-avant du tronc). aileD = aile PROCHE
   // (par-dessus le flanc, z élevé) ; aileG = aile LOINTAINE (derrière le corps, z bas). L'art

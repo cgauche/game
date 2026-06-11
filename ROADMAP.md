@@ -1110,6 +1110,29 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   (Triggers/Dialogues/Rencontres) en role=dialog + piège sans Échap (champs texte — pas de perte de
   modifs sur un réflexe) ; WorldMapEditor = écran plein, exempt. **Plus aucune coquille main.**
 
+## 🎯 Jalon 8.5 — Refonte esthétique du bestiaire non-humanoïde *(validé utilisateur 2026-06-11 : « tous affreux » — exploiter TOUTES les options de personnalisation + en ajouter)*
+
+Ordre validé : **montures + bêtes Tome 1 → gros monstres iconiques → exotiques**. Méthode :
+squelette/art sous QC planches + galeries, description canon (LDB 77-83), reconnaissabilité à
+l'aveugle, goldens regénérés après inspection. Les capacités PHYSIQUES (Bond, Vol…) reçoivent
+leur ANIMATION (demande utilisateur : « une animation ça va avec »).
+
+- ✅ **Lot 1 — socle quad + Tome 1** *(2026-06-11)* : membres SCULPTÉS par carrure (`LEG_BUILD` :
+  masse de cuisse/épaule fondue dans la robe, segments coniques cuisse→genou→boulet, contour
+  seulement sous 30 % — fini les coutures sur le corps), **arrière-main angulée** (cuisse avant,
+  jarret cassé — fini la « table à 4 pieds »), encolure sculptée, **prop `mane`**
+  (crin couché / hirsute — Loup hirsute + collerette de gorge ; rétro-compat tail==='crin'),
+  **harnachement de monture** (`mountTackBones` : tapis, selle pommeau/troussequin, quartier,
+  sangle, étrier, rênes museau→pommeau — os synthétiques z-calés, composés quand MONTÉE).
+- **Lot 2 — ailes & capacités** : ailes REPLIÉES au repos le long du dos (les lames dressées
+  actuelles), déploiement animé (Vol = décollage/stationnaire ; demande : anim de Bond), couches
+  de plumes / doigts de membrane, `wingSpan`.
+- **Lot 3 — props de finesse** : `ridge` (crête/épines/plaques — dragon/basilic/hydre),
+  `markings` (rayures/taches/balzanes via textures.ts), `headScale`/gueule, `tailLen`, yeux
+  adressables sur têtes de gabarit (catalogue), oreilles élargies.
+- **Lot 4 — passe par créature** vs description canon + QC à l'aveugle (runbook
+  `docs/qc-reconnaissabilite-sprites.md`), gros monstres puis exotiques (squig/amorphe/jabber).
+
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
 Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —

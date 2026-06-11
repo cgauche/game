@@ -5,13 +5,26 @@
  * silhouette : les sprites monolithiques officiels (Loup/Chien/Ours/Rat géant/Sanglier).
  */
 import type { View } from '../facing';
-import type { QuadBoneId, QuadProps, QuadFoot } from './quadSkeleton';
+import type { QuadBoneId, QuadProps, QuadFoot, QuadMane } from './quadSkeleton';
 import { scalesPatch, plumeFan } from '../parts/textures';
+
+/** Crinière effective (rétro-compat : les équins historiques dérivaient de tail==='crin'). */
+const maneOf = (p: QuadProps): QuadMane => p.mane ?? (p.tail === 'crin' ? 'crin' : 'sans');
 
 // ============================ helpers ============================
 const cap = (len: number, th: number, fill: string, stroke: string): string => {
   const r = th / 2;
   return `<path d="M${-r} 0 Q${-r} ${-r * 0.6} 0 ${-r * 0.6} Q${r} ${-r * 0.6} ${r} 0 L${r * 0.82} ${len} Q0 ${len + r * 0.7} ${-r * 0.82} ${len} Z" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
+};
+// Segment CONIQUE (membre qui s'effile : cuisse→genou, canon→boulet) — la capsule droite à
+// épaisseur constante lisait « pied de table ». Le contour ne démarre qu'à 30 % de la hauteur :
+// le HAUT du membre (recouvert par/fondu dans le corps) n'imprime AUCUNE couture sur la robe.
+const taper = (len: number, thTop: number, thBot: number, fill: string): string => {
+  const r1 = thTop / 2, r2 = thBot / 2;
+  const e = (t: number) => (r1 + (r2 * 0.92 - r1) * t).toFixed(2); // bord à la fraction t
+  const y0 = (len * 0.3).toFixed(1);
+  return `<path d="M${-r1} 0 Q${-r1} ${-r1 * 0.6} 0 ${-r1 * 0.6} Q${r1} ${-r1 * 0.6} ${r1} 0 L${r2 * 0.92} ${len} Q0 ${len + r2 * 0.7} ${-r2 * 0.92} ${len} Z" fill="${fill}"/>` +
+    `<path d="M${-e(0.3)} ${y0} L${-r2 * 0.92} ${len} Q0 ${len + r2 * 0.7} ${r2 * 0.92} ${len} L${e(0.3)} ${y0}" fill="none" stroke="@corpsO" stroke-width="0.5"/>`;
 };
 function hoof(foot: QuadFoot, far: boolean): string {
   const c = far ? '@cuirO' : '@cuir';
@@ -36,19 +49,44 @@ function footFront(foot: QuadFoot, far: boolean): string {
 const joint = (body: string, cy: number, r: number) =>
   `<circle cx="0" cy="${cy.toFixed(1)}" r="${r}" fill="${body}" stroke="@corpsO" stroke-width="0.3"/>`;
 
-function legParts(far: boolean, foot: QuadFoot, ll: number) {
+// Morphologie des MEMBRES par carrure (anti « jouet de bois » : pattes-cylindres identiques) :
+// masse de cuisse/épaule fondue dans le corps en haut, canon plus fin en bas, jarret marqué.
+//   mass = largeur de la masse musculaire haute (demi-épaisseur), taper = épaisseur du canon.
+const LEG_BUILD: Record<string, { mass: number; haut: number; bas: number }> = {
+  equine: { mass: 6.2, haut: 8.5, bas: 5.2 }, // cheval : cuisse pleine, canons FINS
+  canine: { mass: 5.2, haut: 7.5, bas: 4.8 }, // loup/chien : svelte, jarret net
+  suid: { mass: 5.5, haut: 8, bas: 5.5 }, // sanglier : courtes et fortes
+  rodent: { mass: 4.5, haut: 7, bas: 4.5 },
+  ursine: { mass: 8.5, haut: 12, bas: 9 }, // ours : poteaux massifs
+  feline: { mass: 6.8, haut: 9, bas: 5.5 }, // lion : haunches musclées, canon fin
+  draconic: { mass: 8, haut: 11, bas: 7.5 },
+  batracien: { mass: 7.5, haut: 10, bas: 7 },
+};
+// Masse musculaire HAUTE (cuisse/épaule) : goutte qui s'effile dans le membre — SANS contour
+// (elle FOND dans la robe du corps, sinon elle lit comme une plaque collée), juste une ombre
+// interne courbe pour le galbe. Courte (≤ 0.36 du membre) : le canon reste fin dessous.
+const muscle = (body: string, m: number, len: number) =>
+  `<path d="M${-m} -3 Q${-m - 0.8} ${len * 0.2} ${-m * 0.4} ${len * 0.36} Q0 ${len * 0.46} ${m * 0.4} ${len * 0.36} Q${m + 0.8} ${len * 0.2} ${m} -3 Q0 ${-m * 0.9} ${-m} -3 Z" fill="${body}"/>`;
+
+function legParts(p: QuadProps, far: boolean, foot: QuadFoot) {
+  const ll = p.legLen;
   const body = far ? '@corpsO' : '@corps';
+  const L = LEG_BUILD[p.build] ?? LEG_BUILD.equine;
   return {
-    haut: joint(body, 0, 4.8) + cap(30 * ll, 9, body, '@corpsO'), // épaule/hanche → relie au corps
-    bas: joint(body, 0, 3.7) + cap(22 * ll, 6.5, body, '@corpsO') + joint(body, 22 * ll, 2.9), // genou + boulet
+    haut: muscle(body, L.mass, 30 * ll) + taper(30 * ll, L.haut, L.bas + 1.4, body), // cuisse → genou
+    // canon : plus FIN que la cuisse, s'effile vers le boulet ; jarret/genou bouché à la jointure.
+    bas: joint(body, 0, (L.bas + 1.4) * 0.52) + taper(22 * ll, L.bas + 0.6, L.bas * 0.78, body) + joint(body, 22 * ll, L.bas * 0.4),
     pied: hoof(foot, far), // sabot À l'os du pied (bas de la jambe) — PAS 22·ll plus bas (sinon détaché)
   };
 }
-function legPartsFront(far: boolean, foot: QuadFoot, ll: number) {
+function legPartsFront(p: QuadProps, far: boolean, foot: QuadFoot) {
+  const ll = p.legLen;
   const body = far ? '@corpsO' : '@corps';
+  const L = LEG_BUILD[p.build] ?? LEG_BUILD.equine;
+  const k = far ? 0.84 : 1;
   return {
-    haut: joint(body, 0, far ? 4 : 4.5) + cap(30 * ll, far ? 7 : 8, body, '@corpsO'),
-    bas: joint(body, 0, far ? 3 : 3.4) + cap(22 * ll, far ? 5.5 : 6, body, '@corpsO') + joint(body, 22 * ll, 2.6),
+    haut: muscle(body, L.mass * 0.5 * k, 26 * ll) + taper(30 * ll, L.haut * 0.9 * k, (L.bas + 1.2) * k, body),
+    bas: joint(body, 0, (L.bas + 1.2) * k * 0.5) + taper(22 * ll, (L.bas + 0.5) * k, L.bas * 0.75 * k, body) + joint(body, 22 * ll, L.bas * 0.4),
     pied: footFront(foot, far), // pied à l'os (bas de la jambe), pas 22·ll plus bas
   };
 }
@@ -157,12 +195,17 @@ function neck(p: QuadProps): string {
       hydraHeadlet(20, -L * 0.8, 28, 1.0) + `</g>`;
   }
   const L = 30 * p.neckLen;
-  const mane = p.tail === 'crin';
-  const base = `<path d="M-8 2 Q-10 ${-L * 0.5} -5 ${-L} L6 ${-L} Q9 ${-L * 0.5} 8 2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
-    <path d="M-7 0 Q-9 ${-L * 0.5} -4 ${-L * 0.96}" fill="none" stroke="@corpsO" stroke-width="0.8" opacity="0.6"/>`;
-  const crin = mane
-    ? `<path d="M-5 ${-L} Q-13 ${-L * 0.7} -11 ${-L * 0.2} Q-10 4 -8 4 Q-9 ${-L * 0.4} -3 ${-L * 0.92} Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`
-    : `<path d="M-5 ${-L} Q-9 ${-L * 0.6} -8 2" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.8"/>`;
+  // Encolure SCULPTÉE : large à la base (fond dans le poitrail), gorge incurvée — plus un tube.
+  const base = `<path d="M-9 4 Q-11 ${-L * 0.5} -5 ${-L} L6 ${-L} Q10 ${-L * 0.55} 10 0 Q10 3 8 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
+    <path d="M8 2 Q9 ${-L * 0.5} 5 ${-L * 0.94}" fill="none" stroke="@corpsO" stroke-width="0.8" opacity="0.55"/>`;
+  const m = maneOf(p);
+  let crin = `<path d="M-5 ${-L} Q-9 ${-L * 0.6} -8 2" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.8"/>`; // 'sans' : ligne de dos discrète
+  if (m === 'crin') // crin COUCHÉ retombant sur l'encolure : masse + mèches
+    crin = `<path d="M-4 ${-L - 2} Q-14 ${-L * 0.78} -13 ${-L * 0.34} Q-12.5 ${-L * 0.06} -10 4 Q-9 4.5 -7.5 4 Q-9.5 ${-L * 0.36} -2 ${-L * 0.9} Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
+      `<path d="M-11.5 ${-L * 0.62} Q-10.5 ${-L * 0.4} -10.6 ${-L * 0.18} M-9.4 ${-L * 0.78} Q-8.6 ${-L * 0.5} -9 ${-L * 0.26} M-7 ${-L * 0.9} Q-6.4 ${-L * 0.6} -7.2 ${-L * 0.4}" fill="none" stroke="@cheveuxO" stroke-width="0.7" opacity="0.7"/>`;
+  else if (m === 'hirsute') // fourrure DRESSÉE en dents le long du dos + touffe de gorge
+    crin = `<path d="M-6 ${-L} l-4 -4 l1 5 l-4.5 -2.5 l1.8 4.4 l-4 -1 l2.2 3.8 l-3.4 0 l2.6 3.4 Q-9.5 ${-L * 0.4} -8.4 0 L-6.6 0 Q-8 ${-L * 0.45} -4.5 ${-L * 0.92} Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.45"/>` +
+      `<path d="M8 ${-L * 0.3} q4 1.4 5 5 q-3.6 -0.4 -5.4 -2.2 M8.6 ${-L * 0.14} q3.4 1.6 4 4.6 q-3.2 -0.8 -4.6 -2.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   return `<g>${base}${crin}</g>`;
 }
 function earProfile(p: QuadProps, x: number, s: number): string {
@@ -376,7 +419,7 @@ export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<
     ? { aileD: wingSpread(p), aileG: `<g transform="scale(-1,1)">${wingSpread(p)}</g>` }
     : {};
   if (view === 'front') {
-    const n = legPartsFront(false, frontFoot, p.legLen), f = legPartsFront(true, p.foot, p.legLen);
+    const n = legPartsFront(p, false, frontFoot), f = legPartsFront(p, true, p.foot);
     return {
       ...spreadWings,
       tronc: bodyFront(p), tete: headFront(p),
@@ -385,7 +428,7 @@ export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<
     };
   }
   if (view === 'back') {
-    const n = legPartsFront(false, p.foot, p.legLen), f = legPartsFront(true, frontFoot, p.legLen);
+    const n = legPartsFront(p, false, p.foot), f = legPartsFront(p, true, frontFoot);
     return {
       ...spreadWings,
       tronc: bodyBack(p), tete: napeBack(p), queue: tailBack(p),
@@ -394,8 +437,8 @@ export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<
     };
   }
   // profil : pattes AVANT (frontFoot) près/loin, pattes ARRIÈRE (p.foot) près/loin.
-  const nearAv = legParts(false, frontFoot, p.legLen), farAv = legParts(true, frontFoot, p.legLen);
-  const nearAr = legParts(false, p.foot, p.legLen), farAr = legParts(true, p.foot, p.legLen);
+  const nearAv = legParts(p, false, frontFoot), farAv = legParts(p, true, frontFoot);
+  const nearAr = legParts(p, false, p.foot), farAr = legParts(p, true, p.foot);
   const profWings = p.wings ? { aileD: wingProfile(p, false), aileG: wingProfile(p, true) } : {};
   return {
     ...profWings,
