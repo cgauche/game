@@ -86,3 +86,37 @@ const CLOSEUPS = ['Œil énorme', 'Bouche supplémentaire', 'Visage inversé', '
   writeFileSync('public/qc/mutations-closeup.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
   console.log('OK → public/qc/mutations-closeup.png');
 }
+
+// Planche 5 : collisions calque×ARMURE équipée + arme en main (Soldat cuirassé).
+import type { ItemInstance, Weapon } from '../src/engine/types';
+const piece = (uid: string, pa: number, locs: ItemInstance['locs']): ItemInstance =>
+  ({ uid, name: `Protection (${locs![0]})`, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
+const ARMOUR: ItemInstance[] = [piece('a1', 3, ['corps']), piece('a2', 2, ['tete']), piece('a3', 1, ['brasG', 'brasD']), piece('a4', 1, ['jambeG', 'jambeD'])];
+const EPEE: Weapon = { name: 'Épée', type: 'melee', damage: '+4', qualities: [] };
+const ARMURE_CASES: { label: string; m: string[]; vb: string }[] = [
+  { label: 'Pus sur cuirasse', m: ['Suintement de pus'], vb: '28 14 64 76' },
+  { label: 'Bouche sur cuirasse', m: ['Bouche supplémentaire'], vb: '28 14 64 76' },
+  { label: 'Écailles sur cuirasse', m: ['Écailles épineuses'], vb: '28 14 64 76' },
+  { label: 'Plumes sur cuirasse', m: ['Plumes éparses'], vb: '28 14 64 76' },
+  { label: 'Peau d’acier sur cuirasse', m: ['Peau d’acier'], vb: '28 14 64 76' },
+  { label: 'Tentacule + cuirasse', m: ['Tentacule épais'], vb: '28 14 64 76' },
+  { label: 'Doigts + épée en main', m: ['Doigts distendus'], vb: '25 55 70 84' },
+  { label: 'Sabots + jambières', m: ['Pattes d’animaux'], vb: '30 80 60 72' },
+  { label: 'Cornes + casque', m: ['Cornes asymétriques'], vb: '28 8 64 76' },
+];
+{
+  const perRow = 5;
+  const cells = ARMURE_CASES.map(({ label, m, vb }, i) => {
+    const x = (i % perRow) * ZW, y = Math.floor(i / perRow) * ZH;
+    const overlays = mutationOverlaysFor(m.map(mut));
+    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', view: 'front', overlays }));
+    return `<g transform="translate(${x},${y})"><rect width="${ZW - 4}" height="${ZH - 18}" fill="#262d3b"/>` +
+      `<svg x="0" y="0" width="${ZW - 4}" height="${ZH - 18}" viewBox="${vb}">${inner}</svg>` +
+      `<text x="${(ZW - 4) / 2}" y="${ZH - 5}" text-anchor="middle" font-size="11" fill="#cdd" font-family="sans-serif">${label}</text></g>`;
+  });
+  const rows = Math.ceil(cells.length / perRow);
+  const W = perRow * ZW, H = rows * ZH;
+  const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
+  writeFileSync('public/qc/mutations-armure.png', new Resvg(full, { background: '#11141c', fitTo: { mode: 'width', value: W } }).render().asPng());
+  console.log('OK → public/qc/mutations-armure.png');
+}

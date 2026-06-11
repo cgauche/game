@@ -21,10 +21,12 @@ export const mutKey = (s: string): string => norm(s).replace(/[’']/g, "'");
 const g = (slug: string, svg: string) => `<g data-mut="${slug}">${svg}</g>`;
 
 // --- Art ---------------------------------------------------------------------
-// Sabots fendus brun sombre couvrant la botte, fente médiane + ergot.
+// Sabot fendu couvrant TOUT le pied (talon → pointe, sinon le bout de la botte dépasse),
+// liseré clair en haut pour rester lisible sur des bottes sombres ; fente vers la pointe + ergot.
 const SABOT = g('pattes-danimaux',
-  '<path d="M-3.6 1.2 Q0 -0.6 3.6 1.2 L3.1 8 L0.6 8 L0.4 3.4 L-0.4 3.4 L-0.6 8 L-3.1 8 Z" fill="#4a3424" stroke="#241a10" stroke-width="0.6"/>'
-  + '<path d="M-3.9 2.8 q-1.3 0.7 -1.5 2.2" stroke="#241a10" stroke-width="1" fill="none" stroke-linecap="round"/>');
+  '<path d="M-3.8 0.6 Q2 -1.6 8.8 2.4 L9.6 7.4 L5 7.4 L4.6 4 L3.6 4 L4 7.4 L-3.2 7.4 Z" fill="#5a4028" stroke="#241a10" stroke-width="0.6"/>'
+  + '<path d="M-2.6 0.8 Q2 -0.8 8 2.6" stroke="#8a6a48" stroke-width="0.8" fill="none" opacity="0.9"/>'
+  + '<path d="M-3.4 1.6 q-1.6 0.4 -2 2.2" stroke="#241a10" stroke-width="1.2" fill="none" stroke-linecap="round"/>');
 // Doigts trop longs couleur chair, bouts assombris — chair étirée, pas des serres.
 const DOIGTS = g('doigts-distendus',
   '<path d="M-2.6 3 q-0.7 4.4 -0.4 8.6 M-0.9 3.8 q-0.2 4.6 0 8.6 M0.9 3.8 q0.2 4.6 0 8.6 M2.6 3 q0.7 4.4 0.4 8.6" stroke="@peau" stroke-width="1.25" fill="none" stroke-linecap="round"/>'
