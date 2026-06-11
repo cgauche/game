@@ -211,16 +211,18 @@ const BARE_BLOCK = c([
 
 const MELEE_TWO_HANDED = new Set<Handling>(['lourde2m', 'hampe', 'lance_cav']);
 
-/** Geste de parade : bouclier > tireur (esquive) > 2-mains (blocage) > escrime/poings/garde. */
+/** Geste de parade : bouclier > tireur (esquive) > 2-mains (blocage) > escrime/poings/garde.
+ *  Comme l'attaque, le geste se joue sur LE BRAS QUI TIENT l'arme de parade : une main-gauche/
+ *  brise-épée/2e arme (`hand:'off'`) pare du bras gauche (clip miroité). */
 export function weaponParryClip(w?: Weapon, hasShield = false): Clip {
-  if (hasShield) return SHIELD_PARRY;
+  if (hasShield) return SHIELD_PARRY; // déjà à gauche (bras de bouclier)
   if (!w) return SWORD_GUARD;
   const h = handlingClass(w);
   if (isRangedHandling(w)) return RANGED_FLINCH; // arc/arbalète/arme à feu/jet… esquivent
-  if (MELEE_TWO_HANDED.has(h)) return STAFF_BLOCK;
-  if (h === 'escrime') return FENCE_PARRY;
-  if (h === 'poings' || h === 'cornes') return BARE_BLOCK; // rien en main → on se couvre
-  return SWORD_GUARD; // lame1m, fléau, parade
+  if (MELEE_TWO_HANDED.has(h)) return STAFF_BLOCK; // les deux bras — pas de côté
+  if (h === 'poings' || h === 'cornes') return BARE_BLOCK; // se couvre des deux avant-bras
+  const clip = h === 'escrime' ? FENCE_PARRY : SWORD_GUARD; // lame1m, fléau, parade
+  return leftHanded(w) ? mirrorClip(clip) : clip;
 }
 
 /** True si l'arme se manie à distance (geste de tir/jet plutôt que de mêlée). */

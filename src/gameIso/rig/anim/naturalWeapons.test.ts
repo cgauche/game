@@ -35,4 +35,13 @@ describe('maniement des armes naturelles (mutations/traits)', () => {
     expect(weaponRest(w('Cornes'))).toEqual({});
     expect(weaponParryClip(w('Cornes'))).toBe(weaponParryClip(w('Mains nues'))); // BARE_BLOCK
   });
+
+  it('la PARADE aussi se joue sur le bras qui tient l’arme (main-gauche → bras gauche)', () => {
+    const off = weaponParryClip({ ...w('Main Gauche'), hand: 'off' });
+    const bones = off.steps.flatMap((s) => Object.keys(s.pose));
+    expect(bones).toContain('epauleG');
+    expect(bones).not.toContain('epauleD');
+    // En main directrice, la même arme pare à droite.
+    expect(weaponParryClip(w('Main Gauche')).steps.flatMap((s) => Object.keys(s.pose))).toContain('epauleD');
+  });
 });

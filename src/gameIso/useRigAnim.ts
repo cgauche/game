@@ -57,7 +57,9 @@ export function useRigAnim({ id, equip, restClip, facing, pos }: {
           const cs = useGame.getState().battle?.combatants;
           if (isSupportiveCast(cs?.find((c) => c.id === d.from)?.kind, cs?.find((c) => c.id === d.to)?.kind, d.from === d.to)) return;
         }
-        if (d.defense === 'parade') playClip(gest.current.parry);
+        // Parade de l'arme QUI A PARÉ (main-gauche → geste miroité, bouclier → pavois levé) ;
+        // repli sur l'arme principale si l'événement ne la porte pas (anciens chemins).
+        if (d.defense === 'parade') playClip(d.parryWeapon ? weaponParryClip(d.parryWeapon, isShield(d.parryWeapon)) : gest.current.parry);
         else play('dodge');
       }
     });
