@@ -51,9 +51,11 @@ export function resolveRig(
   const race = raceById(baseSpeciesOf(appearance.species));
   // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
   // de la race (réglé pour son gabarit par défaut) ne s'applique PAS dans ce cas.
-  const gDef = appearance.gabarit
+  let gDef = appearance.gabarit
     ? gabaritById(appearance.gabarit)
     : { ...gabaritById(race.gabarit), ...(race.gabaritOverride ?? {}) };
+  // Mutation morpho « Court sur pattes » : multiplicateur de jambes composé sur le gabarit.
+  if (appearance.legs) gDef = { ...gDef, legs: gDef.legs * appearance.legs };
   let sk = groundSkeleton(applyBuild(baseSkeleton(gDef, appearance.sex), appearance.build));
   if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
   // De profil, le swing du bras DROIT (porteur de l'arme) éloigne la main → l'arme barre le
@@ -142,9 +144,12 @@ export function resolveRig(
     for (const ov of inj.overlays) boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 98 });
   }
 
-  // Calques cosmétiques (mutations…) par-dessus tout, dans le repère de leur os.
+  // Calques cosmétiques (mutations…) dans le repère de leur os. `view` limite un détail de
+  // visage à une vue (groin/langue de face) ; `behind` le passe SOUS la part (cornes, halo).
   for (const ov of overlays) {
-    if (ov.svg) boneParts[ov.bone].push({ svg: ov.svg, layer: 99 });
+    if (!ov.svg) continue;
+    if (ov.view && ov.view !== view) continue;
+    boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 99 });
   }
 
   // Traits de corps de RACE (cornes, queue, crocs, verrues…). Injectés AVANT la résolution

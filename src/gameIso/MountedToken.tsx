@@ -7,6 +7,7 @@ import { addPose } from './rig/poses';
 import { enemyRigProfile } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
+import { mutationAppearance, mutationOverlaysFor } from './rig/parts/mutations';
 import { bipedSpeciesScale } from './rig/creatures';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -26,10 +27,10 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const mountA = usePlanAnim(mount.id, mount.name, isOutOfAction(mount), undefined, mount.pos);
   // Cavalier : apparence/équipement dérivés (héros = du Combatant ; ennemi/PNJ = profil rig).
   const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
-  const appearance = prof?.appearance ?? rider.appearance ?? defaultAppearance(rider);
+  const appearance = mutationAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider.mutations);
   const equip = prof?.equip ?? equipFromCombatant(rider);
   const career = prof?.career ?? rider.career;
-  const overlays = prof?.overlays;
+  const overlays = [...(prof?.overlays ?? []), ...mutationOverlaysFor(rider.mutations)];
   // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id).
   const riderA = useRigAnim({ id: rider.id, equip, facing: undefined, pos: mount.pos });
 

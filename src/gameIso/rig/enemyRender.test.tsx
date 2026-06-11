@@ -34,8 +34,7 @@ describe('rendu rig ennemi (F1)', () => {
 
   it('un Mutant riggé porte un calque de mutation visible', () => {
     const svg = render(mkEnemy('Mutant'));
-    // au moins une des teintes de mutation (corne/griffe/œil/tentacule) est présente
-    expect(svg).toMatch(/c8a880|6a4a2a|e0d8b0|8a9a6a|7a1010/);
+    expect(svg).toContain('data-mut=');
   });
 
   it('rend les 3 vues sans planter', () => {

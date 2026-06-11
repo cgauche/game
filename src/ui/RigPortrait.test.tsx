@@ -12,4 +12,10 @@ describe('RigPortrait', () => {
     expect(html).toContain('viewBox="');
     expect(html).toContain('data-bone="tete"');
   });
+
+  it('montre la mutation de visage du héros (Œil énorme)', () => {
+    const mute = { ...hero, id: 'h2', mutations: [{ label: 'Œil énorme', kind: 'physique', roll: 21 }] } as unknown as Combatant;
+    const html = renderToStaticMarkup(<RigPortrait combatant={mute} ring="#4f8fe0" />);
+    expect(html).toContain('data-mut="oeil-enorme"');
+  });
 });

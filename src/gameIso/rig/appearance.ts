@@ -10,6 +10,7 @@ export interface Appearance {
   gabarit?: string;                                 // id de carrure résolu (sinon dérivé de l'espèce)
   sex: 'M' | 'F';
   build: number;                                   // 0..1
+  legs?: number;                                   // multiplicateur de longueur de jambes (mutation Court sur pattes)
   parts?: Partial<Record<Slot, number>>;           // overrides éditeur
   monster?: MonsterParts;                          // parts monstrueux par slot (mutant modulaire)
   colors?: Palette;                                // personnalisation couleur (peau/cheveux/vêtements)

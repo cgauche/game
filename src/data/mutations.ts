@@ -65,6 +65,10 @@ const MENTALE: Row[] = [
 
 const TABLES: Record<'physique' | 'mentale', Row[]> = { physique: PHYSIQUE, mentale: MENTALE };
 
+/** Labels des tables — pour le registre visuel du rig et son test d'exhaustivité. */
+export const LABELS_PHYSIQUES: readonly string[] = PHYSIQUE.map((r) => r.label);
+export const LABELS_MENTALES: readonly string[] = MENTALE.map((r) => r.label);
+
 /** Tire une mutation sur le Tableau de Corruption `kind` (d100, RNG seedable). */
 export function rollMutation(kind: 'physique' | 'mentale', rng: RNG): Mutation {
   const roll = d100(rng);

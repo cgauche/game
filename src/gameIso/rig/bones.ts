@@ -64,4 +64,7 @@ export interface RigOverlay {
   /** dessiné DERRIÈRE la part de l'os (cornes derrière la tête, queue derrière le bassin,
    *  ventre derrière le torse) au lieu de par-dessus. */
   behind?: boolean;
+  /** calque limité à une vue (détail de visage : groin, langue pendante… — de dos il
+   *  flotterait sur la nuque). Absent = toutes vues. */
+  view?: import('./facing').View;
 }

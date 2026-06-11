@@ -11,6 +11,7 @@ import type { EquipCtx } from './parts/equipment';
 import type { RigOverlay } from './bones';
 import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
+import { randomMutationOverlays } from './parts/mutations';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
@@ -120,41 +121,6 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
   return items;
 }
 
-// --- Calques de mutation (cosmétiques) ------------------------------------
-// Cornes charnues fléchies — tell #1 du mutant, toujours présentes (HORN=droite, HORN2=gauche).
-const M_HORN  = '<path d="M4 -2 Q11 -12 7 -26 Q2 -14 -1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/><path d="M3 -5 Q9 -14 6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>';
-const M_HORN2 = '<path d="M-4 -2 Q-11 -12 -7 -26 Q-2 -14 1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/><path d="M-3 -5 Q-9 -14 -6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>';
-// Œil supplémentaire gros et injecté, implanté sur le torse.
-const M_EYE = '<ellipse cx="0" cy="-4" rx="6" ry="4.5" fill="#e0d8b0" stroke="#3a2820" stroke-width="0.9"/><ellipse cx="0" cy="-4" rx="3.5" ry="3" fill="#7a1010"/><circle cx="0" cy="-4" r="1.6" fill="#0a0808"/><circle cx="1.2" cy="-5.2" r="0.7" fill="#ffffff" opacity="0.5"/>';
-// Tentacule sinueux depuis une épaule.
-const M_TENTACLE = '<path d="M3 -4 Q16 2 14 18 Q12 28 6 24 Q10 18 8 10 Q6 2 0 -2 Z" fill="#8a9a6a" stroke="#4a5836" stroke-width="0.8"/><path d="M8 8 Q15 14 12 22" fill="none" stroke="#5a6a3a" stroke-width="0.6" opacity="0.7"/>';
-// Griffes longues et arquées sur une main.
-const M_CLAW = '<path d="M-4 0 L-3 12 Q-2 14 0 13" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M0 0 L0 14" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M4 0 L3 12 Q2 14 0 13" stroke="#6a4a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
-
-const MUTATION_EXTRAS: RigOverlay[] = [
-  { bone: 'mainD',   svg: M_CLAW },
-  { bone: 'torse',   svg: M_EYE },
-  { bone: 'epauleD', svg: M_TENTACLE },
-];
-
-/** Mutations GARANTIES : les deux cornes + 1 ou 2 extras déterministes depuis le seed. */
-function mutationOverlays(seed: number): RigOverlay[] {
-  // Cornes toujours présentes — tell immédiat du mutant.
-  const out: RigOverlay[] = [
-    { bone: 'tete', svg: M_HORN },
-    { bone: 'tete', svg: M_HORN2 },
-  ];
-  // 1 ou 2 extras choisis par seed (sans doublon os+svg).
-  const extraCount = 1 + (seed % 2); // 1..2
-  const seen = new Set<string>(out.map((o) => o.bone + o.svg));
-  for (let i = 0; i < extraCount; i++) {
-    const o = MUTATION_EXTRAS[(seed + i * 5) % MUTATION_EXTRAS.length];
-    const k = o.bone + o.svg;
-    if (!seen.has(k)) { out.push(o); seen.add(k); }
-  }
-  return out;
-}
-
 /**
  * Profil rig d'un combattant, ou null si non-humanoïde (→ rendu par son gabarit corporel
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
@@ -186,7 +152,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
 
   // Calques de mutation aléatoires SEULEMENT si pas de parts monstrueux explicites.
-  const overlays = isMutant && !hasMonster ? mutationOverlays(seed) : undefined;
+  const overlays = isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined;
 
   return { appearance, career, equip, overlays };
 }
@@ -222,6 +188,6 @@ export function entityRigProfile(
     appearance,
     career: opts?.career ?? perso?.career ?? race.career ?? detectCareer(n),
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
-    overlays: isMutant && !hasMonster ? mutationOverlays(seed) : undefined,
+    overlays: isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined,
   };
 }
