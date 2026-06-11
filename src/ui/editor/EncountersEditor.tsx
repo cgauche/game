@@ -2,9 +2,10 @@
  * Éditeur structuré de rencontres de combat : id + liste d'ennemis
  * (créature du bestiaire + position sur la grille).
  */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EncounterDef, Dialogue } from '../../state/scene';
 import { CreatureData } from '../../data';
+import { useModalA11y } from '../Modal';
 import { EffectList } from './EffectList';
 
 export function EncountersEditor({
@@ -21,13 +22,15 @@ export function EncountersEditor({
   onClose: () => void;
 }) {
   const [list, setList] = useState<EncounterDef[]>(() => JSON.parse(JSON.stringify(encounters)));
+  const boxRef = useRef<HTMLDivElement>(null);
+  useModalA11y(boxRef); // piège de focus seul — pas d'Échap (champs de saisie)
   const upd = (i: number, patch: Partial<EncounterDef>) => setList(list.map((e, j) => (j === i ? { ...e, ...patch } : e)));
   const updEnemy = (ei: number, ni: number, patch: any) =>
     upd(ei, { enemies: list[ei].enemies.map((en, j) => (j === ni ? { ...en, ...patch } : en)) });
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal wide enc-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} role="dialog" aria-modal="true" className="modal wide enc-modal" onClick={(e) => e.stopPropagation()}>
         <h3>Rencontres de combat</h3>
         <p className="hint">Une rencontre = des ennemis du bestiaire placés sur la grille. Référencée par un effet « Démarrer un combat ».</p>
         <div className="enc-list">

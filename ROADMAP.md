@@ -1018,8 +1018,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   **Suite** : comportement extrait en hook `useModalA11y` (réutilisable par les dialogues au markup
   spécifique) → **DocumentModal converti** (variant `plain` + `backdropClose` — clic-voile préservé),
   **Fiche de personnage** et **Inspection** câblés (role=dialog + piège + Échap) ; focusables filtrés
-  aux VISIBLES. Restent à convertir (coquilles main sans `role=dialog`, mécanique) : Cleave/Disengage/
-  FateSave/DualStrike/Heal + dialogues de l'éditeur.
+  aux VISIBLES. **Balayage final** : Cleave (Échap=Terminer), Disengage (Échap=Renoncer en phase
+  choix), DualStrike (Échap=Renoncer), Heal-chirurgie (Échap=Arrêter) convertis au cadre ; FateSave
+  converti SANS Échap (sacrifier le Destin ou mourir = choix explicite) ; dialogues de l'éditeur
+  (Triggers/Dialogues/Rencontres) en role=dialog + piège sans Échap (champs texte — pas de perte de
+  modifs sur un réflexe) ; WorldMapEditor = écran plein, exempt. **Plus aucune coquille main.**
 
 ---
 

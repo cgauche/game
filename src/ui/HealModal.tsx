@@ -9,6 +9,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { TeamPortrait } from './CombatantBadge';
 import { ModalSubject } from './ModalSubject';
+import { Modal } from './Modal';
 import { DrBar } from './DrBar';
 
 /**
@@ -65,9 +66,7 @@ export function HealModal() {
     const started = cum > 0 || rolled;
     const wnds = target ? surgeryTraumas(target) : [];
     return (
-      <div className="modal-overlay">
-        <div className="modal roll-modal">
-          <h3>🔪 Chirurgie — Test étendu de Guérison</h3>
+      <Modal title="🔪 Chirurgie — Test étendu de Guérison" onClose={cancel}>
           <p className="rm-vs">
             <strong>{ph.healerName}</strong> opère <strong>{ph.targetName}</strong>{' '}
             <span className="rm-weapon">(cumuler {cible} DR · Intermédiaire +0)</span>
@@ -98,8 +97,7 @@ export function HealModal() {
             <button className="btn" onClick={surgeryStopBleed} disabled={!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)} title="Arrêter l'hémorragie (Test de Guérison) — sans interrompre l'opération">🩸 Hémorragie</button>
             <button className="btn btn-primary" onClick={surgeryPass}>🔪 Opérer (une passe)</button>
           </div>
-        </div>
-      </div>
+      </Modal>
     );
   }
 

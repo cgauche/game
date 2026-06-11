@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { Modal } from './Modal';
 
 /**
  * Sauvetage par le Destin (LDB « Destin et Résistance » ch.17 l.31-35) : quand un héros à Destin
@@ -18,9 +19,8 @@ export function FateSaveModal() {
   const fate = hero.fate ?? 0;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Le Destin de {hero.name}</h3>
+    // PAS de onClose : sacrifier le Destin ou mourir est un choix explicite — Échap ne tranche pas.
+    <Modal title={`Le Destin de ${hero.name}`}>
         <p className="rm-log">
           {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
           (il en reste {fate})
@@ -38,7 +38,6 @@ export function FateSaveModal() {
             ☠️ Accepter le sort
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

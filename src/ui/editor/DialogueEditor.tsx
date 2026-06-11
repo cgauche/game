@@ -3,8 +3,9 @@
  * Dernière brique d'authoring : permet de construire des scènes sociales
  * entièrement dans l'éditeur (sans JSON).
  */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice, EncounterDef } from '../../state/scene';
+import { useModalA11y } from '../Modal';
 import { EffectList, Ctx } from './EffectList';
 
 export function DialogueEditor({
@@ -19,6 +20,8 @@ export function DialogueEditor({
   onClose: () => void;
 }) {
   const [list, setList] = useState<Dialogue[]>(() => JSON.parse(JSON.stringify(dialogues)));
+  const boxRef = useRef<HTMLDivElement>(null);
+  useModalA11y(boxRef); // piège de focus seul — PAS d'Échap (champs texte : ne pas jeter les modifs sur un réflexe)
   const ctx: Ctx = { encounters, dialogues: list };
 
   const updDlg = (di: number, patch: Partial<Dialogue>) => setList(list.map((d, i) => (i === di ? { ...d, ...patch } : d)));
@@ -29,7 +32,7 @@ export function DialogueEditor({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal wide dlg-edit-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} role="dialog" aria-modal="true" className="modal wide dlg-edit-modal" onClick={(e) => e.stopPropagation()}>
         <h3>Dialogues</h3>
         <p className="hint">Un dialogue = des nœuds (répliques) ; chaque choix mène à un autre nœud et/ou déclenche des effets.</p>
 

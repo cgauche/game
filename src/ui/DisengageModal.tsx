@@ -5,6 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { Dice } from './Dice';
+import { Modal } from './Modal';
 
 /**
  * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
@@ -32,9 +33,7 @@ export function DisengageModal() {
   const rerollable = pd.phase === 'esquive' && canReroll(!pd.def?.success, !!pd.rerolled);
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Se désengager</h3>
+    <Modal title="Se désengager" onClose={pd.phase === 'choice' ? cancel : undefined}>
         <p className="rm-vs">
           <strong>{mover.name}</strong> veut quitter le corps à corps avec <strong>{foe.name}</strong>
         </p>
@@ -95,7 +94,6 @@ export function DisengageModal() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

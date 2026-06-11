@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { cleaveTargets } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
+import { Modal } from './Modal';
 
 /**
  * Modale de Frappe Mortelle — balayage (LDB 14 - _GoBack.md l.9-12 + 85 l.299). Après la touche
@@ -21,9 +22,7 @@ export function CleaveModal() {
   const bcc = bonus(effectiveChar(attacker, 'CC'));
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>⚔️ Frappe Mortelle</h3>
+    <Modal title="⚔️ Frappe Mortelle" onClose={cleaveEnd}>
         <p className="rm-vs">
           <strong>{attacker.name}</strong> balaie — enchaînement {pc.count + 1} / {bcc}
         </p>
@@ -50,7 +49,6 @@ export function CleaveModal() {
             Terminer
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

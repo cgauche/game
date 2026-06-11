@@ -790,7 +790,7 @@ export function Editor() {
 
       {advOpen && (
         <div className="modal-overlay" onClick={() => setAdvOpen(false)}>
-          <div className="modal wide" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" className="modal wide" onClick={(e) => e.stopPropagation()}>
             <h3>Dialogues, Triggers & Combats</h3>
             <p className="hint">Édition JSON avancée (le format est celui du schéma de Scène). C'est ainsi que sont définies les conversations et l'embuscade.</p>
             <textarea className="json-editor" value={advText} onChange={(e) => setAdvText(e.target.value)} />

@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { dualStrikeTargets } from '../state/combatFlow';
+import { Modal } from './Modal';
 
 /**
  * Modale du Maniement de deux armes (LDB 10 l.638). Après une 1ʳᵉ frappe RÉUSSIE de la main directrice, le
@@ -20,9 +21,7 @@ export function DualStrikeModal() {
   const targets = dualStrikeTargets(battle, attacker, off);
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>⚔️ Des deux armes</h3>
+    <Modal title="⚔️ Des deux armes" onClose={dualStrikeSkip}>
         <p className="rm-vs">
           <strong>{attacker.name}</strong> frappe de sa main secondaire (<em>{off.name}</em>) — cible au choix
         </p>
@@ -49,7 +48,6 @@ export function DualStrikeModal() {
             Renoncer
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
