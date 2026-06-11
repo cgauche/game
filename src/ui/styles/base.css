@@ -1,0 +1,516 @@
+/* ══════════════════ CHARTE GRAPHIQUE (Jalon 9) ══════════════════
+   Identité Warhammer : encre/charbon chaud, rouge sang (primaire), or vieilli,
+   parchemin pour les surfaces de contenu. Titres en display gothique lisible
+   (Grenze Gotisch, embarquée) — le CORPS de texte reste sans-serif.
+   RÈGLE : aucune couleur en dur dans les écrans — composer ces tokens. */
+:root {
+  --bg: #16120d;
+  --bg2: #1e1812;
+  --panel: #251d14;
+  --panel2: #2e241a;
+  --border: #4a3b28;
+  --text: #e9dfc9;
+  --muted: #a3936f;
+  --gold: #c9a227;
+  --gold2: #e3c45a;
+  --accent: #8e2418; /* rouge sang — action primaire */
+  --accent2: #b3402e;
+  --danger: #d6543a; /* alerte (plus vif que l'accent, hover distinct) */
+  --danger-soft: #e07a63; /* alerte douce (coral) — texte/bordure d'avertissement léger */
+  --ok: #5d8a46; /* succès (vert mousse) */
+  --ok-bright: #6fce8e; /* succès clair — texte/icône positif sur fond sombre */
+  --parchment: #e6d7ae; /* surface claire « document » (texte = --ink) */
+  --parchment2: #d9c897;
+  --ink: #2b2118;
+  --blood: #6e1a10;
+  --copper: #c9905a; /* monnaie : sou de cuivre */
+  --silver: #cdd6df; /* monnaie : pistole d'argent */
+  --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+/* Charte : curseurs/barres teintés or (le natif convient pour le range). */
+input[type='range'],
+progress {
+  accent-color: var(--gold);
+}
+/* Charte : cases & radios CUSTOM (fin du carré bleu système) — case charbon bordée, cochée =
+   fond sang + marque or. S'applique à TOUTE l'UI (jeu + éditeur). */
+input[type='checkbox'],
+input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1.5px solid var(--border);
+  background: var(--panel2);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.12s, background 0.12s;
+}
+input[type='checkbox'] {
+  border-radius: 4px;
+}
+input[type='radio'] {
+  border-radius: 50%;
+}
+input[type='checkbox']:hover:not(:disabled),
+input[type='radio']:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+input[type='checkbox']:checked,
+input[type='radio']:checked {
+  border-color: var(--gold);
+  background: var(--accent);
+}
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 4.5px;
+  height: 9px;
+  border: solid var(--gold2);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3.5px;
+  border-radius: 50%;
+  background: var(--gold2);
+}
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: radial-gradient(circle at 30% 0%, #2a2014, var(--bg));
+  color: var(--text);
+  font-family: 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+}
+/* Charte : tous les TITRES en display gothique (les labels/corps restent sans-serif). */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.app {
+  height: 100%;
+  height: 100dvh; /* mobile : suit la barre d'adresse dynamique (fallback 100% au-dessus) */
+}
+
+/* Scrollbars fines, discrètes et thémées partout (la barre système claire jure sur le
+   thème sombre) ; pouce renforcé au survol. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Défilement SANS scrollbar visible (rangées de puces, carrousels tactiles). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ══════════════════ RESPONSIVE — STRUCTURE GLOBALE ══════════════════
+   Breakpoints canon du projet : 900px (empilement des colonnes latérales),
+   700px (mobile large), 560px (téléphone étroit). RÈGLE : tout NOUVEL écran
+   doit être utilisable à 360px de large, en composant ces primitives :
+
+   .layout-sidebar   grille « colonne latérale + contenu » (fiche vivante,
+                     inspecteurs…) → s'empile en une colonne ≤ 900px ;
+   .panel-grid       grille de .panel en auto-fit → 1 colonne ≤ 700px ;
+   .bar              barre d'écran : s'enroule ≤ 700px, marges safe-area ;
+   pointer: coarse   cibles tactiles ≥ 40px (boutons, champs, selects).      */
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto; /* UN SEUL défilement (pas de scrollbars imbriquées) */
+  max-width: 1480px; /* écrans larges : contenu compact et centré, pas étalé */
+  margin: 0 auto;
+  width: 100%;
+}
+.layout-sidebar > aside {
+  position: sticky; /* la fiche reste visible pendant que le contenu défile */
+  top: 0;
+  align-self: start;
+}
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.panel-grid > .panel {
+  align-self: start;
+}
+.panel-grid > .span-2 {
+  grid-column: 1 / -1; /* panneau pleine largeur (cartes de sélection) */
+}
+@media (max-width: 900px) {
+  .layout-sidebar {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+  .layout-sidebar > aside {
+    position: static;
+  }
+}
+@media (max-width: 700px) {
+  .bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
+  }
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 12px;
+  }
+  .panel h3 {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+@media (pointer: coarse) {
+  .btn {
+    min-height: 40px;
+  }
+  .btn.small {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+  input,
+  select {
+    min-height: 38px;
+  }
+}
+
+/* Buttons */
+.btn {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: #382c1e;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn.small {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+  border-color: #c9573f;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #c44e38, var(--accent));
+  border-color: var(--gold);
+}
+.btn-test {
+  border-style: dashed;
+  border-color: #5d8a46;
+  color: #b9d8a4;
+  font-size: 13px;
+}
+.btn-test:hover:not(:disabled) {
+  background: #222b18;
+  border-color: #7fae62;
+}
+.btn.danger,
+.btn.danger.btn-primary {
+  border-color: var(--danger);
+}
+.btn.danger:hover {
+  background: #3a2018;
+}
+
+/* Main menu — charte : carte charbon, liseré sang, double filet or, titre gothique. */
+.menu {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 115%, rgba(110, 26, 16, 0.18), transparent 60%);
+  overflow-y: auto;
+}
+.menu-card {
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--blood);
+  border-radius: 14px;
+  padding: 36px 44px 28px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.16);
+}
+.title {
+  font-size: clamp(34px, 9vw, 52px);
+  margin: 0;
+  color: var(--gold2);
+  letter-spacing: 1px;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+  line-height: 1.05;
+}
+.subtitle {
+  color: var(--muted);
+  margin-top: 6px;
+}
+/* Séparateur de charte : filet ⚜ centré (menu, écrans de cérémonie). */
+.rule-fleur {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gold);
+  margin: 18px 0 6px;
+  font-size: 13px;
+}
+.rule-fleur::before,
+.rule-fleur::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 30%, var(--gold) 50%, var(--border) 70%, transparent);
+}
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 22px 0;
+}
+.menu-buttons .btn {
+  font-size: 15px;
+}
+/* Section « Atelier » (outils de création/test) : visuellement secondaire au jeu. */
+.menu-tools-rule {
+  margin-top: 26px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.menu-tools {
+  margin-top: 12px;
+}
+.menu-tools .btn {
+  font-size: 13px;
+  padding: 8px 14px;
+  opacity: 0.92;
+}
+.menu-link {
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.footnote {
+  color: #7c6e52;
+  font-size: 11px;
+  margin-top: 18px;
+}
+
+/* Screens & bars */
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, var(--panel), var(--bg2));
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(201, 162, 39, 0.25); /* filet or sous la barre (charte) */
+}
+.bar h2 {
+  margin: 0;
+  font-size: 21px;
+  color: var(--gold2);
+}
+.bar h2 + * {
+  margin-left: auto;
+}
+.bar .btn-primary {
+  margin-left: auto;
+}
+
+/* Party screen — auto-fit : 4 colonnes en desktop large, empilement mobile. */
+.party-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 16px;
+  padding: 18px;
+  flex: 1;
+  overflow: auto;
+}
+.party-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.empty-slot {
+  background: var(--panel);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  min-height: 240px;
+  justify-content: center;
+}
+.empty-slot::before {
+  content: '✠';
+  color: var(--border);
+  font-size: 30px;
+  line-height: 1;
+}
+.empty-slot .btn {
+  width: 100%;
+  max-width: 240px;
+}
+.slot-num {
+  color: var(--muted);
+  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.5px;
+}
+
+/* Character card */
+.char-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.char-card.compact {
+  padding: 10px;
+}
+.char-head {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+.char-sub {
+  color: var(--gold);
+  font-size: 12px;
+}
+.char-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.stat {
+  background: var(--panel2);
+  border-radius: 6px;
+  padding: 4px 2px;
+  text-align: center;
+}
+.stat-label {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.stat-val {
+  font-weight: 700;
+  font-size: 15px;
+}
+.char-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.char-bottom b {
+  color: var(--text);
+}
+.mini-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin: 10px 0 4px;
+}
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tag {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+.tag.talent {
+  border-color: var(--gold);
+  color: var(--gold);
+}

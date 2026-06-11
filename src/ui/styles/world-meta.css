@@ -1,0 +1,172 @@
+/* ── Carte du monde (#T2 Voyage) ─────────────────────────────────────────────── */
+.worldmap-btn {
+  position: absolute;
+  top: 10px;
+  left: 58px; /* à droite du menu ☰ (.game-menu) */
+  z-index: 60;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: var(--panel2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 19px;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.worldmap-btn.attention {
+  border-color: var(--gold2);
+  animation: wm-pulse 1.6s ease-in-out infinite;
+}
+@keyframes wm-pulse {
+  50% { box-shadow: 0 0 10px 2px rgba(255, 224, 102, 0.45); }
+}
+.worldmap-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* sous les modales (100) */
+  background: rgba(10, 12, 18, 0.88);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 8px;
+}
+.worldmap-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.worldmap-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.worldmap-canvas {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.worldmap-canvas svg {
+  width: min(96vw, 880px);
+  max-height: 100%;
+  user-select: none;
+}
+.worldmap-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  width: min(640px, 96vw);
+  margin: 0 auto;
+}
+.worldmap-panel p { margin: 4px 0; }
+.worldmap-panel.muted-panel { color: var(--muted); text-align: center; }
+/* En-tête du trajet : itinéraire à gauche, modes à droite — sur une ligne, sans étalement. */
+.wm-trip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.wm-trip-route { font-size: 15px; }
+.wm-trip-route b { color: var(--gold2); }
+.wm-arrow { color: var(--muted); }
+.wm-modes { display: flex; gap: 8px; flex-wrap: wrap; }
+.wm-opt { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin: 10px 0; }
+.wm-opt-hint { color: var(--muted); }
+.wm-est { font-size: 13px; color: var(--muted); margin: 8px 0; }
+@media (max-width: 560px) {
+  .worldmap-panel { padding: 10px; }
+  .worldmap-head h2 { font-size: 15px; }
+}
+
+/* ── Éditeur de carte du monde (#T2) ─────────────────────────────────────────── */
+.wme-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: var(--bg, #0e1118);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 8px;
+  overflow: auto;
+}
+.wme-overlay > .bar h3 { margin: 0; }
+.wme-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 10px;
+}
+.wme-canvas {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wme-canvas svg {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  touch-action: none; /* glisser de lieux au doigt */
+}
+.wme-inspector {
+  width: min(340px, 42vw);
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.wme-peril {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+}
+.ed-check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 4px 0; }
+@media (max-width: 900px) {
+  .wme-body { flex-direction: column; }
+  .wme-inspector { width: auto; max-height: 45vh; }
+}
+
+/* ── Sauvegarde / chargement (Jalon 5) ─────────────────────────────────────── */
+.save-slots { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.save-slot {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+}
+.save-slot-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.save-slot-info { font-size: 12px; color: var(--muted); }
+.save-slot-info.empty { opacity: 0.6; }
+.save-slot-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.save-error { color: #e36c6c; font-size: 13px; margin: 6px 0 0; }
+
+/* ── Entre deux aventures (Jalon 5) ────────────────────────────────────────── */
+.interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
+.interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }
+.interlude-hero { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.interlude-hero h3 { margin: 0 0 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
+.interlude-event { margin: 0; font-size: 13px; }
+.interlude-warning { font-size: 12px; color: var(--muted); margin: 0; cursor: help; }
+.interlude-close {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.interlude-close .btn { margin-left: auto; }
+.interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
+.interlude-craft, .interlude-bank { font-size: 13px; }
+.interlude-craft summary, .interlude-bank summary { cursor: pointer; }
+.interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
+.interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }

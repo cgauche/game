@@ -1,0 +1,1262 @@
+
+/* ── Modale d'attaque (jet + localisation + Chance) ── */
+.roll-modal {
+  min-width: 340px;
+}
+.rm-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 6px 0 12px;
+}
+.rm-vs-arrow {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.rm-weapon {
+  color: var(--muted);
+  font-weight: normal;
+}
+/* Contexte de l'attaque entrante dans la modale de défense (R10). */
+.rm-threat {
+  text-align: center;
+  font-size: 12px;
+  color: #e0b0a0;
+  background: rgba(120, 40, 30, 0.22);
+  border: 1px solid rgba(200, 90, 70, 0.4);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 0 0 10px;
+}
+.rm-threat b {
+  color: #ff9b80;
+}
+/* Frisson du dé (R3) : beat de roulement cosmétique avant la révélation du jet. */
+.rm-rolling {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px;
+}
+.rm-die {
+  font-size: 30px;
+  display: inline-block;
+  animation: rm-die-roll 0.46s ease-in-out infinite;
+}
+@keyframes rm-die-roll {
+  0% { transform: rotate(-22deg) scale(0.82); }
+  25% { transform: rotate(18deg) scale(1.14); }
+  50% { transform: rotate(-14deg) scale(0.96); }
+  75% { transform: rotate(10deg) scale(1.1); }
+  100% { transform: rotate(-22deg) scale(0.82); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-die { animation: none; }
+}
+/* Badge d'identité d'un combattant dans les modales (R10) : portrait + couleur d'équipe + PV. */
+.cb-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 84px;
+}
+.cb-name {
+  font-size: 13px;
+  max-width: 110px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cb-pv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 70px;
+}
+.cb-pv-bar {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: #2a2a30;
+  overflow: hidden;
+}
+.cb-pv-bar i {
+  display: block;
+  height: 100%;
+}
+.cb-pv-val {
+  font-size: 10px;
+  color: var(--muted);
+}
+.rm-loc {
+  margin-bottom: 12px;
+}
+/* Localisation visée compacte (choix rare) : libellé + menu déroulant sur une seule ligne. */
+.rm-loc-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+/* Maniement de deux armes : interrupteur cliquable (toute la ligne). */
+.rm-dual-toggle,
+.rm-dual-toggle input {
+  cursor: pointer;
+}
+.rm-dual-toggle {
+  user-select: none;
+}
+.rm-loc-select {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel2, var(--bg));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.rm-loc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+/* Saisie libre de la valeur du dé d'un succès forcé (« Je ne faillirai pas ! », LDB 17 l.73). */
+.rm-die-input {
+  width: 100%;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line, #555);
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.rm-pen {
+  color: var(--gold);
+  font-style: normal;
+  font-size: 12px;
+}
+.rm-log {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 8px 0;
+}
+.bp-hint {
+  font-size: 12px;
+  color: var(--gold);
+  margin: 0;
+}
+.bp-spells {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+.bp-spell-row {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+.bp-spell-row .btn {
+  flex: 1;
+  text-align: left;
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.bp-spell-ni {
+  color: var(--muted);
+  font-size: 11px;
+}
+/* Découvrabilité d'un sort (R4) : portée / durée / cibles sous le nom, dans le sélecteur. */
+.ab-spell-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+/* Journal en couleur (narration partagée : icône unifiée + noms par camp). */
+.jr-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.jr-ic {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+}
+.jr-tx {
+  flex: 1;
+}
+/* Couleurs de camp, partagées journal + bandeau. */
+.nm-ally {
+  color: var(--ok-bright);
+  font-weight: 700;
+}
+.nm-foe {
+  color: var(--danger-soft);
+  font-weight: 700;
+}
+
+/* Panneau d'inspection (clic sur l'ordre de bataille) — lecture seule. */
+.inspect-panel {
+  max-width: 380px;
+}
+.insp-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.insp-id {
+  flex: 1;
+}
+.insp-id h3 {
+  margin: 0 0 4px;
+}
+.insp-pv {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.insp-pv i {
+  display: block;
+  height: 100%;
+}
+.insp-pv-num {
+  font-size: 11px;
+  color: var(--muted);
+}
+.insp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.insp-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.insp-badge.foe {
+  background: rgba(192, 57, 43, 0.18);
+  border-color: #c0392b;
+  color: var(--danger-soft);
+}
+.insp-chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.insp-char {
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+.insp-char b {
+  color: var(--muted);
+  font-size: 11px;
+}
+.insp-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  margin: 5px 0;
+}
+.insp-lbl {
+  flex: 0 0 64px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding-top: 2px;
+}
+.insp-traits {
+  opacity: 0.85;
+  font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.insp-trait-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 1px 6px;
+  cursor: help; /* desc verbatim (LDB 85) en tooltip */
+}
+/* Aperçu du profil du bestiaire (éditeur, volet spawn) — ligne M CC CT … B, « – » = inexistante */
+.creature-profile table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: center;
+}
+.creature-profile th {
+  color: var(--muted);
+  font-weight: 600;
+  padding: 1px 2px;
+}
+.creature-profile td {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
+}
+.creature-profile-traits {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 4px 0 6px;
+}
+.rm-crowd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.rm-crowd-note {
+  font-size: 11px;
+  color: var(--muted);
+}
+/* Rangée Av/assailli masquée quand vide (le nom du héros est passé en title sur le portrait). */
+.ab-actor-top:empty {
+  display: none;
+}
+
+/* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3.
+   top calé sous le bas mesuré de la frise (~73px) + marge d'air, pour ne JAMAIS la chevaucher. */
+.combat-feed {
+  position: absolute;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 40;
+  pointer-events: none;
+  max-width: 80%;
+}
+.cb-ev {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  background: rgba(10, 14, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  backdrop-filter: blur(3px);
+}
+.cb-ev .cb-ic {
+  font-size: 15px;
+}
+.cb-now {
+  animation: cb-in 0.18s ease-out;
+}
+.cb-old {
+  opacity: 0.45;
+  font-size: 12px;
+  padding: 3px 12px;
+}
+/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation) :
+   posé au-dessus de la barre d'action, n'empêche pas de cliquer le champ de bataille. */
+.target-prompt {
+  position: absolute;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 14, 20, 0.88);
+  border: 1px solid var(--gold2);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  z-index: 6;
+  max-width: 94vw;
+}
+@media (max-width: 700px) {
+  .target-prompt {
+    bottom: 132px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+@media (pointer: coarse) {
+  .target-prompt .btn.small {
+    padding: 9px 14px;
+  }
+}
+@keyframes cb-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.battle-result {
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+}
+.battle-result.victory {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid var(--ok);
+}
+.battle-result.defeat {
+  background: rgba(192, 57, 43, 0.15);
+  border: 1px solid var(--danger);
+}
+
+/* Editor */
+.editor-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+}
+.editor-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr 260px;
+  overflow: hidden;
+}
+.editor-palette,
+.editor-inspector {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 12px;
+  overflow: auto;
+}
+.editor-inspector {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+.ed-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.ed-dim {
+  display: flex;
+  gap: 8px;
+}
+.ed-dim label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.ed-dim input {
+  width: 56px;
+}
+.terrain-palette {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.terrain-swatch {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 10px 4px;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  text-shadow: 0 1px 2px #000;
+  text-transform: capitalize;
+}
+.terrain-swatch.active {
+  border-color: var(--gold);
+}
+.entity-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.editor-canvas-wrap {
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.editor-canvas {
+  background: #000;
+  border-radius: 8px;
+  cursor: crosshair;
+  image-rendering: pixelated;
+  max-width: 100%;
+}
+.editor-iso {
+  background: radial-gradient(circle at 50% 28%, var(--bg), var(--bg));
+  border-radius: 8px;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+}
+.json-editor {
+  width: 100%;
+  height: 360px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+
+/* Éditeur de triggers & effets */
+.trig-modal {
+  width: 820px;
+  max-width: 95vw;
+  max-height: 88vh;
+  overflow: auto;
+}
+.trig-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+.trig-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.trig-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.trig-id {
+  width: 110px;
+}
+.trig-cond {
+  width: 150px;
+}
+.rect-fields,
+.money-fields {
+  display: flex;
+  gap: 4px;
+}
+.rect-fields label,
+.money-fields label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.rect-fields input,
+.money-fields input {
+  width: 44px;
+  padding: 4px;
+}
+.eff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+.eff-row {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px;
+}
+.eff-head {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.eff-head select {
+  flex: 1;
+}
+.eff-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.eff-fields input,
+.eff-fields select,
+.eff-fields textarea {
+  width: 100%;
+}
+.eff-fields textarea {
+  height: 70px;
+}
+.test-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tf-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tf-row .dr {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.tf-row .dr input {
+  width: 44px;
+}
+.branch {
+  border-left: 2px solid var(--border);
+  padding-left: 8px;
+}
+.branch-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+.branch-label.ok {
+  color: var(--ok);
+}
+.branch-label.fail {
+  color: #ff7a6c;
+}
+
+/* Éditeur de dialogues */
+.dlg-edit-modal {
+  width: 860px;
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+.dlg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 10px 0;
+}
+.dlg-card {
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 10px;
+}
+.dlg-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dlg-id {
+  width: 150px;
+}
+.dlg-head .dlg-start {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.node-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 8px 0;
+}
+.node-head {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.node-id {
+  width: 90px;
+}
+.node-speaker {
+  flex: 1;
+}
+.node-text {
+  width: 100%;
+  height: 54px;
+  margin-bottom: 6px;
+}
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+}
+.choice-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px;
+}
+.choice-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+.choice-text {
+  flex: 1;
+  min-width: 160px;
+}
+.choice-next {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.choice-cond {
+  width: 110px;
+}
+
+/* Palette à onglets */
+.pal-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pal-tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 8px 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.pal-tabs button:hover {
+  color: var(--text);
+}
+.pal-tabs button.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+.pal-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Palette : groupe logique + aperçu entité */
+.logic-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ent-preview {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 35%, #241830, #0e0b14);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+.editor-inspector textarea {
+  width: 100%;
+  height: 80px;
+}
+
+/* Éditeur de rencontres */
+.enc-modal {
+  width: 640px;
+  max-width: 94vw;
+  max-height: 88vh;
+  overflow: auto;
+}
+.enc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+.enc-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.enc-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.enc-id {
+  flex: 1;
+}
+.enemy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 8px;
+  border-left: 2px solid var(--danger);
+}
+.enemy-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.enemy-row select {
+  flex: 1;
+}
+.enemy-row label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.enemy-row input {
+  width: 44px;
+  padding: 4px;
+}
+
+/* Fiche de personnage / équipement */
+.sheet-modal {
+  position: relative;
+  width: 880px;
+  max-width: 94vw;
+  max-height: 88vh;
+  overflow: auto;
+  border-top: 4px solid var(--gold);
+  padding-top: 16px;
+}
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+/* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤760px. */
+.sheet-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+}
+.sheet-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+}
+/* Grand portrait + identité en tête de colonne (illustration du perso). */
+.sheet-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.sheet-portrait .rig-portrait {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px; /* médaillon rond, façon écu */
+  border-width: 3px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.sheet-portrait h3 {
+  margin: 6px 0 0;
+  font-size: 21px;
+  color: var(--gold2);
+  line-height: 1.05;
+}
+.sheet-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* Vitalité (PV / Mvt / Encombrement) en cartouches. */
+.sheet-vitals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.sheet-vitals .vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 4px;
+}
+.sheet-vitals .vital-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.sheet-vitals .vital b {
+  font-size: 16px;
+  color: var(--text);
+}
+.sheet-vitals .vital.pv b {
+  color: var(--gold2);
+}
+.sheet-vitals .vital.enc-over b {
+  color: var(--danger);
+}
+.sheet-heal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sheet-resources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.sheet-resources .res {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.sheet-resources .res span {
+  color: var(--muted);
+}
+.sheet-resources .res b {
+  color: var(--gold);
+  font-size: 14px;
+}
+.sheet-stats {
+  margin-bottom: 4px;
+}
+@media (max-width: 760px) {
+  .sheet-layout {
+    grid-template-columns: 1fr;
+  }
+  .sheet-aside {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 12px;
+  }
+  /* Mobile : portrait à gauche, identité à droite (compact, pas de grande zone vide). */
+  .sheet-portrait {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+  }
+  .sheet-portrait .rig-portrait {
+    width: 72px;
+    height: 72px;
+  }
+}
+.sheet-combat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.ap-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.ap-cell {
+  text-align: center;
+  background: var(--bg2);
+  border-radius: 6px;
+  padding: 4px 0;
+}
+.ap-cell span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.ap-cell b {
+  font-size: 16px;
+  color: var(--muted);
+}
+.ap-cell b.on {
+  color: var(--gold2);
+}
+.sc-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.sc-meta b {
+  color: var(--text);
+}
+.sc-meta .enc-over b,
+.sc-meta .enc-over {
+  color: var(--danger);
+}
+.sc-weapons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sc-weapons .weap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.sc-weapons .weap em {
+  color: var(--gold);
+}
+.sheet-skills {
+  margin-bottom: 14px;
+}
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 12px;
+}
+.skill-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  border-bottom: 1px dotted var(--border);
+  padding: 2px 0;
+}
+.skill-line .sk-name {
+  flex: 1;
+  color: var(--text);
+}
+.skill-line .sk-val {
+  font-weight: 700;
+  color: var(--gold);
+}
+.skill-line .sk-adv {
+  color: var(--muted);
+  font-size: 10px;
+  width: 28px;
+  text-align: right;
+}
+
+.inv-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.inv-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.inv-row.kind-melee,
+.inv-row.kind-ranged {
+  border-left-color: var(--copper);
+}
+.inv-row.kind-armor {
+  border-left-color: #6f8fb8;
+}
+.inv-row.equipped {
+  background: #2a2438;
+}
+.ir-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ir-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.ir-stats {
+  font-size: 11px;
+  color: var(--muted);
+}
+.ir-enc {
+  font-size: 11px;
+  color: var(--muted);
+}
+.ir-kind {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+.muted {
+  color: var(--muted);
+}
+
+/* Bourse & inventaire (HUD) */
+.purse {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.purse .coins {
+  font-size: 13px;
+  color: var(--muted);
+}
+.purse .co {
+  color: var(--gold);
+}
+.purse .sc {
+  color: var(--silver);
+}
+.purse .pa {
+  color: var(--copper);
+}
+.inv-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.inv-item {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+}
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+/* Modal de test de compétence */
+.test-modal {
+  width: 340px;
+  text-align: center;
+}
+.test-actor {
+  color: var(--muted);
+  margin: 4px 0 14px;
+}
+/* Lecteur de document / handout */
+.document-modal {
+  width: 560px;
+  max-width: 92vw;
+  background: #efe6cf;
+  color: var(--panel2);
+  border: 1px solid var(--gold2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.document-modal h3 {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  text-align: center;
+  color: #5a2018;
+  border-bottom: 2px solid var(--gold2);
+  padding-bottom: 10px;
+  margin-top: 0;
+}
+.doc-text {
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  max-height: 56vh;
+  overflow: auto;
+  margin: 14px 0;
+}
+.doc-text p {
+  margin: 8px 0;
+}
+.document-modal .btn {
+  background: #d8c9a0;
+  color: var(--panel2);
+  border-color: var(--gold2);
+  display: block;
+  margin: 0 auto;
+}
+
+/* Rendu isométrique du jeu — remplit tout l'espace dispo (caméra responsive) */
+.iso-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: radial-gradient(circle at 50% 28%, var(--bg), var(--bg));
+  cursor: pointer;
+  touch-action: none;
+}
+.iso-stage .bob {
+  animation: isobob 3.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes isobob {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-1px) scaleY(1.025); }
+}
+.iso-stage .glow {
+  animation: isoglow 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes isoglow {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.35); opacity: 1; }
+}
+.iso-stage .dmg-float {
+  font: 700 18px 'Segoe UI', sans-serif;
+  paint-order: stroke;
+  animation: dmgfloat 0.85s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes dmgfloat {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-26px); opacity: 0; }
+}
+

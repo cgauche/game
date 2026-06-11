@@ -1,0 +1,470 @@
+/* ── HUD plein-champ façon BG3 (mobile-first) — tuiles-portraits ───────────── */
+.ptile-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  pointer-events: auto;
+}
+.ptile {
+  position: relative;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 9px;
+  flex: 0 0 auto;
+}
+.ptile .rig-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Cadre plus épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9)
+     doivent se lire d'un coup d'œil même sur les petites tuiles de la frise. */
+  border-width: 3px;
+}
+.ptile.active {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(255, 224, 102, 0.5);
+}
+.ptile.ko .rig-portrait {
+  filter: grayscale(0.9);
+  opacity: 0.6;
+}
+.ptile-caret {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold2);
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1;
+  text-shadow: 0 0 3px #000;
+  pointer-events: none;
+}
+.ptile-gauge {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.ptile-gauge b {
+  display: block;
+  width: 100%;
+}
+.ptile-pv {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 3px #000, 0 1px 2px #000;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  line-height: 1.2;
+}
+.ptile .ko-cross {
+  font-size: 22px;
+}
+.ptile-states {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12px;
+  line-height: 1.15;
+  text-shadow: 0 0 3px #000;
+}
+.ptile-more {
+  color: var(--muted);
+  font-weight: 700;
+  cursor: default;
+}
+
+/* ── Frise d'initiative (haut, centrée) ── */
+.initiative-strip {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: min(88vw, 860px);
+}
+.is-tiles {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 6px 8px 4px;
+  background: rgba(10, 14, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(3px);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.is-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 12px; /* place pour le caret du haut de l'actif */
+}
+.is-round {
+  align-self: center;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 2px;
+}
+.is-tiles .inspect-toggle {
+  align-self: center;
+}
+.is-first {
+  font-size: 10px;
+  background: rgba(255, 224, 102, 0.14);
+  border: 1px solid rgba(255, 224, 102, 0.5);
+  border-radius: 6px;
+  color: var(--gold2);
+  padding: 1px 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.is-pause {
+  font-size: 11px;
+  color: var(--gold2);
+  background: rgba(10, 14, 20, 0.7);
+  border-radius: 10px;
+  padding: 2px 10px;
+}
+@media (max-width: 700px) {
+  .initiative-strip { top: 6px; max-width: 96vw; }
+  .is-tiles { gap: 5px; padding: 4px 6px 3px; }
+  .ptile-states { font-size: 10px; }
+  .combat-feed { top: 78px; max-width: 94vw; }
+  .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
+  .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
+}
+
+/* TÉLÉPHONE étroit seulement : la barre passe pleine largeur (la hotbar remplit). Aux largeurs tablette
+   (561-700px) on garde la barre CENTRÉE qui épouse son contenu — sinon un grand vide à droite du panneau. */
+@media (max-width: 560px) {
+  .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
+  .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
+  .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
+  .ab-slots { max-width: none; }
+  .ab-slot { flex: 1 1 0; min-width: 52px; padding: 6px 3px; }
+  .ab-ico { font-size: 17px; }
+  .ab-lbl { font-size: 9px; }
+  .ab-spells { max-height: 42vh; overflow-y: auto; }
+}
+
+/* ── Dock d'équipe (gauche) ── */
+.party-dock {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+@media (max-width: 700px) {
+  .party-dock { left: 6px; gap: 8px; }
+}
+
+/* ── Tiroir journal (bas-droite) ── */
+.log-drawer {
+  position: absolute;
+  right: 12px;
+  bottom: 92px; /* au-dessus de la barre d'action — calibrer en recette */
+  z-index: 46;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.ld-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: var(--panel2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 19px;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.log-drawer.open .ld-btn {
+  border-color: var(--gold);
+}
+.ld-panel {
+  width: min(330px, 86vw);
+  max-height: 38vh;
+  overflow: auto;
+  background: transparent; /* fond transparent par défaut — seul le texte (ombré) flotte sur le champ */
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-shadow: 0 1px 3px #000, 0 0 5px #000; /* lisibilité sur le champ quand le fond est transparent */
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+/* Au survol du tiroir (panneau ou bouton 📜), on révèle le fond opaque ; sinon il reste transparent. */
+.log-drawer:hover .ld-panel {
+  background: rgba(14, 16, 22, 0.94);
+  border-color: var(--border);
+  text-shadow: none;
+}
+@media (max-width: 700px) {
+  .log-drawer { right: 8px; bottom: 88px; }
+}
+
+/* ── Menu ☰ (haut-gauche, les deux modes) ── */
+.game-menu {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 60;
+}
+.gm-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: var(--panel2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 19px;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.game-menu.open .gm-btn {
+  border-color: var(--gold);
+}
+.gm-panel {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  width: min(300px, 88vw);
+  max-height: 72vh;
+  overflow: auto;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.gm-scene {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gold);
+}
+.gm-date {
+  font-size: 12px;
+  color: var(--muted);
+}
+.gm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gm-quit {
+  align-self: flex-start;
+}
+
+/* ── Chip date (haut-droite, exploration) ── */
+.date-chip {
+  position: absolute;
+  top: 16px;
+  right: 118px; /* à gauche des ViewControls (top:16 right:16, ~92px de large) */
+  z-index: 45;
+  background: rgba(10, 14, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 6px 11px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .date-chip { top: 64px; right: 8px; } /* sous les ViewControls sur petit écran */
+}
+
+/* ── Overlay Défaite (centre du champ) ── */
+.defeat-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 70;
+}
+.defeat-overlay .battle-result {
+  min-width: 240px;
+}
+
+/* Bandeau « sujet » des modales (R10 généralisé) : portrait + nom du combattant concerné,
+   pour qu'on sache TOUJOURS à qui une modale (Critique/Maladresse/Colère/Déviation…) s'applique. */
+.modal-subject {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.modal-subject strong {
+  font-size: 14px;
+}
+
+/* ── Monnaie colorée par dénomination (LDB 57) : or / argent / cuivre ── */
+.coin-gold { color: #e8c14a; font-weight: 600; }
+.coin-silver { color: var(--silver); font-weight: 600; }
+.coin-copper { color: var(--copper); font-weight: 600; }
+.coin-sep { color: var(--muted); margin: 0 1px; }
+
+/* Étiquette « équipé » dans la liste de vente. */
+.equipped-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--ok-bright);
+  border: 1px solid rgba(95, 207, 146, 0.5);
+  border-radius: 4px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* Barre de panier (achat) toujours visible au défilement (sticky). */
+.merch-tab .cart-bar {
+  position: sticky;
+  top: -2px;
+  z-index: 3;
+  background: var(--bg2);
+  padding: 6px 2px;
+  margin: -2px 0 6px;
+}
+
+/* Sélecteur de cible de soin par PORTRAIT (#20) — on clique le portrait, pas un bouton nommé. */
+.heal-pick-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
+.heal-pick {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--panel); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 6px 8px; cursor: pointer; color: var(--text);
+}
+.heal-pick:hover { border-color: var(--accent2); }
+.heal-pick.active { border-color: var(--gold); outline: 1px solid var(--gold); }
+.heal-pick-name { font-size: 12px; font-weight: 600; }
+.heal-pick-pv { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.modal-subject .ms-pv { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
+.dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.dr-bar-track {
+  position: relative; flex: 1; height: 14px; border-radius: 7px;
+  background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.15); overflow: hidden;
+}
+.dr-bar-fill { display: block; height: 100%; background: var(--ok-bright); transition: width 0.25s ease; }
+.dr-bar-notch { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.5); }
+.dr-bar-val { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+
+/* Messages de victoire (Effets journal de onVictory) — affichés dans l'écran de victoire (#9). */
+.victory-messages { margin: 4px 0 12px; max-width: 520px; text-align: center; }
+.victory-msg { color: var(--gold); font-size: 14px; margin: 4px 0; line-height: 1.5; }
+
+/* ── Coup Critique : panneau complet (au niveau de la modale d'attaque) ── */
+.crit-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0;
+}
+.crit-stat {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger-soft);
+  background: rgba(192, 57, 43, 0.16);
+  border: 1px solid rgba(224, 83, 58, 0.5);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.crit-cond {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+.crit-effects {
+  margin: 8px 0 4px;
+  max-height: 34vh;
+  overflow: auto;
+}
+.crit-effect {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.crit-effect .ce-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0d9a0;
+}
+.crit-effect .ce-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Sélecteur de soin par portrait dans l'ActionBar (#20). */
+.ab-heal-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 4px 7px;
+}
+.ab-heal-pick .ab-heal-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+/* Protection de la zone touchée dans la modale de Déviation Critique (#critique). */
+.dev-zone {
+  text-align: center;
+  font-size: 13px;
+  margin: 6px 0;
+  background: rgba(79, 143, 224, 0.12);
+  border: 1px solid rgba(79, 143, 224, 0.4);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+.dev-zone.bare {
+  background: rgba(192, 57, 43, 0.12);
+  border-color: rgba(224, 83, 58, 0.4);
+  color: #e8a39a;
+}
+

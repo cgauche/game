@@ -1,0 +1,436 @@
+/* ── Fiche : onglets Fiche / Avancement ── */
+.sheet-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.sheet-tabs .tab {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px 8px 0 0;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.sheet-tabs .tab.on {
+  background: var(--panel2);
+  color: var(--text);
+  border-bottom-color: transparent;
+  font-weight: 600;
+}
+
+/* ── Panneau d'avancement ── */
+.adv-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Total PX collant en tête de l'onglet Avancement (toujours visible en scrollant). */
+.adv-px-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+}
+.adv-px-bar span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.adv-px-bar b {
+  font-size: 24px;
+  color: var(--gold2);
+}
+/* Catégorie repliable */
+.adv-section {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.adv-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+  background: var(--panel2);
+  user-select: none;
+}
+.adv-summary::-webkit-details-marker {
+  display: none;
+}
+.adv-summary-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+}
+.adv-count {
+  font-size: 11px;
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: var(--bg2);
+  color: var(--muted);
+}
+.adv-chevron {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.adv-section[open] .adv-chevron {
+  transform: rotate(180deg);
+}
+.adv-section-body {
+  padding: 10px 12px;
+}
+.adv-section-body .adv-grid {
+  margin-bottom: 0;
+}
+.adv-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+}
+.adv-xp {
+  font-size: 14px;
+  color: var(--muted);
+}
+.adv-xp b {
+  font-size: 20px;
+  color: var(--gold2);
+  margin-left: 6px;
+}
+.adv-grant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.adv-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.adv-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+.adv-row.acquire {
+  border-style: dashed;
+  opacity: 0.92;
+}
+.adv-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.adv-name em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 12px;
+}
+.adv-meta {
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 28px;
+  text-align: right;
+}
+.career-pill {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  line-height: 1.5;
+}
+.career-pill.in {
+  background: rgba(120, 200, 120, 0.18);
+  color: var(--ok-bright);
+}
+.career-pill.out {
+  background: rgba(220, 170, 90, 0.18);
+  color: #e0b96a;
+}
+.acquire-tag {
+  font-size: 10px;
+  color: #8aa9d6;
+  font-style: italic;
+}
+.adv-career {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.adv-career-cur {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.career-status {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: auto;
+}
+.career-status.done {
+  color: var(--ok-bright);
+}
+.adv-change {
+  display: flex;
+  gap: 6px;
+}
+.adv-change select {
+  flex: 1;
+}
+
+/* ── Modale de jet : détail des DEUX côtés (Test opposé) ── */
+.rm-rolls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+/* Jet opposé : portrait d'équipe à gauche de la ligne de jet (R10 : qui a fait quel jet). */
+.rm-roll-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rm-roll-row .rm-roll-block {
+  flex: 1;
+}
+.rm-roll {
+  display: grid;
+  grid-template-columns: 1.1fr 1.5fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  font-size: 13px;
+}
+.rm-roll.ok {
+  border-left: 3px solid #5db87a;
+}
+.rm-roll.fail {
+  border-left: 3px solid #c0563f;
+}
+.rm-roll-label {
+  font-weight: 600;
+}
+.rm-roll-calc {
+  color: var(--muted);
+}
+.rm-roll-calc b {
+  color: var(--text);
+}
+.rm-roll-dice {
+  font-variant-numeric: tabular-nums;
+}
+.rm-roll-dice b {
+  font-size: 16px;
+}
+/* Dé animé : le nombre « roule » (flou + tremblement) avant de se poser sur le résultat. */
+.d100 {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+.d100-rolling {
+  filter: blur(0.6px);
+  opacity: 0.85;
+  animation: d100-jitter 0.09s linear infinite;
+}
+@keyframes d100-jitter {
+  0% { transform: translateY(-1px); }
+  50% { transform: translateY(1px); }
+  100% { transform: translateY(-1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .d100-rolling {
+    filter: none;
+    animation: none;
+    opacity: 1;
+  }
+}
+.rm-roll-sl {
+  text-align: right;
+  font-weight: 600;
+}
+.rm-roll.ok .rm-roll-sl {
+  color: var(--ok-bright);
+}
+.rm-roll.fail .rm-roll-sl {
+  color: var(--danger-soft);
+}
+.rm-roll-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rm-roll-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 10px 2px;
+}
+/* ── Panneau de jet unique (RollPanel) : même géométrie avant/après le jet ── */
+.roll-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+.rr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rr-port {
+  flex: 0 0 28px;
+  display: flex;
+  justify-content: center;
+}
+.rr-line {
+  flex: 1;
+  min-width: 0;
+}
+/* Test opposé post-jet : la ligne GAGNANTE est accentuée (or), la perdante atténuée. */
+.rr-win .rm-roll {
+  border-color: var(--gold2);
+  box-shadow: 0 0 0 1px rgba(217, 184, 90, 0.35);
+  background: rgba(217, 184, 90, 0.07);
+}
+.rr-lose {
+  opacity: 0.55;
+}
+.rm-netsl {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold2);
+  padding-right: 2px;
+}
+/* Ligne pré-remplie (avant le jet) : dé/DR vides, bord neutre. */
+.rm-roll.pending {
+  border-left: 3px solid var(--border);
+}
+.rm-roll.pending .rm-roll-sl {
+  color: var(--muted);
+  font-weight: 400;
+}
+.rm-roll-empty {
+  opacity: 0.55;
+}
+/* Rangée d100 SUR TABLE (Oups !, Critiques, Imparfaites…) : neutre, compacte. */
+.rm-roll.table {
+  grid-template-columns: auto 1fr auto;
+  border-left: 3px solid var(--accent2);
+}
+.rm-table-result {
+  color: var(--text);
+  font-weight: 600;
+}
+/* Attaque impossible (pré-jet) : pas de ligne de vue / hors de portée. */
+.rm-blocked {
+  text-align: center;
+  color: var(--danger-soft);
+  font-weight: 600;
+  margin: 10px 0;
+}
+/* Zone Options pré-jet (localisation, arme, toggles de tir, Parade/Esquive…). */
+.rm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+/* Segmented control (choix exclusif : Parade/Esquive…). */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+.seg button {
+  background: var(--panel2);
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.seg button:last-child {
+  border-right: none;
+}
+.seg button.on {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+  font-weight: 600;
+}
+.rm-mod {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+}
+.rm-mod.pos {
+  color: var(--ok-bright);
+  border-color: #2f6a44;
+}
+.rm-mod.neg {
+  color: var(--danger-soft);
+  border-color: #7a3a2f;
+}
+/* Ligne d'issue d'un jet, rendue dans le style du journal (icône + noms colorés) au sein d'une modale. */
+.rm-journal {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.test-scenarios { max-width: 720px; }
+.ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.ts-card { border: 1px solid #3a3a4a; border-radius: 8px; padding: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
+.ts-head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.ts-ico { font-size: 20px; }
+.ts-tests { font-size: 12px; color: #b8b8c8; flex: 1; }
+.ts-party { font-size: 12px; color: #8fae8f; }
+
