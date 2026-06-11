@@ -347,7 +347,7 @@
    top calé sous le bas mesuré de la frise (~73px) + marge d'air, pour ne JAMAIS la chevaucher. */
 .combat-feed {
   position: absolute;
-  top: 84px;
+  top: 108px; /* sous le dock d'équipe désormais en RANGÉE EN HAUT (inversion init/groupe) */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
