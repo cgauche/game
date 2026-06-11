@@ -33,7 +33,8 @@ export function VictoryScreen() {
   return (
     <div className="victory-overlay">
       <div className="victory-screen">
-        <h1 className="victory-title">🏆 Victoire !</h1>
+        <h1 className="victory-title">Victoire</h1>
+        <div className="rule-fleur" aria-hidden>⚜</div>
 
         {/* #9 : messages de journal de la victoire (ex. annonce de l'arène) affichés ICI. */}
         {(pv?.messages?.length ?? 0) > 0 && (
@@ -43,7 +44,7 @@ export function VictoryScreen() {
         )}
 
         <div className="victory-rewards">
-          <div className="victory-stat"><span className="vs-ico">✨</span> <b>{xp}</b> XP</div>
+          <div className="victory-stat"><span className="vs-ico">✨</span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
           <div className="victory-stat"><span className="vs-ico">💰</span> <Coins money={gold} /></div>
         </div>
 
@@ -58,30 +59,31 @@ export function VictoryScreen() {
           </div>
         )}
 
-        <div className="victory-section">
-          <h3>Butin</h3>
-          {loot.length === 0 ? (
-            <p className="victory-empty">Aucun butin à répartir.</p>
-          ) : (
-            <>
-              <ul className="victory-loot">
-                {loot.map((label, i) => (
-                  <li key={`${label}-${i}`} className="victory-loot-row">
-                    <span className="vl-name">{label}</span>
-                    <span className="vl-assign">
-                      {assignable.map((h) => (
-                        <button key={h.id} className="btn small" onClick={() => giveItemToHero(label, h.id)} title={`Donner « ${label} » à ${h.name}`}>
-                          {h.name}
-                        </button>
-                      ))}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="victory-hint">Clique un héros pour lui attribuer l'objet ; le reste rejoint le stock du groupe.</p>
-            </>
-          )}
-        </div>
+        {loot.length > 0 && (
+          <div className="victory-section">
+            <h3>Butin</h3>
+            <ul className="victory-loot">
+              {loot.map((label, i) => (
+                <li key={`${label}-${i}`} className="victory-loot-row">
+                  <span className="vl-name">{label}</span>
+                  <span className="vl-assign">
+                    {assignable.map((h) => (
+                      <button
+                        key={h.id}
+                        className="vl-hero"
+                        onClick={() => giveItemToHero(label, h.id)}
+                        title={`Donner « ${label} » à ${h.name}`}
+                        aria-label={`Donner ${label} à ${h.name}`}
+                      >
+                        <TeamPortrait combatant={h} size={34} />
+                      </button>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {online ? (
           <>

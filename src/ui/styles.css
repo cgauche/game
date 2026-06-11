@@ -1575,68 +1575,104 @@ textarea:focus {
   z-index: 120;
 }
 .victory-screen {
-  background: var(--panel);
-  border: 1px solid rgba(255, 200, 120, 0.4);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--gold);
   border-radius: 14px;
-  padding: 22px 28px;
+  padding: 26px 28px 22px;
   max-width: 520px;
-  width: 90%;
+  width: 92%;
   max-height: 88vh;
   overflow-y: auto;
-  box-shadow: 0 0 40px rgba(255, 160, 60, 0.2);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.18);
 }
 .victory-title {
   text-align: center;
-  font-size: 30px;
-  margin: 0 0 14px;
-  color: #ffd98a;
+  font-size: clamp(30px, 7vw, 40px);
+  margin: 0;
+  color: var(--gold2);
+  letter-spacing: 1px;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+}
+.victory-screen .rule-fleur {
+  margin: 8px 0 18px;
 }
 .victory-rewards {
   display: flex;
   justify-content: center;
-  gap: 24px;
-  font-size: 18px;
+  gap: 14px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-.victory-stat b { color: #ffe066; }
+.victory-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 18px;
+}
+.victory-stat b { color: var(--gold2); }
+.vs-unit { color: var(--muted); font-size: 14px; }
 .vs-ico { font-size: 20px; }
 .victory-section { margin: 14px 0; }
 .victory-section h3 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gold);
   border-bottom: 1px solid var(--border);
-  padding-bottom: 4px;
-  margin: 0 0 8px;
+  padding-bottom: 5px;
+  margin: 0 0 10px;
 }
 .victory-defeated { display: flex; flex-wrap: wrap; gap: 6px; }
 .victory-foe {
   font-size: 12px;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 10px;
   background: var(--bg2);
+  border: 1px solid var(--border);
   color: var(--muted);
 }
-.victory-loot { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.victory-loot { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .victory-loot-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   background: var(--bg2);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 5px 10px;
+  padding: 6px 8px 6px 12px;
 }
 .vl-name { font-weight: 600; }
-.vl-assign { display: flex; gap: 4px; flex-wrap: wrap; }
-.victory-empty,
-.victory-hint { color: var(--muted); font-size: 12px; text-align: center; }
+.vl-assign { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Attribution par PORTRAIT cliquable (montrer, pas écrire) : halo or au survol. */
+.vl-hero {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  transition: 0.12s;
+}
+.vl-hero:hover,
+.vl-hero:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(201, 162, 39, 0.5);
+  transform: translateY(-1px);
+}
+.victory-empty { color: var(--muted); font-size: 12px; text-align: center; }
 .victory-continue {
   display: block;
-  margin: 18px auto 0;
+  margin: 20px auto 0;
   font-size: 17px;
-  padding: 10px 36px;
+  padding: 11px 40px;
 }
 
 /* Dialogue */
