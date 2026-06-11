@@ -1175,11 +1175,19 @@ créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
   Fixes structurels : tête de race SOUS la coiffe (un skaven casqué garde sa tête de rat),
   `perso.features` additifs (vs `monster` = override complet), gabarit du def transmis aux
   entités hors combat.
+- ✅ **Lot A bis — créatures du Chaos LDB refondues** *(livré 82fd882, 2026-06-11, demande
+  utilisateur « leur rendu ressemble à rien »)* : Gor/Ungor/Chamane-Brey différenciés (statut
+  des cornes LDB 83, yeux caprins), Sanguinaire et Démonette calés sur les illustrations LDB
+  p.337 (cornes recourbées, gueule à crocs, musculature, pagne ; lilas/indigo, corset doré,
+  pinces de chitine aux 2 bras), Furie du Chaos (ailes de cuir, Compagnon ch.9), Horreurs
+  rose/bleue (tête-gueule + tentacules, T1 ch.9), tenue Cultiste (capuchon + heptagramme),
+  Mutant réparé (tentacule/corne).
 - **Lot B — créatures du Chaos du Compagnon SANS modèle** : ch.12 Carnaval du Pandémonium —
   la ménagerie (Urzo, Rassarak, les Jumeaux, la Bête Impériale, la « basse-cour » = hommes-bêtes
   à têtes de chèvre/vache/POULET cracheurs de venin l.154) ; ch.11 — le **Happeur Carnivore** ;
-  ch.9 Main pourpre — cultistes/acolytes/magus/sorciers de Tzeentch. Mécanisme : defs créatures
-  + nouvelles TÊTES de monster parts + statblocks custom dans les scènes.
+  ch.9 Main pourpre — cultistes/acolytes/magus/sorciers de Tzeentch (les démons du ch.9 — Furie,
+  Horreurs — sont LIVRÉS au lot A bis). Mécanisme : defs créatures + nouvelles TÊTES de monster
+  parts + statblocks custom dans les scènes.
 - **Lot C — PNJ nommés avec leur tenue et leur tête** : ch.12 — Wolfgang Hollseher (Doktor),
   Magnus Bugman (Maître du savoir nain), Benbow (vieux loup de mer), « Mamie » Haller, le
   personnel (Grand/Petit Anders, Bertoldo, Ivan, Magda, Mikhail) ; ch.11 — Lauengram, Wolfgang
