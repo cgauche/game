@@ -69,24 +69,30 @@ limite documentée « jeu entre amis ».
 - **Interlude/menus** : hors périmètre V1 (miroir comme l'exploration).
 - L'écran de création/roster reste local ; V1 : l'hôte compose le groupe comme aujourd'hui.
 
-### 4bis. Modales : à qui, et lesquelles (arbitré 2026-06-11)
+### 4bis. Modales : à qui, et lesquelles (arbitré 2026-06-11, contre-propositions retenues)
 
 - **Une modale n'apparaît que chez le(s) CONCERNÉ(S)** : je prends/inflige un Coup Critique → je
   la vois ; MA Colère divine, MA maladresse, MON Imparfaite → chez moi. Un événement purement
-  ENNEMI (maladresse/miscast/Colère d'un monstre) → **AUCUNE modale, le résultat va au journal
-  d'événements** ; si son effet touche un héros (dégâts/État), le propriétaire reçoit la modale
-  adaptée (défense…). ⚠️ Cette règle s'applique AUSSI EN SOLO → chantier `pendingReveals` :
-  supprimer les révélations témoin purement ennemies (→ journal) et **auto-fermer après un
-  délai raisonnable** les modales purement informatives (sans choix).
-- **Contre-sort à PLUSIEURS** : tous les propriétaires d'un contre-lanceur éligible voient le
-  sort ennemi et peuvent chacun tenter la Dissipation sur LE MÊME sort (séquentiel : s'il est
-  dissipé, les tentatives suivantes tombent).
-- **Ready-check** : DÉBUT DE COMBAT et CHAQUE début de Round = chaque joueur clique ; au-dessus
-  de la barre, le portrait d'un personnage de chaque joueur + ✓/✗ de validation. (Le bouton
-  Chance « agir en premier » reste individuel.)
-- **Victoire & butin** : écran de fin SYNCHRONISÉ pour tous + ready-check ; le LOOT est
-  attribuable par chacun (« je le prends ») — **toute modification de l'attribution DÉVALIDE
-  les ✓ de tout le monde** (on revalide après lecture du nouveau partage).
+  ENNEMI (maladresse/miscast/Colère d'un monstre) → **AUCUNE modale** : le **bandeau d'événements
+  EXISTANT** (journal de combat structuré → bandeau du HUD) porte une version COURTE des
+  événements ennemis majeurs (Colère, critique, Imparfaite), le journal garde le détail ; si
+  l'effet touche un héros (dégâts/État), son propriétaire reçoit la modale adaptée (défense…).
+  ⚠️ S'applique AUSSI EN SOLO → chantier `pendingReveals` : supprimer les révélations témoin
+  purement ennemies (→ bandeau+journal).
+- **Auto-fermeture des informatives** (sans choix joueur) : délai COURT (3-4 s) pour le mineur
+  (rechargement, entretien…), LONG avec **barre de temps visible** (8-10 s) pour un
+  critique/État grave sur TON héros ; un clic ferme toujours avant.
+- **Contre-sort à PLUSIEURS** : RAW vérifié (LDB 46 — « un seul Sort chaque Round » = limite PAR
+  lanceur ; « plusieurs lanceurs… effectuent leur lancer séparément ») : chaque propriétaire
+  d'un contre-lanceur éligible voit le sort ennemi et tente sur LE MÊME sort (déjà le
+  comportement moteur — `dispelledThisRound` par combattant).
+- **Ready-check** : DÉBUT DE COMBAT et VICTOIRE seulement (portraits d'un perso par joueur +
+  ✓/✗ au-dessus de la barre). Les Rounds s'enchaînent SANS gate ; un bouton « ✋ » discret
+  permet d'ouvrir volontairement la fenêtre Chance du début de Round. (Le « agir en premier »
+  reste individuel.)
+- **Victoire & butin** : écran de fin SYNCHRONISÉ + ready-check ; attribution du loot visible
+  en temps réel chez tous ; un changement d'attribution ne dévalide QUE le joueur à qui on
+  retire un objet déjà pris.
 - Un joueur déconnecté : ses héros repassent à l'hôte, son ✓ n'est plus requis.
 
 ## 5. Architecture code (sans toucher au moteur)
