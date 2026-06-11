@@ -32,25 +32,42 @@ function buildSkeleton(): Record<SquigBoneId, SBone> {
 function body(p: SquigProps, view: View): string {
   const g = p.girth, rx = 23 * g, ry = 25 * g;
   const feet = `<path d="M-10 ${ry - 4} q-4 7 -1 12 l7 0 q1 -6 -2 -11 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>` +
-    `<path d="M10 ${ry - 4} q4 7 1 12 l-7 0 q-1 -6 2 -11 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>`;
+    `<path d="M10 ${ry - 4} q4 7 1 12 l-7 0 q-1 -6 2 -11 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>` +
+    `<path d="M-12.4 ${ry + 7.4} l-1.6 2.6 M-9 ${ry + 8} l-0.4 3 M11 ${ry + 8} l0.4 3 M12.8 ${ry + 7.4} l1.6 2.6" stroke="#15110c" stroke-width="1.2" stroke-linecap="round"/>`; // griffes
   // crête d'épines dorsale
   const crest = `<path d="M-13 ${-ry + 6} l-3 -9 l7 5 M-3 ${-ry + 2} l-1 -11 l6 7 M7 ${-ry + 4} l2 -10 l3 8 M15 ${-ry + 9} l4 -7 l1 7" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>`;
   const ball = `<ellipse cx="0" cy="0" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
     `<ellipse cx="-6" cy="-8" rx="${(rx * 0.5).toFixed(1)}" ry="${(ry * 0.45).toFixed(1)}" fill="@corpsH" opacity="0.3"/>`;
   if (view === 'back') return `<g>${feet}${ball}${crest}<path d="M0 ${-ry + 6} L0 ${ry - 6}" stroke="@corpsO" stroke-width="1" opacity="0.4"/></g>`;
-  // gueule : intérieur sombre (béant) + lèvre supérieure à crocs pointant vers le bas + gros yeux
-  const maw = `<path d="M-16 7 Q0 2 17 7 Q16 16 0 17 Q-15 16 -16 7 Z" fill="#2a0e0c"/>`; // cavité (derrière la mâchoire)
-  const upperFangs = `<path d="M-13 6 l1.6 6 l2 -5.4 Z M-7 6.4 l1.4 7 l2 -6.4 Z M0 6.6 l1.2 6.6 l1.8 -6.4 Z M7 6.2 l1.2 6 l1.8 -5.6 Z M13 6 l1 5 l1.6 -4.6 Z" fill="#efe6cf"/>`;
-  const eyes = `<ellipse cx="-8" cy="-7" rx="5" ry="5.4" fill="#f4ecd8"/><circle cx="-7" cy="-6" r="2.4" fill="#1a0a06"/><circle cx="-6.2" cy="-7" r="0.8" fill="#fff"/>` +
-    `<ellipse cx="8" cy="-7" rx="5" ry="5.4" fill="#f4ecd8"/><circle cx="7" cy="-6" r="2.4" fill="#1a0a06"/><circle cx="7.8" cy="-7" r="0.8" fill="#fff"/>` +
-    `<path d="M-13 -12 Q-8 -15 -3 -12 M3 -12 Q8 -15 13 -12" stroke="@corpsO" stroke-width="1.2" fill="none"/>`; // sourcils agressifs
+  if (view === 'profile') {
+    // PROFIL : gueule de CÔTÉ fendue vers l'avant (+x), UN œil, crête orientée — fini le
+    // « même pose que de face » (verdict des juges aveugles, lot 4).
+    const mawP = `<path d="M-2 2 Q${rx * 0.4} -2 ${rx - 2} 1 Q${rx} ${ry * 0.4} ${rx * 0.45} ${ry * 0.56} Q-1 ${ry * 0.52} -2 2 Z" fill="#2a0e0c"/>`;
+    const fangsP = `<path d="M${rx * 0.16} 1 l1.8 7.5 l2.6 -7 Z M${rx * 0.45} 0 l1.8 8.5 l2.6 -8 Z M${rx * 0.72} 0.5 l1.6 7 l2.4 -6.6 Z" fill="#efe6cf"/>`;
+    const eyeP = `<ellipse cx="${rx * 0.34}" cy="-10" rx="3.6" ry="4" fill="#f4ecd8"/><circle cx="${rx * 0.4}" cy="-9.4" r="1.8" fill="#1a0a06"/>` +
+      `<path d="M${rx * 0.12} -14.5 Q${rx * 0.36} -17 ${rx * 0.56} -13.5" stroke="@corpsO" stroke-width="1.2" fill="none"/>`;
+    return `<g>${feet}${ball}${crest}${mawP}${fangsP}${eyeP}</g>`;
+  }
+  // FACE : la gueule mange la MOITIÉ INFÉRIEURE du corps (un squig ≈ 80 % mâchoire — la fente
+  // étroite lisait « ballon à fente ») + yeux PETITS excentrés haut (fini les yeux googly).
+  const maw = `<path d="M${-rx + 5} 2 Q0 -3 ${rx - 5} 2 Q${rx - 7} ${ry * 0.6} 0 ${ry * 0.68} Q${-rx + 7} ${ry * 0.6} ${-rx + 5} 2 Z" fill="#2a0e0c"/>`;
+  const upperFangs = `<path d="M${-rx + 8} 2 l2 9 l3 -8.4 Z M-8 -0.5 l1.8 10 l2.8 -9.4 Z M0 -1 l1.6 10.5 l2.6 -10 Z M8 -0.5 l1.6 9.5 l2.6 -9 Z M${rx - 13} 1.5 l1.4 8 l2.4 -7.4 Z" fill="#efe6cf"/>`;
+  const eyes = `<ellipse cx="-12" cy="-13" rx="3.2" ry="3.6" fill="#f4ecd8"/><circle cx="-11.2" cy="-12.6" r="1.6" fill="#1a0a06"/>` +
+    `<ellipse cx="12" cy="-13" rx="3.2" ry="3.6" fill="#f4ecd8"/><circle cx="11.2" cy="-12.6" r="1.6" fill="#1a0a06"/>` +
+    `<path d="M-16 -17.5 Q-11.5 -20 -7.5 -16.5 M7.5 -16.5 Q11.5 -20 16 -17.5" stroke="@corpsO" stroke-width="1.3" fill="none"/>`; // sourcils enfoncés
   return `<g>${feet}${ball}${crest}${maw}${upperFangs}${eyes}</g>`;
 }
 function jaw(p: SquigProps, view: View): string {
   if (view === 'back') return '';
-  // mâchoire inférieure : lèvre + crocs pointant vers le HAUT (repère charnière coin gauche)
-  return `<g><path d="M0 0 Q16 1 33 0 Q34 9 17 12 Q4 12 0 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
-    `<path d="M4 0.5 l1.4 -5.6 l2 5 M11 0 l1.2 -6 l2 5.4 M18 0 l1.2 -6 l2 5.4 M25 0.5 l1.2 -5.4 l1.8 5 M31 1 l1 -4.8 l1.6 4.4" fill="#efe6cf"/></g>`;
+  const g = p.girth, rx = 23 * g;
+  if (view === 'profile') // mâchoire de profil : bec inférieur massif vers l'avant, crocs dressés
+    return `<g><path d="M2 0 Q${14 + rx * 0.3} 2 ${16 + rx * 0.7} 0 Q${17 + rx * 0.7} 10 ${10 + rx * 0.35} 13 Q3 12 2 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M${8 + rx * 0.1} 0.5 l1.6 -7 l2.6 6.4 M${12 + rx * 0.34} 0 l1.6 -8 l2.6 7.4 M${15 + rx * 0.55} 0 l1.4 -6.5 l2.4 6 Z" fill="#efe6cf"/></g>`;
+  // mâchoire inférieure FACE : bac massif qui ferme la demi-gueule, gros crocs dressés
+  const W = rx * 2 - 8;
+  return `<g><path d="M0 0 Q${W / 2} -3 ${W} 0 Q${W + 1} 12 ${W / 2} 16 Q-1 12 0 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+    `<path d="M${W * 0.12} 0 l1.8 -8 l2.8 7.4 M${W * 0.32} -1.4 l1.8 -8.6 l2.8 8 M${W * 0.52} -1.6 l1.8 -8.6 l2.8 8 M${W * 0.72} -1 l1.6 -8 l2.6 7.4 M${W * 0.88} 0 l1.4 -6.6 l2.2 6 Z" fill="#efe6cf"/>` +
+    `<path d="M${W * 0.2} 8 Q${W / 2} 12 ${W * 0.8} 8" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.6"/></g>`;
 }
 
 // --- poses (DELTA additif ; mâchoire s'ouvre en angle +) ------------------

@@ -33,21 +33,27 @@ function buildSkeleton(): Record<SerpentBoneId, SBone> {
 // --- art (repère LOCAL de l'os) -------------------------------------------
 function coil(p: SerpentProps): string {
   const g = p.girth;
+  // Boucles DÉCALÉES qui se chevauchent (croissants d'ombre = sens d'enroulement) + QUEUE qui
+  // émerge du lové — les ellipses concentriques empilées lisaient « pile de pneus / poterie »
+  // (verdict des juges aveugles, lot 4).
   return `<g>` +
-    `<ellipse cx="0" cy="26" rx="${(36 * g).toFixed(1)}" ry="15" fill="@corpsO"/>` +
-    `<ellipse cx="0" cy="18" rx="${(34 * g).toFixed(1)}" ry="14" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<ellipse cx="3" cy="8" rx="${(26 * g).toFixed(1)}" ry="11" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<ellipse cx="5" cy="-1" rx="${(17 * g).toFixed(1)}" ry="8" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<ellipse cx="0" cy="20" rx="${(24 * g).toFixed(1)}" ry="7" fill="@corpsH" opacity="0.38"/>` +
-    `<ellipse cx="3" cy="9" rx="${(16 * g).toFixed(1)}" ry="5" fill="@corpsH" opacity="0.32"/>` +
-    `<path d="M${-30 * g} 16 Q0 22 ${30 * g} 16 M${-22 * g} 6 Q0 11 ${24 * g} 6" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.5"/>` +
+    `<ellipse cx="0" cy="27" rx="${(36 * g).toFixed(1)}" ry="14" fill="@corpsO" opacity="0.9"/>` +
+    `<ellipse cx="-4" cy="18" rx="${(33 * g).toFixed(1)}" ry="13.5" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<path d="M${(20 * g).toFixed(1)} 22 Q${(34 * g).toFixed(1)} 24 ${(42 * g).toFixed(1)} 17 Q${(45 * g).toFixed(1)} 14 ${(42 * g).toFixed(1)} 12.5 Q${(36 * g).toFixed(1)} 16 ${(26 * g).toFixed(1)} 14 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // pointe de queue émergente
+    `<ellipse cx="${(7 * g).toFixed(1)}" cy="8" rx="${(25 * g).toFixed(1)}" ry="10.5" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<path d="M${(-16 * g).toFixed(1)} 12.5 Q7 18 ${(28 * g).toFixed(1)} 9.5 Q7 13.5 ${(-14 * g).toFixed(1)} 9 Z" fill="@corpsO" opacity="0.5"/>` + // croissant : la boucle médiane passe DEVANT
+    `<ellipse cx="-1" cy="-1" rx="${(16 * g).toFixed(1)}" ry="7.5" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<path d="M${(-12 * g).toFixed(1)} 2.5 Q2 6.5 ${(18 * g).toFixed(1)} 1 Q2 3 ${(-11 * g).toFixed(1)} -1 Z" fill="@corpsO" opacity="0.45"/>` +
+    `<ellipse cx="-7" cy="15" rx="${(19 * g).toFixed(1)}" ry="5.2" fill="@corpsH" opacity="0.3"/>` +
+    `<ellipse cx="${(9 * g).toFixed(1)}" cy="5.5" rx="${(13 * g).toFixed(1)}" ry="3.8" fill="@corpsH" opacity="0.28"/>` +
     `</g>`;
 }
 function neck(): string {
+  // cou FUSELÉ en S (large à la base, fin vers la tête) — le tube rigide lisait « périscope ».
   return `<g>` +
-    `<path d="M-6 5 Q-7 -20 -3 -40 L4 -40 Q7 -20 6 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<path d="M-3.5 3 Q-4.5 -20 -1 -38" stroke="@corpsH" stroke-width="1.2" fill="none" opacity="0.4"/>` +
-    `<path d="M-6 -4 Q0 -1 6 -4 M-6 -16 Q0 -13 6 -16 M-5 -28 Q0 -25 5 -28" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.5"/>` +
+    `<path d="M-7 5 Q-9 -10 -4 -22 Q-1 -31 -2.5 -40 L3 -40 Q6 -27 3.5 -17 Q2 -6 7 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<path d="M-4.5 2 Q-6 -12 -1.5 -24 Q1 -32 0 -38" stroke="@corpsH" stroke-width="1.1" fill="none" opacity="0.4"/>` +
+    `<path d="M-6.5 -3 Q-1 0 4.5 -3 M-5 -15 Q-1 -12 3.5 -15.5 M-3.5 -27 Q-0.5 -24.5 2.5 -28" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.5"/>` +
     `</g>`;
 }
 function headProfile(p: SerpentProps): string {

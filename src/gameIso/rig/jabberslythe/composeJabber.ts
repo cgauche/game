@@ -46,29 +46,48 @@ function body(p: JabberProps, view: View): string {
   if (view === 'back') return `<g>${legs}${ball}${warts}<path d="M0 ${-ry + 4} L0 ${ry - 2}" stroke="@corpsO" stroke-width="1" opacity="0.4"/></g>`;
   return `<g>${legs}${ball}${warts}</g>`;
 }
-function wing(far: boolean): string {
-  // aile de libellule : membrane translucide nervurée, dressée haut-arrière
-  const op = far ? 0.45 : 0.6;
-  return `<g opacity="${op}">` +
-    `<path d="M0 0 Q-10 -22 -8 -40 Q-5 -46 -1 -42 Q2 -26 3 -4 Z" fill="@corpsH" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M0 -2 Q-7 -22 -5 -40 M-6 -8 Q-3 -24 -2 -38" stroke="@corpsO" stroke-width="0.5" fill="none" opacity="0.7"/>` +
+function wing(far: boolean, view: View): string {
+  // aile de libellule COUCHÉE en diagonale vers l'arrière (les ex-pagaies dressées au sommet
+  // lisaient « oreilles de lapin », verdict des juges aveugles). Nervures longitudinales +
+  // croisées. De face/dos : écartées en éventail de part et d'autre (signe du miroir).
+  const op = far ? 0.45 : 0.62;
+  const sx = view === 'profile' ? -1 : far ? -1 : 1; // profil : les 2 vers l'arrière ; face : éventail
+  const tilt = view === 'profile' ? 0 : -10;
+  return `<g opacity="${op}" transform="scale(${sx},1) rotate(${tilt})">` +
+    `<path d="M0 0 Q16 -15 34 -19 Q40 -18 38 -12 Q24 -4 2 3 Z" fill="@corpsH" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M3 -1 Q20 -11 36 -16 M7 0 Q22 -7 34 -11" stroke="@corpsO" stroke-width="0.5" opacity="0.7" fill="none"/>` +
+    `<path d="M12 -5.5 l1.6 3.6 M20 -9 l1.6 3.6 M28 -12.5 l1.6 3.6" stroke="@corpsO" stroke-width="0.4" opacity="0.6"/>` +
     `</g>`;
 }
 function neck(): string {
-  return `<g><path d="M-5 4 Q-6 -14 -2 -28 L4 -28 Q6 -14 5 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
-    `<path d="M-4 -2 Q-3 -16 -1 -26 M3 -2 Q3 -16 2 -26" stroke="@corpsO" stroke-width="0.5" fill="none" opacity="0.5"/></g>`;
+  // cou SINUEUX en S (le trapèze rectiligne lisait « rectangle raide sans articulation »)
+  return `<g><path d="M-5 4 Q-8 -8 -2 -17 Q2 -23 -1 -28 L5 -28 Q8 -17 3 -9 Q0 -2 6 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+    `<path d="M-3 0 Q-5 -10 0 -18 Q3 -24 1 -27" stroke="@corpsO" stroke-width="0.5" fill="none" opacity="0.5"/></g>`;
 }
 function head(p: JabberProps, view: View): string {
   const antlers = p.antlers
     ? `<path d="M-5 -6 q-5 -8 -4 -16 q3 4 3 8 q2 -3 1 -7 M5 -6 q5 -8 4 -16 q-3 4 -3 8 q-2 -3 -1 -7" fill="none" stroke="@cuir" stroke-width="1.6" stroke-linecap="round"/>`
     : '';
   if (view === 'back') return `<g>${antlers}<ellipse cx="0" cy="0" rx="7" ry="7.5" fill="@corpsO"/></g>`;
-  // petite tête, ÉNORME yeux globuleux fous + large gueule + langue-fouet pendante
-  const eyes = `<circle cx="-4" cy="-2" r="3.6" fill="#f2e84a"/><circle cx="-3.4" cy="-1.4" r="1.7" fill="#0a0603"/><circle cx="-2.8" cy="-2.6" r="0.6" fill="#fff"/>` +
-    `<circle cx="4" cy="-2" r="3.6" fill="#f2e84a"/><circle cx="4.6" cy="-1.4" r="1.7" fill="#0a0603"/><circle cx="5.2" cy="-2.6" r="0.6" fill="#fff"/>`;
-  const tongue = `<path d="M0 6 Q-2 ${6 + 10 * p.tongue} 3 ${8 + 16 * p.tongue} Q6 ${10 + 18 * p.tongue} 4 ${12 + 20 * p.tongue}" fill="none" stroke="#c0303a" stroke-width="2.2" stroke-linecap="round"/>`;
+  // langue-fouet ANCRÉE à la gueule, qui pend EN AVANT du corps (+x) — fini le ruban qui
+  // traversait le ventre. Regard fou mais MÉCHANT : pupille fendue + paupière lourde.
+  if (view === 'profile') {
+    const tongueP = `<path d="M9 5 Q${12 + 9 * p.tongue} ${9 + 7 * p.tongue} ${8 + 11 * p.tongue} ${12 + 13 * p.tongue} Q${5 + 11 * p.tongue} ${15 + 14 * p.tongue} ${7 + 12 * p.tongue} ${16 + 15 * p.tongue}" fill="none" stroke="#c0303a" stroke-width="2.2" stroke-linecap="round"/>`;
+    return `<g>${antlers}<ellipse cx="1" cy="2" rx="8.5" ry="7" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M3 3 Q9 1.5 11.5 4 Q9 8.5 3 8.5 Q1 6 3 3 Z" fill="#1a0e08"/>` +
+      `<path d="M5 3.4 l0.8 2.4 l1.2 -2.2 M8 3.2 l0.7 2 l1 -1.8" stroke="#efe6cf" stroke-width="0.7"/>` + // crocs
+      tongueP +
+      `<ellipse cx="2.5" cy="-2.5" rx="3" ry="3.2" fill="#f2e84a"/><ellipse cx="3" cy="-2.2" rx="0.8" ry="2.4" fill="#0a0603"/>` +
+      `<path d="M-0.5 -5.4 Q2.5 -7 5.5 -5" stroke="@corpsO" stroke-width="1.1" fill="none"/></g>`;
+  }
+  const eyes = `<ellipse cx="-4" cy="-2" rx="3.3" ry="3.5" fill="#f2e84a"/><ellipse cx="-4" cy="-1.8" rx="0.9" ry="2.6" fill="#0a0603"/>` +
+    `<ellipse cx="4" cy="-2" rx="3.3" ry="3.5" fill="#f2e84a"/><ellipse cx="4" cy="-1.8" rx="0.9" ry="2.6" fill="#0a0603"/>` +
+    `<path d="M-7 -4.8 Q-4 -6.6 -1 -4.6 M1 -4.6 Q4 -6.6 7 -4.8" stroke="@corpsO" stroke-width="1.1" fill="none"/>`; // paupières lourdes
+  const tongue = `<path d="M0 8 Q${4 + 7 * p.tongue} ${10 + 9 * p.tongue} ${2 + 9 * p.tongue} ${12 + 14 * p.tongue} Q${9 * p.tongue - 2} ${15 + 15 * p.tongue} ${9 * p.tongue + 1} ${17 + 16 * p.tongue}" fill="none" stroke="#c0303a" stroke-width="2.2" stroke-linecap="round"/>`;
   return `<g>${antlers}<ellipse cx="0" cy="2" rx="8" ry="7" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
-    `<path d="M-6 5 Q0 8 6 5 Q4 9 0 9 Q-4 9 -6 5 Z" fill="#1a0e08"/>${tongue}${eyes}</g>`;
+    `<path d="M-7 4 Q0 7.5 7 4 Q5.5 10.5 0 10.8 Q-5.5 10.5 -7 4 Z" fill="#1a0e08"/>` +
+    `<path d="M-4.6 5.4 l0.8 2.6 l1.2 -2.2 M0 6.2 l0.8 2.6 l1.2 -2.2 M4 5.6 l0.7 2.2 l1 -2" stroke="#efe6cf" stroke-width="0.7"/>` + // crocs
+    `${tongue}${eyes}</g>`;
 }
 
 // --- poses (DELTA additif) ------------------------------------------------
@@ -101,7 +120,7 @@ export function resolveJabberFromProps(
   const sk = buildSkeleton();
   const world = worldTransformsG(sk, pose) as Record<JabberBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
-  const art: Record<JabberBoneId, string> = { corps: body(p, view), aileG: wing(true), aileD: wing(false), cou: neck(), tete: head(p, view) };
+  const art: Record<JabberBoneId, string> = { corps: body(p, view), aileG: wing(true, view), aileD: wing(false, view), cou: neck(), tete: head(p, view) };
   return (Object.keys(sk) as JabberBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
