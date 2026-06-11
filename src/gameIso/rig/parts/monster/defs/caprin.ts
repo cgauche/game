@@ -12,9 +12,9 @@ export const part: MonsterPartDef = {
   <path d="M9 -1 L13 -7 Q12 0 7 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-7 1 Q-8 -8 0 -9 Q8 -8 7 1 Q6 8 4 11 L2 17 Q0 19 -2 17 L-4 11 Q-6 8 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-4 11 Q0 12 4 11 L3 16 Q0 18 -3 16 Z" fill="@peauO" opacity="0.4"/>
-  <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
-  <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
+  <path d="M-1.5 13.2 q-0.45 1 0 1.9 M1.5 13.2 q0.45 1 0 1.9" stroke="#160a04" stroke-width="0.85" fill="none" stroke-linecap="round"/>
+  <path d="M-2.5 16.4 Q0 17.8 2.5 16.4" stroke="#160a04" stroke-width="0.7" fill="none"/>
+  <path d="M-2.4 16.5 l0.3 -1.7 l1 1.3 z M2.4 16.5 l-0.3 -1.7 l-1 1.3 z" fill="#efe6cf"/>
   ${goatEye(-3.2, 4, 1.6, 1.5)}${goatEye(3.2, 4, 1.6, 1.5)}
 </g>`,
     back: `<g>

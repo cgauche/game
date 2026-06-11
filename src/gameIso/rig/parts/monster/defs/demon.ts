@@ -24,10 +24,9 @@ export const part: MonsterPartDef = {
     profile: `<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
-  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
-  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
-  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M3.6 8.6 Q7.6 10.2 11.4 7.6 L11.8 5.8 Q8 8 4 7.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.4"/>
+  <path d="M5 7.8 l0.4 2.8 l1.3 -1 z M8.2 7.6 l0.4 2.3 l1.2 -1 z" fill="#efe6cf"/>
+  <path d="M10.6 7.4 l0.4 -2.4 l1.1 1.5 z" fill="#efe6cf"/>
   ${emberEye(3, 3, 1.6)}
 </g>`,
   },

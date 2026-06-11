@@ -1,4 +1,5 @@
 import type { CreatureDef } from '../types';
+import { lateralPair } from '../../parts/parallax';
 
 // Démonette de Slaanesh — calée sur l'ILLUSTRATION LDB p.337 : peau LILAS pâle, crête
 // indigo sombre, CORSET noir-indigo liseré d'or + jupe à pans ornés + brassard (sa tenue,
@@ -31,7 +32,11 @@ export const creature: CreatureDef = {
     parts: { cheveux: 4 }, // crinière épaisse qui épouse le crâne (épinglée, pas au seed)
     colors: { peau: '#cfc4dc', cheveux: '#232a4e' }, // lilas pâle + crête indigo (illustration)
     features: [
-      { bone: 'tete', svg: `<path d="M5 4 Q11.5 -1 12.4 -10.5 Q12.8 -16 9.8 -18.5 Q11.4 -13.5 10 -8.5 Q8 -2 2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/><path d="M-5 4 Q-11.5 -1 -12.4 -10.5 Q-12.8 -16 -9.8 -18.5 Q-11.4 -13.5 -10 -8.5 Q-8 -2 -2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/>`, layer: -2 },
+      // cornes par-VUE : paire de face/dos ; de PROFIL une seule corne balayée en arrière
+      // + exemplaire lointain (lateralPair) — l'art de face plaqué donnait deux anses.
+      { bone: 'tete', svg: `<path d="M5 4 Q11.5 -1 12.4 -10.5 Q12.8 -16 9.8 -18.5 Q11.4 -13.5 10 -8.5 Q8 -2 2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/><path d="M-5 4 Q-11.5 -1 -12.4 -10.5 Q-12.8 -16 -9.8 -18.5 Q-11.4 -13.5 -10 -8.5 Q-8 -2 -2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/>`, layer: -2, view: 'front' },
+      { bone: 'tete', svg: `<path d="M5 4 Q11.5 -1 12.4 -10.5 Q12.8 -16 9.8 -18.5 Q11.4 -13.5 10 -8.5 Q8 -2 2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/><path d="M-5 4 Q-11.5 -1 -12.4 -10.5 Q-12.8 -16 -9.8 -18.5 Q-11.4 -13.5 -10 -8.5 Q-8 -2 -2.6 2.4 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/>`, layer: -2, view: 'back' },
+      { bone: 'tete', svg: lateralPair(`<path d="M4 1 Q-2 -4 -6.5 -10 Q-9.5 -14.5 -8 -19 Q-8.2 -14 -4.8 -9 Q-1.2 -3.8 5 -0.8 Z" fill="#3a2a3a" stroke="#1c1220" stroke-width="0.5"/>`, { dx: 4 }), layer: -2, view: 'profile' },
       { bone: 'tete', svg: `<path d="M-1.8 11.3 Q0 10.4 1.8 11.3 Q0 13.2 -1.8 11.3 Z" fill="#7c2040" stroke="#4a1226" stroke-width="0.3"/>`, layer: 50, view: 'front' },
       { bone: 'torse', svg: OV_CORSET, scale: 'bone', layer: 60 },
       { bone: 'torse', svg: OV_JUPE_PANS, scale: 'bone', layer: 60 },
