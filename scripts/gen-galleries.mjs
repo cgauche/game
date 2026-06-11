@@ -9,6 +9,7 @@ const STEPS = [
   ['Bestiaire — rendu en jeu (rig)', 'npx tsx scripts/gen-bestiary-gallery.mts'],
   ['Tenues de carrière', 'npx tsx scripts/gen-tenue-gallery.mts'],
   ['Rig — espèces × équipement', 'npx tsx scripts/gen-rig-gallery.mts'],
+  ['Mutations physiques (LDB 19)', 'npx tsx scripts/gen-mutations-gallery.mts'],
   ['Armes', 'npx tsx scripts/gen-weapon-gallery.mts'],
   ['Animations par arme (animé)', 'npx tsx scripts/gen-anim-gallery.mts'],
   ['Animations — clips & sorts (animé)', 'npx tsx scripts/gen-clip-anim-gallery.mts'],
