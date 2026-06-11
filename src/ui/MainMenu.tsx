@@ -20,6 +20,9 @@ export function MainMenu() {
           <button className="btn" onClick={() => setLoadOpen(true)} title={hasSaves ? 'Reprendre une partie sauvegardée' : 'Aucun emplacement rempli — un fichier exporté reste importable'}>
             📂 Charger une partie
           </button>
+          <button className="btn" onClick={() => setScreen('coop')}>
+            🌐 Jouer en ligne
+          </button>
           <button className="btn" onClick={() => setScreen('editor')}>
             Éditeur de niveau
           </button>

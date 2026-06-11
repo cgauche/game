@@ -11,6 +11,7 @@ const CampaignView = lazy(() => import('./CampaignView').then((m) => ({ default:
 const Editor = lazy(() => import('./editor/Editor').then((m) => ({ default: m.Editor })));
 const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) => ({ default: m.TestScenariosScreen })));
 const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
+const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
 
 export function App() {
   const screen = useGame((s) => s.screen);
@@ -24,6 +25,7 @@ export function App() {
         {screen === 'editor' && <Editor />}
         {screen === 'test' && <TestScenariosScreen />}
         {screen === 'interlude' && <InterludeScreen />}
+        {screen === 'coop' && <CoopLobby />}
       </Suspense>
     </div>
   );

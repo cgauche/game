@@ -1187,6 +1187,62 @@ body {
   flex: 1;
 }
 
+/* ── Lobby coop (Jalon 7) ── */
+.coop-lobby .coop-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+.coop-roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+.coop-role textarea,
+.coop-invite textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 11px;
+  resize: vertical;
+}
+.coop-invite {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.coop-invite textarea {
+  align-self: stretch;
+}
+.coop-seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.coop-assign {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+.coop-assign-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+}
+.coop-assign-row span {
+  flex: 1;
+}
+.coop-error {
+  color: var(--gold);
+}
+
 /* Barre de temps des révélations GRAVES (auto-fermeture longue, arbitrage 2026-06-11) :
    se vide de gauche à droite sur la durée — un clic ferme avant. */
 .reveal-timer {

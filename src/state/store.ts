@@ -37,7 +37,9 @@ import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type Sav
  *  Le merge partiel de zustand préserve les actions du store. */
 function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
-  set({ ...base, ...(save.data as Partial<GameState>), screen: 'campaign' });
+  // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
+  // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
+  set({ ...base, ...(save.data as Partial<GameState>), screen: 'campaign', net: useGame.getState().net });
   bus.emit(EVT.SCENE_DIRTY);
 }
 import { ev, evLines, type CombatEvent } from './combatLog';
@@ -116,7 +118,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
@@ -916,11 +918,12 @@ export const useGame = create<GameState>((set, get) => ({
     // donc tout nouveau champ d'état ajouté à l'init (système futur) se réinitialise ici sans
     // qu'on ait à le câbler. `JSON` retire les fonctions (seules les données sont remises à
     // plat) ; `set()` (fusion superficielle) préserve les actions. On ne conserve QUE la
-    // navigation/vue (screen, caméra, zoom) et le groupe (posé par `setParty`).
-    const { screen, party, camRot, zoom, viewMode, inspectEnabled } = get();
+    // navigation/vue (screen, caméra, zoom), le groupe (posé par `setParty`) et la SESSION COOP
+    // (net : héberger une partie PUIS la lancer ne doit pas dissoudre le salon — Jalon 7).
+    const { screen, party, camRot, zoom, viewMode, inspectEnabled, net } = get();
     set({
       ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
-      screen, party, camRot, zoom, viewMode, inspectEnabled,
+      screen, party, camRot, zoom, viewMode, inspectEnabled, net,
       scene: migrateScene(JSON.parse(JSON.stringify(scene))), // dissout objet→prop + loot/search→interact au chargement
       mode: 'exploration',
       partyPos: pos,
