@@ -1,6 +1,6 @@
 import { RigPortrait } from './RigPortrait';
 import { hpColor } from '../gameIso/teamColors';
-import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
+import { StateChips } from './StateChips';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -29,16 +29,15 @@ export interface PortraitTileProps {
   /** Fond d'équipe derrière le portrait (vert allié / rouge ennemi). */
   team?: 'ally' | 'enemy';
   maxStates?: number;
+  /** Ne pas rendre les pastilles d'États ici (ex. ActiveFrame les pose À DROITE de la jauge). */
+  hideStates?: boolean;
   onClick?: () => void;
   title?: string;
 }
 
-export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = true, team, maxStates = 4, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = true, team, maxStates = 4, hideStates, onClick, title }: PortraitTileProps) {
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
-  const all = summarizeEffects(c.conditions, c.activeEffects, Infinity, combatantFlags(c)).visible;
-  const shown = all.slice(0, maxStates);
-  const more = all.slice(maxStates);
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
   const s = active ? Math.round(size * 1.28) : size;
   return (
@@ -62,18 +61,7 @@ export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = t
           </span>
         )}
       </button>
-      {(shown.length > 0 || more.length > 0) && (
-        <span className="ptile-states">
-          {shown.map((v) => (
-            <span key={v.key} className="pt-state" title={v.count && v.count > 1 ? `${v.label} ×${v.count}` : v.label}>
-              {v.icon}
-            </span>
-          ))}
-          {more.length > 0 && (
-            <span className="pt-state ptile-more" title={more.map((m) => m.label).join(' · ')}>▾</span>
-          )}
-        </span>
-      )}
+      {!hideStates && <StateChips c={c} max={maxStates} />}
     </div>
   );
 }
