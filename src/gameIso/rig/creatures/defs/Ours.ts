@@ -4,5 +4,5 @@ export const creature: CreatureDef = {
   name: "Ours",
   plan: 'quadruped',
   aliases: ["ourse","ursin"],
-  quad: {"sl":1.05,"build":"ursine","girth":1.42,"bodyLen":0.98,"neckLen":0.42,"neckAngle":-16,"legLen":0.8,"head":"ours","tail":"courte","ears":"rondes","foot":"patte","stored":{"corps":"#4a3a2c","corpsO":"#2c2118","corpsH":"#66513c","cheveux":"#2c2118","cheveuxO":"#1a130d","cuir":"#15100a"}},
+  quad: {"sl":1.05,"build":"ursine","girth":1.18,"bodyLen":0.88,"neckLen":0.46,"neckAngle":-12,"legLen":0.78,"head":"ours","tail":"courte","ears":"rondes","foot":"patte","mane":"hirsute","headScale":1.16,"stored":{"corps":"#5a4129","corpsO":"#332315","corpsH":"#7e5e3e","cheveux":"#3f2c1a","cheveuxO":"#261a0e","cuir":"#15100a"}},
 };

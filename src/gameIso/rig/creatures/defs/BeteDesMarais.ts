@@ -7,8 +7,12 @@ export const creature: CreatureDef = {
   name: 'Bête des marais',
   plan: 'amorphous',
   aliases: ['bete des marais', 'fenbeast', 'golem de boue', 'limon'],
+  // LDB 79 l.26-31 : « constitués de boue, d'os, de branches et de mucus », Taille (Grande) —
+  // boue de tourbe BRUNE (pas vert crapaud), contour presque noir (silhouette), reflets de mucus
+  // verdâtre. girth 0.9 : masse plus HAUTE que large (« vaguement humanoïdes ») et qui ne recouvre
+  // plus les moignons de bras (pointe ±28px, non scalée) → deux bras pendants lisibles, ancrés.
   hulk: {
-    sl: 1.1, girth: 1.0,
-    stored: { corps: '#5a5236', corpsO: '#362f1e', corpsH: '#7c7150', cheveux: '#2a2416', cheveuxO: '#181206', cuir: '#3a3320' },
+    sl: 1.1, girth: 0.9,
+    stored: { corps: '#473828', corpsO: '#1a120a', corpsH: '#74804a', cheveux: '#2a2416', cheveuxO: '#181206', cuir: '#3a2e1c' },
   },
 };

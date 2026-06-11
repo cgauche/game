@@ -6,7 +6,8 @@ export const creature: CreatureDef = {
   plan: 'avian',
   aliases: ['pigeon', 'oiseau', 'corbeau', 'colombe', 'moineau', 'corneille'],
   bird: {
-    sl: 0.62, girth: 1.0,
-    stored: { corps: '#7c8a99', corpsO: '#4e5a66', corpsH: '#c2ccd4', cheveux: '#3a444e', cheveuxO: '#222a30', cuir: '#d06a26' },
+    sl: 0.62, girth: 1.15, // jabot plein du pigeon biset
+    // Plumage gris-bleu, reflet irisé vert au cou (corpsH), pattes/bec rouge-rosé (cuir)
+    stored: { corps: '#7e8da1', corpsO: '#46505e', corpsH: '#9dc7b8', cheveux: '#3a444e', cheveuxO: '#222a30', cuir: '#c2545e' },
   },
 };

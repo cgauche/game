@@ -1137,8 +1137,22 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   **`headScale`** / **`tailLen`** (enveloppes d'échelle, 3 vues) ; **yeux des têtes quad ANCRÉS**
   (`data-eye`/`data-ec`, même convention que les visages bipèdes) — le branchement du catalogue
   d'yeux passe au lot 4. Marqueurs `data-*` testés (10 tests lot 2+3).
-- **Lot 4 — passe par créature** vs description canon + QC à l'aveugle (runbook
-  `docs/qc-reconnaissabilite-sprites.md`), gros monstres puis exotiques (squig/amorphe/jabber).
+- ✅ **Lot 4 — passe par créature (workflow ultracode, 70 agents)** *(2026-06-11)* : les
+  **28 defs rigués** audités contre le canon FR (LDB 78/79/82/84 cités ligne à ligne) et
+  retouchés (props lots 1-3 + palettes), puis **jugés À L'AVEUGLE** (le juge ne voit que les
+  PNG) avec repêchage critique → **21/28 reconnues et approuvées** (dont 2 sur match laxiste :
+  Manticore lue « pégase du Chaos », Sangsue lue « serpent géant »). Transformations majeures :
+  Basilic sanglier→grand lézard, Varghulf chien→chauve-souris, Chien lévrier→molosse,
+  Whiptongue→esthétique slaaneshi canon (LDB 84 l.49-53), Pieuvre violette→camouflage marais
+  canon. Outil pérenne `scripts/qc/render-creature.mts` (rendu PNG par créature + --list).
+- **Lot 5 — reliquat STRUCTUREL (art des plans, remonté par les juges aveugles)** :
+  (a) les plans exotiques (spectral/amorphous/jabberslythe/squig/cephalopod/arachnid) n'ont
+  **pas de vraie vue profil** (face = profil pixel-identique) — le défaut n°1 unanime ;
+  (b) pieds quad « bottes/godets » (art `patte`/`serre` à refaire : doigts griffus ancrés) ;
+  (c) cohérence face↔profil des têtes (basilic/manticore/loup lisent une autre bête de face) ;
+  (d) ailes repliées de FACE lisent « oreilles d'âne » ; (e) cous/anneaux serpentins rigides
+  (« pile de pneus » serpent/sangsue, tubes parallèles hydre) ; (f) visages « emoji-jouet »
+  des exotiques (yeux googly squig/jabber/spectraux) ; (g) éthérés : aucune transparence.
 
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 

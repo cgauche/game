@@ -9,8 +9,13 @@ export const creature: CreatureDef = {
   plan: 'quadruped',
   aliases: ['basilisk', 'lezard geant', 'lézard géant'],
   quad: {
-    sl: 1.1, build: 'draconic', girth: 1.06, bodyLen: 1.26, neckLen: 0.66, neckAngle: -18,
-    legLen: 0.6, head: 'dragon', tail: 'reptile', ears: 'pointues', foot: 'patte',
-    stored: { corps: '#6f7a30', corpsO: '#454c1c', corpsH: '#9aa552', cheveux: '#3a3e16', cheveuxO: '#23260e', cuir: '#c2a838' },
+    // Canon LDB 79 (l.15-16) : « créatures reptiliennes » solitaires, venimeuses, au regard
+    // pétrifiant, avec Attaque caudale +8 (l.22) → silhouette de GRAND LÉZARD bas sur pattes :
+    // corps allongé, membres courts, tête portée en avant, queue massive (tailLen). Le plan
+    // quadruped ne rend que 4 des 8 pattes canon — la lisibilité « reptile » prime.
+    sl: 1.1, build: 'draconic', girth: 1.0, bodyLen: 1.42, neckLen: 0.52, neckAngle: -6,
+    legLen: 0.42, head: 'dragon', headScale: 1.12, tail: 'reptile', tailLen: 1.55,
+    ears: 'courtes', foot: 'patte', ridge: 'epines',
+    stored: { corps: '#7a8430', corpsO: '#454c1c', corpsH: '#a8b452', cheveux: '#3a3e16', cheveuxO: '#23260e', cuir: '#6b6e28' },
   },
 };

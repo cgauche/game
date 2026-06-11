@@ -4,5 +4,7 @@ export const creature: CreatureDef = {
   name: "Chien",
   plan: 'quadruped',
   aliases: ["matin","dogue","mastiff","limier","molosse"],
-  quad: {"sl":0.72,"build":"canine","girth":0.86,"bodyLen":0.84,"neckLen":0.5,"neckAngle":-14,"legLen":0.72,"head":"loup","tail":"touffe","ears":"pointues","foot":"patte","markings":"taches","stored":{"corps":"#7d6047","corpsO":"#523c29","corpsH":"#9a7a58","cheveux":"#3a2a1a","cheveuxO":"#241a10","cuir":"#1e1813"}},
+  // Molosse de guerre (LDB 78 l.29-32 : « élevées pour la guerre ou les combats de chiens ») :
+  // trapu, poitrail massif, cou court, grosse tête, oreilles courtes, queue fouet, robe fauve unie.
+  quad: {"sl":0.72,"build":"canine","girth":1.05,"bodyLen":0.86,"neckLen":0.46,"neckAngle":-8,"legLen":0.6,"head":"loup","headScale":1.32,"tail":"fouet","tailLen":0.9,"ears":"courtes","foot":"patte","mane":"sans","markings":"sans","stored":{"corps":"#8b6b44","corpsO":"#46311d","corpsH":"#a98a5e","cheveux":"#33261a","cheveuxO":"#1f1710","cuir":"#191410"}},
 };

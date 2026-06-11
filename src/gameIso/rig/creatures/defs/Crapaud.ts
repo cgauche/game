@@ -8,8 +8,9 @@ export const creature: CreatureDef = {
   plan: 'quadruped',
   aliases: ['crapaud geant', 'crapaud géant', 'batracien', 'toad'],
   quad: {
-    sl: 0.98, build: 'batracien', girth: 1.5, bodyLen: 1.0, neckLen: 0.22, neckAngle: -6,
-    legLen: 0.5, head: 'crapaud', tail: 'sans', ears: 'rondes', foot: 'patte',
-    stored: { corps: '#6a6a3a', corpsO: '#42421f', corpsH: '#8c8c54', cheveux: '#3a3a20', cheveuxO: '#23230f', cuir: '#2a2418' },
+    sl: 0.98, build: 'batracien', girth: 1.5, bodyLen: 0.95, neckLen: 0.06, neckAngle: 4,
+    legLen: 0.45, head: 'crapaud', tail: 'sans', ears: 'rondes', foot: 'patte',
+    headScale: 1.25, markings: 'taches',
+    stored: { corps: '#6e7b3e', corpsO: '#3c431c', corpsH: '#9aa85f', cheveux: '#3a3a20', cheveuxO: '#23230f', cuir: '#4a5226', cuirO: '#2c3214' },
   },
 };

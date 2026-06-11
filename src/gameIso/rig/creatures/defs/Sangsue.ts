@@ -6,7 +6,9 @@ export const creature: CreatureDef = {
   plan: 'serpentine',
   aliases: ['sangsue', 'ver geant', 'asticot'],
   serpent: {
-    sl: 0.92, girth: 1.18, hood: false,
-    stored: { corps: '#6a3a3a', corpsO: '#421f1f', corpsH: '#8a5050', cheveux: '#2a1414', cheveuxO: '#160a0a', cuir: '#7a5a2a' },
+    // Ver gorgé de sang : masse trapue (girth ↑), robe brun-noir humide, anneaux très contrastés
+    // (les stries @corpsO du gabarit lisent comme des annulations), reflet rougeâtre luisant.
+    sl: 0.92, girth: 1.35, hood: false,
+    stored: { corps: '#5c2a24', corpsO: '#260c08', corpsH: '#a8503c', cheveux: '#260c08', cheveuxO: '#140503', cuir: '#6a3a2a' },
   },
 };

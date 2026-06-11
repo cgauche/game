@@ -7,7 +7,11 @@ export const creature: CreatureDef = {
   plan: 'squig',
   aliases: ['squig'],
   squig: {
-    sl: 0.85, girth: 1.0,
-    stored: { corps: '#a82828', corpsO: '#6e1616', corpsH: '#d85a4a', cheveux: '#5a1010', cheveuxO: '#3a0a0a', cuir: '#2a2018' },
+    // LDB 79 l.138 : « de forme ronde … gueule béante et de grandes dents pointues » —
+    // girth resserré (la gueule/crocs sont de taille fixe → boule plus petite = gueule qui DOMINE,
+    // crocs plus grands en proportion) ; rouge sang mat (highlight discret, fini l'effet jouet),
+    // contour/épines/sourcils presque noirs (méchant), pattes en corne sombre (plus « moignon brun »).
+    sl: 0.85, girth: 0.82,
+    stored: { corps: '#a8200f', corpsO: '#3c0a04', corpsH: '#c44526', cheveux: '#5a1010', cheveuxO: '#3a0a0a', cuir: '#241910' },
   },
 };
