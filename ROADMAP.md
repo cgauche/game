@@ -1070,7 +1070,16 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   **par le bus** (`audio/wiring.ts` : `DICE_ROLL`→dés aux 4 boutons Lancer, `ANIM_IMPACT`→critique/sort/
   tranche/contondant/parade selon contexte, `ANIM_MOVE`→pas espacés, `BATTLE_OVER`→gong) ; contrôles
   dans le menu ☰ (`AudioControls`). Recette navigateur : slider+mute visibles, persistance OK, 0 erreur
-  console. **Reste** : musique/ambiances de fond (non couvertes par ces packs SFX).
+  console.
+- ✅ **Musique de fond** *(2026-06-11)* : 4 pistes **RandomMind CC0** (OpenGameArt — exploration,
+  ville, taverne, combat ; ~17 Mo) = defs du MÊME registre (`music.contexts`). **La scène a la
+  main** (éditeur, onglet Scène : Automatique / Aucune / piste précise — `Scene.music
+  {ambient, combat}`, validé par `validateScene`) ; repli **contexte automatique** (`audio/music.ts`
+  pur testé : menu / exploration / intérieur via `isIndoor` / combat ; éditeur = silence). Canal
+  dédié (`engine.ts`) : boucle, **fondu enchaîné**, volume musique séparé persistant, déverrouillage
+  autoplay au premier geste. Recette navigateur : contexte menu→combat bascule la piste, scène
+  imposant `musique-taverne` bascule en direct, variante aléatoire constatée (exploration/ville),
+  2 sliders dans le menu ☰, 0 erreur console. Ajouter une piste = 1 `.mp3` + 1 def.
 - ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
   (build:data → typecheck → **ESLint** → tests → build — le lint y est depuis `ci.yml` ; base 0 erreur).
 - ✅ **Accessibilité des modales** *(2026-06-11)* : cadre `Modal` partagé = `role=dialog`/`aria-modal`,
