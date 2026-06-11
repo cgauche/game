@@ -290,6 +290,11 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
         get().startInterlude(e.weeks ?? 1);
         break;
+      case 'openWorldMap':
+        // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
+        // (no-op sans carte ou en combat).
+        get().openWorldMap();
+        break;
       case 'rest':
         // Repos déclenché par l'éditeur (trigger/dialogue) : `days` journée(s) (défaut 1). Même flux que
         // l'action « Dormir » — récup Exténué/Blessures + convalescence + cauchemars (no-op en combat).

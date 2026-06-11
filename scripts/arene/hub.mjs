@@ -169,8 +169,17 @@ const dlgGarde = {
       speaker: 'Garde du Bourg',
       text: 'L’arène est au sud, derrière la porte. La route de l’est mène à la Futaie, à la Tourbière et à Felsbach — si tu tiens à tes jambes, voyage de jour et le ventre plein.',
       choices: [
-        { text: '« Rien à signaler ? »', effects: [{ type: 'journal', text: 'Le garde hausse les épaules : « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. »' }, { type: 'endDialogue' }] },
+        { text: '« Rien à signaler ? »', next: 'signalements' },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+      ],
+    },
+    {
+      id: 'signalements',
+      speaker: 'Garde du Bourg',
+      text: 'Il hausse les épaules. « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. Si tu veux mon avis : reste du bon côté de la palissade. »',
+      choices: [
+        { text: '« Merci du conseil. »', effects: [{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }] },
+        { text: '↩ Autre chose.', next: 'accueil' },
       ],
     },
   ],
@@ -185,8 +194,17 @@ const dlgRumeurs = {
       speaker: 'Villageoise',
       text: 'Vous êtes les nouveaux gladiateurs ? On parie sur vous au lavoir. Enfin… certains.',
       choices: [
-        { text: '« Qu’est-ce qui se raconte ? »', effects: [{ type: 'journal', text: 'Rumeur du lavoir : le Maître d’arène garde un vieux coffre dont il a perdu la clef — et le prêtre de la chapelle bénit ceux qui partent au combat.' }, { type: 'endDialogue' }] },
+        { text: '« Qu’est-ce qui se raconte ? »', next: 'lavoir' },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+      ],
+    },
+    {
+      id: 'lavoir',
+      speaker: 'Villageoise',
+      text: 'Elle baisse la voix. « Le Maître garde un vieux coffre dont il a perdu la clef — il dit que c’est sans valeur, mais il dort dessus. Et passez voir Frère Anselm à la chapelle : il bénit ceux qui descendent sur le sable. »',
+      choices: [
+        { text: '« Intéressant… »', effects: [{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }] },
+        { text: '↩ Autre chose.', next: 'accueil' },
       ],
     },
   ],
@@ -302,7 +320,18 @@ export function makeHub() {
       P(17, 18, 'panneau', { label: '« L’ARÈNE — treize portes, une gloire »' }),
     ],
     dialogues: [dlgHub, dlgMedecin, dlgForgeron, dlgGarde, dlgRumeurs],
-    triggers: [],
+    triggers: [
+      // Porte EST (la route) : franchir la porte ouvre la carte du monde — la sortie du Bourg
+      // EST le voyage (#T2). Posé sur les tuiles de porte (x31), pas sur l'entryPoint `route`
+      // (30,10) → pas de réouverture intempestive au retour de voyage.
+      { id: 'porte-route', rect: { x: 31, y: 10, w: 1, h: 2 }, effects: [{ type: 'openWorldMap' }] },
+      // Porte SUD (l'arène) : on n'y entre que sur ordre du Maître — rappel in-world.
+      {
+        id: 'porte-arene-rappel',
+        rect: { x: 15, y: 21, w: 2, h: 1 },
+        effects: [{ type: 'journal', text: 'Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale).' }],
+      },
+    ],
     encounters: [],
     entryPoints: { 'porte-arene': { x: 15, y: 20 }, route: { x: 30, y: 10 }, entree: { x: 16, y: 12 } },
     flags: {},
@@ -358,15 +387,27 @@ const dlgTaverne = {
       speaker: 'Tavernière',
       text: 'On entend de tout ici, surtout après la troisième pinte…',
       choices: [
-        {
-          text: '« Et l’arène ? »',
-          effects: [{ type: 'journal', text: 'Rumeur du Trophée : personne n’a jamais passé la treizième porte. Le Maître nourrit QUELQUE CHOSE là-dessous.' }, { type: 'endDialogue' }],
-        },
-        {
-          text: '« Et les routes ? »',
-          effects: [{ type: 'journal', text: 'Rumeur du Trophée : la diligence de Felsbach n’est jamais arrivée. Les charognards de la Futaie portent des cottes de voyageurs.' }, { type: 'endDialogue' }],
-        },
+        { text: '« Et l’arène ? »', next: 'rumeur-arene' },
+        { text: '« Et les routes ? »', next: 'rumeur-routes' },
         { text: '↩ Revenir.', next: 'accueil' },
+      ],
+    },
+    {
+      id: 'rumeur-arene',
+      speaker: 'Tavernière',
+      text: 'Elle essuie une chope, l’œil en coin. « Personne n’a jamais passé la treizième porte. Et entre nous : le Maître fait descendre des carcasses ENTIÈRES là-dessous. On ne nourrit pas un trophée. »',
+      choices: [
+        { text: '« Bon à savoir. »', effects: [{ type: 'journal', text: 'Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous.' }, { type: 'endDialogue' }] },
+        { text: '↩ Une autre rumeur.', next: 'rumeurs' },
+      ],
+    },
+    {
+      id: 'rumeur-routes',
+      speaker: 'Tavernière',
+      text: '« La diligence de Felsbach n’est jamais arrivée le mois dernier. Et les charognards qu’on croise en lisière de la Futaie… portent des cottes de voyageurs. Prenez des rations, et voyagez armés. »',
+      choices: [
+        { text: '« Merci du tuyau. »', effects: [{ type: 'journal', text: 'Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois.' }, { type: 'endDialogue' }] },
+        { text: '↩ Une autre rumeur.', next: 'rumeurs' },
       ],
     },
   ],

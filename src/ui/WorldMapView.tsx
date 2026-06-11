@@ -59,7 +59,8 @@ function CompassRose({ x, y }: { x: number; y: number }) {
  * voyage depuis le lieu courant (mode, classe, allure — RAW section « Voyage » du LDB) et reprise
  * d'un voyage interrompu par une péripétie. Mobile-first : panneau en bas, carte au-dessus.
  */
-export function WorldMapView() {
+/** `hereSceneId`/`initialRouteId` : seams de test (rendu statique : le store SSR sert l'état initial). */
+export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?: string; hereSceneId?: string } = {}) {
   const map = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
@@ -68,19 +69,23 @@ export function WorldMapView() {
   const close = useGame((s) => s.closeWorldMap);
   const startTravel = useGame((s) => s.startTravel);
   const resumeTravel = useGame((s) => s.resumeTravel);
-  const [selId, setSelId] = useState<string | null>(null);
+  const [selId, setSelId] = useState<string | null>(initialRouteId ?? null);
   const [mode, setMode] = useState<TravelMode>('pied');
   const [classKey, setClassKey] = useState('');
   const [forced, setForced] = useState(false);
+  /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
+  const [farId, setFarId] = useState<string | null>(null);
 
-  const here = placeOfScene(map, scene?.id);
+  const here = placeOfScene(map, hereSceneId ?? scene?.id);
   const routes = useMemo(() => (map && here ? routesFrom(map, here.id) : []), [map, here]);
   if (!map) return null;
   const selRoute: MapRoute | null = routes.find((r) => r.id === selId) ?? null;
   const dest: MapPlace | undefined = selRoute && here ? placeById(map, otherEnd(selRoute, here.id)) : undefined;
+  const farPlace: MapPlace | undefined = farId ? placeById(map, farId) : undefined;
 
   const selectRoute = (r: MapRoute) => {
     setSelId(r.id);
+    setFarId(null);
     const m = r.modes[0] ?? 'pied';
     setMode(m);
     setClassKey(m !== 'pied' ? TRANSPORTS[m].classes[0].key : '');
@@ -162,17 +167,23 @@ export function WorldMapView() {
             <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
           ))}
 
-          {/* Routes (chemins courbes) */}
+          {/* Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible) */}
           {map.routes.map((r) => {
             const a = placeById(map, r.a);
             const b = placeById(map, r.b);
             if (!a || !b) return null;
             const c = routeCurve(a.pos.x, a.pos.y * 0.64, b.pos.x, b.pos.y * 0.64, r.id);
             const sel = r.id === selId;
-            const fromHere = here && (r.a === here.id || r.b === here.id);
+            const fromHere = !!here && (r.a === here.id || r.b === here.id);
             const water = r.modes.includes('barge') && !r.modes.includes('pied');
             return (
-              <g key={r.id}>
+              <g
+                key={r.id}
+                onClick={fromHere ? () => selectRoute(r) : undefined}
+                style={fromHere ? { cursor: 'pointer' } : undefined}
+              >
+                {/* zone de clic généreuse (trait invisible épais) */}
+                {fromHere && <path d={c.d} fill="none" stroke="#000" strokeOpacity="0" strokeWidth={5} pointerEvents="stroke" />}
                 <path
                   d={c.d}
                   fill="none"
@@ -181,6 +192,7 @@ export function WorldMapView() {
                   strokeLinecap="round"
                   strokeDasharray={water ? '0.4 1.7' : '1.7 1.2'}
                   opacity={sel || fromHere ? 1 : 0.7}
+                  pointerEvents="none"
                 />
                 <g transform={`translate(${c.lx} ${c.ly})`}>
                   <rect x="-5.4" y="-2.2" width="10.8" height="3.2" rx="1.6" fill="#efe2bd" opacity="0.82" />
@@ -192,7 +204,8 @@ export function WorldMapView() {
             );
           })}
 
-          {/* Lieux (médaillons + cartouche de nom) */}
+          {/* Lieux (médaillons + cartouche de nom). Affordance : destination RELIÉE = anneau accent
+              pointillé + curseur ; lieu hors d'atteinte = estompé, le clic EXPLIQUE (panneau bas). */}
           {map.places.map((p) => {
             const isHere = here?.id === p.id;
             const isDest = dest?.id === p.id;
@@ -203,12 +216,18 @@ export function WorldMapView() {
               <g
                 key={p.id}
                 transform={`translate(${p.pos.x} ${p.pos.y * 0.64})`}
-                onClick={clickable ? () => selectRoute(route!) : undefined}
-                style={clickable ? { cursor: 'pointer' } : undefined}
+                onClick={clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined}
+                style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
+                opacity={clickable || isHere ? 1 : 0.55}
               >
+                {/* cible de clic généreuse (médaillon + cartouche) */}
+                <circle r="6.5" fill="#000" fillOpacity="0" />
                 {isHere && <text y="-4.4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
                 {(isHere || isDest) && (
                   <circle r="3.7" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.55" opacity="0.9" />
+                )}
+                {clickable && !isDest && (
+                  <circle r="3.7" fill="none" stroke="var(--accent)" strokeWidth="0.4" strokeDasharray="0.9 0.7" opacity="0.85" />
                 )}
                 <circle r="2.9" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.35" filter="url(#wm-drop)" />
                 <text y="1.05" textAnchor="middle" fontSize="3.1">{p.icon ?? '📍'}</text>
@@ -298,11 +317,13 @@ export function WorldMapView() {
       {!travelPlan?.interrupted && !selRoute && (
         <div className="worldmap-panel muted-panel">
           <p>
-            {here
-              ? routes.length
-                ? 'Choisissez une destination reliée par une route.'
-                : 'Aucune route ne part de ce lieu.'
-              : 'Ce lieu ne figure pas sur la carte — rejoignez un lieu connu pour voyager.'}
+            {farPlace && here
+              ? `Aucune route directe vers ${farPlace.label} depuis ${here.label} — voyagez d'étape en étape (lieux cerclés).`
+              : here
+                ? routes.length
+                  ? 'Cliquez une destination CERCLÉE (ou sa route) pour préparer le voyage.'
+                  : 'Aucune route ne part de ce lieu.'
+                : 'Ce lieu ne figure pas sur la carte — rejoignez un lieu connu pour voyager.'}
           </p>
         </div>
       )}

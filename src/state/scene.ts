@@ -242,6 +242,9 @@ export type Effect =
    *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
    *  de chapitre par l'auteur de campagne. */
   | { type: 'interlude'; weeks?: number }
+  /** Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »).
+   *  Sans effet si le projet n'a pas de carte ou en combat. */
+  | { type: 'openWorldMap' }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

@@ -38,6 +38,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'startCombat',
   'transition',
   'transitionBack',
+  'openWorldMap',
   'startDialogue',
   'openMerchant',
   'medicalAid',
@@ -66,6 +67,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
+  openWorldMap: 'Ouvrir la carte du monde (partir en voyage)',
   startDialogue: 'Ouvrir un dialogue',
   openMerchant: 'Ouvrir une boutique (marchand)',
   medicalAid: 'Acte de soin payant (PNJ médecin/guérisseur)',
@@ -98,6 +100,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'medicalAid', act: 'wounds', skill: 50, intBonus: 4 };
     case 'test':
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
+    case 'openWorldMap':
+      return { type: 'openWorldMap' };
     case 'endDialogue':
       return { type: 'endDialogue' };
     case 'restoreFortune':

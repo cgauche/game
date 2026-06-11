@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, normalizeEntityKind } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
 import { rangeBandModifier, rangeBandName } from '../engine/combat';
@@ -611,6 +611,21 @@ export function IsoStage() {
     // Entités de scène (créatures/PNJ d'ambiance) : tokens memoïsés (cf. entityObjs) — ré-insérés
     // dans le tri de profondeur, réfs stables → React saute leur re-rendu pendant la marche.
     objs.push(...entityObjs);
+    // Affordance d'ENTRÉE des bâtiments : halo pulsé sur la tuile de PORTE (mêmes codes que la
+    // fouille) — on voit d'un coup d'œil où l'on peut entrer (intérieur `door` comme cutaway).
+    for (const b of scene.buildings ?? []) {
+      if (!b.door) continue;
+      const c = tileCenter(b.door.x, b.door.y, dims);
+      objs.push({
+        d: depth(b.door.x, b.door.y, dims) + 0.6, // au-dessus du mur de façade (même tuile)
+        el: (
+          <g key={`door-halo-${b.id}`} className="interact-halo" pointerEvents="none">
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="#ffe27a" opacity={0.16} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={15} ry={7.5} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.65} />
+          </g>
+        ),
+      });
+    }
     // groupe — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
     const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, viewMode);
@@ -737,6 +752,19 @@ export function IsoStage() {
           st.setPendingInteract(ent.id);
           moveAlong(sc, st.partyPos, adj);
         }
+      }
+      return;
+    }
+    if (ent && normalizeEntityKind(ent.kind) === 'personnage') {
+      // FIGURANT (PNJ sans dialogue/boutique/fouille) : on ne lui marche pas DESSUS — on s'approche
+      // à une case adjacente et on le dit (sinon le groupe « entre dans » le corps du PNJ).
+      st.setPendingInteract(null);
+      const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
+      if (dist > 1) {
+        const adj = adjacentWalkable(sc, ent.pos, st.partyPos);
+        if (adj) moveAlong(sc, st.partyPos, adj);
+      } else {
+        st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
       }
       return;
     }
