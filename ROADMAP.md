@@ -995,8 +995,17 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   attribution des héros par siège → lancement. **Recette 2 onglets PASSÉE** : P2P établi (codes
   ~700-800 caractères), miroir invité (écran/scène/groupe/ownership), session préservée au
   lancement (le reset startScene/load ne dissout plus `net` — bug trouvé en recette).
-- 🚧 **P2 (suivant)** : gating d'affichage par propriétaire (modales/hotbar via `ownsLocally`),
-  ready-check début de combat + victoire (portraits + ✓), écran de loot synchronisé.
+- ✅ **P2 combat** *(2026-06-11, `64e963f`)* : **modales chez leur seul PROPRIÉTAIRE** (arbitre
+  `OWNER_OF` par modale + puce « ⏳ X joue… » chez les autres ; sort ennemi visible partout avec
+  contre-lanceurs filtrés par possession), **barre spectateur** quand le combattant actif est à
+  un autre joueur, **ready-check d'ouverture** (portraits + ✓ par siège, l'hôte lance à
+  l'unanimité des sièges possédant un héros vivant), **rounds suivants enchaînés** sans pause en
+  coop (arbitrage). Recette 2 onglets sur WebRTC réel : attaque de l'hôte → modale chez lui +
+  puce chez l'invité ; tour de l'invité → barre chez lui + puce chez l'hôte ; ready 1/2 attend,
+  2/2 lance.
+- 🚧 **P3 (suivant)** : écran de VICTOIRE/loot synchronisé (ready-check + attribution à
+  dévalidation ciblée), validation owner des intents côté hôte, bouton ✋ (ouvrir la fenêtre
+  Chance d'un round), reconnexion par nouveau code.
 
 ## 🎯 Jalon 8 — Polish & production
 
