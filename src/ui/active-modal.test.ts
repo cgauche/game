@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { pickActiveModalKey } from './ActiveModal';
+import { pickActiveModalKey as pick } from './ActiveModal';
 
 /**
- * Arbitre de modales (R2) : une seule modale de combat à la fois, par priorité explicite. La file est
- * implicite — une modale moins prioritaire dont le `pending` est posé n'apparaît qu'une fois les plus
- * prioritaires fermées.
+ * Arbitre de modales (R2, désormais REGISTRE state/modalArbiter) : une seule modale de combat à
+ * la fois, par priorité explicite (ordre du registre). La file est implicite — une modale moins
+ * prioritaire dont le `pending` est posé n'apparaît qu'une fois les plus prioritaires fermées.
+ * Les tests passent des pendings MINCES (la forme suffit à l'arbitre).
  */
+const pickActiveModalKey = (s: object) => pick(s as Parameters<typeof pick>[0]);
 describe('pickActiveModalKey — priorité des modales de combat', () => {
   it('aucun pending → null', () => {
     expect(pickActiveModalKey({})).toBeNull();

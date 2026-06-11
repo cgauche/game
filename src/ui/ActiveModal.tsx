@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
-import { modalOwnerOf } from '../state/netOwnership';
+import { modalOwnerOf } from '../state/modalArbiter';
 import type { JSX } from 'react';
 import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
@@ -26,9 +26,9 @@ import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
 import { CorruptionModal } from './CorruptionModal';
 
-// Arbitre PUR déplacé en module neutre (state/modalArbiter) — partagé avec la possession réseau
-// (state/netOwnership) sans cycle d'imports. Ré-exporté ici pour les consommateurs historiques.
-export { pickActiveModalKey, type ModalKey, type ModalPendings } from '../state/modalArbiter';
+// REGISTRE des modales : state/modalArbiter (une entrée = quand + concerné, ordre = priorité).
+// Ajouter une modale = 1 entrée au registre + son composant dans COMPONENT ci-dessous.
+export { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {

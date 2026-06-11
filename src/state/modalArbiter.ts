@@ -1,58 +1,73 @@
 /**
- * Arbitre PUR des modales de combat (R2) : quelle modale afficher MAINTENANT, par priorité
- * sémantique explicite. Déplacé hors de l'UI (module neutre) pour être partagé avec la
- * possession réseau (`netOwnership`) sans cycle d'imports. L'UI (`ui/ActiveModal`) le ré-exporte.
+ * REGISTRE des modales de combat (R2 + coop) — une entrée par modale, l'ORDRE du tableau est la
+ * priorité d'affichage. Chaque entrée déclare :
+ *  - `when`  : le pending qui l'active ;
+ *  - `owner` : le combattant CONCERNÉ (gating coop « chacun voit SES modales » + validation des
+ *              intents côté hôte) — `'*'` = tout le monde (sort ennemi : Contre-sort multi),
+ *              `undefined` = aucun acteur joueur → l'HÔTE seul.
+ *
+ * AJOUTER UNE MODALE = UNE entrée ici (+ son composant dans `ui/ActiveModal.COMPONENT`).
+ * `pickActiveModalKey` et `modalOwnerOf` sont DÉRIVÉS du registre — rien d'autre à toucher.
  */
+import type { GameState } from './store';
 
-/** Clés de modales de combat, de la PLUS prioritaire à la moins prioritaire. */
-export type ModalKey =
-  | 'fateSave' | 'fumble' | 'deviation' | 'bladeTrap' | 'renounce' | 'trample' | 'reveal' | 'defense'
-  | 'psych' | 'encounterPsych' | 'disengage' | 'mountTarget' | 'frenzy'
-  | 'approach' | 'run' | 'focus' | 'heal' | 'cast' | 'reload' | 'stateRecovery' | 'attack' | 'test' | 'corruption';
+/** État partiel accepté par l'arbitre (les tests passent des objets minces). */
+export type ArbiterState = Partial<GameState>;
 
-/** Sous-ensemble de l'état lu par l'arbitre (les `pending*` de combat). */
-export interface ModalPendings {
-  pendingFateSave?: unknown; pendingFumble?: unknown; pendingDeviation?: unknown; pendingBladeTrap?: unknown; pendingRenounce?: unknown;
-  pendingCleave?: unknown; pendingDualStrike?: unknown; pendingTrample?: unknown; pendingReveals?: unknown[];
-  pendingDefense?: unknown; pendingPsych?: unknown; pendingEncounterPsych?: unknown;
-  pendingDisengage?: unknown; pendingMountTarget?: unknown;
-  pendingFrenzy?: unknown; pendingApproach?: unknown; pendingRun?: unknown; pendingFocus?: unknown; pendingHeal?: unknown;
-  pendingCast?: unknown; pendingReload?: unknown; pendingStateRecovery?: unknown;
-  pendingAttack?: unknown; pendingTest?: unknown; pendingCorruption?: unknown;
+export interface ModalDef {
+  key: string;
+  /** Le pending de cette modale est-il posé ? */
+  when: (s: ArbiterState) => boolean;
+  /** Combattant concerné ('*' = tous ; undefined = hôte seul). */
+  owner: (s: ArbiterState) => string | undefined | '*';
 }
 
-/**
- * PURE : la modale de combat à afficher MAINTENANT (la 1ʳᵉ dont le `pending` est posé). `null` = aucune.
- * Ordre : sauvetage par Destin > Maladresse > Déviation critique > Piétinement > révélations
- * témoins > défense réactive > psychologie > manœuvres/actions du joueur > jet.
- * Frappe Mortelle / 2ᵉ frappe / Surincantation « +Cible » = ciblages CHAMP DE BATAILLE (pas de modale).
- */
-export function pickActiveModalKey(s: ModalPendings): ModalKey | null {
-  const castPicking = !!(s.pendingCast as { pickingTargets?: boolean } | null | undefined)?.pickingTargets;
-  const order: [boolean, ModalKey][] = [
-    [!!s.pendingFateSave, 'fateSave'],
-    [!!s.pendingFumble, 'fumble'],
-    [!!s.pendingDeviation, 'deviation'],
-    [!!s.pendingBladeTrap, 'bladeTrap'],
-    [!!s.pendingRenounce, 'renounce'],
-    [!!s.pendingTrample, 'trample'],
-    [(s.pendingReveals?.length ?? 0) > 0, 'reveal'],
-    [!!s.pendingDefense, 'defense'],
-    [!!s.pendingPsych, 'psych'],
-    [!!s.pendingEncounterPsych, 'encounterPsych'],
-    [!!s.pendingDisengage, 'disengage'],
-    [!!s.pendingMountTarget, 'mountTarget'],
-    [!!s.pendingFrenzy, 'frenzy'],
-    [!!s.pendingApproach, 'approach'],
-    [!!s.pendingRun, 'run'],
-    [!!s.pendingFocus, 'focus'],
-    [!!s.pendingHeal, 'heal'],
-    [!!s.pendingCast && !castPicking, 'cast'],
-    [!!s.pendingReload, 'reload'],
-    [!!s.pendingStateRecovery, 'stateRecovery'],
-    [!!s.pendingAttack, 'attack'],
-    [!!s.pendingTest, 'test'],
-    [!!s.pendingCorruption, 'corruption'],
-  ];
-  return order.find(([on]) => on)?.[1] ?? null;
+export const MODAL_DEFS = [
+  { key: 'fateSave', when: (s) => !!s.pendingFateSave, owner: (s) => s.pendingFateSave?.heroId },
+  { key: 'fumble', when: (s) => !!s.pendingFumble, owner: (s) => s.pendingFumble?.combatantId },
+  { key: 'deviation', when: (s) => !!s.pendingDeviation, owner: (s) => s.pendingDeviation?.targetId },
+  { key: 'bladeTrap', when: (s) => !!s.pendingBladeTrap, owner: (s) => s.pendingBladeTrap?.defenderId },
+  { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId },
+  { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId },
+  { key: 'reveal', when: (s) => (s.pendingReveals?.length ?? 0) > 0, owner: (s) => s.pendingReveals?.[0]?.subjectId }, // sans sujet (entretien) → hôte
+  { key: 'defense', when: (s) => !!s.pendingDefense, owner: (s) => s.pendingDefense?.defenderId },
+  { key: 'psych', when: (s) => !!s.pendingPsych, owner: (s) => s.pendingPsych?.combatantId },
+  { key: 'encounterPsych', when: (s) => !!s.pendingEncounterPsych, owner: (s) => s.pendingEncounterPsych?.heroId },
+  { key: 'disengage', when: (s) => !!s.pendingDisengage, owner: (s) => s.pendingDisengage?.moverId },
+  { key: 'mountTarget', when: (s) => !!s.pendingMountTarget, owner: (s) => (s.battle ? s.battle.order[s.battle.turn] : undefined) }, // l'attaquant actif qui a cliqué le couple
+  { key: 'frenzy', when: (s) => !!s.pendingFrenzy, owner: (s) => s.pendingFrenzy?.combatantId },
+  { key: 'approach', when: (s) => !!s.pendingApproach, owner: (s) => s.pendingApproach?.combatantId },
+  { key: 'run', when: (s) => !!s.pendingRun, owner: (s) => s.pendingRun?.combatantId },
+  { key: 'focus', when: (s) => !!s.pendingFocus, owner: (s) => s.pendingFocus?.casterId },
+  { key: 'heal', when: (s) => !!s.pendingHeal, owner: (s) => s.pendingHeal?.healerId },
+  {
+    key: 'cast',
+    // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.
+    when: (s) => !!s.pendingCast && !s.pendingCast.pickingTargets,
+    // Sort ENNEMI : chez tous (moment partagé + Contre-sort multi) ; sort d'un héros : son propriétaire.
+    owner: (s) => {
+      const casterId = s.pendingCast?.casterId;
+      const caster = casterId && s.battle ? s.battle.combatants.find((c) => c.id === casterId) : undefined;
+      return caster?.kind === 'enemy' ? '*' : casterId;
+    },
+  },
+  { key: 'reload', when: (s) => !!s.pendingReload, owner: (s) => s.pendingReload?.actorId },
+  { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId },
+  { key: 'attack', when: (s) => !!s.pendingAttack, owner: (s) => s.pendingAttack?.attackerId },
+  { key: 'test', when: (s) => !!s.pendingTest, owner: (s) => s.pendingTest?.actorId },
+  { key: 'corruption', when: (s) => !!s.pendingCorruption, owner: (s) => s.pendingCorruption?.heroId },
+] as const satisfies readonly ModalDef[];
+
+export type ModalKey = (typeof MODAL_DEFS)[number]['key'];
+
+/** PURE : la modale à afficher MAINTENANT (1ʳᵉ entrée active du registre). `null` = aucune.
+ *  Frappe Mortelle / 2ᵉ frappe / Surincantation « +Cible » = ciblages CARTE (pas de modale). */
+export function pickActiveModalKey(s: ArbiterState): ModalKey | null {
+  return (MODAL_DEFS.find((d) => d.when(s))?.key as ModalKey | undefined) ?? null;
+}
+
+/** Combattant concerné par la MODALE ACTIVE (ou '*' / undefined). null = aucune modale. */
+export function modalOwnerOf(s: ArbiterState): string | undefined | '*' | null {
+  const def = MODAL_DEFS.find((d) => d.when(s));
+  return def ? def.owner(s) : null;
 }

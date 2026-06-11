@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
+import { CoopInvitePanel, CoopAssignList } from './CoopPanels';
 
 /**
  * Lobby coop (Jalon 7, P1) — connexion par CODES À PARTAGER (arbitrage : zéro système externe).
@@ -116,54 +117,11 @@ export function CoopLobby() {
         </section>
         <section className="zone-section">
           <h3><span>Inviter un joueur</span></h3>
-          <div className="coop-invite">
-            <button
-              className="btn"
-              onClick={async () => {
-                setError('');
-                const code = await invite();
-                if (!code) setError('Impossible de générer une invitation.');
-                else setInviteCode(code);
-              }}
-            >
-              ➕ Générer une invitation
-            </button>
-            {inviteCode && (
-              <>
-                <textarea readOnly value={inviteCode} rows={3} onFocus={(e) => e.currentTarget.select()} />
-                <button className="btn small" onClick={() => copy(inviteCode)}>📋 Copier</button>
-              </>
-            )}
-            <textarea value={answerIn} onChange={(e) => setAnswerIn(e.target.value)} placeholder="Coller la réponse de l'invité…" rows={3} />
-            <button
-              className="btn"
-              disabled={!answerIn.trim()}
-              onClick={async () => {
-                setError('');
-                const ok = await acceptAnswer(answerIn);
-                if (!ok) setError('Code de réponse invalide.');
-                else { setAnswerIn(''); setInviteCode(''); }
-              }}
-            >
-              ✓ Connecter
-            </button>
-            {error && <p className="hint coop-error">{error}</p>}
-          </div>
+          <CoopInvitePanel />
         </section>
         <section className="zone-section">
           <h3><span>Attribution des héros</span></h3>
-          <div className="coop-assign">
-            {party.map((h) => (
-              <label key={h.id} className="coop-assign-row">
-                <span>{h.name}</span>
-                <select value={net.ownership[h.id] ?? 0} onChange={(e) => assign(h.id, Number(e.target.value))}>
-                  {seats.map(({ seat, name: n }) => (
-                    <option key={seat} value={seat}>{n}</option>
-                  ))}
-                </select>
-              </label>
-            ))}
-          </div>
+          <CoopAssignList />
         </section>
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => setScreen('party')}>
