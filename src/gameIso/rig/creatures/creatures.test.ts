@@ -32,7 +32,12 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
   it('détection d\'espèce bipède (ex-detectSpecies) — cas + chevauchements par priorité', () => {
     const cases: [string, string | undefined][] = [
       ['Guerrier des clans', 'Skaven'],
-      ['Rat ogre', 'Skaven'], // \brat\b testé AVANT \bogre (priorité)
+      ['Rat ogre', 'Rat ogre'], // def dédié (priorité 10 < Skaven 18) — morphologie de brute
+      ['Vermine de choc', 'Vermine de choc'],
+      ['Prophète gris', 'Prophète gris'],
+      ['Esclave skaven', 'Esclave skaven'],
+      ["Coureur d'égout", "Coureur d'égout"],
+      ['Coureur nocturne', "Coureur d'égout"],
       ['Homme-rat', 'Skaven'],
       ['Ogre', 'Ogre'],
       ['Elfe sylvain', 'Elfe sylvain'],

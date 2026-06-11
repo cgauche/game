@@ -99,6 +99,7 @@ export interface RiggedOpts {
   parts?: Appearance['parts']; // coiffure/visage épinglés (idx)
   sex?: 'M' | 'F'; // surcharge le sexe dérivé du seed
   build?: number; // surcharge la carrure dérivée du seed
+  gabarit?: string; // carrure imposée (def créature : Rat ogre → brute-bras-longs)
   /** yeux personnalisés (CLÉS du catalogue EYE_OPTIONS, donnée éditeur) → art résolu ici. */
   eyes?: { G?: string; D?: string };
 }
@@ -110,7 +111,7 @@ export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = 
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, colors: opts.colors, parts: opts.parts, eyes };
+  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -185,6 +186,7 @@ export function entityRigProfile(
     monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? perso?.parts ?? race.parts,
     sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes,
+    gabarit: perso?.gabarit ?? d?.gabarit,
   });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
   // n'est choisi (sinon on respecte le « mutant construit » à la main).

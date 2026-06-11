@@ -8,6 +8,7 @@
  */
 import type { QuadProps } from '../quadruped/quadSkeleton';
 import type { MonsterParts } from '../parts/monstrous';
+import type { RaceFeature } from '../races/types';
 import type { Palette } from '../palette';
 import type { SerpentProps } from '../serpentine/composeSerpent';
 import type { SpiderProps } from '../arachnid/composeSpider';
@@ -34,6 +35,9 @@ export interface CreaturePerso {
   colors?: Palette;
   scale?: number;
   gabarit?: string;
+  /** Traits cosmétiques ADDITIFS par-dessus la race (cornes du Prophète gris…) — contrairement
+   *  à `monster` qui REMPLACE toute la structure de race (tête/membres/features). */
+  features?: RaceFeature[];
 }
 
 export interface CreatureDef {

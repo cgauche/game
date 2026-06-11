@@ -1,6 +1,7 @@
 import React from 'react';
 import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
+import { bipedDef } from './creatures';
 import { gabaritById } from './gabarits';
 import { raceById, racePalette } from './races';
 import type { RaceFeature } from './races';
@@ -49,7 +50,10 @@ export function resolveRig(
   overlays: RigOverlay[] = [],
   mirror = false,
 ): ResolvedBone[] {
-  const race = raceById(baseSpeciesOf(appearance.species));
+  // Race de rendu : le def bipède de l'espèce peut IMPOSER sa race (Vermine de choc → Skaven,
+  // Fimir → Fimir…) ; sinon heuristique de nom (variantes régionales → espèce de base).
+  const bDef = bipedDef(appearance.species);
+  const race = raceById(bDef?.race ?? baseSpeciesOf(appearance.species));
   // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
   // de la race (réglé pour son gabarit par défaut) ne s'applique PAS dans ce cas.
   let gDef = appearance.gabarit
@@ -105,8 +109,14 @@ export function resolveRig(
   // (le chapeau de Noble faisait une « couronne » rouge) : on saute le slot `tete` (le
   // visage + les cheveux lissés restent, via leurs propres slots).
   const dropHeadgear = !!appearance.monster?.cape || !!race.dropHeadgear;
+  // perso.monster du creature-def = override COMPLET de la race (parts structurelles sautées).
+  const hasPersoMonster = !!appearance.monster && Object.keys(appearance.monster).length > 0;
+  // Tête de RACE (rat, orc…) : remplace visage/cheveux mais PAS la coiffe de tenue — un
+  // skaven casqué garde sa tête de rat SOUS le casque (corps nu et tenue = axes séparés).
+  const raceHead = !hasPersoMonster && race.head ? HEADS[race.head] : undefined;
   for (const slot of Object.keys(SLOT_BONES) as Slot[]) {
     if (slot === 'tete' && dropHeadgear) continue;
+    if ((slot === 'visage' || slot === 'cheveux') && raceHead) continue;
     const part = parts[slot];
     if (!part || !part.svg) continue;
     // Visage inversé (mutation LDB 19) : le VRAI visage du personnage est retourné tête en bas
@@ -127,13 +137,10 @@ export function resolveRig(
   // race, ex. Démonette qui hérite du Démon mais a sa propre config sans tête de Khorne).
   // Symétrie avec l'ancien race.monster : un perso.monster non-vide remplaçait intégralement
   // le race.monster (opérateur ??), donc les parts de la race n'étaient jamais injectées.
-  const hasPersoMonster = !!appearance.monster && Object.keys(appearance.monster).length > 0;
   if (!hasPersoMonster) {
-    // Tête de RACE (ex. Orc) : remplace visage/cheveux par la part monstrueuse de la race.
-    if (race.head) {
-      const h = HEADS[race.head];
-      if (h) boneParts['tete'] = [{ svg: pickView(h, view), layer: 5 }];
-    }
+    // Tête de RACE (ex. Orc) : poussée SOUS la coiffe de tenue (layer 0 < coiffe 2) —
+    // visage/cheveux ont déjà été sautés au remplissage des slots ci-dessus.
+    if (raceHead) boneParts['tete'].push({ svg: pickView(raceHead, view), layer: 0 });
     // Membres monstrueux de RACE (REMPLACENT l'os) : jambes de chèvre (Minotaure)…
     if (race.legs) {
       const l = LEGS[race.legs];
@@ -181,6 +188,14 @@ export function resolveRig(
       const part = featureToPart(feat, scaleOf[feat.bone]);
       boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
     }
+  }
+  // Traits propres à CETTE créature (perso.features du def) — ADDITIFS par-dessus la race,
+  // jamais sautés : l'outil « race partagée + extra » (cornes du Prophète gris sur tête de rat)
+  // sans basculer dans l'override complet perso.monster.
+  for (const feat of bDef?.perso?.features ?? []) {
+    if (feat.view && feat.view !== view) continue;
+    const part = featureToPart(feat, scaleOf[feat.bone]);
+    boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
   }
 
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.
