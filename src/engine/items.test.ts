@@ -24,6 +24,12 @@ describe('weaponHands (latéralité)', () => {
     expect(itemFromTrapping('Pistolet')?.hands).toBe(1);
     expect(itemFromTrapping('Hallebarde')?.hands).toBe(2);
   });
+  it('Poudre noire/Ingénierie classées par le marqueur canonique (LDB 62 « (2M) ») : arquebuses 2 mains, pistolets 1 main', () => {
+    expect(itemFromTrapping('Arquebuse')?.hands).toBe(2);
+    expect(itemFromTrapping('Tromblon')?.hands).toBe(2);
+    expect(itemFromTrapping("Long fusil d'Hochland")?.hands).toBe(2);
+    expect(itemFromTrapping('Pistolet à répétition')?.hands).toBe(1);
+  });
 });
 
 describe('mutateurs de loadout (purs)', () => {

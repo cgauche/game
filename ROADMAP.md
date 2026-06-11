@@ -937,7 +937,9 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   doigts −5/doigt (4+ → règle de la main), dents −1 Soc/paire, DEUX yeux → Cécité (−30 vue), DEUX oreilles →
   Surdité (−20 Perception). **Crochet** = arme Dague + rachat 400 PX (armes à 2 mains), **arcs/arbalètes** (sauf
   « de poing ») bloqués pour une main amputée.
-  **Résidus** : armes à DISTANCE Poudre noire/ingénierie (pistolet vs arquebuse, subType ambigu) non classées ;
+  **Résidus** : ✅ armes à distance Poudre noire/Ingénierie **classées par le marqueur canonique `(2M)`**
+  (champ `prefix` de trappings.json, LDB 62 : Arquebuse/Tromblon/Long fusil = 2 mains ; Pistolet(s)/
+  Arbalète de poing = 1 main — lu par `itemFromTrapping`→`weaponHands`, gravé par test) ;
   maintien/défaisage du bandage de fracture (l.302 — événement MJ, pas de déclencheur de jeu) ; ✅ appliquer
   rétroactivement une amputation/un trauma → couvert par l'**Effet d'éditeur `inflictTrauma`** (Jalon 2.5).
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
