@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGame, movementRemaining } from '../state/store';
+import { bus, EVT } from '../state/bus';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { combatValue, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
@@ -75,6 +76,7 @@ export function RollModal() {
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
   const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const doRoll = () => {
+    bus.emit(EVT.DICE_ROLL);
     if (reduceMotion) return roll();
     setRolling(true);
     window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { RollBreakdown } from '../engine/combat';
+import { bus, EVT } from '../state/bus';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { RollPanel, type RollRowData } from './RollPanel';
@@ -134,7 +135,7 @@ export function RollFlowShell({
           </div>
           <div className="modal-actions">
             {cancelBtn}
-            <button className="btn btn-primary" onClick={onRoll}>
+            <button className="btn btn-primary" onClick={() => { bus.emit(EVT.DICE_ROLL); onRoll(); }}>
               {rollLabel}
             </button>
           </div>

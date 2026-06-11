@@ -42,4 +42,8 @@ export const EVT = {
   ANIM_AOE: 'anim_aoe',
   /** store → * : le temps de jeu a avancé {minutes}. #T3 (cascade) branchera guérison/Fatigue/re-stock sur les franchissements. */
   TIME_ADVANCED: 'time:advanced',
+  /** UI → audio : le joueur lance les dés (clic « Lancer » d'une modale de jet). */
+  DICE_ROLL: 'dice_roll',
+  /** store → * : fin de combat {victory:boolean} — gong de victoire, hooks futurs. */
+  BATTLE_OVER: 'battle_over',
 } as const;

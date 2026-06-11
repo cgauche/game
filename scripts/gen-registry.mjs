@@ -156,6 +156,15 @@ export const REGISTRIES = [
     type: 'TraitDef',
     typeFrom: './types',
   },
+  {
+    // Sons (assets CC0 Kenney dans public/audio) : 1 son (avec variantes) = 1 fichier defs/.
+    dir: 'src/audio/defs',
+    out: 'src/audio/_registry.generated.ts',
+    exportName: 'sound',
+    arrayName: 'SOUND_DEFS',
+    type: 'SoundDef',
+    typeFrom: './types',
+  },
 ];
 
 function genOne(r) {

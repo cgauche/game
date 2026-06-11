@@ -21,6 +21,7 @@ import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { GameMenu } from './GameMenu';
 import { CoopMenuSection } from './CoopPanels';
+import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { placeOfScene } from '../state/worldMap';
 import { campaign } from '../scenes/campaign';
@@ -111,7 +112,7 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation). */}
         {mode === 'battle' && battle && <TargetPrompt />}
-        <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} coop={<CoopMenuSection />} />
+        <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} coop={<><CoopMenuSection /><AudioControls /></>} />
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (

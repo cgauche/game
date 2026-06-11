@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
+import { bus, EVT } from '../state/bus';
 import { defenseValue, defenseModifiers, combineMods, DEFENSE_LABEL } from '../engine/combat';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
@@ -52,6 +53,7 @@ export function DefenseModal() {
   const chosenParry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0];
   const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const doRoll = () => {
+    bus.emit(EVT.DICE_ROLL);
     if (reduceMotion) return roll();
     setRolling(true);
     window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson

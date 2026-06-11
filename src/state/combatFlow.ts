@@ -3171,6 +3171,7 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
   if (!enemiesAlive) {
     finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
     set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, ev('info', 'Victoire !')] } });
+    bus.emit(EVT.BATTLE_OVER, { victory: true }); // gong audio + hooks futurs
     // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
     // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
     const xpBefore = get().party[0]?.xp ?? 0;

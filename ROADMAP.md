@@ -1055,7 +1055,15 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   `MonsterPartsFields` — Sexe, Carrure, Coiffure (slot-picker `HAIRSTYLES`), mutations par slot,
   couleurs, carrière, arme — branché spawns ET entités)* ; **galeries QC** (rig/anim/armes/bestiaire)
   à finaliser et committer (itération visuelle — différée).
-- Sons & musique ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
+- ✅ **Sons (SFX)** *(2026-06-11)* : 19 échantillons **CC0 Kenney** (`public/audio/`, ~220 Ko) ; registre
+  `SOUND_DEFS` (`src/audio/defs/` — 11 défs : dés, impact, tranche, parade, critique, sort, pas, gong de
+  victoire, pièces, portes — nouvelle famille du gen-registry : **ajouter un son = 1 fichier def**) ;
+  moteur `audio/engine.ts` (variante aléatoire, volume+sourdine persistants `wfrp4.audio.v1`) ; câblage
+  **par le bus** (`audio/wiring.ts` : `DICE_ROLL`→dés aux 4 boutons Lancer, `ANIM_IMPACT`→critique/sort/
+  tranche/contondant/parade selon contexte, `ANIM_MOVE`→pas espacés, `BATTLE_OVER`→gong) ; contrôles
+  dans le menu ☰ (`AudioControls`). Recette navigateur : slider+mute visibles, persistance OK, 0 erreur
+  console. **Reste** : musique/ambiances de fond (non couvertes par ces packs SFX).
+- ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
   (build:data → typecheck → **ESLint** → tests → build — le lint y est depuis `ci.yml` ; base 0 erreur).
 - ✅ **Accessibilité des modales** *(2026-06-11)* : cadre `Modal` partagé = `role=dialog`/`aria-modal`,
   focus déplacé à l'ouverture, **piège de focus** (Tab/Shift+Tab bouclent dans la boîte) et **Échap**

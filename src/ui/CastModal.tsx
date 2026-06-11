@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { bus, EVT } from '../state/bus';
 import { ownsLocally } from '../state/netFlow';
 import { counterspellCandidates, overcastTargetCandidates } from '../state/combatFlow';
 import { findSpell } from '../data/index';
@@ -108,7 +109,7 @@ export function CastModal() {
                 Annuler
               </button>
             )}
-            <button className="btn btn-primary" onClick={roll}>
+            <button className="btn btn-primary" onClick={() => { bus.emit(EVT.DICE_ROLL); roll(); }}>
               🎲 Lancer
             </button>
           </div>

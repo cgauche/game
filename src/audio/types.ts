@@ -1,0 +1,9 @@
+/** Définition d'un SON du jeu (assets CC0 — Kenney.nl, `public/audio/`). Une def = un id
+ *  logique + ses VARIANTES (une est tirée au hasard à la lecture — évite la répétition). */
+export interface SoundDef {
+  id: string;
+  /** Fichiers dans `public/audio/` (variantes du même son). */
+  files: string[];
+  /** Volume propre 0..1 (multiplié par le volume global). Défaut 1. */
+  volume?: number;
+}
