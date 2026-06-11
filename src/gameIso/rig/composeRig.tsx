@@ -143,24 +143,25 @@ export function resolveRig(
     if (race.armD) { const a = ARMS[race.armD]; if (a) boneParts['epauleD'] = [{ svg: pickView(a, view), layer: 5 }]; }
   }
 
-  // Parts MONSTRUEUSES (mutant modulaire / perso créature) : REMPLACENT la part normale de
-  // l'os ciblé (tête monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique).
-  // Aucun miroir : on dessine directement dans le repère de l'os gauche/droit concerné.
+  // Parts MONSTRUEUSES (mutant modulaire / perso créature) : les REMPLACEMENTS d'os (tête
+  // monstrueuse → efface visage/cheveux ; bras G/D → membre asymétrique) sont appliqués ici ;
+  // leurs CALQUES rejoignent la file commune ci-dessous — UN SEUL traitement pour l'éditeur
+  // (monster) et le reste (mutations/blessures/traits), aucune divergence possible.
+  const queue: RigOverlay[] = [];
   if (appearance.monster) {
     const inj = monsterInjection(appearance.monster, view);
     for (const [bone, part] of Object.entries(inj.replace) as [BoneId, import('./parts/types').PartArt][])
       boneParts[bone] = [{ svg: pickView(part, view), layer: 5 }];
-    // `behind` → calque SOUS la part de l'os (cornes derrière la tête, queue/ventre derrière le
-    // corps) ; sinon par-dessus (côtes, plaies).
-    for (const ov of inj.overlays) boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 98 });
+    queue.push(...inj.overlays);
   }
+  queue.push(...overlays);
 
-  // Calques cosmétiques (mutations…) dans le repère de leur os. `view` limite un détail de
-  // visage à une vue (groin/langue de face) ; `behind` le passe SOUS la part (cornes, halo) ;
-  // `replace` substitue la part de l'os (membre muté : bras → tentacule, svg vide = efface) ;
-  // `plane` l'extrait du z de l'os hôte (ailes : derrière/devant TOUT le corps).
+  // Calques cosmétiques (mutations, blessures, traits, parts monstrueuses…) dans le repère de
+  // leur os. `view` limite à une vue (groin/langue de face) ; `behind` passe SOUS la part
+  // (cornes, halo) ; `replace` substitue la part de l'os (bras → tentacule, svg vide = efface) ;
+  // `plane` extrait le calque du z de l'os hôte (ailes : derrière/devant TOUT le corps).
   const planeExtras: { bone: BoneId; svg: string; z: number }[] = [];
-  for (const ov of overlays) {
+  for (const ov of queue) {
     if (ov.view && ov.view !== view) continue;
     if (ov.plane) {
       if (ov.svg) planeExtras.push({ bone: ov.bone, svg: ov.svg, z: ov.plane === 'fond' ? -10 : 99 });
