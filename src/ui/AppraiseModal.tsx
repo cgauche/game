@@ -2,7 +2,7 @@ import { useGame, type PendingAppraise } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -42,6 +42,7 @@ export function AppraiseModalView({
       onRoll={onRoll}
       onCancel={onCancel}
       breakdown={rolled ? testBreakdown('Évaluation', pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
+      pending={testPending('Évaluation', pa.skillValue, pa.target, pa.difficulty)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"

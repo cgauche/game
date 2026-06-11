@@ -2,7 +2,7 @@ import { useGame, type PendingBargain } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -59,6 +59,7 @@ export function BargainModalView({
       onRoll={onRoll}
       onCancel={onCancel}
       breakdown={rolled ? testBreakdown('Marchandage', pb.playerSkill, pb.roll!) : undefined}
+      pending={testPending('Marchandage', pb.playerSkill)}
       /* Le jet du marchand reste opaque (on ne révèle ni sa valeur ni sa cible) : dé + DR seulement. */
       outcome={rolled && (
         <JournalLine

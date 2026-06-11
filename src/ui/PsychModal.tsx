@@ -7,7 +7,7 @@ import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
-import { CIBLE_LABEL, calmeBreakdown } from './psychLabels';
+import { CIBLE_LABEL, calmeBreakdown, calmePending } from './psychLabels';
 
 /**
  * Modale de Test de Psychologie (Calme) du héros (LDB 21) : Peur (Test ÉTENDU — cumuler le DR vers
@@ -60,6 +60,7 @@ export function PsychModal() {
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
       breakdown={r ? calmeBreakdown(calmeValue(c), r) : undefined}
+      pending={calmePending(calmeValue(c))}
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, c.id, source?.id)} combatants={battle.combatants} /> : undefined}
       determination={{ resolve: c.resolve ?? 0, onResolve: determine }}
       fortune={c.fortune ?? 0}

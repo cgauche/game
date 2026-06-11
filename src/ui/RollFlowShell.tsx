@@ -4,6 +4,7 @@ import { bus, EVT } from '../state/bus';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { RollPanel, type RollRowData } from './RollPanel';
+import type { PendingRoll } from './RollLine';
 import { Modal } from './Modal';
 
 // Dé d100 canonique (désormais animé) — ré-exporté pour les modales qui l'importaient d'ici.
@@ -40,6 +41,7 @@ export function RollFlowShell({
   cancelAfterRoll = false,
   breakdown,
   rows,
+  pending,
   winnerIndex,
   netSL,
   outcome,
@@ -76,6 +78,8 @@ export function RollFlowShell({
   breakdown?: RollBreakdown | RollBreakdown[];
   /** Lignes riches avec portraits (prioritaire sur `breakdown` si fourni). */
   rows?: RollRowData[];
+  /** Ligne(s) de jet EN ATTENTE (pré-jet) montrée(s) AVANT le lancer — parité Attaque/Défense. */
+  pending?: PendingRoll | PendingRoll[];
   /** Test opposé : index de la ligne gagnante (accent) + DR net (badge). */
   winnerIndex?: number | null;
   netSL?: number;
@@ -120,6 +124,10 @@ export function RollFlowShell({
   );
   const panelRows: RollRowData[] | undefined =
     rows ?? (breakdown ? (Array.isArray(breakdown) ? breakdown : [breakdown]).map((d) => ({ d })) : undefined);
+  // Pré-jet : ligne(s) en attente (dé/DR vides), mêmes que l'Attaque/Défense avant le lancer.
+  const preRows: RollRowData[] | undefined = pending
+    ? (Array.isArray(pending) ? pending : [pending]).map((p) => ({ pending: p }))
+    : undefined;
   // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le permet).
   const escClose = (!rolled || cancelAfterRoll) ? onCancel : undefined;
   return (
@@ -128,6 +136,7 @@ export function RollFlowShell({
       {extra}
       {!rolled ? (
         <>
+          {preRows && <RollPanel rows={preRows} />}
           <div className="rm-influence">
             {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
             {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}

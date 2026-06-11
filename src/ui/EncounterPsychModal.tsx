@@ -6,7 +6,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { CIBLE_LABEL, calmeBreakdown } from './psychLabels';
+import { CIBLE_LABEL, calmeBreakdown, calmePending } from './psychLabels';
 
 /**
  * Modale de Psychologie À LA RENCONTRE, hors combat (couture C, LDB 21). Depuis le retour playtest :
@@ -52,6 +52,7 @@ export function EncounterPsychModal() {
       rollLabel="🎲 Test de Calme"
       onRoll={roll}
       breakdown={r ? calmeBreakdown(calmeValue(hero), r) : undefined}
+      pending={calmePending(calmeValue(hero))}
       outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, hero.id, pe.sourceId)} combatants={lite} /> : undefined}
       determination={{ resolve: hero.resolve ?? 0, onResolve: determine }}
       fortune={hero.fortune ?? 0}

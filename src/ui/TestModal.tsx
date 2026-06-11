@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -51,6 +51,7 @@ export function TestModal() {
          (Animosité/Préjugé envers l'interlocuteur), la dépense l'ignore. */
       determination={!rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined}
       breakdown={rolled ? testBreakdown(pt.label, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
+      pending={testPending(pt.label, pt.skillValue, pt.target, pt.difficulty)}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pt.actorId)} combatants={party} />}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}

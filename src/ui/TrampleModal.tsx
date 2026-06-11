@@ -1,7 +1,9 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
+import { combatValue } from '../engine/combat';
 import { RollFlowShell } from './RollFlowShell';
+import { testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -39,6 +41,7 @@ export function TrampleModal() {
       onCancel={cancel}
       cancelAfterRoll
       breakdown={r?.attackerDetail}
+      pending={testPending('Bagarre', combatValue(attacker, 'melee'))}
       outcome={r && <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} />}
       fortune={attacker.fortune ?? 0}
       freeReroll={freeRerollOf(attacker)}

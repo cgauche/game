@@ -2,7 +2,7 @@ import { useGame, type PendingReload } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
@@ -48,6 +48,7 @@ export function ReloadModalView({
       onRoll={onRoll}
       onCancel={onCancel}
       breakdown={rolled ? testBreakdown('Projectiles', pr.skillValue, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty) : undefined}
+      pending={testPending('Projectiles', pr.skillValue, pr.target, pr.difficulty)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"

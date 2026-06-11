@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -38,6 +38,7 @@ export function FrenzyModal() {
       onRoll={roll}
       onCancel={cancel}
       breakdown={r ? testBreakdown('Force Mentale', effectiveChar(c, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined}
+      pending={testPending('Force Mentale', effectiveChar(c, 'FM'))}
       outcome={r && (
         <JournalLine
           className="rm-journal"

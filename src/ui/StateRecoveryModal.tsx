@@ -2,7 +2,7 @@ import { useGame, type PendingStateRecovery } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -55,6 +55,7 @@ export function StateRecoveryModalView({
               : []),
           ]
         : undefined}
+      pending={testPending(sr.skillLabel, sr.skillValue)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"

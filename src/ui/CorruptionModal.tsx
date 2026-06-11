@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { corruptionGain, EXPOSURE_LABELS } from '../engine/corruption';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -44,6 +44,7 @@ export function CorruptionModal() {
       rolled={rolled}
       onRoll={roll}
       breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, pc.target ?? 0, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }) : undefined}
+      pending={testPending(`Test de ${pc.skill}`, pc.target ?? 0, pc.target)}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pc.heroId)} combatants={pool} />}
       fortune={hero?.fortune ?? 0}
       freeReroll={freeRerollOf(hero)}

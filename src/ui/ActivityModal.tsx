@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { DrBar } from './DrBar';
 
 /**
@@ -48,6 +48,7 @@ export function ActivityModal() {
       onRoll={roll}
       onCancel={cancel}
       breakdown={rolled ? testBreakdown(pa.skillLabel, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
+      pending={testPending(pa.skillLabel, pa.skillValue, pa.target, pa.difficulty)}
       outcome={rolled && <p className="rm-journal">{outcomeText}</p>}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}

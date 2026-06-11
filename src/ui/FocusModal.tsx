@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
@@ -47,6 +47,7 @@ export function FocusModal() {
       onCancel={cancel}
       cancelAfterRoll
       breakdown={r ? testBreakdown('Focalisation', castingValue(caster, 'Focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined}
+      pending={testPending('Focalisation', castingValue(caster, 'Focalisation'))}
       outcome={r && (
         <JournalLine
           className="rm-journal"

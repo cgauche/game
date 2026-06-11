@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { healWoundsDelta } from '../engine/healing';
 import { surgeryTraumas } from '../engine/trauma';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { TeamPortrait } from './CombatantBadge';
@@ -137,6 +137,7 @@ export function HealModal() {
       onCancel={cancel}
       cancelFirst
       breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
+      pending={testPending('Guérison', ph.skillValue, ph.target, ph.difficulty)}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
       fortune={fortune}
       freeReroll={freeRerollOf(healer)}

@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -40,6 +40,7 @@ export function RunModal() {
       onRoll={roll}
       onCancel={cancel}
       breakdown={r ? testBreakdown(skill, testValue(c, skill), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined}
+      pending={testPending(skill, testValue(c, skill), undefined, 'accessible')}
       outcome={r && (
         <JournalLine
           className="rm-journal"

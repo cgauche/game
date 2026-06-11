@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { calmeValue } from '../engine/psychology';
 import { RollFlowShell } from './RollFlowShell';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -39,6 +39,7 @@ export function ApproachModal() {
       onRoll={roll}
       onCancel={cancel}
       breakdown={r ? testBreakdown('Calme', calmeValue(c), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined}
+      pending={testPending('Calme', calmeValue(c), undefined, 'intermediaire')}
       outcome={r && (
         <JournalLine
           className="rm-journal"
