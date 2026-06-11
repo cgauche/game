@@ -3201,8 +3201,14 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
     // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
     // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
     const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
-    const deferred = (battle.onVictory ?? []).filter((e) => CONTEXT.has(e.type));
-    const immediate = (battle.onVictory ?? []).filter((e) => !CONTEXT.has(e.type));
+    const all = battle.onVictory ?? [];
+    const deferred = all.filter((e) => CONTEXT.has(e.type));
+    // L'ÉQUIPEMENT (giveTrapping) devient du butin ATTRIBUABLE sur l'écran (qualités conservées) au lieu
+    // d'aller d'office au 1er héros : on le retire des effets immédiats et on le pose dans `gear`.
+    const gear = all
+      .filter((e): e is Extract<Effect, { type: 'giveTrapping' }> => e.type === 'giveTrapping')
+      .map((e) => ({ label: e.trapping, magic: !!e.qualities?.length || e.identified === false, effect: e }));
+    const immediate = all.filter((e) => !CONTEXT.has(e.type) && e.type !== 'giveTrapping');
     const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
     if (immediate.length) applyEffects(get, set, immediate);
     const after = get();
@@ -3213,6 +3219,7 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
         xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
         gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
         loot: after.inventory.slice(invBefore),
+        gear: gear.length ? gear : undefined,
         defeated: [...counts].map(([name, count]) => ({ name, count })),
         messages: messages.length ? messages : undefined,
         onContinue: deferred.length ? deferred : undefined,

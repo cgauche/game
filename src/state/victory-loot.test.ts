@@ -39,3 +39,41 @@ describe('giveItemToHero — assignation du butin de victoire', () => {
     expect(st.mode).toBe('exploration');
   });
 });
+
+/**
+ * Écran de victoire — ÉQUIPEMENT (giveTrapping) : attribuable au héros choisi, qualités/skin conservés
+ * (ne part plus d'office au 1er héros) ; non attribué → 1er héros à la fermeture (rien de perdu).
+ */
+describe('assignVictoryGear — équipement attribuable, qualités conservées', () => {
+  const gearEntry = () => ({
+    label: 'Dague', magic: true,
+    effect: { type: 'giveTrapping', trapping: 'Dague', qualities: ['Dévastatrice'], identified: false },
+  });
+  beforeEach(() => {
+    useGame.setState({
+      party: [hero()], inventory: [],
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, loot: [], gear: [gearEntry()], defeated: [] } as never,
+    });
+  });
+
+  it('l’équipement n’est PAS donné tant qu’on n’a pas choisi le héros', () => {
+    expect(useGame.getState().party[0].items?.length ?? 0).toBe(0);
+    expect(useGame.getState().pendingVictory?.gear?.length).toBe(1);
+  });
+
+  it('assignVictoryGear donne l’objet au héros choisi avec ses qualités (non identifié)', () => {
+    useGame.getState().assignVictoryGear(0, 'h');
+    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.name));
+    expect(it).toBeTruthy();
+    expect(it!.identified).toBe(false); // flag « non identifié » conservé
+    expect((it!.qualities ?? []).length).toBeGreaterThan(0); // qualité magique conservée
+    expect(useGame.getState().pendingVictory?.gear?.length).toBe(0); // retiré du butin de l'écran
+  });
+
+  it('équipement non attribué → 1er héros à la fermeture (rien de perdu)', () => {
+    useGame.setState({ battle: { over: 'victory' } as never });
+    useGame.getState().dismissVictory();
+    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.name));
+    expect(it).toBeTruthy();
+  });
+});

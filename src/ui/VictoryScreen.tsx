@@ -16,6 +16,7 @@ export function VictoryScreen() {
   const party = useGame((s) => s.party);
   const net = useGame((s) => s.net);
   const giveItemToHero = useGame((s) => s.giveItemToHero);
+  const assignGear = useGame((s) => s.assignVictoryGear);
   const dismiss = useGame((s) => s.dismissVictory);
   const victoryReady = useGame((s) => s.victoryReady);
   const state = useGame();
@@ -28,6 +29,7 @@ export function VictoryScreen() {
   const xp = pv?.xp ?? 0;
   const gold = pv?.gold ?? { gold: 0, silver: 0, brass: 0 };
   const loot = pv?.loot ?? [];
+  const gear = pv?.gear ?? [];
   const defeated = pv?.defeated ?? [];
 
   return (
@@ -74,6 +76,35 @@ export function VictoryScreen() {
                         onClick={() => giveItemToHero(label, h.id)}
                         title={`Donner « ${label} » à ${h.name}`}
                         aria-label={`Donner ${label} à ${h.name}`}
+                      >
+                        <TeamPortrait combatant={h} size={34} />
+                      </button>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {gear.length > 0 && (
+          <div className="victory-section">
+            <h3>Équipement — qui l'emporte&nbsp;?</h3>
+            <ul className="victory-loot">
+              {gear.map((g, i) => (
+                <li key={`${g.label}-${i}`} className="victory-loot-row">
+                  <span className="vl-name">
+                    {g.label}
+                    {g.magic && <span className="vl-magic" title="Objet magique — qualités à révéler par Évaluation"> ✨</span>}
+                  </span>
+                  <span className="vl-assign">
+                    {assignable.map((h) => (
+                      <button
+                        key={h.id}
+                        className="vl-hero"
+                        onClick={() => assignGear(i, h.id)}
+                        title={`Équiper « ${g.label} » à ${h.name}`}
+                        aria-label={`Donner ${g.label} à ${h.name}`}
                       >
                         <TeamPortrait combatant={h} size={34} />
                       </button>

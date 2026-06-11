@@ -25,6 +25,9 @@ export interface PendingVictory {
   xp: number;
   gold: Money;
   loot: string[];
+  /** Équipement (giveTrapping) du butin — ATTRIBUABLE par portrait sur l'écran (qualités/skin
+   *  conservés), au lieu d'aller d'office au 1er héros. Non attribué → 1er héros à la fermeture. */
+  gear?: { label: string; magic: boolean; effect: Extract<Effect, { type: 'giveTrapping' }> }[];
   defeated: { name: string; count: number }[];
   /** Messages de journal de la victoire (Effets `journal` de onVictory) — affichés DANS l'écran (#9). */
   messages?: string[];

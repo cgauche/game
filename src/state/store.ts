@@ -291,6 +291,8 @@ export interface GameState {
   /** Écran de victoire : assigne un objet de butin à l'inventaire PERSONNEL d'un héros (retire du
    *  stock de groupe). Réutilise `addItemToHero` (même flux que le marchand). */
   giveItemToHero: (label: string, heroId: string) => void;
+  /** Attribue un objet d'équipement (giveTrapping) du butin de victoire au héros choisi. */
+  assignVictoryGear: (index: number, heroId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
   /** Coop : ✓ d'un siège sur l'écran de victoire — l'hôte ferme quand tous les requis ont validé. */
@@ -1232,9 +1234,19 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
   giveItemToHero: (label, heroId) => partyFlow.giveItemToHero(get, set, label, heroId),
   dismissVictory: () => {
-    const cont = get().pendingVictory?.onContinue;
+    const pv = get().pendingVictory;
+    const leftoverGear = (pv?.gear ?? []).map((g) => g.effect); // équipement non attribué → 1er héros par défaut
+    const cont = pv?.onContinue;
     set({ pendingVictory: null, battle: null, mode: 'exploration' });
+    if (leftoverGear.length) applyEffects(get, set, leftoverGear);
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
+  },
+  /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
+  assignVictoryGear: (index, heroId) => {
+    const pv = get().pendingVictory;
+    if (!pv?.gear || index < 0 || index >= pv.gear.length) return;
+    applyEffects(get, set, [{ ...pv.gear[index].effect, heroId }]);
+    set({ pendingVictory: { ...pv, gear: pv.gear.filter((_, i) => i !== index) } });
   },
   raiseHand: () => {
     const b = get().battle;
