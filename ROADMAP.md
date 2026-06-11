@@ -295,6 +295,22 @@ structurelle accumulée par l'empilement des jalons. Tout est committé par phas
 - **Coquille de modale partagée** (`ui/RollFlowShell.tsx` + `<Dice>`) : les 11 modales de jet ne
   portent plus que leur contenu (titre/sous-titre/verdict) — DOM rendu inchangé ; la Chirurgie
   (Test étendu multi-passes) garde son flux dédié.
+- ✅ **Panneau de jet unique** *(2026-06-11, merge bundle `7bf1b5c`)* : refonte pro des modales —
+  `RollPanel` (même géométrie avant/après le jet, l'avant-jet = le résultat pré-rempli ; ligne
+  adverse limitée à portrait+compétence+mods), `VsHeader` (en-tête A → B), `TableRollLine`
+  (d100 sur table : Oups!/Critiques/Imparfaites), **ciblage champ de bataille** `TargetPrompt`
+  (Frappe Mortelle, 2ᵉ frappe, Surincantation — CleaveModal/DualStrikeModal supprimées),
+  Détermination-retire-un-État pré-jet (`spendResolveCondition`, LDB 17 l.62-66), Sombre Pacte
+  partout. **Regreffes à l'intégration** : Échap/onClose par modale (a11y), `freeReroll` (L9),
+  et **`InfluenceRow` partagé** (la rangée Chance/Pacte/Garantie était copiée-collée dans
+  Attaque/Défense/Incantation/Désengagement — l'acteur est passé une fois, `freeRerollOf` calculé
+  dedans). Recette navigateur : défense montée 30+50=80 décomposé, DR net, Échap par invariant.
+- ✅ **Créateur : responsive + finition** *(2026-06-11, `e520826`)* : fiche-bandeau compacte ≤700px
+  (stats masquées — l'étape 3 et le Récap les montrent), footer en 2 rangées propres (message de
+  validation pleine largeur au-dessus, Précédent ⟷ Suivant sur une ligne), labels AU-DESSUS des
+  champs (`.zone-section label:has(…)`), **panneau d'apparence refait** (grande figurine 184-250px,
+  champs en grille, couleurs en grille de pastilles rondes — fini les 7 longues rangées),
+  lignes de compétences alignées (`.skill-adv` sans display). Vérifié 360/700/1280/1440.
 - **Store découpé en modules `(get,set)`** (patron combatFlow) : `pendings.ts` (types Pending*,
   ré-exportés), `partyFlow.ts` (équipement/avancement/consommables/butin), `merchantFlow.ts`
   (réassort/panier/transactions/Marchandage/Évaluation + types `MerchantState`/`MerchantStocks`).
