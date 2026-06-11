@@ -1,0 +1,34 @@
+import { describe, it, expect } from 'vitest';
+import { previewResourceDelta } from './combatFlow';
+
+/**
+ * `previewResourceDelta` (retour « clignotant » des jauges de l'ActiveFrame) lit le coût/gain de
+ * l'aperçu de clic SANS aucune valeur en dur (anti-duplication — demande utilisateur 2026-06-11,
+ * « Action comme Mouvement comme Avantage ») : Mouvement sur `preview.cost` (le coût que le commit
+ * consomme), Avantage sur `preview.adv` (source UNIQUE `chargeAdvantage`), Action dérivée de la
+ * présence d'un `targetId` (l'attaque consomme l'unique Action). Changer une de ces sources → le
+ * clignotant suit, sans toucher ici.
+ */
+const d = (preview: unknown) => previewResourceDelta({ preview } as never);
+
+describe('previewResourceDelta — coût/gain de l’aperçu, zéro valeur en dur', () => {
+  it('aucun aperçu → tout à 0', () => {
+    expect(previewResourceDelta(null)).toEqual({ action: 0, move: 0, adv: 0 });
+    expect(d(null)).toEqual({ action: 0, move: 0, adv: 0 });
+  });
+  it('Marche / Course → Mouvement lu sur preview.cost, pas d’Action ni d’Avantage', () => {
+    expect(d({ kind: 'move', cost: 3 })).toEqual({ action: 0, move: 3, adv: 0 });
+    expect(d({ kind: 'run', cost: 5 })).toEqual({ action: 0, move: 5, adv: 0 });
+  });
+  it('Attaque → 1 Action (cible visée), rien d’autre prévisualisé', () => {
+    expect(d({ kind: 'attack', targetId: 'e' })).toEqual({ action: 1, move: 0, adv: 0 });
+  });
+  it('Charge → 1 Action + Avantage lu sur preview.adv (suit la source, pas de copie)', () => {
+    const base = { kind: 'charge', targetId: 'e', dest: { x: 1, y: 1 }, path: [] };
+    expect(d({ ...base, adv: 1 })).toEqual({ action: 1, move: 0, adv: 1 });
+    expect(d({ ...base, adv: 0 }).adv).toBe(0); // si chargeAdvantage renvoie 0, le clignotant suit
+  });
+  it('Déplacer-puis-attaquer → 1 Action + Mouvement lu sur preview.cost', () => {
+    expect(d({ kind: 'moveAttack', targetId: 'e', dest: { x: 1, y: 1 }, path: [], cost: 4 })).toEqual({ action: 1, move: 4, adv: 0 });
+  });
+});

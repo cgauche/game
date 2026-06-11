@@ -693,6 +693,21 @@ textarea:focus {
 .af-action { --gc: #e0b83a; } /* Action — or */
 .af-move   { --gc: #46c2d6; } /* Mouvement — cyan */
 .af-adv    { --gc: #ff9b3d; } /* Avantage — orange (plafond 10, option RAW LDB 15 l.17) */
+/* Aperçu de clic (tap 1) : crans qui VONT être dépensés (clignotent) / gagnés (se remplissent en
+   clignotant) — montre le coût/gain de l'opération avant le commit du 2ᵉ clic. */
+@keyframes af-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.28; } }
+.af-bar i.spend { animation: af-pulse 0.7s ease-in-out infinite; }
+.af-bar i.gain {
+  background: var(--gc);
+  border-color: var(--gc);
+  box-shadow: 0 0 4px var(--gc);
+  opacity: 0.6;
+  animation: af-pulse 0.7s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .af-bar i.spend, .af-bar i.gain { animation: none; }
+  .af-bar i.spend { outline: 1px solid rgba(255, 255, 255, 0.85); outline-offset: -1px; }
+}
 .af-hp {
   position: relative;
   display: block;

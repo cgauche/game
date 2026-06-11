@@ -955,6 +955,24 @@ export function previewCast(
   };
 }
 
+/** Delta de RESSOURCES de l'aperçu de clic (tap 1, `battle.preview`) — pour le retour « clignotant »
+ *  de l'ActiveFrame : ce qu'une opération en attente va COÛTER (Action / Mouvement en cases) et
+ *  RAPPORTER (Avantage) AVANT le commit du 2ᵉ clic. Tout à 0 si aucun aperçu en cours. */
+export function previewResourceDelta(battle: BattleState | null): { action: number; move: number; adv: number } {
+  const p = battle?.preview;
+  if (!p) return { action: 0, move: 0, adv: 0 };
+  // AUCUNE valeur de coût/gain n'est codée ici (anti-duplication — Action comme Mouvement comme Avantage) :
+  //  - Mouvement : lu sur `p.cost`, le MÊME coût que le commit consomme (`movementUsed += cost`).
+  //  - Avantage  : lu sur `p.adv`, SOURCE UNIQUE `chargeAdvantage()` partagée par preview / commit / IA.
+  //  - Action    : DÉRIVÉE de la structure — une opération qui VISE un ennemi (`targetId`) est une
+  //                attaque → consomme l'unique Action (binaire `battle.acted`) ; Marche/Course non.
+  // Le Mouvement d'une Charge (portée de Course) est montré par le tracé sur la carte, pas la jauge.
+  const action = 'targetId' in p ? 1 : 0;
+  const move = p.kind === 'move' || p.kind === 'run' || p.kind === 'moveAttack' ? p.cost : 0;
+  const adv = p.kind === 'charge' ? p.adv : 0;
+  return { action, move, adv };
+}
+
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir
  *  dans une bande de portée AVEC Ligne de Vue) — MÊMES prédicats que la résolution (via `previewAttack`),
  *  pour surligner les cibles cliquables et griser les inéligibles. Pur. Vide hors tour de héros. */

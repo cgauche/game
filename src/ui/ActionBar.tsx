@@ -15,6 +15,7 @@ import { ownsLocally } from '../state/netFlow';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './CombatantBadge';
+import { previewResourceDelta } from '../state/combatFlow';
 import { ActiveFrame } from './ActiveFrame';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
@@ -161,6 +162,8 @@ export function ActionBar() {
   // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
   const actMax = 1 + (active.frenzied ? 1 : 0);
   const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
+  // Aperçu de clic (tap 1) : les jauges clignotent pour montrer le coût/gain avant le commit (tap 2).
+  const previewDelta = previewResourceDelta(battle);
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
@@ -377,6 +380,7 @@ export function ActionBar() {
           <ActiveFrame
             c={active} ring={ring} isHero={isHero}
             actAvail={actAvail} actMax={actMax} moveLeft={moveLeft} moveMax={moveMax}
+            spendAction={previewDelta.action} spendMove={previewDelta.move} gainAdv={previewDelta.adv}
             title={active.career ? `${active.name} — ${active.career}` : active.name}
           />
           <div className="ab-actor-side">
