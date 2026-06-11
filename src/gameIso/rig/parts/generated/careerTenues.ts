@@ -260,12 +260,9 @@ const MANUAL: Record<string, TenueSlots> = {
   // laiton, @cuir = sangles (recolorables — palette posée par la race, surchargeable éditeur).
   'Guerrier du Chaos': {
     torse: {
+      // ⚠ PAS d'épaulière dans le torse : elle vit sur l'os du BRAS (slot bras) — chaque bras
+      // rend la sienne → cohérence face/dos/profil et gauche/droite PAR CONSTRUCTION.
       front: `<g stroke-linejoin="round">`
-        // épaulières massives À POINTES (débordent des épaules — LE tell)
-        + `<path d="M-19 -27 Q-21 -33 -14 -34 Q-7 -33 -6 -26 L-9 -19 Q-16 -19 -19 -23 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M19 -27 Q21 -33 14 -34 Q7 -33 6 -26 L9 -19 Q16 -19 19 -23 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M-17 -31 L-21 -40 L-13.5 -33.5 Z M17 -31 L21 -40 L13.5 -33.5 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.6"/>`
-        + `<path d="M-20 -25 L-26 -27 L-19.5 -21.5 Z M20 -25 L26 -27 L19.5 -21.5 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.6"/>`
         // gorgerin MONTANT (couvre le cou jusque sous le heaume) + cuirasse bombée
         + `<path d="M-7 -38 Q0 -41 7 -38 L8 -30 Q8 -26 7 -25 Q0 -27 -7 -25 Q-8 -26 -8 -30 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
         + `<path d="M-13 -26 Q0 -30 13 -26 L12.5 2 Q11 10 0 12 Q-11 10 -12.5 2 Z" fill="@metal" stroke="#0c0c12" stroke-width="1.1"/>`
@@ -279,9 +276,6 @@ const MANUAL: Record<string, TenueSlots> = {
         + `<circle cx="0" cy="10.5" r="3" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/><circle cx="-1.1" cy="10" r="0.6" fill="#0c0c12"/><circle cx="1.1" cy="10" r="0.6" fill="#0c0c12"/><path d="M-1.2 12.2 Q0 13 1.2 12.2" stroke="#0c0c12" stroke-width="0.5" fill="none"/>`
         + `</g>`,
       back: `<g stroke-linejoin="round">`
-        + `<path d="M-19 -27 Q-21 -33 -14 -34 Q-7 -33 -6 -26 L-9 -19 Q-16 -19 -19 -23 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M19 -27 Q21 -33 14 -34 Q7 -33 6 -26 L9 -19 Q16 -19 19 -23 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M-17 -31 L-21 -40 L-13.5 -33.5 Z M17 -31 L21 -40 L13.5 -33.5 Z" fill="@vet2O" stroke="#0c0c12" stroke-width="0.6"/>`
         + `<path d="M-7 -38 Q0 -41 7 -38 L8 -28 Q0 -31 -8 -28 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
         + `<path d="M-13 -26 Q0 -30 13 -26 L12.5 2 Q11 10 0 12 Q-11 10 -12.5 2 Z" fill="@metalO" stroke="#0c0c12" stroke-width="1.1"/>`
         + `<path d="M0 -28 L0 11" stroke="#0c0c12" stroke-width="1"/>`
@@ -289,12 +283,7 @@ const MANUAL: Record<string, TenueSlots> = {
         + `<path d="M-11 12 L11 12 L10 19 L-10 19 Z M-10 20 L10 20 L9 27 L-9 27 Z M-9 28 Q0 32 9 28 L8 33 Q0 36 -8 33 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
         + `</g>`,
       profile: `<g stroke-linejoin="round">`
-        // épaulière à pointes = élément LATÉRAL PAIR → lateralPair() peint d'abord l'exemplaire
-        // LOINTAIN (parallaxe +x, assombri) puis le proche — règle codifiée (parallax.ts).
-        + lateralPair(
-          `<path d="M-2 -28 Q-9 -33 -13 -27 Q-14 -22 -10 -19 L-3 -20 Q0 -24 -2 -28 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
-          + `<path d="M-8 -32 L-11 -41 L-4.5 -33.5 Z M-12 -26 L-18 -28 L-11.5 -22 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.6"/>`,
-          { dx: 4, dy: -4 })
+        // (épaulières sur les BRAS — le bras lointain laisse dépasser sa pointe tout seul)
         + `<path d="M-4 -38 Q2 -40 6 -37 L6.5 -26 Q0 -29 -5 -26 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
         + `<path d="M-6 -27 Q3 -30 7 -25 Q9 -10 7 4 Q4 11 -2 11 Q-7 8 -7 2 Q-8 -14 -6 -27 Z" fill="@metal" stroke="#0c0c12" stroke-width="1"/>`
         + `<path d="M3 -20 L3 -6 M-2 -13 L8 -13" stroke="@vet2" stroke-width="1.1" fill="none"/>`
@@ -325,21 +314,30 @@ const MANUAL: Record<string, TenueSlots> = {
         + `</g>`,
     },
     bras: {
+      // ÉPAULIÈRE À POINTES — UNE SEULE source de vérité (l'os du bras) : les 3 vues montrent
+      // la MÊME pièce (coque débordante + pointe VERTICALE + pointe LATÉRALE), gauche/droite
+      // et près/loin suivent automatiquement (chaque bras rend la sienne).
       front: `<g stroke-linejoin="round">`
-        + `<path d="M-5.4 -3 Q0 -6 5.4 -3 Q6.6 3 5 6.5 Q0 9 -5 6.5 Q-6.6 3 -5.4 -3 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M0 -5.5 L0 -12 L3.4 -6.5 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
-        + `<path d="M-4 7 Q0 9 4 7 L3.6 16 Q0 17.5 -3.6 16 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
+        + `<path d="M0 -7 L0 -15 L3.8 -8 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M-6 -1 L-12 -3.5 L-6.5 3 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M-6.4 -3 Q0 -8 6.4 -3 Q7.6 3.5 5.4 7 Q0 9.6 -5.4 7 Q-7.6 3.5 -6.4 -3 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
+        + `<path d="M-5.6 -1.5 Q0 -5 5.6 -1.5" fill="none" stroke="@metalH" stroke-width="0.7" opacity="0.6"/>`
+        + `<path d="M-4 7.5 Q0 9.6 4 7.5 L3.6 16 Q0 17.5 -3.6 16 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`
         + `<path d="M-3.8 16 L3.8 16 L3.4 27 Q0 29 -3.4 27 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.8"/>`
         + `<path d="M-3.4 20 L3.4 20 M-3.2 24 L3.2 24" stroke="#0c0c12" stroke-width="0.5" opacity="0.7"/>`
         + `</g>`,
       back: `<g stroke-linejoin="round">`
-        + `<path d="M-5.4 -3 Q0 -6 5.4 -3 Q6.6 3 5 6.5 Q0 9 -5 6.5 Q-6.6 3 -5.4 -3 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M-4 7 Q0 9 4 7 L3.4 27 Q0 29 -3.4 27 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.8"/>`
+        + `<path d="M0 -7 L0 -15 L-3.8 -8 Z" fill="@vet2O" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M6 -1 L12 -3.5 L6.5 3 Z" fill="@vet2O" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M-6.4 -3 Q0 -8 6.4 -3 Q7.6 3.5 5.4 7 Q0 9.6 -5.4 7 Q-7.6 3.5 -6.4 -3 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.9"/>`
+        + `<path d="M-4 7.5 Q0 9.6 4 7.5 L3.4 27 Q0 29 -3.4 27 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.8"/>`
         + `</g>`,
       profile: `<g stroke-linejoin="round">`
-        + `<path d="M-5 -3 Q0 -6 5 -3 Q6 3 4.6 6.5 Q0 9 -4.6 6.5 Q-6 3 -5 -3 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
-        + `<path d="M0 -5.5 L0 -11.5 L3 -6.5 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
-        + `<path d="M-3.6 7 Q0 9 3.6 7 L3.2 27 Q0 29 -3.2 27 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.8"/>`
+        + `<path d="M0 -7 L0 -15 L3.6 -8 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M-5.4 -1 L-11 -3.5 L-5.8 3 Z" fill="@vet2" stroke="#0c0c12" stroke-width="0.5"/>`
+        + `<path d="M-6 -3 Q0 -8 6 -3 Q7 3.5 5 7 Q0 9.6 -5 7 Q-7 3.5 -6 -3 Z" fill="@metal" stroke="#0c0c12" stroke-width="0.9"/>`
+        + `<path d="M-5.2 -1.5 Q0 -5 5.2 -1.5" fill="none" stroke="@metalH" stroke-width="0.7" opacity="0.6"/>`
+        + `<path d="M-3.6 7 Q0 9.4 3.6 7 L3.2 27 Q0 29 -3.2 27 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.8"/>`
         + `</g>`,
     },
     tete: {
