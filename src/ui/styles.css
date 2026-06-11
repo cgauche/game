@@ -271,6 +271,26 @@ h3 {
 .menu-buttons .btn {
   font-size: 15px;
 }
+/* Section « Atelier » (outils de création/test) : visuellement secondaire au jeu. */
+.menu-tools-rule {
+  margin-top: 26px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.menu-tools {
+  margin-top: 12px;
+}
+.menu-tools .btn {
+  font-size: 13px;
+  padding: 8px 14px;
+  opacity: 0.92;
+}
+.menu-link {
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
 .hint {
   color: var(--muted);
   font-size: 13px;
@@ -465,9 +485,16 @@ h3 {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap; /* 360px : la carte garde sa largeur, les boutons passent dessous */
 }
 .pregen-row .char-card {
   flex: 1;
+  min-width: 200px;
+}
+.picker-title {
+  margin: 0 0 10px;
+  color: var(--gold2);
+  font-size: 20px;
 }
 /* Barre d'actions normée des modales : 2 boutons max — [Annuler/Subir discret à gauche] [primaire
    à droite, largeur min fixe]. Les dépenses de ressources vivent dans `.rm-influence`, pas ici. */

@@ -1101,11 +1101,18 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   (Triggers/Dialogues/Rencontres) en role=dialog + piège sans Échap (champs texte — pas de perte de
   modifs sur un réflexe) ; WorldMapEditor = écran plein, exempt. **Plus aucune coquille main.**
 
-## 🎯 Jalon 9 — Refonte UI mobile/PC & charte graphique *(ajouté 2026-06-11)*
+## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
 Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —
 arbitrage utilisateur « mobile complet ») utilisables **à 360px ET sur grand écran** (utiliser
 l'espace, pas du mobile étiré), sous une **charte graphique unique**.
+
+**Pas qu'une charte — une refonte UI/UX « produit final »** *(clarification utilisateur
+2026-06-11)* : chaque écran passe de POC à produit — **contenu et parcours compris** :
+hiérarchie de l'information (actions de jeu vs outils), wording court, enchaînements sans
+friction (ex. le recruteur reste ouvert jusqu'au groupe complet, compteur, fermeture auto),
+états vides/désactivés porteurs de sens, micro-feedback. Critère de sortie par écran :
+« on dirait un jeu fini », pas une démo technique.
 
 **Arbitrages actés (2026-06-11)** : éditeur inclus dans l'objectif mobile 360px ; direction
 esthétique **« identité Warhammer marquée »** (encre/charbon, rouge sang, or vieilli, parchemin

@@ -20,7 +20,7 @@ export function PartyScreen() {
     if (party.length >= 4 || party.some((p) => p.id === h.id)) return;
     setParty([...party, JSON.parse(JSON.stringify(h))]);
     if (wealth) creditPartyMoney(wealth, `Richesse initiale de ${h.name}`);
-    setPicker(false);
+    if (party.length + 1 >= 4) setPicker(false); // groupe complet → on ferme ; sinon on enchaîne
   };
   const startCampaign = () => {
     startScene(campaign[0].scene);
@@ -67,7 +67,7 @@ export function PartyScreen() {
         })}
       </div>
 
-      {picker && <PartyPicker party={party} onPick={pick} onClose={() => setPicker(false)} />}
+      {picker && party.length < 4 && <PartyPicker party={party} onPick={pick} onClose={() => setPicker(false)} />}
     </div>
   );
 }
@@ -95,6 +95,7 @@ export function PartyPicker({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3 className="picker-title">Recruter — {party.length}/4</h3>
         <div className="sheet-tabs">
           <button className={`tab ${tab === 'roster' ? 'on' : ''}`} onClick={() => setTab('roster')}>
             Mes personnages
@@ -140,7 +141,7 @@ export function PartyPicker({
         )}
 
         <button className="btn" onClick={onClose}>
-          Fermer
+          Terminé
         </button>
       </div>
     </div>
