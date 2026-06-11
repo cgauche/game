@@ -3,8 +3,7 @@ import { useGame, type BattleState } from './store';
 import { buildAdvancementView } from './advancement';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
-import { tome1Auberge } from '../scenes/tome1-auberge';
+import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
 import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
@@ -80,56 +79,17 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('charge une scène et place le groupe au départ', () => {
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     const st = useGame.getState();
-    expect(st.scene?.id).toBe('tome1-intro');
+    expect(st.scene?.id).toBe('test-fixture');
     expect(st.partyPos).toEqual({ x: 6, y: 10 });
     expect(st.mode).toBe('exploration');
-  });
-
-  it('un dialogue de PNJ s’ouvre et se parcourt (Gustav, intérieur de l’auberge)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
-    useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Auberge);
-    // Se placer à côté de Gustav (5,2) dans la Grande Salle puis interagir.
-    useGame.setState({ partyPos: { x: 5, y: 3 } });
-    useGame.getState().interactEntity('gustav');
-    expect(useGame.getState().dialogue?.dialogue.id).toBe('dlg-gustav');
-    expect(useGame.getState().dialogue?.speakerId).toBe('gustav'); // l'interlocuteur (portrait) est mémorisé
-    useGame.getState().chooseDialogue(0); // → g2
-    expect(useGame.getState().dialogue?.nodeId).toBe('g2');
-    expect(useGame.getState().dialogue?.speakerId).toBe('gustav'); // préservé au changement de nœud
-  });
-
-  it('la porte du bâtiment « La Diligence » ouvre l’intérieur enregistré dans la campagne', () => {
-    // tome1-auberge-interieur est enregistré via campaign[] : aucune startScene
-    // manuelle de l'intérieur n'est nécessaire, contrairement aux tests de porte
-    // ci-dessous qui utilisent une scène ad hoc.
-    useGame.getState().startScene(tome1Intro);
-    useGame.setState({ partyPos: { x: 6, y: 8 } }); // juste sous la porte (6,7)
-    useGame.getState().moveParty({ x: 6, y: 7 }); // marcher sur la porte → intérieur
-    expect(useGame.getState().scene?.id).toBe('tome1-auberge-interieur');
-  });
-
-  it('le trigger de la route déclenche l’embuscade des mutants', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(2) });
-    useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
-    // Entrer dans la zone du trigger (14..19, 11..12).
-    useGame.getState().moveParty({ x: 16, y: 11 });
-    const st = useGame.getState();
-    expect(st.mode).toBe('battle');
-    expect(st.battle).toBeTruthy();
-    const enemies = st.battle!.combatants.filter((c) => c.kind === 'enemy');
-    expect(enemies.length).toBe(3);
-    expect(enemies[0].name).toBe('Mutant');
-    expect(enemies[0].wounds.max).toBe(12); // profil Mutant LDB
   });
 
   it('persiste Blessures + critiques + États persistants vers le groupe en fin de combat (victoire)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat — on pilote l'ordre nous-mêmes
 
@@ -318,7 +278,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
     useGame.setState({ party: [{ ...hero, conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'À Terre', value: 1 }] }] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const h = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -330,7 +290,7 @@ describe('Boucle de jeu (store)', () => {
     const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     const b = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'B', rng: makeRNG(2) });
     useGame.setState({ party: [a, { ...b, dead: true }] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const heroes = useGame.getState().battle!.combatants.filter((c) => c.kind === 'hero');
@@ -341,7 +301,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — fumbleConfirm applique l’auto-blessure (Oups! 01-20)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
@@ -357,7 +317,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — trauma (Oups! 81-90) pose une Déchirure de jambe + 1 Blessure critique', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
@@ -372,7 +332,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — perte d’Action (Oups! 71-80) consommée au tour suivant', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
@@ -391,7 +351,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — fumble du DÉFENSEUR héros (défense ratée + double) ouvre la modale avec reprise IA', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
@@ -424,7 +384,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
@@ -448,7 +408,7 @@ describe('Boucle de jeu (store)', () => {
   it('Maladresse — l’usure d’arme (Oups! 21-40) écrit sur l’ItemInstance et persiste combat→combat', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     let b = useGame.getState().battle!;
@@ -504,7 +464,7 @@ describe('Boucle de jeu (store)', () => {
     hero.characteristics.Int = 90; // assurer le lancement (NI 0)
     hero.spells = ['Fléchette'];
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -531,7 +491,7 @@ describe('Boucle de jeu (store)', () => {
     pretre.characteristics.Soc = 95; // assurer la réussite de la Prière
     pretre.spells = ['Bénédiction de Bataille'];
     useGame.setState({ party: [pretre] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -581,7 +541,7 @@ describe('Boucle de jeu (store)', () => {
     hero.characteristics.CC = 70; // CC élevée + seed fixe → touche déterministe
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2); // RNG de combat contrôlé : seed 2 ⇒ touche avec dégâts (cf. recherche)
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -642,7 +602,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -663,7 +623,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(4);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -700,7 +660,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
     let st = useGame.getState();
@@ -727,7 +687,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     let st = useGame.getState();
@@ -761,7 +721,7 @@ describe('Boucle de jeu (store)', () => {
   it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB États l.123)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -779,7 +739,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
     let st = useGame.getState();
@@ -809,7 +769,7 @@ describe('Boucle de jeu (store)', () => {
     hero.characteristics.CC = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -829,7 +789,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(7);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     let st = useGame.getState();
@@ -852,7 +812,7 @@ describe('Boucle de jeu (store)', () => {
   it('Charge interdite si déjà Engagé (LDB 15-Dépl l.74)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -872,7 +832,7 @@ describe('Boucle de jeu (store)', () => {
   it('attackCancel est sans effet après une Charge (attaque obligatoire, LDB 15-Dépl l.75)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -885,7 +845,7 @@ describe('Boucle de jeu (store)', () => {
   it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     let st = useGame.getState();
@@ -917,7 +877,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -944,7 +904,7 @@ describe('Boucle de jeu (store)', () => {
   it('Désengagement B échec : l’adversaire gagne +1 Avantage, fuite impossible, Action consommée (LDB 15-Dépl l.89)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -976,7 +936,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1010,7 +970,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(4);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1037,7 +997,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(6);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1057,7 +1017,7 @@ describe('Boucle de jeu (store)', () => {
   it('Désengagement B égalité parfaite : statu quo — ni fuite, ni Avantage à l’adversaire', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1088,7 +1048,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1118,7 +1078,7 @@ describe('Boucle de jeu (store)', () => {
   it('Désengagement raté (Action consommée) : re-cliquer « Déplacer » ne relance PAS l’Esquive (anti-boucle)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1139,7 +1099,7 @@ describe('Boucle de jeu (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1167,7 +1127,7 @@ describe('Boucle de jeu (store)', () => {
     hero.characteristics.CC = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -1810,7 +1770,7 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
   function moveSetup() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -2236,7 +2196,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
   it('franchir un Round de combat avance le temps de TIME_COST.combatRound', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

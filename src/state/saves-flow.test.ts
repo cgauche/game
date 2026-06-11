@@ -7,7 +7,7 @@ import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, SAVE_VERSION } from './saves';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -30,7 +30,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     deleteSlot(1); deleteSlot(2); deleteSlot(3);
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Sauvé', rng: makeRNG(4) });
     useGame.setState({ party: [hero], battle: null });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     vi.clearAllTimers();
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); deleteSlot(1); deleteSlot(2); deleteSlot(3); });
@@ -40,7 +40,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(useGame.getState().saveGame(1)).toBe(true);
     const s = readSlot(1)!;
     expect(s.version).toBe(SAVE_VERSION);
-    expect(s.sceneLabel).toBe(tome1Intro.nom); // le NOM de la scène, pas son id
+    expect(s.sceneLabel).toBe(testScene.nom); // le NOM de la scène, pas son id
     expect(s.sceneLabel.length).toBeGreaterThan(0);
     expect((s.data.flags as Record<string, unknown>)['drapeau-test']).toBe(true);
     const metas = listSaves();
@@ -60,7 +60,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(after.gameTime).toBe(12345);
     expect(after.party[0]?.name).toBe('Sauvé');
     expect(after.party[0]?.wounds.current).toBe(3);
-    expect(after.scene?.id).toBe(tome1Intro.id);
+    expect(after.scene?.id).toBe(testScene.id);
     expect(after.screen).toBe('campaign');
     after.log('le store répond'); // les actions n'ont pas été écrasées par le merge
     const j = useGame.getState().journal;
@@ -84,6 +84,6 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     // importGame applique la save importée à l'état.
     useGame.setState({ flags: {}, scene: null, screen: 'menu' });
     expect(useGame.getState().importGame(json)).toBe(true);
-    expect(useGame.getState().scene?.id).toBe(tome1Intro.id);
+    expect(useGame.getState().scene?.id).toBe(testScene.id);
   });
 });

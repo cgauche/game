@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)', () => {
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)',
   function setup() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

@@ -12,7 +12,7 @@ import { applyCast, applyAttackResult, attackWardGate, doAttack } from './combat
 import { createHero } from '../engine/character';
 import { makeRNG, type RNG } from '../engine/dice';
 import { findSpell } from '../data';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 import type { CastResult, MissileResult } from '../engine/magic';
@@ -31,7 +31,7 @@ describe('L13 — gates & redirections', () => {
     const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     const P = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'P', rng: makeRNG(2) });
     useGame.setState({ party: [H, P] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     useGame.getState().seedRng(7);

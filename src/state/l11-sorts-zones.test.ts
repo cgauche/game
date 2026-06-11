@@ -9,7 +9,7 @@ import { applyCast, wardedAgainst, organicProjectile } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { findSpell } from '../data';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { CastResult, MissileResult } from '../engine/magic';
 import type { Combatant, Weapon } from '../engine/types';
 
@@ -20,7 +20,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
   function setup() {
     const W = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'W', rng: makeRNG(3) });
     useGame.setState({ party: [W] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     useGame.getState().seedRng(5);

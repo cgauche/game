@@ -6,7 +6,7 @@ import { recomputeLoadout } from '../engine/items';
 import { attachMutation } from '../engine/corruption';
 import { rollMutation } from '../data/mutations';
 import { hasCondition } from '../engine/conditions';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ describe('Attaque gratuite de Tentacule (store)', () => {
   function setup(withTentacle = true) {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

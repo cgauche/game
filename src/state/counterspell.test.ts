@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { castSpell, resolveRoundBoundary, counterspellCandidates } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 /** Dissipation / Contre-sort (LDB 46 l.201-202) : Test opposé de Langue (Magick) contre une
@@ -19,7 +19,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     });
     hero.spells = ['Fléchette'];
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

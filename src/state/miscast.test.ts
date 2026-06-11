@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { applyMiscast } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 // Colère des dieux / Incantation Imparfaite — révélation témoin (« un jet = une modale »).
 describe('Miscast en révélation (store)', () => {
@@ -20,7 +20,7 @@ describe('Miscast en révélation (store)', () => {
   function battle() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
     useGame.setState({ party: [hero], pendingReveals: [] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

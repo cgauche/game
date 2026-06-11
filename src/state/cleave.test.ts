@@ -4,7 +4,7 @@ import { cleaveTargets, doAttack, autoCleave } from './combatFlow';
 import { occupiesTile } from './footprint';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 import type { BattleState } from './store';
@@ -64,7 +64,7 @@ describe('Balayage en combat (store)', () => {
       createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: `H${i}`, rng: makeRNG(i + 1) }),
     );
     useGame.setState({ party });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers(); // on pilote l'ordre nous-mêmes
     return useGame.getState().battle!;

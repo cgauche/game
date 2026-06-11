@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { applyAttackResult } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import { hasCondition } from '../engine/conditions';
 import type { AttackResult } from '../engine/combat';
 
@@ -21,7 +21,7 @@ describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18-Traumatis
   function setup() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

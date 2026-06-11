@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 /**
  * Bug playtest « pas le droit de bouger après avoir attaqué » : une attaque de mêlée Engage,
@@ -17,7 +17,7 @@ describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () =
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;

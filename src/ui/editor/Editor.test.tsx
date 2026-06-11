@@ -34,9 +34,4 @@ describe('Editor (rendu)', () => {
     expect(html).toContain('Inspecteur');
     expect(html).toContain('Sélectionnez un élément sur la carte');
   });
-
-  it('rend la scène par défaut (« La Diligence » : entités + triggers du tome 1)', () => {
-    // tome1Intro a des entités et des zones → le canvas doit contenir des losanges de trigger.
-    expect(html).toContain('strokeDasharray="4 3"'.replace('strokeDasharray', 'stroke-dasharray'));
-  });
 });

@@ -10,7 +10,7 @@ import { applyCriticalToTarget } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 const mkEnemy = (id: string): Combatant =>
@@ -61,7 +61,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     seedBattleRng(7);
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingRoundStart: null });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
   });

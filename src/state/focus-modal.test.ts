@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 // Focalisation par modale (LDB — Test étendu) : « un jet = une modale ».
 describe('Focalisation en modale (store)', () => {
@@ -23,7 +23,7 @@ describe('Focalisation en modale (store)', () => {
     if (!hero.skills.some((s) => s.name === 'Focalisation')) hero.skills.push({ name: 'Focalisation', advances: 20, characteristic: 'FM' } as never);
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     let st = useGame.getState();
@@ -49,7 +49,7 @@ describe('Focalisation en modale (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.spells = ['Fléchette'];
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const st = useGame.getState();

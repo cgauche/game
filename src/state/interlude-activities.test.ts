@@ -9,7 +9,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
 import { findTrapping } from '../data';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 // (les tests Apprentissage/commande utilisent les actions store et les données réelles)
 
 describe('Activités d’interlude (LDB 23)', () => {
@@ -18,7 +18,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     vi.clearAllTimers();
     const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, journal: [] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     vi.clearAllTimers();
     useGame.setState({ money: fromBrass(2000) });
     useGame.getState().seedRng(13);

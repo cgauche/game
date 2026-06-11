@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { applyAttackResult } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { AttackResult } from '../engine/combat';
 
 // Coup Critique / Assommante en révélation + gel de l'IA (« un jet = une modale »).
@@ -21,7 +21,7 @@ describe('Conséquences d’attaque en révélation (store)', () => {
   function battle() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

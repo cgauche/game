@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { maybeOpenHeroPsych, resolvePsychAI } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 describe('Traits psy ciblés — déclenchement & résolution (LDB 21, P3)', () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Traits psy ciblés — déclenchement & résolution (LDB 21, P3)', () 
   function setup() {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;

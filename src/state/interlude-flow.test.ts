@@ -10,7 +10,7 @@ import { interludeEventFor } from '../data/interludeEvents';
 import { toBrass, fromBrass } from '../engine/money';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 
 describe('Interlude — flux start/end', () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Interlude — flux start/end', () => {
     const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     const b = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'B', rng: makeRNG(2) });
     useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(1000) });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     vi.clearAllTimers();
     useGame.setState({ money: fromBrass(1000) }); // startScene recrédite la richesse initiale — re-fixe
     useGame.getState().seedRng(11);

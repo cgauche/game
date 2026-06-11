@@ -11,7 +11,7 @@ import { applyCast, castSpell } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { findSpell } from '../data';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { CastResult } from '../engine/magic';
 
 const okRes = (sl: number): CastResult => ({ cast: true, roll: 30, target: 70, sl, isCritical: false, isFumble: false, log: 'lance Souffle' });
@@ -23,7 +23,7 @@ describe('Souffle — délégation à l’attaque de zone du Trait (LDB 47 p.244
   function setup() {
     const W = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'W', rng: makeRNG(3) });
     useGame.setState({ party: [W] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     useGame.getState().seedRng(2);

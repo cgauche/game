@@ -3,7 +3,7 @@ import { useGame } from '../../state/store';
 import { Scene, Terrain, SceneEntity, emptyScene, tileAt } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
 import { validateScene, type Warning } from '../../state/validateScene';
-import { tome1Intro } from '../../scenes/tome1-intro';
+import { testScene } from '../../scenes/test-fixture';
 import { creatures } from '../../data';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
@@ -41,7 +41,7 @@ export function Editor() {
   const loadProject = useGame((s) => s.loadProject);
   const party = useGame((s) => s.party);
 
-  const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(tome1Intro));
+  const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(testScene));
   const [tool, setTool] = useState<Tool>({ mode: 'select' });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);

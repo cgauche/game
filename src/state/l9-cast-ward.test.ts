@@ -9,7 +9,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { castingValue } from '../engine/magic';
-import { tome1Intro } from '../scenes/tome1-intro';
+import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', () => {
@@ -20,7 +20,7 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     const priest = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'P', rng: makeRNG(2) });
     useGame.setState({ party: [hero, priest] });
-    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
