@@ -15,9 +15,8 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 
 ## Règles strictes (NE PAS déroger)
 
-1. **Aucune invention de règles.** Toute règle/valeur vient des fichiers `Source/` (Livre de
-   base + Archives de l'Empire I & II uniquement — **chemins exacts § Sources VF ci-dessous**).
-   Ne pas utiliser tes connaissances WFRP.
+1. **Aucune invention de règles.** Toute règle/valeur vient des fichiers `Source/` (livres
+   autorisés — **liste exacte § Sources VF ci-dessous**). Ne pas utiliser tes connaissances WFRP.
    En cas de doute, lire le `.md` source et **citer** le passage. Un workflow d'audit de
    fidélité existe (cf. plus bas) — l'utiliser pour vérifier le code contre la source.
 2. **Tout le contenu de campagne est éditable** dans l'éditeur (schéma de Scène unique).
@@ -49,7 +48,16 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   **85 Traits de créature**. Index : `00 - Index.md`.
 - **ADE I** = `Source/Warhammer v4 - Les archives de l'Empire volume 1/`.
 - **ADE II** = `Source/Warhammer v4 - Les archives de l'Empire volume 2/`.
-- `Source/all-data.json` = extraction filtrée LDB/ADE (source de `npm run build:data`).
+- **EDO** (L'Ennemi dans l'Ombre, T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` — inclus
+  2026-06-11 : sorts de Tzeentch, créatures du Chaos (Horreurs, Furie), 3 talents + 3 traits.
+- **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — 9 véhicules.
+- **Middenheim** = `Source/Warhammer v4 - Middenheim la cité du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
+- `Source/all-data.json` = extraction filtrée aux **livres autorisés ci-dessus** (LDB/ADE1/ADE2 +
+  EDO/Middenheim/EDOC) — source de `npm run build:data`. **Exclusion** (`DENY_CLASS`, `scripts/build-data.ts`) :
+  la classe « Chaos » et sa carrière « Magus du culte de Tzeentch » sont retirées (contenu ennemi, hors
+  création joueur) ; les sorts de Tzeentch RESTENT (verrouillés au joueur par le Talent du grimoire).
+  EDO/EDOC/Middenheim sont AUSSI des livres de scénario (cf. ci-dessous) ; seule leur **donnée extraite**
+  entre dans les règles, pas leur prose narrative.
 
 **SCÉNARIOS / CONTENU de campagne** (PAS pour les règles) :
 - Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `… L'ennemi dans l'Ombre Compagnon/`.
@@ -69,7 +77,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 
 ```bash
 npm install
-npm run build:data   # (re)génère src/data/*.json depuis Source/all-data.json (filtré LDB/ADE1/ADE2)
+npm run build:data   # (re)génère src/data/*.json depuis all-data.json (livres autorisés : LDB/ADE + EDO/Middenheim/EDOC)
 npm run dev          # serveur de dev (http://localhost:5173)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
