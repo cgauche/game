@@ -8,13 +8,8 @@ export const creature: CreatureDef = {
   plan: 'biped',
   matchPriority: 44,
   match: '\\bfimir',
-  // Race dédiée (même gabarit brute que l'Ogre, mais SANS les features cosmétiques Ogre :
-  // heaume/pauldrons/gut-plate sont propres à l'Ogre et ne doivent pas contaminer le Fimir).
+  // Race dédiée (même gabarit brute que l'Ogre, mais SANS les features cosmétiques Ogre).
+  // Tête cyclope, queue, chair gris-vert et cuir écailleux vivent SUR LA RACE (head/palette/
+  // features) : un perso.monster court-circuiterait les features (écailles).
   race: 'Fimir',
-  // Config distincte (œil unique + queue + chair gris-vert) vit ici, pas sur la race.
-  perso: {
-    career: 'Nu',
-    monster: { tete: 'cyclope', queue: true },
-    colors: { peau: '#6b7a52' }, // chair gris-vert (ombres/reflets dérivés auto)
-  },
 };
