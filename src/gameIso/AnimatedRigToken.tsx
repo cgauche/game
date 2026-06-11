@@ -2,7 +2,7 @@ import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant } from './rig/parts/equipment';
-import { mutationAppearance, mutationOverlaysFor } from './rig/parts/mutations';
+import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
 import type { EnemyRigProfile } from './rig/enemyProfile';
 import { RigToken } from './RigToken';
 
@@ -16,10 +16,10 @@ export function AnimatedRigToken({ combatant, profile, pos }: { combatant: Comba
   return (
     <RigToken
       id={combatant.id}
-      appearance={mutationAppearance(profile?.appearance ?? combatant.appearance ?? defaultAppearance(combatant), combatant.mutations)}
+      appearance={combatantAppearance(profile?.appearance ?? combatant.appearance ?? defaultAppearance(combatant), combatant)}
       equip={profile?.equip ?? equipFromCombatant(combatant)}
       career={profile?.career ?? combatant.career}
-      overlays={[...(profile?.overlays ?? []), ...mutationOverlaysFor(combatant.mutations)]}
+      overlays={[...(profile?.overlays ?? []), ...combatantOverlays(combatant)]}
       pos={pos}
       outOfAction={!!combatant.wounds && !!combatant.conditions && isOutOfAction(combatant)}
     />

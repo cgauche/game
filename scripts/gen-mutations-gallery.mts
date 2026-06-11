@@ -10,8 +10,10 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { mutationOverlaysFor, mutationAppearance, randomMutationOverlays } from '../src/gameIso/rig/parts/mutations';
+import { injuryOverlaysFor } from '../src/gameIso/rig/parts/injuries';
 import { LABELS_PHYSIQUES } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
+import type { Combatant, Trauma } from '../src/engine/types';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import type { RigOverlay } from '../src/gameIso/rig/bones';
@@ -63,6 +65,27 @@ section('Sur armure équipée (épée en main)', [
 // 4) Mutants ennemis : visuels tirés au seed du même registre (chemin enemyProfile).
 section('Mutants ennemis — tirage déterministe au seed', [0, 1, 7, 42, 1234, 77].map((seed) =>
   cell(`Mutant seed ${seed}`, { ...APP, seed }, randomMutationOverlays(seed), { bg: '#2a1d22', tint: '#e9b' })));
+
+// 5) Amputations & prothèses (LDB 18/73, injuries.ts) : séquelle nue puis prothèse portée.
+const trauma = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', note: '', ...over });
+const wounded = (traumas: Trauma[], prosthesis?: string): Combatant =>
+  ({ id: 'g', name: 'G', kind: 'hero', traumas, items: prosthesis ? [{ uid: 'p', name: prosthesis, kind: 'misc', qualities: [], enc: 0, equipped: true }] : [] }) as unknown as Combatant;
+const MAIN_D = trauma({ label: 'Main/bras amputé (brasD)', location: 'brasD', noTwoHanded: true });
+const JAMBE_G = trauma({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', movementHalved: true });
+const INJ: { label: string; c: Combatant }[] = [
+  { label: 'Main amputée (moignon)', c: wounded([MAIN_D]) },
+  { label: 'Crochet porté', c: wounded([MAIN_D], 'Crochet') },
+  { label: 'Merveille d’ingénierie', c: wounded([MAIN_D], "Merveille d'ingénierie") },
+  { label: 'Fausse jambe', c: wounded([JAMBE_G], 'Fausse jambe') },
+  { label: 'Œil perdu', c: wounded([trauma({ label: 'Œil perdu' })]) },
+  { label: 'Cache-œil', c: wounded([trauma({ label: 'Œil perdu' })], 'Cache-œil') },
+  { label: 'Œil de verre', c: wounded([trauma({ label: 'Œil perdu' })], 'Œil de verre') },
+  { label: 'Cécité (bandage)', c: wounded([trauma({ label: 'Cécité' })]) },
+  { label: 'Nez amputé', c: wounded([trauma({ label: 'Nez amputé' })]) },
+  { label: 'Nez doré', c: wounded([trauma({ label: 'Nez amputé' })], 'Nez doré') },
+];
+section('Amputations &amp; prothèses (LDB 18 / 73)', INJ.map(({ label, c }) =>
+  cell(label, APP, injuryOverlaysFor(c), { career: 'Soldat', bg: '#241f2a', tint: '#caf' })));
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Mutations QC</title></head>
 <body style="background:#11141c;padding:16px">

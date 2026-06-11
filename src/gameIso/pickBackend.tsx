@@ -13,7 +13,7 @@ import { hashSeed } from './appearance';
 import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
 import { equipFromCombatant, type EquipCtx } from './rig/parts/equipment';
-import { mutationAppearance, mutationOverlaysFor } from './rig/parts/mutations';
+import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
 import type { RigOverlay } from './rig/bones';
 
 /**
@@ -89,10 +89,10 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
     if (classifyEnemy(c.name) === 'rig') {
       const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
       if (top) {
-        const appearance = mutationAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c.mutations);
+        const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);
         const career = prof?.career ?? c.career;
-        const overlays = [...(prof?.overlays ?? []), ...mutationOverlaysFor(c.mutations)];
+        const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(c)];
         const f = faceFrame(appearance, equip, career, overlays);
         return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: f.box, flat: true, body: f.body };
       }
@@ -105,7 +105,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
     const leader = subject.leader;
     if (leader) {
       if (top) {
-        const f = faceFrame(mutationAppearance(leader.appearance ?? defaultAppearance(leader), leader.mutations), equipFromCombatant(leader), leader.career, mutationOverlaysFor(leader.mutations));
+        const f = faceFrame(combatantAppearance(leader.appearance ?? defaultAppearance(leader), leader), equipFromCombatant(leader), leader.career, combatantOverlays(leader));
         return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: f.box, flat: true, body: f.body };
       }
       return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={leader} /> };

@@ -48,6 +48,8 @@ const SYNONYMS: Record<string, string> = {
   // attaques NATURELLES (traits) : aucune arme tenue — la part du corps fait foi
   'mains nues': '', poings: '', morsure: '', griffes: '', griffe: '', tentacule: '', tentacules: '',
   bec: '', dard: '', corne: '', cornes: '', queue: '', pietinement: '', crachat: '',
+  // prothèse-arme : le crochet est dessiné SUR la main (injuries.ts), pas tenu
+  crochet: '',
 };
 const ART_BY_LABEL: Record<string, string> = { ...SYNONYMS };
 for (const f of WEAPON_FORMS) ART_BY_LABEL[wnorm(f.label)] = f.slug;
