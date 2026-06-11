@@ -26,7 +26,8 @@ export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
-import type { InterludeState, BankDeposit } from './interludeFlow';
+import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
+export type { PendingActivity } from './interludeFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
@@ -295,6 +296,20 @@ export interface GameState {
   startInterlude: (weeks?: number) => void;
   /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
   interludeEnd: () => void;
+  /** Jet d'Activité en attente (Revenus / lancer d'Artisanat — modale, fabrique rollFlow). */
+  pendingActivity: PendingActivity | null;
+  activityRoll: () => void;
+  activityReroll: () => void;
+  activityBonusSL: () => void;
+  activityDarkPact: () => void;
+  activityCancel: () => void;
+  activityConfirm: () => void;
+  /** Activités (LDB 23) : Revenus, Artisanat (engager l'ouvrage puis lancer), banque. */
+  interludeRevenus: (heroId: string) => void;
+  interludeCraftStart: (heroId: string, trapping: string, atouts: string[], defauts: string[]) => void;
+  interludeCraftRoll: (heroId: string) => void;
+  interludeBank: (heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number) => void;
+  interludeWithdraw: (index: number) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
@@ -770,6 +785,18 @@ export const useGame = create<GameState>((set, get) => ({
   pendingOrders: [],
   startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
+  pendingActivity: null,
+  activityRoll: () => FLOWS.activity.roll(get, set),
+  activityReroll: () => FLOWS.activity.reroll(get, set),
+  activityBonusSL: () => FLOWS.activity.bonusSL(get, set),
+  activityDarkPact: () => FLOWS.activity.darkPact(get, set),
+  activityCancel: () => FLOWS.activity.cancel(get, set),
+  activityConfirm: () => interludeFlow.confirmActivity(get, set),
+  interludeRevenus: (heroId) => interludeFlow.openRevenus(get, set, heroId),
+  interludeCraftStart: (heroId, trapping, atouts, defauts) => interludeFlow.craftStart(get, set, heroId, trapping, atouts, defauts),
+  interludeCraftRoll: (heroId) => interludeFlow.openCraftRoll(get, set, heroId),
+  interludeBank: (heroId, kind, amountBrass, rate) => interludeFlow.bankDeposit(get, set, heroId, kind, amountBrass, rate),
+  interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {

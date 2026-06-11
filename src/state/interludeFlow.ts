@@ -18,8 +18,11 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrapping, recomputeLoadout } from '../engine/items';
 import { restPartyOvernight } from './combatFlow';
-import type { PriceTier, Availability } from '../engine/activities';
-import type { Difficulty } from '../engine/types';
+import { craftTarget, statusIncome, bankWithdrawOutcome, bankPayout, type PriceTier, type Availability } from '../engine/activities';
+import { testValue } from '../engine/skills';
+import { findCareer, levelsForCareer, findTrapping } from '../data';
+import type { Combatant, Difficulty } from '../engine/types';
+import type { PendingBase } from './rollFlow';
 
 type Get = () => GameState;
 type Set = (s: Partial<GameState>) => void;
@@ -114,6 +117,244 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   set({ interlude: { weeks: w, phase: 'activities', perHero }, bank, pendingOrders: [], screen: 'interlude' });
   for (const l of lines) get().log(l);
   set({ party: [...get().party] });
+}
+
+// ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
+
+/** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu). */
+export interface PendingActivity extends PendingBase {
+  heroId: string;
+  kind: 'revenus' | 'craft';
+  label: string;
+  skillLabel: string;
+  skillValue: number;
+  difficulty: Difficulty;
+  roll: number | null;
+  target: number;
+  sl: number;
+  success: boolean;
+  /** Artisanat : progression du Test étendu (avant ce jet) et cible. */
+  drBefore?: number;
+  drTarget?: number;
+}
+
+/** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
+export function heroStatus(h: Combatant): { tier: PriceTier; standing: number } {
+  const levels = levelsForCareer(h.career ?? '');
+  const lvl = levels[Math.max(0, (h.careerLevel ?? 1) - 1)];
+  const m = (lvl?.status ?? 'Bronze 1').match(/^(Bronze|Argent|Or)\s+(\d+)/i);
+  const tier = (m?.[1] ?? 'Bronze').toLowerCase() as PriceTier;
+  return { tier, standing: Math.max(1, Number(m?.[2] ?? 1)) };
+}
+
+/** Classe du héros (CareerData.class — pour les événements visant une Classe). */
+export function heroClass(h: Combatant): string {
+  return findCareer(h.career ?? '')?.class ?? '';
+}
+
+/** Compétence de carrière « qui permet de Gagner de l'argent » (LDB 08 l.135 : celle en italique
+ *  du premier Niveau — l'italique n'est pas dans les données : on prend la première compétence du
+ *  Niveau 1 que le héros POSSÈDE, sinon la première listée. Approximation documentée). */
+function incomeSkillOf(h: Combatant): string {
+  const lvl1 = levelsForCareer(h.career ?? '')[0];
+  const skills = lvl1?.skills ?? [];
+  const owned = skills.find((s) => h.skills.some((k) => s.toLowerCase().startsWith(k.name.toLowerCase())));
+  return owned ?? skills[0] ?? 'Athlétisme';
+}
+
+const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
+
+/** Ouvre la modale Revenus (LDB 08 l.135 : Test Accessible (+20) de la compétence de carrière). */
+export function openRevenus(get: Get, set: Set, heroId: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  const cls = heroClass(h);
+  const blocked = st.fx?.revenueBlockedClasses;
+  if (blocked && (blocked.includes('*') || blocked.includes(cls))) {
+    get().log(`${h.name} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
+    return;
+  }
+  const skill = incomeSkillOf(h);
+  set({
+    pendingActivity: {
+      heroId, kind: 'revenus', label: 'Revenus — une semaine de travail',
+      skillLabel: skill, skillValue: testValue(h, skill), difficulty: 'accessible',
+      roll: null, target: 0, sl: 0, success: false,
+    },
+  });
+}
+
+/** Engage un Artisanat (ch.23 l.66) : exige une Compétence Métier (≥1 avance) ; les matériaux
+ *  coûtent ¼ du prix listé, payés AVANT (« devront être achetées avant le début de l'Activité »). */
+export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: string, atouts: string[], defauts: string[]): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h) return;
+  if (st.craft) {
+    get().log(`${h.name} a déjà un ouvrage en cours (${st.craft.trapping}).`);
+    return;
+  }
+  const metier = h.skills.find((k) => /^métier/i.test(k.name) && (k.advances ?? 0) > 0);
+  if (!metier) {
+    get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer (LDB 23).`);
+    return;
+  }
+  const t = findTrapping(trappingLabel);
+  if (!t) {
+    get().log(`Équipement inconnu : « ${trappingLabel} ».`);
+    return;
+  }
+  const price = { gold: t.price?.gold ?? 0, silver: t.price?.silver ?? 0, brass: t.price?.bronze ?? 0 };
+  const priceBrass = toBrass({ gold: price.gold, silver: price.silver, brass: price.brass });
+  const materials = Math.max(1, Math.floor(priceBrass / 4)); // « un quart du prix de l'équipement »
+  if (toBrass(get().money) < materials) {
+    get().log(`Matériaux trop chers (${formatMoney(fromBrass(materials))}) pour la bourse du groupe.`);
+    return;
+  }
+  const tier: PriceTier = price.gold > 0 ? 'or' : price.silver > 0 ? 'argent' : 'bronze';
+  // Disponibilité 'ND'/absente (objet jamais en vente) : difficulté prudente Rare (arbitrage documenté).
+  const a = t.availability;
+  const avail: Availability = a === 'Commune' || a === 'Limitée' || a === 'Rare' || a === 'Exotique' ? a : 'Rare';
+  const target = craftTarget(tier, avail, atouts.length, defauts.length);
+  set({ money: fromBrass(toBrass(get().money) - materials) });
+  const itl = get().interlude!;
+  itl.perHero[heroId] = {
+    ...st,
+    craft: { trapping: trappingLabel, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
+  };
+  set({ interlude: { ...itl } });
+  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${trappingLabel} (${target.dr} DR à atteindre, ${metier.name}).`);
+}
+
+/** Ouvre la modale du LANCER d'Artisanat — « Chaque Activité […] vous permet d'effectuer un
+ *  lancer pour votre Test étendu » (ch.23 l.92). */
+export function openCraftRoll(get: Get, set: Set, heroId: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st?.craft || !h || st.left <= 0) return;
+  const metier = h.skills.find((k) => /^métier/i.test(k.name)) ?? { name: 'Métier' };
+  set({
+    pendingActivity: {
+      heroId, kind: 'craft', label: `Artisanat — ${st.craft.trapping}`,
+      skillLabel: metier.name, skillValue: testValue(h, metier.name), difficulty: st.craft.difficulty,
+      roll: null, target: 0, sl: 0, success: false,
+      drBefore: st.craft.drDone, drTarget: st.craft.drTarget,
+    },
+  });
+}
+
+/** Applique le jet d'Activité confirmé (consomme l'Activité). */
+export function confirmActivity(get: Get, set: Set): void {
+  const pa = get().pendingActivity;
+  if (!pa || pa.roll == null) return;
+  const itl = get().interlude;
+  const st = itl?.perHero[pa.heroId];
+  const h = get().party.find((x) => x.id === pa.heroId);
+  set({ pendingActivity: null });
+  if (!itl || !st || !h || st.left <= 0) return;
+  const lines: string[] = [];
+  if (pa.kind === 'revenus') {
+    // LDB 08 l.135 : succès = somme pleine ; échec = moitié ; Échec Stupéfiant (−6) = rien.
+    const outcome = pa.success ? 'success' : pa.sl <= -6 ? 'astoundingFail' : 'fail';
+    const { tier, standing } = heroStatus(h);
+    let brass = toBrass(statusIncome(tier, standing, battleRng(), outcome));
+    // Événements : ±% sur les Revenus (Fausse monnaie −20, Profits +50 pour une Classe…).
+    if (st.fx?.revenuePct && (!st.fx.revenueClasses || st.fx.revenueClasses.includes(heroClass(h)))) {
+      brass = Math.max(0, Math.floor((brass * (100 + st.fx.revenuePct)) / 100));
+      lines.push(`Événement (${interludeEventFor(st.eventRoll).label}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
+    }
+    itl.perHero[pa.heroId] = { ...st, left: st.left - 1, didRevenus: true, revenueBrass: st.revenueBrass + brass };
+    lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
+  } else if (pa.kind === 'craft' && st.craft) {
+    const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
+    if (drDone >= st.craft.drTarget) {
+      const it = itemFromTrapping(st.craft.trapping);
+      if (it) {
+        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts, ...st.craft.defauts];
+        h.items = [...(h.items ?? []), it];
+        recomputeLoadout(h);
+      }
+      lines.push(`${h.name} achève son ouvrage : ${st.craft.trapping}${st.craft.atouts.length ? ` (${st.craft.atouts.join(', ')})` : ''}${st.craft.defauts.length ? ` [${st.craft.defauts.join(', ')}]` : ''} !`);
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: undefined };
+    } else {
+      lines.push(`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${st.craft.trapping}).`);
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: { ...st.craft, drDone } };
+    }
+  }
+  set({ interlude: { ...itl }, party: [...get().party] });
+  for (const l of lines) get().log(l);
+}
+
+/** Opérations bancaires (ch.23 l.154-165) — dépôt (1 Activité). Invest : Statut Or/Argent. */
+export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  if (kind === 'invest' && heroStatus(h).tier === 'bronze') {
+    get().log(`${h.name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque » (LDB 23).`);
+    return;
+  }
+  const amount = Math.max(1, Math.floor(amountBrass));
+  if (toBrass(get().money) < amount) {
+    get().log('La bourse du groupe ne couvre pas ce dépôt.');
+    return;
+  }
+  let deposited = amount;
+  const lines: string[] = [];
+  // Fausse monnaie (LDB 22) : « perdront 20 % de l'argent placé ».
+  if (st.fx?.bankPct) {
+    deposited = Math.max(0, Math.floor((deposited * (100 + st.fx.bankPct)) / 100));
+    lines.push(`Événement : ${st.fx.bankPct} % sur l'argent placé (${interludeEventFor(st.eventRoll).label}).`);
+  }
+  const r = kind === 'invest' ? Math.max(1, Math.min(10, rate ?? d100(battleRng()) % 10 + 1)) : 0;
+  set({ money: fromBrass(toBrass(get().money) - amount), bank: [...(get().bank ?? []), { heroId, kind, brass: deposited, rate: r }] });
+  const itl = get().interlude!;
+  itl.perHero[heroId] = { ...st, left: st.left - 1 };
+  set({ interlude: { ...itl } });
+  lines.push(kind === 'invest'
+    ? `${h.name} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur 🎲 ≤ ${r}).`
+    : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur 🎲 ≤ 10).`);
+  // Émeutes (LDB 22) : « les dépôts des banques réputées doivent vérifier immédiatement la faillite ».
+  if (kind === 'invest' && st.fx?.bankCrashCheck) {
+    lines.push(...bankWithdrawInner(get, set, get().bank.length - 1, true));
+  }
+  for (const l of lines) get().log(l);
+}
+
+/** Retrait (invest : coûte 1 Activité, « Retirer des fonds nécessite une autre Activité » l.157 ;
+ *  planque : libre, l.159). Le d100 est journalisé (résolution directe — pas un Test de compétence). */
+export function bankWithdraw(get: Get, set: Set, index: number): void {
+  const dep = (get().bank ?? [])[index];
+  if (!dep) return;
+  if (dep.kind === 'invest') {
+    const st = heroState(get(), dep.heroId);
+    if (!st || st.left <= 0) {
+      get().log('Retirer un investissement exige une Activité (LDB 23).');
+      return;
+    }
+    const itl = get().interlude!;
+    itl.perHero[dep.heroId] = { ...st, left: st.left - 1 };
+    set({ interlude: { ...itl } });
+  }
+  for (const l of bankWithdrawInner(get, set, index, false)) get().log(l);
+}
+
+function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: boolean): string[] {
+  const dep = (get().bank ?? [])[index];
+  if (!dep) return [];
+  const h = get().party.find((x) => x.id === dep.heroId);
+  const roll = d100(battleRng());
+  const outcome = bankWithdrawOutcome(dep.kind, dep.rate, roll);
+  const rest = (get().bank ?? []).filter((_, i) => i !== index);
+  if (outcome === 'lost') {
+    set({ bank: rest });
+    return [`${h?.name ?? '?'} — 🎲 ${roll} ≤ ${dep.kind === 'invest' ? dep.rate : 10} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
+  }
+  if (crashCheckOnly) return [`Vérification de faillite (émeutes) — 🎲 ${roll} > ${dep.rate} : la banque tient bon.`];
+  const payout = bankPayout(dep.kind, dep.brass, dep.rate);
+  set({ bank: rest, money: fromBrass(toBrass(get().money) + payout) });
+  return [`${h?.name ?? '?'} récupère ${formatMoney(fromBrass(payout))} (🎲 ${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
 }
 
 /** Clôture : « Avec le pouvoir » (Niveaux 3-4 sans Revenus → −1 Niveau, ch.23 l.30), Argent à

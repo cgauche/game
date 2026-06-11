@@ -3845,3 +3845,8 @@ textarea:focus {
 .interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
 .interlude-event { margin: 0; font-size: 13px; }
 .interlude-warning { font-size: 12px; color: var(--muted); }
+.interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
+.interlude-craft, .interlude-bank { font-size: 13px; }
+.interlude-craft summary, .interlude-bank summary { cursor: pointer; }
+.interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
+.interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }

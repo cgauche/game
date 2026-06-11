@@ -15,6 +15,7 @@ import type {
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption,
 } from './store';
+import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
 import { makeRollFlow } from './rollFlow';
 import { battleRng } from './battleRng';
@@ -199,6 +200,21 @@ export const FLOWS = {
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
       derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } }),
     },
+  }),
+
+  /** Activité d'interlude (LDB 23) : Revenus (Test Accessible de la compétence de carrière,
+   *  LDB 08 l.135) ou lancer d'Artisanat (Test ÉTENDU de Métier — le DR se cumule à l'Appliquer). */
+  activity: makeRollFlow<PendingActivity>({
+    key: 'pendingActivity',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => inParty(s, p.heroId),
+    resolve: (_s, p) => {
+      const res = rollTest(p.skillValue, p.difficulty, battleRng());
+      return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
+    },
+    failed: (p) => (p.roll ?? 0) > p.target,
+    bonus: { derive: (_s, p) => ({ sl: p.sl + 1 }) },
+    touch: touchParty,
   }),
 
   /** Rechargement (LDB 63 l.28-29) : Test ÉTENDU de Projectiles — le DR se cumule à l'Appliquer. */
