@@ -1,9 +1,15 @@
+import { useEffect, useState } from 'react';
 import { useGame, type RevealEntry } from '../state/store';
 import { Modal } from './Modal';
 import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { conditionMeta } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
+
+/** Auto-fermeture des révélations INFORMATIVES (arbitrage 2026-06-11) : délai court pour le
+ *  mineur, long AVEC barre de temps pour le grave (critique/mutation d'un héros) — un clic
+ *  ferme toujours avant. */
+const AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, number> = { minor: 3500, grave: 9000 };
 
 const ICON: Record<RevealEntry['kind'], string> = {
   miscast: '🌀',
@@ -80,6 +86,16 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
   onDismiss: () => void;
 }) {
   const isCrit = entry.kind === 'critical';
+  // Auto-fermeture par gravité — relancée à chaque NOUVELLE entrée de la file (clé = entry).
+  const ms = entry.severity ? AUTO_CLOSE_MS[entry.severity] : null;
+  const [armedAt, setArmedAt] = useState(0);
+  useEffect(() => {
+    setArmedAt(Date.now());
+    if (ms == null) return;
+    const t = window.setTimeout(onDismiss, ms);
+    return () => window.clearTimeout(t);
+    // réarmé par ENTRÉE de la file (pas par re-render) — deps volontairement réduites
+  }, [entry]); // eslint-disable-line
   return (
     <Modal title={<>{ICON[entry.kind]} {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
       {isCrit ? (
@@ -95,6 +111,12 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
         </>
       )}
 
+      {/* Barre de temps : visible sur le GRAVE seulement (le mineur disparaît sans cérémonie). */}
+      {ms != null && entry.severity === 'grave' && (
+        <div className="reveal-timer" key={armedAt}>
+          <i style={{ animationDuration: `${ms}ms` }} />
+        </div>
+      )}
       <div className="modal-actions">
         <button className="btn btn-primary" onClick={onDismiss}>
           Continuer

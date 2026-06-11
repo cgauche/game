@@ -50,7 +50,7 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
   if (t.success) {
     lines.push(`${hero.name} contient sa Corruption — pour cette fois (Résistance : ${t.roll}/${t.target}).`);
     if (hero.kind === 'hero')
-      pushReveal(set, { kind: 'mutation', title: 'Corruption contenue', dice: t.roll, lines: [...lines], subjectId: hero.id });
+      pushReveal(set, { kind: 'mutation', title: 'Corruption contenue', dice: t.roll, lines: [...lines], subjectId: hero.id, severity: 'minor' });
     return lines;
   }
 
@@ -92,7 +92,7 @@ export function applyMutation(set: any, hero: Combatant, test?: { roll: number; 
     lines.push(`${hero.name} a BASCULÉ dans le Chaos — damné, perdu pour le groupe (LDB 19, Limites de Corruption).`);
   }
   if (hero.kind === 'hero')
-    pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id });
+    pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
   return lines;
 }
 
@@ -108,7 +108,7 @@ export function resolveRenounce(get: () => GameState, set: any, renounce: boolea
   if (renounce && (hero.resilience ?? 0) > 0) {
     hero.resilience = (hero.resilience ?? 0) - 1;
     lines.push(`${hero.name} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent, LDB 17 l.71).`);
-    pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id });
+    pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id, severity: 'minor' });
   } else {
     lines.push(...applyMutation(set, hero, { roll: pr.testRoll, target: pr.testTarget }));
   }

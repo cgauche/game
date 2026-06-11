@@ -259,6 +259,10 @@ export interface RevealEntry {
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
+  /** Gravité pour l'AUTO-FERMETURE (arbitrage 2026-06-11) : 'minor' = informative courte (3-4 s
+   *  — entretien, interruptions…), 'grave' = critique/mutation sur un héros (9 s AVEC barre de
+   *  temps visible). Un clic ferme toujours avant. Absent = pas d'auto-fermeture. */
+  severity?: 'minor' | 'grave';
   /** Combattant CONCERNÉ par la révélation (victime du critique, lanceur de la Colère…) → portrait
    *  + nom dans la modale (« on sait toujours à qui ça s'applique »). Absent pour les entretiens de Round. */
   subjectId?: string;

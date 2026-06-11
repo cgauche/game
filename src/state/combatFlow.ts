@@ -1200,7 +1200,7 @@ export function applyCriticalToTarget(
   log: string[],
   set: any,
   chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
-  ctx?: { attackerId?: string; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
+  ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
   prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
   suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
 ): boolean {
@@ -1252,9 +1252,13 @@ export function applyCriticalToTarget(
   // « Un jet = une modale » : modale de Coup Critique COMPLÈTE (qui inflige + arme + dé + localisation +
   // Blessures + États + effets expliqués), au niveau de la modale d'attaque. (Sautée si la modale de
   // déviation l'a déjà affichée — la déviation fusionne choix ET révélation sur une seule modale.)
-  if (!suppressReveal) {
+  // SEULEMENT si un héros est concerné — il le SUBIT ou l'INFLIGE (arbitrage 2026-06-11, spec coop
+  // §4bis) ; un critique purement ennemi↔ennemi reste au journal/bandeau (les lignes sont déjà dans `log`).
+  const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero';
+  if (!suppressReveal && heroConcerned) {
     pushReveal(set, {
       kind: 'critical', title: 'Coup Critique', dice: crit.roll, lines: revealLines, subjectId: target.id,
+      severity: 'grave',
       actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
       crit: { location: HIT_LOCATION_LABELS[crit.location], woundsLost: crit.woundsLoss, conditions: crit.conditions.length ? crit.conditions : undefined },
     });
@@ -1335,7 +1339,7 @@ function applyOpposedCritical(
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined,
-    { ...ctx, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined });
+    { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined });
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
 }
 
@@ -1445,7 +1449,7 @@ export function applyAttackResult(
     } else if (res.critical || overkill > 0) {
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -1597,7 +1601,9 @@ export function applyAttackResult(
       if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
         addCondition(target, oh.condition);
         assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
-        pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id }); // « un jet = une modale » (Test opposé)
+        // Modale seulement si un héros subit OU inflige (spec coop §4bis) ; sinon journal/bandeau.
+        if (target.kind === 'hero' || attacker.kind === 'hero')
+          pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id, severity: 'minor' }); // « un jet = une modale » (Test opposé)
       }
     }
     // États « à la touche » des ENCHANTEMENTS d'arme actifs du porteur (Jalon 2.6 — Marteau
@@ -1697,7 +1703,7 @@ export function checkFocusInterruption(get: () => GameState, set: any, target: C
     lines.push(...applyMiscast(get, set, target, 'mineure'));
   }
   if (target.kind === 'hero')
-    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id });
+    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id, severity: 'minor' });
   return lines;
 }
 
@@ -2414,7 +2420,7 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
   );
   // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
   if (caster.kind === 'hero')
-    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id });
+    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' });
   return lines;
 }
 
@@ -2771,7 +2777,7 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') });
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') });
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
@@ -3231,7 +3237,9 @@ export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean):
   }
   const b = get().battle!;
   set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
-  pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName });
+  // Modale seulement si un héros est d'un côté du piège (spec coop §4bis) — déjà journalisé ci-dessus.
+  if (attacker.kind === 'hero' || defender.kind === 'hero')
+    pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName, severity: 'minor' });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   resumeEnemyTurn(get, set);
@@ -3354,7 +3362,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) suffocationTick(c).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
       zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((l) => { battle.log.push(ev('condition', l)); roundLines.push(l); }); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
-      if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines }); // « un jet = une modale » (entretien)
+      if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines, severity: 'minor' }); // « un jet = une modale » (entretien — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
       const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);
@@ -3462,7 +3470,7 @@ export function approachFearTrigger(get: () => GameState, set: any, mover: Comba
     const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
     if (!t.success) addCondition(c, 'Brisé', 1);
     battle.log.push(ev('fear', line, c.id, mover.id));
-    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line], subjectId: c.id });
+    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line], subjectId: c.id, severity: 'minor' });
   }
 }
 

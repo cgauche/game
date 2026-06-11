@@ -1186,6 +1186,32 @@ body {
 .wizard-hint {
   flex: 1;
 }
+
+/* Barre de temps des révélations GRAVES (auto-fermeture longue, arbitrage 2026-06-11) :
+   se vide de gauche à droite sur la durée — un clic ferme avant. */
+.reveal-timer {
+  height: 4px;
+  margin: 10px 0 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.reveal-timer i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  animation: reveal-timer-drain linear forwards;
+}
+@keyframes reveal-timer-drain {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-timer i {
+    animation: none;
+    width: 100%;
+  }
+}
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
