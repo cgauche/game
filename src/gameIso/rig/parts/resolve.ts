@@ -35,6 +35,24 @@ const PROFILE_TETE = (t: string) =>
   `<path d="M-8 -2 Q-8.5 -12 0 -13 Q7 -12 8 -3 Q1 -6 -8 -2Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
   `<path d="M-7 -3 Q-7.5 -11 0 -12.4 Q3 -11.6 4 -3 Q-1 -5.6 -7 -3Z" fill="@${t}H" opacity="0.4"/>`;
 
+// --- Dos : silhouettes de DOS génériques (même principe que le profil) — sans art `back`
+// dédié, la tenue montrerait son art de FACE plaqué dans le dos (lacets, boucles, emblèmes).
+// Peintes en tokens dérivés du tissu dominant → suivent le recoloriage de carrière.
+const BACK_TORSE = (t: string) =>
+  `<path d="M-8.5 -27 Q0 -30 8.5 -27 L9 4 Q8 16 5 33 Q0 36 -5 33 Q-8 16 -9 4 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M0 -27 L0 33" stroke="@${t}O" stroke-width="0.7" opacity="0.55"/>` + // couture (habillé) / colonne (nu)
+  `<path d="M-8.5 -24 Q0 -27 8.5 -24 L8.5 -19 Q0 -22 -8.5 -19 Z" fill="@${t}H" opacity="0.4"/>` + // carrure d'épaules
+  // ceinture de dos — seulement HABILLÉ (une ceinture de cuir sur un dos nu serait incongrue)
+  (t === 'peau' || t === 'corps' ? '' : `<path d="M-8.7 6 L8.7 6 L8.5 10 L-8.5 10 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.4" opacity="0.9"/>`);
+const BACK_JAMBE = (t: string, boot = 'cuir') =>
+  `<path d="M-3.4 0 Q-4.2 20 -2.8 32 Q-4 42 -2.6 49 L3.2 49 Q4.2 24 3.4 0 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M-0.6 12 Q-2.2 21 -0.8 29" stroke="@${t}O" stroke-width="0.6" fill="none" opacity="0.6"/>` + // pli arrière du genou
+  `<path d="M-3 33 Q-3.8 42 -2.6 49 L3.6 49 Q4 40 3.4 33 Q0 35 -3 33 Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.5"/>` +
+  `<path d="M-2.7 45 L3.4 45 L3.2 49 L-2.6 49 Z" fill="@${boot}O" opacity="0.8"/>`; // talon
+const BACK_TETE = (t: string) =>
+  `<path d="M-8 -2 Q-8.5 -12 0 -13 Q8.5 -12 8 -2 Q0 -5.5 -8 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M-7 -4 Q0 -7 7 -4 L7 -2.6 Q0 -5.2 -7 -2.6 Z" fill="@${t}O" opacity="0.5"/>`;
+
 /** Token de tissu DOMINANT d'un fragment de tenue (pour peindre la silhouette de profil avec
  *  la bonne famille de couleur). Compte les occurrences de @vet1/@vet2/@cuir/@metal ; défaut vet1.
  *  (Le gradient g_steel/g_robe… → metal/vet1 approximatif pour l'art non tokenisé restant.) */
@@ -56,6 +74,7 @@ function dominantCloth(svg: string): string {
   return best;
 }
 const hasProfileView = (p: PartArt | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
+const hasBackView = (p: PartArt | undefined): boolean => typeof p === 'object' && p != null && !!p.back;
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
@@ -125,6 +144,14 @@ export function resolveParts(
     // Couvre-chef : silhouette de profil seulement s'il y en a un de face (sinon tête nue +
     // cheveux de profil cosmétiques). Évite l'art de face plaqué qui « s'enfonce » dans le crâne.
     if (!hasProfileView(tenue.tete) && out.tete?.svg) out.tete = { svg: PROFILE_TETE(dominantCloth(out.tete.svg)) };
+  }
+  // Dos : MÊME principe — sans art `back` dédié, l'art de FACE serait plaqué dans le dos
+  // (lacets, boucles, emblèmes). Silhouette dorsale en tokens (couture, carrure, ceinture,
+  // talons de botte) ; les 64 tenues de carrière générées ont leur vrai dos (prioritaire).
+  if (view === 'back') {
+    if (!hasBackView(tenue.torse) && out.torse?.svg) out.torse = { svg: BACK_TORSE(dominantCloth(out.torse.svg)) };
+    if (!hasBackView(tenue.jambes) && out.jambes?.svg) out.jambes = { svg: BACK_JAMBE(dominantCloth(out.jambes.svg), career === 'Nu' ? 'peau' : 'cuir') };
+    if (!hasBackView(tenue.tete) && out.tete?.svg) out.tete = { svg: BACK_TETE(dominantCloth(out.tete.svg)) };
   }
 
   // Pieds : botte de cuir (habillés) ou pied nu (monstres sans chaussure : « Nu » + squelette
