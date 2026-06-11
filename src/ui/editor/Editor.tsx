@@ -65,6 +65,7 @@ export function Editor() {
   const [dlgOpen, setDlgOpen] = useState(false);
   const [encOpen, setEncOpen] = useState(false);
   const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
+  const [drawer, setDrawer] = useState<null | 'palette' | 'inspector'>(null); // tiroir tactile ouvert (≤900px)
   const [openOpen, setOpenOpen] = useState(false); // modale « Ouvrir » (scénarios + bibliothèque)
   const [saveOpen, setSaveOpen] = useState(false); // modale « Enregistrer »
   const [projectId, setProjectId] = useState<string | null>(null); // projet localStorage en cours
@@ -509,7 +510,7 @@ export function Editor() {
         </div>
       </header>
 
-      <div className="editor-body">
+      <div className={`editor-body${drawer ? ` drawer-${drawer}` : ''}`}>
         <Palette
           scene={scene}
           otherScenes={otherScenes}
@@ -793,6 +794,16 @@ export function Editor() {
           onDeselectBuilding={() => setSelectedBuilding(null)}
           onSelectBuilding={(id) => setSelectedBuilding(id)}
         />
+
+        {drawer && <div className="editor-drawer-backdrop" onClick={() => setDrawer(null)} />}
+        <div className="editor-mobile-bar">
+          <button className={`btn${drawer === 'palette' ? ' btn-primary' : ''}`} onClick={() => setDrawer(drawer === 'palette' ? null : 'palette')}>
+            🗺️ Palette
+          </button>
+          <button className={`btn${drawer === 'inspector' ? ' btn-primary' : ''}`} onClick={() => setDrawer(drawer === 'inspector' ? null : 'inspector')}>
+            🔍 Inspecteur
+          </button>
+        </div>
       </div>
 
       {trigOpen && (
