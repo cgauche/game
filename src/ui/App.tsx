@@ -17,7 +17,7 @@ export function App() {
   const screen = useGame((s) => s.screen);
   return (
     <div className="app">
-      <Suspense fallback={<div className="stage-hint">Chargement…</div>}>
+      <Suspense fallback={<div className="lazy-fallback" role="status"><span aria-hidden>⚜</span> Chargement…</div>}>
         {screen === 'menu' && <MainMenu />}
         {screen === 'party' && <PartyScreen />}
         {screen === 'creator' && <CharacterCreator />}

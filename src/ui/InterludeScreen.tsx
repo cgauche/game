@@ -1,25 +1,66 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
-import { interludeEventFor } from '../data/interludeEvents';
-import { formatMoney, fromBrass, PA_PER_SC } from '../engine/money';
-import { heroStatus, heroClass } from '../state/interludeFlow';
+import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
+import { formatMoney, fromBrass, toBrass, PA_PER_SC, type Money } from '../engine/money';
+import { heroStatus, heroClass, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
+import {
+  craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout,
+  type CraftOption, type LearnOption,
+} from '../engine/activities';
+import { DIFFICULTY_LABELS } from '../engine/types';
+import { QUALITY_DESC } from '../engine/qualities/describe';
+import { findTalent } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActivityModal } from './ActivityModal';
+import { Modal } from './Modal';
 
+/** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — tooltips depuis le registre des qualités. */
 const ATOUTS = ['Léger', 'Pratique', 'Raffiné', 'Solide'];
 const DEFAUTS = ['Bâclé', 'Laid', 'Peu Fiable', 'Volumineux'];
 
+/** Familles d'équipement pour grouper les sélecteurs (mêmes données que le marchand). */
+const FAMILY_LABEL: Record<string, string> = {
+  melee: 'Armes de mêlée', ranged: 'Armes à distance', ammunition: 'Munitions',
+  armor: 'Armures', trapping: 'Équipement', vehicle: 'Véhicules',
+};
+
+const fmt = (brass: number) => formatMoney(fromBrass(brass));
+
+/** Seam de test (rendu statique : le store SSR sert l'état initial — cf. WorldMapView). */
+export interface InterludeSeam {
+  interlude: InterludeState;
+  party: Combatant[];
+  money: Money;
+  bank: BankDeposit[];
+  pendingOrders: { heroId: string; trapping: string }[];
+  /** Phase d'ouverture forcée ('activities' saute l'intro Événements). */
+  phase?: 'events' | 'activities' | 'closing';
+}
+
 /**
- * Écran « Entre deux aventures » (LDB 22-23, Jalon 5) : événement par héros + Activités jouables
- * V1 (Revenus, Artisanat en Test étendu, Opérations bancaires) + clôture (Argent à gaspiller).
+ * Écran « Entre deux aventures » (LDB 22-23) — refonte POC→produit (audit 2026-06-11) :
+ * 1. Événements de la période RACONTÉS (révélation par héros, conséquences lisibles) ;
+ * 2. Activités à SÉLECTEURS alimentés par la donnée (fini le libellé exact à deviner — audit
+ *    B1/B2/B3) avec coûts et conditions affichés AVANT de s'engager ;
+ * 3. Clôture RÉCAPITULATIVE (argent gaspillé / Revenus / commandes / dépôts) confirmée.
+ *
+ * Les lectures de DONNÉES restent dans ce composant racine (props descendantes) ; les enfants
+ * ne tirent du store que des ACTIONS — testable en SSR via `seam`.
  */
-export function InterludeScreen() {
-  const interlude = useGame((s) => s.interlude);
-  const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
-  const bank = useGame((s) => s.bank);
-  const end = useGame((s) => s.interludeEnd);
+export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
+  const storeInterlude = useGame((s) => s.interlude);
+  const storeParty = useGame((s) => s.party);
+  const storeMoney = useGame((s) => s.money);
+  const storeBank = useGame((s) => s.bank);
+  const storeOrders = useGame((s) => s.pendingOrders);
+  const interlude = seam?.interlude ?? storeInterlude;
+  const party = seam?.party ?? storeParty;
+  const money = seam?.money ?? storeMoney;
+  const bank = seam?.bank ?? storeBank;
+  const pendingOrders = seam?.pendingOrders ?? storeOrders;
+  const [phase, setPhase] = useState<'events' | 'activities' | 'closing'>(seam?.phase ?? 'events');
   if (!interlude) return null;
+  const heroes = party.filter((h) => !h.dead && interlude.perHero[h.id]);
   return (
     <div className="menu interlude-screen">
       <div className="menu-card interlude-card">
@@ -28,148 +69,444 @@ export function InterludeScreen() {
           {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} · Bourse du groupe {formatMoney(money)}
         </p>
         <div className="rule-fleur" aria-hidden>⚜</div>
-        <div className="interlude-heroes">
-          {party.filter((h) => !h.dead).map((h) => (
-            <HeroCard key={h.id} hero={h} />
-          ))}
-        </div>
-        {bank.length > 0 && (
-          <section className="interlude-hero panel">
-            <h3>🏦 Dépôts</h3>
-            <BankList />
-          </section>
+        {phase === 'events' ? (
+          <EventsIntro heroes={heroes} interlude={interlude} onDone={() => setPhase('activities')} />
+        ) : (
+          <>
+            <div className="interlude-heroes">
+              {heroes.map((h) => (
+                <HeroCard key={h.id} hero={h} st={interlude.perHero[h.id]} weeks={interlude.weeks} money={money} />
+              ))}
+            </div>
+            {bank.length > 0 && (
+              <section className="interlude-hero panel">
+                <h3>🏦 Dépôts en cours</h3>
+                <BankList bank={bank} party={party} interlude={interlude} />
+              </section>
+            )}
+            <div className="interlude-close">
+              <p className="interlude-warning" title="« Tout l'argent non sécurisé disparaît » (Argent à gaspiller, LDB 23) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
+                💸 À la clôture, l'or non déposé sera dilapidé.
+              </p>
+              <button className="btn btn-primary" onClick={() => setPhase('closing')}>Clore l'interlude…</button>
+            </div>
+          </>
         )}
-        <div className="interlude-close">
-          <p className="interlude-warning" title="« Argent à gaspiller » (LDB 23) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
-            💸 L'or non déposé est dilapidé à la clôture.
-          </p>
-          <button className="btn btn-primary" onClick={end}>Clore l'interlude</button>
-        </div>
       </div>
       <ActivityModal />
+      {phase === 'closing' && (
+        <CloseRecap heroes={heroes} interlude={interlude} money={money} bank={bank} pendingOrders={pendingOrders} onCancel={() => setPhase('activities')} />
+      )}
     </div>
   );
 }
 
-function HeroCard({ hero }: { hero: Combatant }) {
-  const interlude = useGame((s) => s.interlude)!;
+/** Conséquences mécaniques d'un événement, en clair (LDB 22). */
+function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatant): string[] {
+  const chips: string[] = [];
+  if (fx?.moneyPct) chips.push(`${fx.moneyPct} % sur la bourse du groupe (pire tirage appliqué une fois)`);
+  if (fx?.loseActivity) chips.push('−1 Activité');
+  if (fx?.fortuneMaxDelta) chips.push(`+${fx.fortuneMaxDelta} Point de Chance`);
+  if (fx?.revenuePct) chips.push(`Revenus ${fx.revenuePct > 0 ? '+' : ''}${fx.revenuePct} %${fx.revenueClasses ? ` (${fx.revenueClasses.join(', ')})` : ''}`);
+  if (fx?.revenueBlockedClasses) chips.push(fx.revenueBlockedClasses.includes('*') || fx.revenueBlockedClasses.includes(heroClass(hero)) ? 'Revenus impossibles cette période' : `Revenus bloqués pour : ${fx.revenueBlockedClasses.join(', ')}`);
+  if (fx?.bankPct) chips.push(`${fx.bankPct} % sur l'argent placé en banque`);
+  if (fx?.stashRaided) chips.push('Planque dévalisée !');
+  if (fx?.bankCrashCheck) chips.push('Les banques vérifient leur faillite immédiatement');
+  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push('−1 Activité (devoir elfique, LDB 23)');
+  return chips;
+}
+
+/** Phase 1 — les événements d100 de la période, racontés héros par héros (audit M1). */
+function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; interlude: InterludeState; onDone: () => void }) {
+  return (
+    <>
+      <p className="interlude-phase-hint">
+        Pendant que le groupe souffle, la vie suit son cours — chacun tire un Événement (d100, LDB 22).
+      </p>
+      <div className="interlude-heroes">
+        {heroes.map((h) => {
+          const st = interlude.perHero[h.id];
+          const ev = interludeEventFor(st.eventRoll);
+          const chips = fxChips(st.fx, interlude.weeks, h);
+          return (
+            <section key={h.id} className="interlude-hero panel">
+              <h3>
+                {h.name} <span className="interlude-left">🎲 {st.eventRoll}</span>
+              </h3>
+              <p className="interlude-event"><strong>{ev.label}.</strong> {ev.text}</p>
+              {chips.length > 0 && (
+                <div className="interlude-fx">
+                  {chips.map((c) => <span key={c} className="interlude-fx-chip">{c}</span>)}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+      <div className="modal-actions">
+        <button className="btn btn-primary" onClick={onDone}>Passer aux Activités →</button>
+      </div>
+    </>
+  );
+}
+
+type Pane = 'craft' | 'learn' | 'order' | 'bank' | null;
+
+function HeroCard({ hero, st, weeks, money }: { hero: Combatant; st: InterludeHeroState; weeks: number; money: Money }) {
   const revenus = useGame((s) => s.interludeRevenus);
-  const craftStart = useGame((s) => s.interludeCraftStart);
   const craftRoll = useGame((s) => s.interludeCraftRoll);
-  const bankDeposit = useGame((s) => s.interludeBank);
-  const learn = useGame((s) => s.interludeLearn);
-  const order = useGame((s) => s.interludeOrder);
-  const [trapping, setTrapping] = useState('');
-  const [atouts, setAtouts] = useState<string[]>([]);
-  const [defauts, setDefauts] = useState<string[]>([]);
-  const [amountPa, setAmountPa] = useState(10);
-  const [talent, setTalent] = useState('');
-  const [orderLabel, setOrderLabel] = useState('');
-  const st = interlude.perHero[hero.id];
-  if (!st) return null;
+  const [pane, setPane] = useState<Pane>(null);
   const ev = interludeEventFor(st.eventRoll);
   const status = heroStatus(hero);
   const none = st.left <= 0;
   const blocked = st.fx?.revenueBlockedClasses;
   const revenusBlocked = !!blocked && (blocked.includes('*') || blocked.includes(heroClass(hero)));
-  const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
-    setList(list.includes(q) ? list.filter((x) => x !== q) : [...list, q]);
+  // « Gagner de l'argent grâce au Statut » (LDB 08 l.135-144) — la formule, lisible AVANT le jet.
+  const incomeFormula = status.tier === 'bronze'
+    ? `${status.standing} × 2d10 sous`
+    : status.tier === 'argent'
+      ? `${status.standing} × 1d10 pistole${status.standing > 1 ? 's' : ''}`
+      : `${status.standing} couronne${status.standing > 1 ? 's' : ''} d'or`;
+  const paneBtn = (key: Pane, label: string, title: string) => (
+    <button
+      className={`btn small${pane === key ? ' btn-primary' : ''}`}
+      disabled={none && pane !== key}
+      onClick={() => setPane(pane === key ? null : key)}
+      title={title}
+    >
+      {label}
+    </button>
+  );
   return (
     <section className="interlude-hero panel">
       <h3>
-        {hero.name} <span className="interlude-left">{st.left} Activité{st.left > 1 ? 's' : ''} · Statut {status.tier} {status.standing}</span>
+        {hero.name}
+        <span className="interlude-left">
+          {'●'.repeat(st.left)}{'○'.repeat(Math.max(0, Math.min(3, weeks) - st.left))} {st.left} Activité{st.left > 1 ? 's' : ''} · Statut {status.tier} {status.standing}
+        </span>
       </h3>
-      <p className="interlude-event"><strong>🎲 {st.eventRoll} — {ev.label}.</strong> {ev.text}</p>
+      <p className="interlude-event" title={ev.text}>🎲 {st.eventRoll} — {ev.label}</p>
       <div className="interlude-actions">
-        <button className="btn small" disabled={none || revenusBlocked} onClick={() => revenus(hero.id)}
-          title={revenusBlocked ? 'Interdit par l’événement de la période' : 'Une semaine de travail — Test de compétence de carrière (LDB 08)'}>
-          💰 Revenus
+        <button
+          className="btn small"
+          disabled={none || revenusBlocked}
+          onClick={() => revenus(hero.id)}
+          title={revenusBlocked ? `Interdit par l'événement de la période (${ev.label})` : `Une semaine de travail — Test Accessible (+20) de la compétence de carrière ; succès = ${incomeFormula}, échec = moitié (LDB 08)`}
+        >
+          💰 Revenus <span className="interlude-hint">({incomeFormula})</span>
         </button>
         {st.craft ? (
           <button className="btn small" disabled={none} onClick={() => craftRoll(hero.id)}
-            title={`Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR`}>
+            title={`Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR (${DIFFICULTY_LABELS[st.craft.difficulty]})`}>
             🔨 Travailler — {st.craft.trapping} ({st.craft.drDone}/{st.craft.drTarget})
           </button>
         ) : (
-          <details className="interlude-craft">
-            <summary>🔨 Artisanat…</summary>
-            <label className="ed-field">
-              Objet (nom exact d'équipement)
-              <input value={trapping} onChange={(e) => setTrapping(e.target.value)} placeholder="Épée, Bouclier, Rations (1 jour)…" />
-            </label>
-            <div className="interlude-craft-q">
-              {ATOUTS.map((q) => (
-                <label key={q}><input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {q}</label>
-              ))}
-              {DEFAUTS.map((q) => (
-                <label key={q}><input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {q} (défaut)</label>
-              ))}
-            </div>
-            <button className="btn small" disabled={!trapping.trim()} onClick={() => craftStart(hero.id, trapping.trim(), atouts, defauts)}
-              title="Achète les matériaux (¼ du prix listé) et installe l'ouvrage">
-              Engager l'ouvrage
-            </button>
-          </details>
+          paneBtn('craft', '🔨 Artisanat…', 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier — LDB 23)')
         )}
-        <details className="interlude-craft">
-          <summary>📚 Apprentissage particulier…</summary>
-          <label className="ed-field">
-            Talent (hors carrière)
-            <input value={talent} onChange={(e) => setTalent(e.target.value)} placeholder="Chanceux, Sens aiguisé (Vue)…" />
-          </label>
-          <button className="btn small" disabled={none || !talent.trim()} onClick={() => learn(hero.id, talent.trim())}
-            title="Test Difficile (−20) — tuteur 2d10 pa/100 PX ; PX et argent perdus sur un échec (+10 par tentative ratée)">
-            Trouver un tuteur
-          </button>
-        </details>
-        <details className="interlude-craft">
-          <summary>📦 Passer commande…</summary>
-          <label className="ed-field">
-            Objet Exotique
-            <input value={orderLabel} onChange={(e) => setOrderLabel(e.target.value)} placeholder="Long fusil de Hochland…" />
-          </label>
-          <button className="btn small" disabled={none || !orderLabel.trim()} onClick={() => order(hero.id, orderLabel.trim())}
-            title="Payé maintenant, livré après la prochaine aventure (LDB 23)">
-            Commander
-          </button>
-        </details>
-        <details className="interlude-bank">
-          <summary>🏦 Banque…</summary>
-          <label className="ed-field">
-            Montant (pistoles d'argent)
-            <input type="number" min={1} value={amountPa} onChange={(e) => setAmountPa(Math.max(1, Number(e.target.value) || 1))} />
-          </label>
-          <div className="interlude-actions">
-            <button className="btn small" disabled={none || status.tier === 'bronze'} onClick={() => bankDeposit(hero.id, 'invest', amountPa * PA_PER_SC)}
-              title={status.tier === 'bronze' ? 'Réservé aux échelons Or et Argent (LDB 23)' : 'Intérêts = Indice % ; faillite sur 🎲 ≤ Indice au retrait'}>
-              Investir
-            </button>
-            <button className="btn small" disabled={none} onClick={() => bankDeposit(hero.id, 'stash', amountPa * PA_PER_SC)}
-              title="Sans intérêts ; retrait libre — découverte sur 🎲 ≤ 10">
-              Planquer
-            </button>
-          </div>
-        </details>
+        {paneBtn('learn', '📚 Apprentissage…', 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec — LDB 23)')}
+        {paneBtn('order', '📦 Commande…', 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure (LDB 23)')}
+        {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires, LDB 23)')}
       </div>
+      {pane === 'craft' && !st.craft && <CraftPane hero={hero} disabled={none} money={money} />}
+      {pane === 'learn' && <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} />}
+      {pane === 'order' && <OrderPane hero={hero} disabled={none} money={money} />}
+      {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} />}
     </section>
   );
 }
 
-function BankList() {
-  const bank = useGame((s) => s.bank);
-  const party = useGame((s) => s.party);
+/** Sélecteur d'équipement groupé par famille + recherche (audit B1/B3). */
+function TrappingSelect({ options, value, onChange, detail }: {
+  options: { label: string; type: string; priceBrass: number }[];
+  value: string;
+  onChange: (v: string) => void;
+  detail?: (label: string) => string;
+}) {
+  const [search, setSearch] = useState('');
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  }, [options, search]);
+  const families = useMemo(() => {
+    const m = new Map<string, typeof filtered>();
+    for (const o of filtered) {
+      const f = FAMILY_LABEL[o.type] ?? 'Équipement';
+      if (!m.has(f)) m.set(f, []);
+      m.get(f)!.push(o);
+    }
+    return [...m.entries()];
+  }, [filtered]);
+  return (
+    <>
+      <input
+        className="interlude-search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="🔎 Filtrer le catalogue…"
+        aria-label="Filtrer le catalogue"
+      />
+      <select className="interlude-select" value={value} onChange={(e) => onChange(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
+        {families.map(([fam, list]) => (
+          <optgroup key={fam} label={fam}>
+            {list.map((o) => (
+              <option key={o.label} value={o.label}>
+                {o.label} — {fmt(o.priceBrass)}{detail ? ` · ${detail(o.label)}` : ''}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </>
+  );
+}
+
+function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
+  const craftStart = useGame((s) => s.interludeCraftStart);
+  const catalog = useMemo(() => craftCatalog(), []);
+  const [label, setLabel] = useState('');
+  const [atouts, setAtouts] = useState<string[]>([]);
+  const [defauts, setDefauts] = useState<string[]>([]);
+  const metier = metierOf(hero);
+  const sel: CraftOption | undefined = catalog.find((o) => o.label === label);
+  const target = sel ? craftTarget(sel.tier, sel.avail, atouts.length, defauts.length) : null;
+  const affordable = !sel || toBrass(money) >= sel.materialsBrass;
+  const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
+    setList(list.includes(q) ? list.filter((x) => x !== q) : [...list, q]);
+  const blockedReason = !metier
+    ? 'Aucune Compétence Métier avec avances — impossible de fabriquer (LDB 23).'
+    : !affordable && sel
+      ? `Matériaux trop chers (${fmt(sel.materialsBrass)}) pour la bourse du groupe.`
+      : null;
+  return (
+    <div className="interlude-pane">
+      {!metier && <p className="interlude-blocked">{blockedReason}</p>}
+      <TrappingSelect options={catalog} value={label} onChange={setLabel} />
+      <div className="interlude-craft-q">
+        {ATOUTS.map((q) => (
+          <label key={q} title={QUALITY_DESC[q]}>
+            <input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {q}
+          </label>
+        ))}
+        {DEFAUTS.map((q) => (
+          <label key={q} title={QUALITY_DESC[q]}>
+            <input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {q} (défaut)
+          </label>
+        ))}
+      </div>
+      {sel && target && (
+        <p className="interlude-detail">
+          Matériaux <b>{fmt(sel.materialsBrass)}</b> (¼ du prix, payés à l'engagement) · Test étendu de{' '}
+          <b>{metier?.name ?? 'Métier'}</b> {DIFFICULTY_LABELS[target.difficulty]} · <b>{target.dr} DR</b> à cumuler
+          (1 lancer par Activité).
+        </p>
+      )}
+      <button
+        className="btn small btn-primary"
+        disabled={disabled || !sel || !metier || !affordable}
+        title={blockedReason ?? 'Achète les matériaux et installe l’ouvrage (le travail inachevé se conserve)'}
+        onClick={() => sel && craftStart(hero.id, sel.label, atouts, defauts)}
+      >
+        Engager l'ouvrage{sel ? ` (${fmt(sel.materialsBrass)})` : ''}
+      </button>
+      {metier && !affordable && sel && <p className="interlude-blocked">{blockedReason}</p>}
+    </div>
+  );
+}
+
+function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled: boolean; fails?: Record<string, number>; money: Money }) {
+  const learn = useGame((s) => s.interludeLearn);
+  const options = useMemo(() => learnableTalents(hero), [hero]);
+  const [label, setLabel] = useState('');
+  const [search, setSearch] = useState('');
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  }, [options, search]);
+  const sel: LearnOption | undefined = options.find((o) => o.label === label);
+  const xp = hero.xp ?? 0;
+  const failCount = sel ? fails?.[sel.label] ?? 0 : 0;
+  const xpOk = !sel || xp >= sel.xpCost;
+  const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
+  const desc = sel ? findTalent(sel.label)?.desc ?? '' : '';
+  return (
+    <div className="interlude-pane">
+      <input className="interlude-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔎 Filtrer les talents…" aria-label="Filtrer les talents" />
+      <select className="interlude-select" value={label} onChange={(e) => setLabel(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
+        {filtered.map((o) => (
+          <option key={o.label} value={o.label} title={findTalent(o.label)?.desc ?? ''}>
+            {o.label} — {o.xpCost} PX · tuteur {fmt(o.tutorMinBrass)} à {fmt(o.tutorMaxBrass)}
+          </option>
+        ))}
+      </select>
+      {sel && (
+        <p className="interlude-detail" title={desc}>
+          {desc ? `${desc.slice(0, 140)}${desc.length > 140 ? '…' : ''} — ` : ''}
+          Test <b>Difficile (−20)</b>{failCount ? <> (+{failCount * 10} d'acharnement)</> : null} · coût <b>{sel.xpCost} PX</b> (il vous en reste {xp})
+          + tuteur <b>2d10 pa / 100 PX</b> — PX et argent perdus même sur un échec (LDB 23).
+        </p>
+      )}
+      <button
+        className="btn small btn-primary"
+        disabled={disabled || !sel || !xpOk || !purseOk}
+        title={!xpOk && sel ? `PX insuffisants (${sel.xpCost} requis)` : !purseOk ? 'La bourse ne couvre même pas le tuteur le moins cher' : 'Trouver un tuteur et tenter l’apprentissage'}
+        onClick={() => sel && learn(hero.id, sel.label)}
+      >
+        Trouver un tuteur{sel ? ` (${sel.xpCost} PX)` : ''}
+      </button>
+      {sel && !xpOk && <p className="interlude-blocked">PX insuffisants : {xp}/{sel.xpCost}.</p>}
+    </div>
+  );
+}
+
+function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
+  const order = useGame((s) => s.interludeOrder);
+  const catalog = useMemo(() => orderCatalog(), []);
+  const [label, setLabel] = useState('');
+  const sel = catalog.find((o) => o.label === label);
+  const affordable = !sel || toBrass(money) >= sel.priceBrass;
+  return (
+    <div className="interlude-pane">
+      <TrappingSelect options={catalog} value={label} onChange={setLabel} />
+      {sel && (
+        <p className="interlude-detail">
+          Payé <b>{fmt(sel.priceBrass)}</b> maintenant — « l'objet sera achevé après votre prochaine
+          aventure » (livré à l'ouverture du prochain interlude, LDB 23).
+        </p>
+      )}
+      <button
+        className="btn small btn-primary"
+        disabled={disabled || !sel || !affordable}
+        title={!affordable && sel ? `Commande trop chère (${fmt(sel.priceBrass)})` : 'Passer commande (1 objet par Activité)'}
+        onClick={() => sel && order(hero.id, sel.label)}
+      >
+        Commander{sel ? ` (${fmt(sel.priceBrass)})` : ''}
+      </button>
+      {sel && !affordable && <p className="interlude-blocked">La bourse du groupe ne couvre pas ce prix.</p>}
+    </div>
+  );
+}
+
+function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; disabled: boolean; bronzeBlocked: boolean; money: Money }) {
+  const bankDeposit = useGame((s) => s.interludeBank);
+  const [amountPa, setAmountPa] = useState(10);
+  const purseBrass = toBrass(money);
+  const pa = Math.max(1, Math.floor(amountPa));
+  const amountBrass = pa * PA_PER_SC;
+  const quick = (frac: number) => setAmountPa(Math.max(1, Math.floor(purseBrass * frac / PA_PER_SC)));
+  return (
+    <div className="interlude-pane">
+      <div className="interlude-actions">
+        <label className="ed-field interlude-amount">
+          Montant (pistoles d'argent)
+          <input type="number" min={1} value={amountPa} onChange={(e) => setAmountPa(Math.max(1, Number(e.target.value) || 1))} />
+        </label>
+        <button className="btn small" onClick={() => quick(0.25)} title="Un quart de la bourse">¼</button>
+        <button className="btn small" onClick={() => quick(0.5)} title="La moitié de la bourse">½</button>
+        <button className="btn small" onClick={() => quick(1)} title="Toute la bourse">Tout</button>
+      </div>
+      <p className="interlude-detail">
+        Bourse du groupe : <b>{formatMoney(money)}</b> · dépôt prévu : <b>{fmt(amountBrass)}</b>
+        {amountBrass > purseBrass && <span className="interlude-blocked"> (au-delà de la bourse)</span>}
+      </p>
+      <div className="interlude-actions">
+        <button
+          className="btn small"
+          disabled={disabled || bronzeBlocked || amountBrass > purseBrass}
+          onClick={() => bankDeposit(hero.id, 'invest', amountBrass)}
+          title={bronzeBlocked ? '« Vous devez être des échelons Or et Argent pour épargner dans une banque » (LDB 23)' : 'Intérêts = Indice d’intérêts (1-10) % ; au retrait, faillite sur 🎲 ≤ Indice (retrait = 1 Activité)'}
+        >
+          🏦 Investir
+        </button>
+        <button
+          className="btn small"
+          disabled={disabled || amountBrass > purseBrass}
+          onClick={() => bankDeposit(hero.id, 'stash', amountBrass)}
+          title="Sans intérêts ; retrait libre — mais découverte de la planque sur 🎲 ≤ 10"
+        >
+          🕳️ Planquer
+        </button>
+      </div>
+      <p className="interlude-detail">
+        Investir : intérêts de l'Indice (1-10) %, faillite au retrait sur 🎲 ≤ Indice — retirer coûte
+        une Activité. Planquer : aucun intérêt, retrait libre, découverte sur 🎲 ≤ 10 (LDB 23).
+        {bronzeBlocked && <span className="interlude-blocked"> Investir exige le Statut Argent ou Or.</span>}
+      </p>
+    </div>
+  );
+}
+
+function BankList({ bank, party, interlude }: { bank: BankDeposit[]; party: Combatant[]; interlude: InterludeState }) {
   const withdraw = useGame((s) => s.interludeWithdraw);
   return (
     <div className="interlude-actions">
       {bank.map((b, i) => {
         const owner = party.find((h) => h.id === b.heroId);
+        const left = owner ? interlude.perHero[owner.id]?.left ?? 0 : 0;
+        const lockedInvest = b.kind === 'invest' && left <= 0;
         return (
-          <button key={i} className="btn small" onClick={() => withdraw(i)}
-            title={b.kind === 'invest' ? `Retirer (1 Activité) — faillite sur 🎲 ≤ ${b.rate}` : 'Retirer la planque (libre) — découverte sur 🎲 ≤ 10'}>
-            {b.kind === 'invest' ? '🏦' : '🕳️'} {owner?.name} : {formatMoney(fromBrass(b.brass))}{b.kind === 'invest' ? ` (Indice ${b.rate})` : ''} — Retirer
+          <button
+            key={i}
+            className="btn small"
+            disabled={lockedInvest}
+            onClick={() => withdraw(i)}
+            title={b.kind === 'invest'
+              ? lockedInvest
+                ? 'Retirer un investissement exige une Activité (LDB 23) — il n’en reste plus.'
+                : `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
+              : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
+          >
+            {b.kind === 'invest' ? '🏦' : '🕳️'} {owner?.name} : {fmt(b.brass)}
+            {b.kind === 'invest' ? ` → ${fmt(bankPayout('invest', b.brass, b.rate))} (Indice ${b.rate})` : ''} — Retirer
           </button>
         );
       })}
     </div>
+  );
+}
+
+/** Clôture confirmée : récapitulatif de ce qui sera perdu/crédité/conservé (audit M3). */
+function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }: {
+  heroes: Combatant[];
+  interlude: InterludeState;
+  money: Money;
+  bank: BankDeposit[];
+  pendingOrders: { heroId: string; trapping: string }[];
+  onCancel: () => void;
+}) {
+  const end = useGame((s) => s.interludeEnd);
+  const wasted = toBrass(money);
+  const revenue = heroes.reduce((a, h) => a + (interlude.perHero[h.id]?.revenueBrass ?? 0), 0);
+  const demoted = heroes.filter((h) => (h.careerLevel ?? 1) >= 3 && !interlude.perHero[h.id]?.didRevenus);
+  const kept = bank.reduce((a, b) => a + b.brass, 0);
+  const crafts = heroes.filter((h) => interlude.perHero[h.id]?.craft);
+  return (
+    <Modal title="Clore l'interlude ?" variant="plain" className="interlude-recap" onClose={onCancel}>
+      <ul className="interlude-recap-list">
+        <li>
+          💸 {wasted > 0
+            ? <><b>{fmt(wasted)}</b> seront dépensés, bus, pariés ou donnés — en totalité (« Argent à gaspiller », LDB 23).</>
+            : 'La bourse est vide — rien à gaspiller.'}
+        </li>
+        <li>💰 Revenus crédités à la reprise : <b>{revenue > 0 ? fmt(revenue) : 'aucun'}</b>.</li>
+        {kept > 0 && <li>🏦 Dépôts conservés : <b>{fmt(kept)}</b> (récupérables à un prochain interlude).</li>}
+        {pendingOrders.length > 0 && (
+          <li>📦 Commandes en cours : {pendingOrders.map((o) => o.trapping).join(', ')} — livrées au prochain interlude.</li>
+        )}
+        {crafts.length > 0 && (
+          <li>🔨 Ouvrages inachevés conservés : {crafts.map((h) => `${h.name} (${interlude.perHero[h.id]!.craft!.trapping})`).join(', ')}.</li>
+        )}
+        {demoted.map((h) => (
+          <li key={h.id} className="interlude-blocked">
+            ⚠️ {h.name} n'a pas entrepris Revenus : retour au Niveau {(h.careerLevel ?? 1) - 1} de sa
+            Carrière (« Avec le pouvoir », LDB 23).
+          </li>
+        ))}
+        <li>🌙 Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>
+      </ul>
+      <div className="modal-actions">
+        <button className="btn" onClick={onCancel}>Pas encore</button>
+        <button className="btn btn-primary" onClick={end}>Clore l'interlude</button>
+      </div>
+    </Modal>
   );
 }

@@ -18,7 +18,7 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrapping, recomputeLoadout } from '../engine/items';
 import { restPartyOvernight } from './combatFlow';
-import { craftTarget, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
+import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
 import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
@@ -202,7 +202,7 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
     get().log(`${h.name} a déjà un ouvrage en cours (${st.craft.trapping}).`);
     return;
   }
-  const metier = h.skills.find((k) => /^métier/i.test(k.name) && (k.advances ?? 0) > 0);
+  const metier = metierOf(h);
   if (!metier) {
     get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer (LDB 23).`);
     return;
@@ -212,17 +212,12 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
     get().log(`Équipement inconnu : « ${trappingLabel} ».`);
     return;
   }
-  const price = { gold: t.price?.gold ?? 0, silver: t.price?.silver ?? 0, brass: t.price?.bronze ?? 0 };
-  const priceBrass = toBrass({ gold: price.gold, silver: price.silver, brass: price.brass });
-  const materials = Math.max(1, Math.floor(priceBrass / 4)); // « un quart du prix de l'équipement »
+  // Gamme/Disponibilité/matériaux : dérivation PARTAGÉE avec le catalogue UI (craftSpecOf).
+  const { tier, avail, materialsBrass: materials } = craftSpecOf(t);
   if (toBrass(get().money) < materials) {
     get().log(`Matériaux trop chers (${formatMoney(fromBrass(materials))}) pour la bourse du groupe.`);
     return;
   }
-  const tier: PriceTier = price.gold > 0 ? 'or' : price.silver > 0 ? 'argent' : 'bronze';
-  // Disponibilité 'ND'/absente (objet jamais en vente) : difficulté prudente Rare (arbitrage documenté).
-  const a = t.availability;
-  const avail: Availability = a === 'Commune' || a === 'Limitée' || a === 'Rare' || a === 'Exotique' ? a : 'Rare';
   const target = craftTarget(tier, avail, atouts.length, defauts.length);
   set({ money: fromBrass(toBrass(get().money) - materials) });
   const itl = get().interlude!;

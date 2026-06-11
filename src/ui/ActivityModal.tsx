@@ -48,7 +48,8 @@ export function ActivityModal() {
       onRoll={roll}
       onCancel={cancel}
       breakdown={rolled ? testBreakdown(pa.skillLabel, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
-      pending={testPending(pa.skillLabel, pa.skillValue, pa.target, pa.difficulty)}
+      // Pré-jet : `pa.target` n'existe qu'après resolve (0 avant) → cible dérivée base+Difficulté.
+      pending={testPending(pa.skillLabel, pa.skillValue, pa.roll != null ? pa.target : undefined, pa.difficulty)}
       outcome={rolled && <p className="rm-journal">{outcomeText}</p>}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
