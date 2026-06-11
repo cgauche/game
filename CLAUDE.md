@@ -95,6 +95,17 @@ l'embarquerait → s'assurer que l'arbre est propre/commité avant de pousser en
 combat direct) ; **passer par le scénario adapté, sinon en créer un** — un scénario = un fichier
 dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
+**Outils de recette `window.__wfrp`** (DEV uniquement, `src/state/devtools.ts`) : pour piloter le
+jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**. Depuis un `browser_evaluate` :
+- `__wfrp.state()` → instantané lisible (écran, `sceneId`, `partyPos`, `inDialogue`, `inCombat`, groupe, argent).
+- `__wfrp.entities()` → **cartographie** : chaque entité de la scène `{ id, label, kind, pos, access }`
+  (`access` = `talk`/`merchant`/`interact`/`—`).
+- `__wfrp.talk('id')` → téléporte le groupe à côté de l'entité et l'**interpelle** (ouvre dialogue/marchand).
+- `__wfrp.goto('id'|{x,y})` → place le groupe sur la case (déclenche portes/triggers au pas).
+- `__wfrp.screen('menu'|'party'|…)` → navigue ; `__wfrp.store` = store Zustand brut (`getState`/`setState`).
+Piège du *closure-sync* : lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le
+re-rendu React — séparer en deux appels (cf. `game-browser-verif-tempo`).
+
 ## Architecture (où trouver quoi)
 
 ```
