@@ -15,7 +15,7 @@ const SHORT: Record<CharKey, string> = {
 
 export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean }) {
   return (
-    <div className={`char-card ${compact ? 'compact' : ''}`}>
+    <div className={`char-card panel ${compact ? 'compact' : ''}`}>
       <div className="char-head">
         <strong>{hero.name}</strong>
         <span className="char-sub">

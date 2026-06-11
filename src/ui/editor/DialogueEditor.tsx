@@ -38,7 +38,7 @@ export function DialogueEditor({
 
         <div className="dlg-list">
           {list.map((d, di) => (
-            <div className="dlg-card" key={di}>
+            <div className="dlg-card panel sunken" key={di}>
               <div className="dlg-head">
                 <input className="dlg-id" value={d.id} onChange={(e) => updDlg(di, { id: e.target.value })} placeholder="id du dialogue" />
                 <label className="dlg-start">
@@ -57,7 +57,7 @@ export function DialogueEditor({
               </div>
 
               {d.nodes.map((n, ni) => (
-                <div className="node-card" key={ni}>
+                <div className="node-card panel" key={ni}>
                   <div className="node-head">
                     <input className="node-id" value={n.id} onChange={(e) => updNode(di, ni, { id: e.target.value })} placeholder="id nœud" />
                     <input className="node-speaker" value={n.speaker ?? ''} onChange={(e) => updNode(di, ni, { speaker: e.target.value || undefined })} placeholder="locuteur (optionnel)" />
@@ -69,7 +69,7 @@ export function DialogueEditor({
 
                   <div className="choices">
                     {n.choices.map((c, ci) => (
-                      <div className="choice-card" key={ci}>
+                      <div className="choice-card panel" key={ci}>
                         <div className="choice-top">
                           <input className="choice-text" value={c.text} onChange={(e) => updChoice(di, ni, ci, { text: e.target.value })} placeholder="Texte du choix" />
                           <label className="choice-next">

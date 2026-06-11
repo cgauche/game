@@ -442,9 +442,9 @@ h3 {
 }
 
 /* Character card */
-.char-card {
+/* .char-card = primitive .panel (components.css) + fond plein --panel et radius 12 propres à la carte */
+.char-card.panel {
   background: var(--panel);
-  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
 }

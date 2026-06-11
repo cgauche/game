@@ -550,12 +550,7 @@
   gap: 12px;
   margin: 10px 0;
 }
-.trig-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
-}
+/* .trig-card = primitive .panel.sunken */
 .trig-top {
   display: flex;
   align-items: center;
@@ -669,11 +664,9 @@
   gap: 14px;
   margin: 10px 0;
 }
-.dlg-card {
-  background: var(--bg2);
-  border: 1px solid var(--gold);
-  border-radius: 10px;
-  padding: 10px;
+/* .dlg-card = primitive .panel.sunken + liseré or (le dialogue est l'unité « racine ») */
+.dlg-card.panel {
+  border-color: var(--gold);
 }
 .dlg-head {
   display: flex;
@@ -691,9 +684,9 @@
   font-size: 12px;
   color: var(--muted);
 }
-.node-card {
+/* .node-card = primitive .panel + fond plein --panel, radius/padding resserrés, marge verticale */
+.node-card.panel {
   background: var(--panel);
-  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px;
   margin: 8px 0;
@@ -721,9 +714,8 @@
   padding-left: 10px;
   border-left: 2px solid var(--accent);
 }
-.choice-card {
-  background: var(--panel2);
-  border: 1px solid var(--border);
+/* .choice-card = primitive .panel + radius/padding resserrés */
+.choice-card.panel {
   border-radius: 8px;
   padding: 7px;
 }

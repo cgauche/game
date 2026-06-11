@@ -32,7 +32,7 @@ export function TriggersEditor({
         <p className="hint">Une zone (rectangle de tuiles) qui déclenche des effets quand le groupe y entre.</p>
         <div className="trig-list">
           {list.map((t, i) => (
-            <div className="trig-card" key={i}>
+            <div className="trig-card panel sunken" key={i}>
               <div className="trig-top">
                 <input className="trig-id" value={t.id} onChange={(e) => upd(i, { id: e.target.value })} placeholder="id" />
                 <div className="rect-fields">
