@@ -114,64 +114,68 @@ const eyeF = (x: number, y = -3, r = 1.7) =>
   `<g data-eye="${x < 0 ? 'G' : 'D'}" data-ec="${x} ${y}"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r + 0.3}" fill="#15100a"/><circle cx="${(x + 0.4).toFixed(1)}" cy="${(y - 0.4).toFixed(1)}" r="${(r * 0.34).toFixed(2)}" fill="#fff" opacity="0.7"/></g>`;
 
 // ============================ PROFIL ============================
-// Corps (tronc) SCULPTÉ par carrure (+x = avant/poitrail, -x = arrière). La profondeur
-// est encore étirée par girth (scale vertical au rendu). Cinq silhouettes distinctes.
+// CORPS ENTIER en UNE SEULE silhouette continue (poitrail → garrot → dos → croupe → cuisse →
+// ventre), dessinée dans le tronc — l'ex-assemblage barrique + croupe-bulle détourées
+// séparément lisait « deux pièces mal soudées / croupe-ballon » (retour utilisateur + juges).
+// +x = avant. La croupe (os) ne porte plus que pattes arrière/queue ; l'arrière-train vit ici
+// (la croupe ne tourne que de quelques degrés en anim — perte négligeable, couture supprimée).
+// La profondeur est encore étirée par girth (scale vertical au rendu).
 function barrel(p: QuadProps): string {
-  const bl = p.bodyLen, W = 31 * bl, Wb = 28 * bl;
+  const bl = p.bodyLen;
+  const X = (n: number) => (n * bl).toFixed(1);
   let path: string, hi: string, lo: string;
   switch (p.build) {
-    case 'suid': // bosse d'épaule HAUTE à l'avant, dos descendant vers un arrière fin + crête de soies
-      path = `M${-Wb} 6 Q${-Wb - 1} -5 ${-12 * bl} -9 Q${2 * bl} -30 ${20 * bl} -25 Q${W} -21 ${W + 1} -3 Q${W} 15 ${16 * bl} 18 Q${-6 * bl} 20 ${-Wb} 12 Z`;
-      hi = `<path d="M${-2 * bl} -28 Q${9 * bl} -32 ${20 * bl} -25" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.85" stroke-linecap="round"/><path d="M${-1 * bl} -26 l-1 4 M${5 * bl} -28 l-1 4 M${11 * bl} -29 l0 4 M${16 * bl} -27 l1 4" stroke="@cheveux" stroke-width="1" opacity="0.7"/>`;
-      lo = `<path d="M${-Wb} 9 Q0 18 ${22 * bl} 12 L${24 * bl} 7 Q0 14 ${-Wb} 5 Z" fill="@corpsO" opacity="0.8"/>`;
+    case 'suid': // bosse d'épaule HAUTE à l'avant, dos qui DÉVALE vers un arrière fin et bas + soies
+      path = `M${X(31)} -16 Q${X(34)} -8 ${X(33)} 1 Q${X(31)} 12 ${X(22)} 16 Q${X(4)} 19 ${X(-18)} 16 Q${X(-32)} 17 ${X(-38)} 12 Q${X(-44)} 6 ${X(-43)} -2 Q${X(-42)} -9 ${X(-36)} -11 Q${X(-20)} -14 ${X(-6)} -20 Q${X(4)} -29 ${X(14)} -27 Q${X(26)} -24 ${X(31)} -16 Z`;
+      hi = `<path d="M${X(-4)} -23 Q${X(6)} -30 ${X(16)} -26" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.85" stroke-linecap="round"/><path d="M${X(-2)} -23 l-1 4 M${X(4)} -26 l-1 4 M${X(10)} -27.5 l0 4 M${X(15)} -26 l1 4" stroke="@cheveux" stroke-width="1" opacity="0.7"/>`;
+      lo = `<path d="M${X(-40)} 8 Q${X(-10)} 18 ${X(24)} 13 L${X(26)} 8 Q${X(-8)} 14 ${X(-39)} 4 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
-    case 'rodent': // dos ARQUÉ (bombé), bas et long, slim
-      path = `M${-W} 2 Q${-W} -9 ${-16 * bl} -13 Q0 -25 ${16 * bl} -15 Q${W} -11 ${W} 1 Q${W - 2} 11 ${14 * bl} 13 Q${-10 * bl} 15 ${-W} 8 Z`;
-      hi = `<path d="M${-20 * bl} -11 Q0 -24 ${18 * bl} -14 L${18 * bl} -10 Q0 -20 ${-20 * bl} -7 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${-W + 2} 8 Q0 14 ${18 * bl} 10 L${20 * bl} 5 Q0 11 ${-W + 2} 4 Z" fill="@corpsO" opacity="0.8"/>`;
+    case 'rodent': // dos ARQUÉ culminant à l'arrière-milieu, avant bas, grosses hanches
+      path = `M${X(30)} -6 Q${X(33)} 0 ${X(31)} 6 Q${X(27)} 12 ${X(18)} 13 Q${X(2)} 15 ${X(-16)} 13 Q${X(-32)} 14 ${X(-40)} 9 Q${X(-46)} 3 ${X(-45)} -5 Q${X(-44)} -14 ${X(-34)} -18 Q${X(-18)} -23 ${X(-2)} -20 Q${X(16)} -16 ${X(30)} -6 Z`;
+      hi = `<path d="M${X(-34)} -16 Q${X(-14)} -22 ${X(4)} -18 L${X(3)} -14 Q${X(-14)} -18 ${X(-32)} -12 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${X(-42)} 7 Q${X(-10)} 14 ${X(22)} 10 L${X(24)} 5 Q${X(-8)} 11 ${X(-41)} 3 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
-    case 'ursine': // MASSIF, épaules hautes arrondies, très profond
-      path = `M${-Wb - 2} 4 Q${-Wb - 2} -13 ${-10 * bl} -19 Q${6 * bl} -28 ${22 * bl} -22 Q${W + 2} -16 ${W + 2} 4 Q${W} 19 ${14 * bl} 21 Q${-10 * bl} 23 ${-Wb - 2} 13 Z`;
-      hi = `<path d="M${-18 * bl} -17 Q${3 * bl} -27 ${22 * bl} -20 L${22 * bl} -15 Q${3 * bl} -22 ${-18 * bl} -12 Z" fill="@corpsH" opacity="0.55"/>`;
-      lo = `<path d="M${-Wb} 11 Q0 21 ${22 * bl} 13 L${24 * bl} 7 Q0 17 ${-Wb} 5 Z" fill="@corpsO" opacity="0.85"/>`;
+    case 'ursine': // MASSIF : bosse d'épaule, tout en profondeur, arrière rond et lourd
+      path = `M${X(30)} -12 Q${X(34)} -4 ${X(33)} 6 Q${X(30)} 17 ${X(20)} 20 Q${X(2)} 24 ${X(-16)} 21 Q${X(-34)} 22 ${X(-42)} 14 Q${X(-48)} 6 ${X(-46)} -4 Q${X(-44)} -14 ${X(-34)} -18 Q${X(-20)} -22 ${X(-6)} -24 Q${X(6)} -28 ${X(16)} -24 Q${X(26)} -20 ${X(30)} -12 Z`;
+      hi = `<path d="M${X(-16)} -21 Q${X(2)} -27 ${X(16)} -23 L${X(15)} -18 Q${X(2)} -22 ${X(-15)} -16 Z" fill="@corpsH" opacity="0.55"/>`;
+      lo = `<path d="M${X(-42)} 12 Q${X(-8)} 22 ${X(24)} 14 L${X(26)} 8 Q${X(-6)} 18 ${X(-41)} 6 Z" fill="@corpsO" opacity="0.85"/>`;
       break;
-    case 'canine': // svelte, ventre RENTRÉ (remonte à l'arrière), poitrail à l'avant
-      path = `M${-W} -1 Q${-W} -13 ${-12 * bl} -16 Q${6 * bl} -22 ${22 * bl} -18 Q${W} -14 ${W} -2 Q${W - 2} 7 ${16 * bl} 10 Q${0} 13 ${-12 * bl} 11 Q${-W + 3} 8 ${-W} -1 Z`;
-      hi = `<path d="M${-18 * bl} -14 Q${2 * bl} -21 ${20 * bl} -16 L${20 * bl} -12 Q${2 * bl} -18 ${-18 * bl} -10 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${-W + 4} 5 Q${-2 * bl} 12 ${12 * bl} 10 Q${20 * bl} 8 ${22 * bl} 1 L${20 * bl} -1 Q${12 * bl} 7 ${-2 * bl} 7 Q${-W + 5} 5 ${-W + 4} 5 Z" fill="@corpsO" opacity="0.8"/>`;
+    case 'canine': // garrot haut, dos qui file, VENTRE LEVRETTÉ (remonte fort), hanches sveltes
+      path = `M${X(30)} -14 Q${X(34)} -7 ${X(33)} 0 Q${X(31)} 8 ${X(24)} 10 Q${X(12)} 12 ${X(2)} 9 Q${X(-12)} 5 ${X(-24)} 7 Q${X(-36)} 9 ${X(-42)} 4 Q${X(-46)} -2 ${X(-44)} -9 Q${X(-42)} -15 ${X(-34)} -16 Q${X(-16)} -18 ${X(-2)} -19 Q${X(14)} -22 ${X(24)} -19 Q${X(29)} -17 ${X(30)} -14 Z`;
+      hi = `<path d="M${X(-30)} -14 Q${X(-6)} -18 ${X(20)} -18 L${X(19)} -14 Q${X(-6)} -15 ${X(-29)} -10 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${X(-38)} 4 Q${X(-22)} 8 ${X(-4)} 6 Q${X(14)} 9 ${X(26)} 4 L${X(24)} 0 Q${X(12)} 6 ${X(-4)} 3 Q${X(-22)} 5 ${X(-37)} 0 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
-    case 'feline': // lion (griffon) : poitrail profond avant + TAILLE creusée + haunches musclées arrière
-      path = `M${-Wb} -3 Q${-Wb - 1} -18 ${-8 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -3 Q${W - 1} 7 ${17 * bl} 11 Q${4 * bl} 7 ${-6 * bl} 9 Q${-18 * bl} 11 ${-Wb} 4 Z`;
-      hi = `<path d="M${-18 * bl} -16 Q${3 * bl} -22 ${22 * bl} -17 L${22 * bl} -13 Q${3 * bl} -19 ${-18 * bl} -12 Z" fill="@corpsH" opacity="0.55"/>`;
-      lo = `<path d="M${-Wb + 2} 3 Q${-6 * bl} 9 ${6 * bl} 8 Q${18 * bl} 6 ${22 * bl} 0 L${20 * bl} -2 Q${10 * bl} 5 ${-4 * bl} 5 Q${-Wb + 3} 2 ${-Wb + 2} 3 Z" fill="@corpsO" opacity="0.8"/>`;
+    case 'feline': // poitrail profond + TAILLE creusée + haunches arrière rondes et musclées
+      path = `M${X(30)} -15 Q${X(34)} -8 ${X(33)} 0 Q${X(31)} 8 ${X(23)} 10 Q${X(10)} 11 ${X(0)} 8 Q${X(-12)} 5 ${X(-22)} 8 Q${X(-36)} 12 ${X(-43)} 6 Q${X(-48)} -1 ${X(-45)} -9 Q${X(-42)} -16 ${X(-32)} -17 Q${X(-16)} -19 ${X(-2)} -20 Q${X(12)} -23 ${X(23)} -20 Q${X(29)} -18 ${X(30)} -15 Z`;
+      hi = `<path d="M${X(-28)} -15 Q${X(-4)} -20 ${X(20)} -19 L${X(19)} -15 Q${X(-4)} -16 ${X(-27)} -11 Z" fill="@corpsH" opacity="0.55"/>`;
+      lo = `<path d="M${X(-40)} 4 Q${X(-20)} 10 ${X(-2)} 5 Q${X(14)} 8 ${X(25)} 3 L${X(23)} -1 Q${X(12)} 5 ${X(-2)} 2 Q${X(-20)} 7 ${X(-39)} 0 Z" fill="@corpsO" opacity="0.8"/>`;
       break;
-    case 'draconic': { // dragon : corps LONG, profond, ventre lourd qui descend, dos écailleux
-      const Wd = W + 3;
-      path = `M${-Wd} 2 Q${-Wd} -14 ${-12 * bl} -18 Q${6 * bl} -23 ${24 * bl} -19 Q${Wd} -15 ${Wd} 0 Q${Wd - 1} 17 ${16 * bl} 22 Q${-8 * bl} 24 ${-Wd} 13 Z`;
-      hi = `<path d="M${-22 * bl} -16 Q${2 * bl} -23 ${24 * bl} -18 L${24 * bl} -14 Q${2 * bl} -20 ${-22 * bl} -12 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${-Wd + 2} 10 Q0 23 ${22 * bl} 14 L${24 * bl} 7 Q0 18 ${-Wd + 2} 5 Z" fill="@corpsO" opacity="0.85"/>` +
+    case 'draconic': { // LONG et profond, ventre lourd qui ondule, arrière qui file vers la queue
+      path = `M${X(30)} -14 Q${X(35)} -6 ${X(34)} 4 Q${X(32)} 17 ${X(20)} 22 Q${X(2)} 26 ${X(-14)} 22 Q${X(-32)} 24 ${X(-42)} 16 Q${X(-50)} 9 ${X(-48)} -1 Q${X(-46)} -11 ${X(-36)} -15 Q${X(-20)} -19 ${X(-4)} -20 Q${X(12)} -23 ${X(22)} -20 Q${X(28)} -18 ${X(30)} -14 Z`;
+      hi = `<path d="M${X(-32)} -14 Q${X(-6)} -20 ${X(20)} -19 L${X(19)} -15 Q${X(-6)} -16 ${X(-31)} -10 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${X(-44)} 12 Q${X(-8)} 25 ${X(24)} 16 L${X(26)} 9 Q${X(-6)} 20 ${X(-43)} 6 Z" fill="@corpsO" opacity="0.85"/>` +
         // cuir d'écailles imbriquées (textures.ts) sur le flanc — le ventre lourd reste lisse
-        // (la crête dorsale est désormais le prop `ridge`, défaut 'epines' pour draconic)
-        scalesPatch(-Wd * 0.72, Wd * 0.72, -13, 8, 4.6, 'corps');
+        scalesPatch(-40 * bl, 26 * bl, -12, 9, 4.6, 'corps');
       break;
     }
-    case 'batracien': { // crapaud : sac TRÈS large, bas et rond (pas de dos défini), dos verruqueux
-      const Wt = W - 2;
-      path = `M${-Wt} 0 Q${-Wt - 2} -16 ${-10 * bl} -20 Q${4 * bl} -24 ${18 * bl} -20 Q${Wt + 2} -16 ${Wt} 2 Q${Wt - 1} 17 ${12 * bl} 20 Q${-8 * bl} 22 ${-Wt} 12 Z`;
-      hi = `<path d="M${-16 * bl} -16 Q${0 * bl} -22 ${18 * bl} -17 L${18 * bl} -12 Q${0 * bl} -18 ${-16 * bl} -11 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${-Wt} 9 Q0 20 ${18 * bl} 12 L${20 * bl} 5 Q0 16 ${-Wt} 4 Z" fill="@corpsO" opacity="0.85"/>` +
-        // pustules dorsales (verrues) — casse l'aplat + tell du crapaud
-        `<circle cx="${-12 * bl}" cy="-13" r="1.7" fill="@corpsO"/><circle cx="${-3 * bl}" cy="-17" r="2" fill="@corpsO"/><circle cx="${7 * bl}" cy="-16" r="1.6" fill="@corpsO"/><circle cx="${15 * bl}" cy="-12" r="1.5" fill="@corpsO"/><circle cx="${-8 * bl}" cy="-8" r="1.3" fill="@corpsO"/><circle cx="${2 * bl}" cy="-6" r="1.4" fill="@corpsO"/>`;
+    case 'batracien': { // sac TRÈS large, bas et rond (pas de dos défini), dos verruqueux
+      path = `M${X(26)} -14 Q${X(33)} -8 ${X(33)} 2 Q${X(32)} 17 ${X(18)} 21 Q${X(0)} 24 ${X(-20)} 21 Q${X(-36)} 18 ${X(-38)} 6 Q${X(-39)} -8 ${X(-28)} -16 Q${X(-12)} -23 ${X(4)} -23 Q${X(18)} -22 ${X(26)} -14 Z`;
+      hi = `<path d="M${X(-22)} -16 Q${X(-4)} -22 ${X(14)} -19 L${X(13)} -14 Q${X(-4)} -18 ${X(-21)} -11 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${X(-34)} 10 Q${X(-4)} 21 ${X(22)} 13 L${X(24)} 6 Q${X(-4)} 17 ${X(-33)} 4 Z" fill="@corpsO" opacity="0.85"/>` +
+        `<circle cx="${X(-16)}" cy="-13" r="1.7" fill="@corpsO"/><circle cx="${X(-4)}" cy="-17" r="2" fill="@corpsO"/><circle cx="${X(7)}" cy="-16" r="1.6" fill="@corpsO"/><circle cx="${X(15)}" cy="-12" r="1.5" fill="@corpsO"/><circle cx="${X(-9)}" cy="-8" r="1.3" fill="@corpsO"/><circle cx="${X(2)}" cy="-6" r="1.4" fill="@corpsO"/>`;
       break;
     }
-    default: // equine : poitrail profond avant, dos LEVEL, croupe arrondie
-      path = `M${-Wb} -2 Q${-Wb - 1} -17 ${-10 * bl} -20 Q${8 * bl} -23 ${24 * bl} -19 Q${W} -15 ${W} -2 Q${W - 1} 11 ${18 * bl} 15 Q${-6 * bl} 18 ${-Wb} 9 Z`;
-      hi = `<path d="M${-20 * bl} -17 Q${2 * bl} -23 ${24 * bl} -17 L${24 * bl} -13 Q${2 * bl} -19 ${-20 * bl} -13 Z" fill="@corpsH" opacity="0.6"/>`;
-      lo = `<path d="M${-Wb} 7 Q0 17 ${22 * bl} 11 L${24 * bl} 5 Q0 13 ${-Wb} 4 Z" fill="@corpsO" opacity="0.85"/>`;
+    default: // equine : poitrail profond, GARROT marqué, dos level, croupe arrondie qui descend en cuisse
+      path = `M${X(30)} -15 Q${X(34)} -7 ${X(33)} 2 Q${X(30)} 13 ${X(20)} 16 Q${X(2)} 19 ${X(-16)} 16 Q${X(-32)} 18 ${X(-40)} 12 Q${X(-47)} 5 ${X(-45)} -5 Q${X(-43)} -15 ${X(-32)} -17 Q${X(-14)} -19 ${X(0)} -19 Q${X(12)} -23 ${X(23)} -20 Q${X(29)} -18 ${X(30)} -15 Z`;
+      hi = `<path d="M${X(-30)} -15 Q${X(-6)} -18 ${X(20)} -19 L${X(19)} -15 Q${X(-6)} -15 ${X(-29)} -11 Z" fill="@corpsH" opacity="0.6"/>`;
+      lo = `<path d="M${X(-40)} 9 Q${X(-6)} 18 ${X(24)} 12 L${X(26)} 6 Q${X(-4)} 14 ${X(-39)} 4 Z" fill="@corpsO" opacity="0.85"/>`;
   }
-  // Ombre de flanc douce (volume : casse l'aplat « blob » signalé par la QC).
-  const flank = `<ellipse cx="${(2 * bl).toFixed(1)}" cy="5" rx="${(13 * bl).toFixed(1)}" ry="5.5" fill="@corpsO" opacity="0.22"/>`;
-  return `<g><path d="${path}" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>${lo}${flank}${hi}${ridgeArt(p)}${markingsArt(p)}</g>`;
+  // Volumes internes SANS contour : ombre de flanc + creux de cuisse (l'arrière-train se lit
+  // par l'ombrage, plus par une bulle détourée).
+  const flank = `<ellipse cx="${X(0)}" cy="4" rx="${X(13)}" ry="5.5" fill="@corpsO" opacity="0.22"/>`;
+  const thigh = `<path d="M${X(-26)} -8 Q${X(-38)} -4 ${X(-38)} 5 Q${X(-37)} 12 ${X(-29)} 13 Q${X(-22)} 12 ${X(-21)} 3 Q${X(-21)} -5 ${X(-26)} -8 Z" fill="@corpsO" opacity="0.16"/>` +
+    `<path d="M${X(-24)} -10 Q${X(-34)} -7 ${X(-36)} 2" fill="none" stroke="@corpsO" stroke-width="0.8" opacity="0.4"/>`;
+  return `<g><path d="${path}" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>${lo}${flank}${thigh}${hi}${ridgeArt(p)}${markingsArt(p)}</g>`;
 }
 // Dorsale (prop `ridge`, défaut 'epines' pour draconic) : ÉPINES pointues / CRÊTE-voile
 // ondulée / PLAQUES rondes, le long du haut du dos. Coordonnées calées sur le dos draconic —
@@ -197,20 +201,8 @@ function markingsArt(p: QuadProps): string {
     return `<g data-marking="taches" opacity="0.5"><ellipse cx="${-14 * bl}" cy="-4" rx="4.6" ry="3.4" fill="@corpsO"/><ellipse cx="${-2 * bl}" cy="3" rx="3.6" ry="2.8" fill="@corpsO"/><ellipse cx="${12 * bl}" cy="-7" rx="4" ry="3" fill="@corpsO"/><ellipse cx="${18 * bl}" cy="2" rx="2.8" ry="2.2" fill="@corpsO"/></g>`;
   return `<g data-marking="rayures" opacity="0.45"><path d="M${-16 * bl} -16 q-2 12 -1 22 M${-8 * bl} -19 q-2 13 -1 25 M${0 * bl} -20 q-2 13 -1 26 M${8 * bl} -20 q-1 13 0 25 M${15 * bl} -18 q-1 12 0 22" stroke="@corpsO" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`;
 }
-// Croupe (arrière-train) PROPORTIONNÉE à la carrure : grosse et ronde pour cheval/ours,
-// PETITE et fuyante pour sanglier (avant-lourd) et rat, svelte pour canin. Le bord avant
-// (+x, vers le tronc) reste ancré pour ne pas décrocher du corps ; seul l'arrière (-x) varie.
-function rump(p: QuadProps): string {
-  const RS: Record<string, number> = { equine: 1.0, canine: 0.82, suid: 0.66, rodent: 0.7, ursine: 1.16, feline: 1.04, draconic: 1.0, batracien: 0.9 };
-  const rs = RS[p.build] ?? 1;
-  const x = (n: number) => (n <= 0 ? n * rs : n).toFixed(1); // arrière (-x) mis à l'échelle, avant ancré
-  const y = (n: number) => (n * (0.5 + 0.5 * rs)).toFixed(1); // hauteur amortie
-  return `<g>
-    <path d="M8 ${y(-22)} Q${x(-18)} ${y(-24)} ${x(-24)} ${y(-6)} Q${x(-26)} ${y(8)} ${x(-10)} ${y(16)} Q6 ${y(18)} 12 ${y(6)} Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
-    <path d="M${x(-22)} ${y(-2)} Q${x(-24)} ${y(8)} ${x(-10)} ${y(15)} Q4 ${y(17)} 10 ${y(8)} L6 ${y(4)} Q-6 ${y(12)} ${x(-20)} ${y(4)} Z" fill="@corpsO" opacity="0.8"/>
-    <path d="M6 ${y(-20)} Q${x(-14)} ${y(-22)} ${x(-22)} ${y(-8)} L${x(-20)} ${y(-4)} Q-12 ${y(-18)} 6 ${y(-16)} Z" fill="@corpsH" opacity="0.6"/>
-  </g>`;
-}
+// (L'ex-art de croupe — la « bulle » détourée — a été DISSOUS dans la silhouette continue du
+// tronc, cf. barrel(). L'os `croupe` ne porte plus que les pattes arrière et la queue.)
 // --- Hydre : cluster de cous/têtes dessiné dans UN os (encolure) → ondule d'un bloc, pas
 // besoin d'os supplémentaires. Tête reptilienne miniature (museau +x, corne, œil fendu, dents).
 function hydraHeadlet(tx: number, ty: number, rot: number, s: number): string {
@@ -294,8 +286,10 @@ function headProfile(p: QuadProps): string {
 }
 function tail(p: QuadProps): string {
   if (p.tail === 'sans') return ''; // batracien : pas de queue
-  if (p.tail === 'reptile') // longue queue écailleuse effilée + épines dorsales
-    return `<path d="M0 -2 Q16 4 28 2 Q40 0 48 8 Q40 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>`;
+  if (p.tail === 'reptile') // longue queue écailleuse qui TRAÎNE derrière au ras du sol — l'os
+    // `queue` penche à 42° (queues pendantes) : on compense dans l'art (miroir + rotate -34
+    // ⇒ ~8° de chute vers l'arrière). Avant, elle pendait sous le ventre vers l'avant (!).
+    return `<g transform="rotate(-34) scale(-1,1)"><path d="M0 -2 Q16 4 28 2 Q40 0 50 9 Q41 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2.4 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/></g>`;
   if (p.tail === 'leonine') // queue de lion : fouet fin + GROS toupet terminal (tell de l'arrière félin)
     return `<path d="M0 0 Q13 7 17 18 Q19 28 14 33 Q16 24 10 15 Q3 8 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M14 30 Q9 33 10 38 Q13 41 16 38 Q20 40 21 35 Q24 33 21 29 Q19 26 14 30 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'crin') return `<path d="M0 0 Q10 6 10 18 Q9 30 4 34 Q7 24 3 14 Q1 6 0 4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
@@ -529,7 +523,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   const profWings = p.wings ? { aileD: profArt(false), aileG: profArt(true) } : {};
   return {
     ...profWings,
-    tronc: barrel(p), croupe: rump(p), encolure: neck(p), tete: headW(headProfile(p)), queue: tailW(tail(p)),
+    tronc: barrel(p), encolure: neck(p), tete: headW(headProfile(p)), queue: tailW(tail(p)),
     hautAvD: nearAv.haut, basAvD: nearAv.bas, piedAvD: nearAv.pied,
     hautArD: nearAr.haut, basArD: nearAr.bas, piedArD: nearAr.pied,
     hautAvG: farAv.haut, basAvG: farAv.bas, piedAvG: farAv.pied,
