@@ -859,7 +859,10 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   localStorage versionnés + **export/import JSON** ; refusée en combat ; UI : modale 3 emplacements
   (scène + date impériale + horodatage) via le menu ☰ en exploration + « Charger une partie » au
   menu principal. La scène vivante, flags, horloge, groupe, marchands, voyage voyagent dans la save.
-  *(Reste : recette navigateur — Playwright à repasser.)*
+  **Recette navigateur passée** *(2026-06-11)* : sauver → recharger la page à froid → charger
+  restaure scène/date/bourse/PV à l'identique ; Exporter télécharge le JSON ; ✕ vide le slot ;
+  0 erreur console. Fix au passage : le libellé du slot affiche le **nom** de la scène (lisait
+  `scene.label` inexistant → retombait sur l'id).
 - ✅ **Entre deux aventures** *(2026-06-11, commits `3cf37b0`→`59b49ad` — spec/plan
   `docs/superpowers/*/2026-06-11-entre-deux-aventures*`)* : achats/marchandage ✅ (Marchand,
   Jalon 1.6) ; **système d'interlude complet (LDB 22-23)** — Effet d'éditeur `interlude{weeks}`,
@@ -873,7 +876,9 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   *Différés documentés* : Entraînement (remise de coût — le ×2 hors-carrière actuel est RAW-conforme
   sans Activité), Changement de carrière (déjà offert par la fiche), Entraînement au combat
   (inversion de Test), Consulter un expert/Invention/Dressage/Activités de Classe (narratifs).
-  *(Reste : recette navigateur + scénario de test dédié.)*
+  **Scénario `16-interlude` + recette navigateur passée** *(2026-06-11, `139cd5d`)* : flux complet
+  vérifié en jeu (événements d100, Revenus avec modale, clôture) — a trouvé et corrigé le bug de
+  famine à la clôture (`fedDaily` : gîte et couvert payés par l'Argent à gaspiller).
 - ✅ **Repos & récupération naturelle** (Jalon 1.8) : « Dormir / Se reposer N jours » — Exténué dissipé,
   Blessures soignées (Résistance +20 → DR+BE, +BE/jour, LDB 18 l.380), cauchemars.
 - ✅ **Guérison des Blessures critiques** *(2026-06-08, `c10bcf4`→`b16a45f`)* : chaque trauma porte `recoveryDays`

@@ -51,11 +51,11 @@ export function snapshotSave(
     if (typeof v === 'function') continue;
     data[k] = v === undefined ? null : v;
   }
-  const scene = state.scene as { label?: string; id?: string } | null;
+  const scene = state.scene as { nom?: string; id?: string } | null;
   return {
     version: SAVE_VERSION,
     savedAt,
-    sceneLabel: scene?.label ?? scene?.id ?? 'Sans scène',
+    sceneLabel: scene?.nom ?? scene?.id ?? 'Sans scène',
     gameTime: typeof state.gameTime === 'number' ? state.gameTime : 0,
     data: JSON.parse(JSON.stringify(data)) as Record<string, unknown>, // deep copy JSON-sûre
   };

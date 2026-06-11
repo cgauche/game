@@ -40,6 +40,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(useGame.getState().saveGame(1)).toBe(true);
     const s = readSlot(1)!;
     expect(s.version).toBe(SAVE_VERSION);
+    expect(s.sceneLabel).toBe(tome1Intro.nom); // le NOM de la scène, pas son id
     expect(s.sceneLabel.length).toBeGreaterThan(0);
     expect((s.data.flags as Record<string, unknown>)['drapeau-test']).toBe(true);
     const metas = listSaves();
