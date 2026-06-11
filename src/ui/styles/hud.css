@@ -131,7 +131,10 @@
 .is-tiles {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* Portraits CALÉS À GAUCHE (pas centrés) : une tuile portant le badge ⏫🍀 (pré-emption) est plus
+     large — centrer décalerait son portrait vs les tuiles sans badge (frise en zigzag, cf. retour
+     2026-06-11). En flex-start tous les portraits partagent le même bord gauche, badge à droite. */
+  align-items: flex-start;
   gap: 6px;
   padding: 8px 6px;
   background: rgba(10, 14, 20, 0.55);

@@ -98,6 +98,11 @@ export function useCombatFx() {
         if (r.defenderDefeated) push(x, y, '✦ hors de combat', 'death');
       } else if (r.defenderDetail) {
         push(x, y, 'Paré / Esquivé', 'defend');
+      } else if (r.cast !== undefined && r.hit === undefined) {
+        // Incantation NON-Projectile (Bénédiction, buff, soin…) : « toucher » n'a pas de sens — un
+        // succès applique des États (qui flottent déjà via diffConditionGains). Ne PAS afficher
+        // « Raté » d'attaque sur un sort réussi (retour playtest 2026-06-11) ; échec → mention sobre.
+        if (!r.cast) push(x, y, 'Incantation ratée', 'miss');
       } else {
         push(x, y, 'Raté', 'miss');
       }
