@@ -451,6 +451,26 @@
   grid-template-columns: 240px 1fr 260px;
   overflow: hidden;
 }
+/* Tactile / petit écran : fin du chevauchement des 3 colonnes. Le CANVAS d'abord (plein
+   largeur), puis la palette et l'inspecteur empilés dessous (scroll vertical unique).
+   NB : étape 1 du tactile — les tiroirs/modales d'édition viennent ensuite. */
+@media (max-width: 900px) {
+  .editor-body {
+    grid-template-columns: 1fr;
+    grid-auto-rows: min-content;
+    overflow: auto;
+  }
+  .editor-canvas-wrap {
+    order: -1;
+  }
+  .editor-palette,
+  .editor-inspector {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    max-height: none;
+  }
+}
 .editor-palette,
 .editor-inspector {
   background: var(--bg2);
