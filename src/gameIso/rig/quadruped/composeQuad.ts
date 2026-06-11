@@ -13,6 +13,7 @@ import {
   type QuadBoneId, type QuadProps,
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
+import { applyEyes } from '../parts/eyes';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from './quadPose';
 
 const LEG_REF_TH = 9; // épaisseur de réf d'un os porteur (haut) → léger scale x des membres
@@ -24,8 +25,9 @@ export function resolveQuad(
   pose: Record<string, number> = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
+  eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
-  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors, wings);
+  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors, wings, eyes);
 }
 
 /** Même rendu, mais à partir d'un PROPS direct (réutilisé par le gabarit AILÉ qui a son propre
@@ -36,10 +38,13 @@ export function resolveQuadFromProps(
   pose: Record<string, number> = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
+  eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), view), pose);
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;
   const parts = quadParts(p, view, wings);
+  // Yeux custom (catalogue) sur les ancres data-eye de la tête (no-op sans ancre — hydre…).
+  if (eyes && parts.tete) parts.tete = applyEyes(parts.tete, eyes);
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const legW = 0.7 + 0.4 * p.girth; // pattes plus épaisses pour les bêtes trapues
   return (Object.keys(parts) as QuadBoneId[])
@@ -63,7 +68,7 @@ export function resolveQuadFromProps(
 
 export const quadrupedPlan: BodyPlan = {
   id: 'quadruped',
-  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors, opts?.wings),
+  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes),
   speciesNames: () => Object.keys(QUAD_SPECIES),
   restPose: () => QUAD_REST,
   walkPose: quadWalkPose,

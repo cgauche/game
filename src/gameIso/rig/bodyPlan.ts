@@ -31,6 +31,9 @@ export interface ResolveOpts {
   equip?: EquipCtx;
   /** Gabarit AILÉ seulement : état des ailes (défaut 'folded' — une bête posée replie). */
   wings?: WingState;
+  /** Yeux personnalisés (ARTS du catalogue, déjà résolus) — appliqués sur les ancres
+   *  `data-eye` des têtes de gabarit (quad/ailé). Sans ancre → no-op. */
+  eyes?: { G?: string; D?: string };
 }
 
 export interface BodyPlan {

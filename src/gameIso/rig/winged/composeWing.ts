@@ -27,8 +27,9 @@ export function resolveWing(
   pose: Record<string, number> = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
+  eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
-  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors, wings);
+  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors, wings, eyes);
 }
 
 // Battement d'ailes (sinusoïde sur aileD/aileG, signes opposés). Vit DANS le plan : l'idle bat
@@ -40,7 +41,7 @@ const wingFlap = (phase: number, amp: number): Record<string, number> => {
 };
 export const wingedPlan: BodyPlan = {
   id: 'winged',
-  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors, opts?.wings),
+  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes),
   speciesNames: () => Object.keys(WINGED_SPECIES),
   restPose: () => QUAD_REST,
   idlePose: (phase) => wingFlap(phase, 2.5), // frémissement d'ailes PLIÉES au repos (subtil)

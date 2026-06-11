@@ -8,6 +8,7 @@ import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile, classifyEnemy } from './rig/enemyProfile';
 import { bodyPlanOf } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
+import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite, pnjSprite } from './sprites';
 import { hashSeed } from './appearance';
 import { resolveRig, RigSprite } from './rig/composeRig';
@@ -99,7 +100,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
       }
       return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
@@ -132,7 +133,9 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
   const refName = ent.ref ?? ent.label ?? '';
   const planId = bodyPlanOf(refName);
   if (planId !== 'biped' && planId !== 'monolithic') {
-    return { backend: 'plan', id, speciesScale: creatureSpeciesScale(refName), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} name={refName} colors={ent.appearance?.colors} facing={ent.facing} pos={ent.pos} /> };
+    // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici
+    // (les combattants passent par riggedAppearance au spawn, qui résout déjà).
+    return { backend: 'plan', id, speciesScale: creatureSpeciesScale(refName), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} name={refName} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
   }
   return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
 }

@@ -75,3 +75,12 @@ export function applyEyes(visage: string, eyes?: { G?: string; D?: string }): st
   if (eyes.D) out = swapEye(out, 'D', eyes.D);
   return out;
 }
+
+/** CLÉS du catalogue (donnée éditeur) → ARTS, ou undefined si rien à remplacer. Utilisé par
+ *  les tokens d'entité (les combattants passent par riggedAppearance qui résout au spawn). */
+export function eyesArtFromKeys(eyes?: { G?: string; D?: string }): { G?: string; D?: string } | undefined {
+  if (!eyes) return undefined;
+  const G = eyes.G ? EYE_OPTIONS[eyes.G]?.art : undefined;
+  const D = eyes.D ? EYE_OPTIONS[eyes.D]?.art : undefined;
+  return G || D ? { ...(G ? { G } : {}), ...(D ? { D } : {}) } : undefined;
+}

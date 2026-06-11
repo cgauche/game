@@ -9,9 +9,9 @@ import type { ColorsSel } from '../state/scene';
  * bus) est déléguée à `usePlanAnim` (partagé avec MountedToken) ; ici on ne fait que rendre.
  * Hébergé dans la boîte 120×150 par tokenNode.
  */
-export function AnimatedPlanToken({ id, name, colors, dead, prone, facing, pos }: { id: string; name: string; colors?: ColorsSel; dead?: boolean; prone?: boolean; facing?: Dir8; pos?: { x: number; y: number } }) {
+export function AnimatedPlanToken({ id, name, colors, eyes, dead, prone, facing, pos }: { id: string; name: string; colors?: ColorsSel; eyes?: { G?: string; D?: string }; dead?: boolean; prone?: boolean; facing?: Dir8; pos?: { x: number; y: number } }) {
   const { plan, species, pose, view, mirror, wings } = usePlanAnim(id, name, dead, facing, pos, prone);
   if (!plan) return null;
-  const svg = bonesToSvg(plan.resolve(species, view, pose, { colors, wings }));
+  const svg = bonesToSvg(plan.resolve(species, view, pose, { colors, wings, eyes }));
   return <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: svg }} />;
 }

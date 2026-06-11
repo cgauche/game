@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { resolveWing, wingedPlan } from '../winged/composeWing';
 import { quadrupedPlan, resolveQuadFromProps } from './composeQuad';
 import { quadLeapPose, quadWalkPose } from './quadPose';
+import { EYE_OPTIONS, eyesArtFromKeys } from '../parts/eyes';
 
 const svgOf = (wings?: 'folded' | 'spread') =>
   resolveWing('Dragon', 'profile', {}, undefined, wings).map((b) => b.parts.map((p) => p.svg).join('')).join('');
@@ -45,6 +46,20 @@ describe('props de finesse (ridge / markings / headScale / tailLen)', () => {
   });
   it('yeux des têtes quad ANCRÉS (data-eye) — prêts pour le catalogue d’yeux', () => {
     expect(svgQuad({})).toContain('data-eye="D"');
+  });
+});
+
+describe('yeux du catalogue sur les têtes de gabarit (ancres data-eye)', () => {
+  const svgQuadEyes = (eyes?: { G?: string; D?: string }) =>
+    quadrupedPlan.resolve('Loup', 'profile', {}, { eyes }).map((b) => b.parts.map((p) => p.svg).join('')).join('');
+  it("l'art du catalogue remplace l'œil ancré (profil = œil D)", () => {
+    expect(svgQuadEyes({ D: EYE_OPTIONS.rouge.art })).toContain('data-eye-art="rouge"');
+    expect(svgQuadEyes()).not.toContain('data-eye-art');
+  });
+  it('eyesArtFromKeys : clés éditeur → arts (clé inconnue/vide ignorée)', () => {
+    expect(eyesArtFromKeys({ D: 'chat' })?.D).toBe(EYE_OPTIONS.chat.art);
+    expect(eyesArtFromKeys({ D: 'inconnu' })).toBeUndefined();
+    expect(eyesArtFromKeys(undefined)).toBeUndefined();
   });
 });
 
