@@ -1,4 +1,5 @@
 import type { Scene, Effect } from './scene';
+import { allMusicDefs } from '../audio/music';
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -27,6 +28,7 @@ function walkEffects(effects: Effect[] | undefined, fn: (e: Effect) => void) {
 export function validateScene(project: Scene[]): Warning[] {
   const out: Warning[] = [];
   const sceneIds = new Set(project.map((s) => s.id));
+  const musicIds = new Set(allMusicDefs().map((d) => d.id));
   for (const s of project) {
     const dlgIds = new Set(s.dialogues.map((d) => d.id));
     const encIds = new Set(s.encounters.map((e) => e.id));
@@ -46,6 +48,9 @@ export function validateScene(project: Scene[]): Warning[] {
         seen.add(id);
       }
     };
+
+    for (const [slot, v] of Object.entries(s.music ?? {}))
+      if (typeof v === 'string' && !musicIds.has(v)) add('warn', 'scene', undefined, `Musique (${slot === 'ambient' ? 'ambiance' : 'combat'}) inconnue au registre « ${v} »`);
 
     dup(s.entities.map((e) => e.id), 'entity');
     dup((s.buildings ?? []).map((b) => b.id), 'building');

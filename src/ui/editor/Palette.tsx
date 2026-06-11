@@ -6,8 +6,28 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import type { Warning } from '../../state/validateScene';
 import { ValidationPanel } from './ValidationPanel';
 import { Tool, Layers, KINDS, KIND_LABEL } from './tools';
+import { allMusicDefs } from '../../audio/music';
 
 const TERRAIN_IDS = Object.keys(TERRAIN_META);
+
+/** Sélecteur de musique de scène (ambiance/combat) : Auto (contexte) / Aucune / pistes du registre. */
+function MusicSelect({ label, value, onChange }: { label: string; value: string | null | undefined; onChange: (v: string | null | undefined) => void }) {
+  return (
+    <label className="ed-field">
+      {label}
+      <select
+        value={value === undefined ? '__auto' : value === null ? '__silence' : value}
+        onChange={(e) => onChange(e.target.value === '__auto' ? undefined : e.target.value === '__silence' ? null : e.target.value)}
+      >
+        <option value="__auto">Automatique</option>
+        <option value="__silence">Aucune</option>
+        {allMusicDefs().map((d) => (
+          <option key={d.id} value={d.id}>{d.id.replace(/^musique-/, '')}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 /**
  * Volet GAUCHE de l'éditeur : palette à onglets Carte (outils/terrains/entités/bâtiments/zones/
@@ -280,6 +300,23 @@ export function Palette({
               <option value="tempete">Tempête (−20 attaque)</option>
             </select>
           </label>
+          <MusicSelect
+            label="Musique (ambiance)"
+            value={scene.music?.ambient}
+            onChange={(v) => {
+              const m = { ...scene.music, ambient: v };
+              setScene({ ...scene, music: m.ambient === undefined && m.combat === undefined ? undefined : m });
+            }}
+          />
+          <MusicSelect
+            label="Musique (combat)"
+            value={scene.music?.combat}
+            onChange={(v) => {
+              const m = { ...scene.music, combat: v };
+              setScene({ ...scene, music: m.ambient === undefined && m.combat === undefined ? undefined : m });
+            }}
+          />
+
           <label className="ed-field">
             Message d'introduction
             <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />

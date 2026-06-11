@@ -94,6 +94,9 @@ export interface EntityAppearance {
   /** Tenue (carrière) CHOISIE — découple l'habit du nom : un PNJ peut porter n'importe
    *  quelle tenue (Mendiant, Soldat, Skaven, Nu…). Vide = dérivée du nom/espèce. */
   career?: string;
+  /** Yeux personnalisés (clés du catalogue `EYE_OPTIONS` : chat/caprin/reptilien/noir/rouge/
+   *  verre) — remplacés EN PLACE sur l'orbite du visage. Vide = yeux normaux. */
+  eyes?: { G?: string; D?: string };
 }
 
 export interface SceneEntity {
@@ -329,6 +332,10 @@ export interface Scene {
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
+  /** Musique de la scène — ids de pistes du registre audio (defs `music`). Champ absent/undefined
+   *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
+   *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */
+  music?: { ambient?: string | null; combat?: string | null };
   /** Grille aplatie de longueur w×h (ligne par ligne). */
   tiles: Terrain[];
   entities: SceneEntity[];

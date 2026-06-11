@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { getVolume, isMuted, setMuted, setVolume, playSfx } from '../audio/engine';
+import { getVolume, getMusicVolume, isMuted, setMuted, setVolume, setMusicVolume, playSfx } from '../audio/engine';
 
-/** Contrôles audio du menu ☰ (Jalon 8 — sons CC0) : volume global + sourdine, persistants.
- *  Bouger le volume joue un échantillon (retour immédiat). */
+/** Contrôles audio du menu ☰ (Jalon 8 — sons CC0) : sourdine globale + volumes effets/musique,
+ *  persistants. Bouger le volume d'effets joue un échantillon ; la musique s'ajuste en direct. */
 export function AudioControls() {
   const [volume, setVol] = useState(getVolume());
+  const [musicVol, setMusicVol] = useState(getMusicVolume());
   const [muted, setMute] = useState(isMuted());
   return (
     <div className="gm-section">
@@ -29,13 +30,32 @@ export function AudioControls() {
           step={0.05}
           value={volume}
           disabled={muted}
-          aria-label="Volume"
+          aria-label="Volume des effets"
+          title="Effets"
           onChange={(e) => {
             const v = Number(e.target.value);
             setVolume(v);
             setVol(v);
           }}
           onPointerUp={() => playSfx('des')}
+        />
+      </div>
+      <div className="audio-controls">
+        <span className="audio-icon" aria-hidden>🎵</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={musicVol}
+          disabled={muted}
+          aria-label="Volume de la musique"
+          title="Musique"
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            setMusicVolume(v);
+            setMusicVol(v);
+          }}
         />
       </div>
     </div>

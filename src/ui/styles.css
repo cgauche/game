@@ -1197,6 +1197,13 @@ body {
   flex: 1;
   padding: 0;
 }
+.audio-controls + .audio-controls {
+  margin-top: 6px;
+}
+.audio-icon {
+  width: 34px;
+  text-align: center;
+}
 
 /* ── Coop : puce spectateur + ready-check ── */
 .spectator-chip {

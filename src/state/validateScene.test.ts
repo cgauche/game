@@ -56,4 +56,14 @@ describe('validateScene', () => {
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });
+
+  it('musique de scène inconnue au registre → avertissement ; piste réelle / silence / auto = OK', () => {
+    const s = base();
+    s.music = { ambient: 'piste-fantome', combat: 'musique-combat' };
+    expect(msgs(validateScene([s])).some((m) => /Musique .*piste-fantome/.test(m))).toBe(true);
+    s.music = { ambient: null, combat: 'musique-combat' }; // silence + piste réelle
+    expect(validateScene([s])).toEqual([]);
+    s.music = undefined; // automatique
+    expect(validateScene([s])).toEqual([]);
+  });
 });
