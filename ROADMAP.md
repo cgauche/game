@@ -874,7 +874,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   actuel n'est qu'une **démo** walk-to-trigger, pas le vrai Ch.1.
 - Puis Tomes 1-3, en s'appuyant sur `tome1-dossiers.json` et **l'éditeur** (tout est éditable).
 
-## 🎯 Jalon 5 — Méta-jeu & persistance
+## ✅ Jalon 5 — Méta-jeu & persistance *(complet — 2026-06-11 ; écartés sourcés documentés)*
 
 - ✅ **Sauvegarde/chargement** *(2026-06-11, commit `66ce86c`)* : snapshot **zéro-maintenance**
   (clés de données de `getInitialState` — toute donnée d'état future est sauvée gratis), 3 slots
@@ -953,7 +953,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   « ennemis abstraits » est l'application directe des données ; à revisiter si les PNJ gagnent
   un inventaire d'items).
 
-## 🎯 Jalon 6 — Éditeur avancé *(largement entamé — Jalons 0.5 & 0.6)*
+## ✅ Jalon 6 — Éditeur avancé *(complet — 2026-06-11 ; reportés mineurs justifiés : resize-confirm, fit-to-view)*
 
 - Fait : palette à onglets, triggers/dialogues/rencontres structurés, outil Zone, **bâtiments &
   décors data-driven posés par drag**, inspecteur générique (`ParamFields`), sélection de bâtiment,
@@ -1017,7 +1017,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   déléguée aux invités, deltas d'état (au lieu de snapshots), dissipation en Test Soutenu à
   plusieurs sur le même Domaine.
 
-## 🎯 Jalon 8 — Polish & production
+## ✅ Jalon 8 — Polish & production *(complet — 2026-06-11 ; restent les finitions VISUELLES différées sur arbitrage : galeries QC, tenues/armes héros dos-profil, proportions Mutant, art des bâtiments)*
 
 - ✅ **Rig 2D squelettique + apparence composable** (`src/gameIso/rig/`, pur + testé —
   **17 fichiers de test, 129 tests verts**) : squelette FK par espèce/morpho (**6 espèces jouables** :
