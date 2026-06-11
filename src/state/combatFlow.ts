@@ -2428,7 +2428,7 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
  * d'États, puis applique `restRecovery` à chaque héros (retrait Exténué + soin de Blessures + cauchemars).
  * Résolution NON interactive (journal, pas de Chance) — cohérent avec l'entretien hors combat existant.
  */
-export function restPartyOvernight(get: () => GameState, set: any, days = 1): void {
+export function restPartyOvernight(get: () => GameState, set: any, days = 1, opts: { fedDaily?: boolean } = {}): void {
   if (get().battle) return; // pas de repos en plein combat
   const n = Math.max(1, Math.floor(days));
   const before = get().gameTime;
@@ -2448,7 +2448,7 @@ export function restPartyOvernight(get: () => GameState, set: any, days = 1): vo
   // Entretien quotidien (#T2/#T3) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
   // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418) ; les
   // maladies/convalescences des jours franchis avancent ici (cascade ; `caredFor` réduit les durées).
-  runDailyUpkeep(get, set, { caredFor });
+  runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily });
   const party = get().party;
   const lines: string[] = [];
   for (const h of party) lines.push(...restRecovery(h, battleRng(), n));

@@ -24,7 +24,7 @@
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { dailyFoodUpkeep } from '../engine/provisions';
+import { dailyFoodUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
@@ -70,7 +70,7 @@ export function purgeClockEffects(get: Get, set: Set): void {
 /** Traite les journées écoulées depuis le dernier entretien (rations/faim, maladies, convalescence)
  *  + purge des effets d'horloge. No-op (hors purge) si aucun franchissement de jour. Appelé par
  *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage. */
-export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean } = {}): void {
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean } = {}): void {
   purgeClockEffects(get, set);
   const today = dayIndex(get().gameTime);
   const last = get().lastUpkeepDay;
@@ -81,6 +81,9 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean } 
   for (let d = last + 1; d <= today; d++) {
     for (const h of party) {
       if (h.dead) continue;
+      // Période NOURRIE (interlude « Entre deux aventures » : gîte et couvert payés par l'Argent
+      // à gaspiller, LDB 23) : chaque jour est un repas — la Faim ne s'installe jamais.
+      if (opts.fedDaily) feedFromMeal(h);
       // 1. Nourriture (LDB 18 l.417-422).
       const r = dailyFoodUpkeep(h, testValue(h, 'Résistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng());
       if (r.rationConsumed) rations++;

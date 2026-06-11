@@ -65,6 +65,15 @@ describe('Interlude — flux start/end', () => {
     expect(useGame.getState().gameTime).toBeGreaterThan(t0); // 7 jours de repos écoulés
   });
 
+  it('la clôture NOURRIT le groupe (vie en ville payée par le gaspillage) — pas de famine sur 3 semaines', () => {
+    useGame.getState().startInterlude(3);
+    const before = useGame.getState().party.map((h) => h.wounds.current);
+    useGame.getState().interludeEnd(); // 21 jours — sans le couvert, la Faim RAW tuerait le groupe
+    const party = useGame.getState().party;
+    party.forEach((h, i) => expect(h.wounds.current, h.name).toBeGreaterThanOrEqual(before[i]));
+    expect(useGame.getState().journal.join('\n')).not.toMatch(/dépérit|Faim \(LDB 18\)/);
+  });
+
   it('« Avec le pouvoir » : Niveau 3 sans Revenus → retombe au Niveau 2 (LDB 23 l.30)', () => {
     useGame.getState().startInterlude(1);
     const hero = useGame.getState().party[0];
