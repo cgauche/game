@@ -11,18 +11,27 @@ import { isTileVisible } from './viewport';
 
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
 const FLINCH_MS = 240; // durée du recul (touché) / dérobade (attaque esquivée)
+const DYING_MS = 420; // durée de l'effondrement (mort / mis À Terre)
 
 type Mode =
   | { kind: 'rest' }
   | { kind: 'walk'; until: number }
   | { kind: 'attack'; start: number; atk?: string }
-  | { kind: 'flinch'; start: number };
+  | { kind: 'flinch'; start: number }
+  | { kind: 'dying'; start: number };
 
 // Recul générique (quadrupède/ailé : mêmes os que creatureAttackPoses) — tête/encolure qui
 // rentrent, tronc en arrière. Amplitude modulée en cloche (sin) sur la durée du flinch.
 const FLINCH: Record<string, number> = { tronc: -7, encolure: -13, tete: -8, croupe: 3 };
 const scalePose = (p: Record<string, number>, k: number): Record<string, number> =>
   Object.fromEntries(Object.entries(p).map(([b, v]) => [b, v * k]));
+// Interpolation de poses (union des os, absent = 0) — pour l'effondrement animé.
+const lerpPose = (a: Record<string, number>, b: Record<string, number>, t: number): Record<string, number> => {
+  const out: Record<string, number> = {};
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) out[k] = (a[k] ?? 0) * (1 - t) + (b[k] ?? 0) * t;
+  return out;
+};
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
  * Pilote l'ANIMATION d'un gabarit rigué non-bipède (quadrupède/ailé/serpentin/…) : repos en
@@ -42,6 +51,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const [, force] = useState(0);
   const modeRef = useRef<Mode>({ kind: 'rest' });
   const rafRef = useRef(0);
+  const wasDown = useRef(!!(dead || prone)); // état initial : pas d'effondrement au montage
   const posRef = useRef(pos); // CULLING : tuile lue dans le rAF sans re-souscrire (pos stable)
   posRef.current = pos;
 
@@ -57,6 +67,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
       if (m.kind === 'walk' && t > m.until) modeRef.current = { kind: 'rest' };
       else if (m.kind === 'attack' && t - m.start > 360) modeRef.current = { kind: 'rest' };
       else if (m.kind === 'flinch' && t - m.start > FLINCH_MS) modeRef.current = { kind: 'rest' };
+      else if (m.kind === 'dying' && t - m.start > DYING_MS) modeRef.current = { kind: 'rest' };
       // CULLING viewport : hors-champ → on saute le re-rendu (donc resolveRig) mais on GARDE la
       // boucle vivante (reprise auto en revenant dans le cadre). Le mode (walk/attack→rest) avance
       // quand même, donc aucune désync de timing. Coût hors-champ = un simple test de cadre.
@@ -65,6 +76,14 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
     };
     const ensureLoop = () => { if (!rafRef.current) rafRef.current = requestAnimationFrame(loop); };
     if (hasIdle && !dead && !prone) ensureLoop();
+    // Transition debout → au sol : EFFONDREMENT animé (interpolation vers la pose couchée),
+    // pas une téléportation. Un token monté déjà au sol (chargement) ne s'anime pas.
+    const downNow = !!(dead || prone);
+    if (downNow && !wasDown.current) {
+      modeRef.current = { kind: 'dying', start: performance.now() };
+      ensureLoop();
+    }
+    wasDown.current = downNow;
     const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
       if (d.id !== id) return;
       const p = d.path;
@@ -102,11 +121,11 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const canFlinch = planId === 'quadruped' || planId === 'winged';
   const pose: Record<string, number> = !plan
     ? {}
-    : dead
-      ? plan.deathPose()
-      : prone
-        ? plan.deathPose() // À Terre : couché (l'anneau de vie + l'icône 🔻 disent « vivant »)
-        : m.kind === 'walk'
+    : dead || prone
+      ? (m.kind === 'dying'
+          ? lerpPose(plan.restPose(), plan.deathPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
+          : plan.deathPose()) // À Terre : couché (l'anneau de vie + l'icône 🔻 disent « vivant »)
+      : m.kind === 'walk'
           ? plan.walkPose(((now / STEP_MS) % 2) / 2)
           : m.kind === 'attack'
             ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)

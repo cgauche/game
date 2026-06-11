@@ -54,9 +54,16 @@ export function RigToken({
       <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={down === 'corpse' ? CORPSE_POSE : down === 'prone' ? PRONE_POSE : addPose(holdPose, pose)} view={view} mirror={mirror} />
     </g>
   );
-  // AU SOL : bascule de tout le rig autour des pieds (pivot rig-local ≈ (60,150)) — le corps
-  // s'allonge au lieu de rester debout. Cadavre ~82°, À Terre ~72° (à demi relevé).
-  if (down === 'corpse') return <g transform="rotate(82 60 150)">{body}</g>;
-  if (down === 'prone') return <g transform="rotate(72 60 150)">{body}</g>;
-  return body;
+  // AU SOL : bascule de tout le rig autour des pieds (pivot rig-local (60,150)) — cadavre
+  // ~82°, À Terre ~72° (à demi relevé). La rotation est une TRANSITION CSS : la CHUTE est
+  // animée (plus de téléportation au sol) et le RELEVÉ aussi, gratuitement. Pivot exprimé en
+  // sandwich translate·rotate·translate (unités LOCALES — pas de transform-origin : le token
+  // iso n'a pas de viewport propre, l'origine CSS pointerait la scène). Même structure dans
+  // les deux états → interpolation fluide ; un élément monté déjà au sol ne transitionne pas.
+  const deg = down === 'corpse' ? 82 : down === 'prone' ? 72 : 0;
+  return (
+    <g style={{ transform: `translate(60px, 150px) rotate(${deg}deg) translate(-60px, -150px)`, transition: 'transform 420ms cubic-bezier(.34,.8,.42,1)' }}>
+      {body}
+    </g>
+  );
 }
