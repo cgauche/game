@@ -85,6 +85,7 @@ export function PartyPicker({
   const pregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
+  const setScreen = useGame((s) => s.setScreen);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
   const removeSaved = (id: string) => {
@@ -108,7 +109,9 @@ export function PartyPicker({
         {tab === 'roster' ? (
           <div className="pregen-list">
             {roster.length === 0 && (
-              <p className="hint">Aucun personnage sauvegardé — ceux créés dans le créateur apparaîtront ici.</p>
+              <button className="btn" onClick={() => setScreen('creator')}>
+                ➕ Créer un personnage
+              </button>
             )}
             {roster.map(({ hero, wealth }) => (
               <div key={hero.id} className="pregen-row">

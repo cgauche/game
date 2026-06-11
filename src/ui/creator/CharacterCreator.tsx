@@ -349,7 +349,6 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
             <button className="btn" onClick={() => setD(rollDraftSpecies(d))}>
               🎲 Tirer l'espèce (d100) — +20 PX si vous acceptez
             </button>
-            <span className="hint">Le jet est unique : pas de relance.</span>
           </div>
         ) : (
           <div className="row-flex">
@@ -378,7 +377,6 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
             );
           })}
         </div>
-        <p className="hint" style={{ marginBottom: 0 }}>2d10 s'ajoutent à chaque valeur au tirage des Caractéristiques.</p>
         <div className="derived" style={{ marginTop: 8 }}>
           <span>
             Mouvement <b>{sp.movement}</b>
@@ -390,7 +388,6 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
         </div>
       </Section>
       <Section title="Compétences d'espèce">
-        <p className="hint" style={{ marginTop: 0 }}>Vous en formerez 3 à +5 et 3 à +3.</p>
         <div className="skill-tags">
           {sp.skills.map((s) => (
             <SkillChip key={s} label={s} />
@@ -411,9 +408,6 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
   const accessible = careersForSpecies(sp.refCareer);
   const carrieres = (
     <>
-      <p className="hint" style={{ marginTop: 0 }}>
-        {accessible.length} carrières accessibles aux {sp.label} — le choix se fait à l'étape suivante.
-      </p>
       {classes.map((cl) => {
         const list = accessible.filter((c) => c.class === cl.label);
         if (!list.length) return null;
@@ -458,7 +452,6 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
         <LoreText html={txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain']} />
       </Section>
       <Section title="Yeux & cheveux">
-        <p className="hint" style={{ marginTop: 0 }}>Couleurs tirées à l'étape Détails (2d10 sur les tables).</p>
         <div className="skill-tags">
           {eyeColors.map((c) => (
             <span key={`e-${c}`} className="tag">👁 {c}</span>

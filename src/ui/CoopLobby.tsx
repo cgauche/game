@@ -46,16 +46,18 @@ export function CoopLobby() {
           <div className="coop-roles">
             <section className="zone-section coop-role">
               <h3><span>Héberger</span></h3>
-              <p className="hint">Vous exécutez la partie ; vos amis vous rejoignent par codes. Composez d'abord votre groupe (« Nouvelle partie »).</p>
               <button className="btn btn-primary" disabled={!name.trim() || party.length === 0} onClick={() => hostStart(name.trim())}>
                 Héberger
               </button>
-              {party.length === 0 && <p className="hint">⚠️ Aucun groupe — créez-le d'abord.</p>}
+              {party.length === 0 && (
+                <button className="btn" onClick={() => setScreen('party')}>
+                  ➕ Composer le groupe
+                </button>
+              )}
             </section>
             <section className="zone-section coop-role">
               <h3><span>Rejoindre</span></h3>
-              <p className="hint">Collez le code d'invitation reçu de l'hôte.</p>
-              <textarea value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder="Code d'invitation (W4C1.…)" rows={3} />
+              <textarea value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder="Collez le code d'invitation (W4C1.…)" rows={3} />
               <button
                 className="btn btn-primary"
                 disabled={!name.trim() || !joinCode.trim()}
@@ -86,13 +88,12 @@ export function CoopLobby() {
         <div className="coop-body">
           {myAnswer ? (
             <section className="zone-section">
-              <h3><span>Votre code de réponse</span></h3>
-              <p className="hint">Renvoyez-le à l'hôte (il le colle pour finaliser la connexion).</p>
+              <h3><span>Code de réponse — à renvoyer à l'hôte</span></h3>
               <textarea readOnly value={myAnswer} rows={3} onFocus={(e) => e.currentTarget.select()} />
               <button className="btn small" onClick={() => copy(myAnswer)}>📋 Copier</button>
             </section>
           ) : null}
-          <p className="hint">⏳ En attente de l'hôte… (la partie démarrera sur votre écran dès qu'il la lance)</p>
+          <p className="hint">⏳ En attente de l'hôte…</p>
         </div>
       </div>
     );

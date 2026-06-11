@@ -37,10 +37,7 @@ export function MainMenu() {
             🎨 Galeries d'art
           </a>
         </div>
-        <p className="footnote">
-          Groupe de 4 aventuriers · tactique au tour par tour · coop en ligne par code. Règles et contenu
-          adaptés du Livre de base et des Archives de l'Empire I &amp; II (WFRP 4e).
-        </p>
+        <p className="footnote">Adapté du Livre de base et des Archives de l'Empire I &amp; II (WFRP 4ᵉ édition).</p>
       </div>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
     </div>
