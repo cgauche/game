@@ -1168,11 +1168,13 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
 Source SCÉNARIO : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` (stats des
 créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
 
-- **Lot A — Skavens différenciés** (« tous identiques » aujourd'hui : une seule race rendue) :
-  data LDB n'a que Vermine de choc / Rat ogre / Rat géant — différencier par VARIANTE visuelle
-  (tenue/équipement/posture par nom : vermine de choc en armure + hallebarde, guerrier de clan,
-  esclave en haillons, coureur d'égout encapuchonné, prophète gris à cornes en robe…) ;
-  inventorier les variantes réellement utilisées (Tome 1 + Compagnon + ADE).
+- ✅ **Lot A — Skavens différenciés** *(livré 049e28b, 2026-06-11)* : 5 defs créatures dédiés
+  (Rat ogre brute-bras-longs + griffes, Vermine de choc fourrure noire + lamelles + casque,
+  Prophète gris cornes caprines + robe + malepierre, Esclave skaven décharné en haillons,
+  Coureur d'égout Eshin encapuchonné) + 4 tenues de carrière au registre (career:true).
+  Fixes structurels : tête de race SOUS la coiffe (un skaven casqué garde sa tête de rat),
+  `perso.features` additifs (vs `monster` = override complet), gabarit du def transmis aux
+  entités hors combat.
 - **Lot B — créatures du Chaos du Compagnon SANS modèle** : ch.12 Carnaval du Pandémonium —
   la ménagerie (Urzo, Rassarak, les Jumeaux, la Bête Impériale, la « basse-cour » = hommes-bêtes
   à têtes de chèvre/vache/POULET cracheurs de venin l.154) ; ch.11 — le **Happeur Carnivore** ;
