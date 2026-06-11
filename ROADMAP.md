@@ -1003,8 +1003,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   reste les tenues/armes héros partielles en fallback front ; ✅ **tintage arcane/divin** des sorts
   (`spell: label` sur `ANIM_ATTACK` → `spellFx`/`spellFxForLabel`, gradients `g_arcane`/`g_divine` ;
   projectile + halo de canalisation du lanceur + aura de bénédiction tintés ; sorts de soutien animés ;
-  vérifié navigateur) ; proportions Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique**
-  dans l'éditeur (slot-picker + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
+  vérifié navigateur) ; proportions Mutant homme-chien/tentacule perfectibles ; ✅ **UI d'override
+  cosmétique** dans l'éditeur *(vérifié livré 2026-06-11 : Inspector → « 🎲 Relancer » (seed) +
+  `MonsterPartsFields` — Sexe, Carrure, Coiffure (slot-picker `HAIRSTYLES`), mutations par slot,
+  couleurs, carrière, arme — branché spawns ET entités)* ; **galeries QC** (rig/anim/armes/bestiaire)
+  à finaliser et committer (itération visuelle — différée).
 - Sons & musique ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
   (build:data → typecheck → **ESLint** → tests → build — le lint y est depuis `ci.yml` ; base 0 erreur).
 - ✅ **Accessibilité des modales** *(2026-06-11)* : cadre `Modal` partagé = `role=dialog`/`aria-modal`,
