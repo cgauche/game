@@ -1664,7 +1664,9 @@ export function applyAttackResult(
   if (attacker.pos && target.pos) {
     set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
   }
-  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, creatureAttack: creatureAttackKind(weapon.name) });
+  // `weapon` voyage dans l'événement : le rig joue le geste de l'arme EMPLOYÉE (2e frappe de
+  // dague gauche, tentacule…), pas celui de l'arme principale.
+  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, weapon, creatureAttack: creatureAttackKind(weapon.name) });
   const evKind: CombatEventKind = weapon.type === 'ranged' ? 'shoot' : 'attack';
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));

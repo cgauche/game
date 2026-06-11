@@ -46,7 +46,11 @@ export function useRigAnim({ id, equip, restClip, facing, pos }: {
         if (d.kind === 'spell') {
           const style = spellCastStyle(cs?.find((c) => c.id === d.from)?.kind, cs?.find((c) => c.id === d.to)?.kind, d.from === d.to);
           playClip(spellCastClip(style), { onImpact });
-        } else playClip(gest.current.attack, { onImpact });
+        } else {
+          // Geste de l'arme EMPLOYÉE (portée par l'événement) — pas de l'arme principale :
+          // la 2e frappe de dague gauche et le tentacule jouent LEUR clip (miroité à gauche).
+          playClip(d.weapon ? weaponAttackClip(d.weapon) : gest.current.attack, { onImpact });
+        }
       } else if (d.to === id && !d.result?.hit) {
         // Réaction défensive UNIQUEMENT face à une attaque offensive (pas un soin/bénédiction reçu).
         if (d.kind === 'spell') {

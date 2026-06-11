@@ -159,22 +159,24 @@ const ATTACK: Record<Handling, Clip> = {
   ], 240),
 };
 
-// Miroir G↔D d'un clip (sans les deltas `arme`, ancrée à la main droite) : le TENTACULE muté
-// remplace le bras GAUCHE — son fouet doit partir de ce bras, pas du bras d'arme droit.
+// Miroir G↔D d'un clip (sans les deltas `arme`, ancrée à la main droite). Les clips sont
+// dessinés pour le bras d'ARME (droit) ; le geste se joue sur LE BRAS QUI TIENT L'ARME :
+// une arme en MAIN GAUCHE (2e frappe du Maniement de deux armes) ou un MEMBRE GAUCHE muté
+// (tentacule, qui remplace le bras gauche) joue le clip MIROITÉ.
 const MIRROR_BONE: Record<string, string> = {
   epauleD: 'epauleG', epauleG: 'epauleD', avantBrasD: 'avantBrasG', avantBrasG: 'avantBrasD', mainD: 'mainG', mainG: 'mainD',
 };
 const mirrorPose = (p: Pose): Pose =>
   Object.fromEntries(Object.entries(p).filter(([k]) => k !== 'arme').map(([k, v]) => [MIRROR_BONE[k] ?? k, v]));
 const mirrorClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: mirrorPose(s.pose) })) });
-const TENTACLE_LASH = mirrorClip(ATTACK.entraves);
+/** L'attaque de cette arme se joue-t-elle sur le bras GAUCHE ? */
+const leftHanded = (w: Weapon): boolean => w.hand === 'off' || norm(w.name).startsWith('tentacule');
 
-/** Geste d'attaque selon la classe de maniement (défaut : lame1m). Le Tentacule (membre
- *  gauche muté) joue le fouet MIROITÉ sur son bras. */
+/** Geste d'attaque selon la classe de maniement (défaut : lame1m), MIROITÉ pour le bras gauche. */
 export function weaponAttackClip(w?: Weapon): Clip {
   if (!w) return ATTACK.lame1m;
-  if (norm(w.name).startsWith('tentacule')) return TENTACLE_LASH;
-  return ATTACK[handlingClass(w)];
+  const base = ATTACK[handlingClass(w)];
+  return leftHanded(w) ? mirrorClip(base) : base;
 }
 
 // --- PARADES / gardes (deltas au-dessus du repos) --------------------------

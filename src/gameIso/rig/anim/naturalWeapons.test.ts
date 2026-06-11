@@ -12,14 +12,19 @@ describe('maniement des armes naturelles (mutations/traits)', () => {
     expect(handlingClass(w('Fouet'))).toBe('entraves'); // l'arme Fouet inchangée
   });
 
-  it('le fouet du Tentacule est MIROITÉ sur le bras gauche (membre muté)', () => {
+  it('le geste se joue sur LE BRAS QUI TIENT L’ARME : tentacule et main gauche → miroité', () => {
     const lash = weaponAttackClip(w('Tentacule'));
     const all = lash.steps.flatMap((s) => Object.keys(s.pose));
     expect(all).toContain('epauleG');
     expect(all).not.toContain('epauleD'); // pas le bras d'arme droit
     expect(all).not.toContain('arme'); // rien en main
-    // L'arme Fouet, elle, fouette du bras droit.
+    // L'arme Fouet (main directrice), elle, fouette du bras droit.
     expect(weaponAttackClip(w('Fouet')).steps.flatMap((s) => Object.keys(s.pose))).toContain('epauleD');
+    // 2e frappe du Maniement de deux armes : la dague en MAIN GAUCHE frappe du bras gauche.
+    const off = weaponAttackClip({ ...w('Dague'), hand: 'off' });
+    const offBones = off.steps.flatMap((s) => Object.keys(s.pose));
+    expect(offBones).toContain('epauleG');
+    expect(offBones).not.toContain('epauleD');
   });
 
   it('Cornes : coup de TÊTE (tête/cou/torse), pas un coup de bras ; parade = se couvrir', () => {
