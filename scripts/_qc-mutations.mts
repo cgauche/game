@@ -67,9 +67,9 @@ montage('public/qc/mutations-enemies.png',
 
 // Planche 4 : GROS PLAN buste/tête des mutations de détail (jugement de l'art).
 const ZW = 200, ZH = 240;
-function zoomCell(i: number, perRow: number, label: string, overlays: RigOverlay[]): string {
+function zoomCell(i: number, perRow: number, label: string, overlays: RigOverlay[], app: Appearance = APP): string {
   const x = (i % perRow) * ZW, y = Math.floor(i / perRow) * ZH;
-  const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip: { weapons: [], armour: [] }, career: 'Mendiant', view: 'front', overlays }));
+  const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career: 'Mendiant', view: 'front', overlays }));
   return `<g transform="translate(${x},${y})"><rect width="${ZW - 4}" height="${ZH - 18}" fill="#262d3b"/>` +
     `<svg x="0" y="0" width="${ZW - 4}" height="${ZH - 18}" viewBox="28 14 64 76">${inner}</svg>` +
     `<text x="${(ZW - 4) / 2}" y="${ZH - 5}" text-anchor="middle" font-size="11" fill="#cdd" font-family="sans-serif">${label}</text></g>`;
@@ -79,7 +79,7 @@ const CLOSEUPS = ['Œil énorme', 'Bouche supplémentaire', 'Visage inversé', '
   'Plumes éparses', 'Suintement de pus', 'Peau brillante', 'Doigts distendus', 'Articulation supplémentaire aux jambes'];
 {
   const perRow = 5;
-  const cells = CLOSEUPS.map((label, i) => zoomCell(i, perRow, label, mutationOverlaysFor([mut(label)])));
+  const cells = CLOSEUPS.map((label, i) => zoomCell(i, perRow, label, mutationOverlaysFor([mut(label)]), mutationAppearance(APP, [mut(label)])));
   const rows = Math.ceil(cells.length / perRow);
   const W = perRow * ZW, H = rows * ZH;
   const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/>${cells.join('')}</svg>`;
@@ -109,7 +109,7 @@ const ARMURE_CASES: { label: string; m: string[]; vb: string }[] = [
   const cells = ARMURE_CASES.map(({ label, m, vb }, i) => {
     const x = (i % perRow) * ZW, y = Math.floor(i / perRow) * ZH;
     const overlays = mutationOverlaysFor(m.map(mut));
-    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', view: 'front', overlays }));
+    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: mutationAppearance(APP, m.map(mut)), equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', view: 'front', overlays }));
     return `<g transform="translate(${x},${y})"><rect width="${ZW - 4}" height="${ZH - 18}" fill="#262d3b"/>` +
       `<svg x="0" y="0" width="${ZW - 4}" height="${ZH - 18}" viewBox="${vb}">${inner}</svg>` +
       `<text x="${(ZW - 4) / 2}" y="${ZH - 5}" text-anchor="middle" font-size="11" fill="#cdd" font-family="sans-serif">${label}</text></g>`;

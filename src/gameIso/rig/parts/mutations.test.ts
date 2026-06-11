@@ -17,17 +17,20 @@ describe('registre des visuels de mutation (LDB 19)', () => {
     expect(Object.keys(MUTATION_VISUALS).length).toBe(LABELS_PHYSIQUES.length);
   });
 
-  it('chaque physique non-morpho a des calques ; les morpho ont build/legs ; Choix du MJ = null', () => {
-    const morpho: Record<string, 'build' | 'legs'> = {
-      [mutKey('Corpulent')]: 'build', [mutKey('Émacié')]: 'build', [mutKey('Court sur pattes')]: 'legs',
-    };
+  it('chaque physique a un visuel (calques, morpho ou peau) ; Choix du MJ = null', () => {
     for (const label of LABELS_PHYSIQUES) {
       const k = mutKey(label);
       const v = MUTATION_VISUALS[k];
       if (k === mutKey('Choix du MJ')) { expect(v).toBeNull(); continue; }
-      if (morpho[k]) { expect(v?.[morpho[k]], label).toBeTruthy(); continue; }
-      expect(v?.overlays?.length, label).toBeGreaterThan(0);
+      expect(!!(v?.overlays?.length || v?.build || v?.legs || v?.skin), label).toBe(true);
     }
+    expect(MUTATION_VISUALS[mutKey('Corpulent')]?.build).toBeGreaterThan(0);
+    expect(MUTATION_VISUALS[mutKey('Émacié')]?.build).toBeLessThan(0);
+    expect(MUTATION_VISUALS[mutKey('Court sur pattes')]?.legs).toBeLessThan(1);
+    // Peaux CORPS ENTIER = recolorisation palette, pas un patch de torse.
+    expect(MUTATION_VISUALS[mutKey('Peau d’acier')]?.skin).toBeTruthy();
+    expect(MUTATION_VISUALS[mutKey('Écailles épineuses')]?.skin).toBeTruthy();
+    expect(MUTATION_VISUALS[mutKey('Peau brillante')]?.skin).toBeTruthy();
   });
 
   it('les détails de visage sont limités à la vue de face', () => {
@@ -42,16 +45,21 @@ describe('registre des visuels de mutation (LDB 19)', () => {
 
   it('mutationOverlaysFor : physiques → calques ; label inconnu → rien', () => {
     const ovs = mutationOverlaysFor([mut('Tentacule épais'), mut('Groin poilu'), mut('Mutation homebrew')]);
-    expect(ovs.some((o) => o.svg.includes('data-mut="tentacule-epais"') && o.bone === 'epauleD')).toBe(true);
+    // Tentacule = MEMBRE REMPLACÉ : bras gauche substitué + poing effacé.
+    expect(ovs.some((o) => o.svg.includes('data-mut="tentacule-epais"') && o.bone === 'epauleG' && o.replace)).toBe(true);
+    expect(ovs.some((o) => o.bone === 'mainG' && o.replace && o.svg === '')).toBe(true);
     expect(ovs.some((o) => o.svg.includes('data-mut="groin-poilu"') && o.bone === 'tete')).toBe(true);
-    expect(ovs.length).toBe(2);
+    expect(ovs.length).toBe(3);
   });
 
-  it('mutationAppearance : morpho appliquée (clamp), même référence sans morpho', () => {
+  it('mutationAppearance : morpho + peau appliquées (clamp), même référence sans rien', () => {
     expect(mutationAppearance(APP, [mut('Corpulent')]).build).toBeCloseTo(0.7);
     expect(mutationAppearance({ ...APP, build: 0.9 }, [mut('Corpulent')]).build).toBe(1);
     expect(mutationAppearance(APP, [mut('Émacié')]).build).toBeCloseTo(0.3);
     expect(mutationAppearance(APP, [mut('Court sur pattes')]).legs).toBeCloseTo(0.78);
+    // Peau corps entier : la palette @peau est surchargée (prime sur la couleur choisie).
+    expect(mutationAppearance(APP, [mut('Peau d’acier')]).colors?.peau).toBe('#8a93a0');
+    expect(mutationAppearance({ ...APP, colors: { peau: '#112233' } }, [mut('Écailles épineuses')]).colors?.peau).not.toBe('#112233');
     expect(mutationAppearance(APP, [mut('Tentacule épais')])).toBe(APP);
     expect(mutationAppearance(APP, undefined)).toBe(APP);
   });

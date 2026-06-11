@@ -67,4 +67,7 @@ export interface RigOverlay {
   /** calque limité à une vue (détail de visage : groin, langue pendante… — de dos il
    *  flotterait sur la nuque). Absent = toutes vues. */
   view?: import('./facing').View;
+  /** REMPLACE la part de l'os au lieu de se superposer (membre muté : bras → tentacule).
+   *  `svg` vide = efface la part (le poing au bout d'un tentacule). */
+  replace?: boolean;
 }

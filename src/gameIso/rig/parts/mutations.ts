@@ -14,6 +14,8 @@ import type { RigOverlay } from '../bones';
 import type { Appearance } from '../appearance';
 import { norm } from '../../../lib/normalize';
 import { OV_PLAIE } from './monstrous';
+import { ARMS } from './monster';
+import { pickView } from './types';
 
 /** Clé de registre : label normalisé, apostrophe typographique (U+2019) repliée. */
 export const mutKey = (s: string): string => norm(s).replace(/[’']/g, "'");
@@ -44,14 +46,12 @@ const ARTICULATION = g('articulation-jambes',
 const BOUCHE = g('bouche-supplementaire',
   '<path d="M0.5 -8.5 Q3 -10.2 5.5 -8 Q3.2 -6.2 0.5 -8.5 Z" fill="#6a1414" stroke="#3a0c0c" stroke-width="0.5"/>'
   + '<path d="M1.4 -8.4 l0.8 1 l0.7 -1.2 l0.8 1 l0.7 -1.2 l0.7 0.9" stroke="#f4ecd8" stroke-width="0.7" fill="none"/>');
-// Tentacule sinueux verdâtre depuis l'épaule (repris du POC ennemi).
-const TENTACULE = g('tentacule-epais',
-  '<path d="M3 -4 Q16 2 14 18 Q12 28 6 24 Q10 18 8 10 Q6 2 0 -2 Z" fill="#8a9a6a" stroke="#4a5836" stroke-width="0.8"/>'
-  + '<path d="M8 8 Q15 14 12 22" fill="none" stroke="#5a6a3a" stroke-width="0.6" opacity="0.7"/>');
-// Lustre : voile clair + éclats spéculaires (lumière de bougie).
+// Tentacule épais : REMPLACE le bras gauche (part monstrueuse du registre monster/, couleur
+// de peau du personnage via @peau) et efface le poing — un membre muté, pas un appendice posé.
+const TENTACULE = g('tentacule-epais', pickView(ARMS['tentacule'], 'front'));
+// Éclats spéculaires (lumière de bougie) — accompagne la peau recolorée corps entier.
 const LUSTRE = g('peau-brillante',
-  '<ellipse cx="-2" cy="-8" rx="5" ry="9" fill="#ffffff" opacity="0.22"/>'
-  + '<path d="M-4 -14 q2 -2 4 -1 M3 -4 q1.6 1.4 1.2 3.4" stroke="#ffffff" stroke-width="1.1" fill="none" opacity="0.5" stroke-linecap="round"/>');
+  '<path d="M-4 -14 q2 -2 4 -1 M3 -4 q1.6 1.4 1.2 3.4 M-5 4 q1.4 1.2 3 1.4" stroke="#ffffff" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>');
 // Halo doré diffus derrière la tête.
 const HALO = g('beaute-surnaturelle',
   '<circle cx="0" cy="5" r="13" fill="#e8c860" opacity="0.3"/>'
@@ -62,13 +62,8 @@ const VISAGE_INVERSE = g('visage-inverse',
   + '<path d="M-2.4 2.4 Q0 0.8 2.4 2.4" stroke="#5a2020" stroke-width="1" fill="none"/>'
   + '<path d="M0 6 q-1 1.4 0 2.4" stroke="@peauO" stroke-width="0.7" fill="none"/>'
   + '<circle cx="-2.6" cy="11" r="1" fill="#241a12"/><circle cx="2.6" cy="11" r="1" fill="#241a12"/>');
-// Plaques gris acier rivetées épousant le torse.
-const ACIER = g('peau-dacier',
-  '<path d="M-7 -16 Q0 -19 7 -16 L7.5 -6 Q0 -3.5 -7.5 -6 Z" fill="#8a93a0" stroke="#4a5058" stroke-width="0.6" opacity="0.85"/>'
-  + '<path d="M-7.5 -4 Q0 -1.5 7.5 -4 L7 6 Q0 9 -7 6 Z" fill="#7e8794" stroke="#4a5058" stroke-width="0.6" opacity="0.85"/>'
-  + '<circle cx="-5" cy="-12" r="0.5" fill="#3a4048"/><circle cx="5" cy="-12" r="0.5" fill="#3a4048"/>'
-  + '<circle cx="-4.6" cy="0" r="0.5" fill="#3a4048"/><circle cx="4.6" cy="0" r="0.5" fill="#3a4048"/>'
-  + '<path d="M-4 -15 q1.6 -1 3.4 -0.6" stroke="#c8d0da" stroke-width="0.8" fill="none" opacity="0.7"/>');
+// Peau d'acier : recolorisation CORPS ENTIER via la palette (`skin`), pas de calque —
+// le visage, les mains et tout membre nu virent au gris métal (ombres dérivées).
 // Langue rose pendant de la bouche jusque sous le menton.
 const LANGUE = g('langue-pendante',
   '<path d="M-1.2 11 Q-1.6 16 0 19.5 Q1.8 16.5 1.4 11 Z" fill="#c46a76" stroke="#8a3a46" stroke-width="0.5"/>'
@@ -82,7 +77,8 @@ const PLUMES_TORSE = g('plumes-eparses',
   '<path d="M-8 -2 q-5 -2 -7 -6 q4.6 0 8 3 Z" fill="#e8e0d0" stroke="#6a5a48" stroke-width="0.5"/>'
   + '<path d="M6 4 q5 -1 8 -4 q-2 4.4 -6 6.4 Z" fill="#8a7a64" stroke="#5a4a3a" stroke-width="0.5"/>'
   + '<path d="M-5 10 q-4.4 1 -7.4 -1 q3 -3 7 -2 Z" fill="#e8e0d0" stroke="#6a5a48" stroke-width="0.5"/>');
-// Écailles triangulaires pointues hérissant flancs et épaules.
+// Épines triangulaires hérissant flancs et épaules — accompagne la peau écailleuse
+// recolorée corps entier (olive reptilien via `skin`).
 const ECAILLES = g('ecailles-epineuses',
   '<path d="M-9 -14 l-3 -1.4 l2.2 2.8 Z M-9.5 -8 l-3.2 -0.8 l2.4 2.6 Z M-9.4 -2 l-3 -0.4 l2.2 2.4 Z'
   + ' M9 -14 l3 -1.4 l-2.2 2.8 Z M9.5 -8 l3.2 -0.8 l-2.4 2.6 Z M9.4 -2 l3 -0.4 l-2.2 2.4 Z" fill="@peauO" stroke="#2a2018" stroke-width="0.4"/>');
@@ -112,6 +108,9 @@ export interface MutationVisual {
   build?: number;
   /** multiplicateur de longueur de jambes (Appearance.legs). */
   legs?: number;
+  /** recolorisation de la peau CORPS ENTIER via la palette (`@peau` + ombres dérivées,
+   *  visage/mains/membres compris) — Peau d'acier, Écailles, Peau brillante. */
+  skin?: string;
 }
 
 /** Clé = `mutKey(label)` des entrées de `src/data/mutations.ts` (table physique). */
@@ -123,15 +122,15 @@ export const MUTATION_VISUALS: Record<string, MutationVisual | null> = {
   [mutKey('Œil énorme')]: { overlays: [{ bone: 'tete', svg: OEIL, view: 'front' }] },
   [mutKey('Articulation supplémentaire aux jambes')]: { overlays: [{ bone: 'tibiaG', svg: ARTICULATION }, { bone: 'tibiaD', svg: ARTICULATION }] },
   [mutKey('Bouche supplémentaire')]: { overlays: [{ bone: 'torse', svg: BOUCHE, view: 'front' }] },
-  [mutKey('Tentacule épais')]: { overlays: [{ bone: 'epauleD', svg: TENTACULE }] },
-  [mutKey('Peau brillante')]: { overlays: [{ bone: 'torse', svg: LUSTRE }] },
+  [mutKey('Tentacule épais')]: { overlays: [{ bone: 'epauleG', svg: TENTACULE, replace: true }, { bone: 'mainG', svg: '', replace: true }] },
+  [mutKey('Peau brillante')]: { skin: '#f0d8a8', overlays: [{ bone: 'torse', svg: LUSTRE }] },
   [mutKey('Beauté surnaturelle')]: { overlays: [{ bone: 'tete', svg: HALO, behind: true }] },
   [mutKey('Visage inversé')]: { overlays: [{ bone: 'tete', svg: VISAGE_INVERSE, view: 'front' }] },
-  [mutKey('Peau d’acier')]: { overlays: [{ bone: 'torse', svg: ACIER }] },
+  [mutKey('Peau d’acier')]: { skin: '#8a93a0' },
   [mutKey('Langue pendante')]: { overlays: [{ bone: 'tete', svg: LANGUE, view: 'front' }] },
   [mutKey('Plumes éparses')]: { overlays: [{ bone: 'epauleG', svg: PLUMES_EPAULE }, { bone: 'torse', svg: PLUMES_TORSE }] },
   [mutKey('Court sur pattes')]: { legs: 0.78 },
-  [mutKey('Écailles épineuses')]: { overlays: [{ bone: 'torse', svg: ECAILLES }] },
+  [mutKey('Écailles épineuses')]: { skin: '#8a8a58', overlays: [{ bone: 'torse', svg: ECAILLES }] },
   [mutKey('Cornes asymétriques')]: { overlays: [{ bone: 'tete', svg: CORNES, behind: true }] },
   [mutKey('Suintement de pus')]: { overlays: [{ bone: 'torse', svg: PUS }] },
   [mutKey('Groin poilu')]: { overlays: [{ bone: 'tete', svg: GROIN, view: 'front' }] },
@@ -150,20 +149,27 @@ export function mutationOverlaysFor(mutations?: Mutation[]): RigOverlay[] {
   return out;
 }
 
-/** Applique les mutations MORPHO (Corpulent/Émacié/Court sur pattes) à l'apparence.
- *  Même référence si aucune morpho (stabilité des props). */
+/** Applique les mutations MORPHO (Corpulent/Émacié/Court sur pattes) et de PEAU corps entier
+ *  (Peau d'acier/Écailles/Brillante) à l'apparence. Même référence si rien (stabilité des props). */
 export function mutationAppearance(a: Appearance, mutations?: Mutation[]): Appearance {
   if (!mutations?.length) return a;
   let dBuild = 0;
   let legs = 1;
+  let skin: string | undefined;
   for (const m of mutations) {
     if (m.kind !== 'physique') continue;
     const v = MUTATION_VISUALS[mutKey(m.label)];
     if (v?.build) dBuild += v.build;
     if (v?.legs) legs *= v.legs;
+    if (v?.skin) skin = v.skin; // la mutation transforme la peau (prime sur la couleur choisie)
   }
-  if (!dBuild && legs === 1) return a;
-  return { ...a, build: Math.min(1, Math.max(0, a.build + dBuild)), legs: (a.legs ?? 1) * legs };
+  if (!dBuild && legs === 1 && !skin) return a;
+  return {
+    ...a,
+    build: Math.min(1, Math.max(0, a.build + dBuild)),
+    legs: (a.legs ?? 1) * legs,
+    ...(skin ? { colors: { ...a.colors, peau: skin } } : {}),
+  };
 }
 
 // Pool des visuels à calques pour le tirage ennemi — hors cornes (déjà garanties) et hors

@@ -145,10 +145,12 @@ export function resolveRig(
   }
 
   // Calques cosmétiques (mutations…) dans le repère de leur os. `view` limite un détail de
-  // visage à une vue (groin/langue de face) ; `behind` le passe SOUS la part (cornes, halo).
+  // visage à une vue (groin/langue de face) ; `behind` le passe SOUS la part (cornes, halo) ;
+  // `replace` substitue la part de l'os (membre muté : bras → tentacule, svg vide = efface).
   for (const ov of overlays) {
-    if (!ov.svg) continue;
     if (ov.view && ov.view !== view) continue;
+    if (ov.replace) { boneParts[ov.bone] = ov.svg ? [{ svg: ov.svg, layer: 5 }] : []; continue; }
+    if (!ov.svg) continue;
     boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 99 });
   }
 
