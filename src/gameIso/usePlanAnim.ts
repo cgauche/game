@@ -116,23 +116,27 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const species = plan ? (creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '') : '';
   const m = modeRef.current;
   const now = performance.now();
-  // Recul (touché/dérobade) : amplitude en cloche, seulement pour les plans qui partagent les
-  // os de creatureAttackPoses (quadrupède/ailé) — les autres restent au repos (pas d'os communs).
-  const canFlinch = planId === 'quadruped' || planId === 'winged';
+  // Recul (touché/dérobade), amplitude en cloche : quadrupède/ailé ont leur recul dédié (mêmes
+  // os que creatureAttackPoses) ; les AUTRES plans (serpentin, arachnide, céphalopode…) jouent
+  // L'INVERSE de leur propre geste d'attaque — retrait anatomiquement juste sans connaître leurs os.
+  const flinchPose = (k: number): Record<string, number> =>
+    planId === 'quadruped' || planId === 'winged' ? scalePose(FLINCH, k) : scalePose(plan!.attackPose(1), -0.35 * k);
+  // À Terre VIVANT : affaissé à 85 % vers la pose couchée (un peu moins effondré qu'un mort).
+  const downPose = () => (prone && !dead ? lerpPose(plan!.restPose(), plan!.deathPose(), 0.85) : plan!.deathPose());
   const pose: Record<string, number> = !plan
     ? {}
     : dead || prone
       ? (m.kind === 'dying'
-          ? lerpPose(plan.restPose(), plan.deathPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
-          : plan.deathPose()) // À Terre : couché (l'anneau de vie + l'icône 🔻 disent « vivant »)
+          ? lerpPose(plan.restPose(), downPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
+          : downPose()) // l'anneau de vie + l'icône 🔻 disent « vivant »
       : m.kind === 'walk'
           ? plan.walkPose(((now / STEP_MS) % 2) / 2)
           : m.kind === 'attack'
             ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)
                 ? quadAttackPose(m.atk, Math.min(1, (now - m.start) / 280))
                 : plan.attackPose(Math.min(1, (now - m.start) / 280)))
-            : m.kind === 'flinch' && canFlinch
-              ? scalePose(FLINCH, Math.sin(Math.min(1, (now - m.start) / FLINCH_MS) * Math.PI))
+            : m.kind === 'flinch'
+              ? flinchPose(Math.sin(Math.min(1, (now - m.start) / FLINCH_MS) * Math.PI))
               : plan.idlePose
                 ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
                 : plan.restPose();
