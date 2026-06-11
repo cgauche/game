@@ -27,12 +27,69 @@
 * {
   box-sizing: border-box;
 }
-/* Charte : contrôles natifs (curseurs, cases, radios) teintés or au lieu du bleu système. */
+/* Charte : curseurs/barres teintés or (le natif convient pour le range). */
 input[type='range'],
-input[type='checkbox'],
-input[type='radio'],
 progress {
   accent-color: var(--gold);
+}
+/* Charte : cases & radios CUSTOM (fin du carré bleu système) — case charbon bordée, cochée =
+   fond sang + marque or. S'applique à TOUTE l'UI (jeu + éditeur). */
+input[type='checkbox'],
+input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1.5px solid var(--border);
+  background: var(--panel2);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.12s, background 0.12s;
+}
+input[type='checkbox'] {
+  border-radius: 4px;
+}
+input[type='radio'] {
+  border-radius: 50%;
+}
+input[type='checkbox']:hover:not(:disabled),
+input[type='radio']:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+input[type='checkbox']:checked,
+input[type='radio']:checked {
+  border-color: var(--gold);
+  background: var(--accent);
+}
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 4.5px;
+  height: 9px;
+  border: solid var(--gold2);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3.5px;
+  border-radius: 50%;
+  background: var(--gold2);
+}
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 html,
 body,
@@ -1823,7 +1880,7 @@ textarea:focus {
   display: inline-block;
   border-radius: 8px;
   border: 2px solid var(--border);
-  background: #1a1426;
+  background: var(--bg);
   overflow: hidden;
   flex: 0 0 auto;
   line-height: 0;
@@ -2920,15 +2977,33 @@ textarea:focus {
   max-width: 94vw;
   max-height: 88vh;
   overflow: auto;
+  border-top: 4px solid var(--gold);
 }
 .sheet-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
-.sheet-head h3 {
+.sheet-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.sheet-id h3 {
   margin: 0;
+  font-size: 22px;
+  color: var(--gold2);
+  line-height: 1.1;
+}
+.sheet-id .rig-portrait {
+  border-radius: 999px; /* médaillon rond, façon écu */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 .sheet-stats {
   margin-bottom: 12px;
@@ -4312,9 +4387,21 @@ textarea:focus {
 }
 .worldmap-panel p { margin: 4px 0; }
 .worldmap-panel.muted-panel { color: var(--muted); text-align: center; }
-.wm-modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
-.wm-opt { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; flex-wrap: wrap; }
-.wm-est { font-size: 13px; color: var(--muted); }
+/* En-tête du trajet : itinéraire à gauche, modes à droite — sur une ligne, sans étalement. */
+.wm-trip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.wm-trip-route { font-size: 15px; }
+.wm-trip-route b { color: var(--gold2); }
+.wm-arrow { color: var(--muted); }
+.wm-modes { display: flex; gap: 8px; flex-wrap: wrap; }
+.wm-opt { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin: 10px 0; }
+.wm-opt-hint { color: var(--muted); }
+.wm-est { font-size: 13px; color: var(--muted); margin: 8px 0; }
 @media (max-width: 560px) {
   .worldmap-panel { padding: 10px; }
   .worldmap-head h2 { font-size: 15px; }

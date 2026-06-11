@@ -240,20 +240,20 @@ export function WorldMapView() {
       {/* Panneau de départ */}
       {!travelPlan?.interrupted && selRoute && dest && here && (
         <div className="worldmap-panel">
-          <p>
-            <b>{here.label}</b> → <b>{dest.label}</b> · {selRoute.km} km
-          </p>
-          <div className="bar wm-modes">
-            {selRoute.modes.map((m) => (
-              <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
-                {m === 'pied' ? '🦶' : m === 'diligence' ? '🚌' : '🛶'} {TRAVEL_MODE_LABEL[m]}
-              </button>
-            ))}
+          <div className="wm-trip">
+            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {selRoute.km} km</span>
+            <div className="wm-modes">
+              {selRoute.modes.map((m) => (
+                <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
+                  {m === 'pied' ? '🦶' : m === 'diligence' ? '🚌' : '🛶'} {TRAVEL_MODE_LABEL[m]}
+                </button>
+              ))}
+            </div>
           </div>
           {mode === 'pied' && (
-            <label className="wm-opt">
+            <label className="wm-opt" title={`${maxH} h de route par jour au lieu de ${base} — Test de Résistance en fin de journée, ou État Exténué (LDB)`}>
               <input type="checkbox" checked={forced} onChange={(e) => setForced(e.target.checked)} />
-              Marche forcée ({maxH} h/jour — Test de Résistance ou Exténué, LDB)
+              <span>Marche forcée <span className="wm-opt-hint">({maxH} h/jour)</span></span>
             </label>
           )}
           {mode !== 'pied' && (

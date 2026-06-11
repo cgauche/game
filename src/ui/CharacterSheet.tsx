@@ -14,6 +14,7 @@ import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { LoadoutSection } from './LoadoutSection';
+import { RigPortrait } from './RigPortrait';
 import { pickView } from '../gameIso/rig/parts/types';
 import { DEFS } from '../gameIso/sprites';
 import type { Palette } from '../gameIso/rig/palette';
@@ -83,12 +84,15 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
     <div className="modal-overlay" onClick={onClose}>
       <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
-          <div>
-            <h3>{hero.name}</h3>
-            <span className="char-sub">
-              {hero.species} · {hero.career}
-              {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
-            </span>
+          <div className="sheet-id">
+            <RigPortrait combatant={hero} size={60} ring="var(--gold)" />
+            <div>
+              <h3>{hero.name}</h3>
+              <span className="char-sub">
+                {hero.species} · {hero.career}
+                {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
+              </span>
+            </div>
           </div>
           <div className="sheet-tabs">
             <button className={`tab ${tab === 'fiche' ? 'on' : ''}`} onClick={() => setTab('fiche')}>
