@@ -48,19 +48,46 @@ limite documentée « jeu entre amis ».
   acceptable en DataChannel ; optimisation différentielle (delta/compression) = V2 si besoin.
 - Le RNG vit chez l'hôte → aucune triche/désync possible côté invité.
 
-## 4. Contrôles & propriété
+## 4. Contrôles & propriété — PRÉCISÉ PAR L'UTILISATEUR (2026-06-11)
 
-- Chaque héros a un **propriétaire** (`ownerPeerId`, l'hôte par défaut — l'attribution se fait
-  au lobby, modifiable en cours de partie).
-- **Combat** : seul le propriétaire du combattant ACTIF voit ses contrôles (hotbar, modales de
-  jet — Lancer/Chance/Résilience/Appliquer chez lui) ; les autres voient la scène + le journal
-  en spectateurs. Les modales de DÉFENSE/Destin s'ouvrent chez le propriétaire du défenseur.
-- **Exploration** : l'hôte pilote (déplacement du groupe, dialogues, fouilles) — V1 simple ;
-  les invités voient tout et peuvent ouvrir LEURS fiches. (V2 : déléguer les Tests de compétence
-  au porteur du meilleur score, comme `partyBest` le suggère déjà.)
-- **Interlude** : chaque joueur joue les Activités de SES héros ; l'hôte clôt.
-- L'écran de création/roster reste local (on amène son héros au lobby — export/import du roster
-  existant ; V1 : l'hôte compose le groupe comme aujourd'hui).
+> « Les joueurs ne partagent pas le même écran ; chacun contrôle un certain nombre de
+> personnages décidé dans le lobby ; en combat ils voient leurs propres modales, contrairement
+> aux autres joueurs. Pour le moment on ne gère QUE la partie combat. En exploration l'hôte
+> gère tout et cela apparaît à l'écran des joueurs. »
+
+- **Chaque joueur a SON écran** (son navigateur) — il n'y a jamais d'écran partagé.
+- **Propriété par lot** : au lobby, l'hôte attribue à chaque siège un NOMBRE LIBRE de héros
+  (`ownership: Record<heroId, seat>` — pas du 1:1 strict ; un joueur peut en contrôler 2).
+- **Combat (le périmètre V1)** : les modales de jet (Attaque/Défense/Incantation/jets divers)
+  ne S'AFFICHENT que chez le PROPRIÉTAIRE du combattant concerné — gating d'affichage par
+  ownership (les pendings voyagent dans le snapshot ; les autres joueurs voient la scène, le
+  journal et un indicateur « X joue… »). La hotbar n'est interactive que pour le propriétaire
+  du combattant actif.
+- **Exploration : MIROIR** — l'hôte fait tout (déplacements, dialogues, fouilles, marchand) et
+  les écrans invités REFLÈTENT son état (snapshots) sans aucune interaction (V1) ; leurs fiches
+  restent consultables.
+- **Interlude/menus** : hors périmètre V1 (miroir comme l'exploration).
+- L'écran de création/roster reste local ; V1 : l'hôte compose le groupe comme aujourd'hui.
+
+### 4bis. Modales : à qui, et lesquelles (arbitré 2026-06-11)
+
+- **Une modale n'apparaît que chez le(s) CONCERNÉ(S)** : je prends/inflige un Coup Critique → je
+  la vois ; MA Colère divine, MA maladresse, MON Imparfaite → chez moi. Un événement purement
+  ENNEMI (maladresse/miscast/Colère d'un monstre) → **AUCUNE modale, le résultat va au journal
+  d'événements** ; si son effet touche un héros (dégâts/État), le propriétaire reçoit la modale
+  adaptée (défense…). ⚠️ Cette règle s'applique AUSSI EN SOLO → chantier `pendingReveals` :
+  supprimer les révélations témoin purement ennemies (→ journal) et **auto-fermer après un
+  délai raisonnable** les modales purement informatives (sans choix).
+- **Contre-sort à PLUSIEURS** : tous les propriétaires d'un contre-lanceur éligible voient le
+  sort ennemi et peuvent chacun tenter la Dissipation sur LE MÊME sort (séquentiel : s'il est
+  dissipé, les tentatives suivantes tombent).
+- **Ready-check** : DÉBUT DE COMBAT et CHAQUE début de Round = chaque joueur clique ; au-dessus
+  de la barre, le portrait d'un personnage de chaque joueur + ✓/✗ de validation. (Le bouton
+  Chance « agir en premier » reste individuel.)
+- **Victoire & butin** : écran de fin SYNCHRONISÉ pour tous + ready-check ; le LOOT est
+  attribuable par chacun (« je le prends ») — **toute modification de l'attribution DÉVALIDE
+  les ✓ de tout le monde** (on revalide après lecture du nouveau partage).
+- Un joueur déconnecté : ses héros repassent à l'hôte, son ✓ n'est plus requis.
 
 ## 5. Architecture code (sans toucher au moteur)
 
