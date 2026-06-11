@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
-import { readSlot, deleteSlot, exportSave, importSave, listSaves, SAVE_VERSION } from './saves';
+import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, SAVE_VERSION } from './saves';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -65,6 +65,23 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     after.log('le store répond'); // les actions n'ont pas été écrasées par le merge
     const j = useGame.getState().journal;
     expect(j[j.length - 1]).toBe('le store répond');
+  });
+
+  it('MIGRATION : une save d’AVANT la carte de campagne (worldMap vide) ne l’écrase pas au chargement', () => {
+    // Recette « la map n’apparaît pas » : l’ancienne campagne sauvait worldMap {places: []} ;
+    // au chargement, cette carte vide écrasait celle du projet courant → plus de bouton 🗺️.
+    expect(useGame.getState().saveGame(2)).toBe(true);
+    const slot = readSlot(2)!;
+    slot.data.worldMap = { id: 'campagne-carte', nom: 'Carte du monde', places: [], routes: [] }; // save legacy
+    saveToSlot(2, slot);
+    expect(useGame.getState().loadGame(2)).toBe(true);
+    const wm = useGame.getState().worldMap!;
+    expect(wm.places.length).toBeGreaterThan(0); // la carte de CAMPAGNE est conservée
+    // … et une save SANS worldMap du tout (clé absente) garde aussi la carte de base.
+    delete slot.data.worldMap;
+    saveToSlot(2, slot);
+    expect(useGame.getState().loadGame(2)).toBe(true);
+    expect(useGame.getState().worldMap?.places.length).toBeGreaterThan(0);
   });
 
   it('en combat : sauvegarde refusée, le slot reste vide', () => {
