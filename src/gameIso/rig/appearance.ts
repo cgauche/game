@@ -11,6 +11,7 @@ export interface Appearance {
   sex: 'M' | 'F';
   build: number;                                   // 0..1
   legs?: number;                                   // multiplicateur de longueur de jambes (mutation Court sur pattes)
+  faceFlip?: boolean;                              // visage retourné tête en bas (mutation Visage inversé)
   parts?: Partial<Record<Slot, number>>;           // overrides éditeur
   monster?: MonsterParts;                          // parts monstrueux par slot (mutant modulaire)
   colors?: Palette;                                // personnalisation couleur (peau/cheveux/vêtements)

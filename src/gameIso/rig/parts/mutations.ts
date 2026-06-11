@@ -56,12 +56,8 @@ const LUSTRE = g('peau-brillante',
 const HALO = g('beaute-surnaturelle',
   '<circle cx="0" cy="5" r="13" fill="#e8c860" opacity="0.3"/>'
   + '<circle cx="0" cy="5" r="13" fill="none" stroke="#e8c860" stroke-width="0.8" opacity="0.55"/>');
-// Ovale de chair couvrant le visage, traits retournés : bouche en haut, yeux en bas.
-const VISAGE_INVERSE = g('visage-inverse',
-  '<ellipse cx="0" cy="7" rx="6.5" ry="7.5" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
-  + '<path d="M-2.4 2.4 Q0 0.8 2.4 2.4" stroke="#5a2020" stroke-width="1" fill="none"/>'
-  + '<path d="M0 6 q-1 1.4 0 2.4" stroke="@peauO" stroke-width="0.7" fill="none"/>'
-  + '<circle cx="-2.6" cy="11" r="1" fill="#241a12"/><circle cx="2.6" cy="11" r="1" fill="#241a12"/>');
+// Visage inversé : le VRAI visage du personnage est retourné tête en bas (flip du slot
+// `visage` dans resolveRig via `Appearance.faceFlip`) — pas d'art dédié.
 // Peau d'acier : recolorisation CORPS ENTIER via la palette (`skin`), pas de calque —
 // le visage, les mains et tout membre nu virent au gris métal (ombres dérivées).
 // Langue rose pendant de la bouche jusque sous le menton.
@@ -111,6 +107,8 @@ export interface MutationVisual {
   /** recolorisation de la peau CORPS ENTIER via la palette (`@peau` + ombres dérivées,
    *  visage/mains/membres compris) — Peau d'acier, Écailles, Peau brillante. */
   skin?: string;
+  /** le vrai visage du personnage retourné tête en bas (Visage inversé). */
+  faceFlip?: boolean;
 }
 
 /** Clé = `mutKey(label)` des entrées de `src/data/mutations.ts` (table physique). */
@@ -125,7 +123,7 @@ export const MUTATION_VISUALS: Record<string, MutationVisual | null> = {
   [mutKey('Tentacule épais')]: { overlays: [{ bone: 'epauleG', svg: TENTACULE, replace: true }, { bone: 'mainG', svg: '', replace: true }] },
   [mutKey('Peau brillante')]: { skin: '#f0d8a8', overlays: [{ bone: 'torse', svg: LUSTRE }] },
   [mutKey('Beauté surnaturelle')]: { overlays: [{ bone: 'tete', svg: HALO, behind: true }] },
-  [mutKey('Visage inversé')]: { overlays: [{ bone: 'tete', svg: VISAGE_INVERSE, view: 'front' }] },
+  [mutKey('Visage inversé')]: { faceFlip: true },
   [mutKey('Peau d’acier')]: { skin: '#8a93a0' },
   [mutKey('Langue pendante')]: { overlays: [{ bone: 'tete', svg: LANGUE, view: 'front' }] },
   [mutKey('Plumes éparses')]: { overlays: [{ bone: 'epauleG', svg: PLUMES_EPAULE }, { bone: 'torse', svg: PLUMES_TORSE }] },
@@ -156,19 +154,22 @@ export function mutationAppearance(a: Appearance, mutations?: Mutation[]): Appea
   let dBuild = 0;
   let legs = 1;
   let skin: string | undefined;
+  let faceFlip = false;
   for (const m of mutations) {
     if (m.kind !== 'physique') continue;
     const v = MUTATION_VISUALS[mutKey(m.label)];
     if (v?.build) dBuild += v.build;
     if (v?.legs) legs *= v.legs;
     if (v?.skin) skin = v.skin; // la mutation transforme la peau (prime sur la couleur choisie)
+    if (v?.faceFlip) faceFlip = true;
   }
-  if (!dBuild && legs === 1 && !skin) return a;
+  if (!dBuild && legs === 1 && !skin && !faceFlip) return a;
   return {
     ...a,
     build: Math.min(1, Math.max(0, a.build + dBuild)),
     legs: (a.legs ?? 1) * legs,
     ...(skin ? { colors: { ...a.colors, peau: skin } } : {}),
+    ...(faceFlip ? { faceFlip } : {}),
   };
 }
 

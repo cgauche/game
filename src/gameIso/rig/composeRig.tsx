@@ -103,11 +103,16 @@ export function resolveRig(
     if (slot === 'tete' && dropHeadgear) continue;
     const part = parts[slot];
     if (!part || !part.svg) continue;
+    // Visage inversé (mutation LDB 19) : le VRAI visage du personnage est retourné tête en bas
+    // (flip vertical au centre du visage, y≈7) — cheveux et crâne restent en place.
+    const svg = slot === 'visage' && appearance.faceFlip
+      ? `<g transform="translate(0,14) scale(1,-1)">${part.svg}</g>`
+      : part.svg;
     SLOT_BONES[slot].forEach((bid, idx) => {
       // Le 2e os d'une paire est miroité POUR LA SYMÉTRIE DE FACE/DOS. En PROFIL c'est
       // faux : les deux pieds/jambes/bras regardent dans la même direction (pas en miroir)
       // — sinon le pied arrière pointe à l'envers (« chaussures vers l'intérieur »).
-      boneParts[bid].push({ svg: part.svg, layer: SLOT_LAYER[slot], mirror: idx === 1 && view !== 'profile' });
+      boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror: idx === 1 && view !== 'profile' });
     });
   }
 

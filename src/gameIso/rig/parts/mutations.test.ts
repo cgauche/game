@@ -22,7 +22,7 @@ describe('registre des visuels de mutation (LDB 19)', () => {
       const k = mutKey(label);
       const v = MUTATION_VISUALS[k];
       if (k === mutKey('Choix du MJ')) { expect(v).toBeNull(); continue; }
-      expect(!!(v?.overlays?.length || v?.build || v?.legs || v?.skin), label).toBe(true);
+      expect(!!(v?.overlays?.length || v?.build || v?.legs || v?.skin || v?.faceFlip), label).toBe(true);
     }
     expect(MUTATION_VISUALS[mutKey('Corpulent')]?.build).toBeGreaterThan(0);
     expect(MUTATION_VISUALS[mutKey('Émacié')]?.build).toBeLessThan(0);
@@ -33,10 +33,11 @@ describe('registre des visuels de mutation (LDB 19)', () => {
     expect(MUTATION_VISUALS[mutKey('Peau brillante')]?.skin).toBeTruthy();
   });
 
-  it('les détails de visage sont limités à la vue de face', () => {
-    for (const label of ['Œil énorme', 'Bouche supplémentaire', 'Visage inversé', 'Langue pendante', 'Groin poilu']) {
+  it('les détails de visage sont limités à la vue de face ; Visage inversé = flip du vrai visage', () => {
+    for (const label of ['Œil énorme', 'Bouche supplémentaire', 'Langue pendante', 'Groin poilu']) {
       for (const ov of MUTATION_VISUALS[mutKey(label)]!.overlays!) expect(ov.view, label).toBe('front');
     }
+    expect(MUTATION_VISUALS[mutKey('Visage inversé')]?.faceFlip).toBe(true);
   });
 
   it('les mutations mentales ne produisent aucun calque', () => {
@@ -60,6 +61,8 @@ describe('registre des visuels de mutation (LDB 19)', () => {
     // Peau corps entier : la palette @peau est surchargée (prime sur la couleur choisie).
     expect(mutationAppearance(APP, [mut('Peau d’acier')]).colors?.peau).toBe('#8a93a0');
     expect(mutationAppearance({ ...APP, colors: { peau: '#112233' } }, [mut('Écailles épineuses')]).colors?.peau).not.toBe('#112233');
+    // Visage inversé : le vrai visage est retourné (flip du slot visage).
+    expect(mutationAppearance(APP, [mut('Visage inversé')]).faceFlip).toBe(true);
     expect(mutationAppearance(APP, [mut('Tentacule épais')])).toBe(APP);
     expect(mutationAppearance(APP, undefined)).toBe(APP);
   });
@@ -97,5 +100,13 @@ describe('rendu rig des mutations (resolveRig)', () => {
     const cuisse = (a: Appearance) =>
       resolveRig(a, NO_EQUIP, {}, undefined, 'front', []).find((b) => b.id === 'cuisseG')!.scale[1];
     expect(cuisse(mutationAppearance(APP, [mut('Court sur pattes')]))).toBeLessThan(cuisse(APP));
+  });
+
+  it('Visage inversé : le slot visage est rendu retourné (flip), pas les cheveux', () => {
+    const parts = (a: Appearance) =>
+      resolveRig(a, NO_EQUIP, {}, undefined, 'front', []).find((b) => b.id === 'tete')!.parts;
+    const flipped = parts(mutationAppearance(APP, [mut('Visage inversé')]));
+    expect(flipped.filter((p) => p.svg.includes('translate(0,14) scale(1,-1)')).length).toBe(1);
+    expect(parts(APP).some((p) => p.svg.includes('scale(1,-1)'))).toBe(false);
   });
 });
