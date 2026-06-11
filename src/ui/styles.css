@@ -1,16 +1,27 @@
+/* ══════════════════ CHARTE GRAPHIQUE (Jalon 9) ══════════════════
+   Identité Warhammer : encre/charbon chaud, rouge sang (primaire), or vieilli,
+   parchemin pour les surfaces de contenu. Titres en display gothique lisible
+   (Grenze Gotisch, embarquée) — le CORPS de texte reste sans-serif.
+   RÈGLE : aucune couleur en dur dans les écrans — composer ces tokens. */
 :root {
-  --bg: #141019;
-  --bg2: #1d1726;
-  --panel: #241c30;
-  --panel2: #2c2238;
-  --border: #3a2f4a;
-  --text: #e8e0f0;
-  --muted: #a99fbd;
-  --gold: #d8a93b;
-  --accent: #7a4fd0;
-  --accent2: #9a6fff;
-  --danger: #c0392b;
-  --ok: #2ecc71;
+  --bg: #16120d;
+  --bg2: #1e1812;
+  --panel: #251d14;
+  --panel2: #2e241a;
+  --border: #4a3b28;
+  --text: #e9dfc9;
+  --muted: #a3936f;
+  --gold: #c9a227;
+  --gold2: #e3c45a;
+  --accent: #8e2418; /* rouge sang — action primaire */
+  --accent2: #b3402e;
+  --danger: #d6543a; /* alerte (plus vif que l'accent, hover distinct) */
+  --ok: #5d8a46;
+  --parchment: #e6d7ae; /* surface claire « document » (texte = --ink) */
+  --parchment2: #d9c897;
+  --ink: #2b2118;
+  --blood: #6e1a10;
+  --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 
 * {
@@ -23,9 +34,17 @@ body,
   margin: 0;
 }
 body {
-  background: radial-gradient(circle at 30% 0%, #241830, var(--bg));
+  background: radial-gradient(circle at 30% 0%, #2a2014, var(--bg));
   color: var(--text);
   font-family: 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+}
+/* Charte : tous les TITRES en display gothique (les labels/corps restent sans-serif). */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 .app {
   height: 100%;
@@ -152,8 +171,8 @@ body {
   transition: 0.15s;
 }
 .btn:hover:not(:disabled) {
-  border-color: var(--accent2);
-  background: #34294a;
+  border-color: var(--gold);
+  background: #382c1e;
 }
 .btn:disabled {
   opacity: 0.4;
@@ -165,58 +184,92 @@ body {
 }
 .btn-primary {
   background: linear-gradient(180deg, var(--accent2), var(--accent));
-  border-color: var(--accent2);
+  border-color: #c9573f;
   font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #c44e38, var(--accent));
+  border-color: var(--gold);
 }
 .btn-test {
   border-style: dashed;
-  border-color: #4a7a3a;
-  color: #aee0a0;
+  border-color: #5d8a46;
+  color: #b9d8a4;
   font-size: 13px;
 }
 .btn-test:hover:not(:disabled) {
-  background: #1e2c1a;
-  border-color: #6fae5a;
+  background: #222b18;
+  border-color: #7fae62;
 }
 .btn.danger,
 .btn.danger.btn-primary {
   border-color: var(--danger);
 }
 .btn.danger:hover {
-  background: #3a2024;
+  background: #3a2018;
 }
 
-/* Main menu */
+/* Main menu — charte : carte charbon, liseré sang, double filet or, titre gothique. */
 .menu {
   height: 100%;
   display: grid;
   place-items: center;
+  padding: 16px;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 115%, rgba(110, 26, 16, 0.18), transparent 60%);
+  overflow-y: auto;
 }
 .menu-card {
-  background: var(--panel);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 40px 48px;
+  border-top: 4px solid var(--blood);
+  border-radius: 14px;
+  padding: 36px 44px 28px;
   max-width: 560px;
+  width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.16);
 }
 .title {
-  font-size: 42px;
+  font-size: clamp(34px, 9vw, 52px);
   margin: 0;
-  color: var(--gold);
+  color: var(--gold2);
   letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+  line-height: 1.05;
 }
 .subtitle {
   color: var(--muted);
   margin-top: 6px;
 }
+/* Séparateur de charte : filet ⚜ centré (menu, écrans de cérémonie). */
+.rule-fleur {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gold);
+  margin: 18px 0 6px;
+  font-size: 13px;
+}
+.rule-fleur::before,
+.rule-fleur::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 30%, var(--gold) 50%, var(--border) 70%, transparent);
+}
 .menu-buttons {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin: 28px 0;
+  margin: 22px 0;
+}
+.menu-buttons .btn {
+  font-size: 15px;
 }
 .hint {
   color: var(--muted);
@@ -224,7 +277,7 @@ body {
   line-height: 1.5;
 }
 .footnote {
-  color: #6f6685;
+  color: #7c6e52;
   font-size: 11px;
   margin-top: 18px;
 }
@@ -240,12 +293,14 @@ body {
   align-items: center;
   gap: 14px;
   padding: 12px 18px;
-  background: var(--bg2);
+  background: linear-gradient(180deg, var(--panel), var(--bg2));
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(201, 162, 39, 0.25); /* filet or sous la barre (charte) */
 }
 .bar h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 21px;
+  color: var(--gold2);
 }
 .bar h2 + * {
   margin-left: auto;
@@ -280,9 +335,22 @@ body {
   min-height: 240px;
   justify-content: center;
 }
+.empty-slot::before {
+  content: '✠';
+  color: var(--border);
+  font-size: 30px;
+  line-height: 1;
+}
+.empty-slot .btn {
+  width: 100%;
+  max-width: 240px;
+}
 .slot-num {
   color: var(--muted);
   font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.5px;
 }
 
 /* Character card */

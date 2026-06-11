@@ -1101,6 +1101,35 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   (Triggers/Dialogues/Rencontres) en role=dialog + piège sans Échap (champs texte — pas de perte de
   modifs sur un réflexe) ; WorldMapEditor = écran plein, exempt. **Plus aucune coquille main.**
 
+## 🎯 Jalon 9 — Refonte UI mobile/PC & charte graphique *(ajouté 2026-06-11)*
+
+Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —
+arbitrage utilisateur « mobile complet ») utilisables **à 360px ET sur grand écran** (utiliser
+l'espace, pas du mobile étiré), sous une **charte graphique unique**.
+
+**Arbitrages actés (2026-06-11)** : éditeur inclus dans l'objectif mobile 360px ; direction
+esthétique **« identité Warhammer marquée »** (encre/charbon, rouge sang, or vieilli, parchemin
+pour les surfaces de contenu, titres gothiques — le CORPS de texte reste sans-serif lisible) ;
+pilote = **menu principal + écran de groupe**, validé à l'œil avant généralisation.
+
+- **Phase 0 — Charte (tokens + composants canoniques)** : étendre les variables `:root`
+  (palette Warhammer, échelle typo avec police display embarquée localement, espacements,
+  rayons, ombres) et consolider les composants existants (`.btn` et variantes, `.panel`,
+  `.screen-header`, `.mini-title`, champs, onglets, `Modal` partagé) — UN système, pas deux ;
+  les primitives responsive (`.layout-sidebar`, `.panel-grid`, `.bar`, breakpoints 900/700/560,
+  `pointer: coarse`) restent le socle.
+- **Phase 1 — Pilote** : MainMenu + PartyScreen refondus sur la charte, recette navigateur
+  360 / 768 / 1440 → **validation utilisateur à l'œil** avant de continuer.
+- **Phase 2 — Écrans joueur** par lots : créateur, fiche de personnage, HUD campagne/combat
+  (déjà mobile-first, à raccorder à la charte), modales (coquille partagée = un seul point),
+  marchand, victoire, interlude, coop, sauvegarde, carte du monde, tests-scénarios.
+- **Phase 3 — Éditeur tactile 360px** : palette/inspecteur en tiroirs, cibles tactiles,
+  pose de tuiles/drag au doigt (le canvas iso est déjà pannable) — le plus gros morceau.
+- **Inventaire (audit de départ)** : 8 écrans racine (MainMenu, PartyScreen, CharacterCreator,
+  CampaignView+HUD, Editor, TestScenariosScreen, InterludeScreen, CoopLobby) + 4 panneaux
+  pleins (CharacterSheet, VictoryScreen, WorldMapView, MerchantPanel) + ~30 modales déjà sur
+  la coquille `Modal`/`RollFlowShell` (héritent de la charte par construction).
+
 ---
 
 ## Dette technique connue

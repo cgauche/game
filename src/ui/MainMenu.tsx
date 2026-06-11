@@ -13,6 +13,7 @@ export function MainMenu() {
       <div className="menu-card">
         <h1 className="title">Warhammer Fantasy</h1>
         <p className="subtitle">Jeu de Rôle — 4ᵉ édition · RPG tactique au tour par tour</p>
+        <div className="rule-fleur" aria-hidden>⚜</div>
         <div className="menu-buttons">
           <button className="btn btn-primary" onClick={() => setScreen('party')}>
             Nouvelle partie

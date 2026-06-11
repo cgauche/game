@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import { useGame } from './state/store';
 import { initAudioWiring } from './audio/wiring';
+import '@fontsource/grenze-gotisch/latin-600.css'; // display de la charte (titres) — embarquée, zéro réseau
+import '@fontsource/grenze-gotisch/latin-800.css';
 import './ui/styles.css';
 
 // DEV uniquement : expose le store aux recettes navigateur (Playwright lit l'état sans fouiller le DOM).
