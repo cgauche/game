@@ -808,5 +808,35 @@
       "book": "LDB",
       "page": 343
     }
+  },
+  {
+    "label": "Marque de Tzeentch",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Tzeentch, le Seigneur du Changement, a marqué physiquement cette créature, indiquant ainsi son importance dans le grand jeu. Cette créature gagne 1d10/3 Mutations (arrondi à l’entier supérieur), alternant entre Mutations mentales et physiques. Utilisez la colonne Tzeentch de la page 66. Cette créature gagne le Talent Savoir-vivre (Disciples de Tzeentch), et est sujette à l’Animosité envers les disciples déclarés de Nurgle. La créature est sujette à l’Animosité des disciples de Nurgle, tant que la Marque de Tzeentch est visible. De plus, elle peut acheter les Talents suivants comme s’il s’agissait d’un avancement de Carrière : Magie des Arcanes (n’importe laquelle), Diction instinctive, Harmonisation aethyrique, Magie du Chaos (Tzeentch), Mage de guerre, Magie mineure, Mains agiles, Perception de la magie, Seconde vue et Sorcier ! pour les coûts normaux en PX. <br><br> La marque de Tzeentch est une bénédiction accordée à certains serviteurs particulièrement favorisés du Changeur de Voies. Quelqu’un qui ne sert pas encore Tzeentch, mais qui, en la portant, y viendra sûrement, peut recevoir cet honneur, mais rarement. Tzeentch favorise ceux qui rejettent la tradition et la stabilité et qui manifestent une fascination pour la magie et la manipulation. Ces personnes peuvent rêver d’un terrible corbeau, au regard retors et complice, qui leur offre le pouvoir. S’ils acceptent trois fois son offre, ils obtiennent la Marque de Tzeentch et entament ainsi un voyage qui ne peut se terminer que par la ruine.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "label": "Dédoublement",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle se divise en deux et est remplacée par deux horreurs bleues, non blessées.",
+    "source": {
+      "book": "EDO",
+      "page": 84
+    }
+  },
+  {
+    "label": "Feu de Tzeentch",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature est enveloppée du feu de Tzeentch qui s’échappe fréquemment du bout des doigts, de la bouche ou des yeux brûlants. Toutes les créatures du même type (par exemple, toutes les horreurs roses ou toutes les horreurs bleues) à proximité mettent leur pouvoir en commun. Une horreur est choisie pour être le focaliseur (Lanceur), et peut lancer 1 Sort de Tzeentch pendant son tour. Les horreurs roses lancent le Sort Feu rose de Tzeentch ; les autres créatures lancent le Sort Feu bleu de Tzeentch. Chaque créature supplémentaire du même type possédant le Feu de Tzeentch ajoute +1 DR, jusqu’à un maximum de +9 DR.",
+    "source": {
+      "book": "EDO",
+      "page": 84
+    }
   }
 ]

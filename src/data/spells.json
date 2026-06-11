@@ -2212,6 +2212,132 @@
     }
   },
   {
+    "label": "Allure démoniaque",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "(Bonus de Sociabilité) Rounds +",
+    "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.<br><br><table> <tr> <th> 1d10 </th> <th> Nurgle </th> <th> Slaanesh </th> <th> Tzeentch </th> <th> Indivisible </th> <tr> <td> 1 </td> <td> Grand </td> <td> Démoniaque (6) </td> <td> Souffle +9 (Feu) </td> <td> Démoniaque (8) </td> <tr> <td> 2 </td> <td> Souffle +7 (Corrosion et Poison) </td> <td> Perturbant (Allure étrange) </td> <td> Démoniaque (9) </td> <td> Démoniaque (8) </td> <tr> <td> 3 </td> <td> Démoniaque (7) </td> <td> Peur (3) </td> <td> Éthéré </td> <td> Élite </td> <tr> <td> 4 </td> <td> Maladie (Pourriture de Nurgle) </td> <td> Frénésie </td> <td> Peur (3) </td> <td> Rapide </td> <tr> <td> 5 </td> <td> Perturbant (Puanteur) </td> <td> Immunité Psychologique </td> <td> Vol (9) </td> <td> Peur (3) </td> <tr> <td> 6 </td> <td> Peur (3) </td> <td> Mutation (jet sous le Tableau) </td> <td> Magique </td> <td> Vol (8) </td> <tr> <td> 7 </td> <td> Parasité </td> <td> Insensible à la douleur </td> <td> Résistance à la Magie (2) </td> <td> Rage </td> <tr> <td> 8 </td> <td> Mutation (jet sous le Tableau) </td> <td> Regard pétrifiant </td> <td> Mutation (jet sous le Tableau) </td> <td> Cornes +10 </td> <tr> <td> 9 </td> <td> Régénération </td> <td> Langue préhensile +6 (6 mètres) </td> <td> Mutation (jet sous le Tableau) </td> <td> Magique </td> <tr> <td> 10 </td> <td> Vomissement </td> <td> Venin </td> <td> Lanceur de Sorts (au choix) </td> <td> Attaque caudale (+10) </td> </table>",
+    "source": {
+      "book": "EDO",
+      "page": 79
+    }
+  },
+  {
+    "label": "Aspect sublimé",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 4,
+    "range": "Toucher",
+    "target": 1,
+    "duration": "(Bonus de Sociabilité) Rounds +",
+    "desc": "Le lanceur de sorts imprègne la Cible (peut-être lui-même) avec un vernis corrompu d'Ulgu infusé par Dhar, l'enveloppant dans une aura de dissimulation. Tant que le Sort est en vigueur, la Cible apparaît sans défaut, ni tache. Les cicatrices, les difformités et, surtout, les Mutations sont indétectables, sauf par des moyens divins. Si les vices évidents sont cachés, les Cibles peuvent paraître étranges ou excentriques, trop débordantes de vie ou anormalement séduisantes. La réussite d'un Test de Perception Difficile (-20) révèle que quelque chose ne va pas, mais sans révéler quoi. Pour les Personnages possédant le Talent Seconde vue, le Test est Intermédiaire (+0), et s'ils le réussissent, ils se rendront compte qu'un Sort est en place, mais pas ce qu'il dissimule.",
+    "source": {
+      "book": "EDO",
+      "page": 79
+    }
+  },
+  {
+    "label": "Décharge de Corruption",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "(Force Mentale) mètres",
+    "target": 1,
+    "duration": "Instantanée",
+    "desc": "Vous canalisez la Magie noire en un éclair de puissance corrosive. Il s'agit d’un Projectile magique infligeant Dégâts +6. Les Cibles affectées par le Sort doivent réussir un Test de Résistance Intermédiaire (+0), ou gagner 1 Corruption.",
+    "source": {
+      "book": "EDO",
+      "page": 80
+    }
+  },
+  {
+    "label": "Déchirer l'Aethyr",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 16,
+    "range": "(Force Mentale) mètres",
+    "target": "Spécial",
+    "duration": "(Bonus de Force Mentale) Rounds +",
+    "desc": "Vos mots ignobles et profanes déchirent le tissu de la réalité, creusant une brèche dans le monde, au travers de laquelle les serviteurs des Dieux Sombres sont libres de passer. Un portail déchiqueté vers l'Aethyr apparaît. <br><br>À la fin de chaque round, un démon mineur traverse le portail depuis les Royaumes du Chaos. Ces démons ne sont pas sous votre contrôle, mais sont susceptibles de vous défendre et d’attaquer vos ennemis, si telle est la volonté de votre maître impie. Les démons invoqués dépendent de votre Domaine du Chaos : démonettes de Slaanesh, porte-peste de Nurgle, horreurs de Tzeentch, sanguinaires de Khorne, et, pour les sorciers du Chaos Indivisible, des furies du Chaos. Pendant toute la durée du sort, tous les démons qu’il invoque sont immunisés aux effets du Trait de créature Instable. <br><br>Pour chaque +5 DR de Surincantation, vous pouvez augmenter le rythme d’arrivée des démons de +1. <br><br>Les créatures vivantes doivent réussir un Test de Résistance Accessible (+20) à la fin de chaque Round où elles voient la déchirure, ou gagner +1 Corruption. Toute créature vivante assez stupide ou malchanceuse pour entrer dans la faille choit dans les Royaumes du Chaos et est immédiatement tuée, à moins qu’un Point de Destin ne soit dépensé. Dans ce cas, elle est renvoyée dans la réalité, peut-être sauvée par une Puissance quelconque dans un but encore inachevé. <br><br>Si vous ratez l’Incantation de ce Sort, les démons qui traversent les Royaumes du Chaos appartiennent à une divinité rivale et peuvent être immédiatement hostiles à leur invocateur !",
+    "source": {
+      "book": "EDO",
+      "page": 80
+    }
+  },
+  {
+    "label": "Esclave des Ténèbres",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "Toucher",
+    "target": 1,
+    "duration": "Spéciale",
+    "desc": "Vous implorez votre divinité pour qu'elle s’empare de l’âme de votre Cible et la remplace par quelque chose de terrible. Faites un Test opposé de Force Mentale, que vous devez gagner d’au moins +2 DR. Si vous y parvenez, l’âme de la victime est envoyée dans les Royaumes du Chaos et le corps est possédé par un démon. À moins que la Cible ne dépense un Point de Destin, le contrôle du Personnage passe au MJ. Si vous ne gagnez pas le Test opposé par au moins +2 DR, vous subissez une Incantation imparfaite majeure, et le Sort échoue. Si vous ne réussissez pas le Test, votre arrogance est punie par votre dieu. Votre âme est arrachée à son corps, pour ne jamais revenir, à moins que vous ne dépensiez un Point de Destin pour y résister. Mais votre dieu ne sera guère ravi si vous rejetez son autorité de manière aussi flagrante. <br><br>Étant donné les risques et les limites inhérents à ce Sort, il est généralement lancé sur des victimes qui ont été « préparées » pour leur sacrifice ; elles ont été attachées, droguées et/ou autrement neutralisées.",
+    "source": {
+      "book": "EDO",
+      "page": 80
+    }
+  },
+  {
+    "label": "Explosion de Corruption",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "(Force Mentale) mètres",
+    "target": "ZdE (Bonus de Force Mentale) mètres",
+    "duration": "Instantanée",
+    "desc": "Vous canalisez la Magie profane en un souffle explosif de Corruption. Il s'agit d’un Projectile magique infligeant Dégâts +5 qui Cible tout le monde dans la Zone d’Effet. Toute personne affectée par le Sort doit réussir un Test de Résistance Intermédiaire (+0), ou gagner 1 Corruption.",
+    "source": {
+      "book": "EDO",
+      "page": 80
+    }
+  },
+  {
+    "label": "Obsession",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "(Bonus d'Initiative) kilomètres",
+    "target": "Spécial",
+    "duration": "(DR) jours",
+    "desc": "Vous devez posséder un objet chéri ou précieux appartenant à la Cible. Vous instillez magiquement de la matière brute du Chaos dans l'objet qui, à son tour, affecte la Cible. Elle devient obsédée par quelque chose : la nature précise de l’obsession dépend de l’individu en question, et de votre Domaine. Par exemple, lorsqu’il s’agit de Nurgle, Obsession peut pousser la Cible récemment blessée à gratter frénétiquement ses croûtes. Le Domaine de Slaanesh peut pousser un épicurien ou un gourmand à se goinfrer. <br><br>La Cible doit réussir un Test de Résistance Accessible (+20) toutes les heures, ou succomber à son obsession. En cas d’échec, les Tests suivants deviennent Intermédiaire (+0), puis si les échecs s’enchaînent, les Tests sont de plus en plus difficiles, jusqu’à ce qu’ils deviennent Très difficiles (-30). Si la Cible obtient une Maladresse à l’un d’entre eux (en lançant un double), elle devient complètement obsédée. Elle ne peut rien faire d’autre que céder à cette obsession, quels qu’en soient le coût et les conséquences, pendant un nombre d’heures égal à 1d10 - Bonus de Force Mentale (minimum 1 heure). À la fin de la durée du Sort, en plus de toutes les autres implications physiques, sociales ou financières, la Cible doit réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption. <br><br>Une Cible ne peut être affectée par ce Sort qu’une seule fois pour chaque Domaine avec lequel il est lancé. Toute tentative ultérieure sur la même Cible avec ce Sort est sans effet.",
+    "source": {
+      "book": "EDO",
+      "page": 80
+    }
+  },
+  {
+    "label": "Odieux messager",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 8,
+    "range": "(Sociabilité) kilomètres",
+    "target": "Spécial",
+    "duration": "Instantanée",
+    "desc": "Vous invoquez un essaim de démons mineurs asservis à votre volonté. Leur forme varie en fonction de la divinité révérée. Les démons porteront un court message (environ vingt-cinq mots) à votre Cible. Ils voyagent presque instantanément et sont invisibles (et inaudibles) pour toute personne ne possédant pas le Talent Seconde vue, même lorsqu'ils délivrent leur message. Toute personne possédant ce Talent peut effectuer un Test de Perception Difficile (-20) pour remarquer l'essaim et entendre son message. Pour chaque +2 DR, vous pouvez doubler la longueur du message.",
+    "source": {
+      "book": "EDO",
+      "page": 81
+    }
+  },
+  {
+    "label": "Pouvoir du Chaos",
+    "type": "Magie du Chaos",
+    "subType": null,
+    "cn": 4,
+    "range": "(Force Mentale) mètres",
+    "target": "ZdE (Bonus de Sociabilité) mètres",
+    "duration": "(Bonus de Force Mentale) Rounds",
+    "desc": "Vous appelez les Dieux Sombres du Chaos à vous aider en pratiquant une petite déchirure dans l'Aethyr. Tous les Sorts lancés dans un rayon de quelques mètres du point ciblé par le Sort voient leur NI réduit de moitié. Toute personne se trouvant dans la Zone d’Effet doit réussir un Test de Résistance Accessible (+20) à la fin de chaque Round ou gagner +1 Point de Corruption. Quiconque lance un Sort dans la Zone d’Effet fait son Test avec une Difficulté Accessible (+20).",
+    "source": {
+      "book": "EDO",
+      "page": 81
+    }
+  },
+  {
     "label": "Flot de Corruption",
     "type": "Magie du Chaos",
     "subType": "Nurgle",
@@ -2251,6 +2377,188 @@
     "source": {
       "book": "LDB",
       "page": 257
+    }
+  },
+  {
+    "label": "Aura dorée de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 7,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "(Bonus de Force Mentale) Rounds",
+    "desc": "Ce Sort est l'un des plus simples et des plus pratiques dans l’arsenal d’un sorcier de Tzeentch. Un tourbillon de feu jaune est invoqué à partir de l’Aethyr et enveloppe le corps du Lanceur, le protégeant des coups et des projectiles. Tant que le Sort est en vigueur, le Lanceur bénéficie du Trait de créature Protection 9+.",
+    "source": {
+      "book": "EDO",
+      "page": 81
+    }
+  },
+  {
+    "label": "Avantage de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 9,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "(Bonus d'Initiative) jours",
+    "desc": "Vos paroles, imprégnées de la prescience labyrinthique du Changeur de Voies, remodèlent votre esprit, vous donnant accès à de nouvelles connaissances arcaniques. Choisissez un Sort dans n'importe quel Domaine (pour assurer un jeu rapide, le MJ peut imposer une limite de temps de neuf secondes). Pendant que l’Avantage de Tzeentch est en vigueur, vous pouvez lancer votre nouveau Sort comme si vous l’aviez mémorisé, sans pouvoir le transcrire dans un grimoire, un parchemin ou autre. Si vous focalisez pour lancer le nouveau Sort, vous pouvez utiliser soit Focalisation (Dhar), soit la Compétence de Focalisation appropriée au Domaine que le Sort requiert normalement, si vous la possédez. <br><br>Si vous faites une erreur en canalisant ou en lançant ce nouveau Sort, le Sort Avantage de Tzeentch quitte votre esprit avec dégoût, et s’efface également de votre grimoire avait permis lui- même d’y être transcrit.",
+    "source": {
+      "book": "EDO",
+      "page": 81
+    }
+  },
+  {
+    "label": "Éclair du changement",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 9,
+    "range": "(Intelligence) mètres",
+    "target": 1,
+    "duration": "Instantanée",
+    "desc": "Un éclair pulsant d'une scintillante énergie chaotique déchire l’air. L’Éclair du changement est un Projectile magique, et la Cible subit des Dégâts +7. De plus, elle doit effectuer un Test de Résistance Intermédiaire (+0). Une Cible qui échoue gagne +1 Point de Corruption. En cas de Maladresse, la Cible effectue immédiatement un jet de Mutation, et gagne le Talent Magie du Chaos (Tzeentch). Un Personnage affecté par ce sort peut résister à une Mutation en dépensant un Point de Détermination.",
+    "source": {
+      "book": "EDO",
+      "page": 81
+    }
+  },
+  {
+    "label": "Feu bleu de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 6,
+    "range": "(Intelligence) mètres",
+    "target": "ZdE (Bonus d'Initiative) mètres",
+    "duration": "Instantané",
+    "desc": "Vos mots invoquent une boule de feu d'un bleu scintillant qui engloutit vos ennemis. Le Feu bleu de Tzeentch est un Projectile magique. Toute personne se trouvant dans les limites de votre Bonus d’Initiative en mètres autour de la cible subit +3 Points de Dégâts, et gagne 1 État En flammes. <br><br>Si un Personnage de Taille Petite ou supérieure est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes dû au Feu bleu de Tzeentch, lancez 1d10. Sur un résultat de 9, deux Horreur bleue (voir page 85) se frayent un chemin à travers la chair hurlante du Personnage, le tuant au passage.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Feu rose de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 6,
+    "range": "(Intelligence) mètres",
+    "target": 1,
+    "duration": "Instantané",
+    "desc": "Des éclairs de feu rose tourbillonnent du bout de vos doigts tendus, faisant hurler d'angoisse la réalité. Le Feu rose de Tzeentch est un Projectile magique. La Cible touchée subit Dégâts +6, et gagne +1 État En flammes. <br><br>Si un Personnage de Taille petite ou plus grande est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes causé par le Feu rose de Tzeentch, lancez un d10. Sur un résultat de 9, une Horreur rose (voir page 85) se fraie un chemin hors du corps convulsé de la Cible, la tuant aussitôt.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Feu spirituel",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 6,
+    "range": "(Intelligence) mètres",
+    "target": 1,
+    "duration": "Instantané",
+    "desc": "L'air se déforme au bout de vos doigts, formant un éclair d’énergie magique brumeuse et chatoyante que vous pouvez lancer sur votre Cible. Toute personne affectée par Feu spirituel doit réussir un Test de Calme Intermédiaire (+0), ou gagner 1 Point de Corruption. Pour chaque +2 DR, vous pouvez faire gagner un Point de Corruption supplémentaire à la Cible dont le Test de Calme est raté. Si une Mutation se produit à la suite de ce Sort, la Cible effectue automatiquement un jet sur le tableau des Mutations mentales, et gagne +1 État En flammes alors que du feu surnaturel jaillit de chaque orifice de sa tête.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Flammes vacillantes du capricieux destin",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 4,
+    "range": "(Intelligence) mètres",
+    "target": "Spécial",
+    "duration": "(Bonus de Force Mentale) Rounds +",
+    "desc": "Vous invoquez un torrent de feu magique, qui crache, crépite et brûle sans aucun combustible matériel. Ce feu n'a aucune propriété physique et ne brûle pas, n’endommage pas et n’émet pas de chaleur. Toutes les créatures vivantes et les démons qui peuvent le percevoir peuvent choisir de relancer chaque Test une fois, comme s’ils avaient dépensé un Point de Chance, même s’ils ont réussi le Test. Chaque fois, ils doivent réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption. Les Personnages portant la marque de Tzeentch sont immunisés à cette Corruption. Le Test pour résister au gain de Corruption ne peut pas être relancé en utilisant l’effet de ce Sort.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "La Main Pourpre",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 3,
+    "range": "(Intelligence) mètres",
+    "target": 1,
+    "duration": "Variable",
+    "desc": "Ce Sort est une malédiction mesquine utilisée par les sorciers de la Main Pourpre pour intimider et calmer les co-conspirateurs agressifs. De tous les codes non verbaux utilisés par la Main Pourpre, le sens de cette malédiction est clair : corrigez vos actes immédiatement ou soyez punis. <br><br>Pour lancer le Sort, le sorcier doit d'abord obtenir un petit morceau de sa Cible : un cheveu perdu ou une rognure d’ongle d’orteil suffisent. Si cet objet est obtenu et que le Sort est lancé avec succès, la paumes des mains de la Cible deviennent d’un profond violet. Les effets du Sort durent une heure pour chaque niveau de réussite obtenu par le Lanceur lors de l’Incantation.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Malédiction de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 9,
+    "range": "(Intelligence) mètres",
+    "target": 1,
+    "duration": "Variable",
+    "desc": "Selon la tradition tzeentchienne, tous les Sorts découlent de la volonté du Dieu et lui appartiennent donc. En utilisant ce Sort, un sorcier de Tzeentch peut faire perdre à un autre sorcier la connaissance et la capacité de lancer un Sort dont il avait auparavant la maîtrise. <br><br>Si la Malédiction de Tzeentch est un succès, le Lanceur doit alors faire un Test opposé de Force Mentale contre la Cible. Si le Lanceur gagne, la Cible perd l'accès à un Sort pris au hasard. Les effets de la Malédiction durent un jour pour chaque DR obtenu par le Lanceur lors du Test opposé.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Maître du Destin",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 8,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "(Bonus de Force Mentale) jours",
+    "desc": "Les sorciers de Tzeentch négocient souvent avec leur maître pour obtenir des indications sur leur destin. Cette recherche est dangereuse, car Tzeentch est un dieu capricieux, même envers ses serviteurs favoris. Une fois que le Sort est lancé, il ne peut plus l'être à nouveau, jusqu’à ce que sa durée soit écoulée. <br><br>Calculez la réussite du Test de Langue (Magick) nécessaire pour lancer le Sort. Pour chaque DR positif, le Lanceur bénéficie d’un Point de Chance qu’il peut utiliser normalement pendant la durée du Sort. Cependant, si le Sort échoue, pour chaque DR négatif, le Lanceur reçoit un Point de Corruption pour avoir examiné un éventail vertigineux d’inquiétants échos futurs.",
+    "source": {
+      "book": "EDO",
+      "page": 82
+    }
+  },
+  {
+    "label": "Parole de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 7,
+    "range": "(Bonus de Force) mètres",
+    "target": 1,
+    "duration": "(Bonus d'Intelligence) Rounds",
+    "desc": "Alors que votre langue émet les motifs sonores déformés de ce Sort blasphématoire, deux voix semblent sortir de votre gorge, en une harmonie impie et contre nature. Vos mots renferment une signification supplémentaire pour ceux qui sont affectés par le Sort, même si les Cibles ne peuvent pas se souvenir de ce qui a été dit. Elles en conservent un sentiment obsédant de pressentiment, comme si elles avaient oublié quelque chose de très important concernant leur propre avenir. <br><br>Les Cibles vivantes affectées par le Sort doivent faire un Test opposé d'Intelligence. Si la Cible perd, elle gagne 1 État Sonné, +1 État Sonné supplémentaire pour chaque DR d’écart. En cas de Maladresse, elle gagne l’État Inconscient, et +1 Point de Corruption. <br><br>Une fois que tous les États ont été retirés, les Cibles affectées doivent réussir un Test de Résistance Accessible (+20), ou gagner +1 Corruption. Si elles obtiennent une Maladresse, elles gagnent immédiatement 1 Mutation mentale, et ne peuvent pas prendre d’Ambition à court terme pendant les 1d10 semaines suivantes.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "label": "Percevoir l'écheveau",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 3,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "1 round",
+    "desc": "Vos yeux brillent de rose et bleu tandis que vous prononcez des mots de pouvoir interdits. Vos yeux se dessillent et vous percevez, pendant quelques instants fugaces, le destin interconnecté de toutes choses. Vous pouvez choisir une Cible que vous pouvez voir, et le MJ doit révéler la Motivation, l'Ambition à court terme et l’Ambition à long terme de cette Cible.",
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "label": "Tempête de feu de Tzeentch",
+    "type": "Magie du Chaos",
+    "subType": "Tzeentch",
+    "cn": 11,
+    "range": "(Intelligence) mètres",
+    "target": "ZdE (Bonus d'Initiative) mètres",
+    "duration": "(Bonus de Force Mentale) Rounds",
+    "desc": "Sur votre ordre, des liens de feu aethyrique s'élèvent de la terre, puis s’enroulent autour de votre Cible, l’enveloppant dans un cocon d’énergie magique. Les Cibles affectées gagnent l’État À Terre et sont considérées comme impuissantes pour toute la durée du Sort. Lorsque la Transformation de Tzeentch prend fin, la Cible doit faire un Test de Résistance Intermédiaire (+0), auquel vous opposez votre Compétence Langue (Magick). Si elle perd, elle gagne +1 Point de Corruption, +1 Point supplémentaire pour chaque DR d’écart.",
+    "source": {
+      "book": "EDO",
+      "page": 83
     }
   },
   {

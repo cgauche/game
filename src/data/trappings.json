@@ -6407,5 +6407,212 @@
       "book": "LDB",
       "page": 308
     }
+  },
+  {
+    "label": "Charrette",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 10,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les charrettes sont de petits véhicules à deux roues de toutes sortes, y compris les charrettes à âne, les chars et les cabriolets. Les charrettes de passagers comprennent une banquette pouvant accueillir jusqu'à deux personnes, tandis que celles qui transportent des marchandises ont un siège plus petit avec un côté ouvert pour le chargement. Les charrettes sont tirées par un seul animal. Des bras dépassent de chaque côté du châssis, auxquels est attaché un harnais, ou un collier.",
+    "price": {
+      "gold": 20,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Chaise",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 51,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Parfois appelés « chaises de Bordeleaux », du nom de la ville de Bretonnie où elles ont été utilisées pour la première fois, il est rare d'en croiser sur les routes. Elles sont constituées d'une cabine lambrissée, semblable à une petite armoire, renfermant une chaise rembourrée, et munie de brancards. La chaise est soulevée par deux porteurs, un à l’avant et un à l’arrière. Les citadins aisés en sont friands, surtout lorsqu’ils rentrent chez eux après une longue nuit en ville. Certains ménages possèdent leurs propres chaises, tandis que d’autres louent des services. Un tarif typique dans une ville est de 3 /- par quartier.<div><br></div>Les chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement. ",
+    "price": {
+      "gold": 25,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Diligence",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 100,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "<div>Une diligence est un véhicule fermé, à quatre roues, tiré par deux à six chevaux. Elles constituent le moyen de locomotion favori des riches pour les voyages de longue distance. L'Empire compte plusieurs compagnies de diligences qui assurent des services réguliers entre les grandes villes. Un véhicule noble, souvent appelé carrosse ou calèche, peut transporter jusqu'à six passagers et possède normalement un plateau à l’arrière pour transporter les bagages. Il est impensable de les attacher sur le toit, car cela gâcherait l’apparence du véhicule. De nombreux véhicules de nobles portent des ornements décoratifs et héraldiques sur le toit, ce qui rend impossible le stockage des bagages. Un carrosse n’a qu’un seul conducteur, avec deux valets de pied qui se tiennent sur des marches à l’arrière, de part et d’autre des bagages, suffisamment haut pour voir par-dessus le toit. D’autres serviteurs suivent généralement dans des charrettes ou des carrosses de moindre importance, et des éclaireurs (ou courriers en ville) vont au devant pour dégager le chemin et derrière pour assurer la sécurité. </div><div>Les diligences commerciales peuvent transporter six passagers à l’intérieur, et leurs bagages sont arrimés au toit. Quatre autres passagers peuvent voyager avec les bagages s’ils sont prêts à braver les éléments. L’équipage se compose d’un cocher et d’un assistant. Ce dernier est généralement armé d’une arbalète ou d’un tromblon et pare aux éventuels problèmes. </div><div><br></div><div>Avec la peinture, les dorures, les belles sculptures et autres frivolités, il n’y a pas de limite à ce que vous pouvez dépenser pour une diligence. En effet, en la matière, le moindre sou dépensé ne l’est que pour souligner le statut de son propriétaire ou même le rehausser. L’ostentation et l’auto-promotion sont des fins en soi, et seul un pingre se contenterait d’une diligence ordinaire.<br></div>",
+    "price": {
+      "gold": 150,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Charrette à bras",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 5,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les charrettes à bras sont des versions plus petites des charrettes à deux roues, poussées par un homme. À la place du siège se trouve un côté ouvert, bien que des rapports indiquent que le pousse-pousse cathayen comporte un siège rembourré pour deux personnes. Comme les charrettes à chevaux, celles à bras possèdent deux arçons en saillie, normalement reliés par une barre transversale afin qu'une ou deux personnes puissent les déplacer.",
+    "price": {
+      "gold": 10,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Petite litière",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 10,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "<div>Une litière, ou palanquin, est une version plus grande d'une chaise de Bordeleaux, ou plutôt, une chaise est une version plus petite d’une litière. Cet ancien moyen de transport est peu utilisé dans le Vieux Monde, mais les dignitaires en visite de Cathay ou d’Arabie, où il est toujours à la mode, l’utilisent occasionnellement. Comme la chaise, la litière est fermée et munie de perches pour être soulevée par des porteurs, mais les voyageurs s’y allongent au lieu de s’asseoir.&nbsp;</div><div>La plupart des litières sont destinées à une personne et soulevées par deux porteurs. Les plus grandes peuvent accueillir deux passagers et nécessitent un équipage d’au moins quatre porteurs. Le nombre de serviteurs transportant une litière est un message explicite concernant le statut du passager. Des rumeurs, certainement exagérées, persistent à propos de des palanquins cathayens assez grands pour transporter toute la cour d’un noble, portés par une vingtaine d’ogres.</div><div><br></div><div>Les chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement.</div>",
+    "price": {
+      "gold": 30,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Grande litière",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 20,
+    "availability": "Exotique",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "<div>Une litière, ou palanquin, est une version plus grande d'une chaise de Bordeleaux, ou plutôt, une chaise est une version plus petite d’une litière. Cet ancien moyen de transport est peu utilisé dans le Vieux Monde, mais les dignitaires en visite de Cathay ou d’Arabie, où il est toujours à la mode, l’utilisent occasionnellement. Comme la chaise, la litière est fermée et munie de perches pour être soulevée par des porteurs, mais les voyageurs s’y allongent au lieu de s’asseoir.&nbsp;</div><div>La plupart des litières sont destinées à une personne et soulevées par deux porteurs. Les plus grandes peuvent accueillir deux passagers et nécessitent un équipage d’au moins quatre porteurs. Le nombre de serviteurs transportant une litière est un message explicite concernant le statut du passager. Des rumeurs, certainement exagérées, persistent à propos de des palanquins cathayens assez grands pour transporter toute la cour d’un noble, portés par une vingtaine d’ogres.</div><div><br></div><div>Les chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement.</div>",
+    "price": {
+      "gold": 45,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Chariot léger",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 30,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
+    "price": {
+      "gold": 75,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Chariot moyen",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 50,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
+    "price": {
+      "gold": 100,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
+  },
+  {
+    "label": "Chariot lourd",
+    "prefix": null,
+    "type": "vehicle",
+    "subType": null,
+    "enc": 75,
+    "availability": "Commune",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
+    "price": {
+      "gold": 125,
+      "silver": "",
+      "bronze": ""
+    },
+    "source": {
+      "book": "EDOC",
+      "page": 27
+    }
   }
 ]

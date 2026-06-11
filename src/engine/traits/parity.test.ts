@@ -63,6 +63,10 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
   ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
+  // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
+  ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
+  ['Dédoublement', 'scission en 2 horreurs bleues à la mort/Critique — pas de spawn-on-death dans le moteur (MJ/auteur)'],
+  ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
 ]);
 
 describe('parité — tout Trait de traits.json est couvert (def, ailleurs, ou journal en conscience)', () => {

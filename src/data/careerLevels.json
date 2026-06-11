@@ -3441,6 +3441,113 @@
     "status": "Bronze 0"
   },
   {
+    "label": "Survivant",
+    "career": "Frère Loup",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Corps à corps (Bagarre)",
+      "Corps à corps (Base)",
+      "Escalade",
+      "Guérison",
+      "Intimidation",
+      "Intuition",
+      "Résistance",
+      "Savoir (Ulric)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Brouet",
+      "Charge berserk",
+      "Frénésie",
+      "Nomade"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Haillons"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Endurance"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Frère Loup",
+    "career": "Frère Loup",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Discrétion (Rurale)",
+      "Esquive",
+      "Savoir (Bêtes)",
+      "Savoir (Herbes)"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Dur à cuire",
+      "Endurci",
+      "Sens aiguisé (Au choix)"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Haillons"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Compagnon Loup",
+    "career": "Frère Loup",
+    "level": 3,
+    "skills": [
+      "Orientation",
+      "Perception",
+      "Pistage"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Pansement de fortune",
+      "Sens de l'orientation",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Haillons"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Bronze 0"
+  },
+  {
+    "label": "Grand Loup",
+    "career": "Frère Loup",
+    "level": 4,
+    "skills": [
+      "Natation",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Contrôle de la Frénésie",
+      "Effrayant",
+      "Ferveur ardente",
+      "Sans peur (Hommes-bêtes)"
+    ],
+    "trappings": [
+      "Arme simple",
+      "Haillons",
+      "Respect des autres Frères Loups"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Bronze 0"
+  },
+  {
     "label": "Coureur",
     "career": "Messager",
     "level": 1,

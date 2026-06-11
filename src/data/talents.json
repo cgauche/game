@@ -191,6 +191,21 @@
     }
   },
   {
+    "label": "Bénédiction de Tzeentch",
+    "max": 1,
+    "test": null,
+    "desc": "Tzeentch, le Dieu du Chaos de la Magie, vous a béni d'un parasite enfoui dans votre esprit. Lorsque vous achetez ce Talent, un Sort unique se faufile dans votre tête où il s'installe, murmurant de temps en temps pendant votre sommeil. Ce Sort peut être choisi dans n'importe quel savoir de Magie des Couleurs. De plus, vous pouvez acheter un Sort de Magie des Couleurs supplémentaire pour 100 XP pour chaque Sort que vous avez mémorisé provenant du Savoir de Tzeentch.",
+    "addSkill": null,
+    "addTalent": null,
+    "addCharacteristic": null,
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "EDO",
+      "page": 75
+    }
+  },
+  {
     "label": "Béni",
     "max": 1,
     "test": null,
@@ -689,6 +704,21 @@
     }
   },
   {
+    "label": "Disciple du changement",
+    "max": 1,
+    "test": null,
+    "desc": "Lorsque vous obtenez une Mutation, lancez deux fois les dés et choisissez l'un des deux résultats.",
+    "addSkill": null,
+    "addTalent": null,
+    "addCharacteristic": null,
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "EDO",
+      "page": 75
+    }
+  },
+  {
     "label": "Doigts de fée",
     "max": 1,
     "test": null,
@@ -701,6 +731,21 @@
     "source": {
       "book": "LDB",
       "page": 136
+    }
+  },
+  {
+    "label": "Double vie",
+    "max": 1,
+    "test": null,
+    "desc": "Vous êtes tellement habile à maintenir votre identité secrète que vous êtes capable de mener deux vies complètement séparées. Lorsque vous prenez ce Talent, vous pouvez entamer une deuxième Carrière parallèlement à votre Carrière du Chaos. Vous comptez maintenant comme appartenant aux deux Carrières, et vous pouvez acheter des Compétences avancées et des Talents dans l'une ou l'autre, ainsi que prendre et abandonner de nouvelles Carrières dans l'une ou l'autre. Comme toujours, tout changement de Carrière doit être approuvé par votre MJ afin de s'adapter au mieux aux plans de campagne et de refléter correctement votre Double vie.",
+    "addSkill": null,
+    "addTalent": null,
+    "addCharacteristic": null,
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "EDO",
+      "page": 75
     }
   },
   {

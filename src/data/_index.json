@@ -1,35 +1,35 @@
 {
-  "generatedAt": "2026-06-11T05:19:00.351Z",
+  "generatedAt": "2026-06-11T18:19:21.043Z",
   "allowedBooks": [
     "LDB",
     "ADE1",
-    "ADE2"
+    "ADE2",
+    "EDO",
+    "Middenheim",
+    "EDOC"
   ],
   "skippedByBook": {
     "SOC": 33,
-    "EDO": 30,
     "AA": 25,
     "VDLM": 150,
     "Lustria": 4,
-    "Middenheim": 1,
     "ADE3": 30,
-    "Salzemund": 1,
-    "EDOC": 9
+    "Salzemund": 1
   },
   "counts": {
     "characteristics": 18,
     "species": 35,
     "classes": 8,
-    "careers": 71,
-    "careerLevels": 284,
+    "careers": 72,
+    "careerLevels": 288,
     "skills": 45,
-    "talents": 172,
+    "talents": 175,
     "etats": 12,
-    "traits": 81,
+    "traits": 84,
     "qualities": 32,
-    "trappings": 270,
+    "trappings": 279,
     "creatures": 62,
-    "spells": 221,
+    "spells": 243,
     "eyes": 10,
     "hairs": 10,
     "details": 5

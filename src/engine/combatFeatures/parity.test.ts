@@ -36,6 +36,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Magie du Chaos', 'apprentissage des sorts (grimoire.ts — hors périmètre sorts)'],
   ['Béni', 'Bénédictions de la divinité (grimoire/spellspecs — hors périmètre sorts)'],
   ['Invocation', 'Miracles du culte (grimoire/spellspecs — hors périmètre sorts)'],
+  ['Bénédiction de Tzeentch', 'Sort unique offert (grimoire.ts — hors périmètre sorts)'],
 ]);
 
 // Narratifs / arbitrage MJ — EN CONSCIENCE : pas d'effet moteur câblable sans inventer (économie
@@ -60,6 +61,7 @@ const NARRATIF_MJ = new Set([
   'Trappeur', 'Travailleur qualifié', 'Tricheur', 'Vice', 'Visions sacrées', 'Volonté de fer',
   'Battement', 'Désarmer', 'Assaut féroce', // manœuvres d'Action dédiées — différées (UI/flux propres)
   'Combattant au contact', 'Combattant en espace clos', // règles optionnelles (Combat au contact p.297) / espaces clos non modélisés
+  'Disciple du changement', 'Double vie', // talents de culte du Chaos (EDO) — Mutation/double carrière, non câblés (classe Chaos hors création joueur)
 ]);
 
 describe('parité — tout Talent de talents.json est couvert (def, création, ailleurs, ou MJ en conscience)', () => {

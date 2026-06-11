@@ -2,7 +2,8 @@
  * Pipeline de données — génère NOTRE base de jeu depuis les sources WFRP4.
  *
  * Lit Source/all-data.json, filtre aux livres autorisés (Livre de base +
- * Archives de l'Empire I & II), normalise et réécrit dans src/data/*.json.
+ * Archives de l'Empire I & II + EDO / Middenheim / EDOC), normalise et
+ * réécrit dans src/data/*.json.
  *
  * IMPORTANT : on ne livre jamais all-data.json tel quel ; ce script produit
  * notre propre format. Lancer avec `npm run build:data`.
@@ -16,12 +17,18 @@ const ROOT = resolve(__dirname, '..');
 const SRC = resolve(ROOT, 'Source/all-data.json');
 const OUT = resolve(ROOT, 'src/data');
 
-/** Livres autorisés : Livre de base + Archives de l'Empire I & II. */
-const ALLOWED = new Set(['LDB', 'ADE1', 'ADE2']);
+/** Livres autorisés (contenu complet) : Livre de base + Archives de l'Empire I & II + suppléments
+ *  retenus par le GM — EDO (L'Ennemi dans l'Ombre : sorts de Tzeentch, créatures du Chaos),
+ *  Middenheim (3 origines humaines + carrière Frère Loup), EDOC (véhicules du Compagnon). */
+const ALLOWED = new Set(['LDB', 'ADE1', 'ADE2', 'EDO', 'Middenheim', 'EDOC']);
 /** Livres de CAMPAGNE (règle 2 : le contenu de campagne est éditable/posable) — admis pour le
- *  BESTIAIRE SEULEMENT : les statblocs de PNJ nommés (Eusapia Balacañon, Horreurs…) sont du
- *  contenu de scénario, pas des règles génériques (règle 1 reste LDB/ADE pour tout le reste). */
-const CAMPAIGN = new Set(['EDO', 'MSR', 'PDT']);
+ *  BESTIAIRE SEULEMENT : les statblocs de PNJ nommés (Eusapia Balacañon…) sont du contenu de
+ *  scénario, pas des règles génériques (règle 1 reste LDB/ADE pour tout le reste). */
+const CAMPAIGN = new Set(['MSR', 'PDT']);
+/** Entrées EXCLUES même si leur livre est autorisé : la classe « Chaos » d'EDO et ses carrières
+ *  (Magus du culte de Tzeentch) restent du contenu PNJ/ennemi — pas jouables à la création. Les
+ *  sorts de Tzeentch, eux, restent inclus (le grimoire les verrouille au joueur via le Talent requis). */
+const DENY_CLASS = new Set(['Chaos']);
 
 type Any = Record<string, any>;
 
@@ -75,7 +82,7 @@ function main() {
       return ok;
     });
 
-  console.log('Génération de la base de jeu (LDB + ADE1 + ADE2)…');
+  console.log(`Génération de la base de jeu (${[...ALLOWED].join(' + ')})…`);
 
   // --- Caractéristiques -----------------------------------------------------
   const characteristics = raw.characteristic.map((c: Any) => ({
@@ -135,7 +142,7 @@ function main() {
   write('species.json', species, species.length);
 
   // --- Classes --------------------------------------------------------------
-  const classes = keep(raw.class).map((c: Any) => ({
+  const classes = keep(raw.class).filter((c: Any) => !DENY_CLASS.has(c.label)).map((c: Any) => ({
     label: c.label,
     trappings: splitList(c.trappings),
     desc: c.desc,
@@ -147,7 +154,7 @@ function main() {
   // `rand` : borne haute d100 par colonne d'espèce (refCareer) du Tableau des Classes et
   // Carrières aléatoires (LDB 05 l.197+). '' = carrière INDISPONIBLE pour cette espèce
   // (restriction de Race, l.360) → null.
-  const careers = keep(raw.career).map((c: Any) => {
+  const careers = keep(raw.career).filter((c: Any) => !DENY_CLASS.has(c.class)).map((c: Any) => {
     const rand: Record<string, number | null> = {};
     for (const [k, v] of Object.entries(c.rand ?? {})) rand[k] = typeof v === 'number' ? v : null;
     return {
@@ -253,7 +260,7 @@ function main() {
   write('trappings.json', trappings, trappings.length);
 
   // --- Bestiaire ------------------------------------------------------------
-  // Règles (LDB/ADE) + PNJ de CAMPAGNE (EDO/MSR/PDT — statblocs de scénario, cf. CAMPAIGN).
+  // Règles (livres autorisés, EDO inclus) + PNJ de CAMPAGNE (MSR/PDT — statblocs de scénario, cf. CAMPAIGN).
   const creatures = (raw.creature as Any[]).filter((c) => allowed(c) || CAMPAIGN.has(c.book)).map((c: Any) => {
     const ch: Record<string, number | null> = {};
     for (const [k, v] of Object.entries(c.char ?? {})) ch[k] = norm(v);
@@ -357,7 +364,7 @@ function main() {
   };
   write('_index.json', index, 1);
 
-  console.log('\nEntrées ignorées (hors LDB/ADE1/ADE2) par livre :');
+  console.log('\nEntrées ignorées (hors livres autorisés) par livre :');
   console.log('  ' + JSON.stringify(skipped));
   console.log('\nBase générée dans src/data/.');
 }

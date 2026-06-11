@@ -651,6 +651,27 @@
     }
   },
   {
+    "label": "Frère Loup",
+    "class": "Itinérants",
+    "rand": {
+      "Humain": null,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 48,
+      "Middenland": 40,
+      "Nordland": 39,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Ulric est votre unique source d'inspiration : vous avez décidé de surmonter les difficultés de la vie par la pratique d'une forme d'extrême autonomie.</I><BR><BR>On ne croise que peu de Flagellants dans le nord de l'Empire. Les zélotes qui suivent Sigmar ne s'y plaisent pas : personne ne les prend au sérieux, et ils ont du mal à trouver des compagnons de route. Le peu de Flagellants qui arpentent les routes des provinces du nord sont souvent raillés, et pas admirés comme ailleurs dans l'Empire.<br><br>Mais Ulric a ses propres zélotes. Ils ne portent pas d'uniforme et ne prêchent aucune parole, car ils sont discrets et individuels dans leur ferveur. Ils cherchent à incarner les vertus incarnées par leur dieu en se confrontant à la nature ; certains vont même jusqu'à vivre avec les loups en plein hiver. Dans les contrées sauvages du Nord, beaucoup perdent leur maison et leur famille suite à une attaque d'hommes-bêtes, de pirates norsques ou de gobelins de la forêt. Les survivants se réfugient souvent dans le credo ulricain, qui veut que le dieu veille sur ceux qui se protègent eux-mêmes. Ainsi, ils finissent par apprendre à vivre de ce que leur apporte la nature, à surmonter le froid hivernal et à faire face à leurs ennemis en combat individuel. <br><br>Nombre de Frères Loups ont une mauvaise impression des sigmarites ou des dirigeants du culte officiel d'Ulric, qu'ils voient comme des hypocrites vaniteux. Cependant, la plupart souhaitent simplement honorer leur dieu à travers une vie de défi et d'extrême austérité. Beaucoup meurent sous les griffes de prédateurs ou les crocs de l'hiver, mais ceux qui survivent sont des modèles d'un mode de vie rude et ingénieux.<br><br>En général, les Frères Loups mènent une vie solitaire, mais ils se rassemblent parfois en petits groupes. S'ils se regroupent de la sorte, c'est généralement parce qu'ils croient que le seul moyen de faire face aux ennemis d'Ulric, ou de suivre sa volonté, est de travailler de concert avec d'autres de ses fidèles pendant un moment.",
+    "source": {
+      "book": "Middenheim",
+      "page": 154
+    }
+  },
+  {
     "label": "Messager",
     "class": "Itinérants",
     "rand": {
