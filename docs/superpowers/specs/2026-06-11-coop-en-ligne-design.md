@@ -110,9 +110,9 @@ optionnel V2) ; 4 joueurs max ; même version de build requise (check de version
 - **P3** : robustesse — reconnexion (nouveau code), version check, héros orphelins, indicateurs.
 - **P4 (V2)** : deltas d'état, exploration déléguée, chat.
 
-## 9. Arbitrages
+## 9. Arbitrages — TOUS TRANCHÉS (2026-06-11)
 
-1. ~~PeerJS cloud ?~~ **TRANCHÉ (2026-06-11)** : aucun système externe — codes à partager
-   (WebRTC pur, signalisation copier/coller, STUN public assumé comme simple annuaire).
-2. Exploration pilotée par l'hôte : **défaut V1** (pas d'objection utilisateur à ce stade).
-3. 4 joueurs max (un par héros) : **défaut V1**.
+1. ~~PeerJS cloud ?~~ Aucun système externe — codes à partager (WebRTC pur, signalisation
+   copier/coller, STUN public assumé comme simple annuaire).
+2. Exploration **pilotée par l'hôte** (confirmé utilisateur).
+3. **4 joueurs max, un par héros, pas de spectateurs** (confirmé utilisateur).
