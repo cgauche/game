@@ -39,6 +39,7 @@ export function PartyScreen() {
   const startScene = useGame((s) => s.startScene);
   const loadProject = useGame((s) => s.loadProject);
   const pendingCampaign = useGame((s) => s.pendingCampaign);
+  const sceneInProgress = useGame((s) => s.scene != null);
   const addHero = useGame((s) => s.partyAddHero);
   const removeHero = useGame((s) => s.partyRemoveHero);
   const assignSlot = useGame((s) => s.netAssignSlot);
@@ -58,6 +59,7 @@ export function PartyScreen() {
       party={party}
       net={net}
       title={pendingCampaign ? pendingCampaign.name : "Votre groupe d'aventuriers"}
+      inProgress={sceneInProgress && !pendingCampaign}
       onMenu={() => setScreen('menu')}
       onQuitCoop={() => { leave(); setScreen('menu'); }}
       onCreate={() => setScreen('creator')}
@@ -65,6 +67,7 @@ export function PartyScreen() {
       onRemoveHero={removeHero}
       onAssignSlot={assignSlot}
       onStart={startCampaign}
+      onResume={() => setScreen('campaign')}
     />
   );
 }
@@ -75,6 +78,7 @@ export function PartyScreenView({
   party,
   net,
   title,
+  inProgress,
   onMenu,
   onQuitCoop,
   onCreate,
@@ -82,10 +86,15 @@ export function PartyScreenView({
   onRemoveHero,
   onAssignSlot,
   onStart,
+  onResume,
 }: {
   party: Combatant[];
   net: NetState;
   title: string;
+  /** Une partie est en cours (scène vivante, hors lancement explicite de campagne) :
+   *  « Reprendre » prend la primauté, « Commencer » resterait sinon le seul chemin et
+   *  écraserait silencieusement la progression (chargement d'une save coop inclus). */
+  inProgress?: boolean;
   onMenu: () => void;
   onQuitCoop: () => void;
   onCreate: () => void;
@@ -93,6 +102,7 @@ export function PartyScreenView({
   onRemoveHero: (heroId: string) => void;
   onAssignSlot: (slot: number, seat: number) => void;
   onStart: () => void;
+  onResume?: () => void;
 }) {
   const [picker, setPicker] = useState(false);
 
@@ -127,14 +137,23 @@ export function PartyScreenView({
         {net.mode === 'guest' ? (
           <span className="hint">⏳ L'hôte lance la partie</span>
         ) : (
-          <button
-            className="btn btn-primary"
-            disabled={party.length === 0 || guestPending}
-            title={guestPending ? 'Des emplacements attribués aux autres joueurs sont encore vides.' : undefined}
-            onClick={onStart}
-          >
-            Commencer →
-          </button>
+          <>
+            {inProgress && (
+              <button className="btn btn-primary" onClick={onResume}>
+                Reprendre →
+              </button>
+            )}
+            <button
+              className={inProgress ? 'btn' : 'btn btn-primary'}
+              disabled={party.length === 0 || guestPending}
+              title={guestPending
+                ? 'Des emplacements attribués aux autres joueurs sont encore vides.'
+                : inProgress ? 'Relance la campagne au début — la partie en cours sera perdue.' : undefined}
+              onClick={onStart}
+            >
+              Commencer →
+            </button>
+          </>
         )}
       </header>
       {isHost && guestPending && (

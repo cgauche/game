@@ -68,12 +68,13 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
   });
 
   const noop = () => {};
-  const render = (party: Combatant[], net: NetState) =>
+  const render = (party: Combatant[], net: NetState, inProgress = false) =>
     renderToStaticMarkup(
       <PartyScreenView
         party={party}
         net={net}
         title="Votre groupe d'aventuriers"
+        inProgress={inProgress}
         onMenu={noop}
         onQuitCoop={noop}
         onCreate={noop}
@@ -81,6 +82,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
         onRemoveHero={noop}
         onAssignSlot={noop}
         onStart={noop}
+        onResume={noop}
       />,
     );
 
@@ -89,6 +91,22 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect(html).not.toContain('slot-owner');
     expect((html.match(/Créer un personnage/g) ?? []).length).toBe(4);
     expect(html).toContain('Commencer');
+    expect(html).not.toContain('Reprendre'); // pas de partie en cours
+  });
+
+  it('partie en cours : « Reprendre » prend la primauté, « Commencer » reste (rétrogradé)', () => {
+    const h = savedHero();
+    const html = render([h], initialNet(), true);
+    expect(html).toMatch(/btn btn-primary[^>]*>Reprendre/);
+    expect(html).toContain('Commencer');
+    expect(html).not.toMatch(/btn btn-primary[^>]*>Commencer/); // plus le bouton primaire
+  });
+
+  it('invité : pas de « Reprendre » même partie en cours (l’hôte pilote)', () => {
+    const html = render([], {
+      mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
+    }, true);
+    expect(html).not.toContain('Reprendre');
   });
 
   it('invité : ses slots actifs, ceux des autres en attente, pas de « Commencer »', () => {

@@ -20,6 +20,7 @@ import { InitiativeStrip } from './InitiativeStrip';
 import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { GameMenu } from './GameMenu';
+import { SaveLoadModal } from './SaveLoadModal';
 import { CoopMenuSection } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
@@ -52,8 +53,10 @@ export function CampaignView() {
   const viewMode = useGame((s) => s.viewMode);
   const toggleViewMode = useGame((s) => s.toggleViewMode);
   const battleClickEntity = useGame((s) => s.battleClickEntity);
+  const netMode = useGame((s) => s.net.mode);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [inspectId, setInspectId] = useState<string | null>(null);
+  const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
   const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
@@ -111,7 +114,9 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation). */}
         {mode === 'battle' && battle && <TargetPrompt />}
-        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} coop={<><CoopMenuSection /><AudioControls /></>} />
+        {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
+        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} coop={<><CoopMenuSection /><AudioControls /></>} />
+        {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (

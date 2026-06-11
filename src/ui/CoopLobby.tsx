@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { CoopInvitePanel, CoopAssignList } from './CoopPanels';
+import { SaveLoadModal } from './SaveLoadModal';
 
 /**
  * Lobby coop (Jalon 7, P1) — connexion par CODES À PARTAGER (arbitrage : zéro système externe).
@@ -56,6 +57,7 @@ export function CoopLobby() {
   const [joinCode, setJoinCode] = useState('');
   const [myAnswer, setMyAnswer] = useState('');
   const [error, setError] = useState('');
+  const [loadOpen, setLoadOpen] = useState(false);
 
   const copy = (text: string) => void navigator.clipboard?.writeText(text).catch(() => {});
 
@@ -131,9 +133,15 @@ export function CoopLobby() {
         <div className="mini-title">Attribution des héros</div>
         <CoopAssignList />
       </section>
-      <button className="btn btn-primary coop-continue" onClick={() => setScreen('party')}>
-        Continuer vers la composition du groupe →
-      </button>
+      {/* Charger en session : le salon survit (`applyLoadedSave` préserve `net`), l'invité
+          suit au snapshot — c'est LE chemin pour reprendre une partie coop sauvegardée. */}
+      <div className="coop-actions">
+        <button className="btn" onClick={() => setLoadOpen(true)}>📂 Charger une partie</button>
+        <button className="btn btn-primary" onClick={() => setScreen('party')}>
+          Composer le groupe →
+        </button>
+      </div>
+      {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
     </CoopShell>
   );
 }
