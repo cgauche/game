@@ -1930,7 +1930,10 @@ export function autoCleave(get: () => GameState, set: any, attacker: Combatant, 
   if (bcc < 1) return;
   const hitIds = [primaryTarget.id];
   // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
-  if (isOutOfAction(primaryTarget) && primaryTarget.pos) attacker.pos = { ...primaryTarget.pos };
+  if (isOutOfAction(primaryTarget) && primaryTarget.pos) {
+    attacker.pos = { ...primaryTarget.pos };
+    displaceSmaller(get, attacker); // en se recalant, un grand dégage les plus petits sous son empreinte (85 l.308-309)
+  }
   for (let n = 0; n < bcc; n++) {
     const battle = get().battle;
     if (!battle || battle.over) break;
@@ -1940,7 +1943,10 @@ export function autoCleave(get: () => GameState, set: any, attacker: Combatant, 
     const r = resolveAttack(get, attacker, next);
     if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
     applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : résolution instantanée (pas de modale de déviation imbriquée)
-    if (isOutOfAction(next) && next.pos) attacker.pos = { ...next.pos }; // se déplace sur la case libérée
+    if (isOutOfAction(next) && next.pos) {
+      attacker.pos = { ...next.pos }; // se déplace sur la case libérée
+      displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.308-309)
+    }
   }
   set({ battle: { ...get().battle! } });
   bus.emit(EVT.SCENE_DIRTY);
@@ -1957,7 +1963,10 @@ export function maybeHeroCleave(get: () => GameState, set: any, attacker: Combat
   if (!pc && !res.cleave) return; // ni balayage en cours, ni déclenché par cette touche
   const count = wasChain ? (pc?.count ?? 0) + 1 : pc?.count ?? 0; // un enchaînement résolu consomme une attaque
   const hitIds = pc ? [...new Set([...pc.hitIds, target.id])] : [target.id];
-  if (isOutOfAction(target) && target.pos) attacker.pos = { ...target.pos }; // case libérée (l.10)
+  if (isOutOfAction(target) && target.pos) {
+    attacker.pos = { ...target.pos }; // case libérée (l.10)
+    displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.308-309)
+  }
   const battle = get().battle!;
   const bcc = bonus(effectiveChar(attacker, 'CC'));
   const remaining = cleaveTargets(battle, attacker, hitIds);
