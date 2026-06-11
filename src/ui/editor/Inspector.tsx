@@ -13,6 +13,7 @@ import { MonsterPartsFields } from './MonsterPartsFields';
 import { ParamFields } from './ParamFields';
 import { EffectList } from './EffectList';
 import { EntityListPanel } from './EntityListPanel';
+import { Modal } from '../Modal';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { findCreature } from '../../data';
@@ -34,6 +35,7 @@ export function Inspector({
   updateSel,
   duplicateSel,
   onSelectEntity,
+  onDeselectEntity,
   selT,
   updateSelT,
   updateSelTRect,
@@ -59,6 +61,7 @@ export function Inspector({
   updateSel: (patch: Partial<SceneEntity>) => void;
   duplicateSel: () => void;
   onSelectEntity: (id: string) => void;
+  onDeselectEntity: () => void;
   selT: Trigger | null;
   updateSelT: (patch: Partial<Trigger>) => void;
   updateSelTRect: (patch: Partial<Trigger['rect']>) => void;
@@ -75,8 +78,31 @@ export function Inspector({
   onDeselectBuilding: () => void;
   onSelectBuilding: (id: string) => void;
 }) {
+  // ÉDITION d'un élément = MODALE (cadre partagé) ; la colonne ne garde que les listes (browse).
+  const editing = !!(selT || spawn || selB || sel);
+  const editTitle = selT ? 'Zone trigger' : spawn ? 'Ennemi de rencontre' : selB ? 'Bâtiment' : 'Entité';
+  const closeEdit = () => { onDeselectTrigger(); onDeselectSpawn(); onDeselectBuilding(); onDeselectEntity(); };
   return (
-    <aside className="editor-inspector">
+    <>
+      <aside className="editor-inspector">
+        <div className="mini-title">Inspecteur</div>
+        <p className="hint">Sélectionnez un élément sur la carte pour l'éditer.</p>
+        {(scene.buildings ?? []).length > 0 && (
+          <>
+            <div className="mini-title">Bâtiments posés</div>
+            <div className="entity-tools">
+              {(scene.buildings ?? []).map((b) => (
+                <button key={b.id} className="btn small" onClick={() => onSelectBuilding(b.id)}>
+                  {b.label ?? BUILDINGS_META[b.type]?.label ?? b.type} ({b.foot.x},{b.foot.y})
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <EntityListPanel entities={scene.entities} selectedId={selected} onSelect={onSelectEntity} />
+      </aside>
+      {editing && (
+      <Modal variant="plain" className="wide editor-edit-modal" title={editTitle} onClose={closeEdit}>
       {selT ? (
         <>
           <div className="mini-title">Zone trigger sélectionnée</div>
@@ -540,29 +566,9 @@ export function Inspector({
             </button>
           </div>
         </>
-      ) : (
-        <>
-          <div className="mini-title">Inspecteur</div>
-          <p className="hint">Sélectionnez un élément sur la carte pour l'éditer.</p>
-          {(scene.buildings ?? []).length > 0 && (
-            <>
-              <div className="mini-title">Bâtiments posés</div>
-              <div className="entity-tools">
-                {(scene.buildings ?? []).map((b) => (
-                  <button key={b.id} className="btn small" onClick={() => onSelectBuilding(b.id)}>
-                    {b.label ?? BUILDINGS_META[b.type]?.label ?? b.type} ({b.foot.x},{b.foot.y})
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-          <EntityListPanel
-            entities={scene.entities}
-            selectedId={selected}
-            onSelect={onSelectEntity}
-          />
-        </>
+      ) : null}
+      </Modal>
       )}
-    </aside>
+    </>
   );
 }

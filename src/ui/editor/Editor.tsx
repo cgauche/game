@@ -729,6 +729,7 @@ export function Editor() {
           updateSel={updateSel}
           duplicateSel={duplicateSel}
           onSelectEntity={(id) => { setSelected(id); setSelectedTrigger(null); setSelectedSpawn(null); setSelectedBuilding(null); }}
+          onDeselectEntity={() => setSelected(null)}
           selT={selT}
           updateSelT={updateSelT}
           updateSelTRect={updateSelTRect}
