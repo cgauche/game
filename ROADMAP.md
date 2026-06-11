@@ -364,7 +364,7 @@ structurelle accumulée par l'empilement des jalons. Tout est committé par phas
 - Actions : ✅ **Défense totale** (« Sur la défensive »), ✅ **Charge** (se ruer au contact sur
   la portée de Course → +1/+2 Avantage, attaque obligatoire), ✅ **Désengagement** = menu de choix :
   *Sacrifier l'Avantage* / *Esquiver* (Test opposé, coûte l'Action) / ✅ **Fuir** (attaque gratuite
-  dans le dos +20, Test de Calme ou État Brisé, puis Mouvement de Course) / *Renoncer*. Reste : **ramasser en plein combat** (arme tombée au sol durant un Round ; le pillage *après* combat = exploration, cf. objets cherchables `search` Jalon 4).
+  dans le dos +20, Test de Calme ou État Brisé, puis Mouvement de Course) / *Renoncer*. ✅ **Ramasser en plein combat** (`battlePickup` — un objet au sol à la fois, cf. synthèse dette ; le pillage *après* combat = exploration, objets cherchables `search` Jalon 4).
 - ✅ **État Engagé** (LDB 13-Combat l.174-175) : posé sur toute attaque de mêlée, levé en fin de
   Round sans coup échangé ; un Engagé ne se déplace plus librement (→ Désengagement). *(L'IA ne
   fait pas de Désengagement et charge en portée de Marche — simplifications assumées.)*
@@ -1017,7 +1017,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   déléguée aux invités, deltas d'état (au lieu de snapshots), dissipation en Test Soutenu à
   plusieurs sur le même Domaine.
 
-## ✅ Jalon 8 — Polish & production *(complet — 2026-06-11 ; restent les finitions VISUELLES différées sur arbitrage : galeries QC, tenues/armes héros dos-profil, proportions Mutant, art des bâtiments)*
+## ✅ Jalon 8 — Polish & production *(complet — 2026-06-11 ; volet rig CLOS (galeries ✓, tenues/armes dos ✓, proportions Mutant ✓) ; restent différés sur arbitrage : art des bâtiments, clips d'attaque montés)*
 
 - ✅ **Rig 2D squelettique + apparence composable** (`src/gameIso/rig/`, pur + testé —
   **17 fichiers de test, 129 tests verts**) : squelette FK par espèce/morpho (**6 espèces jouables** :
