@@ -1156,8 +1156,12 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   directionnel), pieuvre (profil œil unique + tentacules en éclaireurs), Bête des marais (dôme
   de tête + épaulements, gueule orientée au profil), faces dragon/basilic (cornes fines, museau
   denté — fini âne/groin) et loup (museau cunéiforme + crocs + bajoues) raccordées au profil.
-  **Reste 5d (mineur)** : brancher le catalogue d'yeux sur les ancres data-eye des têtes quad
-  (plomberie appearance→resolve) ; recette navigateur en jeu quand Playwright libre.
+  ✅ **5d** *(f008ddc)* : catalogue d'yeux branché sur les ancres data-eye des têtes de gabarit
+  (ResolveOpts.eyes → applyEyes ; clés éditeur résolues au spawn / via eyesArtFromKeys) — les
+  selects Œil G/D de l'éditeur pilotent désormais AUSSI les créatures (loup œil-braise…).
+  + **Flanc quad REFAIT** *(46eed9f, retour utilisateur)* : silhouette CONTINUE unique par
+  carrure (fin de la croupe-bulle), queue reptile qui traîne au sol derrière.
+  **→ Jalon 8.5 CLOS.** Reste : recette navigateur en jeu quand Playwright libre.
 
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
