@@ -11,10 +11,11 @@
 import type { Weapon } from '../../../engine/types';
 import { formSlug } from '../parts/weaponForms';
 import { weaponGroupKey } from '../parts/weaponGroup';
+import { norm } from '../../../lib/normalize';
 
 export type Handling =
   | 'lame1m' | 'escrime' | 'lourde2m' | 'hampe' | 'lance_cav' | 'fleau' | 'parade' | 'poings'
-  | 'arc' | 'arbalete' | 'arme_feu' | 'fronde' | 'jet' | 'entraves' | 'explosif';
+  | 'arc' | 'arbalete' | 'arme_feu' | 'fronde' | 'jet' | 'entraves' | 'explosif' | 'cornes';
 
 /** FORME (slug d'art) → classe de maniement. Source : les 48 formes de weaponForms.ts. */
 const FORM_HANDLING: Record<string, Handling> = {
@@ -59,9 +60,18 @@ const GROUP_HANDLING: Record<string, Handling> = {
   fronde: 'fronde', lancer: 'jet', entraves: 'entraves', explosifs: 'explosif',
 };
 
-/** Classe de maniement d'une arme : FORME d'abord (encode la prise), repli Groupe/type. */
+/** ARMES NATURELLES (loadout de mutation/trait, pas de forme dessinée) → geste dédié :
+ *  le tentacule FOUETTE (classe entraves), les cornes donnent un COUP DE TÊTE. */
+const NATURAL_HANDLING: Record<string, Handling> = {
+  tentacule: 'entraves', tentacules: 'entraves',
+  corne: 'cornes', cornes: 'cornes',
+};
+
+/** Classe de maniement d'une arme : naturelle d'abord, puis FORME (encode la prise), repli Groupe/type. */
 export function handlingClass(w?: Weapon): Handling {
   if (!w) return 'lame1m';
+  const nat = NATURAL_HANDLING[norm(w.name)];
+  if (nat) return nat;
   const slug = formSlug(w.name);
   if (slug) {
     const h = FORM_HANDLING[slug];

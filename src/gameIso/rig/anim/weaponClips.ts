@@ -17,6 +17,7 @@ import type { Clip, ClipStep } from './clips';
 import type { Weapon } from '../../../engine/types';
 import { handlingClass, isRangedHandling, type Handling } from './handling';
 import { isShield } from '../parts/equipment';
+import { norm } from '../../../lib/normalize';
 
 const REST: Pose = {};
 const c = (steps: ClipStep[], onImpact?: number): Clip => ({ steps, onImpact });
@@ -41,6 +42,7 @@ const RESTS: Record<Handling, Pose> = {
   jet: { arme: -120 }, // arme de jet armée, pointe en avant-haut
   entraves: {}, // fouet/lasso enroulé qui pend
   explosif: {}, // tenu bas au côté
+  cornes: {}, // arme naturelle de tête : rien en main
 };
 
 /** Pose de PRISE/orientation de l'arme — TOUJOURS appliquée (sous les clips). */
@@ -133,11 +135,14 @@ const ATTACK: Record<Handling, Clip> = {
     { pose: { epauleD: 48, avantBrasD: 18, torse: 10, bassin: 6, arme: 35 }, ms: 90, easing: 'easeOut' },
     { pose: REST, ms: 200, easing: 'easeInOut' },
   ], 240),
-  // Entraves (fouet/lasso) : grand arc au-dessus puis claquement.
+  // Entraves (fouet/lasso — et tentacule muté) : grand ARMÉ au-dessus de la tête, CLAQUEMENT
+  // sec (le poignet casse, l'arme part en avant), puis SUIVI souple avant le retour — un fouet
+  // ne s'arrête pas net au point d'impact.
   entraves: c([
-    { pose: { epauleD: -66, avantBrasD: -44, torse: -5 }, ms: 150, easing: 'easeOut' },
-    { pose: { epauleD: 54, avantBrasD: 40, torse: 8 }, ms: 90, easing: 'easeOut' },
-    { pose: REST, ms: 240, easing: 'easeInOut' },
+    { pose: { epauleD: -78, avantBrasD: -52, torse: -6, arme: -16 }, ms: 170, easing: 'easeOut' },
+    { pose: { epauleD: 58, avantBrasD: 44, torse: 9, bassin: 4, arme: 26 }, ms: 70, easing: 'easeOutBack' },
+    { pose: { epauleD: 38, avantBrasD: 30, torse: 6, arme: 12 }, ms: 90, easing: 'easeOut' },
+    { pose: REST, ms: 230, easing: 'easeInOut' },
   ], 240),
   // Explosif : lancer en cloche (revers bas puis projection).
   explosif: c([
@@ -145,11 +150,31 @@ const ATTACK: Record<Handling, Clip> = {
     { pose: { epauleD: -30, avantBrasD: -10, torse: -4 }, ms: 110, easing: 'easeOut' },
     { pose: REST, ms: 200, easing: 'easeInOut' },
   ], 240),
+  // Cornes (mutation Cornes asymétriques) : recul du buste puis COUP DE TÊTE projeté,
+  // épaules ramenées — pas un coup de bras.
+  cornes: c([
+    { pose: { tete: -14, cou: -6, torse: -9, bassin: -3 }, ms: 150, easing: 'easeOut' },
+    { pose: { tete: 26, cou: 12, torse: 16, bassin: 7, epauleD: 10, epauleG: 10 }, ms: 90, easing: 'easeOutBack' },
+    { pose: REST, ms: 230, easing: 'easeInOut' },
+  ], 240),
 };
 
-/** Geste d'attaque selon la classe de maniement (défaut : lame1m). */
+// Miroir G↔D d'un clip (sans les deltas `arme`, ancrée à la main droite) : le TENTACULE muté
+// remplace le bras GAUCHE — son fouet doit partir de ce bras, pas du bras d'arme droit.
+const MIRROR_BONE: Record<string, string> = {
+  epauleD: 'epauleG', epauleG: 'epauleD', avantBrasD: 'avantBrasG', avantBrasG: 'avantBrasD', mainD: 'mainG', mainG: 'mainD',
+};
+const mirrorPose = (p: Pose): Pose =>
+  Object.fromEntries(Object.entries(p).filter(([k]) => k !== 'arme').map(([k, v]) => [MIRROR_BONE[k] ?? k, v]));
+const mirrorClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: mirrorPose(s.pose) })) });
+const TENTACLE_LASH = mirrorClip(ATTACK.entraves);
+
+/** Geste d'attaque selon la classe de maniement (défaut : lame1m). Le Tentacule (membre
+ *  gauche muté) joue le fouet MIROITÉ sur son bras. */
 export function weaponAttackClip(w?: Weapon): Clip {
-  return w ? ATTACK[handlingClass(w)] : ATTACK.lame1m;
+  if (!w) return ATTACK.lame1m;
+  if (norm(w.name).startsWith('tentacule')) return TENTACLE_LASH;
+  return ATTACK[handlingClass(w)];
 }
 
 // --- PARADES / gardes (deltas au-dessus du repos) --------------------------
@@ -192,7 +217,7 @@ export function weaponParryClip(w?: Weapon, hasShield = false): Clip {
   if (isRangedHandling(w)) return RANGED_FLINCH; // arc/arbalète/arme à feu/jet… esquivent
   if (MELEE_TWO_HANDED.has(h)) return STAFF_BLOCK;
   if (h === 'escrime') return FENCE_PARRY;
-  if (h === 'poings') return BARE_BLOCK;
+  if (h === 'poings' || h === 'cornes') return BARE_BLOCK; // rien en main → on se couvre
   return SWORD_GUARD; // lame1m, fléau, parade
 }
 

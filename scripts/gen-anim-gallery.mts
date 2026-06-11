@@ -42,12 +42,14 @@ function anim(w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Cl
   return svgTile(svg, label, css, bg);
 }
 
-// Une arme par CLASSE DE MANIEMENT (silhouette/clip distincts).
+// Une arme par CLASSE DE MANIEMENT (silhouette/clip distincts) — dont les armes NATURELLES
+// de mutation (Tentacule = classe fouet, Cornes = coup de tête).
 const WEAPONS: [string, 'melee' | 'ranged'][] = [
   ['Dague', 'melee'], ['Rapière', 'melee'], ['Lance de cavalerie', 'melee'], ['Grande hache', 'melee'],
   ['Hallebarde', 'melee'], ["Fléau d'armes", 'melee'], ['Main Gauche', 'melee'], ['Mains nues', 'melee'],
   ['Arc long', 'ranged'], ['Arbalète', 'ranged'], ['Pistolet', 'ranged'], ['Fronde', 'ranged'],
   ['Javelot', 'ranged'], ['Fouet', 'ranged'], ['Bombe', 'ranged'],
+  ['Tentacule', 'melee'], ['Cornes', 'melee'],
 ];
 
 const rows: string[] = [];
