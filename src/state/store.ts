@@ -338,7 +338,13 @@ export interface GameState {
   netAcceptAnswer: (code: string) => Promise<boolean>;
   netJoin: (inviteCode: string, name: string) => Promise<string | null>;
   netAssign: (heroId: string, seat: number) => void;
+  /** Attribue un EMPLACEMENT (0-3) de l'écran d'équipe à un siège (hôte). */
+  netAssignSlot: (slot: number, seat: number) => void;
   netLeave: () => void;
+  /** Composition d'équipe : ajoute un héros dans un emplacement du siège (intent côté invité ;
+   *  l'hôte injecte le siège autoritaire) / retire un héros (propriétaire seul). */
+  partyAddHero: (hero: Combatant, wealth?: import('../engine/money').Money, seat?: number) => void;
+  partyRemoveHero: (heroId: string) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
@@ -864,7 +870,10 @@ export const useGame = create<GameState>((set, get) => ({
   netAcceptAnswer: (code) => netFlow.netAcceptAnswer(get, set, code),
   netJoin: (inviteCode, name) => netFlow.netJoin(get, set, inviteCode, name),
   netAssign: (heroId, seat) => netFlow.netAssign(get, set, heroId, seat),
+  netAssignSlot: (slot, seat) => netFlow.netAssignSlot(get, set, slot, seat),
   netLeave: () => netFlow.netLeave(get, set),
+  partyAddHero: (hero, wealth, seat) => partyFlow.partyAddHero(get, set, hero, wealth, seat),
+  partyRemoveHero: (heroId) => partyFlow.partyRemoveHero(get, set, heroId),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {

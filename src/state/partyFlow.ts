@@ -31,6 +31,7 @@ import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
 import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData } from '../data/index';
+import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
 
 type Get = () => GameState;
@@ -409,6 +410,32 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
 export function creditPartyMoney(get: Get, set: Set, m: Money, note?: string): void {
   set((s) => ({ money: moneyAdd(s.money, m) }));
   if (note) get().log(`${note} : +${formatMoney(m)}.`);
+}
+
+/** Ajoute un héros au groupe dans un emplacement du siège `seat` (0 = hôte/solo) — point
+ *  d'entrée UNIQUE de la composition d'équipe (PartyScreen, PartyPicker, créateur ; côté
+ *  invité l'action est enveloppée en intent, l'hôte injecte le siège autoritaire). Refuse
+ *  groupe plein, doublon d'id, ou quota d'emplacements du siège épuisé. */
+export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money, seat = 0): void {
+  const s = get();
+  if (s.party.length >= 4 || s.party.some((h) => h.id === hero.id)) return;
+  if (seatSlotsRemaining(s, seat) <= 0) return;
+  const copy: Combatant = JSON.parse(JSON.stringify(hero));
+  set({
+    party: [...s.party, copy],
+    net: { ...s.net, ownership: { ...s.net.ownership, [copy.id]: seat } },
+  });
+  if (wealth) creditPartyMoney(get, set, wealth, `Richesse initiale de ${copy.name}`);
+}
+
+/** Retire un héros du groupe (écran d'équipe) et nettoie sa possession réseau.
+ *  Pas de remboursement de bourse (comportement historique de « Retirer »). */
+export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
+  const s = get();
+  if (!s.party.some((h) => h.id === heroId)) return;
+  const ownership = { ...s.net.ownership };
+  delete ownership[heroId];
+  set({ party: s.party.filter((h) => h.id !== heroId), net: { ...s.net, ownership } });
 }
 
 

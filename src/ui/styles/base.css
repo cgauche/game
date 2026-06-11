@@ -440,6 +440,21 @@ h3 {
   font-size: 17px;
   letter-spacing: 0.5px;
 }
+/* Coop : bandeau « à qui est cet emplacement » au-dessus de chaque slot (select côté hôte). */
+.slot-owner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 28px;
+}
+.slot-owner select {
+  max-width: 180px;
+}
+.party-coop-hint {
+  text-align: center;
+  margin: 0 0 6px;
+}
 
 /* Character card */
 /* .char-card = primitive .panel (components.css) + fond plein --panel et radius 12 propres à la carte */

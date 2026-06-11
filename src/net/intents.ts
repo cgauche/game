@@ -1,8 +1,9 @@
 /**
- * Allowlist des actions de store qu'un INVITÉ peut demander (intents) — périmètre V1 : LE
- * COMBAT uniquement (arbitrage utilisateur : « pour le moment on ne gère que la partie
- * combat » ; l'exploration est un miroir de l'hôte). Tout le reste (sauvegarde, voyage,
- * marchand, interlude, éditeur…) est refusé par l'hôte.
+ * Allowlist des actions de store qu'un INVITÉ peut demander (intents) — périmètre : LE COMBAT
+ * (arbitrage utilisateur V1 : « pour le moment on ne gère que la partie combat » ;
+ * l'exploration est un miroir de l'hôte) + la COMPOSITION DU GROUPE (chaque joueur remplit
+ * les emplacements que l'hôte lui a attribués). Tout le reste (sauvegarde, voyage, marchand,
+ * interlude, éditeur…) est refusé par l'hôte.
  *
  * La liste est VOLONTAIREMENT explicite (pas de regex sur les noms d'actions) : ajouter une
  * action réseau = un choix conscient ici. Le test `intents.test.ts` vérifie que chaque nom
@@ -56,3 +57,10 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
   'bladeTrapResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
 ]);
+
+/** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.
+ *  L'hôte injecte le siège autoritaire dans `partyAddHero` (netFlow) — jamais celui de l'invité. */
+export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'partyRemoveHero']);
+
+/** Allowlist complète côté hôte / interception côté invité. */
+export const GUEST_INTENTS: ReadonlySet<string> = new Set([...COMBAT_INTENTS, ...PARTY_INTENTS]);
