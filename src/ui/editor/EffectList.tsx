@@ -35,6 +35,7 @@ const EFFECT_TYPES: Effect['type'][] = [
   'learnSpell',
   'rest',
   'mealParty',
+  'interlude',
   'startCombat',
   'transition',
   'transitionBack',
@@ -63,6 +64,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   learnSpell: 'Apprendre un sort (trouvaille, sans PX)',
   rest: 'Repos (Dormir / Se reposer N jours)',
   mealParty: 'Repas (nourrit le groupe sans ration — faim à zéro)',
+  interlude: 'Entre deux aventures (Événements + Activités, N semaines)',
   startCombat: 'Démarrer un combat',
   transition: 'Transition de scène',
   transitionBack: 'Retour scène précédente',
@@ -104,6 +106,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'endDialogue' };
     case 'restoreFortune':
       return { type: 'restoreFortune' };
+    case 'interlude':
+      return { type: 'interlude', weeks: 1 };
     case 'inflictNightmares':
       return { type: 'inflictNightmares', heroId: '' };
     case 'inflictDisease':
@@ -218,6 +222,9 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'rest' && (
           <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        )}
+        {effect.type === 'interlude' && (
+          <label>Semaines d'interlude <input type="number" min={1} max={12} value={e.weeks ?? 1} onChange={(ev) => upd({ weeks: Math.max(1, Number(ev.target.value) || 1) })} /></label>
         )}
         {effect.type === 'giveSin' && (
           <>

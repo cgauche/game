@@ -10,6 +10,7 @@ import { CharacterCreator } from './creator/CharacterCreator';
 const CampaignView = lazy(() => import('./CampaignView').then((m) => ({ default: m.CampaignView })));
 const Editor = lazy(() => import('./editor/Editor').then((m) => ({ default: m.Editor })));
 const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) => ({ default: m.TestScenariosScreen })));
+const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
 
 export function App() {
   const screen = useGame((s) => s.screen);
@@ -22,6 +23,7 @@ export function App() {
         {screen === 'campaign' && <CampaignView />}
         {screen === 'editor' && <Editor />}
         {screen === 'test' && <TestScenariosScreen />}
+        {screen === 'interlude' && <InterludeScreen />}
       </Suspense>
     </div>
   );

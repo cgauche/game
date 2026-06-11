@@ -235,6 +235,10 @@ export type Effect =
    *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
    *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
   | { type: 'learnSpell'; spell: string; heroId?: string }
+  /** « Entre deux aventures » (LDB 22-23, Jalon 5) : ouvre l'interlude — Événement d100 par héros,
+   *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
+   *  de chapitre par l'auteur de campagne. */
+  | { type: 'interlude'; weeks?: number }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

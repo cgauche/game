@@ -25,6 +25,8 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
+import * as interludeFlow from './interludeFlow';
+import type { InterludeState, BankDeposit } from './interludeFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
@@ -110,7 +112,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
@@ -285,6 +287,14 @@ export interface GameState {
   previousScene: { id: string; pos: Pt } | null;
 
   setScreen: (s: Screen) => void;
+  /** Interlude « Entre deux aventures » (LDB 22-23, Jalon 5) — état + dépôts bancaires + commandes. */
+  interlude: InterludeState | null;
+  bank: BankDeposit[];
+  pendingOrders: { heroId: string; trapping: string }[];
+  /** Ouvre un interlude de N semaines (Effet d'éditeur `interlude` ou appel direct). */
+  startInterlude: (weeks?: number) => void;
+  /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
+  interludeEnd: () => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
@@ -753,6 +763,13 @@ export const useGame = create<GameState>((set, get) => ({
   previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
+
+  // ── Entre deux aventures (LDB 22-23, Jalon 5) ──
+  interlude: null,
+  bank: [],
+  pendingOrders: [],
+  startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
+  interludeEnd: () => interludeFlow.interludeEnd(get, set),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {
