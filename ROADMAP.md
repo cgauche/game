@@ -1005,8 +1005,16 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   projectile + halo de canalisation du lanceur + aura de bénédiction tintés ; sorts de soutien animés ;
   vérifié navigateur) ; proportions Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique**
   dans l'éditeur (slot-picker + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
-- Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
+- Sons & musique ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
   (build:data → typecheck → **ESLint** → tests → build — le lint y est depuis `ci.yml` ; base 0 erreur).
+- ✅ **Accessibilité des modales** *(2026-06-11)* : cadre `Modal` partagé = `role=dialog`/`aria-modal`,
+  focus déplacé à l'ouverture, **piège de focus** (Tab/Shift+Tab bouclent dans la boîte) et **Échap**
+  mappé sur le bouton Annuler/Fermer **exactement quand il est visible** (rien sinon — un jet posé doit
+  être résolu, invariant « un jet = une modale » ; seule la modale du dessus réagit). RollFlowShell
+  (les 11 flux) + SaveLoad + Attaque suivent ; **CastModal et MountTargetModal convertis au cadre
+  partagé** (ils roulaient leur propre overlay sans `role=dialog`). Aria-labels des boutons-icônes
+  (menu ☰, carte) livrés au commit précédent. Recette navigateur : Tab boucle dans les deux sens,
+  Échap ferme Sauvegarde/Attaque/Ciblage monté, Échap IGNORÉ sur la Défense réactive, 0 erreur console.
 
 ---
 

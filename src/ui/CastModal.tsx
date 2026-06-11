@@ -7,6 +7,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 import { Dice } from './Dice';
+import { Modal } from './Modal';
 
 /**
  * Modale d'incantation (« tous les jets méritent leur modale ») : on sélectionne un sort + une
@@ -44,9 +45,7 @@ export function CastModal() {
   const selfTarget = caster.id === target.id;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>{isPrayer ? 'Prière' : 'Incantation'}</h3>
+    <Modal title={isPrayer ? 'Prière' : 'Incantation'} onClose={!res && caster.kind !== 'enemy' ? cancel : undefined}>
         <p className="rm-vs">
           <strong>{caster.name}</strong>{' '}
           <span className="rm-weapon">
@@ -215,7 +214,6 @@ export function CastModal() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

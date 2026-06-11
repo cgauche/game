@@ -78,7 +78,7 @@ export function RollModal() {
   };
 
   return (
-    <Modal title="Attaque">
+    <Modal title="Attaque" onClose={!res && !rolling ? cancel : undefined}>
         <div className="rm-vs">
           <CombatantBadge combatant={attacker} />
           <span className="rm-vs-arrow"><span className="rm-weapon">{weapon?.name ?? 'Mains nues'}</span><br />→</span>

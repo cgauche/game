@@ -105,8 +105,10 @@ export function RollFlowShell({
     </button>
   );
   const preCancelFirst = cancelFirst ?? variant === 'test';
+  // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le permet).
+  const escClose = (!rolled || cancelAfterRoll) ? onCancel : undefined;
   return (
-    <Modal title={title} variant={variant}>
+    <Modal title={title} variant={variant} onClose={escClose}>
         <p className={subClass}>{subtitle}</p>
         {extra}
         {!rolled ? (

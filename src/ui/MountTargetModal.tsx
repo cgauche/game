@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { Modal } from './Modal';
 
 /**
  * Combat monté (Livre de base p.14 l.219) : « Si vous tentez de toucher un Personnage qui est sur une
@@ -17,9 +18,7 @@ export function MountTargetModal() {
   const mount = battle.combatants.find((c) => c.id === pmt.mountId);
   if (!rider || !mount) return null;
   return (
-    <div className="modal-overlay">
-      <div className="modal roll-modal">
-        <h3>Combat monté — cibler ?</h3>
+    <Modal title="Combat monté — cibler ?" onClose={cancel}>
         <p className="rm-log">
           {rider.name} chevauche {mount.name}. Vous choisissez de frapper le cavalier ou sa monture (LDB 14 l.219) :
           viser le cavalier impose −10 si vous êtes plus petit que la monture ; abattre la monture désarçonne le cavalier.
@@ -35,7 +34,6 @@ export function MountTargetModal() {
             🗡️ Le cavalier ({rider.name} · {rider.wounds.current}/{rider.wounds.max})
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

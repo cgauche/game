@@ -49,7 +49,7 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   };
 
   return (
-    <Modal title={mode === 'save' ? '💾 Sauvegarder' : '📂 Charger une partie'} variant="test">
+    <Modal title={mode === 'save' ? '💾 Sauvegarder' : '📂 Charger une partie'} variant="test" onClose={onClose}>
       <div className="save-slots">
         {SAVE_SLOTS.map((slot) => {
           const m = metas[slot - 1];
