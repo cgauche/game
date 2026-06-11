@@ -13,7 +13,7 @@ exports[`monsterInjection — golden master > catalogues d’options (clés + li
     },
     {
       "key": "griffe",
-      "label": "Griffe",
+      "label": "Pince (griffe de crabe)",
     },
   ],
   "heads": [
@@ -85,6 +85,10 @@ exports[`monsterInjection — golden master > catalogues d’options (clés + li
       "key": "cyclope",
       "label": "Cyclope (œil unique)",
     },
+    {
+      "key": "horreur",
+      "label": "Horreur (gueule béante)",
+    },
   ],
   "legs": [
     {
@@ -124,14 +128,14 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="-3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="-2.8000000000000003" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="3.6" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="-4.35" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="2.05" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -1 L-9 -7 Q-9 0 -3 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#f2a81e"/><circle cx="2" cy="3" r="0.75" fill="#160a04"/><circle cx="2.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#d8a226"/><rect x="0.92" y="2.52" width="2.16" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
       },
     },
@@ -152,7 +156,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
 </g>",
         "front": "<g>
-  <path d="M-8 2 l-3 -11 l8 5 z" fill="@peauO"/><path d="M8 2 l3 -11 l-8 5 z" fill="@peauO"/>
+  <path d="M-6 5 l-5.5 -13 l9.5 7 z" fill="@peauO"/><path d="M6 5 l5.5 -13 l-9.5 7 z" fill="@peauO"/>
   <path d="M-8 1 Q0 -3 8 1 L4 12 L0 16 L-4 12 Z" fill="@peau"/>
   <path d="M-4 11 L0 15 L4 11 L2 13 L-2 13 Z" fill="@peauO"/>
   <ellipse cx="-3" cy="4" rx="1.6" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="4" r="0.8" fill="#140a06"/>
@@ -160,7 +164,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="0" cy="15" rx="1.7" ry="1.3" fill="#1a0e06"/>
 </g>",
         "profile": "<g>
-  <path d="M-6 1 l-3 -10 l7 4 z" fill="@peauO"/>
+  <path d="M-4.5 3 l-4.5 -12 l8.5 5.5 z" fill="@peauO"/>
   <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="@peau"/>
   <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
   <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
@@ -235,7 +239,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
       {
         "behind": true,
         "bone": "tete",
-        "svg": "<path d="M-5 -6 Q-13 -12 -10 -26 Q-6 -16 -3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/><path d="M5 -6 Q13 -12 10 -26 Q6 -16 3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/>",
+        "svg": "<path d="M-4 -7 Q-13 -9 -16 -17 Q-18 -25 -12 -30 Q-9 -32 -6 -31 Q-11 -28 -12 -23 Q-12 -16 -8 -12 Q-6 -10 -2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/><path d="M-13 -16 q-1.8 -1.2 -2.4 -3 M-13.5 -22 q-1.4 -1 -1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/><path d="M4 -7 Q13 -9 16 -17 Q18 -25 12 -30 Q9 -32 6 -31 Q11 -28 12 -23 Q12 -16 8 -12 Q6 -10 2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/><path d="M13 -16 q1.8 -1.2 2.4 -3 M13.5 -22 q1.4 -1 1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/>",
       },
     ],
     "replace": {
@@ -247,17 +251,21 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
         "front": "<g>
   <path d="M-8 1 Q-9 -10 0 -11 Q9 -10 8 1 Q8 7 5 9 L4 14 Q0 18 -4 14 L-5 9 Q-8 7 -8 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-8 -4 Q0 -7 8 -4 Q6 -2 0 -2.5 Q-6 -2 -8 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M-6 9 Q0 8 6 9 Q5 16 0 17 Q-5 16 -6 9 Z" fill="#1a0a06"/>
-  <path d="M-4.4 9.4 l-0.5 3 l1.2 0 z M-1.5 9.6 l0 3.6 M1.5 9.6 l0 3.6 M4.4 9.4 l0.5 3 l-1.2 0 z" fill="#efe6cf"/>
-  <path d="M-3 13.6 l0.4 2.4 M3 13.6 l-0.4 2.4" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="-3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="-3" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="3.8" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M-5.6 9.2 Q0 8 5.6 9.2 Q5 14.6 0 15.4 Q-5 14.6 -5.6 9.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M-4.4 9.6 l-0.4 3.2 l1.4 -0.4 z M4.4 9.6 l0.4 3.2 l-1.4 -0.4 z" fill="#efe6cf"/>
+  <path d="M-2.2 9.5 l0.2 1.5 l0.9 -0.1 z M-0.4 9.4 l0.3 1.4 l0.9 -0.1 z M1.5 9.5 l0.3 1.3 l0.8 -0.2 z" fill="#e8dcc0"/>
+  <path d="M-1.8 14.7 l0.4 -2 l0.9 1.3 z M1.8 14.7 l-0.4 -2 l-0.9 1.3 z" fill="#efe6cf"/>
+  <path d="M-6.2 8.8 Q-5.2 7.9 -4 8.4 M6.2 8.8 Q5.2 7.9 4 8.4" stroke="#601010" stroke-width="0.7" fill="none"/>
+  <path d="M-5.10 3 Q-3.4 1.47 -1.70 3 Q-3.4 4.19 -5.10 3 Z" fill="#ff7a18"/><circle cx="-3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M-5.10 0.62 L-1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/><path d="M1.70 3 Q3.4 1.47 5.10 3 Q3.4 4.19 1.70 3 Z" fill="#ff7a18"/><circle cx="3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M5.10 0.62 L1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
         "profile": "<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M6 9 Q9 8 11 9 Q10 15 6 15 Q3 14 6 9 Z" fill="#1a0a06"/>
-  <path d="M7 9.4 l0 3.4 M9.4 9.2 l0.3 3.2" stroke="#efe6cf" stroke-width="0.8"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.7" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
+  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M1.40 3 Q3 1.56 4.60 3 Q3 4.12 1.40 3 Z" fill="#ff7a18"/><circle cx="3" cy="3" r="0.51" fill="#fff2ae" opacity="0.9"/><path d="M4.60 0.76 L1.40 2.12" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
       },
     },
@@ -333,6 +341,41 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M3 11 Q7 10.4 9 12 Q6.8 14 4 13.4 Z" fill="#26120e"/>
   <path d="M4 11.2 l0.4 1.9 M5.8 11 l0.5 2.1 M7.6 11.4 l0.4 1.7" stroke="#e6ddc4" stroke-width="0.6"/>
   <path d="M-6 -1 l-3.4 -3 l2.2 4.4 z" fill="@peau" stroke="@peauO" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
+  "cornes.horreur": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "tete",
+        "svg": "<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peauO"/>
+  <path d="M-5 -6 q2 3 0 7 M4 -7 q-1.6 3.4 0.4 6.6 M0 -10 q1 4 -0.5 8" stroke="@peau" stroke-width="0.6" fill="none" opacity="0.5"/>
+</g>",
+        "front": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4 Q7 12 3.5 14.5 Q0 16 -3.5 14.5 Q-7 12 -7.5 4 Z" fill="#1c0a14"/>
+  <path d="M-6.6 4.6 l-0.4 2.8 l1.5 -0.3 z M-3.8 3.6 l0 3.4 l1.6 -0.4 z M-0.6 3.3 l0.4 3.6 l1.5 -0.6 z M2.8 3.7 l0.8 3 l1.4 -0.8 z M5.6 4.7 l1 2.4 l0.8 -1.4 z" fill="#f2e8d4"/>
+  <path d="M-5 13.6 l1 -2.6 l1.2 2.2 z M-1.4 14.8 l1 -2.8 l1.3 2.4 z M2.4 14 l0.9 -2.4 l1.2 2 z" fill="#f2e8d4"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4" stroke="#0c0408" stroke-width="0.7" fill="none"/>
+  <ellipse cx="-3.6" cy="-4" rx="2" ry="2.2" fill="#fff" /><circle cx="-3.2" cy="-3.6" r="1" fill="#180a10"/>
+  <ellipse cx="3.4" cy="-5.4" rx="1.5" ry="1.7" fill="#fff"/><circle cx="3.7" cy="-5.2" r="0.75" fill="#180a10"/>
+  <path d="M-6 -7.6 q2 -1.6 4.4 -0.8 M1.6 -8.4 q1.8 -1 3.6 -0.2" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+        "profile": "<g>
+  <path d="M-7 1 Q-8 -8 -1 -10 Q4 -11 6 -8 L12 -4 Q15 -2 14 0 L4 2 Q9 3 13 6 Q15 8 13 10 L5 13 Q1 16 -3 13 Q-7 9 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M4 2 L14 0 Q15 4 13 6 Q9 3.4 4 2.6 Z" fill="#1c0a14"/>
+  <path d="M5.6 1.6 l0.6 -2 l1.2 1.7 z M8.6 1 l0.7 -1.8 l1.2 1.5 z M11.4 0.6 l0.7 -1.6 l1 1.3 z" fill="#f2e8d4"/>
+  <path d="M6 3 l0.5 2 l1.2 -1.5 z M9 3.8 l0.6 1.8 l1.1 -1.3 z" fill="#f2e8d4"/>
+  <ellipse cx="0" cy="-4.6" rx="1.9" ry="2.1" fill="#fff"/><circle cx="0.5" cy="-4.2" r="0.95" fill="#180a10"/>
+  <path d="M-2.6 -7.8 q2.2 -1.4 4.6 -0.6" stroke="@peauO" stroke-width="0.7" fill="none"/>
 </g>",
       },
     },
@@ -583,14 +626,14 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-9 -1 Q-10 -10 0 -11 Q10 -10 9 -1 Q9 8 4 12 L3 17 Q0 19 -3 17 L-4 12 Q-9 8 -9 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>
   <path d="M-6 6 Q0 4 6 6 Q7 12 3 16 Q0 18 -3 16 Q-7 12 -6 6 Z" fill="@peauH"/>
   <ellipse cx="-2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/><ellipse cx="2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/>
-  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="-3" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="3.8" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="-4.62" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="2.18" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -2 L-10 -7 Q-9 1 -3 3 Z" fill="@peauO"/>
   <path d="M-7 -1 Q-8 -10 2 -11 Q10 -10 10 -1 L14 3 Q15 10 11 16 L9 18 Q5 20 3 17 L2 12 Q-6 9 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M10 14 Q12 16 11 18 Q9 18 8 16 Z" fill="@peauH"/>
   <ellipse cx="11" cy="15.5" rx="1.2" ry="1.5" fill="#1a0e06"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#d8a226"/><rect x="1.85" y="2.49" width="2.30" height="1.02" rx="0.48" fill="#160a04"/>
 </g>",
       },
     },
@@ -649,14 +692,14 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="-3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="-2.8000000000000003" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="3.6" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="-4.35" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="2.05" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -1 L-9 -7 Q-9 0 -3 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#f2a81e"/><circle cx="2" cy="3" r="0.75" fill="#160a04"/><circle cx="2.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#d8a226"/><rect x="0.92" y="2.52" width="2.16" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
       },
     },
@@ -677,7 +720,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
 </g>",
         "front": "<g>
-  <path d="M-8 2 l-3 -11 l8 5 z" fill="@peauO"/><path d="M8 2 l3 -11 l-8 5 z" fill="@peauO"/>
+  <path d="M-6 5 l-5.5 -13 l9.5 7 z" fill="@peauO"/><path d="M6 5 l5.5 -13 l-9.5 7 z" fill="@peauO"/>
   <path d="M-8 1 Q0 -3 8 1 L4 12 L0 16 L-4 12 Z" fill="@peau"/>
   <path d="M-4 11 L0 15 L4 11 L2 13 L-2 13 Z" fill="@peauO"/>
   <ellipse cx="-3" cy="4" rx="1.6" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="4" r="0.8" fill="#140a06"/>
@@ -685,7 +728,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="0" cy="15" rx="1.7" ry="1.3" fill="#1a0e06"/>
 </g>",
         "profile": "<g>
-  <path d="M-6 1 l-3 -10 l7 4 z" fill="@peauO"/>
+  <path d="M-4.5 3 l-4.5 -12 l8.5 5.5 z" fill="@peauO"/>
   <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="@peau"/>
   <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
   <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
@@ -772,17 +815,21 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
         "front": "<g>
   <path d="M-8 1 Q-9 -10 0 -11 Q9 -10 8 1 Q8 7 5 9 L4 14 Q0 18 -4 14 L-5 9 Q-8 7 -8 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-8 -4 Q0 -7 8 -4 Q6 -2 0 -2.5 Q-6 -2 -8 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M-6 9 Q0 8 6 9 Q5 16 0 17 Q-5 16 -6 9 Z" fill="#1a0a06"/>
-  <path d="M-4.4 9.4 l-0.5 3 l1.2 0 z M-1.5 9.6 l0 3.6 M1.5 9.6 l0 3.6 M4.4 9.4 l0.5 3 l-1.2 0 z" fill="#efe6cf"/>
-  <path d="M-3 13.6 l0.4 2.4 M3 13.6 l-0.4 2.4" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="-3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="-3" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="3.8" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M-5.6 9.2 Q0 8 5.6 9.2 Q5 14.6 0 15.4 Q-5 14.6 -5.6 9.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M-4.4 9.6 l-0.4 3.2 l1.4 -0.4 z M4.4 9.6 l0.4 3.2 l-1.4 -0.4 z" fill="#efe6cf"/>
+  <path d="M-2.2 9.5 l0.2 1.5 l0.9 -0.1 z M-0.4 9.4 l0.3 1.4 l0.9 -0.1 z M1.5 9.5 l0.3 1.3 l0.8 -0.2 z" fill="#e8dcc0"/>
+  <path d="M-1.8 14.7 l0.4 -2 l0.9 1.3 z M1.8 14.7 l-0.4 -2 l-0.9 1.3 z" fill="#efe6cf"/>
+  <path d="M-6.2 8.8 Q-5.2 7.9 -4 8.4 M6.2 8.8 Q5.2 7.9 4 8.4" stroke="#601010" stroke-width="0.7" fill="none"/>
+  <path d="M-5.10 3 Q-3.4 1.47 -1.70 3 Q-3.4 4.19 -5.10 3 Z" fill="#ff7a18"/><circle cx="-3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M-5.10 0.62 L-1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/><path d="M1.70 3 Q3.4 1.47 5.10 3 Q3.4 4.19 1.70 3 Z" fill="#ff7a18"/><circle cx="3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M5.10 0.62 L1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
         "profile": "<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M6 9 Q9 8 11 9 Q10 15 6 15 Q3 14 6 9 Z" fill="#1a0a06"/>
-  <path d="M7 9.4 l0 3.4 M9.4 9.2 l0.3 3.2" stroke="#efe6cf" stroke-width="0.8"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.7" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
+  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M1.40 3 Q3 1.56 4.60 3 Q3 4.12 1.40 3 Z" fill="#ff7a18"/><circle cx="3" cy="3" r="0.51" fill="#fff2ae" opacity="0.9"/><path d="M4.60 0.76 L1.40 2.12" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
       },
     },
@@ -858,6 +905,41 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M3 11 Q7 10.4 9 12 Q6.8 14 4 13.4 Z" fill="#26120e"/>
   <path d="M4 11.2 l0.4 1.9 M5.8 11 l0.5 2.1 M7.6 11.4 l0.4 1.7" stroke="#e6ddc4" stroke-width="0.6"/>
   <path d="M-6 -1 l-3.4 -3 l2.2 4.4 z" fill="@peau" stroke="@peauO" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
+  "queue.horreur": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "bassin",
+        "svg": "<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peauO"/>
+  <path d="M-5 -6 q2 3 0 7 M4 -7 q-1.6 3.4 0.4 6.6 M0 -10 q1 4 -0.5 8" stroke="@peau" stroke-width="0.6" fill="none" opacity="0.5"/>
+</g>",
+        "front": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4 Q7 12 3.5 14.5 Q0 16 -3.5 14.5 Q-7 12 -7.5 4 Z" fill="#1c0a14"/>
+  <path d="M-6.6 4.6 l-0.4 2.8 l1.5 -0.3 z M-3.8 3.6 l0 3.4 l1.6 -0.4 z M-0.6 3.3 l0.4 3.6 l1.5 -0.6 z M2.8 3.7 l0.8 3 l1.4 -0.8 z M5.6 4.7 l1 2.4 l0.8 -1.4 z" fill="#f2e8d4"/>
+  <path d="M-5 13.6 l1 -2.6 l1.2 2.2 z M-1.4 14.8 l1 -2.8 l1.3 2.4 z M2.4 14 l0.9 -2.4 l1.2 2 z" fill="#f2e8d4"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4" stroke="#0c0408" stroke-width="0.7" fill="none"/>
+  <ellipse cx="-3.6" cy="-4" rx="2" ry="2.2" fill="#fff" /><circle cx="-3.2" cy="-3.6" r="1" fill="#180a10"/>
+  <ellipse cx="3.4" cy="-5.4" rx="1.5" ry="1.7" fill="#fff"/><circle cx="3.7" cy="-5.2" r="0.75" fill="#180a10"/>
+  <path d="M-6 -7.6 q2 -1.6 4.4 -0.8 M1.6 -8.4 q1.8 -1 3.6 -0.2" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+        "profile": "<g>
+  <path d="M-7 1 Q-8 -8 -1 -10 Q4 -11 6 -8 L12 -4 Q15 -2 14 0 L4 2 Q9 3 13 6 Q15 8 13 10 L5 13 Q1 16 -3 13 Q-7 9 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M4 2 L14 0 Q15 4 13 6 Q9 3.4 4 2.6 Z" fill="#1c0a14"/>
+  <path d="M5.6 1.6 l0.6 -2 l1.2 1.7 z M8.6 1 l0.7 -1.8 l1.2 1.5 z M11.4 0.6 l0.7 -1.6 l1 1.3 z" fill="#f2e8d4"/>
+  <path d="M6 3 l0.5 2 l1.2 -1.5 z M9 3.8 l0.6 1.8 l1.1 -1.3 z" fill="#f2e8d4"/>
+  <ellipse cx="0" cy="-4.6" rx="1.9" ry="2.1" fill="#fff"/><circle cx="0.5" cy="-4.2" r="0.95" fill="#180a10"/>
+  <path d="M-2.6 -7.8 q2.2 -1.4 4.6 -0.6" stroke="@peauO" stroke-width="0.7" fill="none"/>
 </g>",
       },
     },
@@ -1108,14 +1190,14 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-9 -1 Q-10 -10 0 -11 Q10 -10 9 -1 Q9 8 4 12 L3 17 Q0 19 -3 17 L-4 12 Q-9 8 -9 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>
   <path d="M-6 6 Q0 4 6 6 Q7 12 3 16 Q0 18 -3 16 Q-7 12 -6 6 Z" fill="@peauH"/>
   <ellipse cx="-2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/><ellipse cx="2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/>
-  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="-3" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="3.8" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="-4.62" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="2.18" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -2 L-10 -7 Q-9 1 -3 3 Z" fill="@peauO"/>
   <path d="M-7 -1 Q-8 -10 2 -11 Q10 -10 10 -1 L14 3 Q15 10 11 16 L9 18 Q5 20 3 17 L2 12 Q-6 9 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M10 14 Q12 16 11 18 Q9 18 8 16 Z" fill="@peauH"/>
   <ellipse cx="11" cy="15.5" rx="1.2" ry="1.5" fill="#1a0e06"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#d8a226"/><rect x="1.85" y="2.49" width="2.30" height="1.02" rx="0.48" fill="#160a04"/>
 </g>",
       },
     },
@@ -1350,36 +1432,48 @@ exports[`monsterInjection — golden master > tous les bras (G/D) + jambes 1`] =
     "overlays": [],
     "replace": {
       "epauleD": "<g>
-  <path d="M0 -2 q-2 14 0 25" stroke="@peau" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-  <path d="M-4 25 l-2 7 M-1 27 l0 7 M2 25 l2 6" stroke="@peau" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+  <path d="M-2.8 -3 Q-4 8 -2.6 16 L2.6 16 Q4 8 2.8 -3 Q0 -4.6 -2.8 -3 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-3.4 15 Q-5 19 -3.8 22 Q0 24 3.8 22 Q5 19 3.4 15 Q0 13.6 -3.4 15 Z" fill="@peau" stroke="@peauO" stroke-width="0.7"/>
+  <path d="M-3.6 21 Q-7.5 25 -6.5 31 Q-5.5 35 -1.6 36 Q-3.6 31 -2.4 26 Q-1.8 23 -0.6 21.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.7"/>
+  <path d="M1 21.6 Q4.8 24 4.6 29 Q4.4 32 2 33 Q3 29 1.8 25.6 Q1.2 23.4 0.2 22 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.7"/>
+  <path d="M-5.8 26 q-0.6 3 0.6 5.4 M3.6 25 q0.6 2.4 -0.2 4.6" stroke="@cheveuxO" stroke-width="0.5" fill="none" opacity="0.7"/>
 </g>",
+      "mainD": "",
     },
   },
   "brasD.tentacule": {
     "overlays": [],
     "replace": {
       "epauleD": "<g>
-  <path d="M-2 -3 Q-10 7 -7 17 Q-5 25 3 26 Q-3 21 -2 13 Q-1 5 0 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-5" cy="10" r="1.3" fill="#8a3a1e"/><circle cx="-4" cy="17" r="1.2" fill="#8a3a1e"/><circle cx="-1" cy="23" r="1.1" fill="#8a3a1e"/>
+  <path d="M-3.4 -3 Q-6 6 -4.6 13 Q-3.4 19 -7 23 Q-10 26.5 -8.6 30.5 Q-7.4 33.6 -4 34 Q-6.6 31.4 -5.6 28.4 Q-4.6 25.6 -1.4 23 Q2.4 19.6 1.6 13.6 Q1 8 2.6 -2 Q-0.4 -4.6 -3.4 -3 Z" fill="@peau" stroke="@peauO" stroke-width="0.7"/>
+  <circle cx="-3.2" cy="9" r="1.2" fill="@peauO"/><circle cx="-3.6" cy="14.5" r="1.1" fill="@peauO"/><circle cx="-5.4" cy="20.5" r="1" fill="@peauO"/><circle cx="-7.2" cy="26" r="0.9" fill="@peauO"/><circle cx="-6.2" cy="30.5" r="0.75" fill="@peauO"/>
+  <path d="M-1.2 4 Q-2.6 10 -1.8 15" stroke="@peauH" stroke-width="0.8" fill="none" opacity="0.6"/>
 </g>",
+      "mainD": "",
     },
   },
   "brasG.griffe": {
     "overlays": [],
     "replace": {
       "epauleG": "<g>
-  <path d="M0 -2 q-2 14 0 25" stroke="@peau" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-  <path d="M-4 25 l-2 7 M-1 27 l0 7 M2 25 l2 6" stroke="@peau" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+  <path d="M-2.8 -3 Q-4 8 -2.6 16 L2.6 16 Q4 8 2.8 -3 Q0 -4.6 -2.8 -3 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-3.4 15 Q-5 19 -3.8 22 Q0 24 3.8 22 Q5 19 3.4 15 Q0 13.6 -3.4 15 Z" fill="@peau" stroke="@peauO" stroke-width="0.7"/>
+  <path d="M-3.6 21 Q-7.5 25 -6.5 31 Q-5.5 35 -1.6 36 Q-3.6 31 -2.4 26 Q-1.8 23 -0.6 21.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.7"/>
+  <path d="M1 21.6 Q4.8 24 4.6 29 Q4.4 32 2 33 Q3 29 1.8 25.6 Q1.2 23.4 0.2 22 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.7"/>
+  <path d="M-5.8 26 q-0.6 3 0.6 5.4 M3.6 25 q0.6 2.4 -0.2 4.6" stroke="@cheveuxO" stroke-width="0.5" fill="none" opacity="0.7"/>
 </g>",
+      "mainG": "",
     },
   },
   "brasG.tentacule": {
     "overlays": [],
     "replace": {
       "epauleG": "<g>
-  <path d="M-2 -3 Q-10 7 -7 17 Q-5 25 3 26 Q-3 21 -2 13 Q-1 5 0 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-5" cy="10" r="1.3" fill="#8a3a1e"/><circle cx="-4" cy="17" r="1.2" fill="#8a3a1e"/><circle cx="-1" cy="23" r="1.1" fill="#8a3a1e"/>
+  <path d="M-3.4 -3 Q-6 6 -4.6 13 Q-3.4 19 -7 23 Q-10 26.5 -8.6 30.5 Q-7.4 33.6 -4 34 Q-6.6 31.4 -5.6 28.4 Q-4.6 25.6 -1.4 23 Q2.4 19.6 1.6 13.6 Q1 8 2.6 -2 Q-0.4 -4.6 -3.4 -3 Z" fill="@peau" stroke="@peauO" stroke-width="0.7"/>
+  <circle cx="-3.2" cy="9" r="1.2" fill="@peauO"/><circle cx="-3.6" cy="14.5" r="1.1" fill="@peauO"/><circle cx="-5.4" cy="20.5" r="1" fill="@peauO"/><circle cx="-7.2" cy="26" r="0.9" fill="@peauO"/><circle cx="-6.2" cy="30.5" r="0.75" fill="@peauO"/>
+  <path d="M-1.2 4 Q-2.6 10 -1.8 15" stroke="@peauH" stroke-width="0.8" fill="none" opacity="0.6"/>
 </g>",
+      "mainG": "",
     },
   },
   "jambes.chevre": {
@@ -1423,14 +1517,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="-3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="-2.8000000000000003" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="3.6" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="-4.35" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="2.05" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -1 L-9 -7 Q-9 0 -3 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#f2a81e"/><circle cx="2" cy="3" r="0.75" fill="#160a04"/><circle cx="2.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#d8a226"/><rect x="0.92" y="2.52" width="2.16" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
       },
     },
@@ -1452,14 +1546,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="-3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="-2.8000000000000003" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="3.6" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="-4.35" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="2.05" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -1 L-9 -7 Q-9 0 -3 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#f2a81e"/><circle cx="2" cy="3" r="0.75" fill="#160a04"/><circle cx="2.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#d8a226"/><rect x="0.92" y="2.52" width="2.16" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
       },
     },
@@ -1481,14 +1575,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="-3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="-2.8000000000000003" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#f2a81e"/><circle cx="3.2" cy="4" r="0.8" fill="#160a04"/><circle cx="3.6" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="-4.35" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/><ellipse cx="3.2" cy="4" rx="1.6" ry="1.5" fill="#d8a226"/><rect x="2.05" y="3.52" width="2.30" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -1 L-9 -7 Q-9 0 -3 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#f2a81e"/><circle cx="2" cy="3" r="0.75" fill="#160a04"/><circle cx="2.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="2" cy="3" rx="1.5" ry="1.5" fill="#d8a226"/><rect x="0.92" y="2.52" width="2.16" height="0.96" rx="0.45" fill="#160a04"/>
 </g>",
       },
     },
@@ -1503,7 +1597,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
 </g>",
         "front": "<g>
-  <path d="M-8 2 l-3 -11 l8 5 z" fill="@peauO"/><path d="M8 2 l3 -11 l-8 5 z" fill="@peauO"/>
+  <path d="M-6 5 l-5.5 -13 l9.5 7 z" fill="@peauO"/><path d="M6 5 l5.5 -13 l-9.5 7 z" fill="@peauO"/>
   <path d="M-8 1 Q0 -3 8 1 L4 12 L0 16 L-4 12 Z" fill="@peau"/>
   <path d="M-4 11 L0 15 L4 11 L2 13 L-2 13 Z" fill="@peauO"/>
   <ellipse cx="-3" cy="4" rx="1.6" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="4" r="0.8" fill="#140a06"/>
@@ -1511,7 +1605,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="15" rx="1.7" ry="1.3" fill="#1a0e06"/>
 </g>",
         "profile": "<g>
-  <path d="M-6 1 l-3 -10 l7 4 z" fill="@peauO"/>
+  <path d="M-4.5 3 l-4.5 -12 l8.5 5.5 z" fill="@peauO"/>
   <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="@peau"/>
   <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
   <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
@@ -1530,7 +1624,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
 </g>",
         "front": "<g>
-  <path d="M-8 2 l-3 -11 l8 5 z" fill="@peauO"/><path d="M8 2 l3 -11 l-8 5 z" fill="@peauO"/>
+  <path d="M-6 5 l-5.5 -13 l9.5 7 z" fill="@peauO"/><path d="M6 5 l5.5 -13 l-9.5 7 z" fill="@peauO"/>
   <path d="M-8 1 Q0 -3 8 1 L4 12 L0 16 L-4 12 Z" fill="@peau"/>
   <path d="M-4 11 L0 15 L4 11 L2 13 L-2 13 Z" fill="@peauO"/>
   <ellipse cx="-3" cy="4" rx="1.6" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="4" r="0.8" fill="#140a06"/>
@@ -1538,7 +1632,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="15" rx="1.7" ry="1.3" fill="#1a0e06"/>
 </g>",
         "profile": "<g>
-  <path d="M-6 1 l-3 -10 l7 4 z" fill="@peauO"/>
+  <path d="M-4.5 3 l-4.5 -12 l8.5 5.5 z" fill="@peauO"/>
   <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="@peau"/>
   <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
   <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
@@ -1557,7 +1651,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-3 4 l1 9 m3 -9 l-1 9 m4 -9 l-1 8" stroke="#4a3018" stroke-width="0.7" opacity="0.5"/>
 </g>",
         "front": "<g>
-  <path d="M-8 2 l-3 -11 l8 5 z" fill="@peauO"/><path d="M8 2 l3 -11 l-8 5 z" fill="@peauO"/>
+  <path d="M-6 5 l-5.5 -13 l9.5 7 z" fill="@peauO"/><path d="M6 5 l5.5 -13 l-9.5 7 z" fill="@peauO"/>
   <path d="M-8 1 Q0 -3 8 1 L4 12 L0 16 L-4 12 Z" fill="@peau"/>
   <path d="M-4 11 L0 15 L4 11 L2 13 L-2 13 Z" fill="@peauO"/>
   <ellipse cx="-3" cy="4" rx="1.6" ry="2.1" fill="url(#g_eye)"/><circle cx="-3" cy="4" r="0.8" fill="#140a06"/>
@@ -1565,7 +1659,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="0" cy="15" rx="1.7" ry="1.3" fill="#1a0e06"/>
 </g>",
         "profile": "<g>
-  <path d="M-6 1 l-3 -10 l7 4 z" fill="@peauO"/>
+  <path d="M-4.5 3 l-4.5 -12 l8.5 5.5 z" fill="@peauO"/>
   <path d="M-7 2 Q-2 -3 5 1 L7 5 Q14 5 16 9 Q14 12 7 11 L3 14 L-1 15 L-6 12 Z" fill="@peau"/>
   <ellipse cx="16" cy="9" rx="1.8" ry="1.4" fill="#1a0e06"/>
   <ellipse cx="2" cy="5" rx="1.5" ry="2" fill="url(#g_eye)"/><circle cx="2" cy="5" r="0.8" fill="#140a06"/>
@@ -1732,17 +1826,21 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
         "front": "<g>
   <path d="M-8 1 Q-9 -10 0 -11 Q9 -10 8 1 Q8 7 5 9 L4 14 Q0 18 -4 14 L-5 9 Q-8 7 -8 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-8 -4 Q0 -7 8 -4 Q6 -2 0 -2.5 Q-6 -2 -8 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M-6 9 Q0 8 6 9 Q5 16 0 17 Q-5 16 -6 9 Z" fill="#1a0a06"/>
-  <path d="M-4.4 9.4 l-0.5 3 l1.2 0 z M-1.5 9.6 l0 3.6 M1.5 9.6 l0 3.6 M4.4 9.4 l0.5 3 l-1.2 0 z" fill="#efe6cf"/>
-  <path d="M-3 13.6 l0.4 2.4 M3 13.6 l-0.4 2.4" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="-3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="-3" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="3.8" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M-5.6 9.2 Q0 8 5.6 9.2 Q5 14.6 0 15.4 Q-5 14.6 -5.6 9.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M-4.4 9.6 l-0.4 3.2 l1.4 -0.4 z M4.4 9.6 l0.4 3.2 l-1.4 -0.4 z" fill="#efe6cf"/>
+  <path d="M-2.2 9.5 l0.2 1.5 l0.9 -0.1 z M-0.4 9.4 l0.3 1.4 l0.9 -0.1 z M1.5 9.5 l0.3 1.3 l0.8 -0.2 z" fill="#e8dcc0"/>
+  <path d="M-1.8 14.7 l0.4 -2 l0.9 1.3 z M1.8 14.7 l-0.4 -2 l-0.9 1.3 z" fill="#efe6cf"/>
+  <path d="M-6.2 8.8 Q-5.2 7.9 -4 8.4 M6.2 8.8 Q5.2 7.9 4 8.4" stroke="#601010" stroke-width="0.7" fill="none"/>
+  <path d="M-5.10 3 Q-3.4 1.47 -1.70 3 Q-3.4 4.19 -5.10 3 Z" fill="#ff7a18"/><circle cx="-3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M-5.10 0.62 L-1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/><path d="M1.70 3 Q3.4 1.47 5.10 3 Q3.4 4.19 1.70 3 Z" fill="#ff7a18"/><circle cx="3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M5.10 0.62 L1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
         "profile": "<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M6 9 Q9 8 11 9 Q10 15 6 15 Q3 14 6 9 Z" fill="#1a0a06"/>
-  <path d="M7 9.4 l0 3.4 M9.4 9.2 l0.3 3.2" stroke="#efe6cf" stroke-width="0.8"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.7" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
+  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M1.40 3 Q3 1.56 4.60 3 Q3 4.12 1.40 3 Z" fill="#ff7a18"/><circle cx="3" cy="3" r="0.51" fill="#fff2ae" opacity="0.9"/><path d="M4.60 0.76 L1.40 2.12" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
       },
     },
@@ -1758,17 +1856,21 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
         "front": "<g>
   <path d="M-8 1 Q-9 -10 0 -11 Q9 -10 8 1 Q8 7 5 9 L4 14 Q0 18 -4 14 L-5 9 Q-8 7 -8 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-8 -4 Q0 -7 8 -4 Q6 -2 0 -2.5 Q-6 -2 -8 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M-6 9 Q0 8 6 9 Q5 16 0 17 Q-5 16 -6 9 Z" fill="#1a0a06"/>
-  <path d="M-4.4 9.4 l-0.5 3 l1.2 0 z M-1.5 9.6 l0 3.6 M1.5 9.6 l0 3.6 M4.4 9.4 l0.5 3 l-1.2 0 z" fill="#efe6cf"/>
-  <path d="M-3 13.6 l0.4 2.4 M3 13.6 l-0.4 2.4" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="-3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="-3" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="3.8" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M-5.6 9.2 Q0 8 5.6 9.2 Q5 14.6 0 15.4 Q-5 14.6 -5.6 9.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M-4.4 9.6 l-0.4 3.2 l1.4 -0.4 z M4.4 9.6 l0.4 3.2 l-1.4 -0.4 z" fill="#efe6cf"/>
+  <path d="M-2.2 9.5 l0.2 1.5 l0.9 -0.1 z M-0.4 9.4 l0.3 1.4 l0.9 -0.1 z M1.5 9.5 l0.3 1.3 l0.8 -0.2 z" fill="#e8dcc0"/>
+  <path d="M-1.8 14.7 l0.4 -2 l0.9 1.3 z M1.8 14.7 l-0.4 -2 l-0.9 1.3 z" fill="#efe6cf"/>
+  <path d="M-6.2 8.8 Q-5.2 7.9 -4 8.4 M6.2 8.8 Q5.2 7.9 4 8.4" stroke="#601010" stroke-width="0.7" fill="none"/>
+  <path d="M-5.10 3 Q-3.4 1.47 -1.70 3 Q-3.4 4.19 -5.10 3 Z" fill="#ff7a18"/><circle cx="-3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M-5.10 0.62 L-1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/><path d="M1.70 3 Q3.4 1.47 5.10 3 Q3.4 4.19 1.70 3 Z" fill="#ff7a18"/><circle cx="3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M5.10 0.62 L1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
         "profile": "<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M6 9 Q9 8 11 9 Q10 15 6 15 Q3 14 6 9 Z" fill="#1a0a06"/>
-  <path d="M7 9.4 l0 3.4 M9.4 9.2 l0.3 3.2" stroke="#efe6cf" stroke-width="0.8"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.7" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
+  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M1.40 3 Q3 1.56 4.60 3 Q3 4.12 1.40 3 Z" fill="#ff7a18"/><circle cx="3" cy="3" r="0.51" fill="#fff2ae" opacity="0.9"/><path d="M4.60 0.76 L1.40 2.12" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
       },
     },
@@ -1784,17 +1886,21 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
         "front": "<g>
   <path d="M-8 1 Q-9 -10 0 -11 Q9 -10 8 1 Q8 7 5 9 L4 14 Q0 18 -4 14 L-5 9 Q-8 7 -8 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-8 -4 Q0 -7 8 -4 Q6 -2 0 -2.5 Q-6 -2 -8 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M-6 9 Q0 8 6 9 Q5 16 0 17 Q-5 16 -6 9 Z" fill="#1a0a06"/>
-  <path d="M-4.4 9.4 l-0.5 3 l1.2 0 z M-1.5 9.6 l0 3.6 M1.5 9.6 l0 3.6 M4.4 9.4 l0.5 3 l-1.2 0 z" fill="#efe6cf"/>
-  <path d="M-3 13.6 l0.4 2.4 M3 13.6 l-0.4 2.4" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="-3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="-3" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="3" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="3" r="0.85" fill="#160a04"/><circle cx="3.8" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M-5.6 9.2 Q0 8 5.6 9.2 Q5 14.6 0 15.4 Q-5 14.6 -5.6 9.2 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M-4.4 9.6 l-0.4 3.2 l1.4 -0.4 z M4.4 9.6 l0.4 3.2 l-1.4 -0.4 z" fill="#efe6cf"/>
+  <path d="M-2.2 9.5 l0.2 1.5 l0.9 -0.1 z M-0.4 9.4 l0.3 1.4 l0.9 -0.1 z M1.5 9.5 l0.3 1.3 l0.8 -0.2 z" fill="#e8dcc0"/>
+  <path d="M-1.8 14.7 l0.4 -2 l0.9 1.3 z M1.8 14.7 l-0.4 -2 l-0.9 1.3 z" fill="#efe6cf"/>
+  <path d="M-6.2 8.8 Q-5.2 7.9 -4 8.4 M6.2 8.8 Q5.2 7.9 4 8.4" stroke="#601010" stroke-width="0.7" fill="none"/>
+  <path d="M-5.10 3 Q-3.4 1.47 -1.70 3 Q-3.4 4.19 -5.10 3 Z" fill="#ff7a18"/><circle cx="-3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M-5.10 0.62 L-1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/><path d="M1.70 3 Q3.4 1.47 5.10 3 Q3.4 4.19 1.70 3 Z" fill="#ff7a18"/><circle cx="3.4" cy="3" r="0.54" fill="#fff2ae" opacity="0.9"/><path d="M5.10 0.62 L1.70 2.06" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
         "profile": "<g>
   <path d="M-7 1 Q-8 -10 1 -11 Q8 -10 8 -1 L11 1 Q12 6 9 8 L8 13 Q4 18 0 14 L-1 9 Q-7 7 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <path d="M-7 -4 Q1 -7 8 -3 Q6 -1 0 -2 Q-6 -2 -7 -4 Z" fill="#7a1f1c" opacity="0.85"/>
-  <path d="M6 9 Q9 8 11 9 Q10 15 6 15 Q3 14 6 9 Z" fill="#1a0a06"/>
-  <path d="M7 9.4 l0 3.4 M9.4 9.2 l0.3 3.2" stroke="#efe6cf" stroke-width="0.8"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.7" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <path d="M4.6 9.6 Q8 8.8 10.8 9.6 Q10 12.8 6.8 13.2 Q4.8 12.4 4.6 9.6 Z" fill="#2a0806" stroke="#160404" stroke-width="0.5"/>
+  <path d="M9.6 9.8 l0.5 3.4 l1.3 -0.7 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M5.6 9.8 l0.3 1.6 l0.9 -0.2 z M7.4 9.8 l0.3 1.5 l0.9 -0.2 z" fill="#e8dcc0"/>
+  <path d="M6.2 13 l0.4 -2 l1 1.3 z" fill="#efe6cf" stroke="#b8a888" stroke-width="0.3"/>
+  <path d="M1.40 3 Q3 1.56 4.60 3 Q3 4.12 1.40 3 Z" fill="#ff7a18"/><circle cx="3" cy="3" r="0.51" fill="#fff2ae" opacity="0.9"/><path d="M4.60 0.76 L1.40 2.12" stroke="#160a04" stroke-width="1" stroke-linecap="round"/>
 </g>",
       },
     },
@@ -1984,6 +2090,93 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M3 11 Q7 10.4 9 12 Q6.8 14 4 13.4 Z" fill="#26120e"/>
   <path d="M4 11.2 l0.4 1.9 M5.8 11 l0.5 2.1 M7.6 11.4 l0.4 1.7" stroke="#e6ddc4" stroke-width="0.6"/>
   <path d="M-6 -1 l-3.4 -3 l2.2 4.4 z" fill="@peau" stroke="@peauO" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
+  "horreur.back": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peauO"/>
+  <path d="M-5 -6 q2 3 0 7 M4 -7 q-1.6 3.4 0.4 6.6 M0 -10 q1 4 -0.5 8" stroke="@peau" stroke-width="0.6" fill="none" opacity="0.5"/>
+</g>",
+        "front": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4 Q7 12 3.5 14.5 Q0 16 -3.5 14.5 Q-7 12 -7.5 4 Z" fill="#1c0a14"/>
+  <path d="M-6.6 4.6 l-0.4 2.8 l1.5 -0.3 z M-3.8 3.6 l0 3.4 l1.6 -0.4 z M-0.6 3.3 l0.4 3.6 l1.5 -0.6 z M2.8 3.7 l0.8 3 l1.4 -0.8 z M5.6 4.7 l1 2.4 l0.8 -1.4 z" fill="#f2e8d4"/>
+  <path d="M-5 13.6 l1 -2.6 l1.2 2.2 z M-1.4 14.8 l1 -2.8 l1.3 2.4 z M2.4 14 l0.9 -2.4 l1.2 2 z" fill="#f2e8d4"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4" stroke="#0c0408" stroke-width="0.7" fill="none"/>
+  <ellipse cx="-3.6" cy="-4" rx="2" ry="2.2" fill="#fff" /><circle cx="-3.2" cy="-3.6" r="1" fill="#180a10"/>
+  <ellipse cx="3.4" cy="-5.4" rx="1.5" ry="1.7" fill="#fff"/><circle cx="3.7" cy="-5.2" r="0.75" fill="#180a10"/>
+  <path d="M-6 -7.6 q2 -1.6 4.4 -0.8 M1.6 -8.4 q1.8 -1 3.6 -0.2" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+        "profile": "<g>
+  <path d="M-7 1 Q-8 -8 -1 -10 Q4 -11 6 -8 L12 -4 Q15 -2 14 0 L4 2 Q9 3 13 6 Q15 8 13 10 L5 13 Q1 16 -3 13 Q-7 9 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M4 2 L14 0 Q15 4 13 6 Q9 3.4 4 2.6 Z" fill="#1c0a14"/>
+  <path d="M5.6 1.6 l0.6 -2 l1.2 1.7 z M8.6 1 l0.7 -1.8 l1.2 1.5 z M11.4 0.6 l0.7 -1.6 l1 1.3 z" fill="#f2e8d4"/>
+  <path d="M6 3 l0.5 2 l1.2 -1.5 z M9 3.8 l0.6 1.8 l1.1 -1.3 z" fill="#f2e8d4"/>
+  <ellipse cx="0" cy="-4.6" rx="1.9" ry="2.1" fill="#fff"/><circle cx="0.5" cy="-4.2" r="0.95" fill="#180a10"/>
+  <path d="M-2.6 -7.8 q2.2 -1.4 4.6 -0.6" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+      },
+    },
+  },
+  "horreur.front": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peauO"/>
+  <path d="M-5 -6 q2 3 0 7 M4 -7 q-1.6 3.4 0.4 6.6 M0 -10 q1 4 -0.5 8" stroke="@peau" stroke-width="0.6" fill="none" opacity="0.5"/>
+</g>",
+        "front": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4 Q7 12 3.5 14.5 Q0 16 -3.5 14.5 Q-7 12 -7.5 4 Z" fill="#1c0a14"/>
+  <path d="M-6.6 4.6 l-0.4 2.8 l1.5 -0.3 z M-3.8 3.6 l0 3.4 l1.6 -0.4 z M-0.6 3.3 l0.4 3.6 l1.5 -0.6 z M2.8 3.7 l0.8 3 l1.4 -0.8 z M5.6 4.7 l1 2.4 l0.8 -1.4 z" fill="#f2e8d4"/>
+  <path d="M-5 13.6 l1 -2.6 l1.2 2.2 z M-1.4 14.8 l1 -2.8 l1.3 2.4 z M2.4 14 l0.9 -2.4 l1.2 2 z" fill="#f2e8d4"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4" stroke="#0c0408" stroke-width="0.7" fill="none"/>
+  <ellipse cx="-3.6" cy="-4" rx="2" ry="2.2" fill="#fff" /><circle cx="-3.2" cy="-3.6" r="1" fill="#180a10"/>
+  <ellipse cx="3.4" cy="-5.4" rx="1.5" ry="1.7" fill="#fff"/><circle cx="3.7" cy="-5.2" r="0.75" fill="#180a10"/>
+  <path d="M-6 -7.6 q2 -1.6 4.4 -0.8 M1.6 -8.4 q1.8 -1 3.6 -0.2" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+        "profile": "<g>
+  <path d="M-7 1 Q-8 -8 -1 -10 Q4 -11 6 -8 L12 -4 Q15 -2 14 0 L4 2 Q9 3 13 6 Q15 8 13 10 L5 13 Q1 16 -3 13 Q-7 9 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M4 2 L14 0 Q15 4 13 6 Q9 3.4 4 2.6 Z" fill="#1c0a14"/>
+  <path d="M5.6 1.6 l0.6 -2 l1.2 1.7 z M8.6 1 l0.7 -1.8 l1.2 1.5 z M11.4 0.6 l0.7 -1.6 l1 1.3 z" fill="#f2e8d4"/>
+  <path d="M6 3 l0.5 2 l1.2 -1.5 z M9 3.8 l0.6 1.8 l1.1 -1.3 z" fill="#f2e8d4"/>
+  <ellipse cx="0" cy="-4.6" rx="1.9" ry="2.1" fill="#fff"/><circle cx="0.5" cy="-4.2" r="0.95" fill="#180a10"/>
+  <path d="M-2.6 -7.8 q2.2 -1.4 4.6 -0.6" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+      },
+    },
+  },
+  "horreur.profile": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peauO"/>
+  <path d="M-5 -6 q2 3 0 7 M4 -7 q-1.6 3.4 0.4 6.6 M0 -10 q1 4 -0.5 8" stroke="@peau" stroke-width="0.6" fill="none" opacity="0.5"/>
+</g>",
+        "front": "<g>
+  <path d="M-9 2 Q-10 -8 -3 -10 Q0 -12 3 -10 Q10 -8 9 2 Q9 10 5 14 Q0 17 -5 14 Q-9 10 -9 2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4 Q7 12 3.5 14.5 Q0 16 -3.5 14.5 Q-7 12 -7.5 4 Z" fill="#1c0a14"/>
+  <path d="M-6.6 4.6 l-0.4 2.8 l1.5 -0.3 z M-3.8 3.6 l0 3.4 l1.6 -0.4 z M-0.6 3.3 l0.4 3.6 l1.5 -0.6 z M2.8 3.7 l0.8 3 l1.4 -0.8 z M5.6 4.7 l1 2.4 l0.8 -1.4 z" fill="#f2e8d4"/>
+  <path d="M-5 13.6 l1 -2.6 l1.2 2.2 z M-1.4 14.8 l1 -2.8 l1.3 2.4 z M2.4 14 l0.9 -2.4 l1.2 2 z" fill="#f2e8d4"/>
+  <path d="M-7.5 4 Q0 0.5 7.5 4" stroke="#0c0408" stroke-width="0.7" fill="none"/>
+  <ellipse cx="-3.6" cy="-4" rx="2" ry="2.2" fill="#fff" /><circle cx="-3.2" cy="-3.6" r="1" fill="#180a10"/>
+  <ellipse cx="3.4" cy="-5.4" rx="1.5" ry="1.7" fill="#fff"/><circle cx="3.7" cy="-5.2" r="0.75" fill="#180a10"/>
+  <path d="M-6 -7.6 q2 -1.6 4.4 -0.8 M1.6 -8.4 q1.8 -1 3.6 -0.2" stroke="@peauO" stroke-width="0.7" fill="none"/>
+</g>",
+        "profile": "<g>
+  <path d="M-7 1 Q-8 -8 -1 -10 Q4 -11 6 -8 L12 -4 Q15 -2 14 0 L4 2 Q9 3 13 6 Q15 8 13 10 L5 13 Q1 16 -3 13 Q-7 9 -7 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M4 2 L14 0 Q15 4 13 6 Q9 3.4 4 2.6 Z" fill="#1c0a14"/>
+  <path d="M5.6 1.6 l0.6 -2 l1.2 1.7 z M8.6 1 l0.7 -1.8 l1.2 1.5 z M11.4 0.6 l0.7 -1.6 l1 1.3 z" fill="#f2e8d4"/>
+  <path d="M6 3 l0.5 2 l1.2 -1.5 z M9 3.8 l0.6 1.8 l1.1 -1.3 z" fill="#f2e8d4"/>
+  <ellipse cx="0" cy="-4.6" rx="1.9" ry="2.1" fill="#fff"/><circle cx="0.5" cy="-4.2" r="0.95" fill="#180a10"/>
+  <path d="M-2.6 -7.8 q2.2 -1.4 4.6 -0.6" stroke="@peauO" stroke-width="0.7" fill="none"/>
 </g>",
       },
     },
@@ -2522,14 +2715,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-9 -1 Q-10 -10 0 -11 Q10 -10 9 -1 Q9 8 4 12 L3 17 Q0 19 -3 17 L-4 12 Q-9 8 -9 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>
   <path d="M-6 6 Q0 4 6 6 Q7 12 3 16 Q0 18 -3 16 Q-7 12 -6 6 Z" fill="@peauH"/>
   <ellipse cx="-2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/><ellipse cx="2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/>
-  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="-3" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="3.8" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="-4.62" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="2.18" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -2 L-10 -7 Q-9 1 -3 3 Z" fill="@peauO"/>
   <path d="M-7 -1 Q-8 -10 2 -11 Q10 -10 10 -1 L14 3 Q15 10 11 16 L9 18 Q5 20 3 17 L2 12 Q-6 9 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M10 14 Q12 16 11 18 Q9 18 8 16 Z" fill="@peauH"/>
   <ellipse cx="11" cy="15.5" rx="1.2" ry="1.5" fill="#1a0e06"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#d8a226"/><rect x="1.85" y="2.49" width="2.30" height="1.02" rx="0.48" fill="#160a04"/>
 </g>",
       },
     },
@@ -2549,14 +2742,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-9 -1 Q-10 -10 0 -11 Q10 -10 9 -1 Q9 8 4 12 L3 17 Q0 19 -3 17 L-4 12 Q-9 8 -9 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>
   <path d="M-6 6 Q0 4 6 6 Q7 12 3 16 Q0 18 -3 16 Q-7 12 -6 6 Z" fill="@peauH"/>
   <ellipse cx="-2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/><ellipse cx="2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/>
-  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="-3" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="3.8" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="-4.62" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="2.18" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -2 L-10 -7 Q-9 1 -3 3 Z" fill="@peauO"/>
   <path d="M-7 -1 Q-8 -10 2 -11 Q10 -10 10 -1 L14 3 Q15 10 11 16 L9 18 Q5 20 3 17 L2 12 Q-6 9 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M10 14 Q12 16 11 18 Q9 18 8 16 Z" fill="@peauH"/>
   <ellipse cx="11" cy="15.5" rx="1.2" ry="1.5" fill="#1a0e06"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#d8a226"/><rect x="1.85" y="2.49" width="2.30" height="1.02" rx="0.48" fill="#160a04"/>
 </g>",
       },
     },
@@ -2576,14 +2769,14 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-9 -1 Q-10 -10 0 -11 Q10 -10 9 -1 Q9 8 4 12 L3 17 Q0 19 -3 17 L-4 12 Q-9 8 -9 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>
   <path d="M-6 6 Q0 4 6 6 Q7 12 3 16 Q0 18 -3 16 Q-7 12 -6 6 Z" fill="@peauH"/>
   <ellipse cx="-2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/><ellipse cx="2.6" cy="15" rx="1.3" ry="1.6" fill="#1a0e06"/>
-  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="-3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="-3" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#f2a81e"/><circle cx="3.4" cy="4" r="0.85" fill="#160a04"/><circle cx="3.8" cy="3.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="-4.62" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/><ellipse cx="3.4" cy="4" rx="1.7" ry="1.7" fill="#d8a226"/><rect x="2.18" y="3.46" width="2.45" height="1.09" rx="0.51" fill="#160a04"/>
 </g>",
         "profile": "<g>
   <path d="M-4 -2 L-10 -7 Q-9 1 -3 3 Z" fill="@peauO"/>
   <path d="M-7 -1 Q-8 -10 2 -11 Q10 -10 10 -1 L14 3 Q15 10 11 16 L9 18 Q5 20 3 17 L2 12 Q-6 9 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
   <path d="M10 14 Q12 16 11 18 Q9 18 8 16 Z" fill="@peauH"/>
   <ellipse cx="11" cy="15.5" rx="1.2" ry="1.5" fill="#1a0e06"/>
-  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#f2a81e"/><circle cx="3" cy="3" r="0.8" fill="#160a04"/><circle cx="3.4" cy="2.5" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="3" rx="1.6" ry="1.6" fill="#d8a226"/><rect x="1.85" y="2.49" width="2.30" height="1.02" rx="0.48" fill="#160a04"/>
 </g>",
       },
     },

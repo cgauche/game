@@ -12,7 +12,7 @@ import type { RigOverlay } from './bones';
 import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
 import { randomMutationOverlays } from './parts/mutations';
-import { EYE_OPTIONS } from './parts/eyes';
+import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
@@ -53,7 +53,7 @@ const ROLE_CAREERS: [RegExp, string][] = [
   [/flagellant|zelote|zealot|penitent|fanatique flagell/, 'Flagellant'],
   [/repurgateur|chasseur de sorcier|witch ?hunter/, 'Répurgateur'],
   [/sorcier|magister|necromancien|hierophante|mage|enchanteur|invocateur/, 'Sorcier'],
-  [/cultiste|sectateur|adepte|fanatique|illumine|hereux|heretique/, 'Sorcier'],
+  [/cultiste|sectateur|adepte|fanatique|illumine|hereux|heretique/, 'Cultiste'],
   [/pretre|prelat|moine|prieur|abbe|hierophante|sceur|soeur|nonne|clerc/, 'Nonne'],
   [/noble|courtisan|aristocrate|seigneur|baron|comte|dame|patricien|bourgeois/, 'Noble'],
   [/repurg/, 'Répurgateur'],
@@ -144,7 +144,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const sex: 'M' | 'F' = perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
   const autoMon = perso?.monster;
-  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit };
+  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
   // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
@@ -185,7 +185,7 @@ export function entityRigProfile(
   const appearance: Appearance = riggedAppearance(name, seed, {
     monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? perso?.parts ?? race.parts,
-    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes,
+    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes ?? perso?.eyes,
     gabarit: perso?.gabarit ?? d?.gabarit,
   });
   // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite

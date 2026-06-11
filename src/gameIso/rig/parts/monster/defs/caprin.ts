@@ -1,5 +1,5 @@
 import type { MonsterPartDef } from '../types';
-import { beastEye } from '../eyes';
+import { goatEye } from '../eyes';
 
 export const part: MonsterPartDef = {
   slot: 'tete',
@@ -15,7 +15,7 @@ export const part: MonsterPartDef = {
   <ellipse cx="0" cy="16.5" rx="1.6" ry="1.1" fill="#1a0e06"/>
   <path d="M-2.4 13 q2.4 1.3 4.8 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
   <path d="M-1.6 13.4 l-0.3 1.8 l0.9 0 z M1.6 13.4 l0.3 1.8 l-0.9 0 z" fill="#efe6cf"/>
-  ${beastEye(-3.2, 4, 1.6, 1.5)}${beastEye(3.2, 4, 1.6, 1.5)}
+  ${goatEye(-3.2, 4, 1.6, 1.5)}${goatEye(3.2, 4, 1.6, 1.5)}
 </g>`,
     back: `<g>
   <path d="M-9 -1 L-13 -7 Q-12 0 -7 2 Z" fill="@peauO"/><path d="M9 -1 L13 -7 Q12 0 7 2 Z" fill="@peauO"/>
@@ -27,7 +27,7 @@ export const part: MonsterPartDef = {
   <path d="M-6 1 Q-7 -8 1 -9 Q8 -8 8 0 L11 4 Q12 9 9 13 L7 17 Q4 19 2 17 L1 12 Q-4 11 -6 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
   <ellipse cx="9" cy="13" rx="1.4" ry="1" fill="#1a0e06"/>
   <path d="M5 13 q3 1.2 4 0" stroke="#160a04" stroke-width="0.7" fill="none"/>
-  ${beastEye(2, 3, 1.5, 1.5)}
+  ${goatEye(2, 3, 1.5, 1.5)}
 </g>`,
   },
 };

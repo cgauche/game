@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import { raceById } from './races';
+import { bipedDef } from './creatures';
+import { baseSpeciesOf } from './skeletons';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -81,8 +83,8 @@ describe('enemyRigProfile', () => {
       ['Orc noir', 'Orc', 'orc'],
       ['Gobelin de la nuit', 'Gobelin', 'gobelin'],
       ['Snotling', 'Snotling', 'gobelin'],
-      ['Gor sauvage', 'Homme-bête', 'caprin'],
-      ['Ungor fourrageur', 'Homme-bête', 'caprin'],
+      ['Gor sauvage', 'Gor', 'caprin'], // def dédié → race Homme-bête (tête caprine)
+      ['Ungor fourrageur', 'Ungor', 'caprin'],
       ['Minotaure', 'Minotaure', 'taureau'],
       ['Squelette guerrier', 'Squelette', 'crane'],
       ['Zombie', 'Zombie', 'pourri'],
@@ -94,7 +96,9 @@ describe('enemyRigProfile', () => {
     for (const [name, species, tete] of cases) {
       const p = enemyRigProfile(mkEnemy(name))!;
       expect(p.appearance.species, name).toBe(species);
-      expect(raceById(p.appearance.species).head, name).toBe(tete);
+      // Résolution de race du RENDU : le def peut imposer sa race (Gor → Homme-bête).
+      const race = raceById(bipedDef(p.appearance.species)?.race ?? baseSpeciesOf(p.appearance.species));
+      expect(race.head, name).toBe(tete);
     }
   });
 

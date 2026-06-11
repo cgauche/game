@@ -92,8 +92,8 @@ const ECAILLES_MAIN = g('ecailles-epineuses', scalesPatch(-2.6, 2.6, 0.4, 5.4, 1
 // EST la mutation — et reste le « tell » de silhouette du mutant. Le moignon monte à −16
 // pour dépasser des cheveux (le calque est DERRIÈRE la part de tête).
 const CORNES = g('cornes-asymetriques',
-  '<path d="M4 -2 Q11 -12 7 -26 Q2 -14 -1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/>'
-  + '<path d="M3 -5 Q9 -14 6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>'
+  '<path d="M4 -1.6 Q12 -7 12 -16 Q11.6 -23 6 -26 Q9.4 -21 8 -15.4 Q6.2 -8.6 -1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/>'
+  + '<path d="M6 -8 q2.4 -1 3.4 -2.8 M8.4 -13.6 q2 -0.8 2.6 -2.4 M9 -19 q1.6 -0.6 2 -2" fill="none" stroke="#7a5a3a" stroke-width="0.6"/>'
   + '<path d="M-5 -2 Q-9 -8 -6.6 -16 Q-9.6 -12 -8.6 -6 Q-7.6 -1.6 -3 -0.6 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.7"/>');
 // Suintement de pus MULTI-SITES sur la PEAU VISIBLE (la note RAW tire une Localisation
 // au hasard, elle ne perce pas les vêtements) : tempe + menton + dos de main, chacun

@@ -45,7 +45,14 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
       ['Elfe', 'Haut-Elfe'], // générique → Haut-Elfe
       ['Nain mercenaire', 'Nain'],
       ['Minotaure', 'Minotaure'], // AVANT homme-bête
-      ['Gor sauvage', 'Homme-bête'],
+      ['Gor sauvage', 'Gor'], // def dédié (grandes cornes)
+      ['Ungor', 'Ungor'], // « ungor » ne déclenche PAS \bgor\b (pas de limite de mot)
+      ['Chamane-Brey', 'Chamane-Brey'],
+      ['Homme-bête', 'Homme-bête'],
+      ['Furie du Chaos', 'Furie du Chaos'],
+      ['Horreur rose', 'Horreur rose'],
+      ['Horreur bleue', 'Horreur bleue'],
+      ['Horreur de Tzeentch', 'Horreur rose'], // « horreur » nu → rose (les plus courantes)
       ['Petit gobelin', 'Gobelin'],
       ['Snotling', 'Snotling'],
       ['Goule de crypte', 'Goule'],

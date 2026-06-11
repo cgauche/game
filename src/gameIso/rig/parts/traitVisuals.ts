@@ -16,6 +16,7 @@ import { pickView } from './types';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
 import { dorsalOverlays } from './dorsal';
 import { raceById } from '../races';
+import { bipedDef } from '../creatures';
 import { baseSpeciesOf } from '../skeletons';
 
 const CORNES = `<g data-trait="cornes">${OV_CORNES}</g>`;
@@ -38,20 +39,26 @@ const TENTACULE_BRAS = `<g data-trait="tentacules">${pickView(ARMS['tentacule'],
 export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   const traits = c.traits ?? [];
   if (!traits.length) return [];
-  const race = raceById(baseSpeciesOf(c.species ?? 'Humain'));
-  const raceHasBehind = (bone: BoneId) => (race.features ?? []).some((f) => f.bone === bone && (f.layer ?? 50) < 0);
+  const d = bipedDef(c.species ?? 'Humain');
+  const race = raceById(d?.race ?? baseSpeciesOf(c.species ?? 'Humain'));
+  // La race OU le def créature (perso.features additifs : cornes du Gor/Prophète gris…)
+  // peuvent déjà fournir l'appendice — dans les deux cas le trait ne double pas.
+  const behindFeats = [...(race.features ?? []), ...(d?.perso?.features ?? [])];
+  const hasBehind = (bone: BoneId) => behindFeats.some((f) => f.bone === bone && (f.layer ?? 50) < 0);
   const has = (re: RegExp) => traits.some((t) => re.test(t.trim()));
   const out: RigOverlay[] = [];
-  if (has(/^cornes?\b/i) && !raceHasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
+  if (has(/^cornes?\b/i) && !hasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
   // Queue et ailes = appendices DORSAUX : règles de vue/profondeur codifiées par dorsalOverlays.
-  if (has(/^attaque caudale\b/i) && !raceHasBehind('bassin')) {
+  if (has(/^attaque caudale\b/i) && !hasBehind('bassin')) {
     out.push(...dorsalOverlays('bassin', { front: QUEUE, back: QUEUE, profile: QUEUE_PROFILE }));
   }
   if (has(/^(\d+\s+)?tentacules?\b/i)) {
     out.push({ bone: 'epauleG', svg: TENTACULE_BRAS, replace: true });
     out.push({ bone: 'mainG', svg: '', replace: true });
   }
-  if (has(/^vol\b/i)) {
+  // Vol : sauté si la créature porte déjà des ailes monstrueuses (Furie : ailes de cuir).
+  const monsterWings = !!(c.appearance?.monster?.ailes ?? d?.perso?.monster?.ailes);
+  if (has(/^vol\b/i) && !monsterWings) {
     out.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }));
   }
   return out;

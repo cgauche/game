@@ -38,6 +38,8 @@ export interface CreaturePerso {
   /** Traits cosmétiques ADDITIFS par-dessus la race (cornes du Prophète gris…) — contrairement
    *  à `monster` qui REMPLACE toute la structure de race (tête/membres/features). */
   features?: RaceFeature[];
+  /** Yeux remplacés sur l'orbite du visage (CLÉS du catalogue EYE_OPTIONS : noir, chat, rouge…). */
+  eyes?: { G?: string; D?: string };
 }
 
 export interface CreatureDef {

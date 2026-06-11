@@ -11,7 +11,7 @@
 import type { BoneId, RigOverlay } from '../bones';
 import type { PartArt } from './types';
 import { HEADS, ARMS, LEGS } from './monster';
-import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
+import { AILES_FRONT, AILES_BACK, AILES_PROFILE, AILES_CUIR_FRONT, AILES_CUIR_BACK, AILES_CUIR_PROFILE } from './wings';
 import { dorsalOverlays } from './dorsal';
 
 /** Sélection monstrueuse par slot (sur Appearance.monster). Tout est optionnel.
@@ -29,17 +29,37 @@ export interface MonsterParts {
   plaie?: boolean; // plaie de chair exposée (zombie)
   cape?: boolean; // col de cape dressé en éventail + crocs (vampire)
   membresRouges?: boolean; // bras/jambes rouge sang + stries au torse (démon bicolore)
-  ailes?: boolean; // ailes emplumées repliées dans le dos (plan dédié — harpie, démon ailé)
+  /** ailes repliées dans le dos — true = emplumées (harpie) ; 'cuir' = membrane (furie, démon). */
+  ailes?: boolean | 'cuir';
 }
 
 // --- Calques (overlays) ----------------------------------------------------
 export const OV_CORNES = `<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>`;
 // Grandes cornes ivoire de chèvre balayées vers l'arrière (Gor/Ungor/Chamane).
 export const OV_CORNES_CAPRIN = `<path d="M-6 -4 Q-12 -10 -10 -20 Q-7 -13 -3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/><path d="M6 -4 Q12 -10 10 -20 Q7 -13 3 -7 Z" fill="#e8e0c8" stroke="#3a3026" stroke-width="0.5"/>`;
+
+// GRANDE paire de cornes du Gor (LDB 83 : « les plus grandes sont les meilleures » — statut) :
+// larges croissants annelés qui s'évasent puis se recourbent vers l'avant, base épaisse.
+export const OV_CORNES_GOR =
+  `<path d="M-5 -3 Q-15 -8 -18 -19 Q-19 -28 -12 -33 Q-16 -26 -13 -19 Q-10 -11 -2 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
+  + `<path d="M-14 -14 q-2.5 -1.4 -3.4 -3.4 M-16 -20 q-2 -1.2 -2.6 -3 M-15.5 -26 q-1.8 -0.8 -2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`
+  + `<path d="M5 -3 Q15 -8 18 -19 Q19 -28 12 -33 Q16 -26 13 -19 Q10 -11 2 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.6"/>`
+  + `<path d="M14 -14 q2.5 -1.4 3.4 -3.4 M16 -20 q2 -1.2 2.6 -3 M15.5 -26 q1.8 -0.8 2.3 -2.4" stroke="#8a7a5c" stroke-width="0.7" fill="none"/>`;
+
+// Cornes VESTIGIALES de l'ungor (LDB 83 : « cornes vestigiales ou très courtes ») : moignons.
+export const OV_CORNES_VESTIGIALES =
+  `<path d="M-5.5 -6 Q-7.5 -9 -6.5 -12 Q-4.5 -9.5 -3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`
+  + `<path d="M5.5 -6 Q7.5 -9 6.5 -12 Q4.5 -9.5 3.5 -7 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>`;
 // Grandes cornes bovines crème en V (Minotaure/Taureau) — plus écartées.
 export const OV_CORNES_TAUREAU = `<path d="M-7 -5 Q-16 -10 -16 -22 Q-11 -15 -4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/><path d="M7 -5 Q16 -10 16 -22 Q11 -15 4 -8 Z" fill="#dcd2b4" stroke="#3a3026" stroke-width="0.6"/>`;
 // Longues cornes noires lisses recourbées vers l'arrière (démon de Khorne).
-export const OV_CORNES_DEMON = `<path d="M-5 -6 Q-13 -12 -10 -26 Q-6 -16 -3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/><path d="M5 -6 Q13 -12 10 -26 Q6 -16 3 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.4"/>`;
+// Cornes de SANGUINAIRE (LDB 84 : « monstrueux visage cornu ») : croissants noirs épais qui
+// s'évasent sur les côtés puis se RECOURBENT vers l'avant — plus d'oreilles de lapin droites.
+export const OV_CORNES_DEMON =
+  `<path d="M-4 -7 Q-13 -9 -16 -17 Q-18 -25 -12 -30 Q-9 -32 -6 -31 Q-11 -28 -12 -23 Q-12 -16 -8 -12 Q-6 -10 -2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
+  + `<path d="M-13 -16 q-1.8 -1.2 -2.4 -3 M-13.5 -22 q-1.4 -1 -1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/>`
+  + `<path d="M4 -7 Q13 -9 16 -17 Q18 -25 12 -30 Q9 -32 6 -31 Q11 -28 12 -23 Q12 -16 8 -12 Q6 -10 2 -9 Z" fill="#1a1410" stroke="#000" stroke-width="0.5"/>`
+  + `<path d="M13 -16 q1.8 -1.2 2.4 -3 M13.5 -22 q1.4 -1 1.6 -2.6" stroke="#3a3026" stroke-width="0.6" fill="none"/>`;
 export const OV_QUEUE = `<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`;
 // Queue de RAT (skaven) — longue, NUE, ROSE, en S, traînant au sol : c'est LE tell de
 // silhouette du skaven (sans elle il lit comme un nain trapu brun). Repère os `bassin`.
@@ -89,8 +109,10 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   const armD = m.brasD ? ARMS[m.brasD] : undefined;
   const legs = m.jambes ? LEGS[m.jambes] : undefined;
   if (head) replace.tete = head;
-  if (armG) replace.epauleG = armG;
-  if (armD) replace.epauleD = armD;
+  // Un bras monstrueux (pince, tentacule) intègre sa propre extrémité : on EFFACE le poing
+  // générique de ce côté (sinon il flotte au milieu de la pince).
+  if (armG) { replace.epauleG = armG; replace.mainG = ''; }
+  if (armD) { replace.epauleD = armD; replace.mainD = ''; }
   if (legs) { replace.cuisseG = legs; replace.cuisseD = legs; } // 2 jambes (symétrique)
   // Cornes : la FORME suit la tête (caprine ivoire / bovine en V / démon noir),
   // sinon les cornes de mutant génériques. Dessinées DERRIÈRE la tête (layer bas).
@@ -120,7 +142,10 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   // Ailes : appendice DORSAL (règles de vue/profondeur codifiées par dorsalOverlays) —
   // monsterInjection composant PAR vue, on ne garde que le calque de la vue courante.
   if (m.ailes) {
-    overlays.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }).filter((o) => !o.view || o.view === view));
+    const set = m.ailes === 'cuir'
+      ? { front: AILES_CUIR_FRONT, back: AILES_CUIR_BACK, profile: AILES_CUIR_PROFILE }
+      : { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE };
+    overlays.push(...dorsalOverlays('torse', set).filter((o) => !o.view || o.view === view));
   }
   return { replace, overlays };
 }
