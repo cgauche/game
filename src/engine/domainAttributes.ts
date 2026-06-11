@@ -95,7 +95,6 @@ export function domainOnHitRiders(
   target: Combatant,
   spell: { type?: string; subType?: string | null },
   hostile: boolean,
-  rng: RNG = defaultRNG,
 ): string[] {
   const dom = domainOf(spell);
   if (!dom) return [];

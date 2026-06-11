@@ -2930,7 +2930,7 @@ export function applyCast(
   // Attributs de Domaine (LDB 48 — L14) : riders post-lancement d'un Sort « issu du Domaine ».
   if (res.cast) {
     for (const t of [target, ...extraTargets]) {
-      logLines.push(...domainOnHitRiders(caster, t, spell, t.kind !== caster.kind, battleRng()));
+      logLines.push(...domainOnHitRiders(caster, t, spell, t.kind !== caster.kind));
     }
     // Cieux (l.87) : le Sort « se dirige vers toutes les autres cibles dans les 2 mètres » de la
     // cible (sauf Magie des Arcanes (Cieux)) — BFM Dégâts, mitigés BE + PA (PA métal ignorées).

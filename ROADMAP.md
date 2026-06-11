@@ -977,7 +977,8 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   projectile + halo de canalisation du lanceur + aura de bénédiction tintés ; sorts de soutien animés ;
   vérifié navigateur) ; proportions Mutant homme-chien/tentacule perfectibles ; **UI d'override cosmétique**
   dans l'éditeur (slot-picker + 🎲 seed) ; **galeries QC** (rig/anim/armes/bestiaire) à finaliser et committer.
-- Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI** (tests+build ; lint à venir).
+- Sons & musique, accessibilité ; ✅ **code-splitting** (éditeur/rendu lazy) ; ✅ **CI complet**
+  (build:data → typecheck → **ESLint** → tests → build — le lint y est depuis `ci.yml` ; base 0 erreur).
 
 ---
 
