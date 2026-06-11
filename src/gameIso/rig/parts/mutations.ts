@@ -13,8 +13,7 @@ import type { Mutation } from '../../../engine/corruption';
 import type { RigOverlay } from '../bones';
 import type { Appearance } from '../appearance';
 import { norm } from '../../../lib/normalize';
-import { OV_PLAIE } from './monstrous';
-import { ARMS } from './monster';
+import { ARMS, LEGS } from './monster';
 import { pickView } from './types';
 import { plumeFan, scalesPatch } from './textures';
 
@@ -24,35 +23,48 @@ export const mutKey = (s: string): string => norm(s).replace(/[’']/g, "'");
 const g = (slug: string, svg: string) => `<g data-mut="${slug}">${svg}</g>`;
 
 // --- Art ---------------------------------------------------------------------
-// Sabot fendu couvrant TOUT le pied (talon → pointe, sinon le bout de la botte dépasse),
-// liseré clair en haut pour rester lisible sur des bottes sombres ; fente vers la pointe + ergot.
-const SABOT = g('pattes-danimaux',
-  '<path d="M-3.8 0.6 Q2 -1.6 8.8 2.4 L9.6 7.4 L5 7.4 L4.6 4 L3.6 4 L4 7.4 L-3.2 7.4 Z" fill="#5a4028" stroke="#241a10" stroke-width="0.6"/>'
-  + '<path d="M-2.6 0.8 Q2 -0.8 8 2.6" stroke="#8a6a48" stroke-width="0.8" fill="none" opacity="0.9"/>'
-  + '<path d="M-3.4 1.6 q-1.6 0.4 -2 2.2" stroke="#241a10" stroke-width="1.2" fill="none" stroke-linecap="round"/>');
-// Doigts trop longs couleur chair, bouts assombris — chair étirée, pas des serres.
+// Pattes d'animaux : les JAMBES sont REMPLACÉES par les pattes de chèvre du registre
+// monster/ (couleur de peau du perso via @peau, sabot inclus) et les bottes effacées —
+// le traitement « membre muté » du tentacule, appliqué aux jambes (comme un Gor).
+const PATTES = g('pattes-danimaux', pickView(LEGS['chevre'], 'front'));
+// Doigts trop longs couleur chair, ANCRÉS dans la paume (ils partent de l'intérieur du
+// poing, pas en dessous) — chair étirée, pas des serres.
 const DOIGTS = g('doigts-distendus',
-  '<path d="M-2.6 3 q-0.7 4.4 -0.4 8.6 M-0.9 3.8 q-0.2 4.6 0 8.6 M0.9 3.8 q0.2 4.6 0 8.6 M2.6 3 q0.7 4.4 0.4 8.6" stroke="@peau" stroke-width="1.25" fill="none" stroke-linecap="round"/>'
-  + '<path d="M-3 10.4 q-0.1 1.2 0.1 2 M-0.9 11.4 q0 1 0.1 1.8 M0.9 11.4 q0 1 -0.1 1.8 M3 10.4 q0.1 1.2 -0.1 2" stroke="@peauO" stroke-width="1.05" fill="none" stroke-linecap="round"/>');
-// Œil unique disproportionné côté gauche du visage (sclère ivoire, iris injecté).
+  '<path d="M-1.6 1.2 Q-2.6 2.4 -2.6 4 L-2.5 5 M1.6 1.2 Q2.6 2.4 2.6 4 L2.5 5" stroke="@peau" stroke-width="1.6" fill="none" stroke-linecap="round"/>'
+  + '<path d="M-2.5 4.4 q-0.7 3.6 -0.4 7.2 M-0.85 2 q-0.2 5 0 9 M0.85 2 q0.2 5 0 9 M2.5 4.4 q0.7 3.6 0.4 7.2" stroke="@peau" stroke-width="1.25" fill="none" stroke-linecap="round"/>'
+  + '<path d="M-2.9 10.2 q-0.1 1.2 0.1 2 M-0.85 10.6 q0 1 0.1 1.8 M0.85 10.6 q0 1 -0.1 1.8 M2.9 10.2 q0.1 1.2 -0.1 2" stroke="@peauO" stroke-width="1.05" fill="none" stroke-linecap="round"/>');
+// Œil unique disproportionné côté gauche du visage : il ÉVINCE l'œil normal — sclère
+// ivoire veinée de sang, iris injecté, paupière distendue.
 const OEIL = g('oeil-enorme',
-  '<ellipse cx="-3" cy="6" rx="4.2" ry="3.4" fill="#e0d8b0" stroke="#3a2820" stroke-width="0.7"/>'
+  '<ellipse cx="-3" cy="6" rx="4.4" ry="3.6" fill="#e0d8b0" stroke="#3a2820" stroke-width="0.7"/>'
+  + '<path d="M-6.6 4.6 q1.4 0.6 2.2 1.6 M-5.8 8.2 q1.2 -0.4 1.8 -1.2 M-0.2 3.4 q-0.8 1 -1.4 1.6 M0.6 7.6 q-1.2 -0.2 -2 -0.8" stroke="#b03a2e" stroke-width="0.35" fill="none" opacity="0.8"/>'
   + '<ellipse cx="-3" cy="6" rx="2.4" ry="2.2" fill="#7a1010"/><circle cx="-3" cy="6" r="1.1" fill="#0a0808"/>'
-  + '<circle cx="-2.2" cy="5.2" r="0.5" fill="#ffffff" opacity="0.6"/>');
+  + '<circle cx="-2.2" cy="5.2" r="0.5" fill="#ffffff" opacity="0.6"/>'
+  + '<path d="M-7.2 3.6 Q-3 1.6 1 3.4" stroke="@peauO" stroke-width="0.8" fill="none"/>');
 // Renflement articulaire + plis anguleux à mi-tibia.
 const ARTICULATION = g('articulation-jambes',
   '<ellipse cx="0" cy="10" rx="2.6" ry="2" fill="@peau" stroke="@peauO" stroke-width="0.6"/>'
   + '<path d="M-2.1 8.7 q2.1 1.3 4.2 0 M-2.1 11.3 q2.1 -1.3 4.2 0" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.7"/>');
-// Bouche de travers sur le pectoral, dents triangulaires ivoire.
+// Bouche parasite béante SUR LA PEAU VISIBLE — en travers du front (le RAW tire une
+// Localisation au hasard mais ne fait pas surgir la bouche À TRAVERS les vêtements) :
+// lèvres charnues, dents sur les deux mâchoires, langue, filet de bave.
 const BOUCHE = g('bouche-supplementaire',
-  '<path d="M0.5 -8.5 Q3 -10.2 5.5 -8 Q3.2 -6.2 0.5 -8.5 Z" fill="#6a1414" stroke="#3a0c0c" stroke-width="0.5"/>'
-  + '<path d="M1.4 -8.4 l0.8 1 l0.7 -1.2 l0.8 1 l0.7 -1.2 l0.7 0.9" stroke="#f4ecd8" stroke-width="0.7" fill="none"/>');
+  '<g transform="rotate(-9 0 1)">'
+  + '<path d="M-3.2 0.8 Q0 -1.4 3.2 1 Q0.2 3.4 -3.2 0.8 Z" fill="#5a1010" stroke="#2e0808" stroke-width="0.5"/>'
+  + '<path d="M-0.8 2 Q0.4 2.6 1.6 1.9 Q0.6 2.9 -0.8 2 Z" fill="#b04a4a"/>'
+  + '<path d="M-2.4 0.4 l0.7 0.9 l0.6 -1 l0.7 0.9 l0.6 -1 l0.7 0.9 l0.6 -0.9" stroke="#f4ecd8" stroke-width="0.6" fill="none"/>'
+  + '<path d="M-1.6 2.1 l0.6 -0.8 l0.6 0.9 l0.6 -0.8 l0.6 0.8" stroke="#e8dcc0" stroke-width="0.55" fill="none"/>'
+  + '<path d="M2.8 1.6 q0.4 1.6 -0.1 3" stroke="#c8d0b0" stroke-width="0.45" fill="none" opacity="0.8"/>'
+  + '</g>');
 // Tentacule épais : REMPLACE le bras gauche (part monstrueuse du registre monster/, couleur
 // de peau du personnage via @peau) et efface le poing — un membre muté, pas un appendice posé.
 const TENTACULE = g('tentacule-epais', pickView(ARMS['tentacule'], 'front'));
-// Éclats spéculaires (lumière de bougie) — accompagne la peau recolorée corps entier.
-const LUSTRE = g('peau-brillante',
-  '<path d="M-4 -14 q2 -2 4 -1 M3 -4 q1.6 1.4 1.2 3.4 M-5 4 q1.4 1.2 3 1.4" stroke="#ffffff" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>');
+// Éclats spéculaires (lumière de bougie) sur la PEAU VISIBLE : front/pommette + dos de
+// main — accompagne la peau recolorée corps entier (pas d'éclat sur les vêtements).
+const LUSTRE_VISAGE = g('peau-brillante',
+  '<path d="M-4.6 1.6 q1.8 -1.6 4 -1.2 M3.2 4.6 q1.2 1 1 2.6" stroke="#ffffff" stroke-width="0.9" fill="none" opacity="0.6" stroke-linecap="round"/>');
+const LUSTRE_MAIN = g('peau-brillante',
+  '<path d="M-1.6 1.2 q1.4 -0.9 3 -0.4" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.6" stroke-linecap="round"/>');
 // Halo doré diffus derrière la tête.
 const HALO = g('beaute-surnaturelle',
   '<circle cx="0" cy="5" r="13" fill="#e8c860" opacity="0.3"/>'
@@ -88,11 +100,17 @@ const CORNES = g('cornes-asymetriques',
   '<path d="M4 -2 Q11 -12 7 -26 Q2 -14 -1 -4 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.8"/>'
   + '<path d="M3 -5 Q9 -14 6 -22" fill="none" stroke="#7a5a3a" stroke-width="0.5" opacity="0.6"/>'
   + '<path d="M-5 -2 Q-9 -8 -6.6 -16 Q-9.6 -12 -8.6 -6 Q-7.6 -1.6 -3 -0.6 Z" fill="#c8a880" stroke="#4a3826" stroke-width="0.7"/>');
-// Plaie exposée (réutilise l'art zombie) + coulures de pus jaune-vert.
-const PUS = g('suintement-de-pus',
-  OV_PLAIE
-  + '<path d="M-3 -7 q-0.4 3 0.2 5.6 M-1 -6.6 q0 2.6 0.6 4.6" stroke="#b8b34a" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.9"/>'
-  + '<circle cx="-2.8" cy="-0.8" r="0.7" fill="#b8b34a"/>');
+// Suintement de pus MULTI-SITES sur la PEAU VISIBLE (la note RAW tire une Localisation
+// au hasard, elle ne perce pas les vêtements) : tempe + menton + dos de main, chacun
+// avec ses coulures jaune-vert.
+const PUS_TETE = g('suintement-de-pus',
+  '<ellipse cx="5" cy="2.6" rx="1.6" ry="2" fill="#7a1010"/><ellipse cx="5" cy="2.6" rx="0.8" ry="1.2" fill="#b03a2e"/>'
+  + '<path d="M5.4 4.2 q0.3 2.2 -0.2 4" stroke="#b8b34a" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.9"/>'
+  + '<circle cx="-3.4" cy="12.6" r="1.1" fill="#7a1010"/><circle cx="-3.4" cy="12.6" r="0.55" fill="#b03a2e"/>'
+  + '<path d="M-3.2 13.6 q0.2 1.8 -0.2 3.2" stroke="#b8b34a" stroke-width="0.6" fill="none" stroke-linecap="round" opacity="0.9"/>');
+const PUS_MAIN = g('suintement-de-pus',
+  '<ellipse cx="0.4" cy="2.2" rx="1.4" ry="1.7" fill="#7a1010"/><ellipse cx="0.4" cy="2.2" rx="0.7" ry="1" fill="#b03a2e"/>'
+  + '<path d="M0 3.6 q-0.2 2 0.3 3.6 M1.2 3.4 q0.3 1.6 0 3" stroke="#b8b34a" stroke-width="0.65" fill="none" stroke-linecap="round" opacity="0.9"/>');
 // Groin porcin rose, naseaux sombres, poils raides autour.
 const GROIN = g('groin-poilu',
   '<ellipse cx="0" cy="8.5" rx="4" ry="3" fill="#d39a8e" stroke="#9a6a60" stroke-width="0.6"/>'
@@ -116,15 +134,29 @@ export interface MutationVisual {
 
 /** Clé = `mutKey(label)` des entrées de `src/data/mutations.ts` (table physique). */
 export const MUTATION_VISUALS: Record<string, MutationVisual | null> = {
-  [mutKey('Pattes d’animaux')]: { overlays: [{ bone: 'piedG', svg: SABOT }, { bone: 'piedD', svg: SABOT }] },
+  [mutKey('Pattes d’animaux')]: {
+    overlays: [
+      { bone: 'cuisseG', svg: PATTES, replace: true },
+      { bone: 'cuisseD', svg: PATTES, replace: true },
+      { bone: 'piedG', svg: '', replace: true }, // le sabot est dans la patte — bottes effacées
+      { bone: 'piedD', svg: '', replace: true },
+    ],
+  },
   [mutKey('Corpulent')]: { build: 0.2 },
   [mutKey('Doigts distendus')]: { overlays: [{ bone: 'mainG', svg: DOIGTS }, { bone: 'mainD', svg: DOIGTS }] },
   [mutKey('Émacié')]: { build: -0.2 },
   [mutKey('Œil énorme')]: { overlays: [{ bone: 'tete', svg: OEIL, view: 'front' }] },
   [mutKey('Articulation supplémentaire aux jambes')]: { overlays: [{ bone: 'tibiaG', svg: ARTICULATION }, { bone: 'tibiaD', svg: ARTICULATION }] },
-  [mutKey('Bouche supplémentaire')]: { overlays: [{ bone: 'torse', svg: BOUCHE, view: 'front' }] },
+  [mutKey('Bouche supplémentaire')]: { overlays: [{ bone: 'tete', svg: BOUCHE, view: 'front' }] },
   [mutKey('Tentacule épais')]: { overlays: [{ bone: 'epauleG', svg: TENTACULE, replace: true }, { bone: 'mainG', svg: '', replace: true }] },
-  [mutKey('Peau brillante')]: { skin: '#f0d8a8', overlays: [{ bone: 'torse', svg: LUSTRE }] },
+  [mutKey('Peau brillante')]: {
+    skin: '#f0d8a8',
+    overlays: [
+      { bone: 'tete', svg: LUSTRE_VISAGE, view: 'front' },
+      { bone: 'mainG', svg: LUSTRE_MAIN },
+      { bone: 'mainD', svg: LUSTRE_MAIN },
+    ],
+  },
   [mutKey('Beauté surnaturelle')]: { overlays: [{ bone: 'tete', svg: HALO, behind: true }] },
   [mutKey('Visage inversé')]: { faceFlip: true },
   [mutKey('Peau d’acier')]: { skin: '#8a93a0' },
@@ -148,7 +180,12 @@ export const MUTATION_VISUALS: Record<string, MutationVisual | null> = {
     ],
   },
   [mutKey('Cornes asymétriques')]: { overlays: [{ bone: 'tete', svg: CORNES, behind: true }] },
-  [mutKey('Suintement de pus')]: { overlays: [{ bone: 'torse', svg: PUS }] },
+  [mutKey('Suintement de pus')]: {
+    overlays: [
+      { bone: 'tete', svg: PUS_TETE, view: 'front' },
+      { bone: 'mainD', svg: PUS_MAIN },
+    ],
+  },
   [mutKey('Groin poilu')]: { overlays: [{ bone: 'tete', svg: GROIN, view: 'front' }] },
   [mutKey('Choix du MJ')]: null,
 };
