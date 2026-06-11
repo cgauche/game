@@ -31,8 +31,10 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const equip = prof?.equip ?? equipFromCombatant(rider);
   const career = prof?.career ?? rider.career;
   const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(rider)];
-  // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id).
-  const riderA = useRigAnim({ id: rider.id, equip, facing: undefined, pos: mount.pos });
+  // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id) —
+  // en mode ASSIS : clips MONTÉS (lance couchée, taille à cheval), gestes sans bassin/jambes,
+  // pas de clip de marche (la monture marche pour deux).
+  const riderA = useRigAnim({ id: rider.id, equip, facing: undefined, pos: mount.pos, seated: true });
 
   if (!mountA.plan) return null; // monture sans gabarit (improbable) — rien à composer
 

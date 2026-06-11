@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { weaponRest, weaponAttackClip, weaponParryClip, isRangedFamily } from './weaponClips';
-import { clipDuration } from './clips';
+import { weaponRest, weaponAttackClip, weaponParryClip, mountedAttackClip, mountedParryClip, seatedClip, isRangedFamily } from './weaponClips';
+import { clipDuration, CLIPS } from './clips';
 import type { Weapon } from '../../../engine/types';
 
 // Libellés CANONIQUES → résolus par la FORME (handlingClass), pas par le Groupe de règles.
@@ -93,6 +93,58 @@ describe('weaponParryClip — garde adaptée à la classe', () => {
   it('un tireur (Arc) esquive au lieu de parer', () => {
     const p = weaponParryClip(w('Arc long', 'ranged'), false).steps[0].pose as Record<string, number>;
     expect(p.bassin).toBeDefined();
+  });
+});
+
+describe('clips MONTÉS — gestes en selle (deltas sur mountedRest, jamais bassin/jambes)', () => {
+  const SEATED_LOCKED = /^(bassin|cuisse|tibia|pied)/;
+  const touchesSeat = (clip: ReturnType<typeof mountedAttackClip>) =>
+    clip.steps.some((s) => Object.keys(s.pose).some((k) => SEATED_LOCKED.test(k)));
+
+  it('aucun clip d’attaque monté ne touche le bassin ni les jambes (dédiés ET replis assis)', () => {
+    for (const n of ['Lance de cavalerie', 'Dague', 'Rapière', 'Grande hache', 'Hallebarde', 'Fouet', 'Javelot', 'Fléau']) {
+      expect(touchesSeat(mountedAttackClip(w(n))), n).toBe(false);
+    }
+    for (const n of ['Arc long', 'Arbalète', 'Pistolet']) {
+      expect(touchesSeat(mountedAttackClip(w(n, 'ranged'))), n).toBe(false);
+    }
+  });
+
+  // Angle MONDE de l'arme (delta) = arme + epauleD + avantBrasD — l'os `arme` suit la main.
+  const worldArme = (p: Record<string, number>) => (p.arme ?? 0) + (p.epauleD ?? 0) + (p.avantBrasD ?? 0);
+
+  it('charge lance couchée ≠ clip à pied : l’épaule projette mais la lance RESTE en arrêt (angle monde quasi constant)', () => {
+    const lance = w('Lance de cavalerie');
+    const monte = mountedAttackClip(lance);
+    expect(monte).not.toEqual(weaponAttackClip(lance)); // le clip à pied abaisse la lance (arme +125)
+    expect(monte.steps.every((s) => Math.abs(worldArme(s.pose as Record<string, number>)) <= 12)).toBe(true);
+    // l'épaule PROJETTE le poing en AVANT (profil natif : négatif = avant, sonde FK).
+    expect(monte.steps.some((s) => ((s.pose as Record<string, number>).epauleD ?? 0) <= -20)).toBe(true);
+  });
+
+  it('taille à cheval (1 main) : la pointe BALAIE un grand arc monde (armé arrière → fauche avant)', () => {
+    const worlds = mountedAttackClip(w('Dague')).steps.map((s) => worldArme(s.pose as Record<string, number>));
+    expect(Math.max(...worlds) - Math.min(...worlds)).toBeGreaterThanOrEqual(100);
+    expect(Math.max(...worlds)).toBeLessThanOrEqual(140); // jamais pointe vers l’ARRIÈRE (> 180 monde)
+  });
+
+  it('le geste monté se joue sur le bras qui tient l’arme : tentacule → miroir gauche', () => {
+    const t = mountedAttackClip(w('Tentacule'));
+    expect(t.steps.some((s) => 'epauleG' in s.pose)).toBe(true);
+    expect(t.steps.every((s) => !('arme' in s.pose))).toBe(true); // miroir = sans delta arme (ancrée à droite)
+  });
+
+  it('parade montée : un tireur (Arc) se dérobe SANS basculer le bassin (vs la version à pied)', () => {
+    const arc = w('Arc long', 'ranged');
+    expect(weaponParryClip(arc, false).steps[0].pose.bassin).toBeDefined();
+    expect(touchesSeat(mountedParryClip(arc, false))).toBe(false);
+  });
+
+  it('seatedClip purge bassin/jambes des clips de base (dodge/hit/walk) en gardant le buste', () => {
+    for (const name of ['dodge', 'hit', 'walk'] as const) {
+      expect(seatedClip(CLIPS[name]).steps.some((s) => Object.keys(s.pose).some((k) => SEATED_LOCKED.test(k))), name).toBe(false);
+    }
+    expect(seatedClip(CLIPS.dodge).steps[0].pose.torse).toBeDefined();
   });
 });
 

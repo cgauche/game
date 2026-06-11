@@ -10,7 +10,10 @@ import { DEFS } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
 import { spellCastClip } from '../src/gameIso/rig/anim/spellClips';
-import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
+import { weaponRest, mountedAttackClip, mountedParryClip, seatedClip } from '../src/gameIso/rig/anim/weaponClips';
+import { seatRiderOnMount, mountedRest } from '../src/gameIso/rig/mountedRig';
+import { planById } from '../src/gameIso/rig/bodyPlan';
+import { creatureMatch } from '../src/gameIso/rig/creatures';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
@@ -52,6 +55,39 @@ const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, 'Soldat', weapo
   tile('blessing (divin)', spellCastClip('blessing'), sorcier, eqNu, 'Nonne', {}, '#2a2618'),
 );
 
+// ── EN SELLE — clips MONTÉS (mountedAttackClip/mountedParryClip sur la tenue mountedRest),
+// cavalier composé sur cheval (composite trié par os). Les ids d'os cavalier/monture
+// COLLISIONNENT (tete des deux côtés) → suffixe par index APRÈS fusion (ordre stable).
+const quad = planById('quadruped');
+const horse = creatureMatch('Cheval de selle')?.name ?? quad.speciesNames()[0];
+function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
+  const dur = Math.max(clipDuration(clip), 1);
+  const equip: EquipCtx = { weapons: weapon ? [weapon] : [], armour: [] };
+  const samples = sampleTimes(dur, N).map((t) => {
+    const mountBones = quad.resolve(horse, 'profile', quad.restPose(), {});
+    const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
+    const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
+    return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: 0.78 }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
+  });
+  const uid = `k${uidN++}`;
+  const { css, svg } = animatedRig(samples, dur, uid);
+  styles.push(css);
+  return `<figure style="margin:0;text-align:center">
+    <svg viewBox="0 0 120 150" width="140" height="175"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${svg}</svg>
+    <figcaption style="color:#bcd;font:11px sans-serif">${label}</figcaption></figure>`;
+}
+const wm = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+4', qualities: [] } as Weapon);
+const rowMonte = [
+  mountedTile('charge (lance couchée)', wm('Lance de cavalerie'), mountedAttackClip(wm('Lance de cavalerie'))),
+  mountedTile('taille (épée)', wm('Épée'), mountedAttackClip(wm('Épée'))),
+  mountedTile('estoc (rapière)', wm('Rapière'), mountedAttackClip(wm('Rapière'))),
+  mountedTile('coup 2 mains (gr. hache)', wm('Grande hache'), mountedAttackClip(wm('Grande hache'))),
+  mountedTile('en joue (arbalète)', wm('Arbalète', 'ranged'), mountedAttackClip(wm('Arbalète', 'ranged'))),
+  mountedTile('en joue (pistolet)', wm('Pistolet', 'ranged'), mountedAttackClip(wm('Pistolet', 'ranged'))),
+  mountedTile('parade (épée)', wm('Épée'), mountedParryClip(wm('Épée'), false)),
+  mountedTile('dérobade (assis)', wm('Épée'), seatedClip(CLIPS.dodge)),
+].join('');
+
 const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Clips animés</title>
 <style>${styles.join('')}</style></head>
 <body style="background:#11141c;padding:18px;margin:0">
@@ -59,6 +95,8 @@ const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>
 <h1 style="color:#eee;font:18px sans-serif;margin:10px 0 2px">Animations — clips du moteur (SVG/CSS, en boucle)</h1>
 <p style="color:#9ab;font:12px sans-serif;margin:0 0 8px">Chaque rig joue son clip en boucle, animé en CSS pur (1 rig + @keyframes par os mobile). Aucun GIF.</p>
 <div style="display:flex;flex-wrap:wrap;gap:12px">${rowSoldat}${rowArc}</div>
+<h2 style="color:#eee;font:15px sans-serif;margin:18px 0 4px">En selle — clips montés (lance couchée, taille à cheval, en joue ; gestes sans bassin/jambes)</h2>
+<div style="display:flex;flex-wrap:wrap;gap:12px">${rowMonte}</div>
 </body></html>`;
 writeFileSync('public/clip-anim-gallery.html', html);
 console.log(`OK: public/clip-anim-gallery.html (${uidN} tuiles animées)`);

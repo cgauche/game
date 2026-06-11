@@ -225,6 +225,78 @@ export function weaponParryClip(w?: Weapon, hasShield = false): Clip {
   return leftHanded(w) ? mirrorClip(clip) : clip;
 }
 
+// --- CLIPS MONTÉS (deltas au-dessus de `mountedRest`, cf. rig/mountedRig.ts) ----------------
+// En selle, la tenue d'arme N'EST PAS celle du fantassin (`mountedWeaponHold` : lance COUCHÉE
+// −86, 1-main/2-mains/tir DRESSÉS −150) → les clips à pied sur-rotaient l'arme et, surtout,
+// leurs deltas bassin/jambes faisaient basculer le corps assis (ancré à la selle par le bassin).
+// Règle : un clip monté ne touche JAMAIS bassin/cuisse/tibia/pied — le geste vit dans le buste.
+const SEATED_LOCKED = /^(bassin|cuisse|tibia|pied)/;
+const seatedPose = (p: Pose): Pose => Object.fromEntries(Object.entries(p).filter(([k]) => !SEATED_LOCKED.test(k)));
+/** Variante ASSISE d'un clip : purge les deltas bassin/jambes (le cavalier reste en selle). */
+export const seatedClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: seatedPose(s.pose) })) });
+
+// ⚠ CALIBRAGE MONTÉ (vérifié à la sonde FK, profil natif non-miroité) :
+//  - angle MONDE de l'arme = tenue + (arme + epauleD + avantBrasD + torse), additif strict ;
+//    repères : 90 ≈ pointe AVANT horizontale, 0 ≈ pointe haut, > 180 = pointe ARRIÈRE.
+//  - le POING : epauleD POSITIF le tire en ARRIÈRE-haut, NÉGATIF le projette en AVANT
+//    (idem torse : positif = recul du buste — cf. clip `hit`). Un coup monté = armé en
+//    positif (on s'arme), frappe en NÉGATIF (on projette) + `arme` compensé vers la cible.
+// Coup des DEUX mains depuis le port dressé (lourde 2-mains ET hampe montées : même tenue −150).
+const MOUNTED_CHOP_2M = c([
+  { pose: { arme: -60, epauleD: 16, epauleG: 12, torse: 6 }, ms: 160, easing: 'easeOut' }, // monde ≈ −9 : armé haut, poings reculés
+  { pose: { arme: 142, epauleD: -30, epauleG: -22, avantBrasD: -10, torse: -8 }, ms: 100, easing: 'easeOutBack' }, // monde ≈ 123 : abat avant-bas, les 2 bras projetés
+  { pose: REST, ms: 230, easing: 'easeInOut' },
+], 260);
+const MOUNTED_ATTACK: Partial<Record<Handling, Clip>> = {
+  // CHARGE lance couchée : la lance est DÉJÀ en arrêt (−86, monde ≈ 101 horizontale) — pas de
+  // moulinet : le poing recule (le corps se coile), puis PROJETTE la lance devant, buste couché
+  // sur l'encolure ; `arme` compense le bras pour que la pointe RESTE en arrêt (~98-103 monde).
+  lance_cav: c([
+    { pose: { arme: -14, epauleD: 12, torse: 4, tete: -2 }, ms: 140, easing: 'easeOut' },
+    { pose: { arme: 40, epauleD: -26, avantBrasD: -10, torse: -7, tete: 2 }, ms: 90, easing: 'easeOutBack' },
+    { pose: REST, ms: 220, easing: 'easeInOut' },
+  ], 230),
+  // TAILLE à cheval : de la lame dressée (monde ≈ 27), armé haut-arrière puis grand arc qui
+  // FAUCHE vers l'avant-bas (monde ≈ 127), poing et buste jetés en avant.
+  lame1m: c([
+    { pose: { arme: -60, epauleD: 18, avantBrasD: 6, torse: 6 }, ms: 140, easing: 'easeOut' }, // monde ≈ −3
+    { pose: { arme: 152, epauleD: -32, avantBrasD: -12, torse: -8 }, ms: 90, easing: 'easeOutBack' }, // monde ≈ 127
+    { pose: REST, ms: 220, easing: 'easeInOut' },
+  ], 230),
+  // Escrime : la pointe dressée PIQUE en estoc plongeant (monde ≈ 111), bras tendu en avant.
+  escrime: c([
+    { pose: { arme: -40, epauleD: 14, torse: 4 }, ms: 90, easing: 'easeOut' }, // monde ≈ 5
+    { pose: { arme: 128, epauleD: -30, avantBrasD: -8, torse: -6 }, ms: 80, easing: 'easeOutBack' },
+    { pose: REST, ms: 180, easing: 'easeInOut' },
+  ], 170),
+  lourde2m: MOUNTED_CHOP_2M,
+  hampe: MOUNTED_CHOP_2M,
+  // Arbalète/arme à feu : du port dressé (−150), on COUCHE l'arme en joue (∼horizontale), recul.
+  arbalete: c([
+    { pose: { arme: 64, epauleD: 34, epauleG: 14, avantBrasD: -6, torse: -3 }, ms: 170, easing: 'easeOut' },
+    { pose: { arme: 60, epauleD: 30, torse: -6, tete: -3 }, ms: 70, easing: 'easeOut' },
+    { pose: REST, ms: 200, easing: 'easeInOut' },
+  ], 190),
+  arme_feu: c([
+    { pose: { arme: 70, epauleD: 40, epauleG: 10, torse: -3 }, ms: 170, easing: 'easeOut' },
+    { pose: { arme: 58, epauleD: 28, torse: -8, tete: -5 }, ms: 80, easing: 'easeOutBack' },
+    { pose: REST, ms: 200, easing: 'easeInOut' },
+  ], 190),
+};
+
+/** Geste d'attaque EN SELLE : clip monté dédié, sinon le clip à pied assis (sans bassin/jambes).
+ *  Comme à pied, le geste se joue sur le bras qui tient l'arme (miroir main gauche/tentacule). */
+export function mountedAttackClip(w?: Weapon): Clip {
+  const base = w && MOUNTED_ATTACK[handlingClass(w)];
+  const clip = base ?? seatedClip(w ? ATTACK[handlingClass(w)] : ATTACK.lame1m);
+  return w && leftHanded(w) ? mirrorClip(clip) : clip;
+}
+
+/** Garde EN SELLE : la parade à pied, assise (les parades vivent déjà dans les bras). */
+export function mountedParryClip(w?: Weapon, hasShield = false): Clip {
+  return seatedClip(weaponParryClip(w, hasShield));
+}
+
 /** True si l'arme se manie à distance (geste de tir/jet plutôt que de mêlée). */
 export const isRangedFamily = isRangedHandling;
 
