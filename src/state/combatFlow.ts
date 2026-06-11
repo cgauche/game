@@ -61,6 +61,7 @@ import {
   durationClockMinutes,
   castInfo,
   castingValue,
+  castPenaltyMod,
   castTestTalentDR,
   knowsCastingSkill,
   isDispellableSpell,
@@ -926,6 +927,32 @@ export function previewAttack(
 export function previewDefense(defender: Combatant): { label: string; mods: ModLine[] } {
   const mode = bestDefenseMode(defender);
   return { label: `défendra : ${DEFENSE_LABEL[mode]}`, mods: defenseModifiers(defender, mode, 0, defender.weapons[0]) };
+}
+
+/** Pré-jet d'INCANTATION pour le panneau de jet (même rôle que previewAttack/previewDefense) : valeur
+ *  du Test = compétence nue + Avantage (LDB 46 l.176) / Contrecoup actif en chips = cible. La CastModal
+ *  ne fait que poser cette ligne `pending` dans le RollPanel partagé (pas de calcul inline). */
+export function previewCast(
+  caster: Combatant,
+  spell: NonNullable<ReturnType<typeof findSpell>>,
+  opts?: { missile?: boolean; focused?: boolean },
+): { label: string; base: number; target: number; mods: ModLine[] } {
+  const ci = castInfo(spell);
+  const target = castingValue(caster, ci.skill, ci.spec);
+  const advMod = 10 * (caster.advantage ?? 0); // l'Avantage s'applique aux Tests d'Incantation
+  const penMod = castPenaltyMod(caster, ci.skill); // contrecoups actifs (Imparfaite/Colère)
+  const isPrayer = spell.cn == null;
+  const ni = opts?.focused ? 0 : spell.cn ?? 0;
+  const mods: ModLine[] = [
+    ...(advMod ? [{ label: 'Avantage', value: advMod }] : []),
+    ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
+  ];
+  return {
+    label: opts?.missile ? 'Projectile' : isPrayer ? 'Prière' : `Incantation / NI ${ni}`,
+    base: target - advMod - penMod,
+    target,
+    mods,
+  };
 }
 
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir

@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { bus, EVT } from '../state/bus';
 import { ownsLocally } from '../state/netFlow';
-import { counterspellCandidates, overcastTargetCandidates } from '../state/combatFlow';
+import { counterspellCandidates, overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
@@ -98,6 +98,9 @@ export function CastModal() {
 
       {!res ? (
         <>
+          {/* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
+              vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */}
+          <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
           <div className="rm-influence">
             {/* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */}
             <ResilienceButton resilience={caster.resilience ?? 0} show={(caster.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
