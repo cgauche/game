@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { CoopInvitePanel, CoopAssignList } from './CoopPanels';
 
@@ -10,21 +10,50 @@ import { CoopInvitePanel, CoopAssignList } from './CoopPanels';
  * ensuite N héros à chaque siège (« un certain nombre de personnages décidé dans le lobby ») et
  * lance la partie — les écrans invités REFLÈTENT le sien (snapshots).
  * INVITÉ : coller l'invitation → renvoyer le code de réponse → attendre le lancement.
+ *
+ * Présentation (Jalon 9) : carte centrée sur la charte (même coquille que le menu principal),
+ * sections en `.panel` — fini la colonne haute avec une zone morte en bas.
  */
+
+/** Coquille de carte centrée, partagée par les 3 états du lobby (local / invité / hôte). */
+function CoopShell({
+  title,
+  backLabel,
+  onBack,
+  wide,
+  children,
+}: {
+  title: string;
+  backLabel: string;
+  onBack: () => void;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="menu coop-lobby">
+      <div className={`menu-card coop-card${wide ? ' wide' : ''}`}>
+        <div className="coop-top">
+          <button className="btn small btn-ghost" onClick={onBack}>
+            {backLabel}
+          </button>
+        </div>
+        <h1 className="coop-title">🌐 {title}</h1>
+        <div className="rule-fleur" aria-hidden>⚜</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function CoopLobby() {
   const setScreen = useGame((s) => s.setScreen);
   const net = useGame((s) => s.net);
   const party = useGame((s) => s.party);
   const hostStart = useGame((s) => s.netHostStart);
-  const invite = useGame((s) => s.netInvite);
-  const acceptAnswer = useGame((s) => s.netAcceptAnswer);
   const join = useGame((s) => s.netJoin);
-  const assign = useGame((s) => s.netAssign);
   const leave = useGame((s) => s.netLeave);
 
   const [name, setName] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
-  const [answerIn, setAnswerIn] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [myAnswer, setMyAnswer] = useState('');
   const [error, setError] = useState('');
@@ -33,103 +62,84 @@ export function CoopLobby() {
 
   if (net.mode === 'local') {
     return (
-      <div className="screen coop-lobby">
-        <header className="bar">
-          <button className="btn small" onClick={() => { leave(); setScreen('menu'); }}>← Menu</button>
-          <h2>🌐 Jouer en ligne</h2>
-        </header>
-        <div className="coop-body">
-          <section className="zone-section">
-            <h3><span>Votre nom</span></h3>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de joueur" />
-          </section>
-          <div className="coop-roles">
-            <section className="zone-section coop-role">
-              <h3><span>Héberger</span></h3>
-              <button className="btn btn-primary" disabled={!name.trim() || party.length === 0} onClick={() => hostStart(name.trim())}>
+      <CoopShell title="Jouer en ligne" backLabel="← Menu" onBack={() => { leave(); setScreen('menu'); }}>
+        <label className="field coop-name">
+          <span>Votre nom</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de joueur" autoFocus />
+        </label>
+        <div className="coop-roles">
+          <section className="panel coop-role">
+            <div className="mini-title">Héberger une partie</div>
+            {party.length === 0 ? (
+              <button className="btn" onClick={() => setScreen('party')}>
+                ➕ Composer le groupe
+              </button>
+            ) : (
+              <button className="btn btn-primary" disabled={!name.trim()} onClick={() => hostStart(name.trim())}>
                 Héberger
               </button>
-              {party.length === 0 && (
-                <button className="btn" onClick={() => setScreen('party')}>
-                  ➕ Composer le groupe
-                </button>
-              )}
-            </section>
-            <section className="zone-section coop-role">
-              <h3><span>Rejoindre</span></h3>
-              <textarea value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder="Collez le code d'invitation (W4C1.…)" rows={3} />
-              <button
-                className="btn btn-primary"
-                disabled={!name.trim() || !joinCode.trim()}
-                onClick={async () => {
-                  setError('');
-                  const answer = await join(joinCode, name.trim());
-                  if (!answer) setError('Code d’invitation invalide.');
-                  else setMyAnswer(answer);
-                }}
-              >
-                Rejoindre
-              </button>
-              {error && <p className="hint coop-error">{error}</p>}
-            </section>
-          </div>
+            )}
+          </section>
+          <section className="panel coop-role">
+            <div className="mini-title">Rejoindre une partie</div>
+            <textarea value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder="Collez le code d'invitation (W4C1.…)" rows={3} />
+            <button
+              className="btn btn-primary"
+              disabled={!name.trim() || !joinCode.trim()}
+              onClick={async () => {
+                setError('');
+                const answer = await join(joinCode, name.trim());
+                if (!answer) setError('Code d’invitation invalide.');
+                else setMyAnswer(answer);
+              }}
+            >
+              Rejoindre
+            </button>
+            {error && <p className="hint coop-error">{error}</p>}
+          </section>
         </div>
-      </div>
+      </CoopShell>
     );
   }
 
   if (net.mode === 'guest') {
     return (
-      <div className="screen coop-lobby">
-        <header className="bar">
-          <button className="btn small" onClick={() => { leave(); setScreen('menu'); }}>← Quitter</button>
-          <h2>🌐 Salon — invité</h2>
-        </header>
-        <div className="coop-body">
-          {myAnswer ? (
-            <section className="zone-section">
-              <h3><span>Code de réponse — à renvoyer à l'hôte</span></h3>
-              <textarea readOnly value={myAnswer} rows={3} onFocus={(e) => e.currentTarget.select()} />
-              <button className="btn small" onClick={() => copy(myAnswer)}>📋 Copier</button>
-            </section>
-          ) : null}
-          <p className="hint">⏳ En attente de l'hôte…</p>
-        </div>
-      </div>
+      <CoopShell title="Salon — invité" backLabel="← Quitter" onBack={() => { leave(); setScreen('menu'); }}>
+        {myAnswer ? (
+          <section className="panel coop-role">
+            <div className="mini-title">Code de réponse — à renvoyer à l'hôte</div>
+            <textarea readOnly value={myAnswer} rows={3} onFocus={(e) => e.currentTarget.select()} />
+            <button className="btn small" onClick={() => copy(myAnswer)}>📋 Copier</button>
+          </section>
+        ) : null}
+        <p className="hint coop-waiting">⏳ En attente de l'hôte…</p>
+      </CoopShell>
     );
   }
 
   // ── HÔTE ──
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
   return (
-    <div className="screen coop-lobby">
-      <header className="bar">
-        <button className="btn small" onClick={() => { leave(); setScreen('menu'); }}>← Quitter</button>
-        <h2>🌐 Salon — hôte</h2>
-      </header>
-      <div className="coop-body">
-        <section className="zone-section">
-          <h3><span>Joueurs connectés</span></h3>
-          <ul className="coop-seats">
-            {seats.map(({ seat, name: n }) => (
-              <li key={seat}>{seat === 0 ? '👑' : '🟢'} {n}{seat === 0 ? ' (vous)' : ''}</li>
-            ))}
-          </ul>
-        </section>
-        <section className="zone-section">
-          <h3><span>Inviter un joueur</span></h3>
-          <CoopInvitePanel />
-        </section>
-        <section className="zone-section">
-          <h3><span>Attribution des héros</span></h3>
-          <CoopAssignList />
-        </section>
-        <div className="modal-actions">
-          <button className="btn btn-primary" onClick={() => setScreen('party')}>
-            Continuer vers la partie →
-          </button>
-        </div>
-      </div>
-    </div>
+    <CoopShell title="Salon — hôte" backLabel="← Quitter" onBack={() => { leave(); setScreen('menu'); }} wide>
+      <section className="panel coop-role">
+        <div className="mini-title">Joueurs connectés</div>
+        <ul className="coop-seats">
+          {seats.map(({ seat, name: n }) => (
+            <li key={seat}>{seat === 0 ? '👑' : '🟢'} {n}{seat === 0 ? ' (vous)' : ''}</li>
+          ))}
+        </ul>
+      </section>
+      <section className="panel coop-role">
+        <div className="mini-title">Inviter un joueur</div>
+        <CoopInvitePanel />
+      </section>
+      <section className="panel coop-role">
+        <div className="mini-title">Attribution des héros</div>
+        <CoopAssignList />
+      </section>
+      <button className="btn btn-primary coop-continue" onClick={() => setScreen('party')}>
+        Continuer vers la partie →
+      </button>
+    </CoopShell>
   );
 }
