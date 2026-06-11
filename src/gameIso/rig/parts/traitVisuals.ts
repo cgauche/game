@@ -10,7 +10,7 @@
  */
 import type { Combatant } from '../../../engine/types';
 import type { RigOverlay, BoneId } from '../bones';
-import { OV_CORNES, OV_QUEUE } from './monstrous';
+import { OV_CORNES } from './monstrous';
 import { ARMS } from './monster';
 import { pickView } from './types';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
@@ -18,7 +18,13 @@ import { raceById } from '../races';
 import { baseSpeciesOf } from '../skeletons';
 
 const CORNES = `<g data-trait="cornes">${OV_CORNES}</g>`;
-const QUEUE = `<g data-trait="queue">${OV_QUEUE}</g>`;
+// Queue de trait : LONGUE et débordant la hanche (sinon, cachée derrière le bassin, elle
+// est invisible de face) — fouet de chair terminé par une touffe de poils.
+const QUEUE = '<g data-trait="queue">'
+  + '<path d="M0 2 Q14 7 19 17 Q22 26 17 31 Q20 23 13 18 Q5 13 0 10 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>'
+  + '<path d="M3 6 Q12 11 16 19" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.6"/>'
+  + '<path d="M17 31 q5 1.4 4.6 6 q-5 -0.4 -6.6 -4.2 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>'
+  + '</g>';
 const TENTACULE_BRAS = `<g data-trait="tentacules">${pickView(ARMS['tentacule'], 'front')}</g>`;
 
 /** Calques dérivés des traits du combattant (bipèdes — les plans dessinent les leurs). */
@@ -35,10 +41,12 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
     out.push({ bone: 'epauleG', svg: TENTACULE_BRAS, replace: true });
     out.push({ bone: 'mainG', svg: '', replace: true });
   }
+  // Ailes en PLAN dédié : de face/profil DERRIÈRE tout le corps (le z inégal des bras en
+  // cacherait une sinon), de dos DEVANT tout (on regarde le dos où elles s'attachent).
   if (has(/^vol\b/i)) {
-    out.push({ bone: 'torse', svg: AILES_FRONT, behind: true, view: 'front' });
-    out.push({ bone: 'torse', svg: AILES_BACK, view: 'back' });
-    out.push({ bone: 'torse', svg: AILES_PROFILE, behind: true, view: 'profile' });
+    out.push({ bone: 'torse', svg: AILES_FRONT, plane: 'fond', view: 'front' });
+    out.push({ bone: 'torse', svg: AILES_BACK, plane: 'avant', view: 'back' });
+    out.push({ bone: 'torse', svg: AILES_PROFILE, plane: 'fond', view: 'profile' });
   }
   return out;
 }

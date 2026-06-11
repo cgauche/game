@@ -70,4 +70,8 @@ export interface RigOverlay {
   /** REMPLACE la part de l'os au lieu de se superposer (membre muté : bras → tentacule).
    *  `svg` vide = efface la part (le poing au bout d'un tentacule). */
   replace?: boolean;
+  /** PLAN dédié dans le tri du peintre, dans le repère de l'os hôte : `fond` = derrière TOUT
+   *  le corps (ailes de face — sinon le z inégal des bras en cache une), `avant` = devant tout
+   *  (ailes vues de dos). Ignore `behind`/`replace`. */
+  plane?: 'fond' | 'avant';
 }

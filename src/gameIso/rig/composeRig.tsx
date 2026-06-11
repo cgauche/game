@@ -157,9 +157,15 @@ export function resolveRig(
 
   // Calques cosmétiques (mutations…) dans le repère de leur os. `view` limite un détail de
   // visage à une vue (groin/langue de face) ; `behind` le passe SOUS la part (cornes, halo) ;
-  // `replace` substitue la part de l'os (membre muté : bras → tentacule, svg vide = efface).
+  // `replace` substitue la part de l'os (membre muté : bras → tentacule, svg vide = efface) ;
+  // `plane` l'extrait du z de l'os hôte (ailes : derrière/devant TOUT le corps).
+  const planeExtras: { bone: BoneId; svg: string; z: number }[] = [];
   for (const ov of overlays) {
     if (ov.view && ov.view !== view) continue;
+    if (ov.plane) {
+      if (ov.svg) planeExtras.push({ bone: ov.bone, svg: ov.svg, z: ov.plane === 'fond' ? -10 : 99 });
+      continue;
+    }
     if (ov.replace) { boneParts[ov.bone] = ov.svg ? [{ svg: ov.svg, layer: 5 }] : []; continue; }
     if (!ov.svg) continue;
     boneParts[ov.bone].push({ svg: ov.svg, layer: ov.behind ? -2 : 99 });
@@ -210,10 +216,14 @@ export function resolveRig(
     zOverride.bouclier = mirror ? 99 : -2; // bouclier / 2e arme = main gauche
   }
 
-  return BONE_IDS
+  const bones = BONE_IDS
     .map((id) => ({ id, matrix: world[id], scale: scaleOf[id], z: zOverride[id] ?? sk[id].z, parts: boneParts[id].sort((a, b) => a.layer - b.layer) }))
-    .filter((b) => b.parts.length > 0)
-    .sort((a, b) => a.z - b.z);
+    .filter((b) => b.parts.length > 0);
+  // Calques à PLAN dédié (ailes…) : entrée z propre, dans le repère (matrice/échelle) de l'os hôte.
+  for (const p of planeExtras) {
+    bones.push({ id: p.bone, matrix: world[p.bone], scale: scaleOf[p.bone], z: p.z, parts: [{ svg: applyTokenMap(p.svg, tmap), layer: 0 }] });
+  }
+  return bones.sort((a, b) => a.z - b.z);
 }
 
 /** Composant : un <g data-bone> par os, transformable individuellement (anim C / postures D). */
@@ -231,7 +241,7 @@ export function RigSprite({ appearance, equip, pose = {}, career, view = 'front'
   return (
     <g className="rig">
       {bones.map((b) => (
-        <g key={b.id} data-bone={b.id} transform={toSvg(b.matrix)}>
+        <g key={`${b.id}.${b.z}`} data-bone={b.id} transform={toSvg(b.matrix)}>
           <g transform={`scale(${b.scale[0].toFixed(4)},${b.scale[1].toFixed(4)})`}>
             {b.parts.map((p, i) =>
               p.mirror ? (

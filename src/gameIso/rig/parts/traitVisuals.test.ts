@@ -34,5 +34,9 @@ describe('visuels dérivés des traits de créature (statbloc éditeur, sorts gr
     const wings = ovs.filter((o) => o.svg.includes('data-trait="vol"'));
     expect(wings.map((o) => o.view).sort()).toEqual(['back', 'front', 'profile']);
     expect(wings.every((o) => o.bone === 'torse')).toBe(true);
+    // Plan dédié : derrière TOUT le corps de face/profil (z inégal des bras), devant tout de dos.
+    expect(wings.find((o) => o.view === 'front')?.plane).toBe('fond');
+    expect(wings.find((o) => o.view === 'profile')?.plane).toBe('fond');
+    expect(wings.find((o) => o.view === 'back')?.plane).toBe('avant');
   });
 });
