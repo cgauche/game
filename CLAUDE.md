@@ -111,6 +111,10 @@ jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**. Depuis
 - `__wfrp.talk('id')` → téléporte le groupe à côté de l'entité et l'**interpelle** (ouvre dialogue/marchand).
 - `__wfrp.goto('id'|{x,y})` → place le groupe sur la case (déclenche portes/triggers au pas).
 - `__wfrp.screen('menu'|'party'|…)` → navigue ; `__wfrp.store` = store Zustand brut (`getState`/`setState`).
+- **Triches de recette** : `killEnemies()` (victoire par le flux normal), `healParty()` (PB max,
+  états/critiques/maladies purgés), `give(co)` / `xp(n)`, `flags()` / `flag('id', bool)` (portes de
+  l'arène), `go('scene-id')` (transition), `fight()` (liste/lance une rencontre de la scène),
+  `time(min)` / `rest(jours)` (horloge + cascade quotidienne).
 Piège du *closure-sync* : lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le
 re-rendu React — séparer en deux appels (cf. `game-browser-verif-tempo`).
 
