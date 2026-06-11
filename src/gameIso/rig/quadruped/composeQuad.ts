@@ -13,18 +13,19 @@ import {
   type QuadBoneId, type QuadProps,
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
-import { QUAD_REST, quadWalkPose, quadBitePose, QUAD_DEATH } from './quadPose';
+import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from './quadPose';
 
 const LEG_REF_TH = 9; // épaisseur de réf d'un os porteur (haut) → léger scale x des membres
 
-/** (espèce, vue, pose, couleurs) → os résolus, triés z croissant (peintre). PUR. */
+/** (espèce, vue, pose, couleurs, ailes) → os résolus, triés z croissant (peintre). PUR. */
 export function resolveQuad(
   species: string,
   view: View = 'profile',
   pose: Record<string, number> = {},
   colors?: Palette,
+  wings: 'folded' | 'spread' = 'folded',
 ): ResolvedBone[] {
-  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors);
+  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.Cheval, view, pose, colors, wings);
 }
 
 /** Même rendu, mais à partir d'un PROPS direct (réutilisé par le gabarit AILÉ qui a son propre
@@ -34,10 +35,11 @@ export function resolveQuadFromProps(
   view: View = 'profile',
   pose: Record<string, number> = {},
   colors?: Palette,
+  wings: 'folded' | 'spread' = 'folded',
 ): ResolvedBone[] {
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), view), pose);
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;
-  const parts = quadParts(p, view);
+  const parts = quadParts(p, view, wings);
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const legW = 0.7 + 0.4 * p.girth; // pattes plus épaisses pour les bêtes trapues
   return (Object.keys(parts) as QuadBoneId[])
@@ -61,12 +63,13 @@ export function resolveQuadFromProps(
 
 export const quadrupedPlan: BodyPlan = {
   id: 'quadruped',
-  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors),
+  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors, opts?.wings),
   speciesNames: () => Object.keys(QUAD_SPECIES),
   restPose: () => QUAD_REST,
   walkPose: quadWalkPose,
   attackPose: quadBitePose,
   deathPose: () => QUAD_DEATH,
+  leapPose: quadLeapPose, // Bond (LDB 85) : démarche bondissante
   hasView: () => true,
 };
 

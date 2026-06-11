@@ -10,7 +10,7 @@ import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { resolveQuadFromProps } from '../quadruped/composeQuad';
-import { QUAD_REST, quadWalkPose, quadBitePose, QUAD_DEATH } from '../quadruped/quadPose';
+import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from '../quadruped/quadPose';
 import { bonesToSvg } from '../renderBones';
 import { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames } from '../creatures';
 
@@ -19,14 +19,16 @@ import { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames } from '../creatur
 // plan, svg, échelle). On re-exporte la table/matcher dérivés (consommateurs inchangés).
 export { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames };
 
-/** (espèce ailée, vue, pose, couleurs) → os résolus (réutilise le pipeline quadrupède). */
+/** (espèce ailée, vue, pose, couleurs, ailes) → os résolus (réutilise le pipeline quadrupède).
+ *  `wings` : REPLIÉES au repos (défaut) / DÉPLOYÉES en vol/attaque (cf. WingState). */
 export function resolveWing(
   species: string,
   view: View = 'profile',
   pose: Record<string, number> = {},
   colors?: Palette,
+  wings: 'folded' | 'spread' = 'folded',
 ): ResolvedBone[] {
-  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors);
+  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.Griffon, view, pose, colors, wings);
 }
 
 // Battement d'ailes (sinusoïde sur aileD/aileG, signes opposés). Vit DANS le plan : l'idle bat
@@ -38,13 +40,14 @@ const wingFlap = (phase: number, amp: number): Record<string, number> => {
 };
 export const wingedPlan: BodyPlan = {
   id: 'winged',
-  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors),
+  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors, opts?.wings),
   speciesNames: () => Object.keys(WINGED_SPECIES),
   restPose: () => QUAD_REST,
-  idlePose: (phase) => wingFlap(phase, 7), // battement doux au repos
-  walkPose: (phase) => ({ ...quadWalkPose(phase), ...wingFlap(phase, 26) }), // pattes + battement ample
+  idlePose: (phase) => wingFlap(phase, 2.5), // frémissement d'ailes PLIÉES au repos (subtil)
+  walkPose: (phase) => ({ ...quadWalkPose(phase), ...wingFlap(phase, 26) }), // pattes + battement ample (déployées)
   attackPose: quadBitePose,
   deathPose: () => QUAD_DEATH,
+  leapPose: (phase) => ({ ...quadLeapPose(phase), ...wingFlap(phase, 26) }), // Bond ailé = détente + battement
   hasView: () => true,
 };
 

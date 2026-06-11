@@ -19,12 +19,18 @@ import { creaturePlanMatch, creatureMatch } from './creatures';
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
 export type BodyPlanId = string;
 
+/** État des AILES d'un gabarit ailé : REPLIÉES le long du dos (repos) ou DÉPLOYÉES (vol/
+ *  attaque/mort étalée). Décidé par l'animation (usePlanAnim) — l'art change, pas que l'angle. */
+export type WingState = 'folded' | 'spread';
+
 /** Options de résolution communes (le bipède lit appearance/equip/career ; tous lisent colors). */
 export interface ResolveOpts {
   colors?: Palette;
   career?: string;
   appearance?: Appearance;
   equip?: EquipCtx;
+  /** Gabarit AILÉ seulement : état des ailes (défaut 'folded' — une bête posée replie). */
+  wings?: WingState;
 }
 
 export interface BodyPlan {
@@ -39,6 +45,9 @@ export interface BodyPlan {
   /** Anim de repos jouée EN CONTINU par AnimatedPlanToken (battement d'ailes, ondulation de
    *  serpent/pieuvre, dodelinement d'oiseau, frémissement d'araignée). Absente → idle figé. */
   idlePose?(phase: number): Record<string, number>;
+  /** BOND (trait LDB 85) : démarche bondissante jouée à la place de walkPose quand le
+   *  combattant a le trait — ramassé/détente cyclique. Absente → walkPose (repli). */
+  leapPose?(phase: number): Record<string, number>;
   hasView(species: string, view: View): boolean;
 }
 

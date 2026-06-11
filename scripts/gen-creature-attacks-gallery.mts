@@ -37,7 +37,7 @@ function attackFrames(name: string, kind: AttackKind): { samples: ResolvedBone[]
   const z = sc > 1 ? +(1 / sc).toFixed(3) : 1;
   const quadFamily = planId === 'quadruped' || planId === 'winged';
   const poseAt = quadFamily ? (p: number) => quadAttackPose(kind, p) : (p: number) => plan.attackPose(p);
-  const samples = Array.from({ length: N }, (_, i) => scaleBones(plan.resolve(species, 'profile', poseAt(i / (N - 1)), {}), z));
+  const samples = Array.from({ length: N }, (_, i) => scaleBones(plan.resolve(species, 'profile', poseAt(i / (N - 1)), { wings: 'spread' }), z));
   return { samples };
 }
 

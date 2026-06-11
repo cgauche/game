@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { bus, EVT } from '../state/bus';
 import { useGame } from '../state/store';
-import { planById, bodyPlanOf, type BodyPlanId, type BodyPlan } from './rig/bodyPlan';
+import { hasLeap } from '../engine/traits/dispatch';
+import { planById, bodyPlanOf, type BodyPlanId, type BodyPlan, type WingState } from './rig/bodyPlan';
 import { creatureMatch } from './rig/creatures';
 import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
@@ -15,7 +16,7 @@ const DYING_MS = 420; // durée de l'effondrement (mort / mis À Terre)
 
 type Mode =
   | { kind: 'rest' }
-  | { kind: 'walk'; until: number }
+  | { kind: 'walk'; until: number; leap?: boolean }
   | { kind: 'attack'; start: number; atk?: string }
   | { kind: 'flinch'; start: number }
   | { kind: 'dying'; start: number };
@@ -45,6 +46,9 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   pose: Record<string, number>;
   view: View;
   mirror: boolean;
+  /** Gabarit AILÉ : ailes PLIÉES au repos, DÉPLOYÉES en vol/attaque/mort étalée — à passer
+   *  dans `ResolveOpts.wings` (les autres plans l'ignorent). */
+  wings: WingState;
 } {
   const camRot = useGame((s) => s.camRot);
   const worldDir = useGame((s) => s.facing?.[id]) ?? facing;
@@ -87,7 +91,9 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
     const offMove = bus.on(EVT.ANIM_MOVE, (d: { id: string; path?: { x: number; y: number }[] }) => {
       if (d.id !== id) return;
       const p = d.path;
-      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, walkMs(p ?? [])) }; // s'arrête à l'arrivée réelle (plus d'off-by-one)
+      // BOND (trait LDB 85) : le combattant qui l'a se déplace en BONDISSANT (leapPose du plan).
+      const traits = useGame.getState().battle?.combatants.find((c) => c.id === id)?.traits;
+      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, walkMs(p ?? [])), leap: hasLeap(traits) }; // s'arrête à l'arrivée réelle (plus d'off-by-one)
       ensureLoop();
     });
     const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string; creatureAttack?: string; result?: { hit?: boolean } }) => {
@@ -130,7 +136,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
           ? lerpPose(plan.restPose(), downPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
           : downPose()) // l'anneau de vie + l'icône 🔻 disent « vivant »
       : m.kind === 'walk'
-          ? plan.walkPose(((now / STEP_MS) % 2) / 2)
+          ? (m.leap && plan.leapPose ? plan.leapPose : plan.walkPose)(((now / STEP_MS) % 2) / 2)
           : m.kind === 'attack'
             ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)
                 ? quadAttackPose(m.atk, Math.min(1, (now - m.start) / 280))
@@ -140,6 +146,10 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
               : plan.idlePose
                 ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
                 : plan.restPose();
+  // AILES : pliées posé/flinch, DÉPLOYÉES dès que la bête vole (marche/bond), attaque, ou
+  // s'effondre (QUAD_DEATH les étale au sol).
+  const wings: WingState =
+    dead || prone || m.kind === 'walk' || m.kind === 'attack' || m.kind === 'dying' ? 'spread' : 'folded';
   const fv = worldDir ? project(worldDir, camRot) : { view: 'front' as View, mirror: false };
-  return { plan, species, pose, view: fv.view, mirror: fv.mirror };
+  return { plan, species, pose, view: fv.view, mirror: fv.mirror, wings };
 }

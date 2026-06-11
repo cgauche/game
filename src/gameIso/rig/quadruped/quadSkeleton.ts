@@ -43,6 +43,7 @@ export interface QuadProps {
   foot: QuadFoot; // pied ARRIÈRE (et avant par défaut)
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
+  wingSpan?: number; // envergure (× sur l'art des ailes, défaut 1 — dragon ample, demigriffon court)
   mane?: QuadMane; // crinière d'encolure (défaut : 'crin' si tail==='crin', sinon 'sans')
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
 }

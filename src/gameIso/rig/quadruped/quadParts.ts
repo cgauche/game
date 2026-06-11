@@ -374,8 +374,27 @@ function tailBack(p: QuadProps): string {
 }
 
 // ============================ AILES (gabarit ailé) ============================
-// Repère LOCAL = garrot. PROFIL : aile à demi repliée dressée vers le haut-arrière (-x/-y).
-// FACE/DOS : aile DÉPLOYÉE vers +x (l'aile gauche est miroitée scale(-1,1) au dispatch).
+// Repère LOCAL = garrot. DEUX ÉTATS d'art (cf. WingState) : REPLIÉES le long du dos (repos —
+// les lames dressées en permanence lisaient « feuilles plantées ») / DÉPLOYÉES (vol/attaque).
+// PROFIL replié : l'aile se couche vers l'arrière (-x), couvre le haut du flanc, pointe au-delà
+// de la croupe. FACE/DOS : déployée vers +x (aile gauche miroitée scale(-1,1) au dispatch).
+function wingFoldedProfile(p: QuadProps, far: boolean): string {
+  const c = far ? '@corpsO' : '@corps';
+  const L = 46 * p.bodyLen; // longueur du pli (suit l'allongement du corps)
+  if (p.wings === 'membrane') { // membrane pliée : doigts rabattus en faisceau le long du dos + griffe au poignet
+    return `<g data-wing="folded">` +
+      `<path d="M2 -2 Q-6 -7 ${-L * 0.45} -6 Q${-L} -3 ${-L - 7} 4 Q${-L * 0.6} 3 ${-L * 0.3} 4 Q-4 5 3 3 Z" fill="${c}" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M1 -1 Q${-L * 0.4} -5 ${-L - 5} 3 M0 1 Q${-L * 0.4} -2 ${-L * 0.72} 2" fill="none" stroke="@corpsO" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/>` +
+      `<path d="M3 -2 l3 -3 l1.4 3.4" fill="${c}" stroke="@corpsO" stroke-width="0.6"/>` + // griffe de poignet
+      `</g>`;
+  }
+  // plumes pliées : couvertures + rémiges en 3 bandes couchées, pointe effilée vers la croupe
+  return `<g data-wing="folded">` +
+    `<path d="M3 -3 Q-8 -8 ${-L * 0.5} -7 Q${-L} -4 ${-L - 9} 3 Q${-L * 0.55} 5 ${-L * 0.25} 5 Q-4 5 3 2 Z" fill="${c}" stroke="@corpsO" stroke-width="0.7"/>` +
+    `<path d="M0 -4 Q${-L * 0.5} -6 ${-L - 7} 2" fill="none" stroke="@corpsO" stroke-width="0.9" opacity="0.7"/>` +
+    `<path d="M-4 0 q-4 3 -9 3 M${-L * 0.32} 1 q-4 3 -9 2.6 M${-L * 0.58} 0 q-4 3 -8.4 2.4 M${-L * 0.8} -0.6 q-3.4 2.6 -7 2.2" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.6"/>` +
+    `</g>`;
+}
 function wingProfile(p: QuadProps, far: boolean): string {
   const c = far ? '@corpsO' : '@corps';
   if (p.wings === 'membrane') { // dragon : grande membrane à doigts dressée haut au-dessus du dos
@@ -411,12 +430,23 @@ function wingSpread(p: QuadProps): string {
     `</g>`;
 }
 
+// Aile PLIÉE vue de bout (face/dos) : bosse d'épaule dépassant au-dessus du garrot — la
+// silhouette d'un rapace posé, pas l'envergure complète.
+function wingFoldedEnd(p: QuadProps): string {
+  const c = p.wings === 'membrane' ? '@corpsO' : '@corps';
+  return `<g data-wing="folded"><path d="M2 2 Q4 -12 10 -17 Q13.5 -9 10.5 -1 Q7 3 2 3 Z" fill="${c}" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M4 -2 Q6 -9 9.4 -14" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.6"/></g>`;
+}
+
 // ============================ dispatch ============================
-export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<QuadBoneId, string>> {
+export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): Partial<Record<QuadBoneId, string>> {
   const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
-  // Ailes déployées (face/dos) : aileD à droite, aileG = même art miroité (scale -1).
+  // Envergure : × sur l'art d'aile (déployée ET pliée).
+  const span = (svg: string) => (p.wingSpan && p.wingSpan !== 1 ? `<g transform="scale(${p.wingSpan})">${svg}</g>` : svg);
+  // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir scale -1).
+  const endArt = wings === 'spread' ? wingSpread(p) : wingFoldedEnd(p);
   const spreadWings = p.wings
-    ? { aileD: wingSpread(p), aileG: `<g transform="scale(-1,1)">${wingSpread(p)}</g>` }
+    ? { aileD: span(endArt), aileG: `<g transform="scale(-1,1)">${span(endArt)}</g>` }
     : {};
   if (view === 'front') {
     const n = legPartsFront(p, false, frontFoot), f = legPartsFront(p, true, p.foot);
@@ -439,7 +469,8 @@ export function quadParts(p: QuadProps, view: View = 'profile'): Partial<Record<
   // profil : pattes AVANT (frontFoot) près/loin, pattes ARRIÈRE (p.foot) près/loin.
   const nearAv = legParts(p, false, frontFoot), farAv = legParts(p, true, frontFoot);
   const nearAr = legParts(p, false, p.foot), farAr = legParts(p, true, p.foot);
-  const profWings = p.wings ? { aileD: wingProfile(p, false), aileG: wingProfile(p, true) } : {};
+  const profArt = (far: boolean) => span(wings === 'spread' ? wingProfile(p, far) : wingFoldedProfile(p, far));
+  const profWings = p.wings ? { aileD: profArt(false), aileG: profArt(true) } : {};
   return {
     ...profWings,
     tronc: barrel(p), croupe: rump(p), encolure: neck(p), tete: headProfile(p), queue: tail(p),

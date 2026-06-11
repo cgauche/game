@@ -21,6 +21,21 @@ export function quadBitePose(phase: number): QuadPose {
   return { encolure: 18 * k, tete: 26 * k, hautAvD: -10 * k, hautAvG: -8 * k, croupe: -4 * k };
 }
 
+/** BOND (trait LDB 85) : démarche BONDISSANTE — cycle ramassé (pattes sous le corps, dos
+ *  arqué) → DÉTENTE (avants jetés devant, arrières étendus derrière, encolure allongée).
+ *  Remplace quadWalkPose quand le combattant a le trait. phase 0..1 (boucle). */
+export function quadLeapPose(phase: number): QuadPose {
+  const s = Math.sin(phase * Math.PI * 2); // -1 ramassé … +1 détendu
+  const ext = Math.max(0, s), tuck = Math.max(0, -s);
+  return {
+    hautAvD: -42 * ext + 16 * tuck, basAvD: 8 * ext - 34 * tuck, piedAvD: 6 * ext,
+    hautAvG: -36 * ext + 14 * tuck, basAvG: 8 * ext - 30 * tuck, piedAvG: 6 * ext,
+    hautArD: 36 * ext - 18 * tuck, basArD: -10 * ext + 26 * tuck, piedArD: -6 * ext,
+    hautArG: 32 * ext - 16 * tuck, basArG: -10 * ext + 22 * tuck, piedArG: -6 * ext,
+    encolure: -8 * ext + 7 * tuck, tete: -6 * ext + 5 * tuck, croupe: -7 * tuck, queue: -12 * ext,
+  };
+}
+
 /**
  * Mort d'un QUADRUPÈDE : effondré sur le flanc — pattes TENDUES (avant vers l'avant, arrière
  * vers l'arrière, raides, à l'horizontale), encolure et tête AU SOL, queue molle. PAS de

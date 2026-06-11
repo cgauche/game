@@ -1124,9 +1124,13 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   (crin couché / hirsute — Loup hirsute + collerette de gorge ; rétro-compat tail==='crin'),
   **harnachement de monture** (`mountTackBones` : tapis, selle pommeau/troussequin, quartier,
   sangle, étrier, rênes museau→pommeau — os synthétiques z-calés, composés quand MONTÉE).
-- **Lot 2 — ailes & capacités** : ailes REPLIÉES au repos le long du dos (les lames dressées
-  actuelles), déploiement animé (Vol = décollage/stationnaire ; demande : anim de Bond), couches
-  de plumes / doigts de membrane, `wingSpan`.
+- ✅ **Lot 2 — ailes & capacités** *(2026-06-11)* : **WingState** — ailes REPLIÉES le long du
+  dos au repos (art dédié : membrane à doigts rabattus + griffe de poignet / rémiges couchées
+  en bandes ; face/dos = bosses d'épaule), DÉPLOYÉES en vol/attaque/mort étalée (décidé par
+  usePlanAnim, `ResolveOpts.wings`, idle replié = frémissement ±2.5°) ; **Bond animé** —
+  `BodyPlan.leapPose` (hook générique) + `quadLeapPose` (cycle ramassé→détente, quad + ailé
+  avec battement) joué à la place du trot quand le combattant a le trait (hasLeap, data-driven —
+  une créature d'éditeur qui reçoit Bond bondit) ; prop **`wingSpan`** (envergure ×).
 - **Lot 3 — props de finesse** : `ridge` (crête/épines/plaques — dragon/basilic/hydre),
   `markings` (rayures/taches/balzanes via textures.ts), `headScale`/gueule, `tailLen`, yeux
   adressables sur têtes de gabarit (catalogue), oreilles élargies.
