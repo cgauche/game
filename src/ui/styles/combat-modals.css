@@ -482,14 +482,7 @@
   border-right: none;
   border-left: 1px solid var(--border);
 }
-.ed-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
+/* .ed-field = primitive .field (components.css) */
 .ed-dim {
   display: flex;
   gap: 8px;

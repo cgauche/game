@@ -543,16 +543,7 @@ export function Inspector({
       ) : (
         <>
           <div className="mini-title">Inspecteur</div>
-          <p className="hint">
-            Sélectionnez une entité sur la carte pour l'éditer (créature, dialogue, butin…).
-            <br />
-            <br />
-            Onglet <b>Carte</b> : peindre tuiles, placer entités, <b>glisser</b> pour poser un bâtiment ou une zone.
-            <br />
-            Onglet <b>Logique</b> : triggers, dialogues, rencontres.
-            <br />
-            Onglet <b>Scène</b> : nom, taille, ambiance.
-          </p>
+          <p className="hint">Sélectionnez un élément sur la carte pour l'éditer.</p>
           {(scene.buildings ?? []).length > 0 && (
             <>
               <div className="mini-title">Bâtiments posés</div>

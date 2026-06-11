@@ -32,7 +32,7 @@ describe('Editor (rendu)', () => {
     expect(html).toContain('editor-iso');
     expect(html).toContain('viewBox');
     expect(html).toContain('Inspecteur');
-    expect(html).toContain('Sélectionnez une entité sur la carte');
+    expect(html).toContain('Sélectionnez un élément sur la carte');
   });
 
   it('rend la scène par défaut (« La Diligence » : entités + triggers du tome 1)', () => {

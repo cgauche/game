@@ -82,8 +82,9 @@
   padding: 10px 12px;
 }
 
-/* ── CHAMP de formulaire (libellé AU-DESSUS du contrôle) ── */
-.field {
+/* ── CHAMP de formulaire (libellé AU-DESSUS du contrôle) ── `.ed-field` (éditeur) = même primitive. */
+.field,
+.ed-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -91,6 +92,10 @@
 }
 .field > span:first-child {
   color: var(--muted);
+}
+.ed-field {
+  color: var(--muted);
+  margin-bottom: 10px;
 }
 
 /* ── CARTOUCHE de stat (label + valeur) ── */

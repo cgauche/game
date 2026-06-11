@@ -717,9 +717,6 @@ export function Editor() {
               onToggleView={() => setViewMode((v) => (v === 'iso' ? 'top' : 'iso'))}
             />
           </div>
-          <p className="hint">
-            Peignez les tuiles (cliquer-glisser). Placez les entités. Les zones rouges en pointillés sont les triggers. Molette = zoom · clic-milieu/Espace = déplacer.
-          </p>
         </main>
 
         <Inspector
