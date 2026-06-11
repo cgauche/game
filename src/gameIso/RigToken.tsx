@@ -11,6 +11,9 @@ import type { RigOverlay } from './rig/bones';
  *  bascule ~82° autour des pieds → corps allongé au sol. Override DUR (indépendant des
  *  clips) pour qu'aucun event (touché, idle) ne « relève » le mort. cf. game-roll-modal. */
 const CORPSE_POSE = { tete: 18, torse: 6, epauleG: -30, epauleD: 24, avantBrasG: -14, avantBrasD: 10, cuisseG: 14, cuisseD: -10, tibiaG: 18, tibiaD: 6 } as const;
+/** Pose À TERRE (LDB 16 l.37) : couché mais CONSCIENT — à demi relevé sur le coude droit,
+ *  tête redressée, jambes repliées. Bascule moindre (~72°) que le cadavre. */
+const PRONE_POSE = { tete: -30, cou: -8, torse: -4, epauleD: -38, avantBrasD: -52, epauleG: 14, avantBrasG: 8, cuisseG: 12, cuisseD: -8, tibiaG: 20, tibiaD: 8 } as const;
 
 /**
  * TOKEN RIG UNIQUE — sert le combat ET l'exploration (aucune différence visuelle entre les
@@ -27,6 +30,7 @@ export function RigToken({
   facing,
   pos,
   outOfAction = false,
+  ground = null,
 }: {
   id: string;
   appearance: Appearance;
@@ -39,15 +43,20 @@ export function RigToken({
   /** Tuile de l'acteur (CULLING viewport : un rig hors-champ ne paie plus son rAF d'animation). */
   pos?: { x: number; y: number };
   outOfAction?: boolean;
+  /** État AU SOL (groundPose.ts) : `corpse` = effondré, `prone` = À Terre conscient (coude levé). */
+  ground?: 'corpse' | 'prone' | null;
 }) {
   const restClip = ambientAnim ? ambientClip(ambientAnim) ?? undefined : undefined;
   const { pose, holdPose, view, mirror } = useRigAnim({ id, equip, restClip, facing, pos });
+  const down = outOfAction || ground === 'corpse' ? 'corpse' : ground;
   const body = (
     <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={outOfAction ? CORPSE_POSE : addPose(holdPose, pose)} view={view} mirror={mirror} />
+      <RigSprite appearance={appearance} equip={equip} career={career} overlays={overlays} pose={down === 'corpse' ? CORPSE_POSE : down === 'prone' ? PRONE_POSE : addPose(holdPose, pose)} view={view} mirror={mirror} />
     </g>
   );
-  // Hors de combat = CADAVRE AU SOL : bascule de tout le rig ~82° autour des pieds
-  // (pivot rig-local ≈ (60,150)) → le corps s'allonge sur le sol au lieu de rester debout.
-  return outOfAction ? <g transform="rotate(82 60 150)">{body}</g> : body;
+  // AU SOL : bascule de tout le rig autour des pieds (pivot rig-local ≈ (60,150)) — le corps
+  // s'allonge au lieu de rester debout. Cadavre ~82°, À Terre ~72° (à demi relevé).
+  if (down === 'corpse') return <g transform="rotate(82 60 150)">{body}</g>;
+  if (down === 'prone') return <g transform="rotate(72 60 150)">{body}</g>;
+  return body;
 }

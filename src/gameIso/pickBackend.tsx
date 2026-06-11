@@ -14,6 +14,7 @@ import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
 import { equipFromCombatant, type EquipCtx } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
+import { groundStateOf } from './groundPose';
 import type { RigOverlay } from './rig/bones';
 
 /**
@@ -98,7 +99,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
       }
       return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={isOutOfAction(c)} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
