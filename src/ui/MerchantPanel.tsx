@@ -329,7 +329,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                           <span className="merch-qty" title="En stock">×{l.qty}</span>
                         </button>
                       </td>
-                      {cols.map((c) => <td key={c.label} className={c.emph ? 'col-emph' : ''}>{t ? c.get(t) : DASH}</td>)}
+                      {cols.map((c) => <td key={c.label} className={c.emph ? 'col-emph' : 'col-stat'}>{t ? c.get(t) : DASH}</td>)}
                       <td className="col-enc">{t?.enc ?? 0}</td>
                       <td className="col-price">{unit ? <Coins money={unit} /> : '—'}</td>
                       <td className="col-buy">
@@ -355,7 +355,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                   <thead>
                     <tr>
                       <th className="col-name">Objet</th>
-                      {cols.map((c) => <th key={c.label} className={c.emph ? 'col-emph' : ''}>{c.label}</th>)}
+                      {cols.map((c) => <th key={c.label} className={c.emph ? 'col-emph' : 'col-stat'}>{c.label}</th>)}
                       <th className="col-enc" title="Encombrement">Enc</th>
                       <th className="col-price">Prix</th>
                       <th className="col-buy" aria-label="Panier" />

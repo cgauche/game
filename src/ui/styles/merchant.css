@@ -96,6 +96,51 @@
   font-weight: 700; padding: 10px 8px 3px; border-bottom: 1px solid var(--border);
 }
 .merch-table tbody tr:first-child.group-row td { padding-top: 2px; }
+/* 360px : la table d'achat se reconfigure en CARTES empilées — nom en tête, puis
+   Dégâts · Prix · Acheter sur une ligne. Fini le défilement horizontal pour atteindre
+   « Ajouter » ; les colonnes secondaires (Allonge/Portée/Enc…) restent lisibles via ▸. */
+@media (max-width: 560px) {
+  .merch-table,
+  .merch-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .merch-table thead {
+    display: none;
+  }
+  .merch-table th.col-stat,
+  .merch-table td.col-stat,
+  .merch-table th.col-enc,
+  .merch-table td.col-enc {
+    display: none;
+  }
+  .merch-trow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 8px 4px;
+  }
+  .merch-trow > td {
+    border: none;
+    padding: 0;
+  }
+  .merch-trow > td.col-name {
+    flex: 1 1 100%;
+    width: auto;
+    white-space: normal;
+  }
+  .merch-trow > td.col-price {
+    margin-left: auto;
+  }
+  .merch-table .group-row,
+  .merch-table .group-row > td,
+  .merch-table .detail-row,
+  .merch-table .detail-row > td {
+    display: block;
+  }
+}
 /* Panier (#2) */
 .cart-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 7px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
 .cart-bar .cart-info { font-weight: 600; }
