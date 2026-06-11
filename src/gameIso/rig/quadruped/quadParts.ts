@@ -229,7 +229,9 @@ function neck(p: QuadProps): string {
   }
   const L = 30 * p.neckLen;
   // Encolure SCULPTÉE : large à la base (fond dans le poitrail), gorge incurvée — plus un tube.
-  const base = `<path d="M-9 4 Q-11 ${-L * 0.5} -5 ${-L} L6 ${-L} Q10 ${-L * 0.55} 10 0 Q10 3 8 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
+  // La base PLONGE profondément dans le corps (jusqu'à +16 sous le pivot, évasée) : les poses
+  // d'attaque pivotent le cou de ±30° et la jonction doit rester ENFOUIE (sinon cou détaché).
+  const base = `<path d="M-13 16 Q-12 6 -9 0 Q-11 ${-L * 0.5} -5 ${-L} L6 ${-L} Q10 ${-L * 0.55} 10 0 Q11 8 14 16 Q0 19 -13 16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>
     <path d="M8 2 Q9 ${-L * 0.5} 5 ${-L * 0.94}" fill="none" stroke="@corpsO" stroke-width="0.8" opacity="0.55"/>`;
   const m = maneOf(p);
   let crin = `<path d="M-5 ${-L} Q-9 ${-L * 0.6} -8 2" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.8"/>`; // 'sans' : ligne de dos discrète
