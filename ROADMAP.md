@@ -1194,6 +1194,16 @@ pilote = **menu principal + écran de groupe**, validé à l'œil avant généra
   CampaignView+HUD, Editor, TestScenariosScreen, InterludeScreen, CoopLobby) + 4 panneaux
   pleins (CharacterSheet, VictoryScreen, WorldMapView, MerchantPanel) + ~30 modales déjà sur
   la coquille `Modal`/`RollFlowShell` (héritent de la charte par construction).
+- ✅ **Éditeur « produit final » (2026-06-11)** : édition de tout élément (zone trigger /
+  ennemi de rencontre / bâtiment / entité) en **modale partagée** `<Modal>` — fin de la
+  colonne étroite ; le volet droit ne garde que la **navigation** (liste d'entités + bâtiments
+  posés). **« Ouvrir »** liste les **19 scénarios de test** ET une **bibliothèque de projets
+  persistée** (localStorage `wfrp4.editor-projects.v1`, module pur `projectLibrary` testé,
+  miroir de `roster`) ; **« Enregistrer »** nomme le projet, choisit la **scène de départ**
+  jouable et le **publie**. Une campagne **publiée** apparaît au menu principal sous
+  **« Mes campagnes »** et se **joue** (constitution du groupe → `loadProject`). On crée,
+  sauvegarde et joue une campagne **de bout en bout sans toucher au code**. Champ store
+  `pendingCampaign` (réinitialisé par le reset zéro-maintenance). Suite verte (2897), 0 console.
 
 ---
 
