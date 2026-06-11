@@ -16,10 +16,12 @@ import { part as e11 } from './defs/minuscule';
 import { part as e12 } from './defs/ogive';
 import { part as e13 } from './defs/ogre';
 import { part as e14 } from './defs/orc';
-import { part as e15 } from './defs/pourri';
-import { part as e16 } from './defs/rat';
-import { part as e17 } from './defs/taureau';
-import { part as e18 } from './defs/tentacule';
-import { part as e19 } from './defs/troll';
+import { part as e15 } from './defs/poulet';
+import { part as e16 } from './defs/pourri';
+import { part as e17 } from './defs/rat';
+import { part as e18 } from './defs/taureau';
+import { part as e19 } from './defs/tentacule';
+import { part as e20 } from './defs/troll';
+import { part as e21 } from './defs/vache';
 
-export const MONSTER_PARTS: MonsterPartDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19];
+export const MONSTER_PARTS: MonsterPartDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21];

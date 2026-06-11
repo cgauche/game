@@ -62,6 +62,14 @@ exports[`monsterInjection — golden master > catalogues d’options (clés + li
       "label": "Crâne (squelette)",
     },
     {
+      "key": "vache",
+      "label": "Vache (basse-cour)",
+    },
+    {
+      "key": "poulet",
+      "label": "Poulet (basse-cour)",
+    },
+    {
       "key": "pourri",
       "label": "Chair pourrie (zombie)",
     },
@@ -538,6 +546,39 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
       },
     },
   },
+  "cornes.poulet": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "tete",
+        "svg": "<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peauO"/>
+  <path d="M0 -8 L0 13" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="-3" cy="1" r="1.8" fill="#e8b820"/><circle cx="-3" cy="1" r="0.85" fill="#160a04"/><circle cx="3" cy="1" r="1.8" fill="#e8b820"/><circle cx="3" cy="1" r="0.85" fill="#160a04"/>
+  <path d="M-1.8 7 L1.8 7 L0 12.4 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M-1.2 12.6 Q-2 15.6 -0.4 17 Q0.6 15 0.2 12.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+        "profile": "<g>
+  <path d="M-1 -8.2 L-3 -10.6 L-1.4 -11 L-2.2 -13.6 L-0.2 -12.2 L1.6 -13.8 L0.9 -11.2 L2.6 -10.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6 0 Q-7 -8 1 -9 Q7.5 -7.5 7.5 0 Q7.5 5 5.5 8 L3 12 Q0 14 -2 12 L-3 8 Q-5.5 6 -6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="2.4" cy="0" r="1.8" fill="#e8b820"/><circle cx="2.4" cy="0" r="0.85" fill="#160a04"/>
+  <path d="M6.5 4 L13.5 6.2 L6.5 8.6 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M9.5 6.4 L6.8 6.4" stroke="#8a6a1e" stroke-width="0.4"/>
+  <path d="M5 9 Q4.6 12.4 6 13.8 Q7 11.6 6.4 9.2 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
   "cornes.pourri": {
     "overlays": [
       {
@@ -599,7 +640,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
       },
     },
@@ -669,6 +710,42 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
   <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
   <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
+</g>",
+      },
+    },
+  },
+  "cornes.vache": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "tete",
+        "svg": "<path d="M-5 -1 q-2 -9 -8 -12 q2 7 4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/><path d="M5 -1 q2 -9 8 -12 q-2 7 -4 13 z" fill="#cabfae" stroke="#3a3026" stroke-width="0.5"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peauO"/><path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peauO"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peauO"/>
+  <path d="M0 -9 L0 16" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 10 Q0 8.6 5 10 L4.4 16.4 Q0 19 -4.4 16.4 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M-2.2 13 q-0.6 1.2 0 2.4 M2.2 13 q0.6 1.2 0 2.4" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="-4.75" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/><ellipse cx="3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="2.45" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/>
+</g>",
+        "profile": "<g>
+  <path d="M-4 0 L-10 -2 Q-10.5 3.5 -5 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-1 -7.5 Q-3.5 -10.5 -2.5 -13 Q0.5 -10.5 1.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-7 -1 Q-8 -9 1 -10 Q8 -8.5 8.5 -2 L11.5 4 Q12.5 9 10 13 L8 17 Q4 19.5 2 17 L1 11 Q-5 9.5 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M5 10 Q9.5 8.6 12 10.5 Q12.4 15 9 16.8 Q5 17.5 4 14 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M9.6 12.4 q0.8 1 0.3 2.2" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="1.5" rx="1.5" ry="1.3" fill="#d8a226"/><rect x="1.52" y="1.08" width="2.16" height="0.83" rx="0.39" fill="#160a04"/>
 </g>",
       },
     },
@@ -1106,6 +1183,39 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
       },
     },
   },
+  "queue.poulet": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "bassin",
+        "svg": "<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peauO"/>
+  <path d="M0 -8 L0 13" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="-3" cy="1" r="1.8" fill="#e8b820"/><circle cx="-3" cy="1" r="0.85" fill="#160a04"/><circle cx="3" cy="1" r="1.8" fill="#e8b820"/><circle cx="3" cy="1" r="0.85" fill="#160a04"/>
+  <path d="M-1.8 7 L1.8 7 L0 12.4 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M-1.2 12.6 Q-2 15.6 -0.4 17 Q0.6 15 0.2 12.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+        "profile": "<g>
+  <path d="M-1 -8.2 L-3 -10.6 L-1.4 -11 L-2.2 -13.6 L-0.2 -12.2 L1.6 -13.8 L0.9 -11.2 L2.6 -10.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6 0 Q-7 -8 1 -9 Q7.5 -7.5 7.5 0 Q7.5 5 5.5 8 L3 12 Q0 14 -2 12 L-3 8 Q-5.5 6 -6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="2.4" cy="0" r="1.8" fill="#e8b820"/><circle cx="2.4" cy="0" r="0.85" fill="#160a04"/>
+  <path d="M6.5 4 L13.5 6.2 L6.5 8.6 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M9.5 6.4 L6.8 6.4" stroke="#8a6a1e" stroke-width="0.4"/>
+  <path d="M5 9 Q4.6 12.4 6 13.8 Q7 11.6 6.4 9.2 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
   "queue.pourri": {
     "overlays": [
       {
@@ -1167,7 +1277,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
       },
     },
@@ -1237,6 +1347,42 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
   <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
   <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
+</g>",
+      },
+    },
+  },
+  "queue.vache": {
+    "overlays": [
+      {
+        "behind": true,
+        "bone": "bassin",
+        "svg": "<path d="M0 2 Q13 9 17 24 Q11 23 7 15 Q3 9 0 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>",
+      },
+    ],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peauO"/><path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peauO"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peauO"/>
+  <path d="M0 -9 L0 16" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 10 Q0 8.6 5 10 L4.4 16.4 Q0 19 -4.4 16.4 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M-2.2 13 q-0.6 1.2 0 2.4 M2.2 13 q0.6 1.2 0 2.4" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="-4.75" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/><ellipse cx="3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="2.45" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/>
+</g>",
+        "profile": "<g>
+  <path d="M-4 0 L-10 -2 Q-10.5 3.5 -5 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-1 -7.5 Q-3.5 -10.5 -2.5 -13 Q0.5 -10.5 1.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-7 -1 Q-8 -9 1 -10 Q8 -8.5 8.5 -2 L11.5 4 Q12.5 9 10 13 L8 17 Q4 19.5 2 17 L1 11 Q-5 9.5 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M5 10 Q9.5 8.6 12 10.5 Q12.4 15 9 16.8 Q5 17.5 4 14 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M9.6 12.4 q0.8 1 0.3 2.2" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="1.5" rx="1.5" ry="1.3" fill="#d8a226"/><rect x="1.52" y="1.08" width="2.16" height="0.83" rx="0.39" fill="#160a04"/>
 </g>",
       },
     },
@@ -2543,6 +2689,87 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
       },
     },
   },
+  "poulet.back": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peauO"/>
+  <path d="M0 -8 L0 13" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="-3" cy="1" r="1.8" fill="#e8b820"/><circle cx="-3" cy="1" r="0.85" fill="#160a04"/><circle cx="3" cy="1" r="1.8" fill="#e8b820"/><circle cx="3" cy="1" r="0.85" fill="#160a04"/>
+  <path d="M-1.8 7 L1.8 7 L0 12.4 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M-1.2 12.6 Q-2 15.6 -0.4 17 Q0.6 15 0.2 12.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+        "profile": "<g>
+  <path d="M-1 -8.2 L-3 -10.6 L-1.4 -11 L-2.2 -13.6 L-0.2 -12.2 L1.6 -13.8 L0.9 -11.2 L2.6 -10.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6 0 Q-7 -8 1 -9 Q7.5 -7.5 7.5 0 Q7.5 5 5.5 8 L3 12 Q0 14 -2 12 L-3 8 Q-5.5 6 -6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="2.4" cy="0" r="1.8" fill="#e8b820"/><circle cx="2.4" cy="0" r="0.85" fill="#160a04"/>
+  <path d="M6.5 4 L13.5 6.2 L6.5 8.6 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M9.5 6.4 L6.8 6.4" stroke="#8a6a1e" stroke-width="0.4"/>
+  <path d="M5 9 Q4.6 12.4 6 13.8 Q7 11.6 6.4 9.2 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
+  "poulet.front": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peauO"/>
+  <path d="M0 -8 L0 13" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="-3" cy="1" r="1.8" fill="#e8b820"/><circle cx="-3" cy="1" r="0.85" fill="#160a04"/><circle cx="3" cy="1" r="1.8" fill="#e8b820"/><circle cx="3" cy="1" r="0.85" fill="#160a04"/>
+  <path d="M-1.8 7 L1.8 7 L0 12.4 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M-1.2 12.6 Q-2 15.6 -0.4 17 Q0.6 15 0.2 12.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+        "profile": "<g>
+  <path d="M-1 -8.2 L-3 -10.6 L-1.4 -11 L-2.2 -13.6 L-0.2 -12.2 L1.6 -13.8 L0.9 -11.2 L2.6 -10.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6 0 Q-7 -8 1 -9 Q7.5 -7.5 7.5 0 Q7.5 5 5.5 8 L3 12 Q0 14 -2 12 L-3 8 Q-5.5 6 -6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="2.4" cy="0" r="1.8" fill="#e8b820"/><circle cx="2.4" cy="0" r="0.85" fill="#160a04"/>
+  <path d="M6.5 4 L13.5 6.2 L6.5 8.6 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M9.5 6.4 L6.8 6.4" stroke="#8a6a1e" stroke-width="0.4"/>
+  <path d="M5 9 Q4.6 12.4 6 13.8 Q7 11.6 6.4 9.2 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
+  "poulet.profile": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peauO"/>
+  <path d="M0 -8 L0 13" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M0 -8.5 L-2.6 -11 L-0.9 -11.4 L-2 -14 L0 -12.6 L2 -14 L0.9 -11.4 L2.6 -11 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6.5 0 Q-7.5 -8 0 -9 Q7.5 -8 6.5 0 Q6 7 3.5 10 L2 14 Q0 16 -2 14 L-3.5 10 Q-6 7 -6.5 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="-3" cy="1" r="1.8" fill="#e8b820"/><circle cx="-3" cy="1" r="0.85" fill="#160a04"/><circle cx="3" cy="1" r="1.8" fill="#e8b820"/><circle cx="3" cy="1" r="0.85" fill="#160a04"/>
+  <path d="M-1.8 7 L1.8 7 L0 12.4 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M-1.2 12.6 Q-2 15.6 -0.4 17 Q0.6 15 0.2 12.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+        "profile": "<g>
+  <path d="M-1 -8.2 L-3 -10.6 L-1.4 -11 L-2.2 -13.6 L-0.2 -12.2 L1.6 -13.8 L0.9 -11.2 L2.6 -10.8 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.5"/>
+  <path d="M-6 0 Q-7 -8 1 -9 Q7.5 -7.5 7.5 0 Q7.5 5 5.5 8 L3 12 Q0 14 -2 12 L-3 8 Q-5.5 6 -6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <circle cx="2.4" cy="0" r="1.8" fill="#e8b820"/><circle cx="2.4" cy="0" r="0.85" fill="#160a04"/>
+  <path d="M6.5 4 L13.5 6.2 L6.5 8.6 Z" fill="#d8b14a" stroke="#8a6a1e" stroke-width="0.5"/>
+  <path d="M9.5 6.4 L6.8 6.4" stroke="#8a6a1e" stroke-width="0.4"/>
+  <path d="M5 9 Q4.6 12.4 6 13.8 Q7 11.6 6.4 9.2 Z" fill="#c23028" stroke="#7a1812" stroke-width="0.4"/>
+</g>",
+      },
+    },
+  },
   "pourri.back": {
     "overlays": [],
     "replace": {
@@ -2642,7 +2869,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
       },
     },
@@ -2671,7 +2898,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
       },
     },
@@ -2700,7 +2927,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
       },
     },
@@ -2872,6 +3099,96 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
   <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
   <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
+</g>",
+      },
+    },
+  },
+  "vache.back": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peauO"/><path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peauO"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peauO"/>
+  <path d="M0 -9 L0 16" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 10 Q0 8.6 5 10 L4.4 16.4 Q0 19 -4.4 16.4 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M-2.2 13 q-0.6 1.2 0 2.4 M2.2 13 q0.6 1.2 0 2.4" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="-4.75" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/><ellipse cx="3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="2.45" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/>
+</g>",
+        "profile": "<g>
+  <path d="M-4 0 L-10 -2 Q-10.5 3.5 -5 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-1 -7.5 Q-3.5 -10.5 -2.5 -13 Q0.5 -10.5 1.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-7 -1 Q-8 -9 1 -10 Q8 -8.5 8.5 -2 L11.5 4 Q12.5 9 10 13 L8 17 Q4 19.5 2 17 L1 11 Q-5 9.5 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M5 10 Q9.5 8.6 12 10.5 Q12.4 15 9 16.8 Q5 17.5 4 14 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M9.6 12.4 q0.8 1 0.3 2.2" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="1.5" rx="1.5" ry="1.3" fill="#d8a226"/><rect x="1.52" y="1.08" width="2.16" height="0.83" rx="0.39" fill="#160a04"/>
+</g>",
+      },
+    },
+  },
+  "vache.front": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peauO"/><path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peauO"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peauO"/>
+  <path d="M0 -9 L0 16" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 10 Q0 8.6 5 10 L4.4 16.4 Q0 19 -4.4 16.4 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M-2.2 13 q-0.6 1.2 0 2.4 M2.2 13 q0.6 1.2 0 2.4" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="-4.75" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/><ellipse cx="3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="2.45" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/>
+</g>",
+        "profile": "<g>
+  <path d="M-4 0 L-10 -2 Q-10.5 3.5 -5 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-1 -7.5 Q-3.5 -10.5 -2.5 -13 Q0.5 -10.5 1.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-7 -1 Q-8 -9 1 -10 Q8 -8.5 8.5 -2 L11.5 4 Q12.5 9 10 13 L8 17 Q4 19.5 2 17 L1 11 Q-5 9.5 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M5 10 Q9.5 8.6 12 10.5 Q12.4 15 9 16.8 Q5 17.5 4 14 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M9.6 12.4 q0.8 1 0.3 2.2" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="1.5" rx="1.5" ry="1.3" fill="#d8a226"/><rect x="1.52" y="1.08" width="2.16" height="0.83" rx="0.39" fill="#160a04"/>
+</g>",
+      },
+    },
+  },
+  "vache.profile": {
+    "overlays": [],
+    "replace": {
+      "tete": {
+        "back": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peauO"/><path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peauO"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peauO"/>
+  <path d="M0 -9 L0 16" stroke="@peau" stroke-width="0.5" opacity="0.4"/>
+</g>",
+        "front": "<g>
+  <path d="M-7 0 L-13 -3 Q-13.5 3 -8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M7 0 L13 -3 Q13.5 3 8 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-5.5 -7 Q-8.5 -10 -7.5 -13 Q-4.5 -10.5 -3.5 -8 Z M5.5 -7 Q8.5 -10 7.5 -13 Q4.5 -10.5 3.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-8 -1 Q-9 -9 0 -10 Q9 -9 8 -1 Q7.5 7 5 11 L3.5 17 Q0 19.5 -3.5 17 L-5 11 Q-7.5 7 -8 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M-5 10 Q0 8.6 5 10 L4.4 16.4 Q0 19 -4.4 16.4 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M-2.2 13 q-0.6 1.2 0 2.4 M2.2 13 q0.6 1.2 0 2.4" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="-4.75" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/><ellipse cx="3.6" cy="2.5" rx="1.6" ry="1.4" fill="#d8a226"/><rect x="2.45" y="2.05" width="2.30" height="0.90" rx="0.42" fill="#160a04"/>
+</g>",
+        "profile": "<g>
+  <path d="M-4 0 L-10 -2 Q-10.5 3.5 -5 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>
+  <path d="M-1 -7.5 Q-3.5 -10.5 -2.5 -13 Q0.5 -10.5 1.5 -8 Z" fill="#ddd2b6" stroke="#3a3026" stroke-width="0.5"/>
+  <path d="M-7 -1 Q-8 -9 1 -10 Q8 -8.5 8.5 -2 L11.5 4 Q12.5 9 10 13 L8 17 Q4 19.5 2 17 L1 11 Q-5 9.5 -7 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
+  <path d="M5 10 Q9.5 8.6 12 10.5 Q12.4 15 9 16.8 Q5 17.5 4 14 Z" fill="#d8a8a0" stroke="#a87870" stroke-width="0.5"/>
+  <path d="M9.6 12.4 q0.8 1 0.3 2.2" stroke="#6e4640" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="1.5" rx="1.5" ry="1.3" fill="#d8a226"/><rect x="1.52" y="1.08" width="2.16" height="0.83" rx="0.39" fill="#160a04"/>
 </g>",
       },
     },

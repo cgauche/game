@@ -8,18 +8,34 @@ export const tenue: TenueDef = {
   career: true,
   palette: { vet1: '#5a2326', vet2: '#c9a44a', cuir: '#4a3a28' },
   set: {
-    torse: `<g stroke-linejoin="round">`
-      // robe ample drapée
-      + `<path d="M-13 -26 Q0 -30 13 -26 L13 8 L12.4 34 Q0 38 -12.4 34 L-13 8 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.8"/>`
-      + `<path d="M-6.5 -23 L-7.5 35 M6.5 -23 L7.5 35" stroke="@vet1O" stroke-width="0.7" opacity="0.55" fill="none"/>`
-      // cordelière nouée
-      + `<path d="M-12.5 9 Q0 12 12.5 9" stroke="@cuir" stroke-width="2.4" fill="none"/>`
-      + `<path d="M-1 11 Q-2 19 0 25 M1.5 11 Q2.5 17 1.5 23" stroke="@cuir" stroke-width="1.2" fill="none" stroke-linecap="round"/>`
-      // emblème pectoral : HEPTAGRAMME (étoile à 7 branches tracée d'un trait, 7/3)
-      + `<circle cx="0" cy="-12" r="5.4" fill="none" stroke="@vet2" stroke-width="1"/>`
-      + `<path d="M0 -16.2 L2.75 -8.62 L-4.1 -13.3 L4.1 -13.3 L-2.75 -8.62 L0 -16.2" fill="none" stroke="@vet2" stroke-width="0.8" stroke-linejoin="round"/>`
-      + `<path d="M2.75 -8.62 L-1.83 -16.05 L-4.1 -13.3 M4.1 -13.3 L1.83 -16.05 L-2.75 -8.62" fill="none" stroke="@vet2" stroke-width="0.8" stroke-linejoin="round"/>`
-      + `</g>`,
+    torse: {
+      front: `<g stroke-linejoin="round">`
+        // robe ample drapée
+        + `<path d="M-13 -26 Q0 -30 13 -26 L13 8 L12.4 34 Q0 38 -12.4 34 L-13 8 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.8"/>`
+        + `<path d="M-6.5 -23 L-7.5 35 M6.5 -23 L7.5 35" stroke="@vet1O" stroke-width="0.7" opacity="0.55" fill="none"/>`
+        // cordelière nouée
+        + `<path d="M-12.5 9 Q0 12 12.5 9" stroke="@cuir" stroke-width="2.4" fill="none"/>`
+        + `<path d="M-1 11 Q-2 19 0 25 M1.5 11 Q2.5 17 1.5 23" stroke="@cuir" stroke-width="1.2" fill="none" stroke-linecap="round"/>`
+        // emblème pectoral : HEPTAGRAMME (étoile à 7 branches tracée d'un trait, 7/3)
+        + `<circle cx="0" cy="-12" r="5.4" fill="none" stroke="@vet2" stroke-width="1"/>`
+        + `<path d="M0 -16.2 L2.75 -8.62 L-4.1 -13.3 L4.1 -13.3 L-2.75 -8.62 L0 -16.2" fill="none" stroke="@vet2" stroke-width="0.8" stroke-linejoin="round"/>`
+        + `<path d="M2.75 -8.62 L-1.83 -16.05 L-4.1 -13.3 M4.1 -13.3 L1.83 -16.05 L-2.75 -8.62" fill="none" stroke="@vet2" stroke-width="0.8" stroke-linejoin="round"/>`
+        + `</g>`,
+      // profil/dos EXPLICITES : l'emblème @vet2 (or) gagnait le décompte dominantCloth →
+      // la silhouette substituée virait au doré. Robe @vet1 + rappel discret de l'emblème.
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-5 -27 Q3 -30 7 -25 Q8.5 -10 6.5 4 L6 34 Q-1 37.5 -6.5 34 L-5 4 Q-7 -13 -5 -27 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.8"/>`
+        + `<path d="M3 -26 Q6 -10 5 4 L4.6 31 M-2 -26 Q-3.6 -10 -2.8 4 L-2.6 32" fill="none" stroke="@vet1O" stroke-width="0.7" opacity="0.55"/>`
+        + `<path d="M-5.4 8.6 Q1 11 6.4 8.6" stroke="@cuir" stroke-width="2.2" fill="none"/>`
+        + `<circle cx="3.4" cy="-12" r="2.6" fill="none" stroke="@vet2" stroke-width="0.8"/>`
+        + `</g>`,
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-8.5 -26 Q0 -29 8.5 -26 L9 6 Q8.4 20 6 34 Q0 37 -6 34 Q-8.4 20 -9 6 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.8"/>`
+        + `<path d="M0 -26 L0 34" stroke="@vet1O" stroke-width="0.8" opacity="0.6"/>`
+        + `<path d="M-8.5 -23 Q0 -26 8.5 -23 L8.5 -18 Q0 -21 -8.5 -18 Z" fill="@vet1H" opacity="0.4"/>`
+        + `<path d="M-8.6 8.6 Q0 11 8.6 8.6" stroke="@cuir" stroke-width="2.2" fill="none"/>`
+        + `</g>`,
+    },
     bras: `<g stroke-linejoin="round">`
       // manche tombante
       + `<path d="M-5 -3 Q0 -5.6 5 -3 L6.2 15 Q7 19.5 3.6 20.5 L-3.6 20.5 Q-7 19.5 -6.2 15 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>`

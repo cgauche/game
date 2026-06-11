@@ -111,9 +111,12 @@ export function resolveRig(
   const dropHeadgear = !!appearance.monster?.cape || !!race.dropHeadgear;
   // perso.monster du creature-def = override COMPLET de la race (parts structurelles sautées).
   const hasPersoMonster = !!appearance.monster && Object.keys(appearance.monster).length > 0;
-  // Tête de RACE (rat, orc…) : remplace visage/cheveux mais PAS la coiffe de tenue — un
-  // skaven casqué garde sa tête de rat SOUS le casque (corps nu et tenue = axes séparés).
-  const raceHead = !hasPersoMonster && race.head ? HEADS[race.head] : undefined;
+  // Tête de RACE (rat, orc…) — surchargeable par le def créature (perso.head : tête de
+  // vache/poulet de la basse-cour SANS perdre queue/fourrure de race). Remplace visage/
+  // cheveux mais PAS la coiffe de tenue — un skaven casqué garde sa tête de rat SOUS le
+  // casque (corps nu et tenue = axes séparés).
+  const raceHeadKey = hasPersoMonster ? undefined : (bDef?.perso?.head ?? race.head);
+  const raceHead = raceHeadKey ? HEADS[raceHeadKey] : undefined;
   for (const slot of Object.keys(SLOT_BONES) as Slot[]) {
     if (slot === 'tete' && dropHeadgear) continue;
     if ((slot === 'visage' || slot === 'cheveux') && raceHead) continue;
@@ -211,8 +214,8 @@ export function resolveRig(
     lezard: '#5d7a42', chien: '#6e4a2c', rat: '#6e4a2e',
   };
   const speciesHasSkin = speciesPalette?.peau != null;
-  const headKey = appearance.monster?.tete ?? race.head; // greffe de peau depuis la tête (monster OU race)
-  const headSkin = !speciesHasSkin && headKey ? SKIN_FROM_HEAD[headKey] : undefined;
+  const skinHeadKey = appearance.monster?.tete ?? bDef?.perso?.head ?? race.head; // greffe de peau depuis la tête (monster, def OU race)
+  const headSkin = !speciesHasSkin && skinHeadKey ? SKIN_FROM_HEAD[skinHeadKey] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
   // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
   // Palette de tenue : carrière dédiée OU archétype de classe en repli (tenuePaletteFor) →

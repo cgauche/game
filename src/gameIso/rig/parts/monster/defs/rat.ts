@@ -27,7 +27,7 @@ export const part: MonsterPartDef = {
   <ellipse cx="18" cy="5" rx="1.6" ry="1.3" fill="#d68a96"/>
   <path d="M16 7 q-3 4 -6 2" stroke="#efe6cf" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M13 8 q5 1 7 -1 M12 9 q5 2 8 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
-  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e6a017"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#cc3a1a"/><ellipse cx="3" cy="2" rx="0.55" ry="1.4" fill="#180a04"/><circle cx="3.5" cy="1.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>`,
   },
 };

@@ -38,6 +38,10 @@ export interface CreaturePerso {
   /** Traits cosmétiques ADDITIFS par-dessus la race (cornes du Prophète gris…) — contrairement
    *  à `monster` qui REMPLACE toute la structure de race (tête/membres/features). */
   features?: RaceFeature[];
+  /** Tête monstrueuse (clé HEADS) remplaçant CELLE DE LA RACE seulement — queue/fourrure/
+   *  features de race conservées (basse-cour : tête de vache/poulet sur corps d'homme-bête).
+   *  ≠ monster.tete qui bascule dans l'override complet. */
+  head?: string;
   /** Yeux remplacés sur l'orbite du visage (CLÉS du catalogue EYE_OPTIONS : noir, chat, rouge…). */
   eyes?: { G?: string; D?: string };
 }

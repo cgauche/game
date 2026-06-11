@@ -45,6 +45,13 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
       ['Elfe', 'Haut-Elfe'], // générique → Haut-Elfe
       ['Nain mercenaire', 'Nain'],
       ['Minotaure', 'Minotaure'], // AVANT homme-bête
+      ['Urzo', 'Urzo'], // ménagerie du Carnaval (Compagnon T1 ch.12)
+      ['Rassarak', 'Rassarak'],
+      ['Homme-bête de Khorne', 'Homme-bête de Khorne'],
+      ['Les Jumeaux', 'Jumeaux'],
+      ['Bête Impériale', 'Bête Impériale'],
+      ['Homme-bête à tête de vache', 'Homme-bête à tête de vache'],
+      ['Homme-bête à tête de poulet', 'Homme-bête à tête de poulet'],
       ['Gor sauvage', 'Gor'], // def dédié (grandes cornes)
       ['Ungor', 'Ungor'], // « ungor » ne déclenche PAS \bgor\b (pas de limite de mot)
       ['Chamane-Brey', 'Chamane-Brey'],

@@ -52,6 +52,9 @@ export interface EnemyRigProfile {
 const ROLE_CAREERS: [RegExp, string][] = [
   [/flagellant|zelote|zealot|penitent|fanatique flagell/, 'Flagellant'],
   [/repurgateur|chasseur de sorcier|witch ?hunter/, 'Répurgateur'],
+  // AVANT « sorcier » générique : les lanceurs du Chaos portent la robe de culte, pas celle
+  // de magister (Compagnon T1 ch.9 : magus/sorciers de la Main pourpre).
+  [/sorcier du chaos|sorciere du chaos|magus|demonologue/, 'Cultiste'],
   [/sorcier|magister|necromancien|hierophante|mage|enchanteur|invocateur/, 'Sorcier'],
   [/cultiste|sectateur|adepte|fanatique|illumine|hereux|heretique/, 'Cultiste'],
   [/pretre|prelat|moine|prieur|abbe|hierophante|sceur|soeur|nonne|clerc/, 'Nonne'],
