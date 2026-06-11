@@ -6,7 +6,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
-import { recomputeLoadout, addItemToHero, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from '../engine/items';
+import { recomputeLoadout, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from '../engine/items';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,

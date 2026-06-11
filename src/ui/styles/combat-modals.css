@@ -1173,18 +1173,6 @@
 .purse .pa {
   color: var(--copper);
 }
-.inv-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.inv-item {
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 7px;
-  font-size: 11px;
-}
 .empty {
   color: var(--muted);
   font-size: 12px;
