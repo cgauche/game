@@ -47,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, previewAttack, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
@@ -243,6 +243,16 @@ export function IsoStage() {
     const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
     return (scene.buildings ?? []).map((b) => buildingObj(b, d, roofHidden(b, allies), night));
   }, [scene, shownRot, viewMode, mode, battle, partyPos, gameTime]);
+
+  // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
+  // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun
+  // n'a d'anneau rouge). Actif pendant la visée — mode neutre (attaque implicite au clic) ou
+  // catégorie Tir ouverte — tant que l'Action n'est pas consommée.
+  const ghostIds = useMemo<Set<string>>(() => {
+    if (mode !== 'battle' || !battle || battle.over) return new Set();
+    if (battle.acted || (battle.action !== null && battle.action !== 'tir')) return new Set();
+    return outOfSightTargetIds(useGame.getState);
+  }, [scene, mode, battle]);
 
   // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
   // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés
@@ -491,9 +501,9 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
-    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} walking={walking} bakedDeath
+    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
       flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR}>
       {child}
@@ -553,6 +563,7 @@ export function IsoStage() {
         flat: top,
         portraitBox: r.portraitBox,
         discR: discR(c.size),
+        ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }

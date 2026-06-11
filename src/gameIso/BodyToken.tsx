@@ -25,6 +25,7 @@ export function BodyToken({
   ring,
   ringDash,
   dim = false,
+  ghost = false,
   walking = false,
   fx,
   bakedDeath = false,
@@ -46,6 +47,8 @@ export function BodyToken({
   /** Pointillé SVG de l'anneau (canal d'appartenance daltonien-safe, R9) ; absent = trait plein. */
   ringDash?: string;
   dim?: boolean;
+  /** Hors Ligne de Vue du héros actif (tir impossible) → pion fantomatique (désaturé, translucide). */
+  ghost?: boolean;
   walking?: boolean;
   fx?: string;
   bakedDeath?: boolean;
@@ -76,7 +79,7 @@ export function BodyToken({
   const badgeY = flat ? -R : -150 * scale;
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
-    <g style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : 1 }}>
+    <g style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: ghost && !dim ? 'grayscale(0.85)' : undefined }}>
       {flat ? (
         // Pion-portrait (vue du dessus) : disque clippé centré sur la case, anneau circulaire.
         <>

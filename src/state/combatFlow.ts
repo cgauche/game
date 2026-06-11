@@ -953,6 +953,23 @@ export function eligibleAttackTargetIds(get: () => GameState): Set<string> {
   return ids;
 }
 
+/** Ennemis SANS Ligne de Vue depuis le héros actif (LDB 13 l.123 — le tir est impossible) :
+ *  l'UI les GRISE pour distinguer « hors LdV » de « hors de portée » (pas d'anneau dans les
+ *  deux cas). Même vérité que l'attaque réelle (`previewAttack.blocked`, arme à distance
+ *  seulement — la mêlée n'est jamais bloquée par la LdV). */
+export function outOfSightTargetIds(get: () => GameState): Set<string> {
+  const battle = get().battle;
+  const ids = new Set<string>();
+  if (!battle) return ids;
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  for (const c of battle.combatants) {
+    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    if (previewAttack(get, active, c).blocked) ids.add(c.id);
+  }
+  return ids;
+}
+
 /** Applique un résultat d'attaque déjà résolu : Blessures, États, Assommante,
  *  Avantage, animation, journal, fin de combat. */
 /** Issue du Test opposé d'Esquive du Désengagement : le mover est l'« attaquant » du test ;

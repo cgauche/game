@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { previewAttack, resolveAttack, eligibleAttackTargetIds } from './combatFlow';
+import { previewAttack, resolveAttack, eligibleAttackTargetIds, outOfSightTargetIds } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
@@ -99,5 +99,23 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     (s.tiles as string[])[3] = 'mur'; // mur intercalé sur la ligne (x=3,y=0)
     const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
     expect(previewAttack(get, a, b).blocked).toBe(true);
+  });
+
+  it('outOfSightTargetIds (grisage hors-LdV) : ennemi derrière un mur grisé au tir, pas en mêlée, pas les morts', () => {
+    const s = scene();
+    (s.tiles as string[])[3] = 'mur'; // mur sur la ligne y=0 entre x=0 et x=6
+    const archer = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] }] as never });
+    const hidden = combatant({ id: 'E1', kind: 'enemy', pos: { x: 6, y: 0 } }); // derrière le mur
+    const seen = combatant({ id: 'E2', kind: 'enemy', pos: { x: 0, y: 5 } }); // ligne dégagée
+    const deadHidden = combatant({ id: 'E3', kind: 'enemy', pos: { x: 6, y: 1 }, wounds: { current: 0, max: 10 } as never });
+    const mk = (cs: Combatant[], order: string[]) =>
+      (() => ({ scene: s, battle: { combatants: cs, order, turn: 0, movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+    const ids = outOfSightTargetIds(mk([archer, hidden, seen, deadHidden], ['A', 'E1', 'E2', 'E3']));
+    expect(ids.has('E1')).toBe(true);
+    expect(ids.has('E2')).toBe(false);
+    expect(ids.has('E3')).toBe(false);
+    // En mêlée la LdV ne bloque pas le ciblage → aucun grisage.
+    const swordsman = combatant({ id: 'A', pos: { x: 0, y: 0 } });
+    expect(outOfSightTargetIds(mk([swordsman, hidden, seen], ['A', 'E1', 'E2'])).size).toBe(0);
   });
 });
