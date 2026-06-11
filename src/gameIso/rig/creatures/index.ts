@@ -101,8 +101,9 @@ export function creaturePlanMatch(name: string): CreatureBodyPlan | undefined { 
 /** Noms canon des créatures riggées — source du sélecteur d'apparence de l'éditeur
  *  (remplace l'ex-`creatureNames()` qui listait les clés du bestiaire monolithique). */
 export const creatureSpeciesNames = (): string[] => CREATURES.map((c) => c.name);
-/** Échelle de token (sl) du gabarit rigué qui matche — lit le champ de props présent. Défaut 1. */
+/** Échelle de token (sl) du gabarit rigué qui matche — lit le champ de props présent, QUEL QUE
+ *  SOIT le plan (jabber/squig/hulk/spectre compris — leur sl était ignoré avant). Défaut 1. */
 export function creatureSpeciesScale(name: string): number {
   const c = creatureMatch(name);
-  return (c && (c.quad ?? c.serpent ?? c.spider ?? c.bird ?? c.octopus)?.sl) || 1;
+  return (c && (c.quad ?? c.serpent ?? c.spider ?? c.bird ?? c.octopus ?? c.spectre ?? c.squig ?? c.hulk ?? c.jabber)?.sl) || 1;
 }

@@ -13,7 +13,8 @@ import { spellCastClip } from '../src/gameIso/rig/anim/spellClips';
 import { weaponRest, mountedAttackClip, mountedParryClip, seatedClip } from '../src/gameIso/rig/anim/weaponClips';
 import { seatRiderOnMount, mountedRest } from '../src/gameIso/rig/mountedRig';
 import { planById } from '../src/gameIso/rig/bodyPlan';
-import { creatureMatch } from '../src/gameIso/rig/creatures';
+import { creatureMatch, creatureSpeciesScale } from '../src/gameIso/rig/creatures';
+import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
@@ -67,7 +68,9 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
     const mountBones = quad.resolve(horse, 'profile', quad.restPose(), {});
     const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
     const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
-    return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: 0.78 }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
+    // Ratio cavalier DÉRIVÉ comme en jeu (MountedToken) : cavalier ÷ (art monture × Taille).
+    const rideK = 1 / (creatureSpeciesScale(horse) * sizeTokenScale('grande'));
+    return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
   });
   const uid = `k${uidN++}`;
   const { css, svg } = animatedRig(samples, dur, uid);

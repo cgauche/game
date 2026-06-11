@@ -8,12 +8,10 @@ import { enemyRigProfile } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
-import { bipedSpeciesScale } from './rig/creatures';
+import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
+import { sizeTokenScale } from './sizeScale';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
-
-/** Échelle du cavalier RELATIVE à la boîte de la monture (assis). Tuning visuel (QC d'assise). */
-const RIDE_SCALE = 0.78;
 
 /**
  * Couple CAVALIER+MONTURE rendu comme UN SEUL corps composite, trié au niveau de l'os
@@ -45,8 +43,11 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
   const riderPose = addPose(mountedRest(view, mainWeapon), riderA.pose);
   const riderBones = resolveRig(appearance, equip, riderPose, career, view, overlays, mountA.mirror);
-  // k (échelle relative dans la boîte monture) : RIDE_SCALE × échelle d'espèce du cavalier.
-  const k = RIDE_SCALE * bipedSpeciesScale(rider.name);
+  // k (échelle relative dans la boîte monture) : DÉRIVÉ de la chaîne d'échelles monde — le
+  // cavalier garde SA taille de rendu en selle (échelle cavalier ÷ échelle monture, art × Taille).
+  // Fin de l'ex-RIDE_SCALE 0.78 codé en dur : un cheval recalibré ou une autre monture (loup
+  // funeste…) garde un couple proportionné gratuitement.
+  const k = bipedSpeciesScale(rider.name) / (creatureSpeciesScale(mount.name) * sizeTokenScale(mount.size));
   const merged = seatRiderOnMount(mountBones, riderBones, { view, mountScale: 1, riderScale: k });
   return <g transform={mountA.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: bonesToSvg(merged) }} />;
 }

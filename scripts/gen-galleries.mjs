@@ -16,6 +16,7 @@ const STEPS = [
   ['Bestiaire — attaques (traits, animé)', 'npx tsx scripts/gen-creature-attacks-gallery.mts'],
   ['Têtes — 3 vues', 'npx tsx scripts/gen-head-views-gallery.mts'],
   ['Tenues — 3 vues', 'npx tsx scripts/gen-tenue-views-gallery.mts'],
+  ['Toise — échelles en jeu', 'npx tsx scripts/gen-toise-gallery.mts'],
   ['Debug — ancrage sol & armes', 'npx tsx scripts/_dbg-species.mts'],
 ];
 

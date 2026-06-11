@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   plan: 'quadruped',
   aliases: ['hydra', 'hydre des marais'],
   quad: {
-    sl: 1.55, build: 'draconic', girth: 1.12, bodyLen: 1.16, neckLen: 1.5, neckAngle: -12,
+    sl: 1.2, build: 'draconic', girth: 1.12, bodyLen: 1.16, neckLen: 1.5, neckAngle: -12,
     legLen: 0.72, head: 'hydre', tail: 'reptile', ears: 'pointues', foot: 'patte',
     stored: { corps: '#3e5a44', corpsO: '#243a2a', corpsH: '#5e7c62', cheveux: '#1e2e22', cheveuxO: '#121c15', cuir: '#a89a36' },
   },

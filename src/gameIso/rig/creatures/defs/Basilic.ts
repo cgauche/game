@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   plan: 'quadruped',
   aliases: ['basilisk', 'lezard geant', 'lézard géant'],
   quad: {
-    sl: 1.32, build: 'draconic', girth: 1.06, bodyLen: 1.26, neckLen: 0.66, neckAngle: -18,
+    sl: 1.1, build: 'draconic', girth: 1.06, bodyLen: 1.26, neckLen: 0.66, neckAngle: -18,
     legLen: 0.6, head: 'dragon', tail: 'reptile', ears: 'pointues', foot: 'patte',
     stored: { corps: '#6f7a30', corpsO: '#454c1c', corpsH: '#9aa552', cheveux: '#3a3e16', cheveuxO: '#23260e', cuir: '#c2a838' },
   },
