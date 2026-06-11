@@ -17,6 +17,7 @@ export function RunModal() {
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.runRoll);
   const reroll = useGame((s) => s.runReroll);
+  const darkPact = useGame((s) => s.runDarkPact);
   const force = useGame((s) => s.runForceSuccess);
   const confirm = useGame((s) => s.runConfirm);
   const cancel = useGame((s) => s.runCancel);
@@ -50,6 +51,8 @@ export function RunModal() {
       freeReroll={freeRerollOf(c)}
       rerollable={!!r && !r.success && canReroll(true, !!pr.rerolled)}
       onReroll={reroll}
+      darkPactable={!!r && !r.success && c.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={c.resilience ?? 0}
       onForce={force}
       forceShow={!r?.success}

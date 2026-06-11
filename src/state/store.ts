@@ -15,7 +15,7 @@ import {
   effectiveSpellOf, finishPlayerAction, restPartyOvernight,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
-  autoCleave, maybeHeroCleave, cleaveTargets, resolveDualSecond,
+  autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   counterspellCandidates, applyCounterspell,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
@@ -95,6 +95,7 @@ import {
   openEncounterPsych,
   encounterPsychRoll as encounterPsychRollFlow,
   encounterPsychReroll as encounterPsychRerollFlow,
+  encounterPsychDarkPact as encounterPsychDarkPactFlow,
   encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
   encounterPsychConfirm as encounterPsychConfirmFlow,
   encounterPsychResolve as encounterPsychResolveFlow,
@@ -393,6 +394,7 @@ export interface GameState {
   bargainRoll: () => void;
   bargainReroll: () => void;
   bargainBonusSL: () => void;
+  bargainDarkPact: () => void;
   bargainConfirm: () => void;
   bargainCancel: () => void;
   /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix. */
@@ -400,6 +402,7 @@ export interface GameState {
   appraiseRoll: () => void;
   appraiseReroll: () => void;
   appraiseBonusSL: () => void;
+  appraiseDarkPact: () => void;
   resolveAppraise: () => void;
   appraiseCancel: () => void;
   testRoll: () => void;
@@ -408,6 +411,9 @@ export interface GameState {
   testBonusSL: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté (même déjà relancé). */
   testDarkPact: () => void;
+  /** Détermination (LDB 17 l.62) : insensible à la Psychologie — retire le malus social
+   *  (Animosité/Préjugé) du Test en cours, AVANT le jet. */
+  testDetermination: () => void;
   resolveTest: () => void;
   /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
   corruptionRoll: () => void;
@@ -438,6 +444,7 @@ export interface GameState {
   healRoll: () => void;
   healReroll: () => void;
   healBonusSL: () => void;
+  healDarkPact: () => void;
   healForceSuccess: () => void;
   healConfirm: () => void;
   healCancel: () => void;
@@ -449,6 +456,7 @@ export interface GameState {
   reloadReroll: () => void;
   /** Chance « +1 DR » sur le jet de rechargement figé. */
   reloadBonusSL: () => void;
+  reloadDarkPact: () => void;
   /** « Appliquer » : cumule le DR (Test étendu), recharge si ≥ Indice, consomme l'Action. */
   reloadConfirm: () => void;
   /** Ferme la modale de rechargement sans coût (avant le jet). */
@@ -461,6 +469,7 @@ export interface GameState {
   recoverReroll: () => void;
   /** Chance « +1 DR » sur le jet de récupération figé. */
   recoverBonusSL: () => void;
+  recoverDarkPact: () => void;
   /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
   recoverConfirm: () => void;
   /** Ferme la modale de récupération sans coût (avant le jet). */
@@ -470,6 +479,9 @@ export interface GameState {
   /** Détermination (Resolve, LDB ch.17 l.66) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
+  /** Détermination depuis une MODALE de jet (LDB 17 l.66) : même règle, pour n'importe quel héros
+   *  (le défenseur n'est pas l'actif) et sans toucher au mode d'action. */
+  spendResolveCondition: (combatantId: string, conditionName: string) => void;
   /** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
   battleResolvePsychImmune: () => void;
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique ce Round. */
@@ -497,6 +509,9 @@ export interface GameState {
   castAllocOvercast: (axis: 'duration' | 'targets') => void;
   /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
   castToggleExtraTarget: (id: string) => void;
+  /** Surincantation « +Cible » : bascule le choix SUR LE CHAMP DE BATAILLE (la modale s'efface,
+   *  bandeau TargetPrompt + clic carte → castToggleExtraTarget). En combat uniquement. */
+  castPickTargets: (on: boolean) => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -568,6 +583,7 @@ export interface GameState {
   trampleRoll: () => void;
   trampleReroll: () => void;
   trampleBonusSL: () => void;
+  trampleDarkPact: () => void;
   trampleForceSuccess: () => void;
   trampleConfirm: () => void;
   trampleCancel: () => void;
@@ -576,12 +592,14 @@ export interface GameState {
   runRoll: () => void;
   runReroll: () => void;
   runForceSuccess: () => void;
+  runDarkPact: () => void;
   runConfirm: () => void;
   runCancel: () => void;
   /** Approche d'une source de Peur (LDB 21 l.29) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
   approachRoll: () => void;
   approachReroll: () => void;
   approachForceSuccess: () => void;
+  approachDarkPact: () => void;
   approachConfirm: () => void;
   approachCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
@@ -590,6 +608,7 @@ export interface GameState {
   focusRoll: () => void;
   focusReroll: () => void;
   focusBonusSL: () => void;
+  focusDarkPact: () => void;
   focusForceSuccess: () => void;
   focusConfirm: () => void;
   focusCancel: () => void;
@@ -600,12 +619,14 @@ export interface GameState {
   psychReroll: () => void;
   psychBonusSL: () => void;
   psychForceSuccess: () => void;
+  psychDarkPact: () => void;
   /** Détermination (LDB 17 l.62) : immunité Psychologie → passe la Peur/Terreur/trait sans risque. */
   psychResolve: () => void;
   psychConfirm: () => void;
   /** Test de Psychologie à la rencontre, hors combat (couture C, LDB 21) : Lancer, Chance, Résilience, Appliquer. */
   encounterPsychRoll: () => void;
   encounterPsychReroll: () => void;
+  encounterPsychDarkPact: () => void;
   encounterPsychForceSuccess: () => void;
   encounterPsychConfirm: () => void;
   encounterPsychResolve: () => void;
@@ -614,6 +635,7 @@ export interface GameState {
   frenzyRoll: () => void;
   frenzyReroll: () => void;
   frenzyForceSuccess: () => void;
+  frenzyDarkPact: () => void;
   frenzyConfirm: () => void;
   frenzyCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
@@ -627,6 +649,8 @@ export interface GameState {
   defenseRoll: () => void;
   defenseReroll: () => void;
   defenseBonusSL: () => void;
+  /** Sombre Pacte du défenseur (LDB 19 l.41) : +1 Corruption pour relancer sa défense ratée. */
+  defenseDarkPact: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
   /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
@@ -650,6 +674,8 @@ export interface GameState {
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   disengageReroll: () => void;
   disengageBonusSL: () => void;
+  /** Sombre Pacte du mover (LDB 19 l.41) : +1 Corruption pour relancer son Esquive ratée. */
+  disengageDarkPact: () => void;
   // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1).
   testForceSuccess: () => void;
   attackForceSuccess: () => void;
@@ -1053,6 +1079,7 @@ export const useGame = create<GameState>((set, get) => ({
   bargainRoll: () => FLOWS.bargain.roll(get, set),
   bargainReroll: () => FLOWS.bargain.reroll(get, set),
   bargainBonusSL: () => FLOWS.bargain.bonusSL(get, set),
+  bargainDarkPact: () => FLOWS.bargain.darkPact(get, set),
   bargainConfirm: () => merchantFlow.bargainConfirm(get, set),
   bargainCancel: () => set({ pendingBargain: null }),
 
@@ -1060,6 +1087,7 @@ export const useGame = create<GameState>((set, get) => ({
   appraiseRoll: () => FLOWS.appraise.roll(get, set),
   appraiseReroll: () => FLOWS.appraise.reroll(get, set),
   appraiseBonusSL: () => FLOWS.appraise.bonusSL(get, set),
+  appraiseDarkPact: () => FLOWS.appraise.darkPact(get, set),
   resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
 
@@ -1246,6 +1274,7 @@ export const useGame = create<GameState>((set, get) => ({
   /** Chance (relance / +1 DR) et Résilience : cf. spec `heal` de rollFlows. */
   healReroll: () => FLOWS.heal.reroll(get, set),
   healBonusSL: () => FLOWS.heal.bonusSL(get, set),
+  healDarkPact: () => FLOWS.heal.darkPact(get, set),
   healForceSuccess: () => FLOWS.heal.forceSuccess(get, set),
 
   /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. */
@@ -1512,6 +1541,12 @@ export const useGame = create<GameState>((set, get) => ({
   castToggleExtraTarget: (id) => {
     const pc = get().pendingCast;
     if (!pc || !pc.result?.cast) return;
+    // Garde : seules les cibles ÉLIGIBLES (portée/éveillées, LDB 47 l.28-31) sont togglables —
+    // indispensable depuis le clic carte (pickingTargets), inoffensif depuis le picker en modale.
+    const pool = get().battle?.combatants ?? get().party;
+    const caster = pool.find((c) => c.id === pc.casterId);
+    const spell = findSpell(pc.spellLabel);
+    if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile).some((c) => c.id === id)) return;
     const cur = pc.extraTargetIds ?? [];
     const next = cur.includes(id)
       ? cur.filter((x) => x !== id)
@@ -1519,6 +1554,11 @@ export const useGame = create<GameState>((set, get) => ({
         ? [...cur, id]
         : cur;
     set({ pendingCast: { ...pc, extraTargetIds: next } });
+  },
+  castPickTargets: (on) => {
+    const pc = get().pendingCast;
+    if (!pc || !pc.result?.cast || !get().battle) return; // hors combat : pas de carte tactique → picker en modale
+    set({ pendingCast: { ...pc, pickingTargets: on } });
   },
   castCancel: () => {
     const pc = get().pendingCast;
@@ -1567,6 +1607,7 @@ export const useGame = create<GameState>((set, get) => ({
   focusRoll: () => FLOWS.focus.roll(get, set),
   focusReroll: () => FLOWS.focus.reroll(get, set),
   focusBonusSL: () => FLOWS.focus.bonusSL(get, set),
+  focusDarkPact: () => FLOWS.focus.darkPact(get, set),
   focusForceSuccess: () => FLOWS.focus.forceSuccess(get, set),
   focusConfirm: () => {
     const { pendingFocus: pf } = get();
@@ -1619,6 +1660,7 @@ export const useGame = create<GameState>((set, get) => ({
   psychReroll: () => FLOWS.psych.reroll(get, set),
   psychBonusSL: () => FLOWS.psych.bonusSL(get, set),
   psychForceSuccess: () => FLOWS.psych.forceSuccess(get, set),
+  psychDarkPact: () => FLOWS.psych.darkPact(get, set),
   psychResolve: () => {
     // Détermination (LDB 17 l.62) : immunité TEMPORAIRE à la Psychologie (ce Round + le prochain) — elle
     // RETARDE/ignore la Peur, elle ne la SURMONTE PAS (l'Indice reste). On ferme donc le Test sans le
@@ -1671,6 +1713,7 @@ export const useGame = create<GameState>((set, get) => ({
   //    (self-contained pour limiter la collision avec la session « rig »). « Un jet = une modale ». ──
   encounterPsychRoll: () => encounterPsychRollFlow(get, set),
   encounterPsychReroll: () => encounterPsychRerollFlow(get, set),
+  encounterPsychDarkPact: () => encounterPsychDarkPactFlow(get, set),
   encounterPsychForceSuccess: () => encounterPsychForceSuccessFlow(get, set),
   encounterPsychConfirm: () => encounterPsychConfirmFlow(get, set),
   encounterPsychResolve: () => encounterPsychResolveFlow(get, set),
@@ -1687,6 +1730,7 @@ export const useGame = create<GameState>((set, get) => ({
   frenzyRoll: () => FLOWS.frenzy.roll(get, set),
   frenzyReroll: () => FLOWS.frenzy.reroll(get, set),
   frenzyForceSuccess: () => FLOWS.frenzy.forceSuccess(get, set),
+  frenzyDarkPact: () => FLOWS.frenzy.darkPact(get, set),
   frenzyConfirm: () => {
     const { battle, pendingFrenzy: pf } = get();
     if (!battle || !pf || !pf.result) return;
@@ -1878,6 +1922,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero') return;
+    // Ciblage CHAMP DE BATAILLE des flux différés (plus de boutons-noms en modale) — AVANT le
+    // verrou `battle.acted` (ces frappes surviennent après l'attaque-Action) :
+    // Frappe Mortelle / 2ᵉ frappe (Deux armes) / cibles supplémentaires de Surincantation.
+    if (get().pendingCleave && !get().pendingAttack) return get().cleaveAttack(id);
+    if (get().pendingDualStrike && !get().pendingAttack) return get().dualStrikeAttack(id);
+    if (get().pendingCast?.pickingTargets) return get().castToggleExtraTarget(id);
     // Piétinement : action GRATUITE (autorisée même Action consommée). Précède le verrou `battle.acted`.
     if (battle.action === 'trample') {
       get().battleTrample(id);
@@ -2189,6 +2239,7 @@ export const useGame = create<GameState>((set, get) => ({
   reloadRoll: () => FLOWS.reload.roll(get, set),
   reloadReroll: () => FLOWS.reload.reroll(get, set),
   reloadBonusSL: () => FLOWS.reload.bonusSL(get, set),
+  reloadDarkPact: () => FLOWS.reload.darkPact(get, set),
   reloadConfirm: () => {
     const { battle, pendingReload: pr } = get();
     if (!battle || !pr || pr.roll == null) return;
@@ -2241,6 +2292,7 @@ export const useGame = create<GameState>((set, get) => ({
   recoverRoll: () => FLOWS.recover.roll(get, set),
   recoverReroll: () => FLOWS.recover.reroll(get, set),
   recoverBonusSL: () => FLOWS.recover.bonusSL(get, set),
+  recoverDarkPact: () => FLOWS.recover.darkPact(get, set),
   recoverConfirm: () => {
     const { battle, pendingStateRecovery: sr } = get();
     if (!battle || !sr || sr.roll == null) return;
@@ -2283,6 +2335,28 @@ export const useGame = create<GameState>((set, get) => ({
       extra = ' (+1 PB en se relevant)';
     }
     set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', `${active.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`, active.id)] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  },
+  /** Détermination depuis une MODALE de jet (LDB 17 l.62-66) : même règle que `battleSpendResolve`,
+   *  mais pour N'IMPORTE QUEL héros (en défense, le héros n'est pas l'actif) et sans toucher au
+   *  mode d'action — le panneau pré-rempli recalcule ses modificateurs au re-rendu. */
+  spendResolveCondition: (combatantId, conditionName) => {
+    const s = get();
+    const hero = (s.battle?.combatants ?? s.party).find((c) => c.id === combatantId);
+    if (!hero || hero.kind !== 'hero' || (hero.resolve ?? 0) <= 0) return;
+    if (!hero.conditions.some((c) => c.name === conditionName)) return;
+    hero.resolve = (hero.resolve ?? 0) - 1;
+    removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
+    let extra = '';
+    if (conditionName === 'À Terre') {
+      hero.wounds.current = Math.min(hero.wounds.max, hero.wounds.current + 1); // +1 PB en se relevant (l.66)
+      extra = ' (+1 PB en se relevant)';
+    }
+    if (s.battle) {
+      set({ battle: { ...s.battle, log: [...s.battle.log, ev('info', `${hero.name} puise dans sa Détermination : retire l'État ${conditionName}${extra}.`, hero.id)] } });
+    } else {
+      set({ party: [...s.party] });
+    }
     bus.emit(EVT.SCENE_DIRTY);
   },
   /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la fin du PROCHAIN Round. */
@@ -2547,6 +2621,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!attacker || !target || isOutOfAction(target)) return;
     const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
     if (!off) { set({ pendingDualStrike: null }); return; }
+    if (!dualStrikeTargets(battle, attacker, off).some((t) => t.id === targetId)) return; // cible invalide (hors d'Allonge)
     // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.638).
     const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });
@@ -2578,6 +2653,7 @@ export const useGame = create<GameState>((set, get) => ({
   trampleRoll: () => FLOWS.trample.roll(get, set),
   trampleReroll: () => FLOWS.trample.reroll(get, set),
   trampleBonusSL: () => FLOWS.trample.bonusSL(get, set),
+  trampleDarkPact: () => FLOWS.trample.darkPact(get, set),
   trampleForceSuccess: () => FLOWS.trample.forceSuccess(get, set),
   trampleConfirm: () => {
     const { battle, pendingTrample: pt } = get();
@@ -2606,6 +2682,7 @@ export const useGame = create<GameState>((set, get) => ({
   runRoll: () => FLOWS.run.roll(get, set),
   runReroll: () => FLOWS.run.reroll(get, set),
   runForceSuccess: () => FLOWS.run.forceSuccess(get, set),
+  runDarkPact: () => FLOWS.run.darkPact(get, set),
   runConfirm: () => {
     const { battle, scene, pendingRun: pr } = get();
     if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
@@ -2658,6 +2735,7 @@ export const useGame = create<GameState>((set, get) => ({
   approachRoll: () => FLOWS.approach.roll(get, set),
   approachReroll: () => FLOWS.approach.reroll(get, set),
   approachForceSuccess: () => FLOWS.approach.forceSuccess(get, set),
+  approachDarkPact: () => FLOWS.approach.darkPact(get, set),
   approachConfirm: () => {
     const { battle, pendingApproach: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -2761,6 +2839,23 @@ export const useGame = create<GameState>((set, get) => ({
     const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined, [], 0, undefined, parry);
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
+  },
+  /** Sombre Pacte du défenseur (LDB 19 l.41) : +1 Corruption pour RELANCER sa défense ratée —
+   *  même déjà relancée par la Chance (le jet d'attaque reste figé). */
+  defenseDarkPact: () => {
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.result || pd.def?.success) return; // on ne pactise que pour relancer un Test RATÉ
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender || defender.kind !== 'hero') return; // la Corruption ne suit que les héros
+    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender);
+    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined;
+    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon);
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
+    const lines = gainCorruption(get, set, defender, 1);
+    for (const l of lines) get().log(l);
+    // Pas de drapeau `rerolled` : le Pacte reste disponible (chaque usage corrompt — c'est sa limite).
+    set({ pendingDefense: { ...get().pendingDefense!, def, result: res }, battle: { ...get().battle! } });
   },
   defenseConfirm: () => {
     // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
@@ -2942,6 +3037,19 @@ export const useGame = create<GameState>((set, get) => ({
     const opp = resolveOpposed(def2, pd.atk!);
     set({ pendingDisengage: { ...pd, def: def2, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
   },
+  /** Sombre Pacte du mover (LDB 19 l.41) : +1 Corruption pour RELANCER son Esquive ratée —
+   *  même déjà relancée (le jet du foe reste figé). */
+  disengageDarkPact: () => {
+    const { battle, pendingDisengage: pd } = get();
+    if (!battle || !pd || !pd.result || pd.def?.success) return; // Test RATÉ uniquement (LDB 19 l.16)
+    const mover = battle.combatants.find((c) => c.id === pd.moverId);
+    if (!mover || mover.kind !== 'hero') return;
+    const def = rollMeleeDefender(mover, 'esquive', battleRng());
+    const opp = resolveOpposed(def, pd.atk!);
+    const lines = gainCorruption(get, set, mover, 1);
+    for (const l of lines) get().log(l);
+    set({ pendingDisengage: { ...get().pendingDisengage!, def, result: disengageOutcome(opp.winner) }, battle: { ...get().battle! } });
+  },
 
   // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1) ──
   testForceSuccess: () => FLOWS.test.forceSuccess(get, set),
@@ -3115,6 +3223,19 @@ export const useGame = create<GameState>((set, get) => ({
   testReroll: () => FLOWS.test.reroll(get, set),
   testBonusSL: () => FLOWS.test.bonusSL(get, set),
   testDarkPact: () => FLOWS.test.darkPact(get, set),
+  testDetermination: () => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll != null || !pt.psychMod) return; // AVANT le jet, et seulement si un malus psy pèse
+    const actor = get().party.find((c) => c.id === pt.actorId);
+    if (!actor || (actor.resolve ?? 0) <= 0) return;
+    actor.resolve = (actor.resolve ?? 0) - 1;
+    get().log(`${actor.name} puise dans sa Détermination : insensible à la Psychologie (LDB 17 l.62) — malus social ignoré.`);
+    // Le malus psy était intégré à skillValue/target (cf. PendingTest) : on le retranche des deux.
+    set({
+      pendingTest: { ...pt, skillValue: pt.skillValue - pt.psychMod, target: pt.target - pt.psychMod, psychMod: 0, psychDetail: undefined },
+      party: [...get().party],
+    });
+  },
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
   corruptionRoll: () => FLOWS.corruption.roll(get, set),
@@ -3189,3 +3310,9 @@ export const useGame = create<GameState>((set, get) => ({
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
 }));
+
+// Exposition DEV-ONLY du store pour le pilotage en vérification navigateur (Playwright/Puppeteer) :
+// permet d'ouvrir les flux (battleClickEntity, etc.) sans simuler la projection isométrique du clic.
+if (typeof window !== 'undefined' && import.meta.env?.DEV) {
+  (window as unknown as { __game?: typeof useGame }).__game = useGame;
+}

@@ -17,6 +17,7 @@ export function ApproachModal() {
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.approachRoll);
   const reroll = useGame((s) => s.approachReroll);
+  const darkPact = useGame((s) => s.approachDarkPact);
   const force = useGame((s) => s.approachForceSuccess);
   const confirm = useGame((s) => s.approachConfirm);
   const cancel = useGame((s) => s.approachCancel);
@@ -49,6 +50,8 @@ export function ApproachModal() {
       freeReroll={freeRerollOf(c)}
       rerollable={!!r && !r.success && canReroll(true, !!pa.rerolled)}
       onReroll={reroll}
+      darkPactable={!!r && !r.success && c.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={c.resilience ?? 0}
       onForce={force}
       forceShow={!r?.success}

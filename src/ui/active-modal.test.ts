@@ -35,15 +35,21 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     ).toBe('fateSave');
   });
 
-  it('la Maladresse passe avant la Déviation et la Frappe Mortelle', () => {
+  it('la Maladresse passe avant la Déviation', () => {
     expect(pickActiveModalKey({ pendingFumble: {}, pendingDeviation: {}, pendingCleave: {} })).toBe('fumble');
   });
 
-  it('Frappe Mortelle seule → modale de balayage', () => {
-    expect(pickActiveModalKey({ pendingCleave: {} })).toBe('cleave');
+  it('Frappe Mortelle / 2ᵉ frappe (Deux armes) ne sont PLUS des modales (ciblage carte, TargetPrompt)', () => {
+    expect(pickActiveModalKey({ pendingCleave: {} })).toBeNull();
+    expect(pickActiveModalKey({ pendingDualStrike: {} })).toBeNull();
   });
 
   it('Frappe Mortelle + jet d’enchaînement en cours → le jet prend la main', () => {
     expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {} })).toBe('attack');
+  });
+
+  it('Surincantation : choix des cibles sur la carte → la modale d’incantation s’efface', () => {
+    expect(pickActiveModalKey({ pendingCast: {} })).toBe('cast');
+    expect(pickActiveModalKey({ pendingCast: { pickingTargets: true } })).toBeNull();
   });
 });

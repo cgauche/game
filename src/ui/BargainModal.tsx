@@ -14,6 +14,7 @@ export function BargainModalView({
   onRoll,
   onReroll,
   onBonusSL,
+  onDarkPact,
   onConfirm,
   onCancel,
 }: {
@@ -23,6 +24,7 @@ export function BargainModalView({
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
+  onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -69,6 +71,8 @@ export function BargainModalView({
       rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
+      darkPactable={rolled && pb.roll!.roll > pb.roll!.target}
+      onDarkPact={onDarkPact}
       confirmLabel="Conclure"
       onConfirm={onConfirm}
     />
@@ -87,10 +91,10 @@ export function BargainModal() {
   const roll = useGame((s) => s.bargainRoll);
   const reroll = useGame((s) => s.bargainReroll);
   const bonusSL = useGame((s) => s.bargainBonusSL);
+  const darkPact = useGame((s) => s.bargainDarkPact);
   const confirm = useGame((s) => s.bargainConfirm);
   const cancel = useGame((s) => s.bargainCancel);
   if (!pb) return null;
   const actor = party.find((c) => c.id === pb.playerId);
-  const fortune = actor?.fortune ?? 0;
-  return <BargainModalView pb={pb} fortune={fortune} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />;
+  return <BargainModalView pb={pb} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
 }

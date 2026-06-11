@@ -47,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach, computeRunReach } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, previewAttack, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
@@ -107,6 +107,9 @@ export function IsoStage() {
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
   const pendingCast = useGame((s) => s.pendingCast);
+  // Ciblage carte des flux différés (TargetPrompt) : surbrillances des cibles cliquables.
+  const pendingCleave = useGame((s) => s.pendingCleave);
+  const pendingDualStrike = useGame((s) => s.pendingDualStrike);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
@@ -348,8 +351,32 @@ export function IsoStage() {
           hl.push(<path key={`crowd-${v.id}`} d={diamondPath(v.pos.x, v.pos.y, d)} fill="#ff7a3c" opacity={0.34} stroke="#ff7a3c" strokeWidth={2} pointerEvents="none" />);
         }
     }
+    // Ciblage CHAMP DE BATAILLE des flux différés (bandeau TargetPrompt) : anneau sur les cibles
+    // cliquables — Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation « +Cible ».
+    if (!pendingAttack) {
+      const ring = (c: Combatant, key: string, color = '#ff5a4d') =>
+        hl.push(<path key={key} d={diamondPath(c.pos!.x, c.pos!.y, d)} fill="none" stroke={color} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
+      if (pendingCleave) {
+        const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
+        if (atk) for (const t of cleaveTargets(battle, atk, pendingCleave.hitIds)) t.pos && ring(t, `clv-${t.id}`);
+      }
+      if (pendingDualStrike) {
+        const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
+        const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
+        if (atk && off) for (const t of dualStrikeTargets(battle, atk, off)) t.pos && ring(t, `dsk-${t.id}`);
+      }
+      if (pendingCast?.pickingTargets) {
+        const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
+        const spell = findSpell(pendingCast.spellLabel);
+        if (caster && spell)
+          for (const t of overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile)) {
+            // Cibles déjà cochées en vert (re-cliquer décoche), candidates restantes en rouge.
+            if (t.pos) ring(t, `oct-${t.id}`, (pendingCast.extraTargetIds ?? []).includes(t.id) ? '#5db87a' : '#ff5a4d');
+          }
+      }
+    }
     return hl;
-  }, [scene, shownRot, viewMode, mode, battle, pendingAttack]);
+  }, [scene, shownRot, viewMode, mode, battle, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
 
   // Tokens des ENTITÉS de scène (exploration) memoïsés : ils ne BOUGENT pas pendant que le groupe
   // marche (seul le leader glisse, rendu à part). Sans ça, le rAF de marche (setWalkTick) re-rendait
@@ -654,9 +681,10 @@ export function IsoStage() {
     const { x, y } = t;
     if (st.mode === 'battle') {
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
-      // En mode incantation, on peut cibler n'importe quel combattant (allié, ennemi ou soi) ;
-      // sinon seuls les ennemis sont cliquables pour attaquer.
-      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast')) st.battleClickEntity(occ.id);
+      // En mode incantation — ou pendant le choix des cibles de Surincantation (carte) — on peut
+      // cibler n'importe quel combattant (allié, ennemi ou soi) ; sinon seuls les ennemis sont
+      // cliquables pour attaquer.
+      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast' || st.pendingCast?.pickingTargets)) st.battleClickEntity(occ.id);
       else st.battleClickTile({ x, y });
       return;
     }

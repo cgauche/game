@@ -14,6 +14,7 @@ export function AppraiseModalView({
   onRoll,
   onReroll,
   onBonusSL,
+  onDarkPact,
   onConfirm,
   onCancel,
 }: {
@@ -23,6 +24,7 @@ export function AppraiseModalView({
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
+  onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -51,6 +53,8 @@ export function AppraiseModalView({
       rerollable={rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled)}
       onReroll={onReroll}
       onBonusSL={onBonusSL}
+      darkPactable={rolled && pa.roll! > pa.target}
+      onDarkPact={onDarkPact}
       onConfirm={onConfirm}
     />
   );
@@ -67,10 +71,10 @@ export function AppraiseModal() {
   const roll = useGame((s) => s.appraiseRoll);
   const reroll = useGame((s) => s.appraiseReroll);
   const bonusSL = useGame((s) => s.appraiseBonusSL);
+  const darkPact = useGame((s) => s.appraiseDarkPact);
   const confirm = useGame((s) => s.resolveAppraise);
   const cancel = useGame((s) => s.appraiseCancel);
   if (!pa) return null;
   const actor = party.find((c) => c.id === pa.actorId);
-  const fortune = actor?.fortune ?? 0;
-  return <AppraiseModalView pa={pa} fortune={fortune} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onConfirm={confirm} onCancel={cancel} />;
+  return <AppraiseModalView pa={pa} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
 }

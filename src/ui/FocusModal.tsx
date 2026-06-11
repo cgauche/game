@@ -20,6 +20,7 @@ export function FocusModal() {
   const roll = useGame((s) => s.focusRoll);
   const reroll = useGame((s) => s.focusReroll);
   const bonusSL = useGame((s) => s.focusBonusSL);
+  const darkPact = useGame((s) => s.focusDarkPact);
   const force = useGame((s) => s.focusForceSuccess);
   const confirm = useGame((s) => s.focusConfirm);
   const cancel = useGame((s) => s.focusCancel);
@@ -58,6 +59,8 @@ export function FocusModal() {
       rerollable={!!r && canReroll(r.dr === 0, !!pf.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}
+      darkPactable={!!r && r.dr === 0 && caster.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={caster.resilience ?? 0}
       onForce={force}
       forceShow={r?.dr === 0}

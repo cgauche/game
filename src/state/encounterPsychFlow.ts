@@ -20,6 +20,7 @@ import { canReroll } from '../engine/fortune';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { battleRng } from './battleRng';
 import { addCondition } from '../engine/conditions';
+import { gainCorruption } from './corruptionFlow';
 
 export interface PendingEncounterPsych {
   heroId: string;
@@ -85,6 +86,18 @@ export function encounterPsychReroll(get: () => GameState, set: (s: Partial<Game
   if (free) consumeActiveFlag(hero, 'freeReroll');
   else hero.fortune = (hero.fortune ?? 0) - 1;
   set({ pendingEncounterPsych: { ...pe, result: rollFor(pe, hero), rerolled: true }, party: [...party] });
+}
+
+/** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER le Test raté — même déjà
+ *  relancé par la Chance (le Pacte reste disponible : chaque usage corrompt, c'est sa limite). */
+export function encounterPsychDarkPact(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+  const { pendingEncounterPsych: pe, party } = get();
+  if (!pe || !pe.result || pe.result.success) return; // on ne pactise que pour relancer un Test RATÉ
+  const hero = party.find((h) => h.id === pe.heroId);
+  if (!hero) return;
+  const lines = gainCorruption(get, set, hero, 1);
+  for (const l of lines) get().log(l);
+  set({ pendingEncounterPsych: { ...get().pendingEncounterPsych!, result: rollFor(pe, hero) }, party: [...get().party] });
 }
 
 export function encounterPsychForceSuccess(get: () => GameState, set: (s: Partial<GameState>) => void): void {

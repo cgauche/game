@@ -36,6 +36,8 @@ import {
   ModLine,
   outnumberMod,
   crowdMod,
+  defenseModifiers,
+  DEFENSE_LABEL,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
@@ -923,6 +925,15 @@ export function previewAttack(
   const target0 = combatValue(attacker, kind, weapon) + combineMods(mods);
   const inRange = kind === 'ranged' ? rangeBandModifier(dist, weapon.range ?? 0) != null : dist <= reachTiles(weapon);
   return { weapon, kind, inRange, blocked: false, target: target0, mods, dmg, soak };
+}
+
+/** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit
+ *  de savoir de la défense à venir — la compétence probable (« défendra : Parade ») et ses
+ *  bonus/malus visibles (Avantage, États, Sur la défensive…), SANS la valeur de compétence ni
+ *  l'encaissé. Compétence = meilleure défense (`bestDefenseMode`) ; Bestial → Esquive seule. */
+export function previewDefense(defender: Combatant): { label: string; mods: ModLine[] } {
+  const mode = bestDefenseMode(defender);
+  return { label: `défendra : ${DEFENSE_LABEL[mode]}`, mods: defenseModifiers(defender, mode, 0, defender.weapons[0]) };
 }
 
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir

@@ -18,6 +18,7 @@ export function TestModal() {
   const reroll = useGame((s) => s.testReroll);
   const bonusSL = useGame((s) => s.testBonusSL);
   const darkPact = useGame((s) => s.testDarkPact);
+  const determination = useGame((s) => s.testDetermination);
   const forceSuccess = useGame((s) => s.testForceSuccess);
   const resolve = useGame((s) => s.resolveTest);
   if (!pt) return null;
@@ -46,6 +47,9 @@ export function TestModal() {
       }
       rolled={rolled}
       onRoll={roll}
+      /* Détermination (LDB 17 l.62) : AVANT le jet, si un malus psy social pèse sur le Test
+         (Animosité/Préjugé envers l'interlocuteur), la dépense l'ignore. */
+      determination={!rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined}
       breakdown={rolled ? testBreakdown(pt.label, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pt.actorId)} combatants={party} />}
       fortune={actor?.fortune ?? 0}

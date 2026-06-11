@@ -401,11 +401,59 @@ body {
 .pregen-row .char-card {
   flex: 1;
 }
+/* Barre d'actions normée des modales : 2 boutons max — [Annuler/Subir discret à gauche] [primaire
+   à droite, largeur min fixe]. Les dépenses de ressources vivent dans `.rm-influence`, pas ici. */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   margin-top: 12px;
+}
+.modal .modal-actions .btn-primary {
+  min-width: 132px;
+}
+/* Annuler/Subir : bouton discret, ancré à gauche de la barre. */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--panel2);
+}
+.modal-actions .btn-ghost {
+  margin-right: auto;
+}
+/* Rangée « influencer le jet » : ressources contextuelles (Chance, Pacte, Résilience,
+   Détermination) en petits boutons normés de taille identique. Vide → invisible. */
+.rm-influence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.rm-influence:empty {
+  display: none;
+}
+.btn.btn-resource {
+  padding: 5px 11px;
+  font-size: 12.5px;
+  border-radius: 14px;
+  line-height: 1.3;
+}
+@media (max-width: 560px) {
+  /* Mobile : ressources centrées sur leur rangée, primaire pleine largeur restante. */
+  .rm-influence {
+    justify-content: center;
+  }
+  .modal .modal-actions .btn-primary {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 /* Creator */
@@ -1958,6 +2006,36 @@ textarea:focus {
   font-size: 12px;
   padding: 3px 12px;
 }
+/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation) :
+   posé au-dessus de la barre d'action, n'empêche pas de cliquer le champ de bataille. */
+.target-prompt {
+  position: absolute;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 14, 20, 0.88);
+  border: 1px solid #d9b85a;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  z-index: 6;
+  max-width: 94vw;
+}
+@media (max-width: 700px) {
+  .target-prompt {
+    bottom: 132px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+@media (pointer: coarse) {
+  .target-prompt .btn.small {
+    padding: 9px 14px;
+  }
+}
 @keyframes cb-in {
   from {
     opacity: 0;
@@ -2611,43 +2689,6 @@ textarea:focus {
   color: var(--muted);
   margin: 4px 0 14px;
 }
-.test-result {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border);
-}
-.test-result.ok {
-  background: rgba(46, 204, 113, 0.14);
-  border-color: var(--ok);
-}
-.test-result.fail {
-  background: rgba(192, 57, 43, 0.14);
-  border-color: var(--danger);
-}
-.test-result .dice {
-  font-size: 40px;
-  font-weight: 800;
-}
-.test-result .vs {
-  color: var(--muted);
-  font-size: 16px;
-}
-.test-result .verdict {
-  margin-left: 6px;
-  font-weight: 700;
-}
-.test-result.ok .verdict {
-  color: var(--ok);
-}
-.test-result.fail .verdict {
-  color: #ff7a6c;
-}
-
 /* Lecteur de document / handout */
 .document-modal {
   width: 560px;
@@ -2954,34 +2995,100 @@ textarea:focus {
   gap: 5px;
   padding: 0 10px 2px;
 }
-/* Aperçu pré-jet (R4) : valeur de toucher + modificateurs visibles AVANT « Lancer ». */
-.rm-preview {
-  margin: 10px 0 4px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg2);
+/* ── Panneau de jet unique (RollPanel) : même géométrie avant/après le jet ── */
+.roll-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
 }
-.rm-preview-hit {
-  text-align: center;
-  font-size: 15px;
-  margin-bottom: 6px;
+.rr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.rm-preview-hit b {
-  color: #ffe066;
+.rr-port {
+  flex: 0 0 28px;
+  display: flex;
+  justify-content: center;
 }
-.rm-preview-dmg {
-  text-align: center;
+.rr-line {
+  flex: 1;
+  min-width: 0;
+}
+/* Test opposé post-jet : la ligne GAGNANTE est accentuée (or), la perdante atténuée. */
+.rr-win .rm-roll {
+  border-color: #d9b85a;
+  box-shadow: 0 0 0 1px rgba(217, 184, 90, 0.35);
+  background: rgba(217, 184, 90, 0.07);
+}
+.rr-lose {
+  opacity: 0.55;
+}
+.rm-netsl {
+  text-align: right;
   font-size: 12px;
+  font-weight: 600;
+  color: #d9b85a;
+  padding-right: 2px;
+}
+/* Ligne pré-remplie (avant le jet) : dé/DR vides, bord neutre. */
+.rm-roll.pending {
+  border-left: 3px solid var(--border);
+}
+.rm-roll.pending .rm-roll-sl {
   color: var(--muted);
-  margin-top: 6px;
+  font-weight: 400;
 }
-.rm-preview-dmg b {
-  color: #e7c8a0;
+.rm-roll-empty {
+  opacity: 0.55;
 }
-.rm-preview.bad {
+/* Rangée d100 SUR TABLE (Oups !, Critiques, Imparfaites…) : neutre, compacte. */
+.rm-roll.table {
+  grid-template-columns: auto 1fr auto;
+  border-left: 3px solid var(--accent2);
+}
+.rm-table-result {
+  color: var(--text);
+  font-weight: 600;
+}
+/* Attaque impossible (pré-jet) : pas de ligne de vue / hors de portée. */
+.rm-blocked {
   text-align: center;
   color: #e07a63;
+  font-weight: 600;
+  margin: 10px 0;
+}
+/* Zone Options pré-jet (localisation, arme, toggles de tir, Parade/Esquive…). */
+.rm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+/* Segmented control (choix exclusif : Parade/Esquive…). */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+.seg button {
+  background: var(--panel2);
+  border: none;
+  border-right: 1px solid var(--border);
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.seg button:last-child {
+  border-right: none;
+}
+.seg button.on {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
   font-weight: 600;
 }
 .rm-mod {
@@ -3620,11 +3727,6 @@ textarea:focus {
 .dr-bar-notch { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.5); }
 .dr-bar-val { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-/* Confrontation portraits dans une modale (testeur vs source) — #20. */
-.modal-vs { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 4px 0 10px; flex-wrap: wrap; }
-.modal-vs .mv-side { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.modal-vs .mv-side strong { font-size: 13px; }
-.modal-vs .mv-arrow { color: var(--muted); font-size: 16px; }
 
 /* Messages de victoire (Effets journal de onVictory) — affichés dans l'écran de victoire (#9). */
 .victory-messages { margin: 4px 0 12px; max-width: 520px; text-align: center; }

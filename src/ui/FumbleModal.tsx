@@ -1,6 +1,6 @@
 import { useGame, type PendingFumble } from '../state/store';
 import { Modal } from './Modal';
-import { Dice } from './Dice';
+import { TableRollLine } from './RollLine';
 import type { Combatant } from '../engine/types';
 
 /** Vue pure de la modale de Maladresse (testable sans store). Pas de Chance : elle agit AVANT
@@ -22,29 +22,26 @@ export function FumbleModalView({
   const r = pf.result;
   return (
     <Modal title="🎲 Maladresse !" subject={combatant} variant="test">
-        <p className="test-actor">
-          <strong>{name}</strong> — Test de combat raté sur un double (Tableau des Oups !, LDB)
-        </p>
+      <p className="test-actor">
+        <strong>{name}</strong> — Test de combat raté sur un double (Tableau des Oups !, LDB)
+      </p>
 
-        {!r ? (
+      {!r ? (
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={onRoll}>
+            🎲 Lancer sur le Tableau des Oups !
+          </button>
+        </div>
+      ) : (
+        <>
+          <TableRollLine table="Tableau des Oups !" roll={r.roll} result={r.label} />
           <div className="modal-actions">
-            <button className="btn btn-primary" onClick={onRoll}>
-              🎲 Lancer sur le Tableau des Oups !
+            <button className="btn btn-primary" onClick={onConfirm}>
+              Appliquer
             </button>
           </div>
-        ) : (
-          <>
-            <div className="test-result fail">
-              <span className="dice"><Dice roll={r.roll} /></span>
-              <span className="verdict">{r.label}</span>
-            </div>
-            <div className="modal-actions">
-              <button className="btn btn-primary" onClick={onConfirm}>
-                Appliquer
-              </button>
-            </div>
-          </>
-        )}
+        </>
+      )}
     </Modal>
   );
 }

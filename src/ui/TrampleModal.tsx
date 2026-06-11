@@ -16,6 +16,7 @@ export function TrampleModal() {
   const roll = useGame((s) => s.trampleRoll);
   const reroll = useGame((s) => s.trampleReroll);
   const bonusSL = useGame((s) => s.trampleBonusSL);
+  const darkPact = useGame((s) => s.trampleDarkPact);
   const force = useGame((s) => s.trampleForceSuccess);
   const confirm = useGame((s) => s.trampleConfirm);
   const cancel = useGame((s) => s.trampleCancel);
@@ -44,6 +45,8 @@ export function TrampleModal() {
       rerollable={!!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled)}
       onReroll={reroll}
       onBonusSL={bonusSL}
+      darkPactable={!!r && !r.attackerDetail?.success && attacker.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={attacker.resilience ?? 0}
       onForce={force}
       /* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */

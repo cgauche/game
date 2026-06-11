@@ -26,6 +26,7 @@ export function HealModal() {
   const roll = useGame((s) => s.healRoll);
   const reroll = useGame((s) => s.healReroll);
   const bonusSL = useGame((s) => s.healBonusSL);
+  const darkPact = useGame((s) => s.healDarkPact);
   const force = useGame((s) => s.healForceSuccess);
   const confirm = useGame((s) => s.healConfirm);
   const cancel = useGame((s) => s.healCancel);
@@ -90,11 +91,13 @@ export function HealModal() {
             <p className="rm-note">Dernière passe : {ph.sl >= 0 ? '+' : ''}{ph.sl} DR{target ? ` · ${target.name} ${target.wounds.current}/${target.wounds.max} PB` : ''}</p>
           )}
           <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10). À 0 PB, l’opération s’interrompt.</p>
+          {/* #16 : gérer le patient (bander / arrêter l'hémorragie) SANS interrompre l'opération. */}
+          <div className="rm-influence">
+            <button className="btn btn-resource" onClick={surgeryBandage} disabled={!target || target.wounds.current >= target.wounds.max} title="Bander les Blessures (Test de Guérison, +BI+DR PB) — sans interrompre l'opération">🩹 Bander</button>
+            <button className="btn btn-resource" onClick={surgeryStopBleed} disabled={!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)} title="Arrêter l'hémorragie (Test de Guérison) — sans interrompre l'opération">🩸 Hémorragie</button>
+          </div>
           <div className="modal-actions">
-            <button className="btn" onClick={cancel}>Arrêter</button>
-            {/* #16 : gérer le patient (bander / arrêter l'hémorragie) SANS interrompre l'opération. */}
-            <button className="btn" onClick={surgeryBandage} disabled={!target || target.wounds.current >= target.wounds.max} title="Bander les Blessures (Test de Guérison, +BI+DR PB) — sans interrompre l'opération">🩹 Bander</button>
-            <button className="btn" onClick={surgeryStopBleed} disabled={!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)} title="Arrêter l'hémorragie (Test de Guérison) — sans interrompre l'opération">🩸 Hémorragie</button>
+            <button className="btn btn-ghost" onClick={cancel}>Arrêter</button>
             <button className="btn btn-primary" onClick={surgeryPass}>🔪 Opérer (une passe)</button>
           </div>
       </Modal>
@@ -137,9 +140,11 @@ export function HealModal() {
       outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
       fortune={fortune}
       freeReroll={freeRerollOf(healer)}
-      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled)}
+      rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeRerollOf(healer))}
       onReroll={reroll}
       onBonusSL={bonusSL}
+      darkPactable={rolled && ph.roll! > ph.target && healer?.kind === 'hero'}
+      onDarkPact={darkPact}
       resilience={healer?.resilience ?? 0}
       onForce={force}
       forceShow={!ph.success}

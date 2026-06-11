@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { RollBreakdown } from '../engine/combat';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
-import { RollLine } from './RollLine';
+import { RollPanel, type RollRowData } from './RollPanel';
 import { Modal } from './Modal';
 
 // Dé d100 canonique (désormais animé) — ré-exporté pour les modales qui l'importaient d'ici.
@@ -10,20 +10,22 @@ export { Dice } from './Dice';
 
 /**
  * Coquille PARTAGÉE des modales de jet différé (invariante « un jet = une modale ») — pendant UI de
- * la fabrique `state/rollFlow.ts`. Toutes suivent le même squelette, jusqu'ici copié-collé par modale :
+ * la fabrique `state/rollFlow.ts`. Toutes suivent le même squelette :
  *
- *   overlay → titre → sous-titre → [pré-jet : Lancer · Résilience (LDB 17 l.73, AVANT le jet) ·
- *   Annuler] | [post-jet : bloc résultat · Chance (relance / +1 DR) · Résilience · Appliquer · Annuler]
+ *   overlay → titre → sous-titre → panneau de jet (`RollPanel`, pré-rempli ou rempli) → issue
+ *   style journal → rangée « influencer le jet » (ressources contextuelles : Chance / Pacte /
+ *   Résilience / Détermination) → barre d'actions (2 boutons max : Annuler · primaire).
  *
  * La modale concrète ne fournit QUE sa partie spécifique : titre, sous-titre, ligne(s) de jet
- * (`breakdown` → RollLine) + issue style journal (`outcome`), et les handlers du flux.
+ * (`breakdown` → RollPanel) + issue style journal (`outcome`), et les handlers du flux.
  * Variantes couvertes par props :
  * - `variant` : famille de classes ('roll' = roll-modal/rm-vs ; 'test' = test-modal/test-actor) ;
- * - `onBonusSL` absent : Test binaire → bouton « 🍀 Relancer » simple au lieu de `ChanceButtons` ;
+ * - `onBonusSL` absent : Test binaire → pas de bouton « +1 DR » ;
  * - `onForce` absent : pas de Résilience (flux sans « Réussite garantie ») ;
  * - `preRollForce` : action Résilience pré-jet spécifique (ex. Piétinement : lancer PUIS forcer) ;
- * - `cancelFirst` : « Annuler » avant « Lancer » (famille test + soin) ; `cancelAfterRoll` : Annuler
- *   aussi après le jet (Piétinement, Focalisation).
+ * - `cancelFirst` historique : « Annuler » est désormais TOUJOURS à gauche (barre normée) ;
+ *   `cancelAfterRoll` : Annuler aussi après le jet (Piétinement, Focalisation) ;
+ * - `rows`/`winnerIndex`/`netSL` : Test opposé riche (portraits + vainqueur accentué).
  */
 export function RollFlowShell({
   variant = 'roll',
@@ -34,9 +36,11 @@ export function RollFlowShell({
   rollLabel = '🎲 Lancer',
   onRoll,
   onCancel,
-  cancelFirst,
   cancelAfterRoll = false,
   breakdown,
+  rows,
+  winnerIndex,
+  netSL,
   outcome,
   determination,
   fortune,
@@ -63,22 +67,27 @@ export function RollFlowShell({
   onRoll: () => void;
   /** Absent → pas de bouton « Annuler ». */
   onCancel?: () => void;
-  /** « Annuler » avant « Lancer » (défaut : oui pour la famille 'test'). */
+  /** @deprecated la barre normée place toujours « Annuler » à gauche. */
   cancelFirst?: boolean;
   cancelAfterRoll?: boolean;
   /** Ligne(s) de jet riche(s) (base = cible · d100 · DR), façon Attaque/Défense — un tableau pour
    *  les Tests opposés (acteur puis opposant). */
   breakdown?: RollBreakdown | RollBreakdown[];
+  /** Lignes riches avec portraits (prioritaire sur `breakdown` si fourni). */
+  rows?: RollRowData[];
+  /** Test opposé : index de la ligne gagnante (accent) + DR net (badge). */
+  winnerIndex?: number | null;
+  netSL?: number;
   /** Ligne d'issue style journal sous la ligne de jet (le « log » de l'action). */
   outcome?: ReactNode;
-  /** Détermination (LDB 17 l.62) : bouton 1ʳᵉ classe — immunité Psychologie. Affiché pré-jet et après échec. */
+  /** Détermination (LDB 17 l.62) : immunité Psychologie. Affiché pré-jet et après échec. */
   determination?: { resolve: number; onResolve: () => void };
   fortune: number;
   rerollable: boolean;
   onReroll: () => void;
   /** Bénédiction de Chance (LDB 41) : relance gratuite disponible (actif même à 0 Chance). */
   freeReroll?: boolean;
-  /** Absent → Test binaire : bouton « 🍀 Relancer » simple (pas de « +1 DR »). */
+  /** Absent → Test binaire : pas de « +1 DR ». */
   onBonusSL?: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté, même déjà relancé. */
   darkPactable?: boolean;
@@ -95,66 +104,69 @@ export function RollFlowShell({
 }) {
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const cancelBtn = onCancel && (
-    <button className="btn" onClick={onCancel}>
+    <button className="btn btn-ghost" onClick={onCancel}>
       Annuler
     </button>
   );
   const determineBtn = determination && determination.resolve > 0 && (
-    <button className="btn" onClick={determination.onResolve} title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)">
-      ✊ Détermination ({determination.resolve})
+    <button
+      className="btn btn-resource"
+      onClick={determination.onResolve}
+      title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)"
+    >
+      ✊ Détermination ×{determination.resolve}
     </button>
   );
-  const preCancelFirst = cancelFirst ?? variant === 'test';
+  const panelRows: RollRowData[] | undefined =
+    rows ?? (breakdown ? (Array.isArray(breakdown) ? breakdown : [breakdown]).map((d) => ({ d })) : undefined);
   // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le permet).
   const escClose = (!rolled || cancelAfterRoll) ? onCancel : undefined;
   return (
     <Modal title={title} variant={variant} onClose={escClose}>
-        <p className={subClass}>{subtitle}</p>
-        {extra}
-        {!rolled ? (
-          <div className="modal-actions">
-            {preCancelFirst && cancelBtn}
-            <button className="btn btn-primary" onClick={onRoll}>
-              {rollLabel}
-            </button>
+      <p className={subClass}>{subtitle}</p>
+      {extra}
+      {!rolled ? (
+        <>
+          <div className="rm-influence">
             {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
             {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}
             {determineBtn}
-            {!preCancelFirst && cancelBtn}
           </div>
-        ) : (
-          <>
-            {breakdown && (
-              <div className="rm-rolls">
-                {(Array.isArray(breakdown) ? breakdown : [breakdown]).map((d, i) => <RollLine key={i} d={d} />)}
-              </div>
-            )}
-            {outcome}
-            <div className="modal-actions">
-              {onBonusSL ? (
-                <ChanceButtons fortune={fortune} rerollable={rerollable} onReroll={onReroll} freeReroll={freeReroll} onBonusSL={onBonusSL} darkPactable={darkPactable} onDarkPact={onDarkPact} />
-              ) : (
-                rerollable &&
-                (freeReroll || fortune > 0) && (
-                  <button
-                    className="btn"
-                    onClick={onReroll}
-                    title={freeReroll
-                      ? 'Bénédiction de Chance (LDB 41) : relance gratuite du Test raté — sans dépenser de Chance'
-                      : 'Dépense un point de Chance pour relancer le Test (LDB Destin)'}
-                  >
-                    {freeReroll ? '🙏 Relancer' : `🍀 Relancer (${fortune})`}
-                  </button>
-                )
-              )}
-              {onForce && <ResilienceButton resilience={resilience} show={forceShow} onForce={onForce} />}
-              <button className="btn btn-primary" onClick={onConfirm}>
-                {confirmLabel}
-              </button>
-              {cancelAfterRoll && cancelBtn}
-            </div>
-          </>
-        )}
+          <div className="modal-actions">
+            {cancelBtn}
+            <button className="btn btn-primary" onClick={onRoll}>
+              {rollLabel}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          {panelRows && <RollPanel rows={panelRows} winnerIndex={winnerIndex} netSL={netSL} />}
+          {outcome}
+          <div className="rm-influence">
+            <ChanceButtons
+              fortune={fortune}
+              rerollable={rerollable}
+              onReroll={onReroll}
+              freeReroll={freeReroll}
+              onBonusSL={onBonusSL}
+              darkPactable={darkPactable}
+              onDarkPact={onDarkPact}
+            />
+            {onForce && <ResilienceButton resilience={resilience} show={forceShow} onForce={onForce} />}
+            {forceShow && determineBtn}
+          </div>
+          <div className="modal-actions">
+            {cancelAfterRoll && cancelBtn}
+            <button className="btn btn-primary" onClick={onConfirm}>
+              {confirmLabel}
+            </button>
+          </div>
+        </>
+      )}
     </Modal>
   );
 }
+
+/** Ré-export pour composer des lignes riches (portraits) côté modale. */
+export type { RollRowData } from './RollPanel';
