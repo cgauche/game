@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveWing, wingedPlan } from '../winged/composeWing';
-import { quadrupedPlan } from './composeQuad';
+import { quadrupedPlan, resolveQuadFromProps } from './composeQuad';
 import { quadLeapPose, quadWalkPose } from './quadPose';
 
 const svgOf = (wings?: 'folded' | 'spread') =>
@@ -19,6 +19,32 @@ describe('ailes pliées/déployées (WingState)', () => {
   it('le plan ailé route ResolveOpts.wings (parité resolve direct)', () => {
     const viaPlan = wingedPlan.resolve('Dragon', 'profile', {}, { wings: 'spread' }).map((b) => b.parts.map((p) => p.svg).join('')).join('');
     expect(viaPlan).toBe(svgOf('spread'));
+  });
+});
+
+describe('props de finesse (ridge / markings / headScale / tailLen)', () => {
+  const svgQuad = (props: Record<string, unknown>) => {
+    const base = { sl: 1, build: 'equine', girth: 1, bodyLen: 1, neckLen: 1, neckAngle: -40, legLen: 1, head: 'cheval', tail: 'crin', ears: 'courtes', foot: 'sabot', stored: {} } as never;
+    return resolveQuadFromProps({ ...(base as object), ...props } as never, 'profile').map((b) => b.parts.map((p) => p.svg).join('')).join('');
+  };
+  it('ridge : épines par DÉFAUT pour draconic, paramétrable (crête/plaques), sans pour les autres', () => {
+    expect(svgQuad({ build: 'draconic' })).toContain('data-ridge="epines"');
+    expect(svgQuad({ build: 'draconic', ridge: 'crete' })).toContain('data-ridge="crete"');
+    expect(svgQuad({ ridge: 'plaques' })).toContain('data-ridge="plaques"');
+    expect(svgQuad({})).not.toContain('data-ridge');
+  });
+  it('markings : taches/rayures sur le flanc, balzanes sur les MEMBRES', () => {
+    expect(svgQuad({ markings: 'taches' })).toContain('data-marking="taches"');
+    expect(svgQuad({ markings: 'rayures' })).toContain('data-marking="rayures"');
+    expect(svgQuad({ markings: 'balzanes' })).toContain('data-marking="balzanes"');
+    expect(svgQuad({})).not.toContain('data-marking');
+  });
+  it('headScale / tailLen : enveloppes d’échelle sur tête et queue', () => {
+    expect(svgQuad({ headScale: 1.3 })).toContain('scale(1.3)');
+    expect(svgQuad({ tailLen: 1.4 })).toContain('scale(1.4)');
+  });
+  it('yeux des têtes quad ANCRÉS (data-eye) — prêts pour le catalogue d’yeux', () => {
+    expect(svgQuad({})).toContain('data-eye="D"');
   });
 });
 

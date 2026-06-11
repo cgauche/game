@@ -45,6 +45,10 @@ export interface QuadProps {
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
   wingSpan?: number; // envergure (× sur l'art des ailes, défaut 1 — dragon ample, demigriffon court)
   mane?: QuadMane; // crinière d'encolure (défaut : 'crin' si tail==='crin', sinon 'sans')
+  ridge?: 'epines' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans')
+  markings?: 'taches' | 'rayures' | 'balzanes' | 'sans'; // robe : taches/rayures de flanc, balzanes aux membres
+  headScale?: number; // × sur l'art de tête (défaut 1)
+  tailLen?: number; // × sur l'art de queue (défaut 1)
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
 }
 

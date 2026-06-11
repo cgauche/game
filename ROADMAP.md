@@ -1131,9 +1131,12 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   `BodyPlan.leapPose` (hook générique) + `quadLeapPose` (cycle ramassé→détente, quad + ailé
   avec battement) joué à la place du trot quand le combattant a le trait (hasLeap, data-driven —
   une créature d'éditeur qui reçoit Bond bondit) ; prop **`wingSpan`** (envergure ×).
-- **Lot 3 — props de finesse** : `ridge` (crête/épines/plaques — dragon/basilic/hydre),
-  `markings` (rayures/taches/balzanes via textures.ts), `headScale`/gueule, `tailLen`, yeux
-  adressables sur têtes de gabarit (catalogue), oreilles élargies.
+- ✅ **Lot 3 — props de finesse** *(2026-06-11)* : **`ridge`** (épines — défaut draconic / crête-
+  voile / plaques rondes / sans, extrait de l'inline draconic), **`markings`** (taches/rayures
+  de flanc + **balzanes** aux membres — Chien tacheté, Cheval à balzanes en démo),
+  **`headScale`** / **`tailLen`** (enveloppes d'échelle, 3 vues) ; **yeux des têtes quad ANCRÉS**
+  (`data-eye`/`data-ec`, même convention que les visages bipèdes) — le branchement du catalogue
+  d'yeux passe au lot 4. Marqueurs `data-*` testés (10 tests lot 2+3).
 - **Lot 4 — passe par créature** vs description canon + QC à l'aveugle (runbook
   `docs/qc-reconnaissabilite-sprites.md`), gros monstres puis exotiques (squig/amorphe/jabber).
 

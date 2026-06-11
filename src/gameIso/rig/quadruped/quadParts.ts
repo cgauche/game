@@ -68,6 +68,12 @@ const LEG_BUILD: Record<string, { mass: number; haut: number; bas: number }> = {
 const muscle = (body: string, m: number, len: number) =>
   `<path d="M${-m} -3 Q${-m - 0.8} ${len * 0.2} ${-m * 0.4} ${len * 0.36} Q0 ${len * 0.46} ${m * 0.4} ${len * 0.36} Q${m + 0.8} ${len * 0.2} ${m} -3 Q0 ${-m * 0.9} ${-m} -3 Z" fill="${body}"/>`;
 
+// Balzane (markings==='balzanes') : « chaussette » claire au bas du canon, au-dessus du sabot.
+const balzane = (p: QuadProps, ll: number, w: number, far: boolean): string =>
+  p.markings === 'balzanes'
+    ? `<path data-marking="balzanes" d="M${-w * 0.46} ${22 * ll - 7} L${w * 0.46} ${22 * ll - 7} L${w * 0.45} ${22 * ll} Q0 ${22 * ll + 3} ${-w * 0.45} ${22 * ll} Z" fill="#e9e4d6" opacity="${far ? 0.55 : 0.9}"/>`
+    : '';
+
 function legParts(p: QuadProps, far: boolean, foot: QuadFoot) {
   const ll = p.legLen;
   const body = far ? '@corpsO' : '@corps';
@@ -75,7 +81,7 @@ function legParts(p: QuadProps, far: boolean, foot: QuadFoot) {
   return {
     haut: muscle(body, L.mass, 30 * ll) + taper(30 * ll, L.haut, L.bas + 1.4, body), // cuisse → genou
     // canon : plus FIN que la cuisse, s'effile vers le boulet ; jarret/genou bouché à la jointure.
-    bas: joint(body, 0, (L.bas + 1.4) * 0.52) + taper(22 * ll, L.bas + 0.6, L.bas * 0.78, body) + joint(body, 22 * ll, L.bas * 0.4),
+    bas: joint(body, 0, (L.bas + 1.4) * 0.52) + taper(22 * ll, L.bas + 0.6, L.bas * 0.78, body) + joint(body, 22 * ll, L.bas * 0.4) + balzane(p, ll, L.bas + 0.6, far),
     pied: hoof(foot, far), // sabot À l'os du pied (bas de la jambe) — PAS 22·ll plus bas (sinon détaché)
   };
 }
@@ -86,14 +92,15 @@ function legPartsFront(p: QuadProps, far: boolean, foot: QuadFoot) {
   const k = far ? 0.84 : 1;
   return {
     haut: muscle(body, L.mass * 0.5 * k, 26 * ll) + taper(30 * ll, L.haut * 0.9 * k, (L.bas + 1.2) * k, body),
-    bas: joint(body, 0, (L.bas + 1.2) * k * 0.5) + taper(22 * ll, (L.bas + 0.5) * k, L.bas * 0.75 * k, body) + joint(body, 22 * ll, L.bas * 0.4),
+    bas: joint(body, 0, (L.bas + 1.2) * k * 0.5) + taper(22 * ll, (L.bas + 0.5) * k, L.bas * 0.75 * k, body) + joint(body, 22 * ll, L.bas * 0.4) + balzane(p, ll, (L.bas + 0.5) * k, far),
     pied: footFront(foot, far), // pied à l'os (bas de la jambe), pas 22·ll plus bas
   };
 }
 // Œil CALME d'animal : iris sombre + petit reflet (pas le glow jaune g_eye, qui faisait
-// « yeux démoniaques/globuleux » sur cheval/ours/rat).
+// « yeux démoniaques/globuleux » sur cheval/ours/rat). ANCRÉ `data-eye`/`data-ec` (même
+// convention que les visages bipèdes, cf. parts/eyes.ts) → yeux custom branchables.
 const eyeF = (x: number, y = -3, r = 1.7) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r + 0.3}" fill="#15100a"/><circle cx="${(x + 0.4).toFixed(1)}" cy="${(y - 0.4).toFixed(1)}" r="${(r * 0.34).toFixed(2)}" fill="#fff" opacity="0.7"/>`;
+  `<g data-eye="${x < 0 ? 'G' : 'D'}" data-ec="${x} ${y}"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r + 0.3}" fill="#15100a"/><circle cx="${(x + 0.4).toFixed(1)}" cy="${(y - 0.4).toFixed(1)}" r="${(r * 0.34).toFixed(2)}" fill="#fff" opacity="0.7"/></g>`;
 
 // ============================ PROFIL ============================
 // Corps (tronc) SCULPTÉ par carrure (+x = avant/poitrail, -x = arrière). La profondeur
@@ -132,9 +139,8 @@ function barrel(p: QuadProps): string {
       path = `M${-Wd} 2 Q${-Wd} -14 ${-12 * bl} -18 Q${6 * bl} -23 ${24 * bl} -19 Q${Wd} -15 ${Wd} 0 Q${Wd - 1} 17 ${16 * bl} 22 Q${-8 * bl} 24 ${-Wd} 13 Z`;
       hi = `<path d="M${-22 * bl} -16 Q${2 * bl} -23 ${24 * bl} -18 L${24 * bl} -14 Q${2 * bl} -20 ${-22 * bl} -12 Z" fill="@corpsH" opacity="0.5"/>`;
       lo = `<path d="M${-Wd + 2} 10 Q0 23 ${22 * bl} 14 L${24 * bl} 7 Q0 18 ${-Wd + 2} 5 Z" fill="@corpsO" opacity="0.85"/>` +
-        // crête dorsale épineuse (le long du dos)
-        `<path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>` +
         // cuir d'écailles imbriquées (textures.ts) sur le flanc — le ventre lourd reste lisse
+        // (la crête dorsale est désormais le prop `ridge`, défaut 'epines' pour draconic)
         scalesPatch(-Wd * 0.72, Wd * 0.72, -13, 8, 4.6, 'corps');
       break;
     }
@@ -154,7 +160,31 @@ function barrel(p: QuadProps): string {
   }
   // Ombre de flanc douce (volume : casse l'aplat « blob » signalé par la QC).
   const flank = `<ellipse cx="${(2 * bl).toFixed(1)}" cy="5" rx="${(13 * bl).toFixed(1)}" ry="5.5" fill="@corpsO" opacity="0.22"/>`;
-  return `<g><path d="${path}" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>${lo}${flank}${hi}</g>`;
+  return `<g><path d="${path}" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>${lo}${flank}${hi}${ridgeArt(p)}${markingsArt(p)}</g>`;
+}
+// Dorsale (prop `ridge`, défaut 'epines' pour draconic) : ÉPINES pointues / CRÊTE-voile
+// ondulée / PLAQUES rondes, le long du haut du dos. Coordonnées calées sur le dos draconic —
+// les autres builds varient de quelques px (acceptable : la dorsale vit sur les reptiliens).
+function ridgeArt(p: QuadProps): string {
+  const r = p.ridge ?? (p.build === 'draconic' ? 'epines' : 'sans');
+  if (r === 'sans') return '';
+  const bl = p.bodyLen;
+  if (r === 'epines')
+    return `<g data-ridge="epines"><path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/></g>`;
+  if (r === 'crete') // voile continue ondulée
+    return `<g data-ridge="crete"><path d="M${-21 * bl} -12 Q${-17 * bl} -23 ${-11 * bl} -16 Q${-5 * bl} -26 ${1 * bl} -18 Q${7 * bl} -27 ${13 * bl} -18 Q${18 * bl} -24 ${22 * bl} -15 L${21 * bl} -12 Q0 -19 ${-20 * bl} -10 Z" fill="@corpsO" opacity="0.92" stroke="@cheveuxO" stroke-width="0.5"/></g>`;
+  // plaques rondes (stégo-like)
+  return `<g data-ridge="plaques"><ellipse cx="${-15 * bl}" cy="-15" rx="3.4" ry="4.4" fill="@corpsO" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="${-5 * bl}" cy="-19" rx="3.8" ry="5" fill="@corpsO" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="${6 * bl}" cy="-20" rx="3.8" ry="5" fill="@corpsO" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="${16 * bl}" cy="-16" rx="3.2" ry="4.2" fill="@corpsO" stroke="@cheveuxO" stroke-width="0.5"/></g>`;
+}
+// Marquages de ROBE (prop `markings`) : taches/rayures sur le flanc (les balzanes vivent sur
+// les MEMBRES, cf. legParts). Sombre sur robe claire (op. soutenue), discret sinon.
+function markingsArt(p: QuadProps): string {
+  const m = p.markings ?? 'sans';
+  if (m !== 'taches' && m !== 'rayures') return '';
+  const bl = p.bodyLen;
+  if (m === 'taches')
+    return `<g data-marking="taches" opacity="0.5"><ellipse cx="${-14 * bl}" cy="-4" rx="4.6" ry="3.4" fill="@corpsO"/><ellipse cx="${-2 * bl}" cy="3" rx="3.6" ry="2.8" fill="@corpsO"/><ellipse cx="${12 * bl}" cy="-7" rx="4" ry="3" fill="@corpsO"/><ellipse cx="${18 * bl}" cy="2" rx="2.8" ry="2.2" fill="@corpsO"/></g>`;
+  return `<g data-marking="rayures" opacity="0.45"><path d="M${-16 * bl} -16 q-2 12 -1 22 M${-8 * bl} -19 q-2 13 -1 25 M${0 * bl} -20 q-2 13 -1 26 M${8 * bl} -20 q-1 13 0 25 M${15 * bl} -18 q-1 12 0 22" stroke="@corpsO" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`;
 }
 // Croupe (arrière-train) PROPORTIONNÉE à la carrure : grosse et ronde pour cheval/ours,
 // PETITE et fuyante pour sanglier (avant-lourd) et rat, svelte pour canin. Le bord avant
@@ -217,7 +247,7 @@ function earProfile(p: QuadProps, x: number, s: number): string {
 }
 function headProfile(p: QuadProps): string {
   if (p.head === 'hydre') return ''; // têtes dessinées dans l'os encolure (cluster)
-  const eye = `<ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/>`;
+  const eye = `<g data-eye="D" data-ec="6 2"><ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/></g>`;
   if (p.head === 'aigle') // tête emplumée + bec crochu jaune + œil féroce + sourcil saillant
     return `<g transform="rotate(5)"><path d="M-7 -6 Q-9 6 -2 10 Q4 13 11 11 Q15 9 14 4 Q9 4 4 2 Q-1 0 -2 -6 Q-3 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
       `<path d="M10 4 Q19 3 21 7 Q19 9 15 9 Q12 12 10 9 Z" fill="#d4a82e" stroke="#7a5a18" stroke-width="0.5"/><path d="M19 7 Q21.5 8 20 11 Q17.5 11 16 8.5 Z" fill="#c79a26" stroke="#7a5a18" stroke-width="0.4"/>` +
@@ -441,8 +471,10 @@ function wingFoldedEnd(p: QuadProps): string {
 // ============================ dispatch ============================
 export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): Partial<Record<QuadBoneId, string>> {
   const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
-  // Envergure : × sur l'art d'aile (déployée ET pliée).
+  // Envergure : × sur l'art d'aile (déployée ET pliée). Idem tête (headScale) et queue (tailLen).
   const span = (svg: string) => (p.wingSpan && p.wingSpan !== 1 ? `<g transform="scale(${p.wingSpan})">${svg}</g>` : svg);
+  const headW = (svg: string) => (p.headScale && p.headScale !== 1 ? `<g transform="scale(${p.headScale})">${svg}</g>` : svg);
+  const tailW = (svg: string) => (p.tailLen && p.tailLen !== 1 ? `<g transform="scale(${p.tailLen})">${svg}</g>` : svg);
   // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir scale -1).
   const endArt = wings === 'spread' ? wingSpread(p) : wingFoldedEnd(p);
   const spreadWings = p.wings
@@ -452,7 +484,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     const n = legPartsFront(p, false, frontFoot), f = legPartsFront(p, true, p.foot);
     return {
       ...spreadWings,
-      tronc: bodyFront(p), tete: headFront(p),
+      tronc: bodyFront(p), tete: headW(headFront(p)),
       hautAvD: n.haut, basAvD: n.bas, piedAvD: n.pied, hautAvG: n.haut, basAvG: n.bas, piedAvG: n.pied,
       hautArD: f.haut, basArD: f.bas, piedArD: f.pied, hautArG: f.haut, basArG: f.bas, piedArG: f.pied,
     };
@@ -461,7 +493,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     const n = legPartsFront(p, false, p.foot), f = legPartsFront(p, true, frontFoot);
     return {
       ...spreadWings,
-      tronc: bodyBack(p), tete: napeBack(p), queue: tailBack(p),
+      tronc: bodyBack(p), tete: headW(napeBack(p)), queue: tailW(tailBack(p)),
       hautArD: n.haut, basArD: n.bas, piedArD: n.pied, hautArG: n.haut, basArG: n.bas, piedArG: n.pied,
       hautAvD: f.haut, basAvD: f.bas, piedAvD: f.pied, hautAvG: f.haut, basAvG: f.bas, piedAvG: f.pied,
     };
@@ -473,7 +505,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   const profWings = p.wings ? { aileD: profArt(false), aileG: profArt(true) } : {};
   return {
     ...profWings,
-    tronc: barrel(p), croupe: rump(p), encolure: neck(p), tete: headProfile(p), queue: tail(p),
+    tronc: barrel(p), croupe: rump(p), encolure: neck(p), tete: headW(headProfile(p)), queue: tailW(tail(p)),
     hautAvD: nearAv.haut, basAvD: nearAv.bas, piedAvD: nearAv.pied,
     hautArD: nearAr.haut, basArD: nearAr.bas, piedArD: nearAr.pied,
     hautAvG: farAv.haut, basAvG: farAv.bas, piedAvG: farAv.pied,
