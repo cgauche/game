@@ -7,8 +7,10 @@ import { HAIRSTYLES } from './generated/hairstyles';
 // GÉNÉRIQUE en tokens ci-dessous (PROFILE_FACE / BACK_NAPE + PROFILE_HAIR / BACK_HAIR).
 
 // Œil de secours : blanc + iris @yeux + pupille (PAS le gradient monstre g_eye).
+// ANCRÉ data-eye comme les têtes générées → remplaçable par le système d'yeux
+// (parts/eyes.ts : Vampire rougeoyant, œil de verre…) même sans tête dédiée.
 const eye = (cx: number) =>
-  `<ellipse cx="${cx}" cy="7" rx="2" ry="1.3" fill="#f3ede1"/><circle cx="${cx}" cy="7" r="1.1" fill="@yeux"/><circle cx="${cx}" cy="7" r="0.6" fill="#140a06"/>`;
+  `<g data-eye="${cx < 0 ? 'G' : 'D'}" data-ec="${cx} 7"><ellipse cx="${cx}" cy="7" rx="2" ry="1.3" fill="#f3ede1"/><circle cx="${cx}" cy="7" r="1.1" fill="@yeux"/><circle cx="${cx}" cy="7" r="0.6" fill="#140a06"/></g>`;
 
 const VISAGE: Record<string, string[]> = {
   default: [

@@ -74,8 +74,10 @@ export function resolveRig(
   const world = worldTransforms(sk, addPose(speciesPose, addPose(viewPose, pose)));
   const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
   // Yeux personnalisés (œil de verre, Œil énorme, yeux d'animaux…) : remplacés EN PLACE
-  // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur).
-  if (appearance.eyes && parts.visage?.svg) parts.visage = { svg: applyEyes(parts.visage.svg, appearance.eyes) };
+  // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur). Les yeux de
+  // RACE (Vampire rougeoyant) servent de défaut, l'apparence (mutation/blessure) prime.
+  const eyes = race.eyes || appearance.eyes ? { ...race.eyes, ...appearance.eyes } : undefined;
+  if (eyes && parts.visage?.svg) parts.visage = { svg: applyEyes(parts.visage.svg, eyes) };
 
   // Échelle de rendu par os = (thickness/réf, length/réf). Os de longueur/épaisseur
   // nulle (arme/bouclier) : hérite du parent. N'affecte PAS la FK (positions des joints).
