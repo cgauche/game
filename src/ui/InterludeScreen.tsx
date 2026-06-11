@@ -34,7 +34,7 @@ export function InterludeScreen() {
           ))}
         </div>
         {bank.length > 0 && (
-          <section className="interlude-hero">
+          <section className="interlude-hero panel">
             <h3>🏦 Dépôts</h3>
             <BankList />
           </section>
@@ -75,7 +75,7 @@ function HeroCard({ hero }: { hero: Combatant }) {
   const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
     setList(list.includes(q) ? list.filter((x) => x !== q) : [...list, q]);
   return (
-    <section className="interlude-hero">
+    <section className="interlude-hero panel">
       <h3>
         {hero.name} <span className="interlude-left">{st.left} Activité{st.left > 1 ? 's' : ''} · Statut {status.tier} {status.standing}</span>
       </h3>

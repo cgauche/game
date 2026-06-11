@@ -149,7 +149,7 @@
 /* ── Entre deux aventures (Jalon 5) ────────────────────────────────────────── */
 .interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
 .interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }
-.interlude-hero { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.interlude-hero.panel { padding: 8px 12px; } /* surface = primitive .panel ; padding resserré ici */
 .interlude-hero h3 { margin: 0 0 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
 .interlude-event { margin: 0; font-size: 13px; }

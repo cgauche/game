@@ -35,7 +35,7 @@ export function EncountersEditor({
         <p className="hint">Une rencontre = des ennemis du bestiaire placés sur la grille. Référencée par un effet « Démarrer un combat ».</p>
         <div className="enc-list">
           {list.map((enc, ei) => (
-            <div className="enc-card" key={ei}>
+            <div className="panel sunken" key={ei}>
               <div className="enc-top">
                 <input className="enc-id" value={enc.id} onChange={(e) => upd(ei, { id: e.target.value })} placeholder="id de la rencontre" />
                 <button className="btn small danger" onClick={() => setList(list.filter((_, j) => j !== ei))}>
