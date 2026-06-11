@@ -198,7 +198,10 @@
   .ab-spells { max-height: 42vh; overflow-y: auto; }
 }
 
-/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur) ── */
+/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur).
+   `max-width` réserve la place des coins (menu/carte à gauche, vue à droite) : sur petit
+   écran le dock S'ENROULE (2×2) au lieu de chevaucher ces boutons ; sur grand écran il
+   reste sur une rangée (la réserve ne fait que plafonner la largeur). ── */
 .party-dock {
   position: absolute;
   top: 10px;
@@ -207,12 +210,14 @@
   z-index: 45;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: flex-start;
   gap: 12px;
-  max-width: 96vw;
+  max-width: calc(100vw - 220px);
 }
 @media (max-width: 700px) {
-  .party-dock { top: 6px; gap: 8px; }
+  .party-dock { top: 6px; gap: 8px 10px; }
 }
 
 /* ── Tiroir journal (bas-droite) ── */
