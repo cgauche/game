@@ -8,14 +8,14 @@ import type { Combatant } from '../../../engine/types';
 import type { RigOverlay } from '../bones';
 import type { Appearance } from '../appearance';
 import { mutationOverlaysFor, mutationAppearance } from './mutations';
-import { injuryOverlaysFor } from './injuries';
+import { injuryOverlaysFor, injuryAppearance } from './injuries';
 
 /** Calques d'état (mutations physiques + amputations/prothèses portées). */
 export function combatantOverlays(c: Combatant): RigOverlay[] {
   return [...mutationOverlaysFor(c.mutations), ...injuryOverlaysFor(c)];
 }
 
-/** Apparence modifiée par l'état (morpho/peau/visage des mutations). */
+/** Apparence modifiée par l'état (morpho/peau/visage/yeux — mutations puis blessures). */
 export function combatantAppearance(a: Appearance, c: Combatant): Appearance {
-  return mutationAppearance(a, c.mutations);
+  return injuryAppearance(mutationAppearance(a, c.mutations), c);
 }

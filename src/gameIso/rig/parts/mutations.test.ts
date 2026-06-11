@@ -22,7 +22,7 @@ describe('registre des visuels de mutation (LDB 19)', () => {
       const k = mutKey(label);
       const v = MUTATION_VISUALS[k];
       if (k === mutKey('Choix du MJ')) { expect(v).toBeNull(); continue; }
-      expect(!!(v?.overlays?.length || v?.build || v?.legs || v?.skin || v?.faceFlip), label).toBe(true);
+      expect(!!(v?.overlays?.length || v?.build || v?.legs || v?.skin || v?.faceFlip || v?.eyeG), label).toBe(true);
     }
     expect(MUTATION_VISUALS[mutKey('Corpulent')]?.build).toBeGreaterThan(0);
     expect(MUTATION_VISUALS[mutKey('Émacié')]?.build).toBeLessThan(0);
@@ -33,11 +33,14 @@ describe('registre des visuels de mutation (LDB 19)', () => {
     expect(MUTATION_VISUALS[mutKey('Peau brillante')]?.skin).toBeTruthy();
   });
 
-  it('les détails de visage sont limités à la vue de face ; Visage inversé = flip du vrai visage', () => {
-    for (const label of ['Œil énorme', 'Bouche supplémentaire', 'Langue pendante', 'Groin poilu']) {
+  it('les détails de visage sont limités à la vue de face ; Visage inversé/Œil énorme = vrai visage', () => {
+    for (const label of ['Bouche supplémentaire', 'Langue pendante', 'Groin poilu']) {
       for (const ov of MUTATION_VISUALS[mutKey(label)]!.overlays!) expect(ov.view, label).toBe('front');
     }
     expect(MUTATION_VISUALS[mutKey('Visage inversé')]?.faceFlip).toBe(true);
+    // Œil énorme remplace l'œil peint EN PLACE (système d'yeux), pas un calque plaqué.
+    expect(MUTATION_VISUALS[mutKey('Œil énorme')]?.eyeG).toContain('data-mut="oeil-enorme"');
+    expect(mutationAppearance(APP, [mut('Œil énorme')]).eyes?.G).toContain('oeil-enorme');
   });
 
   it('les mutations mentales ne produisent aucun calque', () => {

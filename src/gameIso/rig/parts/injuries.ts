@@ -12,6 +12,8 @@
  */
 import type { Combatant, Trauma } from '../../../engine/types';
 import type { RigOverlay, BoneId } from '../bones';
+import type { Appearance } from '../appearance';
+import { OEIL_PERDU as OEIL_PERDU_ART, OEIL_DE_VERRE as OEIL_DE_VERRE_ART, CACHE_OEIL as CACHE_OEIL_ART } from './eyes';
 
 const g = (slug: string, svg: string) => `<g data-injury="${slug}">${svg}</g>`;
 
@@ -42,22 +44,13 @@ const JAMBE_DE_BOIS = g('jambe-de-bois',
   + '<path d="M-1.5 22.6 L1.5 22.6 L0.9 50 L-0.9 50 Z" fill="#8a6a3e" stroke="#5a4226" stroke-width="0.5"/>'
   + '<path d="M-0.3 24 Q-0.6 37 -0.2 48" stroke="#5a4226" stroke-width="0.4" fill="none" opacity="0.6"/>'
   + '<ellipse cx="0" cy="50" rx="1.3" ry="0.7" fill="#5a4226"/>');
-// Œil perdu (sans prothèse) : paupière fermée balafrée (œil gauche du visage).
-const OEIL_PERDU = g('oeil-perdu',
-  '<path d="M-5 5.9 Q-3.4 6.7 -1.8 5.9" stroke="@peauO" stroke-width="0.8" fill="none" stroke-linecap="round"/>'
-  + '<path d="M-4.6 3.8 L-2.2 8 M-2.6 3.9 L-4.3 7.9" stroke="#8a4a3a" stroke-width="0.55" stroke-linecap="round"/>');
-// Cache-œil : coque noire + sangles croisant le visage.
-const CACHE_OEIL = g('cache-oeil',
-  '<path d="M-8.6 4 L1.6 7 M-8.4 7.8 L1.8 4.2" stroke="#1a1410" stroke-width="0.6"/>'
-  + '<ellipse cx="-3.4" cy="5.8" rx="2.5" ry="2.1" fill="#1a1410" stroke="#000" stroke-width="0.3"/>');
-// Œil de verre : iris pâle laiteux, reflet fixe — un regard qui ne suit pas.
-const OEIL_DE_VERRE = g('oeil-de-verre',
-  '<ellipse cx="-3.4" cy="5.9" rx="1.6" ry="1.25" fill="#eef2f4" stroke="#8a98a4" stroke-width="0.3"/>'
-  + '<circle cx="-3.4" cy="5.9" r="0.65" fill="#9ab4c2"/><circle cx="-3.1" cy="5.6" r="0.3" fill="#fff"/>');
+// Les visuels d'ŒIL (perdu / verre / cache-œil) ne sont PAS des calques : ils remplacent
+// l'œil peint EN PLACE via le système d'yeux (parts/eyes.ts, ancres data-eye du visage) —
+// cf. `injuryAppearance` ci-dessous.
 // Cécité (les deux yeux) : bandage noué sur les yeux.
 const BANDEAU_CECITE = g('cecite',
-  '<path d="M-8.8 4.2 Q0 2.6 8.8 4.2 L8.8 7.8 Q0 9.2 -8.8 7.8 Z" fill="#d8cdb4" stroke="#a89878" stroke-width="0.45"/>'
-  + '<path d="M-8.8 6 Q0 4.6 8.8 6" stroke="#a89878" stroke-width="0.4" fill="none" opacity="0.7"/>');
+  '<path d="M-8.8 5 Q0 3.4 8.8 5 L8.8 8.6 Q0 10 -8.8 8.6 Z" fill="#d8cdb4" stroke="#a89878" stroke-width="0.45"/>'
+  + '<path d="M-8.8 6.8 Q0 5.4 8.8 6.8" stroke="#a89878" stroke-width="0.4" fill="none" opacity="0.7"/>');
 // Nez amputé : cavité sombre à la place du nez.
 const NEZ_AMPUTE = g('nez-ampute',
   '<path d="M-1 7.4 q1 -0.8 2 0 q-0.3 2 -1 2.3 q-0.7 -0.3 -1 -2.3 Z" fill="#5a3030" stroke="#3a1c1c" stroke-width="0.3"/>');
@@ -90,12 +83,19 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
     }
     if (t.label === 'Nez amputé') out.push({ bone: 'tete', svg: worn(c, 'Nez doré') ? NEZ_DORE : NEZ_AMPUTE, view: 'front' });
   }
-  // Yeux : Cécité (agrégat des deux) → bandage ; sinon UN Œil perdu → prothèse oculaire/cicatrice.
+  // Cécité (agrégat des deux yeux) : bandage par-dessus le visage (l'œil unique perdu, lui,
+  // passe par le remplacement d'œil — injuryAppearance).
   if (traumas.some((t) => t.label === 'Cécité')) {
     out.push({ bone: 'tete', svg: BANDEAU_CECITE, view: 'front' });
-  } else if (traumas.some((t) => t.label === 'Œil perdu')) {
-    const svg = worn(c, 'Cache-œil') ? CACHE_OEIL : worn(c, 'Œil de verre') ? OEIL_DE_VERRE : OEIL_PERDU;
-    out.push({ bone: 'tete', svg, view: 'front' });
   }
   return out;
+}
+
+/** Modifications d'APPARENCE dues aux blessures : l'œil perdu remplace l'œil peint en place
+ *  (cicatrice / Cache-œil / Œil de verre selon la prothèse portée). Même référence si rien. */
+export function injuryAppearance(a: Appearance, c: Combatant): Appearance {
+  const traumas = c.traumas ?? [];
+  if (!traumas.some((t) => t.label === 'Œil perdu') || traumas.some((t) => t.label === 'Cécité')) return a;
+  const art = worn(c, 'Cache-œil') ? CACHE_OEIL_ART : worn(c, 'Œil de verre') ? OEIL_DE_VERRE_ART : OEIL_PERDU_ART;
+  return { ...a, eyes: { ...a.eyes, G: art } };
 }

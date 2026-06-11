@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { injuryOverlaysFor } from './injuries';
+import { injuryOverlaysFor, injuryAppearance } from './injuries';
 import type { Combatant, Trauma, ItemInstance } from '../../../engine/types';
+import type { Appearance } from '../appearance';
 
 const mk = (traumas: Trauma[], items: ItemInstance[] = []): Combatant =>
   ({ id: 'h1', name: 'H', kind: 'hero', traumas, items }) as unknown as Combatant;
@@ -32,15 +33,24 @@ describe('visuels des amputations/prothèses (injuries)', () => {
     expect(ovs.some((o) => o.bone === 'piedG' && o.replace && o.svg === '')).toBe(true);
   });
 
-  it('œil : cicatrice → cache-œil/œil de verre ; Cécité → bandage (et pas les deux)', () => {
+  it('œil perdu : REMPLACE l’œil peint en place (cicatrice → cache-œil → œil de verre)', () => {
+    const APP = { species: 'Humain', sex: 'M', build: 0.5 } as Appearance;
     const eye = t({ label: 'Œil perdu' });
-    expect(injuryOverlaysFor(mk([eye]))[0].svg).toContain('data-injury="oeil-perdu"');
-    expect(injuryOverlaysFor(mk([eye], [item('Cache-œil')]))[0].svg).toContain('data-injury="cache-oeil"');
-    expect(injuryOverlaysFor(mk([eye], [item('Œil de verre')]))[0].svg).toContain('data-injury="oeil-de-verre"');
-    const blind = injuryOverlaysFor(mk([eye, eye, t({ label: 'Cécité' })]));
+    expect(injuryAppearance(APP, mk([eye])).eyes?.G).toContain('data-injury="oeil-perdu"');
+    expect(injuryAppearance(APP, mk([eye], [item('Cache-œil')])).eyes?.G).toContain('data-injury="cache-oeil"');
+    expect(injuryAppearance(APP, mk([eye], [item('Œil de verre')])).eyes?.G).toContain('data-injury="oeil-de-verre"');
+    expect(injuryAppearance(APP, mk([]))).toBe(APP); // même référence sans blessure d'œil
+    expect(injuryOverlaysFor(mk([eye]))).toEqual([]); // plus de calque d'œil
+  });
+
+  it('Cécité : bandage sur le visage (et pas de remplacement d’œil)', () => {
+    const APP = { species: 'Humain', sex: 'M', build: 0.5 } as Appearance;
+    const blindT = [t({ label: 'Œil perdu' }), t({ label: 'Œil perdu' }), t({ label: 'Cécité' })];
+    const blind = injuryOverlaysFor(mk(blindT));
     expect(blind.filter((o) => o.bone === 'tete').length).toBe(1);
     expect(blind[0].svg).toContain('data-injury="cecite"');
-    for (const o of injuryOverlaysFor(mk([eye]))) expect(o.view).toBe('front');
+    expect(blind[0].view).toBe('front');
+    expect(injuryAppearance(APP, mk(blindT))).toBe(APP);
   });
 
   it('nez : trou sombre, ou nez doré si porté', () => {

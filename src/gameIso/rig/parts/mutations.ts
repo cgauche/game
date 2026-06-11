@@ -16,6 +16,7 @@ import { norm } from '../../../lib/normalize';
 import { ARMS, LEGS } from './monster';
 import { pickView } from './types';
 import { plumeFan, scalesPatch } from './textures';
+import { OEIL_ENORME } from './eyes';
 
 /** Clé de registre : label normalisé, apostrophe typographique (U+2019) repliée. */
 export const mutKey = (s: string): string => norm(s).replace(/[’']/g, "'");
@@ -33,14 +34,8 @@ const DOIGTS = g('doigts-distendus',
   '<path d="M-1.6 1.2 Q-2.6 2.4 -2.6 4 L-2.5 5 M1.6 1.2 Q2.6 2.4 2.6 4 L2.5 5" stroke="@peau" stroke-width="1.6" fill="none" stroke-linecap="round"/>'
   + '<path d="M-2.5 4.4 q-0.7 3.6 -0.4 7.2 M-0.85 2 q-0.2 5 0 9 M0.85 2 q0.2 5 0 9 M2.5 4.4 q0.7 3.6 0.4 7.2" stroke="@peau" stroke-width="1.25" fill="none" stroke-linecap="round"/>'
   + '<path d="M-2.9 10.2 q-0.1 1.2 0.1 2 M-0.85 10.6 q0 1 0.1 1.8 M0.85 10.6 q0 1 -0.1 1.8 M2.9 10.2 q0.1 1.2 -0.1 2" stroke="@peauO" stroke-width="1.05" fill="none" stroke-linecap="round"/>');
-// Œil unique disproportionné côté gauche du visage : il ÉVINCE l'œil normal — sclère
-// ivoire veinée de sang, iris injecté, paupière distendue.
-const OEIL = g('oeil-enorme',
-  '<ellipse cx="-3" cy="6" rx="4.4" ry="3.6" fill="#e0d8b0" stroke="#3a2820" stroke-width="0.7"/>'
-  + '<path d="M-6.6 4.6 q1.4 0.6 2.2 1.6 M-5.8 8.2 q1.2 -0.4 1.8 -1.2 M-0.2 3.4 q-0.8 1 -1.4 1.6 M0.6 7.6 q-1.2 -0.2 -2 -0.8" stroke="#b03a2e" stroke-width="0.35" fill="none" opacity="0.8"/>'
-  + '<ellipse cx="-3" cy="6" rx="2.4" ry="2.2" fill="#7a1010"/><circle cx="-3" cy="6" r="1.1" fill="#0a0808"/>'
-  + '<circle cx="-2.2" cy="5.2" r="0.5" fill="#ffffff" opacity="0.6"/>'
-  + '<path d="M-7.2 3.6 Q-3 1.6 1 3.4" stroke="@peauO" stroke-width="0.8" fill="none"/>');
+// Œil énorme : REMPLACE l'œil peint en place (système d'yeux, parts/eyes.ts) — globe
+// disproportionné veiné de sang qui évince l'œil normal, ancré sur la vraie orbite.
 // Renflement articulaire + plis anguleux à mi-tibia.
 const ARTICULATION = g('articulation-jambes',
   '<ellipse cx="0" cy="10" rx="2.6" ry="2" fill="@peau" stroke="@peauO" stroke-width="0.6"/>'
@@ -130,6 +125,8 @@ export interface MutationVisual {
   skin?: string;
   /** le vrai visage du personnage retourné tête en bas (Visage inversé). */
   faceFlip?: boolean;
+  /** remplacement de l'œil GAUCHE en place (art centré, cf. parts/eyes.ts — Œil énorme). */
+  eyeG?: string;
 }
 
 /** Clé = `mutKey(label)` des entrées de `src/data/mutations.ts` (table physique). */
@@ -145,7 +142,7 @@ export const MUTATION_VISUALS: Record<string, MutationVisual | null> = {
   [mutKey('Corpulent')]: { build: 0.2 },
   [mutKey('Doigts distendus')]: { overlays: [{ bone: 'mainG', svg: DOIGTS }, { bone: 'mainD', svg: DOIGTS }] },
   [mutKey('Émacié')]: { build: -0.2 },
-  [mutKey('Œil énorme')]: { overlays: [{ bone: 'tete', svg: OEIL, view: 'front' }] },
+  [mutKey('Œil énorme')]: { eyeG: OEIL_ENORME },
   [mutKey('Articulation supplémentaire aux jambes')]: { overlays: [{ bone: 'tibiaG', svg: ARTICULATION }, { bone: 'tibiaD', svg: ARTICULATION }] },
   [mutKey('Bouche supplémentaire')]: { overlays: [{ bone: 'tete', svg: BOUCHE, view: 'front' }] },
   [mutKey('Tentacule épais')]: { overlays: [{ bone: 'epauleG', svg: TENTACULE, replace: true }, { bone: 'mainG', svg: '', replace: true }] },
@@ -210,6 +207,7 @@ export function mutationAppearance(a: Appearance, mutations?: Mutation[]): Appea
   let legs = 1;
   let skin: string | undefined;
   let faceFlip = false;
+  let eyeG: string | undefined;
   for (const m of mutations) {
     if (m.kind !== 'physique') continue;
     const v = MUTATION_VISUALS[mutKey(m.label)];
@@ -217,14 +215,16 @@ export function mutationAppearance(a: Appearance, mutations?: Mutation[]): Appea
     if (v?.legs) legs *= v.legs;
     if (v?.skin) skin = v.skin; // la mutation transforme la peau (prime sur la couleur choisie)
     if (v?.faceFlip) faceFlip = true;
+    if (v?.eyeG) eyeG = v.eyeG;
   }
-  if (!dBuild && legs === 1 && !skin && !faceFlip) return a;
+  if (!dBuild && legs === 1 && !skin && !faceFlip && !eyeG) return a;
   return {
     ...a,
     build: Math.min(1, Math.max(0, a.build + dBuild)),
     legs: (a.legs ?? 1) * legs,
     ...(skin ? { colors: { ...a.colors, peau: skin } } : {}),
     ...(faceFlip ? { faceFlip } : {}),
+    ...(eyeG ? { eyes: { ...a.eyes, G: eyeG } } : {}),
   };
 }
 
