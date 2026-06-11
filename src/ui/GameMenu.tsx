@@ -20,7 +20,7 @@ export function GameMenu({ sceneName, money, inventory, dateLine, onQuit, onSave
   const [open, setOpen] = useState(initialOpen);
   return (
     <div className={`game-menu ${open ? 'open' : ''}`}>
-      <button type="button" className="gm-btn" onClick={() => setOpen(!open)} title={open ? 'Fermer le menu' : 'Menu'}>
+      <button type="button" className="gm-btn" aria-label={open ? 'Fermer le menu' : 'Menu'} aria-expanded={open} onClick={() => setOpen(!open)} title={open ? 'Fermer le menu' : 'Menu'}>
         ☰
       </button>
       {open && (

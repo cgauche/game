@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ModalSubject } from './ModalSubject';
 import type { Combatant } from '../engine/types';
 
@@ -27,9 +27,21 @@ export function Modal({
   className?: string;
   children: ReactNode;
 }) {
+  // Accessibilité (Jalon 8) : dialogue sémantique + focus déplacé DANS la modale à l'ouverture
+  // (lecteurs d'écran + navigation clavier — le premier bouton/champ devient atteignable au Tab).
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const first = boxRef.current?.querySelector<HTMLElement>('button, [href], input, select, textarea');
+    first?.focus();
+  }, []);
   return (
     <div className="modal-overlay">
-      <div className={`modal ${variant === 'test' ? 'test-modal' : 'roll-modal'}${className ? ` ${className}` : ''}`}>
+      <div
+        ref={boxRef}
+        role="dialog"
+        aria-modal="true"
+        className={`modal ${variant === 'test' ? 'test-modal' : 'roll-modal'}${className ? ` ${className}` : ''}`}
+      >
         <h3>{title}</h3>
         {subject && <ModalSubject c={subject} pv={subjectPv} />}
         {children}

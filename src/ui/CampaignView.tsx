@@ -116,7 +116,7 @@ export function CampaignView() {
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
           <button
             type="button"
-            className={`worldmap-btn ${travelPlan?.interrupted ? 'attention' : ''}`}
+            aria-label="Carte du monde" className={`worldmap-btn ${travelPlan?.interrupted ? 'attention' : ''}`}
             onClick={openWorldMap}
             title={travelPlan?.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
           >
