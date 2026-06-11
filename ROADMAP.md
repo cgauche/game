@@ -1152,9 +1152,12 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
   ✅ **5b** *(9677d16)* : squig (gueule = moitié du corps, yeux excentrés, profil), jabber
   (ailes couchées arrière/éventail, langue ancrée pendant devant, pupilles fendues, cou en S,
   profil), serpentins (boucles décalées + queue émergente, cou fuselé).
-  **Reste 5c** : profils amorphous/cephalopod/arachnid ; cohérence face↔profil des têtes QUAD
-  (basilic/manticore/loup lisent une autre bête de face) ; pattes d'araignée coudées + crochets
-  courbés ; brancher le catalogue d'yeux sur les ancres data-eye quad.
+  ✅ **5c** *(0fbd372)* : araignée (pattes articulées genou haut, crochets courbés, profil
+  directionnel), pieuvre (profil œil unique + tentacules en éclaireurs), Bête des marais (dôme
+  de tête + épaulements, gueule orientée au profil), faces dragon/basilic (cornes fines, museau
+  denté — fini âne/groin) et loup (museau cunéiforme + crocs + bajoues) raccordées au profil.
+  **Reste 5d (mineur)** : brancher le catalogue d'yeux sur les ancres data-eye des têtes quad
+  (plomberie appearance→resolve) ; recette navigateur en jeu quand Playwright libre.
 
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
