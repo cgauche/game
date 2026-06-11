@@ -17,6 +17,7 @@ import { useGame } from './store';
 import { snapshotSave } from './saves';
 import { HostSession, GuestSession } from '../net/session';
 import { COMBAT_INTENTS } from '../net/intents';
+import { intentAllowedFor } from './netOwnership';
 import { encodeSignal, decodeSignal } from '../net/codes';
 import {
   hostCreateOffer, guestAcceptOffer, hostAcceptAnswer, channelTransport, type Transport,
@@ -106,7 +107,13 @@ export function netHostStart(get: Get, set: Set, name: string): void {
   host = new HostSession({
     build: BUILD_ID,
     allow: COMBAT_INTENTS,
-    applyIntent: (action, args) => {
+    applyIntent: (action, args, seat) => {
+      // Validation de POSSESSION (spec §4bis) : un invité ne pilote que SES combattants —
+      // modale ouverte → seul son concerné agit ; sinon seul le propriétaire du tour actif.
+      if (!intentAllowedFor(useGame.getState(), seat, action)) {
+        get().log(`Action réseau refusée (${action}) : pas le propriétaire.`);
+        return;
+      }
       const fn = (useGame.getState() as unknown as Record<string, unknown>)[action];
       if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args);
     },
