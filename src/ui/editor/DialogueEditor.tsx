@@ -3,9 +3,9 @@
  * Dernière brique d'authoring : permet de construire des scènes sociales
  * entièrement dans l'éditeur (sans JSON).
  */
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice, EncounterDef } from '../../state/scene';
-import { useModalA11y } from '../Modal';
+import { Modal } from '../Modal';
 import { EffectList, Ctx } from './EffectList';
 
 export function DialogueEditor({
@@ -20,8 +20,6 @@ export function DialogueEditor({
   onClose: () => void;
 }) {
   const [list, setList] = useState<Dialogue[]>(() => JSON.parse(JSON.stringify(dialogues)));
-  const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef); // piège de focus seul — PAS d'Échap (champs texte : ne pas jeter les modifs sur un réflexe)
   const ctx: Ctx = { encounters, dialogues: list };
 
   const updDlg = (di: number, patch: Partial<Dialogue>) => setList(list.map((d, i) => (i === di ? { ...d, ...patch } : d)));
@@ -30,10 +28,9 @@ export function DialogueEditor({
   const updChoice = (di: number, ni: number, ci: number, patch: Partial<DialogueChoice>) =>
     updNode(di, ni, { choices: list[di].nodes[ni].choices.map((c, i) => (i === ci ? { ...c, ...patch } : c)) });
 
+  // Cadre partagé <Modal> ; pas de onClose (champs texte → fermeture explicite seulement).
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div ref={boxRef} role="dialog" aria-modal="true" className="modal wide dlg-edit-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Dialogues</h3>
+    <Modal title="Dialogues" variant="plain" className="wide dlg-edit-modal">
         <p className="hint">Un dialogue = des nœuds (répliques) ; chaque choix mène à un autre nœud et/ou déclenche des effets.</p>
 
         <div className="dlg-list">
@@ -152,7 +149,6 @@ export function DialogueEditor({
             Appliquer
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

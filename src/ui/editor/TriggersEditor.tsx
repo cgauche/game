@@ -1,9 +1,9 @@
 /**
  * Éditeur structuré de Triggers (zones déclencheuses + effets).
  */
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Trigger, EncounterDef, Dialogue } from '../../state/scene';
-import { useModalA11y } from '../Modal';
+import { Modal } from '../Modal';
 import { EffectList, Ctx } from './EffectList';
 
 export function TriggersEditor({
@@ -20,15 +20,12 @@ export function TriggersEditor({
   onClose: () => void;
 }) {
   const [list, setList] = useState<Trigger[]>(() => JSON.parse(JSON.stringify(triggers)));
-  const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef); // piège de focus seul — pas d'Échap (champs de saisie)
   const ctx: Ctx = { encounters, dialogues };
   const upd = (i: number, patch: Partial<Trigger>) => setList(list.map((t, j) => (j === i ? { ...t, ...patch } : t)));
 
+  // Cadre partagé <Modal> ; pas de onClose (champs de saisie → fermeture explicite seulement).
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div ref={boxRef} role="dialog" aria-modal="true" className="modal wide trig-modal" onClick={(ev) => ev.stopPropagation()}>
-        <h3>Triggers &amp; effets</h3>
+    <Modal title="Triggers & effets" variant="plain" className="wide trig-modal">
         <p className="hint">Une zone (rectangle de tuiles) qui déclenche des effets quand le groupe y entre.</p>
         <div className="trig-list">
           {list.map((t, i) => (
@@ -73,7 +70,6 @@ export function TriggersEditor({
             Appliquer
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
