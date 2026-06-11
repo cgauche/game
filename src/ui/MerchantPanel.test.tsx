@@ -80,7 +80,7 @@ describe('MerchantPanel (#2 — panier)', () => {
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 3 }], cart: [{ label: 'Hallebarde', qty: 1 }], bargainBuy: { won: true, drNet: 2, negotiator: false } }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
     );
-    expect(html).toContain('Le prix est arrêté'); // note reformulée
+    expect(html).toContain('Prix arrêté'); // note de marché scellé (texte condensé, détail en title)
     expect(html).not.toMatch(/Marchander le panier/); // plus de renégociation
     expect(html).toContain('Refuser le marché'); // remplace « Vider »
     expect(html).not.toContain('Vider le panier');

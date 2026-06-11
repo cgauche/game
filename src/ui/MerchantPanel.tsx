@@ -151,7 +151,6 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   // Bloc de comparaison d'un héros (info : la neuve vs l'équipement actuel). Pas de bouton d'équipement (cart).
   const heroCompareBlock = (item: ItemInstance, h: Combatant) => {
     const cmp = compareEquip(item, h);
-    const isWeapon = item.kind === 'melee' || item.kind === 'ranged' || isShieldItem(item);
     return (
       <div className="mc-hero" key={h.id}>
         <div className="mc-hero-head">
@@ -172,7 +171,6 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             </tbody>
           </table>
         )}
-        {isWeapon && <p className="mc-hint">🗡 à ranger dans un set d’armes (fiche du perso) pour la tenir.</p>}
       </div>
     );
   };
@@ -266,7 +264,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           </table>
           <div className="cart-haggle">{buyHaggleControl()}</div>
           {sealed && (
-            <p className="cart-sealed">🤝 Le prix est arrêté. Vous pouvez encore <strong>retirer</strong> des articles pour baisser le total (mais plus en ajouter). À vous de <strong>régler</strong> ou de <strong>refuser le marché</strong> — refuser ou partir sans payer, et il ne marchandera plus avant son réassort.</p>
+            <p className="cart-sealed" title="Refuser ou partir sans payer : le marchand ne marchandera plus avant son réassort.">🤝 Prix arrêté — vous pouvez retirer des articles, puis régler ou refuser.</p>
           )}
           <div className="cart-total">Total : <strong><Coins money={cartTotal} /></strong>{buyDiscount > 0 && <span className="cart-disc"> (marchandé −{buyDiscount} %)</span>}</div>
           <div className="cart-actions">
@@ -461,9 +459,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     <div className="merchant-panel modal-overlay">
       <div className="merchant-box">
         <div className="merchant-head">
-          <strong>Marchand</strong>
-          <span className="purse">Bourse : <Coins money={money} /></span>
-          <button className="btn small" onClick={onClose}>Fermer</button>
+          <h2 className="merchant-title">🪙 Marchand</h2>
+          <span className="purse">Bourse <Coins money={money} /></span>
+          <button className="btn small" onClick={onClose} aria-label="Fermer">✕</button>
         </div>
         <div className="merchant-tabs" role="tablist">
           <button className={`mtab ${tab === 'buy' ? 'active' : ''}`} onClick={() => setTab('buy')}>Acheter{cartCount ? <span className="tab-count">{cartCount}</span> : null}</button>
