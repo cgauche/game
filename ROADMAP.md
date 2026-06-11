@@ -826,6 +826,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 - ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce
   à +5, 3 à +3, additif ; talents fixes, choix « A ou B », et « N Talent aléatoire » tirés sur le
   Tableau des Talents aléatoires d100). Restent : richesse initiale, détails physiques, noms.
+- ✅ **Génération de noms** *(2026-06-11)* : bouton **🎲** sur le champ Nom du créateur — banque
+  `src/data/names.json` (reprise du projet WarhammerV2 : ~1750 prénoms humains M/F, 1835 familles,
+  pools complets nain/elfe/halfling/gnome/ogre, toutes espèces couvertes) ; moteur pur
+  `engine/names.ts` (RNG injecté, 6 tests) ; cas NAIN canon : patronyme « parent + suffixe sexué »
+  (LDB 05 l.622 : -sson/-snev fils/neveu, -sdottir/-sniz fille/nièce). Vérifié navigateur.
 - ✅ **Avancement — MOTEUR** (`engine/advancement.ts`, testé, verbatim LDB Carrières l.31-137) :
   coûts d'Augmentation Caractéristique/Compétence par bandes de 5 (25→520 / 10→440), **hors-carrière ×2**,
   Talents (100 + 100×déjà-acheté), **changement de carrière** (complétion = 5×niveau d'Augmentations,

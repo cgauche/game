@@ -34,6 +34,8 @@ import {
 import { CHAR_KEYS, CharKey, CHAR_LABELS, CHAR_BY_LABEL, Characteristics } from '../../engine/types';
 import { bonus } from '../../engine/characteristics';
 import { formatMoney } from '../../engine/money';
+import { makeRNG } from '../../engine/dice';
+import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
@@ -1079,7 +1081,20 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         <div className="form-cols">
           <label>
             Nom
-            <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
+            <span className="input-dice">
+              <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
+              <button
+                type="button"
+                className="btn small"
+                title="Nom aléatoire (espèce et sexe du personnage)"
+                onClick={() => {
+                  const n = generateName(d.speciesLabel, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
+                  if (n) setD({ ...d, name: n });
+                }}
+              >
+                🎲
+              </button>
+            </span>
           </label>
           <label>
             Motivation <em className="hint">(recharge la Détermination)</em>

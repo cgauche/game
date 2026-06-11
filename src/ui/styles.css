@@ -675,6 +675,14 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 0 18px;
 }
+.input-dice {
+  display: flex;
+  gap: 6px;
+}
+.input-dice input {
+  flex: 1;
+  min-width: 0;
+}
 /* Fiche vivante : 3ᵉ colonne pleine hauteur (plus une carte flottante). */
 .creator-shell > .creator-summary {
   border: 0;
