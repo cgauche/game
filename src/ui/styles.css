@@ -1519,11 +1519,28 @@ textarea {
   font-size: 14px;
   font-family: inherit;
 }
+/* Charte : <select> CUSTOM — fin de la flèche système, chevron or dessiné, options thémées. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23c9a227' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+select:hover {
+  border-color: var(--gold);
+}
+option {
+  background: var(--panel2);
+  color: var(--text);
+}
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--accent2);
+  border-color: var(--gold);
 }
 .derived {
   display: flex;
@@ -3764,7 +3781,7 @@ textarea:focus {
 .dist-list { display: flex; flex-direction: column; gap: 6px; }
 .dist-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 .dist-row .merch-name { flex: 1; }
-.dist-row select { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 13px; }
+.dist-row select { background-color: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 26px 5px 8px; font-size: 13px; }
 .haggle-bar { margin-bottom: 10px; min-height: 30px; }
 /* Familles repliables */
 .merch-section { margin-bottom: 6px; }
