@@ -117,13 +117,13 @@ export function WorldMapView() {
                 onClick={clickable ? () => selectRoute(route!) : undefined}
                 style={clickable ? { cursor: 'pointer' } : undefined}
               >
-                {isHere && <circle r="3.4" fill="none" stroke="#1d6fb8" strokeWidth="0.5" />}
-                {dest?.id === p.id && <circle r="3.4" fill="none" stroke="#8a2f1d" strokeWidth="0.5" />}
+                {isHere && <circle r="3.4" fill="none" stroke="var(--ok)" strokeWidth="0.6" />}
+                {dest?.id === p.id && <circle r="3.4" fill="none" stroke="var(--accent)" strokeWidth="0.6" />}
                 <text y="1.3" textAnchor="middle" fontSize="3.8">{p.icon ?? '📍'}</text>
                 <text y="5.6" textAnchor="middle" fontSize="2.6" fontWeight={isHere ? 700 : 400} fill="#3c2d14">
                   {p.label}
                 </text>
-                {isHere && <text y="-4" textAnchor="middle" fontSize="2.2" fill="#1d6fb8">Vous êtes ici</text>}
+                {isHere && <text y="-4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">Vous êtes ici</text>}
               </g>
             );
           })}
@@ -137,7 +137,7 @@ export function WorldMapView() {
             Voyage vers <b>{resumeDest.label}</b> interrompu — {Math.max(0, Math.round(travelPlan.km - travelPlan.kmDone))} km restants.
           </p>
           <div className="modal-actions">
-            <button type="button" className="btn primary" onClick={resumeTravel}>▶ Reprendre le voyage</button>
+            <button type="button" className="btn btn-primary" onClick={resumeTravel}>▶ Reprendre le voyage</button>
           </div>
         </div>
       )}
@@ -150,7 +150,7 @@ export function WorldMapView() {
           </p>
           <div className="bar wm-modes">
             {selRoute.modes.map((m) => (
-              <button key={m} type="button" className={`btn small ${mode === m ? 'primary' : ''}`} onClick={() => pickMode(m)}>
+              <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
                 {m === 'pied' ? '🦶' : m === 'diligence' ? '🚌' : '🛶'} {TRAVEL_MODE_LABEL[m]}
               </button>
             ))}
@@ -190,7 +190,7 @@ export function WorldMapView() {
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
             <button
               type="button"
-              className="btn primary"
+              className="btn btn-primary"
               disabled={kmh <= 0 || !affordable}
               onClick={() => startTravel(selRoute.id, mode, { classKey: classKey || undefined, hoursPerDay: mode === 'pied' && forced ? maxH : undefined })}
             >
