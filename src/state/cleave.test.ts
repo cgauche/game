@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { cleaveTargets, doAttack } from './combatFlow';
+import { cleaveTargets, doAttack, autoCleave } from './combatFlow';
+import { occupiesTile } from './footprint';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { tome1Intro } from '../scenes/tome1-intro';
 import type { Combatant } from '../engine/types';
+import type { AttackResult } from '../engine/combat';
 import type { BattleState } from './store';
 
 // ---------------------------------------------------------------------------
@@ -157,5 +159,36 @@ describe('Balayage en combat (store)', () => {
 
     useGame.getState().cleaveEnd();
     expect(useGame.getState().pendingCleave).toBeNull();
+  });
+
+  it('en se recalant sur la case d’un mort, un Énorme dégage les plus petits sous son empreinte (LDB 85 l.308-309)', () => {
+    useGame.getState().seedRng(7);
+    const b = setupBattle(2);
+    const heroes = b.combatants.filter((c) => c.kind === 'hero');
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const E = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true)); // un seul ennemi actif
+    E.size = 'enorme'; // empreinte 3×3
+    E.characteristics.CC = 40; // BCC = 4
+    E.pos = { x: 0, y: 0 };
+    const [deadPrimary, small] = heroes;
+    deadPrimary.dead = true; // cible primaire DÉJÀ hors de combat → l’Énorme se recale sur sa case
+    deadPrimary.pos = { x: 10, y: 10 };
+    small.size = 'moyenne';
+    small.pos = { x: 11, y: 11 }; // SOUS l’empreinte 3×3 ancrée en (10,10) → (10..12, 10..12)
+    small.wounds = { current: 200, max: 200, base: 200 } as Combatant['wounds'];
+    small.conditions = [{ name: 'Surpris', value: 1 }]; // pas de défense → enchaînement instantané, survit
+    small.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    useGame.setState({ battle: { ...b } });
+
+    expect(occupiesTile({ x: 10, y: 10 }, 'enorme', 11, 11)).toBe(true); // sanity : small était bien sous l’empreinte
+
+    autoCleave(useGame.getState, useGame.setState, E, deadPrimary, { cleave: true } as AttackResult);
+
+    const st = useGame.getState().battle!;
+    const e = st.combatants.find((c) => c.id === E.id)!;
+    const s = st.combatants.find((c) => c.id === small.id)!;
+    expect(e.pos).toEqual({ x: 10, y: 10 }); // recalé sur la case du mort (l.10)
+    expect(occupiesTile(e.pos!, e.size, s.pos!.x, s.pos!.y)).toBe(false); // small dégagé HORS de l’empreinte
   });
 });
