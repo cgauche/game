@@ -1,10 +1,11 @@
 import type { Scene, Effect } from './scene';
+import type { WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 
 export interface Warning {
   level: 'error' | 'warn';
   sceneId: string;
-  scope: 'entity' | 'building' | 'trigger' | 'dialogue' | 'encounter' | 'scene';
+  scope: 'entity' | 'building' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
   message: string;
@@ -22,12 +23,29 @@ function walkEffects(effects: Effect[] | undefined, fn: (e: Effect) => void) {
 }
 
 /**
- * Vérifie un PROJET (liste de scènes) avant le runtime : réfs cassées (dialogue / rencontre /
- * scène / scène intérieure / nœud de dialogue), zones hors-carte, ids dupliqués. PUR.
+ * Vérifie un PROJET (liste de scènes + carte du monde optionnelle) avant le runtime : réfs cassées
+ * (dialogue / rencontre / scène / scène intérieure / nœud de dialogue / lieu et route de la carte),
+ * zones hors-carte, ids dupliqués. PUR.
  */
-export function validateScene(project: Scene[]): Warning[] {
+export function validateScene(project: Scene[], worldMap?: WorldMap | null): Warning[] {
   const out: Warning[] = [];
   const sceneIds = new Set(project.map((s) => s.id));
+  if (worldMap) {
+    const addWm = (refId: string, message: string) =>
+      out.push({ level: 'error', sceneId: worldMap.id, scope: 'worldMap', refId, message });
+    const placeIds = new Set(worldMap.places.map((p) => p.id));
+    for (const p of worldMap.places) if (!sceneIds.has(p.scene)) addWm(p.id, `Lieu « ${p.label} » → scène inexistante « ${p.scene} »`);
+    for (const r of worldMap.routes) {
+      for (const end of [r.a, r.b] as const) if (!placeIds.has(end)) addWm(r.id, `Route « ${r.id} » → lieu inexistant « ${end} »`);
+      const amb = r.ambush;
+      if (amb) {
+        const target = project.find((s) => s.id === amb.scene);
+        if (!target) addWm(r.id, `Route « ${r.id} » → scène d'embuscade inexistante « ${amb.scene} »`);
+        else if (!target.encounters.some((e) => e.id === amb.encounter))
+          addWm(r.id, `Route « ${r.id} » → rencontre d'embuscade inexistante « ${amb.encounter} » dans « ${amb.scene} »`);
+      }
+    }
+  }
   const musicIds = new Set(allMusicDefs().map((d) => d.id));
   for (const s of project) {
     const dlgIds = new Set(s.dialogues.map((d) => d.id));

@@ -313,7 +313,11 @@ export function Editor() {
   }, [sel, clip, scene]);
   const selB = (scene.buildings ?? []).find((b) => b.id === selectedBuilding) ?? null;
   const selT = scene.triggers.find((t) => t.id === selectedTrigger) ?? null;
-  const warnings = useMemo(() => validateScene([scene, ...otherScenes]).filter((w) => w.sceneId === scene.id), [scene, otherScenes]);
+  // Avertissements de LA scène éditée + ceux de la carte du monde (rattachés à aucune scène).
+  const warnings = useMemo(
+    () => validateScene([scene, ...otherScenes], worldMap).filter((w) => w.sceneId === scene.id || w.scope === 'worldMap'),
+    [scene, otherScenes, worldMap],
+  );
   /** Clic sur un avertissement → sélectionne le fautif. */
   function selectWarning(w: Warning) {
     if (!w.refId) return;

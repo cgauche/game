@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { useGame } from '../../state/store';
 import { applyEffects } from '../../state/combatFlow';
 import { condMet, type Scene } from '../../state/scene';
+import { parseProject } from '../../state/worldMap';
 import { makeArenaParty } from '../../data/pregens';
 
 /**
@@ -13,7 +14,7 @@ import { makeArenaParty } from '../../data/pregens';
  * de la zone suivante s'ouvre (flag). Tout via des primitives déjà testées (checkTriggers,
  * startCombat, applyEffects, transition, condMet).
  */
-const project = JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8')) as Scene[];
+const project: Scene[] = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8'))).scenes;
 const zone1 = project.find((s) => s.id === 'arene-zone1')!;
 
 describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () => {

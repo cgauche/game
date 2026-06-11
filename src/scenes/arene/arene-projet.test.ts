@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
+import { parseProject } from '../../state/worldMap';
 import { isWalkable, type Scene } from '../../state/scene';
 import { findCreature, findTrapping } from '../../data';
 import { MERCHANTS } from '../../state/merchants/index';
@@ -21,9 +22,8 @@ function baseTerrain(tiles: string[]): string {
  * existant — aucun code applicatif dédié. Ce test verrouille que le JSON est VALIDE (transitions,
  * dialogues, ids) et que chaque ennemi référence une vraie créature du bestiaire (sinon mannequin B10).
  */
-const project = JSON.parse(
-  readFileSync(join(__dirname, 'arene-projet.json'), 'utf8'),
-) as Scene[];
+const doc = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8')));
+const project: Scene[] = doc.scenes;
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
   it('14 scènes, entrée = arene-zone1, hub + 13 zones reliées (rampe longue)', () => {
@@ -37,8 +37,8 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(new Set(zones).size).toBe(13);
   });
 
-  it('validateScene(projet) ne lève AUCUNE erreur (transitions/dialogues/ids OK)', () => {
-    const errors = validateScene(project).filter((w) => w.level === 'error');
+  it('validateScene(projet + carte du monde) ne lève AUCUNE erreur (transitions/dialogues/ids/lieux OK)', () => {
+    const errors = validateScene(project, doc.worldMap).filter((w) => w.level === 'error');
     expect(errors).toEqual([]);
   });
 
