@@ -11,6 +11,8 @@
 import type { BoneId, RigOverlay } from '../bones';
 import type { PartArt } from './types';
 import { HEADS, ARMS, LEGS } from './monster';
+import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
+import { dorsalOverlays } from './dorsal';
 
 /** Sélection monstrueuse par slot (sur Appearance.monster). Tout est optionnel.
  *  Champs en `string` (libellés libres venant de la scène/éditeur) ; les lookups
@@ -27,6 +29,7 @@ export interface MonsterParts {
   plaie?: boolean; // plaie de chair exposée (zombie)
   cape?: boolean; // col de cape dressé en éventail + crocs (vampire)
   membresRouges?: boolean; // bras/jambes rouge sang + stries au torse (démon bicolore)
+  ailes?: boolean; // ailes emplumées repliées dans le dos (plan dédié — harpie, démon ailé)
 }
 
 // --- Calques (overlays) ----------------------------------------------------
@@ -113,6 +116,11 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
     overlays.push({ bone: 'cuisseG', svg: OV_CUISSE_ROUGE });
     overlays.push({ bone: 'cuisseD', svg: OV_CUISSE_ROUGE });
     overlays.push({ bone: 'torse', svg: OV_STRIES });
+  }
+  // Ailes : appendice DORSAL (règles de vue/profondeur codifiées par dorsalOverlays) —
+  // monsterInjection composant PAR vue, on ne garde que le calque de la vue courante.
+  if (m.ailes) {
+    overlays.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }).filter((o) => !o.view || o.view === view));
   }
   return { replace, overlays };
 }

@@ -14,16 +14,23 @@ import { OV_CORNES } from './monstrous';
 import { ARMS } from './monster';
 import { pickView } from './types';
 import { AILES_FRONT, AILES_BACK, AILES_PROFILE } from './wings';
+import { dorsalOverlays } from './dorsal';
 import { raceById } from '../races';
 import { baseSpeciesOf } from '../skeletons';
 
 const CORNES = `<g data-trait="cornes">${OV_CORNES}</g>`;
 // Queue de trait : LONGUE et débordant la hanche (sinon, cachée derrière le bassin, elle
-// est invisible de face) — fouet de chair terminé par une touffe de poils.
+// est invisible de face) — fouet de chair terminé par une touffe de poils. De PROFIL elle
+// part vers −x (le dos), pas toujours à droite.
 const QUEUE = '<g data-trait="queue">'
   + '<path d="M0 2 Q14 7 19 17 Q22 26 17 31 Q20 23 13 18 Q5 13 0 10 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>'
   + '<path d="M3 6 Q12 11 16 19" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.6"/>'
   + '<path d="M17 31 q5 1.4 4.6 6 q-5 -0.4 -6.6 -4.2 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>'
+  + '</g>';
+const QUEUE_PROFILE = '<g data-trait="queue">'
+  + '<path d="M-2 2 Q-15 6 -20 15 Q-23 24 -18 29 Q-21 21 -14 17 Q-6 12 -2 9 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>'
+  + '<path d="M-5 6 Q-13 10 -17 17" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.6"/>'
+  + '<path d="M-18 29 q-5 1.4 -4.6 6 q5 -0.4 6.6 -4.2 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>'
   + '</g>';
 const TENTACULE_BRAS = `<g data-trait="tentacules">${pickView(ARMS['tentacule'], 'front')}</g>`;
 
@@ -36,17 +43,16 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   const has = (re: RegExp) => traits.some((t) => re.test(t.trim()));
   const out: RigOverlay[] = [];
   if (has(/^cornes?\b/i) && !raceHasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
-  if (has(/^attaque caudale\b/i) && !raceHasBehind('bassin')) out.push({ bone: 'bassin', svg: QUEUE, behind: true });
+  // Queue et ailes = appendices DORSAUX : règles de vue/profondeur codifiées par dorsalOverlays.
+  if (has(/^attaque caudale\b/i) && !raceHasBehind('bassin')) {
+    out.push(...dorsalOverlays('bassin', { front: QUEUE, back: QUEUE, profile: QUEUE_PROFILE }));
+  }
   if (has(/^(\d+\s+)?tentacules?\b/i)) {
     out.push({ bone: 'epauleG', svg: TENTACULE_BRAS, replace: true });
     out.push({ bone: 'mainG', svg: '', replace: true });
   }
-  // Ailes en PLAN dédié : de face/profil DERRIÈRE tout le corps (le z inégal des bras en
-  // cacherait une sinon), de dos DEVANT tout (on regarde le dos où elles s'attachent).
   if (has(/^vol\b/i)) {
-    out.push({ bone: 'torse', svg: AILES_FRONT, plane: 'fond', view: 'front' });
-    out.push({ bone: 'torse', svg: AILES_BACK, plane: 'avant', view: 'back' });
-    out.push({ bone: 'torse', svg: AILES_PROFILE, plane: 'fond', view: 'profile' });
+    out.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }));
   }
   return out;
 }

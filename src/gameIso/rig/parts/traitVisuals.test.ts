@@ -10,10 +10,13 @@ describe('visuels dérivés des traits de créature (statbloc éditeur, sorts gr
     expect(traitOverlaysFor(mk([]))).toEqual([]);
   });
 
-  it('Cornes → cornes derrière la tête ; Attaque caudale → queue derrière le bassin', () => {
+  it('Cornes → cornes derrière la tête ; Attaque caudale → queue dorsale (3 vues, profil vers −x)', () => {
     const ovs = traitOverlaysFor(mk(['Cornes +6', 'Attaque caudale +8']));
     expect(ovs.some((o) => o.bone === 'tete' && o.behind && o.svg.includes('data-trait="cornes"'))).toBe(true);
-    expect(ovs.some((o) => o.bone === 'bassin' && o.behind && o.svg.includes('data-trait="queue"'))).toBe(true);
+    const queue = ovs.filter((o) => o.svg.includes('data-trait="queue"'));
+    expect(queue.map((o) => o.view).sort()).toEqual(['back', 'front', 'profile']);
+    expect(queue.find((o) => o.view === 'profile')?.plane).toBe('fond');
+    expect(queue.find((o) => o.view === 'profile')?.svg).toContain('M-2 2'); // part vers −x (le dos)
   });
 
   it('anti-doublon : la race qui fournit déjà cornes/queue (feature behind) fait foi', () => {

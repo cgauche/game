@@ -92,6 +92,19 @@ section('Amputations &amp; prothèses (LDB 18 / 73)', INJ.map(({ label, c }) =>
 section('Yeux personnalisés (catalogue)', Object.values(EYE_OPTIONS).map(({ label, art }) =>
   cell(label, { ...APP, eyes: { G: art, D: art } }, [], { bg: '#1f2430', tint: '#9cf' })));
 
+// 7) Visuels de TRAITS (traitVisuals.ts) en 3 VUES — les appendices dorsaux (ailes, queue)
+// sont LES récidivistes des bugs de vue/profondeur : chaque regen les montre sous tous les angles.
+const TRAITS: { label: string; traits: string[] }[] = [
+  { label: 'Vol (ailes)', traits: ['Vol 90'] },
+  { label: 'Attaque caudale (queue)', traits: ['Attaque caudale +8'] },
+  { label: 'Cornes', traits: ['Cornes +6'] },
+  { label: 'Tentacules', traits: ['8 Tentacules +9'] },
+];
+const traitC = (traits: string[]): Combatant => ({ id: 't', name: 'T', kind: 'hero', species: 'Humain', traits }) as unknown as Combatant;
+section('Traits de créature → visuels (statbloc / sorts) — 3 vues', TRAITS.flatMap(({ label, traits }) =>
+  (['front', 'profile', 'back'] as View[]).map((view) =>
+    cell(`${label} — ${view}`, APP, combatantOverlays(traitC(traits)), { view, career: 'Soldat', bg: '#23202c', tint: '#fc9' }))));
+
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Mutations QC</title></head>
 <body style="background:#11141c;padding:16px">
 <h1 style="color:#eee;font:18px sans-serif">Galerie QC — mutations physiques (LDB 19) sur le rig</h1>

@@ -17,10 +17,11 @@ const aile = (s: 1 | -1) =>
 export const AILES_FRONT = `<g data-trait="vol">${aile(1)}${aile(-1)}</g>`;
 /** Vue de DOS : les ailes couvrent le dos (par-dessus le torse). */
 export const AILES_BACK = `<g data-trait="vol">${aile(1)}${aile(-1)}<path d="M-2 -16 Q0 -6 0 6 Q0 -6 2 -16" stroke="#5a4a38" stroke-width="0.8" fill="none" opacity="0.6"/></g>`;
-/** Vue de PROFIL : une seule aile, repliée vers l'arrière (−x = le dos en profil). */
+/** Vue de PROFIL : une seule aile ANCRÉE AU BORD ARRIÈRE du torse (le dos est à −x quand
+ *  le personnage regarde +x) et déployée vers l'arrière — pas flottante derrière le corps. */
 export const AILES_PROFILE =
   '<g data-trait="vol">'
-  + '<path d="M-2 -16 Q-12 -28 -16 -36 Q-19 -24 -15 -12 Q-12 0 -6 8 Q-9 -4 -5 -12 Z" fill="#cdbb9a" stroke="#5a4a38" stroke-width="0.6"/>'
-  + '<path d="M-3 -15 Q-11 -25 -15 -33" stroke="#8a6f52" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
-  + '<path d="M-13 -10 Q-10 0 -6 7 M-14 -16 Q-11 -6 -7 0" stroke="#8a6f52" stroke-width="0.5" fill="none" opacity="0.7"/>'
+  + '<path d="M-3 -13 Q-14 -26 -20 -37 Q-24 -22 -18 -9 Q-13 3 -6 9 Q-11 -3 -6 -10 Z" fill="#cdbb9a" stroke="#5a4a38" stroke-width="0.6"/>'
+  + '<path d="M-4 -12 Q-13 -24 -18 -34" stroke="#8a6f52" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+  + '<path d="M-16 -8 Q-12 2 -7 8 M-17 -15 Q-13 -5 -8 1 M-18 -22 Q-15 -13 -11 -7" stroke="#8a6f52" stroke-width="0.5" fill="none" opacity="0.7"/>'
   + '</g>';
