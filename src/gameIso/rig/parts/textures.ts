@@ -54,10 +54,11 @@ export function scalesPath(x0: number, x1: number, y0: number, y1: number, step 
   return d;
 }
 
-/** Patch d'écailles prêt à poser : bords @peauO + reflet décalé @peauH (relief). */
-export function scalesPatch(x0: number, x1: number, y0: number, y1: number, step = 3): string {
-  return `<path d="${scalesPath(x0, x1, y0, y1, step)}" stroke="@peauO" stroke-width="${(step * 0.16).toFixed(2)}" fill="none" opacity="0.85"/>`
-    + `<path d="${scalesPath(x0, x1, y0 + step * 0.18, y1, step)}" stroke="@peauH" stroke-width="${(step * 0.1).toFixed(2)}" fill="none" opacity="0.4"/>`;
+/** Patch d'écailles prêt à poser : bords ombrés + reflet décalé (relief). `tok` = famille de
+ *  palette (`peau` pour le rig bipède, `corps` pour les gabarits de créature). */
+export function scalesPatch(x0: number, x1: number, y0: number, y1: number, step = 3, tok = 'peau'): string {
+  return `<path d="${scalesPath(x0, x1, y0, y1, step)}" stroke="@${tok}O" stroke-width="${(step * 0.16).toFixed(2)}" fill="none" opacity="0.85"/>`
+    + `<path d="${scalesPath(x0, x1, y0 + step * 0.18, y1, step)}" stroke="@${tok}H" stroke-width="${(step * 0.1).toFixed(2)}" fill="none" opacity="0.4"/>`;
 }
 
 /** Chemin de touffes de FOURRURE en quinconce (petits traits incurvés vers le bas). */
@@ -72,8 +73,8 @@ export function furPath(x0: number, x1: number, y0: number, y1: number, step = 3
   return d;
 }
 
-/** Patch de pelage prêt à poser : touffes @peauO + reflets épars @peauH. */
-export function furPatch(x0: number, x1: number, y0: number, y1: number, step = 3): string {
-  return `<path d="${furPath(x0, x1, y0, y1, step)}" stroke="@peauO" stroke-width="${(step * 0.14).toFixed(2)}" fill="none" opacity="0.7" stroke-linecap="round"/>`
-    + `<path d="${furPath(x0 + step * 0.3, x1, y0 + step * 0.45, y1, step * 2)}" stroke="@peauH" stroke-width="${(step * 0.1).toFixed(2)}" fill="none" opacity="0.45" stroke-linecap="round"/>`;
+/** Patch de pelage prêt à poser : touffes ombrées + reflets épars. `tok` = famille de palette. */
+export function furPatch(x0: number, x1: number, y0: number, y1: number, step = 3, tok = 'peau'): string {
+  return `<path d="${furPath(x0, x1, y0, y1, step)}" stroke="@${tok}O" stroke-width="${(step * 0.14).toFixed(2)}" fill="none" opacity="0.7" stroke-linecap="round"/>`
+    + `<path d="${furPath(x0 + step * 0.3, x1, y0 + step * 0.45, y1, step * 2)}" stroke="@${tok}H" stroke-width="${(step * 0.1).toFixed(2)}" fill="none" opacity="0.45" stroke-linecap="round"/>`;
 }

@@ -6,6 +6,7 @@
  */
 import type { View } from '../facing';
 import type { QuadBoneId, QuadProps, QuadFoot } from './quadSkeleton';
+import { scalesPatch, plumeFan } from '../parts/textures';
 
 // ============================ helpers ============================
 const cap = (len: number, th: number, fill: string, stroke: string): string => {
@@ -94,7 +95,9 @@ function barrel(p: QuadProps): string {
       hi = `<path d="M${-22 * bl} -16 Q${2 * bl} -23 ${24 * bl} -18 L${24 * bl} -14 Q${2 * bl} -20 ${-22 * bl} -12 Z" fill="@corpsH" opacity="0.5"/>`;
       lo = `<path d="M${-Wd + 2} 10 Q0 23 ${22 * bl} 14 L${24 * bl} 7 Q0 18 ${-Wd + 2} 5 Z" fill="@corpsO" opacity="0.85"/>` +
         // crête dorsale épineuse (le long du dos)
-        `<path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>`;
+        `<path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/>` +
+        // cuir d'écailles imbriquées (textures.ts) sur le flanc — le ventre lourd reste lisse
+        scalesPatch(-Wd * 0.72, Wd * 0.72, -13, 8, 4.6, 'corps');
       break;
     }
     case 'batracien': { // crapaud : sac TRÈS large, bas et rond (pas de dos défini), dos verruqueux
@@ -178,7 +181,9 @@ function headProfile(p: QuadProps): string {
       `<path d="M10 9 Q14 10 17 9" stroke="#7a5a18" stroke-width="0.5" fill="none"/>` +
       `<ellipse cx="6" cy="1.6" rx="2" ry="2.1" fill="#e8b820"/><circle cx="6.5" cy="1.6" r="0.95" fill="#0a0603"/><circle cx="6.9" cy="1" r="0.3" fill="#fff" opacity="0.8"/>` +
       `<path d="M2 -1.4 Q6 -2.8 9.4 -0.6" stroke="@corpsO" stroke-width="1.3" fill="none"/>` +
-      `<path d="M-7 -4 q-3 2 -4 6 M-6 -1 q-3 3 -3 7 M-4 2 q-3 3 -2 7" stroke="@corpsO" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.7"/></g>`;
+      `<path d="M-7 -4 q-3 2 -4 6 M-6 -1 q-3 3 -3 7 M-4 2 q-3 3 -2 7" stroke="@corpsO" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.7"/>` +
+      // collerette emplumée à la base du cou (textures.ts) — le tell « rapace » du griffon
+      plumeFan(-6.5, 9, { n: 3, k: 0.8, baseRot: -125, colors: ['@corps', '@corpsO'] }) + `</g>`;
   if (p.head === 'dragon') // long museau écailleux + cornes en arrière + crête + dents + œil fendu
     return `<g transform="rotate(8)"><path d="M-8 -6 Q-10 7 -2 11 Q4 14 16 13 Q24 12 26 8 Q22 7 14 6 Q3 4 1 -4 Q0 -9 -8 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
       `<path d="M-6 -5 q-4 -8 -11 -10 q4 6 6 12 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/><path d="M-2 -6 q-3 -9 -9 -12 q3 7 5 13 z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` +
