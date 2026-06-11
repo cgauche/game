@@ -8,8 +8,53 @@ import {
 import { rationCount } from '../engine/provisions';
 import { formatMoney, canAfford } from '../engine/money';
 
+/** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
+}
+/** Chemin courbe (quadratique) entre deux points + son milieu (pour poser le label). Le sens de
+ *  la courbure est fixé par l'id → la carte ne « bouge » pas d'un rendu à l'autre. */
+function routeCurve(ax: number, ay: number, bx: number, by: number, id: string) {
+  const mx = (ax + bx) / 2, my = (ay + by) / 2;
+  const dx = bx - ax, dy = by - ay;
+  const len = Math.hypot(dx, dy) || 1;
+  const bend = (hashStr(id) % 2 ? 1 : -1) * Math.min(7, len * 0.14);
+  const cx = mx + (-dy / len) * bend, cy = my + (dx / len) * bend;
+  // milieu de la Bézier quadratique (t=0,5)
+  const lx = 0.25 * ax + 0.5 * cx + 0.25 * bx;
+  const ly = 0.25 * ay + 0.5 * cy + 0.25 * by;
+  return { d: `M ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`, lx, ly };
+}
+
+/** Rose des vents décorative (carte ancienne) — 4 branches cardinales bicolores + N. */
+function CompassRose({ x, y }: { x: number; y: number }) {
+  const ink = '#5d4520', faint = '#8a6c3e';
+  const ray = (rot: number, long: boolean) => {
+    const r = long ? 5.4 : 3.2;
+    return (
+      <g key={rot} transform={`rotate(${rot})`}>
+        <path d={`M 0 0 L 0.9 -${r * 0.5} L 0 -${r} Z`} fill={ink} />
+        <path d={`M 0 0 L -0.9 -${r * 0.5} L 0 -${r} Z`} fill={faint} />
+      </g>
+    );
+  };
+  return (
+    <g transform={`translate(${x} ${y})`} opacity="0.85" aria-hidden>
+      <circle r="6" fill="none" stroke={faint} strokeWidth="0.25" />
+      <circle r="4.4" fill="none" stroke={faint} strokeWidth="0.2" />
+      {[45, 135, 225, 315].map((d) => ray(d, false))}
+      {[0, 90, 180, 270].map((d) => ray(d, true))}
+      <circle r="0.7" fill={ink} />
+      <text y="-6.6" textAnchor="middle" fontSize="2.4" fill={ink} fontWeight={700}>N</text>
+    </g>
+  );
+}
+
 /**
- * Carte du monde (#T2 Voyage) — overlay plein écran en exploration : parchemin SVG, lieux et
+ * Carte du monde (#T2 Voyage) — overlay plein écran en exploration : carte au PARCHEMIN dessinée
+ * (texture vieillie, cadre orné, routes en chemins, lieux en médaillons, rose des vents), lieux et
  * routes (donnée `WorldMap` du projet, éditable dans l'onglet « Monde » de l'éditeur), départ de
  * voyage depuis le lieu courant (mode, classe, allure — RAW section « Voyage » du LDB) et reprise
  * d'un voyage interrompu par une péripétie. Mobile-first : panneau en bas, carte au-dessus.
@@ -74,42 +119,86 @@ export function WorldMapView() {
       </div>
 
       <div className="worldmap-canvas">
-        <svg viewBox="0 0 100 64" preserveAspectRatio="xMidYMid meet">
-          {/* Parchemin */}
+        <svg viewBox="0 0 100 64" preserveAspectRatio="xMidYMid meet" className="wm-map">
           <defs>
-            <radialGradient id="wm-parch" cx="50%" cy="42%" r="75%">
-              <stop offset="0%" stopColor="#e8d9b0" />
-              <stop offset="78%" stopColor="#d9c28c" />
-              <stop offset="100%" stopColor="#b89a63" />
+            <radialGradient id="wm-parch" cx="50%" cy="40%" r="78%">
+              <stop offset="0%" stopColor="#efe1bb" />
+              <stop offset="70%" stopColor="#dcc78f" />
+              <stop offset="100%" stopColor="#c2a466" />
+            </radialGradient>
+            {/* Vignettage : bords ombrés (vieillissement) */}
+            <radialGradient id="wm-vignette" cx="50%" cy="48%" r="62%">
+              <stop offset="55%" stopColor="#000000" stopOpacity="0" />
+              <stop offset="100%" stopColor="#3a2a12" stopOpacity="0.42" />
+            </radialGradient>
+            {/* Grain papier */}
+            <filter id="wm-grain" x="0" y="0" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" stitchTiles="stitch" result="n" />
+              <feColorMatrix in="n" type="saturate" values="0" />
+            </filter>
+            {/* Ombre douce des médaillons */}
+            <filter id="wm-drop" x="-40%" y="-40%" width="180%" height="180%">
+              <feDropShadow dx="0" dy="0.5" stdDeviation="0.5" floodColor="#000" floodOpacity="0.35" />
+            </filter>
+            <radialGradient id="wm-medal" cx="50%" cy="38%" r="70%">
+              <stop offset="0%" stopColor="#f4e8c6" />
+              <stop offset="100%" stopColor="#d2b87e" />
             </radialGradient>
           </defs>
-          <rect x="0" y="0" width="100" height="64" rx="2" fill="url(#wm-parch)" stroke="#7a5f38" strokeWidth="0.6" />
-          {/* Routes */}
+
+          {/* Parchemin + grain + vignette */}
+          <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-parch)" />
+          <rect x="0" y="0" width="100" height="64" rx="2.5" filter="url(#wm-grain)" opacity="0.06" />
+          {/* Taches d'âge (déterministes) */}
+          <ellipse cx="22" cy="14" rx="6" ry="3.4" fill="#7a5f38" opacity="0.06" />
+          <ellipse cx="80" cy="50" rx="7" ry="4" fill="#7a5f38" opacity="0.05" />
+          <ellipse cx="60" cy="9" rx="4" ry="2.6" fill="#7a5f38" opacity="0.05" />
+          <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-vignette)" />
+
+          {/* Cadre orné : filet brun épais + filet or fin + fleurons aux angles */}
+          <rect x="1.4" y="1.4" width="97.2" height="61.2" rx="2" fill="none" stroke="#5a4327" strokeWidth="1.3" />
+          <rect x="3.1" y="3.1" width="93.8" height="57.8" rx="1.4" fill="none" stroke="#a9842f" strokeWidth="0.4" />
+          {[[5, 6.6], [95, 6.6], [5, 60], [95, 60]].map(([fx, fy], i) => (
+            <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
+          ))}
+
+          {/* Routes (chemins courbes) */}
           {map.routes.map((r) => {
             const a = placeById(map, r.a);
             const b = placeById(map, r.b);
             if (!a || !b) return null;
-            const ax = a.pos.x, ay = a.pos.y * 0.64, bx = b.pos.x, by = b.pos.y * 0.64;
+            const c = routeCurve(a.pos.x, a.pos.y * 0.64, b.pos.x, b.pos.y * 0.64, r.id);
+            const sel = r.id === selId;
             const fromHere = here && (r.a === here.id || r.b === here.id);
+            const water = r.modes.includes('barge') && !r.modes.includes('pied');
             return (
               <g key={r.id}>
-                <line
-                  x1={ax} y1={ay} x2={bx} y2={by}
-                  stroke={r.id === selId ? '#8a2f1d' : fromHere ? '#6d4f24' : '#9b8255'}
-                  strokeWidth={r.id === selId ? 1.1 : 0.7}
-                  strokeDasharray={r.modes.includes('barge') && !r.modes.includes('pied') ? '2 1.2' : '1.6 1.1'}
+                <path
+                  d={c.d}
+                  fill="none"
+                  stroke={sel ? 'var(--accent)' : fromHere ? '#6d4f24' : '#9b8255'}
+                  strokeWidth={sel ? 1.1 : 0.65}
+                  strokeLinecap="round"
+                  strokeDasharray={water ? '0.4 1.7' : '1.7 1.2'}
+                  opacity={sel || fromHere ? 1 : 0.7}
                 />
-                <text x={(ax + bx) / 2} y={(ay + by) / 2 - 1} textAnchor="middle" fontSize="2.6" fill="#5d4520">
-                  {r.km} km{r.modes.some((m) => m !== 'pied') ? ' 🚌' : ''}
-                </text>
+                <g transform={`translate(${c.lx} ${c.ly})`}>
+                  <rect x="-5.4" y="-2.2" width="10.8" height="3.2" rx="1.6" fill="#efe2bd" opacity="0.82" />
+                  <text y="0.2" textAnchor="middle" fontSize="2.3" fill="#5d4520">
+                    {r.km} km{r.modes.some((m) => m !== 'pied') ? (water ? ' 🛶' : ' 🚌') : ''}
+                  </text>
+                </g>
               </g>
             );
           })}
-          {/* Lieux */}
+
+          {/* Lieux (médaillons + cartouche de nom) */}
           {map.places.map((p) => {
             const isHere = here?.id === p.id;
+            const isDest = dest?.id === p.id;
             const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
             const clickable = !!route;
+            const w = Math.max(11, p.label.length * 1.35 + 4);
             return (
               <g
                 key={p.id}
@@ -117,16 +206,22 @@ export function WorldMapView() {
                 onClick={clickable ? () => selectRoute(route!) : undefined}
                 style={clickable ? { cursor: 'pointer' } : undefined}
               >
-                {isHere && <circle r="3.4" fill="none" stroke="var(--ok)" strokeWidth="0.6" />}
-                {dest?.id === p.id && <circle r="3.4" fill="none" stroke="var(--accent)" strokeWidth="0.6" />}
-                <text y="1.3" textAnchor="middle" fontSize="3.8">{p.icon ?? '📍'}</text>
-                <text y="5.6" textAnchor="middle" fontSize="2.6" fontWeight={isHere ? 700 : 400} fill="#3c2d14">
-                  {p.label}
-                </text>
-                {isHere && <text y="-4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">Vous êtes ici</text>}
+                {isHere && <text y="-4.4" textAnchor="middle" fontSize="2.2" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
+                {(isHere || isDest) && (
+                  <circle r="3.7" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.55" opacity="0.9" />
+                )}
+                <circle r="2.9" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.35" filter="url(#wm-drop)" />
+                <text y="1.05" textAnchor="middle" fontSize="3.1">{p.icon ?? '📍'}</text>
+                {/* cartouche de nom */}
+                <g transform="translate(0 6.2)">
+                  <rect x={-w / 2} y="-2.3" width={w} height="3.6" rx="1.8" fill="#33240f" opacity={isHere ? 0.9 : 0.72} />
+                  <text y="0.3" textAnchor="middle" fontSize="2.5" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
+                </g>
               </g>
             );
           })}
+
+          <CompassRose x={13} y={52} />
         </svg>
       </div>
 
