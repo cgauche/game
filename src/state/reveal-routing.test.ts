@@ -10,6 +10,7 @@ import { applyCriticalToTarget } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
+import { tome1Intro } from '../scenes/tome1-intro';
 import type { Combatant } from '../engine/types';
 
 const mkEnemy = (id: string): Combatant =>
@@ -51,5 +52,50 @@ describe('routage des révélations (spec coop §4bis)', () => {
       { attackerId: 'e1', attackerKind: 'enemy' });
     expect(useGame.getState().pendingReveals).toHaveLength(1);
     expect(useGame.getState().pendingReveals[0].severity).toBe('grave');
+  });
+});
+
+describe('entretien de fin de Round — partition héros/ennemis (spec coop §4bis)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    seedBattleRng(7);
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingRoundStart: null });
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+  });
+
+  const crossRound = () => {
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.id.startsWith('hero') || c.kind === 'hero')!;
+    useGame.setState({
+      battle: { ...st.battle!, order: [H.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
+      pendingRoundStart: null,
+      pendingReveals: [],
+    });
+    useGame.getState().battleEndTurn(); // seul dans l'ordre → franchit le Round
+    vi.advanceTimersByTime(3000);
+  };
+
+  it('États récurrents ENNEMIS seuls → pas de modale, mais le journal de combat les porte', () => {
+    const st = useGame.getState();
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'Hémorragique', value: 1 });
+    crossRound();
+    const reveals = useGame.getState().pendingReveals.filter((r) => r.kind === 'round');
+    expect(reveals).toHaveLength(0);
+    expect(useGame.getState().battle!.log.some((e) => /Hémorragique|hémorragie|perd/i.test(e.text))).toBe(true);
+  });
+
+  it('État récurrent sur un HÉROS → modale de Round avec SA ligne, sans les lignes ennemies', () => {
+    const st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    H.conditions.push({ name: 'Hémorragique', value: 1 });
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'Hémorragique', value: 1 });
+    crossRound();
+    const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'round');
+    expect(reveal).toBeTruthy();
+    expect(reveal!.lines.some((l) => l.includes(H.name))).toBe(true);
+    expect(reveal!.lines.every((l) => l.includes(H.name) || !/Mutant/i.test(l))).toBe(true);
   });
 });

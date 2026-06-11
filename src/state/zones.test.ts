@@ -77,12 +77,13 @@ describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un
   it('occupant : 1d10+6 Dégâts ignorant les PA (mitigés BE) + 1 En flammes', () => {
     const inZone = mk({ id: 'a', pos: { x: 6, y: 5 }, armour: { tete: 9, brasG: 9, brasD: 9, corps: 9, jambeG: 9, jambeD: 9 } as Combatant['armour'] });
     const outZone = mk({ id: 'b', pos: { x: 20, y: 20 } });
-    const lines = zonesRoundTick([fire], [inZone, outZone], rng);
+    const ticks = zonesRoundTick([fire], [inZone, outZone], rng);
     // d10 scripté = 5 → 11 Dégâts − BE 3 = 8 (PA 9 ignorées)
     expect(inZone.wounds.current).toBe(4);
     expect(inZone.conditions.some((c) => c.name === 'En flammes')).toBe(true);
     expect(outZone.wounds.current).toBe(12);
-    expect(lines.join(' ')).toMatch(/ignore PA/);
+    expect(ticks.map((t) => t.line).join(' ')).toMatch(/ignore PA/);
+    expect(ticks.every((t) => t.combatant.id === 'a')).toBe(true); // chaque ligne porte son combattant
   });
 });
 

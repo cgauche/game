@@ -26,6 +26,8 @@ export { movementRemaining, canMove } from './mount';
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
+import * as netFlow from './netFlow';
+import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
@@ -314,6 +316,15 @@ export interface GameState {
   /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
   interludeLearn: (heroId: string, talent: string) => void;
   interludeOrder: (heroId: string, trapping: string) => void;
+  /** Coop en ligne (Jalon 7) : état réseau sérialisable + actions de session — délégué à netFlow.
+   *  Les objets réseau vivants (WebRTC) restent des singletons de module, jamais ici. */
+  net: NetState;
+  netHostStart: (name: string) => void;
+  netInvite: () => Promise<string | null>;
+  netAcceptAnswer: (code: string) => Promise<boolean>;
+  netJoin: (inviteCode: string, name: string) => Promise<string | null>;
+  netAssign: (heroId: string, seat: number) => void;
+  netLeave: () => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
   /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
@@ -831,6 +842,14 @@ export const useGame = create<GameState>((set, get) => ({
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
   interludeLearn: (heroId, talent) => interludeFlow.openLearn(get, set, heroId, talent),
   interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
+
+  net: netFlow.initialNet(),
+  netHostStart: (name) => netFlow.netHostStart(get, set, name),
+  netInvite: () => netFlow.netInvite(get),
+  netAcceptAnswer: (code) => netFlow.netAcceptAnswer(get, set, code),
+  netJoin: (inviteCode, name) => netFlow.netJoin(get, set, inviteCode, name),
+  netAssign: (heroId, seat) => netFlow.netAssign(get, set, heroId, seat),
+  netLeave: () => netFlow.netLeave(get, set),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {

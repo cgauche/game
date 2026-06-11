@@ -3279,8 +3279,14 @@ export function advanceTurn(get: () => GameState, set: any) {
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
       for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', `${c.name} agira en dernier ce Round (Maladresse).`, c.id)); }
-      const roundLines: string[] = []; // entretien groupé en UNE révélation (pas une modale par tic)
-      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); });
+      // Entretien de Round PARTITIONNÉ (spec coop §4bis) : TOUT va au journal de combat (bandeau) ;
+      // seules les lignes CONCERNANT UN HÉROS alimentent la révélation (les ennemis : journal seul).
+      const heroRoundLines: string[] = [];
+      const tickLine = (line: string, c?: Combatant) => {
+        battle.log.push(ev('condition', line, c?.id));
+        if (c?.kind === 'hero') heroRoundLines.push(line);
+      };
+      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => tickLine(l, c));
       for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
       // Régénération (LDB 85 p.341) : début de Round — PB > 0 → +1d10 PB ; à 0 PB → 1d10, 8+ → 1 PB
       // (la créature reprend conscience) ; un 10 soigne aussi une Blessure Critique. (Exception du
@@ -3290,16 +3296,16 @@ export function advanceTurn(get: () => GameState, set: any) {
         const r = d10(battleRng());
         if (c.wounds.current > 0) {
           const healed = Math.min(c.wounds.max - c.wounds.current, r);
-          if (healed > 0) { c.wounds.current += healed; roundLines.push(`${c.name} régénère ${healed} Blessure(s).`); }
+          if (healed > 0) { c.wounds.current += healed; tickLine(`${c.name} régénère ${healed} Blessure(s).`, c); }
         } else if (r >= 8) {
           c.wounds.current = 1;
           while (hasCondition(c, 'Inconscient')) removeCondition(c, 'Inconscient', 99);
-          roundLines.push(`${c.name} régénère et se relève (1 PB) !`);
+          tickLine(`${c.name} régénère et se relève (1 PB) !`, c);
         }
         if (r === 10 && (c.criticalWounds ?? 0) > 0) {
           c.criticalWounds = (c.criticalWounds ?? 0) - 1;
           if (c.traumas?.length) c.traumas = c.traumas.slice(0, -1);
-          roundLines.push(`${c.name} régénère une Blessure Critique.`);
+          tickLine(`${c.name} régénère une Blessure Critique.`, c);
         }
       }
       // Instable (LDB 85 p.340) : fin de Round Engagé avec un adversaire d'Avantage SUPÉRIEUR →
@@ -3313,8 +3319,8 @@ export function advanceTurn(get: () => GameState, set: any) {
         const diff = (foesAdv.length ? Math.max(...foesAdv) : 0) - (c.advantage ?? 0);
         if (diff > 0) {
           loseWounds(c, diff);
-          roundLines.push(`${c.name} (Instable) est repoussée : −${diff} PB.`);
-          if (c.wounds.current <= 0) { c.dead = true; roundLines.push(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`); }
+          tickLine(`${c.name} (Instable) est repoussée : −${diff} PB.`, c);
+          if (c.wounds.current <= 0) { c.dead = true; tickLine(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`, c); }
         }
       }
       // Bestial (LDB 85 p.338) : « Elle a peur du feu et gagne l'État Brisé si elle est touchée par
@@ -3322,7 +3328,7 @@ export function advanceTurn(get: () => GameState, set: any) {
       for (const c of battle.combatants) {
         if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, 'En flammes') && !hasCondition(c, 'Brisé')) {
           addCondition(c, 'Brisé');
-          roundLines.push(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`);
+          tickLine(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`, c);
         }
       }
       // Perturbant (LDB 85 p.341) : −20 à tous les Tests à Bonus d'Endurance mètres d'une créature
@@ -3341,7 +3347,7 @@ export function advanceTurn(get: () => GameState, set: any) {
           return !!e && e.kind !== c.kind && !isOutOfAction(e);
         }).length;
         // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
-        if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); roundLines.push(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`); }
+        if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); tickLine(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`, c); }
       }
       // Mâchoires d'acier (LDB 10) : Test de Résistance (+0) — retire 1 + DR États Sonné (résolu au
       // franchissement de Round, approximation de « chaque fois que vous gagnez un État Sonné »).
@@ -3351,18 +3357,18 @@ export function advanceTurn(get: () => GameState, set: any) {
         if (t.success) {
           const n = Math.min(stacks(c, 'Sonné'), 1 + Math.max(0, t.sl));
           removeCondition(c, 'Sonné', n);
-          roundLines.push(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`);
+          tickLine(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`, c);
         }
       }
       for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
-      brokenRecovery(get, roundLines); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
-      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // 0 PB→Inconscient (LDB 18 l.28)
-      for (const c of battle.combatants) suffocationTick(c).forEach((l) => { battle.log.push(ev('condition', l, c.id)); roundLines.push(l); }); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
-      zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((l) => { battle.log.push(ev('condition', l)); roundLines.push(l); }); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
+      brokenRecovery(get, tickLine); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
+      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => tickLine(l, c)); // 0 PB→Inconscient (LDB 18 l.28)
+      for (const c of battle.combatants) suffocationTick(c).forEach((l) => tickLine(l, c)); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
+      zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => tickLine(t.line, t.combatant)); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
-      if (roundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: roundLines, severity: 'minor' }); // « un jet = une modale » (entretien — auto-fermée)
+      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // « un jet = une modale » (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
       const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);
@@ -3479,8 +3485,8 @@ export function approachFearTrigger(get: () => GameState, set: any, mover: Comba
  *    (caché hors de vue → Accessible +20 ; ennemi à ≤ 3 cases → Très difficile −30 ; sinon Intermédiaire +0),
  *    retirant 1 + DR États Brisé sur un succès ;
  *  - +1 État Brisé retiré si l'on est resté caché hors de vue de TOUT ennemi ce Round (l.59).
- *  Pousse les jets dans `roundLines` (révélation d'entretien — pas de Chance, comme la Fuite/l'Initiative). */
-export function brokenRecovery(get: () => GameState, roundLines: string[]): void {
+ *  Émet chaque ligne via `sink(line, combattant)` — l'entretien de Round partitionne héros/ennemis. */
+export function brokenRecovery(get: () => GameState, sink: (line: string, c: Combatant) => void): void {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle) return;
@@ -3488,7 +3494,7 @@ export function brokenRecovery(get: () => GameState, roundLines: string[]): void
     if (!stacks(c, 'Brisé') || isOutOfAction(c) || !c.pos) continue;
     const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
     const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
-    if (hidden) { removeCondition(c, 'Brisé', 1); roundLines.push(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`); }
+    if (hidden) { removeCondition(c, 'Brisé', 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
     // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
     // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
     if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, 'Brisé')) {
@@ -3498,13 +3504,13 @@ export function brokenRecovery(get: () => GameState, roundLines: string[]): void
       if (t.success) {
         const removed = Math.min(stacks(c, 'Brisé'), 1 + Math.max(0, t.sl));
         removeCondition(c, 'Brisé', removed);
-        roundLines.push(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`);
+        sink(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`, c);
       } else {
-        roundLines.push(`${c.name} reste Brisé (Test de Calme raté).`);
+        sink(`${c.name} reste Brisé (Test de Calme raté).`, c);
       }
     }
     // « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80).
-    if (!stacks(c, 'Brisé')) { addCondition(c, 'Exténué'); roundLines.push(`${c.name} est Exténué (après s'être ressaisi).`); }
+    if (!stacks(c, 'Brisé')) { addCondition(c, 'Exténué'); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
   }
 }
 

@@ -84,23 +84,24 @@ export function crossZones(
 }
 
 /** Franchissement de Round : applique le `perRound` de chaque zone à chaque combattant DANS la
- *  zone (« Quiconque se trouve dans la Zone d'Effet au début d'un Round »). */
+ *  zone (« Quiconque se trouve dans la Zone d'Effet au début d'un Round »). Chaque ligne porte
+ *  son COMBATTANT — l'entretien de Round partitionne héros (modale) / ennemis (journal seul). */
 export function zonesRoundTick(
   zones: BattleZone[] | undefined,
   combatants: Combatant[],
   rng: RNG,
-): string[] {
-  const lines: string[] = [];
+): { line: string; combatant: Combatant }[] {
+  const out: { line: string; combatant: Combatant }[] = [];
   for (const z of zones ?? []) {
     if (!z.perRound) continue;
     const caster = z.casterId ? combatants.find((c) => c.id === z.casterId) : undefined;
     for (const c of combatants) {
       if (!c.pos || c.dead || isOutOfAction(c)) continue;
       if (!zoneCovers(z, c.pos)) continue;
-      lines.push(...applyZoneEffect(c, z.label, z.perRound, caster, rng));
+      for (const line of applyZoneEffect(c, z.label, z.perRound, caster, rng)) out.push({ line, combatant: c });
     }
   }
-  return lines;
+  return out;
 }
 
 /** Résout une formule de longueur/rayon en MÈTRES vers des cases (1 case = 2 m, min 1). */

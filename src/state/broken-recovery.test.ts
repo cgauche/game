@@ -20,7 +20,7 @@ describe('brokenRecovery — récupération du Brisé en fin de Round (LDB 16 l.
     const h = broken({});
     const battle = { combatants: [h, foe({})] };
     const lines: string[] = [];
-    brokenRecovery(getFn(battle, scene()), lines);
+    brokenRecovery(getFn(battle, scene()), (l) => lines.push(l));
     expect(stacks(h, 'Brisé')).toBeLessThan(2); // FM 80 → Test de Calme réussi
     expect(lines.join(' ')).toMatch(/Brisé/);
   });
@@ -29,13 +29,13 @@ describe('brokenRecovery — récupération du Brisé en fin de Round (LDB 16 l.
     seedBattleRng(1);
     const h = broken({ pos: { x: 5, y: 5 }, engagedWith: ['e'] });
     const battle = { combatants: [h, foe({ pos: { x: 5, y: 6 } })] }; // adjacent, en vue
-    brokenRecovery(getFn(battle, scene()), []);
+    brokenRecovery(getFn(battle, scene()), () => {});
     expect(stacks(h, 'Brisé')).toBe(2); // inchangé (Engagé + visible donc pas caché)
   });
 
   it('aucun Brisé → no-op', () => {
     const h = broken({ conditions: [] });
-    brokenRecovery(getFn({ combatants: [h, foe({})] }, scene()), []);
+    brokenRecovery(getFn({ combatants: [h, foe({})] }, scene()), () => {});
     expect(stacks(h, 'Brisé')).toBe(0);
   });
 });
