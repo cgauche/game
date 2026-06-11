@@ -837,11 +837,11 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 - **Différé réel assumé** : ~20 utilitaires narratifs hors grille (Bruits, Repères, Serrure
   ouverte…), volet « Commandements divins » de B. de Conscience.
 
-## 🎯 Jalon 3 — Création de personnage complète
+## ✅ Jalon 3 — Création de personnage complète *(complet — 2026-06-11)*
 
 - ✅ **Compétences/Talents raciaux** appliqués à la création (LDB l.510 : 3 compétences d'espèce
   à +5, 3 à +3, additif ; talents fixes, choix « A ou B », et « N Talent aléatoire » tirés sur le
-  Tableau des Talents aléatoires d100). Restent : richesse initiale, détails physiques, noms.
+  Tableau des Talents aléatoires d100).
 - ✅ **Génération de noms** *(2026-06-11)* : bouton **🎲** sur le champ Nom du créateur — banque
   `src/data/names.json` (reprise du projet WarhammerV2 : ~1750 prénoms humains M/F, 1835 familles,
   pools complets nain/elfe/halfling/gnome/ogre, toutes espèces couvertes) ; moteur pur
@@ -976,7 +976,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   `searchable` pré-arme `interact`). Sous-projet 2 livré aussi : sprites lettre/coffre/étagère/
   clé/bourse (+ cercle runique) au catalogue.
 
-## 🎯 Jalon 7 — Coop en ligne
+## ✅ Jalon 7 — Coop en ligne *(V1 complète — 2026-06-11 ; V2 documentée non engagée)*
 
 - Du hotseat au **réseau** (WebSocket ou WebRTC). **RNG de combat seedable** (`store.seedRng`,
   Jalon 0.6) + état sérialisable déjà en place.
@@ -1003,9 +1003,17 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   coop (arbitrage). Recette 2 onglets sur WebRTC réel : attaque de l'hôte → modale chez lui +
   puce chez l'invité ; tour de l'invité → barre chez lui + puce chez l'hôte ; ready 1/2 attend,
   2/2 lance.
-- 🚧 **P3 (suivant)** : écran de VICTOIRE/loot synchronisé (ready-check + attribution à
-  dévalidation ciblée), validation owner des intents côté hôte, bouton ✋ (ouvrir la fenêtre
-  Chance d'un round), reconnexion par nouveau code.
+- ✅ **P3 complet** *(2026-06-11, `24a7fa9`+`0a6dd44`)* : **P3a validation de possession** côté
+  hôte (`netOwnership.intentAllowedFor` : modale ouverte → son owner ; sinon le combattant actif ;
+  ready/main levée → tous) ; **P3b victoire synchronisée** (ready-check par siège portraits + ✓,
+  fermeture à l'unanimité par l'hôte, **butin attribuable à SES héros seulement**) + bouton ✋
+  « Pause Round » (rouvre la fenêtre Chance du prochain round) ; **P3c reconnexion** (section coop
+  du menu ☰ hôte en partie : ré-inviter par code, réattribuer les héros d'un siège parti) ;
+  **REGISTRE unique des modales** (`state/modalArbiter.ts` : une entrée = `when` + `owner`, ordre
+  = priorité ; `pickActiveModalKey`/`modalOwnerOf` dérivés — partagé UI + validation réseau).
+- **V2 documentée (non engagée)** : recette bout-en-bout victoire/loot à 2 onglets, exploration
+  déléguée aux invités, deltas d'état (au lieu de snapshots), dissipation en Test Soutenu à
+  plusieurs sur le même Domaine.
 
 ## 🎯 Jalon 8 — Polish & production
 
@@ -1097,18 +1105,18 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   **tir interdit en Combat rapproché** (Atout Pistolet, LDB l.297-298 ; `attackWeapon` + IA).
 - **Combat — reste** : ✅ **« ramasser » en plein combat** (un objet au sol *à la fois*, réutilise `objet`/`search`, persiste party — `battlePickup`) ; ✅ **Chance étendue** : relance **1×/Test sur jet propre raté** (fix de 2 bugs), **+1 DR** cumulable, **Détermination** = retirer un État (+1 PB si À Terre, n'importe quel État : Surpris/À Terre/Hémorragique…). ✅ **Blessures critiques & mort** (LDB 18-Traumatisme : 0 PB ≠ mort → À Terre→Inconscient→mort si critiques > BE, overkill/double, tables par localisation, Mort Subite figurants ; `isOutOfAction` corrigé). ✅ **Destin/Résilience sacrifiés** (« Comment ça a pu rater ? », « Meurs un autre jour », « Je ne faillirai pas ! » ; `pendingFateSave`/`outOfRencontre`). ✅ **Munitions + rechargement (héros)** : munition = équipement avec **choix joueur**, tir = **arme + munition** combinées (1 consommée/tir), **Recharge N = Test étendu de Projectiles par modale** (`pendingReload`, cumul de DR jusqu'à l'Indice ; Arc tire chaque Round). ✅ **Maladresses** (Tableau des Oups !, modale héros / instant ennemi / défenseur couvert, Incident de Tir). ✅ **Table Difficultés de Combat** (Ligne de Vue, Couvert 3 niveaux, Combiner −30/+60, obscurité/météo, tir-en-bougeant, tir-dans-la-mêlée + redirection ; **Taille T0+T1** size-to-hit + plus-petit). Reste : munitions ennemies / achat / récupération (Jalon 5) ; grisage visuel des cibles hors-LdV (recette). *(✅ 3ᵉ usage de la Chance — pré-emption d'initiative — fait.)*
 - **Simplifications IA assumées** (mineures, documentées) : l'IA **ne se désengage pas** ; l'IA **charge en portée de Marche** (pas de Course).
-- **Vérif NAVIGATEUR — dette du cycle** : toute l'UI livrée cette session est **couverte par tests/typecheck mais jamais vue en live** (profil Playwright monopolisé par la session rig parallèle). À repasser à l'œil : modales attaque/**détail des jets opposés**/défense/**incantation**, **panneau Avancement** (achat de PX), action **« Utiliser »** (potions), **fouille** de corps, éditeur **« À la victoire »**, scène **Chapitre 2**, hotbar, Engagé/Charge. *(Penser au **hard reload** : le HMR du dev se périme souvent.)*
+- ✅ **Vérif NAVIGATEUR — dette du cycle (2026-06-05) RÉSORBÉE** : les recettes listées sont passées
+  au fil des sessions suivantes (unification des modales + recettes, refonte HUD BG3 + playtest live,
+  scénarios de test marchand/interlude/voyage, Chapitre 2, Engagé/Charge). *(Réflexe conservé : **hard
+  reload** avant recette, le HMR du dev se périme.)*
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). ✅ **Système d'arme complet (Jalon 0.11)** : maniement clé sur la forme + prises 2-mains, **48 armes au registre** (1 fichier/arme), **couleur tokenisée + skins légendaires** (backend `Weapon.skin`/`ItemInstance.skin`), tenues normalisées, **silhouettes reconnaissables à l'aveugle** (audit + regen best-of-N), ✅ **éditeur de skin d'objet (ARME + ARMURE)** dans la fiche perso (bouton ✨ → aperçu live recoloré + sélecteurs de couleur ; armure tokenisée + `ARMOUR_PALETTES` ; validé navigateur). ✅ **vues dos/profil héros** (cosmetic.ts, nuque/profil corrects) + ✅ **tintage arcane/divin** des sorts (`spell` sur `ANIM_ATTACK` → `spellFx`, gradients `g_arcane`/`g_divine` ; projectile/halo/aura tintés ; validé navigateur). ✅ **Orientation-monde persistante** (2026-06-07) : Dir8 monde projeté au rendu (`project`+camRot) → **rotation caméra ré-oriente**, repos stable (face ennemi/attaquant), éditeur 8-dir, coquille **BodyToken** unifiée, **classifieur `pickBackend`** (4 sites de dispatch collapsés), **non-bipèdes d'exploration animés + orientés** (fin de l'asymétrie sprite figé ; `planStaticSvg` retiré), legacy monolithique retiré. **Fusion des 2 moteurs d'anim ÉCARTÉE volontairement** (verdict adversarial : asymétrie essentielle clips-rig vs poses-plan closed-form ; toute interface unique serait lossy/leaky ; bus reste par-backend). Reste **fin** (pré-existant, hors orientation) : tenues/armes héros dos/profil partielles (repli *face*, désormais un peu plus visible depuis le facing 8-dir), galeries QC à finaliser.
 - **Contenu jouable** (Jalon 4) : ✅ **Chapitre 2** « Du Sang Sur la Route » livré et testé ; reste le vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
-- **Dette « qualités/traits en données sans code »** *(relevé 2026-06-07, via workflow d'inventaire)* :
-  **22 qualités d'arme** (Lente, Imprécise, Dévastatrice, Percutante, Perturbante, Immobilisante,
-  Protectrice, À Répétition, Dangereuse, Épuisante…), **4 qualités d'armure** (Flexible, Impénétrable,
-  Partielle, Points Faibles) et **90+ traits de créature** (Peur/Terreur, Régénération, Souffle, Venin,
-  Vol, Éthéré, Frénésie…) existent dans `data/qualities.json` / `data/traits.json` **sans implémentation
-  en code**. Le **registre de qualités** (Jalon 1.6 Phase 0) en absorbe une première partie (qualités
-  d'arme/armure/artisanat) ; le reste = **backlog** à brancher comme **entrées de registre** au fil des
-  besoins (la Psychologie — Peur/Terreur — est aussi un prérequis de la Taille T5, Jalon 1.5).
+- ✅ **Dette « qualités/traits en données sans code » — RÉSORBÉE** *(2026-06-10/11)* : le **registre
+  de qualités** (`engine/qualities/`, Jalon 1.6 Phase 0→C2) couvre les qualités d'arme/armure/artisanat ;
+  le **registre de traits** (`engine/traits/` — 40 defs + dispatch + test de parité, Jalon 2.5) couvre
+  les traits de créature mécanisables (Peur/Terreur via Psychologie, Régénération, Éthéré, Vol…).
+  Ajouter une qualité/un trait = **une entrée de registre** (plus de code éparpillé).
 
 ### Dette « historique » (détail)
 
