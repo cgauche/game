@@ -5,28 +5,47 @@
   gap: 3px;
   pointer-events: auto;
 }
+/* Tuile = carte d'équipe (fond teinté), portrait au-dessus, jauge de vie HORIZONTALE dessous. */
 .ptile {
   position: relative;
-  padding: 0;
-  background: none;
-  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(10, 14, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   line-height: 0;
   border-radius: 9px;
   flex: 0 0 auto;
 }
-.ptile .rig-portrait {
+/* R5 : FOND d'équipe derrière le portrait (vert allié / rouge ennemi). */
+.ptile.team-ally {
+  background: rgba(55, 192, 122, 0.16);
+  border-color: rgba(55, 192, 122, 0.45);
+}
+.ptile.team-enemy {
+  background: rgba(192, 57, 43, 0.18);
+  border-color: rgba(192, 57, 43, 0.5);
+}
+.ptile-face {
+  position: relative;
+  display: block;
+}
+.ptile-face .rig-portrait {
   display: block;
   width: 100%;
   height: 100%;
-  /* Cadre plus épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9)
-     doivent se lire d'un coup d'œil même sur les petites tuiles de la frise. */
+  /* Cadre épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9) se lisent d'un coup d'œil. */
   border-width: 3px;
 }
+/* R6 : l'unité active (déjà agrandie côté React) reçoit le liseré or + halo. */
 .ptile.active {
   outline: 2px solid var(--gold2);
   outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(255, 224, 102, 0.5);
+  box-shadow: 0 0 12px rgba(255, 224, 102, 0.55);
+  z-index: 1;
 }
 .ptile.ko .rig-portrait {
   filter: grayscale(0.9);
@@ -34,7 +53,7 @@
 }
 .ptile-caret {
   position: absolute;
-  top: -13px;
+  top: -11px;
   left: 50%;
   transform: translateX(-50%);
   color: var(--gold2);
@@ -43,40 +62,43 @@
   line-height: 1;
   text-shadow: 0 0 3px #000;
   pointer-events: none;
+  z-index: 2;
 }
+/* Jauge de vie HORIZONTALE (bas du portrait) — même idiome que tous les autres écrans. */
 .ptile-gauge {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: 5px;
-  background: rgba(0, 0, 0, 0.65);
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.72);
   border-radius: 3px;
   overflow: hidden;
-  display: flex;
-  align-items: flex-end;
   pointer-events: none;
 }
 .ptile-gauge b {
   display: block;
-  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.2s ease;
 }
 .ptile-pv {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 1px;
+  inset: 0;
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #fff;
   text-shadow: 0 0 3px #000, 0 1px 2px #000;
   font-variant-numeric: tabular-nums;
-  pointer-events: none;
-  line-height: 1.2;
+  line-height: 10px;
 }
 .ptile .ko-cross {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 22px;
+  line-height: 1;
 }
 .ptile-states {
   display: flex;

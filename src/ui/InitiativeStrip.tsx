@@ -44,7 +44,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
               <PortraitTile
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}
-                size={40}
+                team={isHero ? 'ally' : 'enemy'}
+                size={44}
                 active={!p.over && i === p.turn}
                 onClick={p.onInspect ? () => p.onInspect!(id) : undefined}
                 title={p.targeting ? `${c.name} — cibler` : p.onInspect ? `${c.name} — inspecter` : c.name}

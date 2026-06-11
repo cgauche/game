@@ -1,5 +1,4 @@
 import { PortraitTile } from './PortraitTile';
-import { hpColor } from '../gameIso/teamColors';
 import { ADVANTAGE_CAP } from '../engine/advantage';
 import type { Combatant } from '../engine/types';
 
@@ -15,22 +14,18 @@ function Notches({ kind, value, max, vertical, title }: { kind: string; value: n
 }
 
 /** Cadre du combattant ACTIF (barre d'action seulement) : Action verticale à gauche | portrait |
- *  Mouvement vertical à droite ; dessous : vie (continue) puis Avantage (10 crans — plafond RAW
- *  optionnel LDB 15-Dépl l.17). Pur à props (testable en SSR). */
+ *  Mouvement vertical à droite ; sous le portrait : Avantage (10 crans — plafond RAW optionnel
+ *  LDB 15-Dépl l.17). Le portrait + sa VIE viennent de la tuile-portrait UNIFIÉE (PortraitTile),
+ *  identique au dock et à la frise. Pur à props (testable en SSR). */
 export function ActiveFrame({ c, ring, isHero, actAvail, actMax, moveLeft, moveMax, title }: {
   c: Combatant; ring: string; isHero: boolean;
   actAvail: number; actMax: number; moveLeft: number; moveMax: number; title?: string;
 }) {
-  const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   return (
     <div className="aframe">
       {isHero && <Notches kind="action" vertical value={actAvail} max={actMax} title={`Action : ${actAvail}/${actMax}`} />}
       <div className="af-mid">
-        <PortraitTile c={c} ring={ring} size={72} showGauge={false} title={title} />
-        <span className="af-hp" title={`Blessures : ${c.wounds.current}/${c.wounds.max}`}>
-          <b style={{ width: `${Math.round(ratio * 100)}%`, background: hpColor(ratio) }} />
-          <span className="af-hp-n">{c.dead ? '☠️' : `${c.wounds.current}/${c.wounds.max}`}</span>
-        </span>
+        <PortraitTile c={c} ring={ring} size={72} showPv team={isHero ? 'ally' : 'enemy'} title={title} />
         <Notches kind="adv" value={Math.min(c.advantage, ADVANTAGE_CAP)} max={ADVANTAGE_CAP} title={`Avantage : ${c.advantage}/${ADVANTAGE_CAP}`} />
       </div>
       {isHero && <Notches kind="move" vertical value={moveLeft} max={moveMax} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />}

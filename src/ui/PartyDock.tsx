@@ -22,6 +22,7 @@ export function PartyDock({ heroes, activeId, targeting, onOpen }: {
           key={c.id}
           c={c}
           ring={HERO_RING[idx % HERO_RING.length]}
+          team="ally"
           size={56}
           active={c.id === activeId}
           showPv

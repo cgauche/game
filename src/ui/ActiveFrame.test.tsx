@@ -28,17 +28,17 @@ describe('ActiveFrame — jauges crantées à taille fixe', () => {
     expect(html).toContain('af-action');
   });
 
-  it('vie continue sous le portrait (af-hp), pas de jauge interne au portrait', () => {
+  it('vie via la tuile-portrait UNIFIÉE (ptile-gauge), plus de barre af-hp séparée', () => {
     const html = renderToStaticMarkup(<ActiveFrame c={c({})} ring="#fff" isHero actAvail={1} actMax={1} moveLeft={0} moveMax={0} />);
-    expect(html).toContain('af-hp');
-    expect(html).not.toContain('ptile-gauge');
+    expect(html).toContain('ptile-gauge'); // la vie vient de PortraitTile (même affichage partout)
+    expect(html).not.toContain('af-hp'); // l'ancienne barre dédiée a disparu
   });
 
   it('ennemi : pas de jauges Action/Mouvement, mais vie + Avantage visibles', () => {
     const html = renderToStaticMarkup(<ActiveFrame c={c({ kind: 'enemy', advantage: 2 })} ring="#f00" isHero={false} actAvail={0} actMax={0} moveLeft={0} moveMax={0} />);
     expect(html).not.toContain('af-action');
     expect(html).not.toContain('af-move');
-    expect(html).toContain('af-hp');
+    expect(html).toContain('ptile-gauge'); // vie via la tuile unifiée
     expect(html).toContain('af-adv');
   });
 });

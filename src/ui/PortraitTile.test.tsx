@@ -8,12 +8,12 @@ import type { Combatant } from '../engine/types';
 const base = () => createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Gunnar', rng: makeRNG(3) });
 
 describe('PortraitTile', () => {
-  it('jauge verticale : pleine et verte à PV max', () => {
+  it('jauge HORIZONTALE : pleine et verte à PV max', () => {
     const c = base();
     c.wounds = { current: 12, max: 12 };
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
     expect(html).toContain('ptile-gauge');
-    expect(html).toContain('height:100%');
+    expect(html).toContain('width:100%'); // barre horizontale (largeur = ratio), plus de hauteur
     expect(html).toContain('#2ecc71'); // hpColor(1) — vert sain
   });
 
@@ -21,15 +21,23 @@ describe('PortraitTile', () => {
     const c = base();
     c.wounds = { current: 3, max: 12 }; // ratio 0.25
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
-    expect(html).toContain('height:25%');
+    expect(html).toContain('width:25%');
     expect(html).toContain('#e74c3c'); // hpColor critique
   });
 
-  it('PV chiffrés DANS le portrait seulement si showPv', () => {
+  it('PV chiffrés sur la jauge seulement si showPv (cartouche ptile-pv)', () => {
     const c = base();
     c.wounds = { current: 11, max: 11 };
-    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" showPv />)).toContain('11/11');
-    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('11/11');
+    const withPv = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" showPv />);
+    expect(withPv).toContain('ptile-pv');
+    expect(withPv).toContain('11/11');
+    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('ptile-pv');
+  });
+
+  it('fond d’équipe : classe team-ally / team-enemy selon `team`', () => {
+    const c = base();
+    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" team="ally" />)).toContain('team-ally');
+    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#c0392b" team="enemy" />)).toContain('team-enemy');
   });
 
   it('≤ 4 états visibles puis chevron ▾', () => {
