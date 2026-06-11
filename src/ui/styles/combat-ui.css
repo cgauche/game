@@ -448,29 +448,84 @@ textarea:focus {
   bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(680px, 92%);
-  background: var(--panel);
-  border: 1px solid var(--gold);
+  width: min(680px, 94%);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
   border-radius: 12px;
-  padding: 16px 18px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  padding: 16px 18px 14px;
+  box-shadow:
+    0 16px 50px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.12);
+}
+.dlg-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.dlg-portrait {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 50% 32%, var(--panel2), var(--bg));
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.dlg-portrait svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.dlg-body {
+  flex: 1;
+  min-width: 0;
 }
 .dlg-speaker {
-  color: var(--gold);
-  font-weight: 700;
-  margin-bottom: 6px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+  margin-bottom: 4px;
 }
 .dlg-text {
-  margin: 0 0 12px;
-  line-height: 1.5;
+  margin: 0;
+  line-height: 1.55;
+  color: var(--text);
 }
 .dlg-choices {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 14px;
 }
 .dlg-choice {
+  display: flex;
+  align-items: center;
   text-align: left;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-left: 30px;
+  position: relative;
+}
+.dlg-choice::before {
+  content: '▸';
+  position: absolute;
+  left: 12px;
+  color: var(--gold);
+  transition: transform 0.12s;
+}
+.dlg-choice:hover:not(:disabled)::before {
+  transform: translateX(3px);
+}
+.dlg-choice-text {
+  flex: 1;
+}
+.dlg-choice-cost {
+  color: var(--gold2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Option de jeu : bascule d'inspection (OFF par défaut). */

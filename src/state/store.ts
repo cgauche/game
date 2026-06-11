@@ -222,7 +222,7 @@ export interface GameState {
   partyPos: Pt;
   flags: Record<string, boolean>;
   journal: string[];
-  dialogue: { dialogue: Dialogue; nodeId: string } | null;
+  dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
   merchant: MerchantState | null;
   /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
@@ -1051,7 +1051,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
     if (ent.dialogueId) {
       const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
-      if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
+      if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start, speakerId: ent.id } });
       return;
     }
     if (ent.merchant) { get().openMerchant(ent.id); return; }
@@ -1086,7 +1086,7 @@ export const useGame = create<GameState>((set, get) => ({
       set((s) => ({ money: moneySub(s.money, cost)! }));
     }
     if (choice.effects) applyEffects(get, set, choice.effects);
-    if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next } });
+    if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId } });
     else {
       if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture (no-op si un Effect a déjà fermé)
       set({ dialogue: null });

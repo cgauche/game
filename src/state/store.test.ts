@@ -95,8 +95,10 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ partyPos: { x: 5, y: 3 } });
     useGame.getState().interactEntity('gustav');
     expect(useGame.getState().dialogue?.dialogue.id).toBe('dlg-gustav');
+    expect(useGame.getState().dialogue?.speakerId).toBe('gustav'); // l'interlocuteur (portrait) est mémorisé
     useGame.getState().chooseDialogue(0); // → g2
     expect(useGame.getState().dialogue?.nodeId).toBe('g2');
+    expect(useGame.getState().dialogue?.speakerId).toBe('gustav'); // préservé au changement de nœud
   });
 
   it('la porte du bâtiment « La Diligence » ouvre l’intérieur enregistré dans la campagne', () => {
