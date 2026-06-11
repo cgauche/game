@@ -3252,6 +3252,8 @@ export function advanceTurn(get: () => GameState, set: any) {
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
   if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
+  if (prevActive?.tentacleUsedThisTurn) prevActive.tentacleUsedThisTurn = false; // Attaque gratuite de Tentacule : 1/tour
+
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
     turn += 1;

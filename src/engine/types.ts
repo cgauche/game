@@ -360,6 +360,9 @@ export interface Combatant {
   pendingFreeAttacks?: string[];
   /** A chargé ce tour → ouvre une Attaque gratuite de Cornes (LDB 85) si la créature a le trait. */
   chargedThisTurn?: boolean;
+  /** Trait Tentacules (LDB 85 l.354, mutation Tentacule épais) : l'Attaque gratuite de tentacule
+   *  de ce Tour a-t-elle été jouée ? (héros — réinitialisée en fin de tour.) */
+  tentacleUsedThisTurn?: boolean;
   /** Dissipation (LDB 46 l.201-202 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
   dispelledThisRound?: boolean;
   characteristics: Characteristics;

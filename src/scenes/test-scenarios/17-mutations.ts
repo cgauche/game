@@ -41,7 +41,7 @@ export const scenario: TestScenario = {
   order: 17,
   icon: '🧬',
   title: 'Visuels de mutation',
-  tests: 'Chaque mutation physique LDB 19 a son calque/morpho sur le rig (héros mutés) ; détails de visage en vue de face seulement ; portraits HUD mutés ; Mutants ennemis tirés du même registre.',
+  tests: 'Chaque mutation physique LDB 19 a son calque/morpho/peau sur le rig (héros mutés) ; tentacule = bras remplacé + Attaque gratuite 1/tour (Spécial → 🐙, Empêtré sur Dégâts) ; Cornes = arme naturelle (+BF) ; détails de visage en vue de face seulement ; portraits HUD mutés ; Mutants ennemis tirés du même registre.',
   partyNote: '4 pré-tirés portant à eux quatre les 19 mutations physiques',
   makeParty: () => makePregens().slice(0, 4).map((c, i) => mutate(c, LOTS[i] ?? [])),
   scene,

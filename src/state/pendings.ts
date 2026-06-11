@@ -172,6 +172,9 @@ export interface PendingAttack {
   dualMode?: boolean;
   /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
   dualSecond?: boolean;
+  /** Attaque GRATUITE de Tentacule (trait Tentacules, LDB 85 l.354) : ne consomme pas l'Action,
+   *  1/tour, Empêtré sur Dégâts (cf. attackConfirm). */
+  freeTentacle?: boolean;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux

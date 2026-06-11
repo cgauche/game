@@ -188,6 +188,15 @@ export function recomputeLoadout(c: Combatant): void {
   if (items.some((i) => i.equipped && i.name === 'Crochet')) {
     weapons.push({ name: 'Crochet', type: 'melee', damage: '+BF+2', reach: 'Très courte', qualities: [], subType: 'Base', hands: 1, hand: 'main' });
   }
+  // Armes NATURELLES de mutation (LDB 19) : Arme de Créature, Dégâts = Bonus de Force (LDB p.338,
+  // cf. note des Cornes asymétriques). Le Tentacule (trait Tentacules p.343) est AUSSI une Attaque
+  // gratuite 1/tour (battleTentacle) ; ici il reste utilisable comme arme ordinaire.
+  if ((c.traits ?? []).some((t) => /^(\d+\s+)?tentacules?\b/i.test(t))) {
+    weapons.push({ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-tentacule' });
+  }
+  if ((c.mutations ?? []).some((m) => m.label === 'Cornes asymétriques')) {
+    weapons.push({ name: 'Cornes', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-cornes' });
+  }
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 

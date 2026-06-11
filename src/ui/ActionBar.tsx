@@ -107,6 +107,10 @@ export function ActionBar() {
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
   // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
   const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
+  // Tentacule (trait Tentacules, LDB 85 l.354 — mutation) : Attaque gratuite 1/tour, 0 Avantage,
+  // si un adversaire est au contact.
+  const canTentacle = isHero && !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule')
+    && !!active.pos && battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && Math.max(Math.abs(c.pos.x - active.pos!.x), Math.abs(c.pos.y - active.pos!.y)) <= 1);
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
@@ -175,8 +179,8 @@ export function ActionBar() {
   const hasMvt = canStandUp || (engaged && !frenzied) || mounted || !!mountCandidate;
   const hasTir = !!rangedW && !frenzied;
   const hasObjets = !frenzied && (usableGroups.length > 0 || groundItems.length > 0);
-  // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner).
-  const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample;
+  // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner, Tentacule).
+  const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample || canTentacle;
 
   return (
     <div className="action-bar">
@@ -286,6 +290,11 @@ export function ActionBar() {
           {canTrample && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" onClick={() => selectAction('trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage (LDB Taille)">🐾 Piétiner</button>
+            </div>
+          )}
+          {canTentacle && (
+            <div className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => selectAction('tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts (LDB Traits)">🐙 Tentacule</button>
             </div>
           )}
         </div>
@@ -433,8 +442,8 @@ export function ActionBar() {
             {/* ── Spécial : TOUTES les manœuvres situationnelles regroupées ── */}
             {hasSpecial && (
               <button
-                className={`ab-slot ${battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' ? null : 'mvt')}
+                className={`ab-slot ${battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' || battle.action === 'tentacle' ? 'on' : ''}`}
+                onClick={() => selectAction(battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' || battle.action === 'tentacle' ? null : 'mvt')}
                 title="Manœuvres situationnelles : Charger, Courir, Se relever, Se désengager, Viser/Recharger, Objets, Frénésie, Piétiner…"
               >
                 <span className="ab-ico">⭐</span>

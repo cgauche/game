@@ -139,7 +139,7 @@ export interface BattleState {
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
    *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | 'teleport' | null;
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'mvt' | 'tir' | 'objets' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -426,7 +426,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
+  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** Guérison HORS COMBAT : le meilleur soigneur du groupe soigne `targetId`. */
@@ -577,6 +577,9 @@ export interface GameState {
   /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
    *  plus petit. Ne consomme pas l'Action. */
   battleTrample: (targetId: string) => void;
+  /** Attaque gratuite de Tentacule (trait Tentacules, LDB 85 l.354 — mutation Tentacule épais) :
+   *  1/tour, 0 Avantage, ne consomme pas l'Action, Empêtré sur Dégâts. Modale d'attaque standard. */
+  battleTentacle: (targetId: string) => void;
   /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
   dismissReveal: () => void;
   /** Piétinement par modale (LDB 85 l.320-321) : Lancer le jet, dépenser une Chance, appliquer (gratuit). */
@@ -1933,6 +1936,11 @@ export const useGame = create<GameState>((set, get) => ({
       get().battleTrample(id);
       return;
     }
+    // Tentacule (trait Tentacules) : Attaque GRATUITE 1/tour — idem, précède le verrou `battle.acted`.
+    if (battle.action === 'tentacle') {
+      get().battleTentacle(id);
+      return;
+    }
     // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
     // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
     const freeFrenzyAttack = battle.action === null && !!active.frenzied && !active.frenzyFreeUsed;
@@ -2557,9 +2565,9 @@ export const useGame = create<GameState>((set, get) => ({
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
-      } else if (!isDualMain && !isDualSecond) {
+      } else if (!isDualMain && !isDualSecond && !pa.freeTentacle) {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
-        // (jamais en mode dual : un Maniement de deux armes ne balaie pas).
+        // (jamais en mode dual ni sur l'Attaque gratuite de Tentacule).
         maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
       }
       // Action « des deux armes » (LDB 10 l.638) : on a CHOISI d'attaquer des deux → −10 à toutes ses défenses
@@ -2581,9 +2589,16 @@ export const useGame = create<GameState>((set, get) => ({
         if (dualBefore && pa.result.hit) { gainAdvantage(attacker); attacker.gainedAdvThisRound = true; }
         set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
+      // Attaque gratuite de Tentacule (LDB 85 l.354) : l'Action est préservée, 1/tour, et sur
+      // Dégâts la cible est Empêtrée (Empoignade) — effet partagé des attaques de créature.
+      if (attacker.kind === 'hero' && pa.freeTentacle) {
+        attacker.tentacleUsedThisTurn = true;
+        applyFreeAttackEffects(get, attacker, victim, 'tentacules', pa.result);
+        set({ battle: { ...get().battle!, acted: prevActed } });
+      }
       // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du
       // héros frénétique ne consomme PAS l'Action (il pourra réattaquer normalement ensuite).
-      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain && !isDualSecond) {
+      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain && !isDualSecond && !pa.freeTentacle) {
         attacker.frenzyFreeUsed = true;
         set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, ev('frenzy', `${attacker.name} : attaque libre de Frénésie (Action préservée).`, attacker.id)] } });
       }
@@ -2649,6 +2664,22 @@ export const useGame = create<GameState>((set, get) => ({
     if (!target) return;
     // OUVRE la modale (le jet se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
+  },
+  battleTentacle: (targetId) => {
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero' || active.tentacleUsedThisTurn) return; // 1 tentacule (mutation) → 1 Attaque gratuite/tour
+    if (!active.weapons.some((w) => w.uid === 'nat-tentacule')) return;
+    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return;
+    const target = battle.combatants.find((c) => c.id === targetId);
+    if (!target || target.kind === active.kind || isOutOfAction(target) || !target.pos || !active.pos) return;
+    if (combatDistance(active, target) > 1) {
+      get().log('Cible hors de portée du tentacule.');
+      return;
+    }
+    // OUVRE la modale d'attaque standard avec l'arme naturelle — « un jet = une modale ».
+    set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, weaponUid: 'nat-tentacule', freeTentacle: true }, battle: { ...battle, action: null } });
   },
   trampleRoll: () => FLOWS.trample.roll(get, set),
   trampleReroll: () => FLOWS.trample.reroll(get, set),
