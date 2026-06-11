@@ -24,6 +24,9 @@ import { useEditorView } from './useEditorView';
 import { Palette } from './Palette';
 import { Inspector } from './Inspector';
 import { WorldMapEditor } from './WorldMapEditor';
+import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
+import { projectSave, SavedProject } from '../../state/projectLibrary';
+import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { Tool, Rect, Layers, KIND_LABEL, rectFrom } from './tools';
 
@@ -62,6 +65,11 @@ export function Editor() {
   const [dlgOpen, setDlgOpen] = useState(false);
   const [encOpen, setEncOpen] = useState(false);
   const [palTab, setPalTab] = useState<'carte' | 'logique' | 'scene'>('carte');
+  const [openOpen, setOpenOpen] = useState(false); // modale « Ouvrir » (scénarios + bibliothèque)
+  const [saveOpen, setSaveOpen] = useState(false); // modale « Enregistrer »
+  const [projectId, setProjectId] = useState<string | null>(null); // projet localStorage en cours
+  const [projectName, setProjectName] = useState('La Diligence');
+  const [published, setPublished] = useState(false);
 
   const { rot, setRot, viewMode, setViewMode, view, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = useEditorView();
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
@@ -406,6 +414,42 @@ export function Editor() {
     loadProject([scene, ...otherScenes], scene.id, worldMap);
     setScreen('campaign');
   }
+  function loadScenario(sc: TestScenario) {
+    setOtherScenes((sc.extraScenes ?? []).map(clone));
+    setWorldMap(sc.worldMap ? JSON.parse(JSON.stringify(sc.worldMap)) : null);
+    setProjectId(null);
+    setProjectName(sc.title);
+    setPublished(false);
+    setSelected(null);
+    resetScene(clone(sc.scene));
+    setOpenOpen(false);
+  }
+  function loadSaved(p: SavedProject) {
+    const scenes = p.project.scenes;
+    setOtherScenes(scenes.slice(1).map(clone));
+    setWorldMap(p.project.worldMap ? JSON.parse(JSON.stringify(p.project.worldMap)) : null);
+    setProjectId(p.id);
+    setProjectName(p.name);
+    setPublished(p.published);
+    setSelected(null);
+    resetScene(clone(scenes[0]));
+    setOpenOpen(false);
+  }
+  function saveProject(name: string, pub: boolean, startSceneId: string) {
+    const id = projectId ?? `proj-${Date.now().toString(36)}`;
+    projectSave({
+      id,
+      name,
+      startSceneId,
+      savedAt: Date.now(),
+      published: pub,
+      project: { schema: 2, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}) },
+    });
+    setProjectId(id);
+    setProjectName(name);
+    setPublished(pub);
+    setSaveOpen(false);
+  }
   function openAdvanced() {
     setAdvText(JSON.stringify({ dialogues: scene.dialogues, triggers: scene.triggers, encounters: scene.encounters }, null, 2));
     setAdvOpen(true);
@@ -437,8 +481,11 @@ export function Editor() {
           <button className="btn small" onClick={() => resetScene(emptyScene())}>
             Nouveau
           </button>
-          <button className="btn small" onClick={() => resetScene(clone(tome1Intro))}>
-            Charger « La Diligence »
+          <button className="btn small" onClick={() => setOpenOpen(true)}>
+            Ouvrir
+          </button>
+          <button className="btn small" onClick={() => setSaveOpen(true)} title="Enregistrer le projet (bibliothèque locale)">
+            Enregistrer
           </button>
           <button className="btn small" onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)">
             ↶ Annuler
@@ -783,6 +830,21 @@ export function Editor() {
           setMap={setWorldMap}
           scenes={[scene, ...otherScenes]}
           onClose={() => setWorldOpen(false)}
+        />
+      )}
+
+      {openOpen && (
+        <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onClose={() => setOpenOpen(false)} />
+      )}
+
+      {saveOpen && (
+        <SaveProjectModal
+          initialName={projectName}
+          initialPublished={published}
+          scenes={[scene, ...otherScenes]}
+          initialStartId={scene.id}
+          onSave={saveProject}
+          onClose={() => setSaveOpen(false)}
         />
       )}
 
