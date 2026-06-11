@@ -73,41 +73,63 @@ const SHORT: Record<CharKey, string> = {
   Soc: 'Soc',
 };
 
+type SheetTab = 'combat' | 'competences' | 'sac' | 'sorts' | 'avancement';
+const TAB_LABELS: Record<SheetTab, string> = {
+  combat: 'Combat',
+  competences: 'Compétences',
+  sac: 'Sac',
+  sorts: 'Sorts',
+  avancement: 'Avancement',
+};
+
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
   const hero = useGame((s) => s.party.find((h) => h.id === heroId));
-  const [tab, setTab] = useState<'fiche' | 'avancement'>('fiche');
+  const [tab, setTab] = useState<SheetTab>('combat');
   const boxRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
   if (!hero) return null;
 
+  const isCaster = (hero.spells?.length ?? 0) > 0;
+  const tabs: SheetTab[] = ['combat', 'competences', 'sac', ...(isCaster ? ['sorts' as const] : []), 'avancement'];
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
-        <header className="sheet-head">
-          <div className="sheet-id">
-            <RigPortrait combatant={hero} size={60} ring="var(--gold)" />
-            <div>
+        <button className="btn small sheet-close" onClick={onClose} aria-label="Fermer">✕</button>
+
+        {/* L'ESSENTIEL à gauche (portrait + identité + vitalité + carac, toujours visible) ;
+            le détail en onglets à droite. */}
+        <div className="sheet-layout">
+          <aside className="sheet-aside">
+            <div className="sheet-portrait">
+              <RigPortrait combatant={hero} size={112} ring="var(--gold)" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
                 {hero.species} · {hero.career}
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
             </div>
+            <FicheBody hero={hero} section="profil" />
+          </aside>
+          <div className="sheet-main">
+            <nav className="sheet-tabs" role="tablist">
+              {tabs.map((t) => (
+                <button key={t} role="tab" aria-selected={tab === t} className={`tab ${tab === t ? 'on' : ''}`} onClick={() => setTab(t)}>
+                  {TAB_LABELS[t]}
+                </button>
+              ))}
+            </nav>
+            <div className="sheet-tabbody">
+              {tab === 'avancement' ? (
+                <AdvancementPanel hero={hero} />
+              ) : tab === 'sorts' ? (
+                <SpellbookSection hero={hero} />
+              ) : (
+                <FicheBody hero={hero} section={tab} />
+              )}
+            </div>
           </div>
-          <div className="sheet-tabs">
-            <button className={`tab ${tab === 'fiche' ? 'on' : ''}`} onClick={() => setTab('fiche')}>
-              Fiche
-            </button>
-            <button className={`tab ${tab === 'avancement' ? 'on' : ''}`} onClick={() => setTab('avancement')}>
-              Avancement
-            </button>
-          </div>
-          <button className="btn small" onClick={onClose}>
-            Fermer
-          </button>
-        </header>
-
-        {tab === 'fiche' ? <FicheBody hero={hero} /> : <AdvancementPanel hero={hero} />}
+        </div>
       </div>
     </div>
   );
@@ -206,7 +228,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   );
 }
 
-function FicheBody({ hero }: { hero: Combatant }) {
+function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const createLoadout = useGame((s) => s.createLoadout);
   const renameLoadout = useGame((s) => s.renameLoadout);
@@ -245,15 +267,49 @@ function FicheBody({ hero }: { hero: Combatant }) {
 
   return (
     <>
-      <div className="char-stats sheet-stats">
-        {CHAR_KEYS.map((k) => (
-          <div className="stat" key={k}>
-            <span className="stat-label">{SHORT[k]}</span>
-            <span className="stat-val">{hero.characteristics[k]}</span>
+      {section === 'profil' && (<>
+        <div className="sheet-vitals">
+          <div className="vital pv">
+            <span className="vital-lbl">Blessures</span>
+            <b>{hero.wounds.current}/{hero.wounds.max}</b>
           </div>
-        ))}
-      </div>
+          <div className="vital">
+            <span className="vital-lbl">Mouvement</span>
+            <b>{hero.movement}</b>
+          </div>
+          <div className={`vital ${over ? 'enc-over' : ''}`}>
+            <span className="vital-lbl">Encombrement</span>
+            <b>{enc}/{maxEnc}{over ? ' ⚠' : ''}</b>
+          </div>
+        </div>
+        {canSoigner && (
+          <div className="sheet-heal">
+            {availableHealModes(hero).filter((m) => m !== 'surgery' || hasSurgeon).map((m) => (
+              <button key={m} className="btn small" onClick={() => healAlly(hero.id, m)}
+                title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)">
+                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : m === 'trauma' ? '🦵 Soigner déchirure' : '🔪 Opérer'}
+              </button>
+            ))}
+          </div>
+        )}
+        {hero.fate != null && (
+          <div className="sheet-resources">
+            <div className="res" title="Points de Destin (permanents) / Chance (par session)"><span>🎲 Destin</span><b>{hero.fate}{hero.fortune != null ? ` · ${hero.fortune}` : ''}</b></div>
+            <div className="res" title="Résilience (permanente) / Détermination (par session)"><span>🛡 Résilience</span><b>{hero.resilience ?? 0}{hero.resolve != null ? ` · ${hero.resolve}` : ''}</b></div>
+          </div>
+        )}
+        <div className="mini-title">Caractéristiques</div>
+        <div className="char-stats sheet-stats">
+          {CHAR_KEYS.map((k) => (
+            <div className="stat" key={k}>
+              <span className="stat-label">{SHORT[k]}</span>
+              <span className="stat-val">{hero.characteristics[k]}</span>
+            </div>
+          ))}
+        </div>
+      </>)}
 
+      {section === 'combat' && (<>
       <div className="sheet-combat">
         <div className="sc-block">
           <span className="mini-title">Défense — Points d'Armure</span>
@@ -265,29 +321,6 @@ function FicheBody({ hero }: { hero: Combatant }) {
               </div>
             ))}
           </div>
-        </div>
-        <div className="sc-meta">
-          <span>
-            Blessures <b>{hero.wounds.current}/{hero.wounds.max}</b>
-            {canSoigner && availableHealModes(hero).filter((m) => m !== 'surgery' || hasSurgeon).map((m) => (
-              <button
-                key={m}
-                className="btn small"
-                style={{ marginLeft: 6 }}
-                onClick={() => healAlly(hero.id, m)}
-                title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)"
-              >
-                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : m === 'trauma' ? '🦵 Soigner déchirure' : '🔪 Opérer (Chirurgie)'}
-              </button>
-            ))}
-          </span>
-          <span>
-            Mvt <b>{hero.movement}</b>
-          </span>
-          <span className={over ? 'enc-over' : ''}>
-            Encombrement <b>{enc}</b>/{maxEnc}
-            {over && ' ⚠'}
-          </span>
         </div>
         <div className="sc-weapons">
           <span className="mini-title">Armes actives</span>
@@ -313,9 +346,9 @@ function FicheBody({ hero }: { hero: Combatant }) {
           onSetSlot={(id, slot, uid) => setLoadoutSlot(hero.id, id, slot, uid)}
         />
       )}
+      </>)}
 
-      {!inBattle && <SpellbookSection hero={hero} />}
-
+      {section === 'competences' && (
       <div className="sheet-skills">
         <div className="mini-title">Compétences</div>
         <div className="skill-grid">
@@ -348,8 +381,9 @@ function FicheBody({ hero }: { hero: Combatant }) {
           </>
         )}
       </div>
+      )}
 
-      {((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
+      {section === 'profil' && ((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
         <div className="sheet-afflictions">
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
@@ -393,6 +427,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
         </div>
       )}
 
+      {section === 'sac' && (
       <div className="sheet-inventory">
         <div className="mini-title">Inventaire & équipement ({items.length})</div>
         <div className="inv-rows">
@@ -508,6 +543,7 @@ function FicheBody({ hero }: { hero: Combatant }) {
           })}
         </div>
       </div>
+      )}
     </>
   );
 }

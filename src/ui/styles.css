@@ -2990,40 +2990,142 @@ textarea:focus {
 
 /* Fiche de personnage / équipement */
 .sheet-modal {
-  width: 620px;
+  position: relative;
+  width: 880px;
   max-width: 94vw;
   max-height: 88vh;
   overflow: auto;
   border-top: 4px solid var(--gold);
+  padding-top: 16px;
 }
-.sheet-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
 }
-.sheet-id {
+/* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤760px. */
+.sheet-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+}
+.sheet-aside {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+}
+/* Grand portrait + identité en tête de colonne (illustration du perso). */
+.sheet-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.sheet-portrait .rig-portrait {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px; /* médaillon rond, façon écu */
+  border-width: 3px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.sheet-portrait h3 {
+  margin: 6px 0 0;
+  font-size: 21px;
+  color: var(--gold2);
+  line-height: 1.05;
+}
+.sheet-main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
-.sheet-id h3 {
-  margin: 0;
-  font-size: 22px;
-  color: var(--gold2);
-  line-height: 1.1;
+/* Vitalité (PV / Mvt / Encombrement) en cartouches. */
+.sheet-vitals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
-.sheet-id .rig-portrait {
-  border-radius: 999px; /* médaillon rond, façon écu */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+.sheet-vitals .vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 4px;
+}
+.sheet-vitals .vital-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.sheet-vitals .vital b {
+  font-size: 16px;
+  color: var(--text);
+}
+.sheet-vitals .vital.pv b {
+  color: var(--gold2);
+}
+.sheet-vitals .vital.enc-over b {
+  color: var(--danger);
+}
+.sheet-heal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sheet-resources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.sheet-resources .res {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.sheet-resources .res span {
+  color: var(--muted);
+}
+.sheet-resources .res b {
+  color: var(--gold);
+  font-size: 14px;
 }
 .sheet-stats {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+}
+@media (max-width: 760px) {
+  .sheet-layout {
+    grid-template-columns: 1fr;
+  }
+  .sheet-aside {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 12px;
+  }
+  /* Mobile : portrait à gauche, identité à droite (compact, pas de grande zone vide). */
+  .sheet-portrait {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+  }
+  .sheet-portrait .rig-portrait {
+    width: 72px;
+    height: 72px;
+  }
 }
 .sheet-combat {
   display: flex;
@@ -3296,7 +3398,9 @@ textarea:focus {
 .sheet-tabs {
   display: flex;
   gap: 4px;
-  margin: 0 auto 0 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
 }
 .sheet-tabs .tab {
   background: var(--bg2);
