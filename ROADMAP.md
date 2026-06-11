@@ -1182,12 +1182,13 @@ créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
   pinces de chitine aux 2 bras), Furie du Chaos (ailes de cuir, Compagnon ch.9), Horreurs
   rose/bleue (tête-gueule + tentacules, T1 ch.9), tenue Cultiste (capuchon + heptagramme),
   Mutant réparé (tentacule/corne).
-- **Lot B — créatures du Chaos du Compagnon SANS modèle** : ch.12 Carnaval du Pandémonium —
-  la ménagerie (Urzo, Rassarak, les Jumeaux, la Bête Impériale, la « basse-cour » = hommes-bêtes
-  à têtes de chèvre/vache/POULET cracheurs de venin l.154) ; ch.11 — le **Happeur Carnivore** ;
-  ch.9 Main pourpre — cultistes/acolytes/magus/sorciers de Tzeentch (les démons du ch.9 — Furie,
-  Horreurs — sont LIVRÉS au lot A bis). Mécanisme : defs créatures + nouvelles TÊTES de monster
-  parts + statblocks custom dans les scènes.
+- ✅ **Lot B — créatures du Compagnon SANS modèle** *(livré 5286255, 2026-06-11)* : ménagerie
+  du ch.12 — Urzo (quasi-ogre plaqué de corne), Rassarak (skaven blanc aveugle, yeux laiteux),
+  Hommes-bêtes de Khorne (rouge + rune-crâne), Jumeaux, Bête Impériale (fourrure d'or),
+  basse-cour à têtes de vache/poulet (nouvelles têtes au registre + `perso.head` = tête par
+  def sans perdre la race) ; ch.11 — **Happeur Carnivore** (plan avian étendu en THÉROPODE) ;
+  ch.9 — magus/sorciers du Chaos en robe de Cultiste. Les statblocks (campagne) iront en
+  CustomStatblock dans les scènes au moment de l'authoring du Tome 1.
 - **Lot C — PNJ nommés avec leur tenue et leur tête** : ch.12 — Wolfgang Hollseher (Doktor),
   Magnus Bugman (Maître du savoir nain), Benbow (vieux loup de mer), « Mamie » Haller, le
   personnel (Grand/Petit Anders, Bertoldo, Ivan, Magda, Mikhail) ; ch.11 — Lauengram, Wolfgang
