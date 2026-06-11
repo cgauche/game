@@ -46,7 +46,7 @@ import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
-import { sizeFootprint, occupiesTile } from '../state/footprint';
+import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, previewAttack, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates } from '../state/combatFlow';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
@@ -512,22 +512,27 @@ export function IsoStage() {
 
   // Décors (props : épave, cadavres, sang…) rendus dans LES DEUX modes → restent
   // visibles pendant le combat. L'anim d'ambiance CSS (ent.anim) passe par le calque fx.
+  // Empreinte multi-cases (`foot {w,h}` : tente 2×2, tribune 3×1…) : token centré sur le bloc,
+  // agrandi au côté max, profondeur au coin le plus PROCHE (comme les bâtiments).
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
+    const fg = decorFootGeometry(ent.foot);
+    const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
+    const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims);
     if (ent.interact) {
       // Affordance : halo doux pulsé au sol sous un décor fouillable/ramassable (cf. anim.css).
-      const c = tileCenter(ent.pos.x, ent.pos.y, dims);
+      const c = tileCenter(px, py, dims);
       objs.push({
-        d: depth(ent.pos.x, ent.pos.y, dims) - 0.02, // juste sous le sprite
+        d: pd - 0.02, // juste sous le sprite
         el: (
           <g key={`halo-${ent.id}`} className="interact-halo" pointerEvents="none">
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={16} ry={8} fill="#ffe27a" opacity={0.18} />
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={16} ry={8} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.7} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={16 * fg.scale} ry={8 * fg.scale} fill="#ffe27a" opacity={0.18} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={16 * fg.scale} ry={8 * fg.scale} fill="none" stroke="#ffe27a" strokeWidth={1.5} opacity={0.7} />
           </g>
         ),
       });
     }
-    objs.push({ d: depth(ent.pos.x, ent.pos.y, dims), el: token(`e-${ent.id}`, ent.pos.x, ent.pos.y, entitySprite(ent), 0.55, undefined, false, ent.anim) });
+    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —

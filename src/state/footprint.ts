@@ -45,6 +45,15 @@ export function occupiesTile(pos: Pt, size: SizeCategory | undefined, x: number,
   return x >= pos.x && x < pos.x + n && y >= pos.y && y < pos.y + n;
 }
 
+/** Géométrie d'un DÉCOR à empreinte rectangulaire (`SceneEntity.foot {w,h}`, ancre = coin NO) :
+ *  décalage fractionnaire vers le CENTRE du bloc (pour y poser le token) et facteur d'échelle
+ *  visuel (côté max). Absent/1×1 ⇒ identité — le décor historique ne bouge pas. */
+export function decorFootGeometry(foot?: { w: number; h: number }): { offX: number; offY: number; scale: number } {
+  const w = Math.max(1, foot?.w ?? 1);
+  const h = Math.max(1, foot?.h ?? 1);
+  return { offX: (w - 1) / 2, offY: (h - 1) / 2, scale: Math.max(w, h) };
+}
+
 /** Écart 1D minimal entre les intervalles [a, a+an) et [b, b+bn) (0 s'ils se recouvrent ou se touchent). */
 function gapAxis(a: number, an: number, b: number, bn: number): number {
   const a2 = a + an - 1;

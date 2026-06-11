@@ -2,7 +2,7 @@ import { CELL, type Dims } from './iso';
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { sizeTokenScale } from './sizeScale';
-import { sizeFootprint } from '../state/footprint';
+import { sizeFootprint, decorFootGeometry } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import type { SceneEntity } from '../state/scene';
 
@@ -18,15 +18,18 @@ export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dim
   const r = pickBackend({ kind: 'sceneEntity', ent }, dims.view);
   // Centrée + mise à l'échelle de son empreinte par Taille (LDB 15 l.55) : une grande créature est
   // aussi grande dans l'éditeur qu'en combat. Objets/statiques : Taille indéfinie ⇒ ×1, inchangé.
+  // Décor à empreinte rectangulaire (`foot {w,h}` : tente 2×2, tribune 3×1…) : même principe —
+  // centré sur son bloc et agrandi au côté max.
   const sz = entitySize(ent);
+  const fg = decorFootGeometry(ent.kind === 'prop' ? ent.foot : undefined);
   const off = (sizeFootprint(sz) - 1) / 2;
-  const discR = (sizeFootprint(sz) * CELL) / 2 * 0.85;
+  const discR = (Math.max(sizeFootprint(sz), fg.scale) * CELL) / 2 * 0.85;
   return (
     <BodyToken
-      x={ent.pos.x + off}
-      y={ent.pos.y + off}
+      x={ent.pos.x + off + fg.offX}
+      y={ent.pos.y + off + fg.offY}
       dims={dims}
-      scale={scale * sizeTokenScale(sz)}
+      scale={scale * sizeTokenScale(sz) * fg.scale}
       bakedDeath={r.backend !== 'sprite'}
       flat={top && r.flat}
       portraitBox={r.portraitBox}

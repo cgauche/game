@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sizeFootprint, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance } from './footprint';
+import { sizeFootprint, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry } from './footprint';
 import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
@@ -59,5 +59,21 @@ describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
     expect(combatDistance(C(5, 5, 'grande'), C(7, 6))).toBe(1); // 2×2 adjacent au bord est
     expect(combatDistance(C(5, 5, 'grande'), C(8, 6))).toBe(2); // une tuile de marge
     expect(combatDistance(C(0, 0), {} as Combatant)).toBe(Infinity); // cible non posée
+  });
+});
+
+describe('decorFootGeometry — empreinte rectangulaire des décors (foot {w,h})', () => {
+  it('absent ou 1×1 → identité (le décor historique ne bouge pas)', () => {
+    expect(decorFootGeometry(undefined)).toEqual({ offX: 0, offY: 0, scale: 1 });
+    expect(decorFootGeometry({ w: 1, h: 1 })).toEqual({ offX: 0, offY: 0, scale: 1 });
+  });
+  it('tente 2×2 → centre du bloc (+0.5,+0.5), échelle ×2', () => {
+    expect(decorFootGeometry({ w: 2, h: 2 })).toEqual({ offX: 0.5, offY: 0.5, scale: 2 });
+  });
+  it('tribune 3×1 → centre (+1,0), échelle = côté max (×3)', () => {
+    expect(decorFootGeometry({ w: 3, h: 1 })).toEqual({ offX: 1, offY: 0, scale: 3 });
+  });
+  it('valeurs dégénérées (0/négatives) ramenées à 1', () => {
+    expect(decorFootGeometry({ w: 0, h: -2 })).toEqual({ offX: 0, offY: 0, scale: 1 });
   });
 });

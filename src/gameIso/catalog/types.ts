@@ -42,6 +42,9 @@ export interface PropViz {
   label: string;
   /** Décor « naturellement fouillable/ramassable » : l'éditeur pré-arme `interact` à la pose (SP2↔SP1). */
   searchable?: boolean;
+  /** Empreinte par DÉFAUT en cases (tente 2×2, tribune 3×1…) : appliquée à la pose dans l'éditeur
+   *  (modifiable par entité via `SceneEntity.foot`), bloque la marche et dimensionne le rendu. */
+  foot?: { w: number; h: number };
   paramsSchema?: ParamField[];
   render(params: Record<string, unknown>, ctx: RenderCtx): string;
 }

@@ -17,3 +17,14 @@ describe('propRefPatch — auto-suggestion interact à la pose', () => {
     expect(p).toEqual({ ref: 'tonneau' });
   });
 });
+
+describe('propRefPatch — empreinte par défaut du catalogue (foot)', () => {
+  it('gros décor (tribune 3×1) → foot appliqué à la pose', () => {
+    expect(propRefPatch('tribune', false).foot).toEqual({ w: 3, h: 1 });
+  });
+  it('décor 1×1 (tonneau) → foot REMIS à undefined (purge une empreinte héritée d’un autre ref)', () => {
+    const p = propRefPatch('tonneau', false);
+    expect('foot' in p).toBe(true);
+    expect(p.foot).toBeUndefined();
+  });
+});
