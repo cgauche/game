@@ -12,6 +12,8 @@ export function PartyScreen() {
   const setParty = useGame((s) => s.setParty);
   const setScreen = useGame((s) => s.setScreen);
   const startScene = useGame((s) => s.startScene);
+  const loadProject = useGame((s) => s.loadProject);
+  const pendingCampaign = useGame((s) => s.pendingCampaign);
   const creditPartyMoney = useGame((s) => s.creditPartyMoney);
   const [picker, setPicker] = useState(false);
 
@@ -23,7 +25,11 @@ export function PartyScreen() {
     if (party.length + 1 >= 4) setPicker(false); // groupe complet → on ferme ; sinon on enchaîne
   };
   const startCampaign = () => {
-    startScene(campaign[0].scene);
+    if (pendingCampaign) {
+      loadProject(pendingCampaign.scenes, pendingCampaign.startSceneId, pendingCampaign.worldMap ?? null);
+    } else {
+      startScene(campaign[0].scene);
+    }
     setScreen('campaign');
   };
 
@@ -33,9 +39,9 @@ export function PartyScreen() {
         <button className="btn small" onClick={() => setScreen('menu')}>
           ← Menu
         </button>
-        <h2>Votre groupe d'aventuriers ({party.length}/4)</h2>
+        <h2>{pendingCampaign ? pendingCampaign.name : "Votre groupe d'aventuriers"} ({party.length}/4)</h2>
         <button className="btn btn-primary" disabled={party.length === 0} onClick={startCampaign}>
-          Commencer la campagne →
+          Commencer →
         </button>
       </header>
 

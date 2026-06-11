@@ -301,6 +301,11 @@ export interface GameState {
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
 
+  /** Campagne publiée choisie au menu — jouée après constitution du groupe (PartyScreen).
+   *  null = « Nouvelle partie » standard (campagne par défaut). */
+  pendingCampaign: { name: string; scenes: Scene[]; startSceneId: string; worldMap?: import('./worldMap').WorldMap | null } | null;
+  setPendingCampaign: (pc: GameState['pendingCampaign']) => void;
+
   setScreen: (s: Screen) => void;
   /** Interlude « Entre deux aventures » (LDB 22-23, Jalon 5) — état + dépôts bancaires + commandes. */
   interlude: InterludeState | null;
@@ -738,6 +743,7 @@ export interface GameState {
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
+  pendingCampaign: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   worldMap: campaignWorldMap,
@@ -832,6 +838,7 @@ export const useGame = create<GameState>((set, get) => ({
   previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
+  setPendingCampaign: (pc) => set({ pendingCampaign: pc }),
 
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──
   interlude: null,

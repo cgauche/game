@@ -1,12 +1,25 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
+import { publishedProjects, SavedProject } from '../state/projectLibrary';
 import { SaveLoadModal } from './SaveLoadModal';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
+  const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const [loadOpen, setLoadOpen] = useState(false);
   const hasSaves = listSaves().some((m) => m != null);
+  const published = useState(() => publishedProjects())[0];
+
+  const playCampaign = (p: SavedProject) => {
+    setPendingCampaign({
+      name: p.name,
+      scenes: p.project.scenes,
+      startSceneId: p.startSceneId,
+      worldMap: p.project.worldMap ?? null,
+    });
+    setScreen('party');
+  };
 
   return (
     <div className="menu">
@@ -15,7 +28,7 @@ export function MainMenu() {
         <p className="subtitle">Jeu de Rôle — 4ᵉ édition · Tactique au tour par tour</p>
         <div className="rule-fleur" aria-hidden>⚜</div>
         <div className="menu-buttons">
-          <button className="btn btn-primary" onClick={() => setScreen('party')}>
+          <button className="btn btn-primary" onClick={() => { setPendingCampaign(null); setScreen('party'); }}>
             ⚔️ Nouvelle partie
           </button>
           <button className="btn" onClick={() => setLoadOpen(true)} title={hasSaves ? 'Reprendre une partie sauvegardée' : 'Aucun emplacement rempli — un fichier exporté reste importable'}>
@@ -25,6 +38,18 @@ export function MainMenu() {
             🌐 Jouer en ligne
           </button>
         </div>
+        {published.length > 0 && (
+          <>
+            <div className="rule-fleur menu-tools-rule" aria-hidden>Mes campagnes</div>
+            <div className="menu-buttons">
+              {published.map((p) => (
+                <button key={p.id} className="btn btn-primary" onClick={() => playCampaign(p)}>
+                  ▶ {p.name}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <div className="rule-fleur menu-tools-rule" aria-hidden>Atelier</div>
         <div className="menu-buttons menu-tools">
           <button className="btn" onClick={() => setScreen('editor')}>
