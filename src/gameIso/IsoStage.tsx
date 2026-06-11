@@ -358,12 +358,12 @@ export function IsoStage() {
         hl.push(<path key={key} d={diamondPath(c.pos!.x, c.pos!.y, d)} fill="none" stroke={color} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
       if (pendingCleave) {
         const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
-        if (atk) for (const t of cleaveTargets(battle, atk, pendingCleave.hitIds)) t.pos && ring(t, `clv-${t.id}`);
+        if (atk) for (const t of cleaveTargets(battle, atk, pendingCleave.hitIds)) if (t.pos) ring(t, `clv-${t.id}`);
       }
       if (pendingDualStrike) {
         const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
         const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
-        if (atk && off) for (const t of dualStrikeTargets(battle, atk, off)) t.pos && ring(t, `dsk-${t.id}`);
+        if (atk && off) for (const t of dualStrikeTargets(battle, atk, off)) if (t.pos) ring(t, `dsk-${t.id}`);
       }
       if (pendingCast?.pickingTargets) {
         const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
