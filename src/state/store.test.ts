@@ -11,6 +11,8 @@ import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { applyAttackResult, applyEffects, computeMoveReach } from './combatFlow';
+import { mountUp } from './mount';
+import { combatValue } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
@@ -717,6 +719,41 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingDefense!.defenderId).toBe(H.id);
     expect(st.pendingDefense!.result).toBeNull(); // figé sur le choix, pas encore défendu
     expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur l'attaquant (non avancé)
+  });
+
+  it('attaque IA MONTÉE : le jet figé de la modale de défense porte le +20 Combat monté (LDB 14 l.217)', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().seedRng(5);
+    useGame.getState().startScene(tome1Intro);
+    useGame.getState().startCombat('enc-mutants');
+    vi.clearAllTimers();
+    let st = useGame.getState();
+    const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
+    const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
+    E.pos = { x: H.pos!.x + 1, y: H.pos!.y };
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
+    // Monture GRANDE sous l'ennemi (Moyenne) : le cavalier frappe le héros (Moyenne < Grande) à +20.
+    const horse = {
+      id: 'horse-test', name: 'Cheval (test)', kind: 'enemy', size: 'grande', movement: 8,
+      characteristics: { ...E.characteristics }, talents: [], items: [], weapons: [],
+      wounds: { current: 10, max: 10, base: 10 }, conditions: [], pos: { ...E.pos! },
+    } as unknown as Combatant;
+    mountUp(E, horse);
+    useGame.setState({
+      battle: { ...st.battle!, combatants: [...st.battle!.combatants, horse], order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
+      facing: { ...useGame.getState().facing, [H.id]: 'E' }, // face à l'attaquant → pas de Flanc/dos parasite
+      pendingDefense: null,
+      pendingReveals: [],
+      pendingRoundStart: null,
+    });
+    useGame.getState().battleEndTurn(); // H finit → E (cavalier) actif → IA attaque
+    vi.advanceTimersByTime(2000);
+    st = useGame.getState();
+    expect(st.pendingDefense).not.toBeNull();
+    // +20 Combat monté (cible plus petite que la monture, l.217) + 20 Surnombre (la monture est un
+    // combattant ennemi actif au contact → « 2 contre 1 », LDB 14 l.92 — même décompte que resolveAttack).
+    expect(st.pendingDefense!.atk.target).toBe(combatValue(E, 'melee', E.weapons[0]) + 40);
   });
 
   it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB États l.123)', () => {

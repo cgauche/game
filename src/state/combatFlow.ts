@@ -1823,6 +1823,7 @@ export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combat
  *  à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
  *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
 export function maybeOpenDefense(
+  get: () => GameState,
   set: any,
   attacker: Combatant,
   target: Combatant,
@@ -1834,7 +1835,10 @@ export function maybeOpenDefense(
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
-  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng()); // jet d'attaque figé
+  // Le MÊME env que resolveAttack (météo, Flanc/dos, Surnombre, Combat monté) : le jet figé de la
+  // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217).
+  const { env } = attackEnv(get, attacker, target, weapon);
+  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng(), undefined, env); // jet d'attaque figé
   set({
     pendingDefense: {
       attackerId: attacker.id,
@@ -1862,7 +1866,7 @@ export function doAttack(get: () => GameState, set: any, attacker: Combatant, ta
   const b0 = get().battle;
   if (ward.lines.length && b0) set({ battle: { ...b0, log: [...b0.log, ...evLines(ward.lines, 'info', attacker.id)] } });
   if (!ward.allowed) return false;
-  if (maybeOpenDefense(set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
+  if (maybeOpenDefense(get, set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   // Tir ennemi : l'annoncer dans le journal de COMBAT (battle.log → fil + tiroir) DÈS la décision — un tir
   // n'ouvre pas de modale de défense, donc « on ne savait jamais sur qui il tirait » (#12d). Avant, l'annonce
   // partait dans le journal du GROUPE (invisible en combat).
@@ -2108,7 +2112,7 @@ function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, ta
   const prevActed = get().battle?.acted ?? false;
   attacker.advantage = Math.max(0, attacker.advantage - cost);
   const weapon = freeAttackWeapon(kind, bonus);
-  if (maybeOpenDefense(set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
+  if (maybeOpenDefense(get, set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
   applyAttackResult(get, set, attacker, target, weapon, res, false);
   set({ battle: { ...get().battle!, acted: prevActed } }); // gratuite : ne consomme pas l'Action
