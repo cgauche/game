@@ -16,7 +16,7 @@ import type { GameState } from './store';
 import { useGame } from './store';
 import { snapshotSave } from './saves';
 import { HostSession, GuestSession } from '../net/session';
-import { COMBAT_INTENTS } from '../net/intents';
+import { GUEST_INTENTS } from '../net/intents';
 import { intentAllowedFor } from './netOwnership';
 import { encodeSignal, decodeSignal } from '../net/codes';
 import {
@@ -27,14 +27,16 @@ import { bus, EVT } from './bus';
 type Get = () => GameState;
 type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
 
-/** État réseau SÉRIALISABLE (dans GameState). `ownership` : heroId → siège (0 = hôte). */
+/** État réseau SÉRIALISABLE (dans GameState). `ownership` : heroId → siège (0 = hôte).
+ *  `slots` : siège attribué à chacun des 4 emplacements de l'écran d'équipe (0 = hôte). */
 export interface NetState {
   mode: 'local' | 'host' | 'guest';
   mySeat: number;
   seatNames: Record<number, string>;
   ownership: Record<string, number>;
+  slots: number[];
 }
-export const initialNet = (): NetState => ({ mode: 'local', mySeat: 0, seatNames: {}, ownership: {} });
+export const initialNet = (): NetState => ({ mode: 'local', mySeat: 0, seatNames: {}, ownership: {}, slots: [0, 0, 0, 0] });
 
 // ── Singletons réseau (non sérialisables) ──────────────────────────────────────────────────────
 let host: HostSession | null = null;
@@ -64,15 +66,19 @@ function scheduleBroadcast(get: Get): void {
   }, 120);
 }
 
-/** L'invité applique un snapshot : état de l'hôte + SON identité réseau préservée. */
+/** L'invité applique un snapshot : état de l'hôte + SON identité réseau préservée.
+ *  Pendant la composition d'équipe, son écran « créateur » LOCAL est aussi préservé (sinon
+ *  chaque broadcast de l'hôte l'éjecterait en pleine création et perdrait son brouillon). */
 function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
-  const mine = useGame.getState().net;
+  const mine = useGame.getState();
   const incoming = (data as { net?: NetState }).net;
+  const keepCreator = mine.screen === 'creator' && (data as Partial<GameState>).screen === 'party';
   set({
     ...base,
     ...(data as Partial<GameState>),
-    net: { ...(incoming ?? mine), mode: 'guest', mySeat: mine.mySeat },
+    ...(keepCreator ? { screen: 'creator' as const } : null),
+    net: { ...(incoming ?? mine.net), mode: 'guest', mySeat: mine.net.mySeat },
   });
   bus.emit(EVT.SCENE_DIRTY);
 }
@@ -83,7 +89,7 @@ function interceptGuestActions(): void {
   originals = {};
   const state = useGame.getState() as unknown as Record<string, unknown>;
   const wrapped: Record<string, unknown> = {};
-  for (const name of COMBAT_INTENTS) {
+  for (const name of GUEST_INTENTS) {
     const fn = state[name];
     if (typeof fn !== 'function') continue;
     originals[name] = fn as (...args: unknown[]) => unknown;
@@ -106,7 +112,7 @@ export function netHostStart(get: Get, set: Set, name: string): void {
   if (get().net.mode !== 'local') return;
   host = new HostSession({
     build: BUILD_ID,
-    allow: COMBAT_INTENTS,
+    allow: GUEST_INTENTS,
     applyIntent: (action, args, seat) => {
       // Validation de POSSESSION (spec §4bis) : un invité ne pilote que SES combattants —
       // modale ouverte → seul son concerné agit ; sinon seul le propriétaire du tour actif.
@@ -114,21 +120,23 @@ export function netHostStart(get: Get, set: Set, name: string): void {
         get().log(`Action réseau refusée (${action}) : pas le propriétaire.`);
         return;
       }
+      // Composition d'équipe : le siège vient du transport, jamais des args de l'invité.
+      if (action === 'partyAddHero') args = [args[0], args[1], seat];
       const fn = (useGame.getState() as unknown as Record<string, unknown>)[action];
       if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args);
     },
     getSnapshot: () => netSnapshot(get),
     onSeatClosed: (seat) => {
-      const { seatNames, ownership } = get().net;
+      const { seatNames, ownership, slots } = get().net;
       const names = { ...seatNames };
       delete names[seat];
-      // Ses héros reviennent à l'hôte (spec §6) — et son ✓ ne sera plus requis.
+      // Ses héros ET ses emplacements reviennent à l'hôte (spec §6) — son ✓ ne sera plus requis.
       const own = Object.fromEntries(Object.entries(ownership).map(([h, s]) => [h, s === seat ? 0 : s]));
-      set({ net: { ...get().net, seatNames: names, ownership: own } });
+      set({ net: { ...get().net, seatNames: names, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)) } });
       get().log(`Un joueur a quitté — ses héros reviennent à l'hôte.`);
     },
   });
-  set({ net: { mode: 'host', mySeat: 0, seatNames: { 0: name }, ownership: {} } });
+  set({ net: { mode: 'host', mySeat: 0, seatNames: { 0: name }, ownership: {}, slots: [0, 0, 0, 0] } });
   unsubscribe = useGame.subscribe(() => scheduleBroadcast(get));
 }
 
@@ -172,7 +180,7 @@ export async function netJoin(get: Get, set: Set, inviteCode: string, name: stri
     applySnapshot: (data) => applyNetSnapshot(set, data),
     onClosed: () => netLeave(get, set),
   });
-  set({ net: { mode: 'guest', mySeat: seat, seatNames: { [seat]: name }, ownership: {} } });
+  set({ net: { mode: 'guest', mySeat: seat, seatNames: { [seat]: name }, ownership: {}, slots: [0, 0, 0, 0] } });
   interceptGuestActions();
   void channelReady.then((channel) => guest?.connect(channelTransport(channel) as Transport));
   return encodeSignal({ v: 1, seat, answer, name });
@@ -182,6 +190,15 @@ export async function netJoin(get: Get, set: Set, inviteCode: string, name: stri
 export function netAssign(get: Get, set: Set, heroId: string, seat: number): void {
   if (get().net.mode !== 'host') return;
   set({ net: { ...get().net, ownership: { ...get().net.ownership, [heroId]: seat } } });
+}
+
+/** HÔTE : attribue un EMPLACEMENT de l'écran d'équipe à un siège — le joueur le remplira
+ *  lui-même (créer / charger un perso de son roster / pré-tiré). */
+export function netAssignSlot(get: Get, set: Set, slot: number, seat: number): void {
+  if (get().net.mode !== 'host' || slot < 0 || slot > 3) return;
+  const slots = [...get().net.slots];
+  slots[slot] = seat;
+  set({ net: { ...get().net, slots } });
 }
 
 /** Quitte la session (les deux rôles) — retour au mode local, actions restaurées. */

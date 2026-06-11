@@ -197,23 +197,20 @@ function TalentEntryChips({ entry }: { entry: string }) {
 
 export function CharacterCreator() {
   const party = useGame((s) => s.party);
-  const setParty = useGame((s) => s.setParty);
   const setScreen = useGame((s) => s.setScreen);
-  const creditPartyMoney = useGame((s) => s.creditPartyMoney);
+  const addHero = useGame((s) => s.partyAddHero);
 
   const [d, setD] = useState<CreatorDraft>(() => newDraft());
   const [step, setStep] = useState(0);
 
-  const level = draftLevel(d);
   const err = validateStep(d, step + 1);
   const canNext = err == null;
 
   const create = () => {
     const hero = buildHero(d);
     const wealth = draftWealth(d);
-    rosterAdd({ hero, wealth }); // roster persistant : réutilisable dans un futur groupe
-    setParty([...party, hero]);
-    creditPartyMoney(wealth, `Richesse initiale de ${hero.name} (${level?.status ?? ''})`);
+    rosterAdd({ hero, wealth }); // roster persistant LOCAL : réutilisable dans un futur groupe
+    addHero(hero, wealth); // côté invité : intent vers l'hôte (l'état arrive par snapshot)
     setScreen('party');
   };
 

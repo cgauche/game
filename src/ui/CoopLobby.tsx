@@ -6,9 +6,9 @@ import { CoopInvitePanel, CoopAssignList } from './CoopPanels';
  * Lobby coop (Jalon 7, P1) — connexion par CODES À PARTAGER (arbitrage : zéro système externe).
  *
  * HÔTE : « Inviter un joueur » génère un code d'invitation (à envoyer par le canal de son choix) ;
- * l'invité renvoie son code de réponse, l'hôte le colle → le siège se connecte. L'hôte attribue
- * ensuite N héros à chaque siège (« un certain nombre de personnages décidé dans le lobby ») et
- * lance la partie — les écrans invités REFLÈTENT le sien (snapshots).
+ * l'invité renvoie son code de réponse, l'hôte le colle → le siège se connecte. L'hôte continue
+ * ensuite vers l'écran d'équipe, où il attribue les EMPLACEMENTS aux joueurs — chacun remplit
+ * les siens (créer / roster local / pré-tiré) ; les écrans invités REFLÈTENT le sien (snapshots).
  * INVITÉ : coller l'invitation → renvoyer le code de réponse → attendre le lancement.
  *
  * Présentation (Jalon 9) : carte centrée sur la charte (même coquille que le menu principal),
@@ -48,7 +48,6 @@ function CoopShell({
 export function CoopLobby() {
   const setScreen = useGame((s) => s.setScreen);
   const net = useGame((s) => s.net);
-  const party = useGame((s) => s.party);
   const hostStart = useGame((s) => s.netHostStart);
   const join = useGame((s) => s.netJoin);
   const leave = useGame((s) => s.netLeave);
@@ -70,15 +69,10 @@ export function CoopLobby() {
         <div className="coop-roles">
           <section className="panel coop-role">
             <div className="mini-title">Héberger une partie</div>
-            {party.length === 0 ? (
-              <button className="btn" onClick={() => setScreen('party')}>
-                ➕ Composer le groupe
-              </button>
-            ) : (
-              <button className="btn btn-primary" disabled={!name.trim()} onClick={() => hostStart(name.trim())}>
-                Héberger
-              </button>
-            )}
+            <p className="hint">Le groupe se compose ensemble : vous attribuerez les emplacements aux joueurs connectés.</p>
+            <button className="btn btn-primary" disabled={!name.trim()} onClick={() => hostStart(name.trim())}>
+              Héberger
+            </button>
           </section>
           <section className="panel coop-role">
             <div className="mini-title">Rejoindre une partie</div>
@@ -138,7 +132,7 @@ export function CoopLobby() {
         <CoopAssignList />
       </section>
       <button className="btn btn-primary coop-continue" onClick={() => setScreen('party')}>
-        Continuer vers la partie →
+        Continuer vers la composition du groupe →
       </button>
     </CoopShell>
   );

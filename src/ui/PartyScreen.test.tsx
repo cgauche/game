@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PartyPicker } from './PartyScreen';
+import { PartyPicker, PartyScreenView } from './PartyScreen';
 import { makePregens } from '../data/pregens';
 import { rosterAdd } from '../state/roster';
+import { initialNet, type NetState } from '../state/netFlow';
 import { Combatant } from '../engine/types';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
@@ -55,5 +56,68 @@ describe('PartyPicker — pré-tirés + roster persistant', () => {
     rosterAdd({ hero: h, wealth: { gold: 0, silver: 5, brass: 0 } });
     const html = renderToStaticMarkup(<PartyPicker party={[h]} onPick={() => {}} onClose={() => {}} />);
     expect(html).toContain('Déjà choisi');
+  });
+});
+
+describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit les siens)', () => {
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  const noop = () => {};
+  const render = (party: Combatant[], net: NetState) =>
+    renderToStaticMarkup(
+      <PartyScreenView
+        party={party}
+        net={net}
+        title="Votre groupe d'aventuriers"
+        onMenu={noop}
+        onQuitCoop={noop}
+        onCreate={noop}
+        onAddHero={noop}
+        onRemoveHero={noop}
+        onAssignSlot={noop}
+        onStart={noop}
+      />,
+    );
+
+  it('solo : 4 emplacements à soi (boutons), pas de bandeau joueur', () => {
+    const html = render([], initialNet());
+    expect(html).not.toContain('slot-owner');
+    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(4);
+    expect(html).toContain('Commencer');
+  });
+
+  it('invité : ses slots actifs, ceux des autres en attente, pas de « Commencer »', () => {
+    const html = render([], {
+      mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
+    });
+    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(2); // slots 1 et 2 (siège 1)
+    expect(html).toContain('En attente de Hôte'); // slots 0 et 3
+    expect(html).not.toContain('Commencer');
+    expect(html).toContain('Quitter');
+  });
+
+  it('hôte : select de siège sur les slots vides, « Commencer » grisé tant qu’un slot invité est vide', () => {
+    const html = render([], {
+      mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
+    });
+    expect(html).toContain('<select'); // attribution par slot
+    expect(html).toContain('Antoine');
+    expect(html).toMatch(/Commencer[^<]*→<\/button>/);
+    expect(html).toContain('disabled'); // slot du siège 1 vide → bouton grisé
+    expect(html).toContain('En attente que chaque joueur remplisse ses emplacements');
+  });
+
+  it('hôte : héros de l’invité dans SON slot, « Retirer » réservé au propriétaire', () => {
+    const h = savedHero();
+    const html = render([h], {
+      mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
+    });
+    expect(html).toContain(h.name); // affiché dans le slot du siège 1
+    expect(html).not.toContain('Retirer'); // pas à l'hôte → pas de retrait
   });
 });
