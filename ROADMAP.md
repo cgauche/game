@@ -980,6 +980,23 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 
 - Du hotseat au **réseau** (WebSocket ou WebRTC). **RNG de combat seedable** (`store.seedRng`,
   Jalon 0.6) + état sérialisable déjà en place.
+- ✅ **Spec ARBITRÉE** (`docs/superpowers/specs/2026-06-11-coop-en-ligne-design.md`) : WebRTC pur
+  **sans broker** (« un code à partager, zéro système externe »), hôte-autoritaire + snapshots,
+  combat-only V1 (exploration = miroir de l'hôte), N héros par joueur décidés au lobby, modales
+  chez leur seul propriétaire, ready-check début de combat + victoire (portraits + ✓), loot
+  synchronisé à dévalidation ciblée, contre-sort multi (RAW vérifié LDB 46).
+- ✅ **P0 fondation** *(2026-06-11, `7d943cc`+`f8a9a8a`+`f453197`)* : `src/net/` — codes de
+  signalisation (deflate natif + base64url, préfixe `W4C1.`), protocole de messages validés,
+  HostSession/GuestSession sur Transport injecté (allowlist d'intents COMBAT gardée par test,
+  version check, snapshots, déconnexions → héros à l'hôte), transport WebRTC nu. 16 tests.
+- ✅ **P1 lobby** *(2026-06-11, `9e2f7d6`+`7990e69`)* : `netFlow.ts` (état `net` sérialisable,
+  interception des actions invité → intents, broadcast throttlé 120 ms, `ownsLocally`) +
+  **« 🌐 Jouer en ligne »** au menu — Héberger/Inviter (code) → Rejoindre (code de réponse) →
+  attribution des héros par siège → lancement. **Recette 2 onglets PASSÉE** : P2P établi (codes
+  ~700-800 caractères), miroir invité (écran/scène/groupe/ownership), session préservée au
+  lancement (le reset startScene/load ne dissout plus `net` — bug trouvé en recette).
+- 🚧 **P2 (suivant)** : gating d'affichage par propriétaire (modales/hotbar via `ownsLocally`),
+  ready-check début de combat + victoire (portraits + ✓), écran de loot synchronisé.
 
 ## 🎯 Jalon 8 — Polish & production
 
