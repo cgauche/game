@@ -1,7 +1,9 @@
 # Coop en ligne (Jalon 7) — design
 
-**Statut : PROPOSITION — arbitrage utilisateur requis avant toute implémentation.**
-Les recommandations sont tranchées ; les alternatives écartées sont notées avec leurs raisons.
+**Statut : ARBITRÉ (2026-06-11) — « ça doit marcher avec un code à partager, sans dépendre
+d'un système externe »** → WebRTC **sans broker** : signalisation par échange de codes
+(copier/coller), aucune lib réseau tierce, aucun serveur. Le §2 est mis à jour en conséquence ;
+PeerJS (cloud OU self-host) est écarté.
 
 ## 1. Contraintes du projet
 
@@ -12,17 +14,26 @@ Les recommandations sont tranchées ; les alternatives écartées sont notées a
   entièrement sérialisable** (prouvé par la sauvegarde : `snapshotSave` capture toutes les clés
   de données de `getInitialState`) ; hotseat fonctionnel (tout le monde contrôle tout).
 
-## 2. Topologie réseau — RECOMMANDATION : WebRTC DataChannel via PeerJS
+## 2. Topologie réseau — ARBITRÉ : WebRTC DataChannel, signalisation par CODES (zéro broker)
 
 | Option | Verdict |
 |---|---|
-| **WebRTC + PeerJS** (serveur de signaling public gratuit, données en P2P direct) | ✅ Recommandé : zéro infra à héberger, prod statique conservée, lib mûre, code de partie simple (id PeerJS). |
-| WebSocket + serveur maison | ❌ Exige un backend hébergé (coût, ops, hors modèle GitHub Pages). |
-| WebRTC signaling manuel (copier/coller l'offre SDP) | ❌ UX pénible (gros blobs à échanger) ; à garder en SECOURS si le cloud PeerJS disparaît. |
+| **WebRTC pur + codes copiés/collés** (offre/réponse SDP compressées en codes texte) | ✅ **Arbitré utilisateur** : « un code à partager, sans système externe ». Zéro serveur, zéro lib tierce, marche sur GitHub Pages tel quel. |
+| WebRTC + PeerJS (broker de signaling cloud) | ❌ Écarté par l'arbitrage : dépendance à un service tiers. |
+| WebSocket + serveur maison | ❌ Backend hébergé (coût, ops, hors modèle statique). |
 
-Risques PeerJS assumés : dépendance au signaling public (fallback : héberger `peerjs-server`
-plus tard, ou self-host gratuit type Render/Fly — décision repoussée) ; NAT symétriques sans
-TURN ≈ rare entre amis sur réseaux domestiques (documenter « si ça ne se connecte pas… »).
+**Flux de connexion** (par invité ; l'hôte répète pour chaque siège, 3 max) :
+1. Hôte « Inviter un joueur » → l'app génère un **code d'invitation** (offre SDP + candidats ICE,
+   dégonflée `CompressionStream` → base64url, préfixe de version `W4C1.`) → l'hôte l'envoie par
+   le canal de son choix (Discord, SMS…).
+2. L'invité colle le code → l'app génère un **code de réponse** (même encodage) → il le renvoie.
+3. L'hôte colle la réponse → le DataChannel s'ouvre → handshake `hello` (version de build).
+
+**STUN, assumé et documenté** : `stun:` est un simple annuaire d'adresses publiques (AUCUNE
+donnée de jeu n'y transite, remplaçable par n'importe quelle URL stun, constante dans le code).
+Sans STUN, la connexion ne marche en pratique qu'en LAN ; avec, la plupart des NAT domestiques
+passent. Pas de TURN (relais) : si deux NAT symétriques se croisent, ça ne se connecte pas —
+limite documentée « jeu entre amis ».
 
 ## 3. Modèle d'autorité — RECOMMANDATION : hôte-autoritaire + snapshots d'état
 
@@ -55,9 +66,10 @@ TURN ≈ rare entre amis sur réseaux domestiques (documenter « si ça ne se co
 
 ```
 src/net/
-  session.ts      « NetSession » : 'local' (défaut, comportement actuel) | 'host' | 'guest'
-  transport.ts    PeerJS wrap (connect/broadcast/onMessage), lazy-chunké (pas dans le bundle de base)
+  codes.ts        encode/décode des codes de signalisation (JSON → deflate → base64url, préfixe W4C1.)
   protocol.ts     messages : {kind:'intent'|'snapshot'|'hello'|'assign'|'chat'}, version du protocole
+  session.ts      « NetSession » : 'local' (défaut, comportement actuel) | 'host' | 'guest'
+  transport.ts    RTCPeerConnection nu (offer/answer/DataChannel) + FakeTransport (tests en mémoire)
   intents.ts      registre des actions REJOUABLES (allowlist nom→action store + validation owner)
 ```
 - **Couture store minimale** : un middleware d'INTERCEPTION — en mode `guest`, les actions de
@@ -72,8 +84,9 @@ src/net/
 
 ## 6. Lobby & cycle de vie
 
-1. « Jouer en ligne » (menu) → Héberger (affiche un **code de partie** = id PeerJS court) ou
-   Rejoindre (saisir le code).
+1. « Jouer en ligne » (menu) → Héberger (bouton « Inviter » par siège → **code d'invitation** à
+   envoyer, champ « Coller la réponse ») ou Rejoindre (coller l'invitation → **code de réponse**
+   à renvoyer).
 2. Lobby : liste des connectés, attribution des héros (drag/select), bouton Lancer (hôte).
 3. En partie : indicateur de connexion par joueur ; un invité déconnecté → ses héros repassent
    à l'hôte (bandeau « X a quitté — reprise par l'hôte ») ; reconnexion par le même code →
@@ -86,18 +99,20 @@ src/net/
 Pas d'anti-triche au-delà de l'autorité hôte (jeu entre amis) ; pas de chat vocal (texte
 optionnel V2) ; 4 joueurs max ; même version de build requise (check de version au hello).
 
-## 8. Découpage d'implémentation (plans à écrire après arbitrage)
+## 8. Découpage d'implémentation
 
-- **P0** : `NetSession` + allowlist d'intents + middleware (mode local inerte) — testable sans
-  réseau (deux stores en mémoire reliés par un transport factice).
-- **P1** : transport PeerJS + lobby (héberger/rejoindre/attribuer) + snapshot broadcast.
+- **P0a** : `codes.ts` + `protocol.ts` (purs, testés — encode/décode, version, parse).
+- **P0b** : `NetSession` + allowlist d'intents + middleware (mode local inerte) — testable sans
+  réseau (deux stores en mémoire reliés par `FakeTransport`).
+- **P1** : transport WebRTC nu + lobby codes (héberger/inviter/rejoindre/attribuer) + snapshot
+  broadcast — recette à deux onglets.
 - **P2** : ownership UI (hotbar/modales gâtées par propriétaire, spectateur).
-- **P3** : robustesse — reconnexion, version check, héros orphelins, indicateurs.
+- **P3** : robustesse — reconnexion (nouveau code), version check, héros orphelins, indicateurs.
 - **P4 (V2)** : deltas d'état, exploration déléguée, chat.
 
-## 9. Questions ouvertes pour l'arbitrage
+## 9. Arbitrages
 
-1. **PeerJS cloud** OK comme dépendance de signaling (gratuit, tiers) — ou exigence de
-   self-host dès la V1 ?
-2. L'« exploration pilotée par l'hôte » te va, ou chaque joueur doit pouvoir déplacer le groupe ?
-3. 4 joueurs max (un par héros) ou spectateurs supplémentaires ?
+1. ~~PeerJS cloud ?~~ **TRANCHÉ (2026-06-11)** : aucun système externe — codes à partager
+   (WebRTC pur, signalisation copier/coller, STUN public assumé comme simple annuaire).
+2. Exploration pilotée par l'hôte : **défaut V1** (pas d'objection utilisateur à ce stade).
+3. 4 joueurs max (un par héros) : **défaut V1**.
