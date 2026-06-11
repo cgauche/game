@@ -901,8 +901,15 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   maintien/défaisage du bandage de fracture (l.302 — événement MJ, pas de déclencheur de jeu) ; appliquer
   rétroactivement une amputation à un PJ existant (pas d'Effet/outil d'édition de trauma).
 - ✅ **Encombrement** appliqué (pénalités LDB p.295 : Mouvement −1/−2 + planchers, immobilisé
-  au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). Reste : Fatigue du
-  voyage (échelle voyage, hors combat).
+  au-delà de ×3, malus d'Agilité −10/−20 sur l'Esquive ; câblé au combat). ✅ **Fatigue du
+  voyage** (LDB 61 l.36-44 : +1/+2 Exténué en fin de journée de route à pied si surchargé) —
+  livrée avec #T2 (`travelFlow.travelFatigue`), constatée 2026-06-11.
+- **Munitions — bilan 2026-06-11 (sourcé)** : achat ✅ (l'Armurier vend la catégorie
+  `ammunition`, réassort #T3) ; **récupération post-combat : AUCUNE règle dans le LDB**
+  (vérifié ch.62/63) → écartée (règle 1, rien d'inventé) ; **munitions ennemies** : les
+  statblocks n'ont pas d'inventaire détaillé → rien à décompter sans inventer (la simplification
+  « ennemis abstraits » est l'application directe des données ; à revisiter si les PNJ gagnent
+  un inventaire d'items).
 
 ## 🎯 Jalon 6 — Éditeur avancé *(largement entamé — Jalons 0.5 & 0.6)*
 
