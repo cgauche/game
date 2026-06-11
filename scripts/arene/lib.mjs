@@ -71,10 +71,14 @@ export function fightTrigger(encounter, rect, extra = {}) {
   return { id: `fight-${encounter}`, rect, once: true, effects: [{ type: 'startCombat', encounter }], ...extra };
 }
 
-/** onVictory standard d'une zone de l'échelle : bourse + PX + flag de porte + retour au Bourg. */
-export function zoneVictory(n, { gold, xp, journal, extra = [] }) {
+/** onVictory standard d'une zone de l'échelle : bourse + PX + flag de porte + retour au Bourg.
+ *  ÉCONOMIE : la vie coûte des PISTOLES (repas 1 pa, nuit 10 sb/tête, ration 2 pa) et la plate
+ *  complète ~31 CO ; les bourses montent donc de quelques pa (échauffement) à ~10 co (dragon) —
+ *  l'équipement lourd se GAGNE sur toute l'échelle, pas au premier combat. XP : ~100 → 450 par
+ *  zone (progression de carrière sentie à CHAQUE victoire, pas tous les 3 combats). */
+export function zoneVictory(n, { money, xp, journal, extra = [] }) {
   return [
-    { type: 'giveMoney', gold },
+    { type: 'giveMoney', ...money },
     { type: 'giveXp', amount: xp },
     { type: 'setFlag', flag: `zone${n}_clear` },
     { type: 'journal', text: journal },

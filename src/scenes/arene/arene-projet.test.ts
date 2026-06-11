@@ -116,6 +116,51 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(trapped.length).toBeGreaterThanOrEqual(2); // fouilles à risque (maladie/réveil du dragon…)
   });
 
+  it('ÉCONOMIE : la vie est chère — l’or TOTAL du projet reste < 3 plates complètes ; l’XP est généreuse', () => {
+    // Régression (retour utilisateur) : avant, UN combat suffisait à mettre tout le groupe en
+    // full plate (~31 co/tête). On verrouille : la somme de TOUT l'argent distribuable du projet
+    // (victoires + fouilles + dialogues, optionnels compris) reste sous ~100 co — soit ~3 plates
+    // en finissant ABSOLUMENT tout — et la zone 1 ne paie qu'en pistoles.
+    let totalSb = 0; // tout en sous de bronze (1 co = 240 sb, 1 pa = 12 sb)
+    const walk = (effs: any[] | undefined) => {
+      for (const e of effs ?? []) {
+        if (e.type === 'giveMoney') totalSb += (e.gold ?? 0) * 240 + (e.silver ?? 0) * 12 + (e.brass ?? 0);
+        if (e.type === 'test') {
+          walk(e.onSuccess);
+          walk(e.onFailure);
+        }
+      }
+    };
+    for (const s of project) {
+      for (const t of s.triggers) walk(t.effects);
+      for (const e of s.encounters) walk(e.onVictory);
+      for (const ent of s.entities) walk(ent.interact?.effects);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);
+    }
+    expect(totalSb).toBeLessThanOrEqual(100 * 240);
+    const z1 = project[0].encounters.find((e) => e.id === 'enc-zone1')!;
+    const z1money = z1.onVictory!.find((e) => e.type === 'giveMoney') as any;
+    expect(z1money.gold ?? 0).toBe(0); // l'échauffement paie en PISTOLES
+    // XP : chaque victoire de zone vaut ≥100 PX (progression sentie à CHAQUE combat),
+    // et l'échelle complète en cumule ≥2500.
+    let ladder = 0;
+    for (let n = 1; n <= 13; n++) {
+      const z = project.find((s) => s.id === `arene-zone${n}`)!;
+      const xp = z.encounters.find((e) => e.id === `enc-zone${n}`)!.onVictory!.find((e) => e.type === 'giveXp') as any;
+      expect(xp.amount, `XP zone${n}`).toBeGreaterThanOrEqual(100);
+      ladder += xp.amount;
+    }
+    expect(ladder).toBeGreaterThanOrEqual(2500);
+  });
+
+  it('AUBERGE : dormir au Trophée inclut le souper (gîte ET couvert — dormir n’affame jamais le groupe)', () => {
+    const taverne = project.find((s) => s.id === 'arene-int-taverne')!;
+    const choices = taverne.dialogues.flatMap((d) => d.nodes.flatMap((n) => n.choices));
+    const sleeps = choices.filter((c) => c.effects?.some((e) => e.type === 'rest'));
+    expect(sleeps.length).toBeGreaterThanOrEqual(1);
+    for (const c of sleeps) expect(c.effects!.some((e) => e.type === 'mealParty'), 'rest accompagné de mealParty').toBe(true);
+  });
+
   it('BUTIN magique : au moins un giveTrapping avec qualités magiques NON identifiées (vitrine Évaluation)', () => {
     let found = false;
     const walk = (effs: any[] | undefined) => {

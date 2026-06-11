@@ -66,7 +66,7 @@ export function makeZone1() {
           { ref: 'Gobelin', pos: { x: 19, y: 12 }, randomChars: true },
           { ref: 'Rat géant', pos: { x: 12, y: 12 } },
         ],
-        onVictory: zoneVictory(1, { gold: 25, xp: 40, journal: 'La Cour : vaincue ! Retournez voir le maître d’arène.' }),
+        onVictory: zoneVictory(1, { money: { silver: 8 }, xp: 100, journal: 'La Cour : vaincue ! Retournez voir le maître d’arène.' }),
       },
     ],
   });
@@ -130,9 +130,9 @@ export function makeZone2() {
       P(25, 3, 'coffre', {
         label: 'Coffre de la garnison',
         ...fouille([
-          { type: 'giveMoney', gold: 15 },
+          { type: 'giveMoney', gold: 3 },
           { type: 'giveTrapping', trapping: 'Bouclier' },
-          { type: 'journal', text: 'Le coffre de la garnison : 15 co et un bouclier frappé du Comte Palatin.' },
+          { type: 'journal', text: 'Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin.' },
         ]),
       }),
       P(3, 8, 'tonneau'),
@@ -153,7 +153,7 @@ export function makeZone2() {
           { ref: 'Gobelin', pos: { x: 15, y: 14 } },
           { ref: 'Orc', pos: { x: 12, y: 5 } },
         ],
-        onVictory: zoneVictory(2, { gold: 30, xp: 50, journal: 'Les Ruines : nettoyées ! (La salle au trésor, au nord-est, n’a pas dit son dernier mot.)' }),
+        onVictory: zoneVictory(2, { money: { silver: 12 }, xp: 120, journal: 'Les Ruines : nettoyées ! (La salle au trésor, au nord-est, n’a pas dit son dernier mot.)' }),
       },
       {
         // Le gardien du trésor : on le SURPREND dans sa salle (embuscade des héros).
@@ -165,7 +165,7 @@ export function makeZone2() {
           { ref: 'Gobelin', pos: { x: 24, y: 6 } },
         ],
         onVictory: [
-          { type: 'giveXp', amount: 25 },
+          { type: 'giveXp', amount: 50 },
           { type: 'journal', text: 'Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !' },
         ],
       },
@@ -255,7 +255,7 @@ export function makeZone3() {
           { ref: 'Snotling', pos: { x: 15, y: 3 } },
           { ref: 'Snotling', pos: { x: 18, y: 6 } },
         ],
-        onVictory: zoneVictory(3, { gold: 35, xp: 60, journal: 'Les Égouts : purgés ! Remontez respirer au Bourg.' }),
+        onVictory: zoneVictory(3, { money: { silver: 16 }, xp: 140, journal: 'Les Égouts : purgés ! Remontez respirer au Bourg.' }),
       },
     ],
   });
@@ -363,8 +363,8 @@ export function makeZone4() {
           { ref: 'Goule de crypte', pos: { x: 12, y: 6 } },
         ],
         onVictory: zoneVictory(4, {
-          gold: 40,
-          xp: 70,
+          money: { gold: 1 },
+          xp: 160,
           journal: 'Le Charnier : recouché ! Mais certaines images ne s’oublient pas…',
           extra: [{ type: 'inflictNightmares' }],
         }),
@@ -446,7 +446,7 @@ export function makeZone5() {
           // 5 : piquier à pied derrière la barrière.
           { ref: 'Gobelin', pos: { x: 18, y: 6 } },
         ],
-        onVictory: zoneVictory(5, { gold: 45, xp: 80, journal: 'Les Lices : remportées sous la pluie ! Le Bourg parle déjà de votre charge.' }),
+        onVictory: zoneVictory(5, { money: { gold: 1, silver: 10 }, xp: 180, journal: 'Les Lices : remportées sous la pluie ! Le Bourg parle déjà de votre charge.' }),
       },
     ],
   });
@@ -539,7 +539,7 @@ export function makeZone6() {
           { ref: 'Loup funeste', pos: { x: 25, y: 5 } },
           { ref: 'Fimir', pos: { x: 18, y: 12 } },
         ],
-        onVictory: zoneVictory(6, { gold: 50, xp: 90, journal: 'Le Marais : la harde est brisée — et son Fimir avec. Le brouillard se lève enfin.' }),
+        onVictory: zoneVictory(6, { money: { gold: 2 }, xp: 200, journal: 'Le Marais : la harde est brisée — et son Fimir avec. Le brouillard se lève enfin.' }),
       },
     ],
   });
@@ -647,7 +647,7 @@ export function makeZone7() {
           { ref: 'Basilic', pos: { x: 22, y: 18 } },
           { ref: 'Vouivre', pos: { x: 24, y: 4 } },
         ],
-        onVictory: zoneVictory(7, { gold: 55, xp: 100, journal: 'Le Nid : brûlé ! La vouivre ne sifflera plus sous l’arène.' }),
+        onVictory: zoneVictory(7, { money: { gold: 2, silver: 10 }, xp: 220, journal: 'Le Nid : brûlé ! La vouivre ne sifflera plus sous l’arène.' }),
       },
     ],
   });

@@ -1224,8 +1224,14 @@ L'arène passe de 14 petites scènes (~15×11, 13 effets utilisés, 0 bâtiment,
   brasero, gargouille, idole du Chaos…), terrains `neige`/`planches`/`fosse`, archétype
   `taverniere`. **Props multi-cases** : `foot {w,h}` désormais RENDU (centré + mis à l'échelle,
   jeu ET éditeur), empreinte par défaut au catalogue (`PropViz.foot`, appliquée à la pose).
-- **Tests** : 36 tests arène (vitrine des Effets clés, échelle complète des 13 portes, entrée/
-  sortie d'intérieur par la porte, contrats, carte valide) + scénario 🧪 `18-arene` (recette au Bourg).
+- **Économie & rythme rééquilibrés** (retour utilisateur : « full plate après un combat, niveau 2
+  après 3 combats ») : bourses en PISTOLES au début (8 pa) → petites couronnes en fin d'échelle
+  (10 co au dragon), or TOTAL du projet ≈ 98 co (≈3 plates en finissant TOUT — verrouillé par test
+  ≤100 co) ; XP par zone 100 → 450 (≥100 partout, échelle ≥2 500 cumulés). Dormir à l'auberge
+  inclut le souper (gîte ET couvert — `rest` toujours accompagné de `mealParty`, verrouillé par test).
+- **Tests** : 38 tests arène (vitrine des Effets clés, échelle complète des 13 portes, entrée/
+  sortie d'intérieur par la porte, contrats, carte valide, garde-fous économie/XP/auberge)
+  + scénario 🧪 `18-arene` (recette au Bourg).
 
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 

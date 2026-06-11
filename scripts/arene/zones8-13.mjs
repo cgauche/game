@@ -70,8 +70,8 @@ export function makeZone8() {
           { ref: 'Minotaure', pos: { x: 20, y: 16 } },
         ],
         onVictory: zoneVictory(8, {
-          gold: 60,
-          xp: 110,
+          money: { gold: 3 },
+          xp: 240,
           journal: 'La Fosse : le Minotaure est tombé ! Le gladiateur vous salue et disparaît par le tunnel des bêtes.',
         }),
       },
@@ -136,9 +136,9 @@ export function makeZone9() {
       P(26, 5, 'coffre', {
         label: 'Magot de la caverne',
         ...fouille([
-          { type: 'giveMoney', gold: 20 },
+          { type: 'giveMoney', gold: 4 },
           { type: 'giveTrapping', trapping: 'Grande hache' },
-          { type: 'journal', text: 'Le magot : 20 co et une grande hache au fil intact. L’Ogre ne comptera plus rien.' },
+          { type: 'journal', text: 'Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien.' },
         ]),
       }),
       P(28, 8, 'feu-camp', { label: 'Feu de l’Ogre' }),
@@ -157,8 +157,8 @@ export function makeZone9() {
           { ref: 'Gor', pos: { x: 18, y: 6 } },
         ],
         onVictory: zoneVictory(9, {
-          gold: 65,
-          xp: 120,
+          money: { gold: 3, silver: 10 },
+          xp: 260,
           journal: 'La Caverne : le Troll est resté à terre (cette fois pour de bon). L’alcôve du fond vous tend les bras…',
         }),
       },
@@ -167,7 +167,7 @@ export function makeZone9() {
         id: 'enc-caverne-ogre',
         enemies: [{ ref: 'Ogre', pos: { x: 27, y: 9 }, optionals: ['Affamé'] }],
         onVictory: [
-          { type: 'giveXp', amount: 30 },
+          { type: 'giveXp', amount: 60 },
           { type: 'journal', text: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
         ],
       },
@@ -200,7 +200,7 @@ export function makeZone10() {
                 onSuccess: [
                   { type: 'setFlag', flag: 'prisonnier_libre' },
                   { type: 'giveMoney', silver: 40 },
-                  { type: 'giveXp', amount: 25 },
+                  { type: 'giveXp', amount: 50 },
                   { type: 'journal', text: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
                   { type: 'endDialogue' },
                 ],
@@ -301,8 +301,8 @@ export function makeZone10() {
           { ref: 'Rat géant', pos: { x: 10, y: 20 } },
         ],
         onVictory: zoneVictory(10, {
-          gold: 70,
-          xp: 130,
+          money: { gold: 4 },
+          xp: 280,
           journal: 'Le Nid de Vermine : enfumé ! Les terriers resteront silencieux… un temps.',
         }),
       },
@@ -399,8 +399,8 @@ export function makeZone11() {
           { ref: 'Horreur bleue', pos: { x: 22, y: 16 } },
         ],
         onVictory: zoneVictory(11, {
-          gold: 80,
-          xp: 140,
+          money: { gold: 5 },
+          xp: 300,
           journal: 'Le Cercle Maudit : le chant s’est tu. L’idole n’est plus qu’une pierre — fouillez le coffre du célébrant.',
         }),
       },
@@ -493,8 +493,8 @@ export function makeZone12() {
           { ref: 'Vampire', pos: { x: 16, y: 8 }, optionals: ['Champion'] },
         ],
         onVictory: zoneVictory(12, {
-          gold: 90,
-          xp: 150,
+          money: { gold: 6 },
+          xp: 320,
           journal: 'Le Sépulcre : le seigneur est recouché, ses gens dispersés. Son épée, elle, ne dort pas — fouillez le sarcophage.',
           extra: [{ type: 'inflictNightmares' }],
         }),
@@ -570,8 +570,8 @@ export function makeZone13() {
             difficulty: 'difficile',
             label: 'Chiper l’or sous l’œil clos du dragon',
             onSuccess: [
-              { type: 'giveMoney', gold: 50 },
-              { type: 'journal', text: 'Cinquante couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
+              { type: 'giveMoney', gold: 8 },
+              { type: 'journal', text: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
             ],
             onFailure: [
               { type: 'journal', text: 'UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion.' },
@@ -583,9 +583,9 @@ export function makeZone13() {
       P(36, 22, 'coffre', {
         label: 'Coffre du trésor',
         ...fouille([
-          { type: 'giveMoney', gold: 30 },
+          { type: 'giveMoney', gold: 6 },
           { type: 'giveTrapping', trapping: 'Arc elfique' },
-          { type: 'journal', text: 'Dans le coffre d’un pillard digéré : 30 co et un arc elfique que le feu n’a jamais mordu.' },
+          { type: 'journal', text: 'Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu.' },
         ]),
       }),
     ],
@@ -602,8 +602,8 @@ export function makeZone13() {
           { ref: 'Cultiste', pos: { x: 30, y: 3 }, optionals: ['Armure 1'] },
         ],
         onVictory: zoneVictory(13, {
-          gold: 150,
-          xp: 200,
+          money: { gold: 10 },
+          xp: 450,
           journal: 'LE DRAGON EST TOMBÉ. L’arène entière retient son souffle — puis HURLE. Allez réclamer votre titre au Maître !',
         }),
       },

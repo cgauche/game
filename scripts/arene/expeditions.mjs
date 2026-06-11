@@ -79,9 +79,9 @@ export function makeForet() {
       P(34, 8, 'coffre', {
         label: 'Coffre de la bande',
         ...fouille([
-          { type: 'giveMoney', gold: 25 },
+          { type: 'giveMoney', gold: 5 },
           { type: 'giveTrapping', trapping: 'Rapière', qualities: ['Raffiné'] },
-          { type: 'journal', text: 'Le coffre de Bella : 25 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
+          { type: 'journal', text: 'Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
         ]),
       }),
       P(16, 6, 'gibet', { label: 'L’avertissement de Bella' }),
@@ -106,7 +106,7 @@ export function makeForet() {
           { ref: 'Loup', pos: { x: 17, y: 23 } },
         ],
         onVictory: [
-          { type: 'giveXp', amount: 60 },
+          { type: 'giveXp', amount: 120 },
           { type: 'journal', text: 'La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…' },
         ],
       },
@@ -121,7 +121,7 @@ export function makeForet() {
         ],
         onVictory: [
           { type: 'setFlag', flag: 'contrat_foret_fait' },
-          { type: 'giveXp', amount: 80 },
+          { type: 'giveXp', amount: 160 },
           { type: 'journal', text: 'Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)' },
         ],
       },
@@ -226,8 +226,8 @@ export function makeMarais() {
         ],
         onVictory: [
           { type: 'setFlag', flag: 'contrat_marais_fait' },
-          { type: 'giveXp', amount: 90 },
-          { type: 'giveMoney', gold: 15 },
+          { type: 'giveXp', amount: 180 },
+          { type: 'giveMoney', gold: 3 },
           { type: 'journal', text: 'La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)' },
         ],
       },
@@ -347,7 +347,7 @@ export function makeVillage() {
         ],
         onVictory: [
           { type: 'setFlag', flag: 'contrat_village_fait' },
-          { type: 'giveXp', amount: 100 },
+          { type: 'giveXp', amount: 200 },
           { type: 'journal', text: 'Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)' },
         ],
       },
@@ -411,7 +411,7 @@ export function makeEmbuscade() {
           { ref: 'Orc', pos: { x: 21, y: 5 } },
         ],
         onVictory: [
-          { type: 'giveXp', amount: 40 },
+          { type: 'giveXp', amount: 80 },
           { type: 'giveMoney', silver: 15 },
           { type: 'journal', text: 'Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde.' },
         ],

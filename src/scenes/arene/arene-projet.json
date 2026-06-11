@@ -628,11 +628,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 25
+       "silver": 8
       },
       {
        "type": "giveXp",
-       "amount": 40
+       "amount": 100
       },
       {
        "type": "setFlag",
@@ -1825,11 +1825,11 @@
             },
             {
              "type": "giveMoney",
-             "gold": 30
+             "gold": 5
             },
             {
              "type": "journal",
-             "text": "Le coffre cède : 30 couronnes !"
+             "text": "Le coffre cède : 5 couronnes !"
             }
            ],
            "onFailure": [
@@ -1851,7 +1851,7 @@
           },
           {
            "type": "giveXp",
-           "amount": 100
+           "amount": 300
           },
           {
            "type": "journal",
@@ -2064,11 +2064,11 @@
           },
           {
            "type": "giveMoney",
-           "gold": 50
+           "gold": 3
           },
           {
            "type": "giveXp",
-           "amount": 80
+           "amount": 160
           },
           {
            "type": "journal",
@@ -2100,11 +2100,11 @@
           },
           {
            "type": "giveMoney",
-           "gold": 60
+           "gold": 4
           },
           {
            "type": "giveXp",
-           "amount": 100
+           "amount": 200
           },
           {
            "type": "journal",
@@ -2136,11 +2136,11 @@
           },
           {
            "type": "giveMoney",
-           "gold": 70
+           "gold": 5
           },
           {
            "type": "giveXp",
-           "amount": 120
+           "amount": 240
           },
           {
            "type": "journal",
@@ -2619,13 +2619,20 @@
          ]
         },
         {
-         "text": "🛏️ Dormir — chambre commune pour le groupe, 40 sb.",
+         "text": "🛏️ Souper et dormir — gîte et couvert pour le groupe, 7 pa.",
          "cost": {
-          "brass": 40
+          "silver": 7
          },
          "effects": [
           {
+           "type": "mealParty"
+          },
+          {
            "type": "rest"
+          },
+          {
+           "type": "journal",
+           "text": "Ventres pleins et paillasses propres : le Trophée veille sur vos rêves jusqu’à l’aube."
           }
          ]
         },
@@ -3770,7 +3777,7 @@
       "effects": [
        {
         "type": "giveMoney",
-        "gold": 15
+        "gold": 3
        },
        {
         "type": "giveTrapping",
@@ -3778,7 +3785,7 @@
        },
        {
         "type": "journal",
-        "text": "Le coffre de la garnison : 15 co et un bouclier frappé du Comte Palatin."
+        "text": "Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin."
        }
       ]
      }
@@ -3893,11 +3900,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 30
+       "silver": 12
       },
       {
        "type": "giveXp",
-       "amount": 50
+       "amount": 120
       },
       {
        "type": "setFlag",
@@ -3946,7 +3953,7 @@
      "onVictory": [
       {
        "type": "giveXp",
-       "amount": 25
+       "amount": 50
       },
       {
        "type": "journal",
@@ -4756,11 +4763,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 35
+       "silver": 16
       },
       {
        "type": "giveXp",
-       "amount": 60
+       "amount": 140
       },
       {
        "type": "setFlag",
@@ -5651,11 +5658,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 40
+       "gold": 1
       },
       {
        "type": "giveXp",
-       "amount": 70
+       "amount": 160
       },
       {
        "type": "setFlag",
@@ -6520,11 +6527,12 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 45
+       "gold": 1,
+       "silver": 10
       },
       {
        "type": "giveXp",
-       "amount": 80
+       "amount": 180
       },
       {
        "type": "setFlag",
@@ -7645,11 +7653,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 50
+       "gold": 2
       },
       {
        "type": "giveXp",
-       "amount": 90
+       "amount": 200
       },
       {
        "type": "setFlag",
@@ -8638,11 +8646,12 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 55
+       "gold": 2,
+       "silver": 10
       },
       {
        "type": "giveXp",
-       "amount": 100
+       "amount": 220
       },
       {
        "type": "setFlag",
@@ -9487,11 +9496,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 60
+       "gold": 3
       },
       {
        "type": "giveXp",
-       "amount": 110
+       "amount": 240
       },
       {
        "type": "setFlag",
@@ -10356,7 +10365,7 @@
       "effects": [
        {
         "type": "giveMoney",
-        "gold": 20
+        "gold": 4
        },
        {
         "type": "giveTrapping",
@@ -10364,7 +10373,7 @@
        },
        {
         "type": "journal",
-        "text": "Le magot : 20 co et une grande hache au fil intact. L’Ogre ne comptera plus rien."
+        "text": "Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien."
        }
       ]
      }
@@ -10455,11 +10464,12 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 65
+       "gold": 3,
+       "silver": 10
       },
       {
        "type": "giveXp",
-       "amount": 120
+       "amount": 260
       },
       {
        "type": "setFlag",
@@ -10493,7 +10503,7 @@
      "onVictory": [
       {
        "type": "giveXp",
-       "amount": 30
+       "amount": 60
       },
       {
        "type": "journal",
@@ -11556,7 +11566,7 @@
             },
             {
              "type": "giveXp",
-             "amount": 25
+             "amount": 50
             },
             {
              "type": "journal",
@@ -11699,11 +11709,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 70
+       "gold": 4
       },
       {
        "type": "giveXp",
-       "amount": 130
+       "amount": 280
       },
       {
        "type": "setFlag",
@@ -12776,11 +12786,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 80
+       "gold": 5
       },
       {
        "type": "giveXp",
-       "amount": 140
+       "amount": 300
       },
       {
        "type": "setFlag",
@@ -13742,11 +13752,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 90
+       "gold": 6
       },
       {
        "type": "giveXp",
-       "amount": 150
+       "amount": 320
       },
       {
        "type": "setFlag",
@@ -15056,11 +15066,11 @@
         "onSuccess": [
          {
           "type": "giveMoney",
-          "gold": 50
+          "gold": 8
          },
          {
           "type": "journal",
-          "text": "Cinquante couronnes glissées sans un tintement. Le dragon ronfle toujours."
+          "text": "Huit couronnes glissées sans un tintement. Le dragon ronfle toujours."
          }
         ],
         "onFailure": [
@@ -15091,7 +15101,7 @@
       "effects": [
        {
         "type": "giveMoney",
-        "gold": 30
+        "gold": 6
        },
        {
         "type": "giveTrapping",
@@ -15099,7 +15109,7 @@
        },
        {
         "type": "journal",
-        "text": "Dans le coffre d’un pillard digéré : 30 co et un arc elfique que le feu n’a jamais mordu."
+        "text": "Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu."
        }
       ]
      }
@@ -15205,11 +15215,11 @@
      "onVictory": [
       {
        "type": "giveMoney",
-       "gold": 150
+       "gold": 10
       },
       {
        "type": "giveXp",
-       "amount": 200
+       "amount": 450
       },
       {
        "type": "setFlag",
@@ -16572,7 +16582,7 @@
       "effects": [
        {
         "type": "giveMoney",
-        "gold": 25
+        "gold": 5
        },
        {
         "type": "giveTrapping",
@@ -16583,7 +16593,7 @@
        },
        {
         "type": "journal",
-        "text": "Le coffre de Bella : 25 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé."
+        "text": "Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé."
        }
       ]
      }
@@ -16703,7 +16713,7 @@
      "onVictory": [
       {
        "type": "giveXp",
-       "amount": 60
+       "amount": 120
       },
       {
        "type": "journal",
@@ -16754,7 +16764,7 @@
       },
       {
        "type": "giveXp",
-       "amount": 80
+       "amount": 160
       },
       {
        "type": "journal",
@@ -17972,11 +17982,11 @@
       },
       {
        "type": "giveXp",
-       "amount": 90
+       "amount": 180
       },
       {
        "type": "giveMoney",
-       "gold": 15
+       "gold": 3
       },
       {
        "type": "journal",
@@ -19188,7 +19198,7 @@
       },
       {
        "type": "giveXp",
-       "amount": 100
+       "amount": 200
       },
       {
        "type": "journal",
@@ -19736,7 +19746,7 @@
      "onVictory": [
       {
        "type": "giveXp",
-       "amount": 40
+       "amount": 80
       },
       {
        "type": "giveMoney",

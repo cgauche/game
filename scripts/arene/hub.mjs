@@ -54,8 +54,8 @@ const dlgHub = {
               label: 'Crocheter le coffre',
               onSuccess: [
                 { type: 'setFlag', flag: 'coffre_pris' },
-                { type: 'giveMoney', gold: 30 },
-                { type: 'journal', text: 'Le coffre cède : 30 couronnes !' },
+                { type: 'giveMoney', gold: 5 },
+                { type: 'journal', text: 'Le coffre cède : 5 couronnes !' },
               ],
               onFailure: [{ type: 'journal', text: 'Le mécanisme rouillé résiste — peut-être plus tard.' }],
             },
@@ -66,7 +66,7 @@ const dlgHub = {
           condition: 'zone13_clear,!champion_fete',
           effects: [
             { type: 'setFlag', flag: 'champion_fete' },
-            { type: 'giveXp', amount: 100 },
+            { type: 'giveXp', amount: 300 },
             { type: 'journal', text: 'Le Maître s’incline, et tout le Bourg avec lui : « CHAMPION DE L’ARÈNE ! »' },
             {
               type: 'document',
@@ -114,9 +114,9 @@ const dlgHub = {
       speaker: 'Maître d’arène',
       text: 'Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde (🗺️). Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.',
       choices: [
-        ...contrat('foret', 'zone4_clear', 'La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.', 'Méfie-toi : la futaie a des yeux.', 50, 80),
-        ...contrat('marais', 'zone6_clear', 'La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.', 'Reste sur les pontons.', 60, 100),
-        ...contrat('village', 'zone8_clear', 'Felsbach : le village ne répond plus depuis un mois. Brûle ce qui marche encore.', 'Ne bois pas l’eau du puits.', 70, 120),
+        ...contrat('foret', 'zone4_clear', 'La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.', 'Méfie-toi : la futaie a des yeux.', 3, 160),
+        ...contrat('marais', 'zone6_clear', 'La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.', 'Reste sur les pontons.', 4, 200),
+        ...contrat('village', 'zone8_clear', 'Felsbach : le village ne répond plus depuis un mois. Brûle ce qui marche encore.', 'Ne bois pas l’eau du puits.', 5, 240),
         { text: '↩ Revenir.', next: 'accueil' },
       ],
     },
@@ -339,9 +339,15 @@ const dlgTaverne = {
           effects: [{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }],
         },
         {
-          text: '🛏️ Dormir — chambre commune pour le groupe, 40 sb.',
-          cost: { brass: 40 },
-          effects: [{ type: 'rest' }],
+          // Gîte ET couvert : dormir sans souper affamerait le groupe pendant la nuit (Faim RAW) —
+          // l'auberge nourrit TOUJOURS ses dormeurs (repas du soir compris dans le prix).
+          text: '🛏️ Souper et dormir — gîte et couvert pour le groupe, 7 pa.',
+          cost: { silver: 7 },
+          effects: [
+            { type: 'mealParty' },
+            { type: 'rest' },
+            { type: 'journal', text: 'Ventres pleins et paillasses propres : le Trophée veille sur vos rêves jusqu’à l’aube.' },
+          ],
         },
         { text: '👂 Écouter la salle.', next: 'rumeurs' },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
