@@ -14,7 +14,8 @@ import { makeArenaParty } from '../../data/pregens';
  * de la zone suivante s'ouvre (flag). Tout via des primitives déjà testées (checkTriggers,
  * startCombat, applyEffects, transition, condMet).
  */
-const project: Scene[] = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8'))).scenes;
+const doc = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8')));
+const project: Scene[] = doc.scenes;
 const zone1 = project.find((s) => s.id === 'arene-zone1')!;
 
 describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () => {
@@ -37,7 +38,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
   it('entrer sur le sol (dans le rect du trigger) DÉCLENCHE la rencontre', () => {
     useGame.getState().setParty(makeArenaParty());
     useGame.getState().loadProject(project, 'arene-zone1');
-    useGame.getState().moveParty({ x: 6, y: 5 }); // dans le rect de combat (x≥6) → checkTriggers
+    useGame.getState().moveParty({ x: 8, y: 8 }); // dans le rect de combat (x≥7) → checkTriggers
     expect(useGame.getState().battle).not.toBeNull();
   });
 
@@ -55,17 +56,87 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     applyEffects(useGame.getState, useGame.setState, zone1.encounters[0].onVictory!);
     const hub = useGame.getState().scene!;
     const dlgHub = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
-    const ruines = dlgHub.nodes[0].choices.find((c) => c.text.includes('Ruines'))!;
+    const ruines = dlgHub.nodes.flatMap((n) => n.choices).find((c) => c.text.includes('Ruines'))!;
     expect(condMet(ruines.condition!, useGame.getState().flags)).toBe(true); // zone1_clear && !zone2_clear
+  });
+
+  it('ÉCHELLE COMPLÈTE : les 13 victoires enchaînées ouvrent chaque porte puis le titre de champion', () => {
+    useGame.getState().setParty(makeArenaParty());
+    useGame.getState().loadProject(project, 'arene-zone1');
+    const dlgHub = project.find((s) => s.id === 'arene-hub')!.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const choices = dlgHub.nodes.flatMap((n) => n.choices);
+    for (let n = 1; n <= 13; n++) {
+      // la porte de la zone N est OUVERTE (condition satisfaite) avant sa victoire…
+      const porte = choices.find((c) => c.effects?.some((e) => e.type === 'transition' && e.scene === `arene-zone${n}`))!;
+      expect(condMet(porte.condition!, useGame.getState().flags), `porte zone${n} ouverte`).toBe(true);
+      // … on applique la victoire de la zone (enc principal = enc-zoneN) → flag + retour Bourg
+      const z = project.find((s) => s.id === `arene-zone${n}`)!;
+      const enc = z.encounters.find((e) => e.id === `enc-zone${n}`)!;
+      applyEffects(useGame.getState, useGame.setState, enc.onVictory!);
+      expect(useGame.getState().flags[`zone${n}_clear`], `zone${n}_clear`).toBe(true);
+      expect(useGame.getState().scene?.id).toBe('arene-hub');
+      // … et la porte se REFERME (déjà nettoyée)
+      expect(condMet(porte.condition!, useGame.getState().flags), `porte zone${n} refermée`).toBe(false);
+    }
+    // le titre de champion est désormais réclamable
+    const champion = choices.find((c) => (c.condition ?? '').includes('zone13_clear'))!;
+    expect(condMet(champion.condition!, useGame.getState().flags)).toBe(true);
+  });
+
+  it('INTÉRIEURS : marcher sur la porte de la taverne ENTRE, la sortie revient au Bourg (transitionBack)', () => {
+    useGame.getState().setParty(makeArenaParty());
+    useGame.getState().loadProject(project, 'arene-hub');
+    // La porte de la taverne (bâtiment reveal:'door') est en (5,4) — on s'y rend pas à pas.
+    useGame.getState().moveParty({ x: 5, y: 5 });
+    useGame.getState().moveParty({ x: 5, y: 4 });
+    expect(useGame.getState().scene?.id).toBe('arene-int-taverne');
+    // Sortie : le trigger transitionBack en bas de la salle ramène au Bourg.
+    const sortie = useGame.getState().scene!.triggers.find((t) => t.id === 'sortie')!;
+    applyEffects(useGame.getState, useGame.setState, sortie.effects);
+    expect(useGame.getState().scene?.id).toBe('arene-hub');
+  });
+
+  it('CONTRATS : la victoire au camp de Bella pose contrat_foret_fait → la prime du Maître se débloque', () => {
+    useGame.getState().setParty(makeArenaParty());
+    useGame.getState().loadProject(project, 'arene-hub');
+    const foret = project.find((s) => s.id === 'arene-exp-foret')!;
+    const bande = foret.encounters.find((e) => e.id === 'enc-foret-bande')!;
+    applyEffects(useGame.getState, useGame.setState, bande.onVictory!);
+    expect(useGame.getState().flags.contrat_foret_fait).toBe(true);
+    const dlgHub = project.find((s) => s.id === 'arene-hub')!.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const prime = dlgHub.nodes.flatMap((n) => n.choices).find((c) => (c.condition ?? '').includes('contrat_foret_fait'))!;
+    expect(condMet(prime.condition!, useGame.getState().flags)).toBe(true);
+  });
+
+  it('CARTE DU MONDE : le Bourg est un lieu connu (bouton 🗺️) et ses routes partent vers les 3 expéditions', async () => {
+    const { placeOfScene, routesFrom, otherEnd, placeById } = await import('../../state/worldMap');
+    const wm = doc.worldMap!;
+    const bourg = placeOfScene(wm, 'arene-hub')!;
+    expect(bourg).toBeTruthy();
+    const dests = new Set<string>();
+    const frontier = [bourg.id];
+    while (frontier.length) {
+      const cur = frontier.pop()!;
+      for (const r of routesFrom(wm, cur)) {
+        const other = otherEnd(r, cur);
+        if (!dests.has(other) && other !== bourg.id) {
+          dests.add(other);
+          frontier.push(other);
+        }
+      }
+    }
+    const scenes = [...dests].map((id) => placeById(wm, id)!.scene);
+    expect(scenes.sort()).toEqual(['arene-exp-foret', 'arene-exp-marais', 'arene-exp-village']);
   });
 });
 
 const hub = project.find((s) => s.id === 'arene-hub')!;
 
 describe('Médecin (PNJ) — actes de soin payants (LDB 75), via la modale de Guérison', () => {
-  it('le dialogue du médecin propose 3 actes payants (Guérison/hémorragie/Chirurgie) avec un coût', () => {
-    const dlg = hub.dialogues.find((d) => d.id === 'dlg-medecin')!;
-    const acts = dlg.nodes[0].choices.filter((c) => c.effects?.some((e) => e.type === 'medicalAid'));
+  it('les 3 actes payants (Guérison/hémorragie/Chirurgie) sont proposés entre Médecin (Bourg) et Frère (chapelle)', () => {
+    const chapelle = project.find((s) => s.id === 'arene-int-chapelle')!;
+    const dlgs = [hub.dialogues.find((d) => d.id === 'dlg-medecin')!, chapelle.dialogues.find((d) => d.id === 'dlg-frere')!];
+    const acts = dlgs.flatMap((d) => d.nodes.flatMap((n) => n.choices.filter((c) => c.effects?.some((e) => e.type === 'medicalAid'))));
     expect(acts.length).toBe(3);
     expect(acts.every((c) => (c.cost?.silver ?? 0) >= 4 && (c.cost?.silver ?? 0) <= 6)).toBe(true); // 4-6 pistoles RAW
     const modes = acts.flatMap((c) => c.effects!.filter((e) => e.type === 'medicalAid').map((e: any) => e.act));

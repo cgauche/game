@@ -26,15 +26,109 @@ const doc = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.j
 const project: Scene[] = doc.scenes;
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
-  it('14 scènes, entrée = arene-zone1, hub + 13 zones reliées (rampe longue)', () => {
-    expect(project).toHaveLength(14);
+  it('20 scènes : entrée zone1, Bourg + 2 intérieurs, 13 zones, 3 expéditions, 1 embuscade de route', () => {
+    expect(project).toHaveLength(20);
     expect(project[0].id).toBe('arene-zone1');
     const ids = project.map((s) => s.id);
     expect(ids).toContain('arene-hub');
     expect(ids).toContain('arene-zone13'); // L'Antre du Dragon (finale)
-    // 13 zones distinctes (zone1..zone13)
-    const zones = ids.filter((id) => id.startsWith('arene-zone'));
+    expect(ids).toEqual(expect.arrayContaining(['arene-int-taverne', 'arene-int-chapelle'])); // intérieurs du Bourg
+    expect(ids).toEqual(expect.arrayContaining(['arene-exp-foret', 'arene-exp-marais', 'arene-exp-village'])); // expéditions (#T2)
+    expect(ids).toContain('arene-route-embuscade'); // cible du « Attaqués ! »
+    const zones = ids.filter((id) => /^arene-zone\d+$/.test(id));
     expect(new Set(zones).size).toBe(13);
+  });
+
+  it('CARTE DU MONDE (#T2) : lieux→scènes valides, modes payants, péripéties d’auteur, embuscades', () => {
+    const wm = doc.worldMap!;
+    expect(wm.places.length).toBeGreaterThanOrEqual(4);
+    const ids = new Set(project.map((s) => s.id));
+    for (const p of wm.places) expect(ids.has(p.scene), `lieu ${p.id} → ${p.scene}`).toBe(true);
+    expect(wm.routes.some((r) => r.modes.includes('diligence'))).toBe(true); // transport payant RAW
+    expect(wm.routes.some((r) => (r.perils ?? []).length > 0)).toBe(true); // péripéties d'auteur
+    expect(wm.routes.some((r) => r.ambush)).toBe(true); // « Attaqués ! » → scène de combat
+    expect(wm.routes.some((r) => r.perilDie != null)).toBe(true); // seuil d10 surchargé par route
+  });
+
+  it('le BOURG a des bâtiments dont ≥2 intérieurs (reveal door) + marchands taverniere/armurier/medecin', () => {
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const doors = (hub.buildings ?? []).filter((b) => b.reveal === 'door' && b.interiorScene);
+    expect(doors.length).toBeGreaterThanOrEqual(2);
+    const ids = new Set(project.map((s) => s.id));
+    for (const b of doors) expect(ids.has(b.interiorScene!), `intérieur ${b.interiorScene}`).toBe(true);
+    const archetypes = project.flatMap((s) => s.entities.map((e) => e.merchant?.archetype)).filter(Boolean);
+    expect(archetypes).toEqual(expect.arrayContaining(['armurier', 'medecin', 'taverniere']));
+  });
+
+  it('VITRINE des systèmes : tous les Effets clés sont mis en scène quelque part dans le projet', () => {
+    const used = new Set<string>();
+    const walk = (effs: any[] | undefined) => {
+      for (const e of effs ?? []) {
+        used.add(e.type);
+        if (e.type === 'test') {
+          walk(e.onSuccess);
+          walk(e.onFailure);
+        }
+      }
+    };
+    for (const s of project) {
+      for (const t of s.triggers) walk(t.effects);
+      for (const e of s.encounters) walk(e.onVictory);
+      for (const ent of s.entities) walk(ent.interact?.effects);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);
+    }
+    for (const type of [
+      'test', 'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition', 'transitionBack',
+      'startDialogue', 'journal', 'document', 'setTime', 'openMerchant', 'medicalAid', 'restoreFortune',
+      'rest', 'mealParty', 'inflictNightmares', 'inflictDisease', 'giveSin', 'corruptionExposure',
+      'learnSpell', 'interlude', 'setFlag', 'endDialogue',
+    ]) expect(used.has(type), `effet « ${type} » mis en scène`).toBe(true);
+  });
+
+  it('VITRINE des rencontres : sorciers ennemis (spells), traits optionnels édités, stats aléatoires, allié à pied', () => {
+    const all = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies));
+    expect(all.some((e) => (e.spells ?? []).length > 0)).toBe(true); // lanceur de sorts ennemi (IA incante)
+    expect(all.some((e) => (e.optionals ?? []).length > 0)).toBe(true); // traits facultatifs (LDB 76)
+    expect(all.some((e) => e.randomChars)).toBe(true); // −10 + 2d10 au spawn (LDB 78)
+    expect(all.some((e) => e.side === 'ally' && !e.mount)).toBe(true); // allié de scène à PIED
+  });
+
+  it('VITRINE météo/ambiance : ≥3 météos, intérieurs ET extérieurs, musiques de scène', () => {
+    const weathers = new Set(project.map((s) => s.weather ?? 'clair'));
+    expect(weathers.size).toBeGreaterThanOrEqual(3); // clair + pluie + brouillard
+    const ambiances = new Set(project.map((s) => (s.ambiance === 'interieur' ? 'interieur' : 'exterieur')));
+    expect(ambiances).toEqual(new Set(['interieur', 'exterieur']));
+    expect(project.some((s) => s.music?.ambient)).toBe(true);
+  });
+
+  it('GRANDES cartes tactiques : chaque zone de l’échelle fait ≥ 24×16 (8× l’ancienne surface au max)', () => {
+    for (const s of project.filter((x) => /^arene-zone\d+$/.test(x.id))) {
+      expect(s.dimensions.w * s.dimensions.h, `${s.id} (${s.dimensions.w}×${s.dimensions.h})`).toBeGreaterThanOrEqual(24 * 16);
+    }
+    const finale = project.find((s) => s.id === 'arene-zone13')!;
+    expect(finale.dimensions.w * finale.dimensions.h).toBeGreaterThanOrEqual(40 * 28 - 1); // l'antre voit GRAND
+  });
+
+  it('FOUILLE : des décors interactifs (interact) répartis dans ≥8 scènes, certains piégés (test imbriqué)', () => {
+    const withInteract = project.filter((s) => s.entities.some((e) => e.interact));
+    expect(withInteract.length).toBeGreaterThanOrEqual(8);
+    const trapped = project.flatMap((s) => s.entities.filter((e) => e.interact?.effects.some((ef) => ef.type === 'test')));
+    expect(trapped.length).toBeGreaterThanOrEqual(2); // fouilles à risque (maladie/réveil du dragon…)
+  });
+
+  it('BUTIN magique : au moins un giveTrapping avec qualités magiques NON identifiées (vitrine Évaluation)', () => {
+    let found = false;
+    const walk = (effs: any[] | undefined) => {
+      for (const e of effs ?? []) {
+        if (e.type === 'giveTrapping' && e.identified === false && (e.qualities ?? []).length > 0) found = true;
+        if (e.type === 'test') {
+          walk(e.onSuccess);
+          walk(e.onFailure);
+        }
+      }
+    };
+    for (const s of project) for (const ent of s.entities) walk(ent.interact?.effects);
+    expect(found).toBe(true);
   });
 
   it('validateScene(projet + carte du monde) ne lève AUCUNE erreur (transitions/dialogues/ids/lieux OK)', () => {
@@ -114,7 +208,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const refs = new Set(
       project.flatMap((s) => s.encounters.flatMap((e) => e.enemies.map((en) => en.ref).filter(Boolean))),
     );
-    expect(refs.size).toBeGreaterThanOrEqual(18); // large vitrine (≥18 créatures distinctes)
+    expect(refs.size).toBeGreaterThanOrEqual(30); // large vitrine (≥30 créatures distinctes)
     // Traits canoniques (LDB 85) portés par les créatures référencées.
     const traitsOf = (ref?: string) => (ref ? findCreature(ref)?.traits ?? [] : []);
     const allTraits = [...refs].flatMap((r) => traitsOf(r as string));
@@ -142,13 +236,35 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     }
   });
 
-  it('le hub ouvre la zone suivante via flags (porte gated zoneN_clear)', () => {
+  it('le Maître ouvre la zone suivante via flags (porte gated zoneN_clear) — 13 portes', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const door = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
-    const choices = door.nodes[0].choices;
-    const doors = choices.filter((c) => c.effects?.some((e) => e.type === 'transition' && e.scene.startsWith('arene-zone')));
-    expect(doors.length).toBeGreaterThanOrEqual(3); // zones 2,3,4 ouvertes par progression
+    const choices = door.nodes.flatMap((n) => n.choices);
+    const doors = choices.filter((c) => c.effects?.some((e) => e.type === 'transition' && /^arene-zone\d+$/.test(e.scene)));
+    expect(doors.length).toBe(13);
     expect(doors.every((c) => /clear/.test(c.condition ?? ''))).toBe(true);
+  });
+
+  it('les CONTRATS d’expédition : proposition gated progression, prime gated contrat_*_fait', () => {
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const dlg = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const choices = dlg.nodes.flatMap((n) => n.choices);
+    for (const key of ['foret', 'marais', 'village']) {
+      expect(choices.some((c) => (c.condition ?? '').includes(`!contrat_${key}`)), `proposition ${key}`).toBe(true);
+      expect(choices.some((c) => (c.condition ?? '').includes(`contrat_${key}_fait`)), `prime ${key}`).toBe(true);
+      // et une rencontre d'expédition pose bien le flag _fait
+      const setters = project.flatMap((s) => s.encounters.flatMap((e) => e.onVictory ?? []));
+      expect(setters.some((e) => e.type === 'setFlag' && e.flag === `contrat_${key}_fait`), `flag contrat_${key}_fait`).toBe(true);
+    }
+  });
+
+  it('FINALE de campagne : le titre de champion délivre un document ET un interlude (LDB 22-23)', () => {
+    const hub = project.find((s) => s.id === 'arene-hub')!;
+    const dlg = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
+    const champion = dlg.nodes.flatMap((n) => n.choices).find((c) => (c.condition ?? '').includes('zone13_clear'))!;
+    expect(champion).toBeTruthy();
+    const types = (champion.effects ?? []).map((e) => e.type);
+    expect(types).toEqual(expect.arrayContaining(['document', 'interlude', 'giveXp']));
   });
 
   it('le hub a un Médecin (LDB 75) qui vend des soins ET des prothèses, curatifs garantis', () => {

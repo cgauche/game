@@ -20,5 +20,6 @@ import { scenario as e15 } from './16-interlude';
 import { scenario as e16 } from './16-pieuvre-lanceur';
 import { scenario as e17 } from './16-voyage';
 import { scenario as e18 } from './17-mutations';
+import { scenario as e19 } from './18-arene';
 
-export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18];
+export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19];
