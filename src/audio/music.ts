@@ -21,8 +21,10 @@ export interface MusicStateSlice {
 export type MusicSelection = { def: string } | { ctx: MusicContext } | null;
 
 export function musicSelectionOf(s: MusicStateSlice): MusicSelection {
-  if (s.screen === 'editor') return null; // pas de musique pendant l'outillage
-  if (s.screen !== 'campaign') return { ctx: 'menu' };
+  // Musique UNIQUEMENT en jeu (vue campagne) : c'est le seul écran qui expose les contrôles
+  // audio (☰ → volume/sourdine). Menu, groupe, créateur, galeries… = SILENCE — on n'impose
+  // pas une musique qu'on ne peut pas couper (demande utilisateur 2026-06-11).
+  if (s.screen !== 'campaign') return null;
   const inBattle = s.mode === 'battle' && !!s.battle;
   // La scène a la main (éditeur) : piste imposée, ou silence explicite (null).
   const wanted = inBattle ? s.scene?.music?.combat : s.scene?.music?.ambient;

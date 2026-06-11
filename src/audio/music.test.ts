@@ -19,13 +19,10 @@ describe('musicSelectionOf — résolution de la musique (scène > contexte)', (
   it('exploration en extérieur → contexte exploration', () => {
     expect(musicSelectionOf(at({}))).toEqual({ ctx: 'exploration' });
   });
-  it('écrans hors campagne → contexte menu', () => {
-    for (const screen of ['menu', 'party', 'creator', 'coop', 'test', 'interlude'] as const) {
-      expect(musicSelectionOf(at({ screen, scene: null }))).toEqual({ ctx: 'menu' });
+  it('écrans hors campagne → SILENCE (seul l\'écran de jeu expose les contrôles audio — on n\'impose pas une musique incoupable)', () => {
+    for (const screen of ['menu', 'party', 'creator', 'coop', 'test', 'interlude', 'editor'] as const) {
+      expect(musicSelectionOf(at({ screen, scene: null }))).toBe(null);
     }
-  });
-  it("éditeur → silence (pas de musique pendant l'outillage)", () => {
-    expect(musicSelectionOf(at({ screen: 'editor' }))).toBe(null);
   });
   it("la scène impose sa piste d'ambiance (paramétrée dans l'éditeur)", () => {
     expect(musicSelectionOf(at({ scene: { ambiance: 'exterieur', music: { ambient: 'musique-taverne' } } })))
