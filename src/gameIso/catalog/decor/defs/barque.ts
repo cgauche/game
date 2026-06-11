@@ -1,0 +1,4 @@
+import type { PropViz } from '../../types';
+
+// Barque de pêcheur échouée (rive, ponton) — rames livrées, fouillable. Empreinte 2×1.
+export const prop: PropViz = { id: "barque", foot: { w: 2, h: 1 }, label: "Barque", searchable: true, render: ()=>`<g><ellipse cx="60" cy="146" rx="48" ry="10" fill="#000" opacity="0.2"/><path d="M12 122 Q60 110 108 122 Q98 144 60 146 Q22 144 12 122 Z" fill="#6a4e2e"/><path d="M12 122 Q60 110 108 122 Q60 132 12 122 Z" fill="#7d5d38"/><path d="M20 126 Q60 136 100 126 M26 132 Q60 142 94 132" stroke="#4a3520" stroke-width="2" fill="none" opacity="0.7"/><path d="M36 122 L40 138 M82 122 L78 138" stroke="#4a3520" stroke-width="3"/><path d="M30 116 L86 134" stroke="#8a7050" stroke-width="3" stroke-linecap="round"/><ellipse cx="89" cy="135" rx="6" ry="3" fill="#8a7050"/><path d="M50 118 q6 -2 12 0" stroke="#3a2a18" stroke-width="1.5" fill="none" opacity="0.5"/></g>` };

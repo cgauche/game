@@ -4,5 +4,6 @@ import type { MerchantArchetypeDef } from './types';
 import { merchantArchetype as e0 } from './defs/Armurier';
 import { merchantArchetype as e1 } from './defs/Herboriste';
 import { merchantArchetype as e2 } from './defs/Medecin';
+import { merchantArchetype as e3 } from './defs/Taverniere';
 
-export const MERCHANT_ARCHETYPES: MerchantArchetypeDef[] = [e0, e1, e2];
+export const MERCHANT_ARCHETYPES: MerchantArchetypeDef[] = [e0, e1, e2, e3];

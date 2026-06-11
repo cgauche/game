@@ -1,0 +1,4 @@
+import type { PropViz } from '../../types';
+
+// Brasero de fer sur trépied (crypte, donjon) — flamme chaude animée (classe « warm », cf. anim.css).
+export const prop: PropViz = { id: "brasero", label: "Brasero", render: ()=>`<g><ellipse cx="60" cy="147" rx="22" ry="8" fill="#000" opacity="0.25"/><path d="M48 146 L58 116 M72 146 L62 116 M60 146 L60 118" stroke="#3a3a40" stroke-width="4" stroke-linecap="round"/><path d="M40 104 Q60 96 80 104 L76 120 Q60 126 44 120 Z" fill="#4a4a52"/><ellipse cx="60" cy="104" rx="20" ry="7" fill="#2c2c32"/><path d="M44 112 h32" stroke="#26262c" stroke-width="2" opacity="0.7"/><g class="warm"><path d="M60 104 Q50 86 60 68 Q65 82 71 76 Q76 94 60 104 Z" fill="#ff7a1a"/><path d="M60 102 Q55 90 60 80 Q64 90 60 102 Z" fill="#ffd479"/></g><circle cx="52" cy="102" r="2" fill="#ff9a3a" opacity="0.9"/><circle cx="68" cy="103" r="1.6" fill="#ffba5a" opacity="0.9"/></g>` };

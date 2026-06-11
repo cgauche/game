@@ -1,0 +1,4 @@
+import type { PropViz } from '../../types';
+
+// Nénuphars (à poser SUR l'eau du marais) — décor plat, fleur ouverte.
+export const prop: PropViz = { id: "nenuphars", label: "Nénuphars", render: ()=>`<g><ellipse cx="44" cy="138" rx="18" ry="8" fill="#3d6030"/><path d="M44 138 L58 134" stroke="#2c4624" stroke-width="2"/><ellipse cx="44" cy="138" rx="18" ry="8" fill="none" stroke="#2c4624" stroke-width="1"/><ellipse cx="76" cy="128" rx="15" ry="7" fill="#467038"/><path d="M76 128 L88 124" stroke="#2c4624" stroke-width="2"/><ellipse cx="58" cy="146" rx="13" ry="6" fill="#33502a"/><g transform="translate(72 126)"><path d="M0 0 l-5 -8 l5 3 l0 -9 l3 8 l5 -6 l-2 9 l8 -2 l-7 5 z" fill="#e8d8e8"/><circle cx="1" cy="-2" r="2.2" fill="#d8a93b"/></g><path d="M30 132 q6 2 12 0 M62 142 q7 2 14 0" stroke="#bcd4e8" stroke-width="1.2" fill="none" opacity="0.4"/></g>` };

@@ -1,0 +1,4 @@
+import type { PropViz } from '../../types';
+
+// Gibet de potence (justice du bourg) — corbeau perché, corde au vent.
+export const prop: PropViz = { id: "gibet", label: "Gibet", render: ()=>`<g><ellipse cx="60" cy="147" rx="34" ry="10" fill="#000" opacity="0.22"/><path d="M34 148 L34 26 L88 26 L88 38" stroke="#4a3520" stroke-width="8" stroke-linecap="square" fill="none"/><path d="M34 56 L58 26" stroke="#4a3520" stroke-width="5"/><path d="M30 148 L30 30 L34 26 L38 30 L38 148 Z" fill="#5e462a"/><path d="M88 38 q-1 14 0 26" stroke="#8a7a5a" stroke-width="3" fill="none"/><ellipse cx="88" cy="70" rx="7" ry="9" fill="none" stroke="#8a7a5a" stroke-width="3"/><path d="M20 148 L48 148 M24 142 L44 142" stroke="#4a3520" stroke-width="4"/><path d="M52 22 q4 -7 10 -2 q5 4 1 8 l-6 -2 q-2 4 -7 2 z" fill="#1c1c22"/><circle cx="60" cy="22" r="1.2" fill="#c8b07a"/><path d="M44 110 q6 3 12 0" stroke="#3a2a18" stroke-width="1.5" fill="none" opacity="0.5"/></g>` };
