@@ -176,15 +176,18 @@ src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, m
                               gauche à onglets), Inspector.tsx (volet droit), useSceneHistory (undo/redo),
                               useEditorView (caméra), TriggersEditor, DialogueEditor, EncountersEditor,
                               EffectList (constructeur d'effets partagé)
-src/scenes/                 Documents de scène (tome1-intro, tome1-route) + campaign.ts + tome1-dossiers.json
+src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arène, `arene/arene-projet.json`)
+                            + test-fixture.ts (scène neutre `testScene` + rencontre `enc-mutants` des tests de combat)
 art-ref/                    Illustrations extraites des PDFs + mapping.json (GITIGNORÉ — droits Cubicle 7)
 ```
 
 ## Systèmes clés (état actuel)
 
-- **Schéma de Scène + Effets** (`scene.ts`) : `Effect` = setFlag, journal, document, giveItem,
-  giveMoney, startCombat, **transition** (scène+entry), startDialogue, **test** (compétence +
-  difficulté + `onSuccess`/`onFailure`), endDialogue. Tout est appliqué par `applyEffects` dans le store.
+- **Schéma de Scène + Effets** (`scene.ts`) : `Effect` = setFlag, journal, document, **giveTrapping**
+  (donner un objet — nom RÉEL de la base → objet à stats ; nom inconnu → objet CUSTOM `misc` ;
+  il n'y a PLUS de `giveItem`/inventaire de groupe), giveMoney, giveXp, startCombat, **transition**
+  (scène+entry), startDialogue, **test** (compétence + difficulté + `onSuccess`/`onFailure`),
+  endDialogue. Tout est appliqué par `applyEffects` dans le store.
 - **Moteur de campagne** : transitions de scènes (registre depuis `campaign`), tests de
   compétence interactifs (modal + branches), inventaire/argent/handouts (state party-level).
 - **Inventaire/équipement** : chaque héros a `items: ItemInstance[]` ; `weapons`/`armour`
@@ -210,5 +213,6 @@ Prochain candidat : **sprites de carrières** (réfs prêtes dans `art-ref/ldb/m
   appels, ou utiliser un `ref` côté composant pour la logique de drag.
 - `npm run build:data` doit être lancé après un `git clone` (les `src/data/*.json` sont commités,
   mais les régénérer garantit la cohérence avec `Source/`).
-- L'« inventaire » party-level (`store.inventory`, liste de noms pour handouts/butin) est
-  DISTINCT de l'inventaire à stats par personnage (`Combatant.items`).
+- Il n'y a PLUS d'inventaire de GROUPE (`store.inventory`/`giveItem` supprimés) : tout objet va
+  sur un héros (`Combatant.items`) via `giveTrapping` (réel ou custom). Butin d'équipement
+  attribuable par portrait à l'écran de victoire (`pendingVictory.gear`).
