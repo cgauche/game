@@ -53,53 +53,8 @@
   font-size: 24px;
   color: var(--gold2);
 }
-/* Catégorie repliable */
-.adv-section {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--panel);
-  overflow: hidden;
-}
-.adv-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  cursor: pointer;
-  list-style: none;
-  background: var(--panel2);
-  user-select: none;
-}
-.adv-summary::-webkit-details-marker {
-  display: none;
-}
-.adv-summary-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  letter-spacing: 0.5px;
-  color: var(--gold2);
-}
-.adv-count {
-  font-size: 11px;
-  min-width: 18px;
-  text-align: center;
-  padding: 1px 6px;
-  border-radius: 9px;
-  background: var(--bg2);
-  color: var(--muted);
-}
-.adv-chevron {
-  margin-left: auto;
-  color: var(--muted);
-  transition: transform 0.15s;
-}
-.adv-section[open] .adv-chevron {
-  transform: rotate(180deg);
-}
-.adv-section-body {
-  padding: 10px 12px;
-}
-.adv-section-body .adv-grid {
+/* Catégorie repliable de l'Avancement = primitive `.fold` (cf. components.css). */
+.fold-body .adv-grid {
   margin-bottom: 0;
 }
 .adv-top {

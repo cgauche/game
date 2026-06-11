@@ -1,0 +1,155 @@
+/* ════════════ PRIMITIVES CANONIQUES — le « design system » (Jalon 9) ════════════
+   Tout écran COMPOSE ces classes au lieu de recréer ses propres surfaces/sections/listes.
+   Les couleurs viennent des tokens (base.css `:root`). Conventions : classe de base +
+   modificateurs en classe additionnelle (`.panel.sunken`, `.btn.small`).
+
+   Inventaire :
+     .panel              surface (carte/cadre). .sunken (creux), .gold (liseré or), .flush (sans padding)
+     .stack / .row-flex  empilement vertical / rangée horizontale qui s'enroule
+     .fold               section repliable (<details>) : <summary>.fold-title</summary><div class=fold-body>
+     .field              champ de formulaire (libellé au-dessus du contrôle)
+     .stat-chip          cartouche « label + valeur » (PV, carac, ressource…)
+     .listrow            rangée de liste : nom (flex:1) + méta + action
+     .chip               badge/pastille (alias de .tag) ; .count = pastille numérique
+   Titres de section : réutiliser `.mini-title` (déjà global).                              */
+
+/* ── SURFACE ── */
+.panel {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.panel.sunken {
+  background: var(--bg2);
+}
+.panel.gold {
+  border-top: 3px solid var(--gold);
+}
+.panel.flush {
+  padding: 0;
+}
+
+/* ── EMPILEMENTS ── */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.row-flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── SECTION REPLIABLE ── <details class="fold"><summary><span class="fold-title">…</span></summary><div class="fold-body">…</div></details> */
+.fold {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+  background: var(--panel2);
+  user-select: none;
+}
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+.fold > summary::after {
+  content: '▾';
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.fold[open] > summary::after {
+  transform: rotate(180deg);
+}
+.fold-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+}
+.fold-body {
+  padding: 10px 12px;
+}
+
+/* ── CHAMP de formulaire (libellé AU-DESSUS du contrôle) ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.field > span:first-child {
+  color: var(--muted);
+}
+
+/* ── CARTOUCHE de stat (label + valeur) ── */
+.stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 6px;
+  text-align: center;
+}
+.stat-chip > .sc-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.stat-chip > .sc-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── RANGÉE de liste (nom + méta + action) ── */
+.listrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.listrow > .lr-name {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── CHIP / badge ── (.tag reste un alias historique) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.count {
+  font-size: 11px;
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: var(--bg2);
+  color: var(--muted);
+}

@@ -3,6 +3,7 @@
    base.css (`:root`) : changer la palette = éditer ce seul bloc.
    Ajouter du style → l'écrire dans le module du domaine concerné, pas ici. */
 @import './styles/base.css'; /* charte/tokens, reset, responsive, boutons, menu, party, char-card */
+@import './styles/components.css'; /* PRIMITIVES CANONIQUES (panel/fold/field/stat-chip/listrow…) — composer celles-ci */
 @import './styles/creator.css'; /* cadre Modal partagé + assistant de création + apparence */
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */

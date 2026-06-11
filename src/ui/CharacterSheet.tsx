@@ -591,17 +591,16 @@ function SlotChoiceRow({
   );
 }
 
-/** Catégorie repliable de l'Avancement : titre + compteur, dépliée par défaut. */
+/** Catégorie repliable de l'Avancement : compose la primitive `.fold` (section repliable). */
 function AdvSection({ title, count, badge, children }: { title: string; count?: number; badge?: ReactNode; children: ReactNode }) {
   return (
-    <details className="adv-section" open>
-      <summary className="adv-summary">
-        <span className="adv-summary-title">{title}</span>
-        {count != null && <span className="adv-count">{count}</span>}
+    <details className="fold" open>
+      <summary>
+        <span className="fold-title">{title}</span>
+        {count != null && <span className="count">{count}</span>}
         {badge}
-        <span className="adv-chevron" aria-hidden>▾</span>
       </summary>
-      <div className="adv-section-body">{children}</div>
+      <div className="fold-body">{children}</div>
     </details>
   );
 }
