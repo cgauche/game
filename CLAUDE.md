@@ -186,7 +186,10 @@ src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, m
                               gauche à onglets), Inspector.tsx (volet droit), useSceneHistory (undo/redo),
                               useEditorView (caméra), TriggersEditor, DialogueEditor, EncountersEditor,
                               EffectList (constructeur d'effets partagé)
-src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arène, `arene/arene-projet.json`)
+src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arène, `arene/arene-projet.json`,
+                            projet v2 {scenes, worldMap} — 20 scènes : Bourg+intérieurs, 13 zones, 3 expéditions,
+                            embuscade ; AUTHORING par `scripts/arene/generate.mjs`, cartes ASCII → JSON canonique
+                            qui RESTE la source éditable dans l'éditeur)
                             + test-fixture.ts (scène neutre `testScene` + rencontre `enc-mutants` des tests de combat)
 art-ref/                    Illustrations extraites des PDFs + mapping.json (GITIGNORÉ — droits Cubicle 7)
 ```

@@ -1197,6 +1197,36 @@ créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
   épinglée, couleurs, yeux) exposé comme préréglage dans l'éditeur, TOUT restant surchargeable
   (compatible « contenu = donnée éditeur »).
 
+## ✅ Jalon 8.7 — Arène 2.0 : la campagne VITRINE *(2026-06-11 — demande utilisateur « en mettre plein la vue »)*
+
+L'arène passe de 14 petites scènes (~15×11, 13 effets utilisés, 0 bâtiment, pas de voyage) à
+**20 scènes (24×16 → 40×28)** qui exploitent l'ENSEMBLE des systèmes — tout reste de la donnée
+100 % éditable dans l'éditeur (outil d'authoring `scripts/arene/` : cartes ASCII → JSON canonique).
+
+- **Projet v2 pour la campagne intégrée** : `campaign.ts` lit `{schema:2, scenes, worldMap}` via
+  `parseProject` → la carte du monde du projet alimente le voyage (#T2). `validateScene` vérifie
+  désormais la carte (lieux→scènes, routes→lieux, cibles d'embuscade), affiché dans l'éditeur.
+- **Le Bourg de l'Arène** (hub refondu, extérieur 32×22) : bâtiments taverne/chapelle (intérieurs
+  `door` + `transitionBack`), forge/échoppe (cutaway), Tavernière (rations → Faim/voyage),
+  Frère Anselm (soins, bénédiction `restoreFortune`, tronc pillable → `giveSin`), Médecin
+  (chirurgie), Forgeron (armurier), échelle des 13 portes + contrats chez le Maître.
+- **13 zones refaites en grand** (ids/flags conservés) : 2ᵉ rencontres optionnelles (trésor gardé
+  `surprise:'enemies'`, Ogre au magot), fouilles interactives dont piégées (maladies, réveil du
+  dragon au tas d'or), sorciers ENNEMIS (`spells` : Chamane-Brey, cultiste), Horreurs EDO,
+  `corruptionExposure` à l'idole, `setTime` (crépuscule/nuit), `inflictNightmares`, butin magique
+  `identified:false` (vitrine Évaluation), `learnSpell` + Grimoire, allié de scène à PIED,
+  cavalerie conservée, ≥30 créatures distinctes du bestiaire.
+- **Carte du monde** : 4 lieux, 4 routes (diligence payante, péripéties d'auteur, `perilDie` par
+  route, embuscade « Attaqués ! » → scène dédiée), 3 expéditions de contrat (camp de **Bella la
+  Noire** — PNJ nommée, Tourbière au monstre `Fabriqué`, village pesteux à bâtiments + puits maudit).
+- **Finale** : titre de Champion = `document` + 100 XP + **`interlude{weeks:2}`** (LDB 22-23).
+- **Décors/terrains/marchand nouveaux** (registres) : 15 props (tente 2×2, palissade, gibet,
+  brasero, gargouille, idole du Chaos…), terrains `neige`/`planches`/`fosse`, archétype
+  `taverniere`. **Props multi-cases** : `foot {w,h}` désormais RENDU (centré + mis à l'échelle,
+  jeu ET éditeur), empreinte par défaut au catalogue (`PropViz.foot`, appliquée à la pose).
+- **Tests** : 36 tests arène (vitrine des Effets clés, échelle complète des 13 portes, entrée/
+  sortie d'intérieur par la porte, contrats, carte valide) + scénario 🧪 `18-arene` (recette au Bourg).
+
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
 Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —
