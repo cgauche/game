@@ -16,10 +16,12 @@ const HUMAIN_M: Skeleton = mk({
   tete:       { parent: 'cou',        pivot: { x: 0,  y: -6 },  length: 14, thickness: 14, angle: 0,  z: 7 },
   epauleG:    { parent: 'torse',      pivot: { x: -14, y: -26 }, length: 18, thickness: 7, angle: 8,  z: 4 },
   avantBrasG: { parent: 'epauleG',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: 5,  z: 4 },
-  mainG:      { parent: 'avantBrasG', pivot: { x: 0,  y: 18 },  length: 6,  thickness: 6,  angle: 0,  z: 4 },
+  // Poignet à 14 (pas 18) : l'art du bras peint finit à y≈32 dans le repère épaule — la chaîne
+  // FK (18+14=32) y dépose le poing PILE au bout de la manche (à 18+18=36 il flottait dessous).
+  mainG:      { parent: 'avantBrasG', pivot: { x: 0,  y: 14 },  length: 6,  thickness: 6,  angle: 0,  z: 4 },
   epauleD:    { parent: 'torse',      pivot: { x: 14, y: -26 }, length: 18, thickness: 7,  angle: -8, z: 8 },
   avantBrasD: { parent: 'epauleD',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: -5, z: 8 },
-  mainD:      { parent: 'avantBrasD', pivot: { x: 0,  y: 18 },  length: 6,  thickness: 6,  angle: 0,  z: 8 },
+  mainD:      { parent: 'avantBrasD', pivot: { x: 0,  y: 14 },  length: 6,  thickness: 6,  angle: 0,  z: 8 },
   cuisseG:    { parent: 'bassin',     pivot: { x: -9, y: 4 },   length: 26, thickness: 9,  angle: 4,  z: 3 },
   tibiaG:     { parent: 'cuisseG',    pivot: { x: 0,  y: 26 },  length: 24, thickness: 7,  angle: 2,  z: 3 },
   piedG:      { parent: 'tibiaG',     pivot: { x: 0,  y: 24 },  length: 10, thickness: 6,  angle: 0,  z: 3 },

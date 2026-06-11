@@ -62,13 +62,12 @@ const hasProfileView = (p: PartArt | undefined): boolean => typeof p === 'object
 // de face un bout arrondi, de dos un talon. Botte de cuir neutre (couvre la plupart
 // des tenues). C'est ce qui manquait : les pieds changent enfin selon la direction.
 // Main (poing) directionnelle, repère os `main` (origine = poignet, +y descend).
-// Le POIGNET remonte sous la manche (y −5) : l'art du bras peint (34 u) est plus court que la
-// chaîne FK épaule+avant-bras (36 u) et les angles de repos décalent la main — sans ce pont
-// de chair, le poing « flotte » détaché de la manche.
+// Le raccord à la manche est GÉOMÉTRIQUE (pivot du poignet à 14, cf. skeletons.ts) :
+// le poing chevauche la fin du bras peint, sans pont de chair rapporté.
 const HAND: PartArt = {
-  front: `<rect x="-1.6" y="-5" width="3.2" height="7.4" rx="1.4" fill="@peau"/><ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-1.4 1.6 h2.8 M-1.4 3.2 h2.8" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
-  back: `<rect x="-1.6" y="-5" width="3.2" height="7.4" rx="1.4" fill="@peauO"/><ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
-  profile: `<rect x="-0.9" y="-5" width="3" height="7.4" rx="1.3" fill="@peau"/><ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
+  front: `<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-1.4 1.6 h2.8 M-1.4 3.2 h2.8" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
+  back: `<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
+  profile: `<ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
 };
 const FOOT: PartArt = {
   front: `<path d="M-3.4 -1 Q-4.4 7 0 8 Q4.4 7 3.4 -1 Z" fill="#3a2614" stroke="#1f1408" stroke-width="0.6"/><path d="M-3.6 6.5 Q0 8.6 3.6 6.5 L3.4 8 Q0 9.4 -3.4 8 Z" fill="#241608"/>`,
