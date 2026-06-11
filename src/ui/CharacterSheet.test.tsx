@@ -31,8 +31,8 @@ const hero = (): Combatant =>
 describe('AdvancementPanel (rendu)', () => {
   it('rend le bandeau PX, les Caractéristiques, Compétences, Talents et le bloc Carrière', () => {
     const html = renderToStaticMarkup(<AdvancementPanel hero={hero()} />);
-    // Bandeau PX + octroi
-    expect(html).toContain('PX disponibles');
+    // Bandeau PX collant (total en tête de l'onglet Avancement)
+    expect(html).toContain('Expérience disponibles');
     expect(html).toContain('1000');
     // Caractéristiques : coût in-carrière (CT = 25) ET hors-carrière (CC = 50)
     expect(html).toContain('Capacité de Combat');

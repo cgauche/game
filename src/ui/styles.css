@@ -3422,7 +3422,81 @@ textarea:focus {
 .adv-panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+}
+/* Total PX collant en tête de l'onglet Avancement (toujours visible en scrollant). */
+.adv-px-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+}
+.adv-px-bar span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.adv-px-bar b {
+  font-size: 24px;
+  color: var(--gold2);
+}
+/* Catégorie repliable */
+.adv-section {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.adv-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+  background: var(--panel2);
+  user-select: none;
+}
+.adv-summary::-webkit-details-marker {
+  display: none;
+}
+.adv-summary-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+}
+.adv-count {
+  font-size: 11px;
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: var(--bg2);
+  color: var(--muted);
+}
+.adv-chevron {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.adv-section[open] .adv-chevron {
+  transform: rotate(180deg);
+}
+.adv-section-body {
+  padding: 10px 12px;
+}
+.adv-section-body .adv-grid {
+  margin-bottom: 0;
 }
 .adv-top {
   display: flex;

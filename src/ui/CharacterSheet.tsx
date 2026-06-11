@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive } from '../engine/items';
@@ -589,6 +589,21 @@ function SlotChoiceRow({
   );
 }
 
+/** Catégorie repliable de l'Avancement : titre + compteur, dépliée par défaut. */
+function AdvSection({ title, count, badge, children }: { title: string; count?: number; badge?: ReactNode; children: ReactNode }) {
+  return (
+    <details className="adv-section" open>
+      <summary className="adv-summary">
+        <span className="adv-summary-title">{title}</span>
+        {count != null && <span className="adv-count">{count}</span>}
+        {badge}
+        <span className="adv-chevron" aria-hidden>▾</span>
+      </summary>
+      <div className="adv-section-body">{children}</div>
+    </details>
+  );
+}
+
 export function AdvancementPanel({ hero }: { hero: Combatant }) {
   const buyCharAdvance = useGame((s) => s.buyCharAdvance);
   const buySkillAdvance = useGame((s) => s.buySkillAdvance);
@@ -605,15 +620,14 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
 
   return (
     <div className="adv-panel">
-      <div className="adv-top">
-        <div className="adv-xp">
-          PX disponibles <b>{v.xp}</b>
-        </div>
-        {/* Pas de bouton « Octroyer +PX » : les PX viennent du JEU (Effet `giveXp` — victoires, quêtes),
-            jamais d'un don libre dans la fiche (c'était un outil de debug). */}
+      {/* Total PX en tête, collant — toujours visible en scrollant les catégories.
+          Pas de bouton « Octroyer +PX » : les PX viennent du JEU (Effet `giveXp`). */}
+      <div className="adv-px-bar">
+        <span>Points d'Expérience disponibles</span>
+        <b>{v.xp}</b>
       </div>
 
-      <div className="mini-title">Caractéristiques</div>
+      <AdvSection title="Caractéristiques" count={v.chars.length}>
       <div className="adv-grid">
         {v.chars.map((c) => (
           <div className="adv-row" key={c.key}>
@@ -627,8 +641,9 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           </div>
         ))}
       </div>
+      </AdvSection>
 
-      <div className="mini-title">Compétences</div>
+      <AdvSection title="Compétences" count={v.skills.length + v.skillSlotsOpen.length}>
       <div className="adv-grid">
         {v.skills.map((s) => (
           <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={skillLabel(s.name, s.spec)}>
@@ -665,8 +680,9 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           />
         ))}
       </div>
+      </AdvSection>
 
-      <div className="mini-title">Talents du niveau {v.careerLevel}</div>
+      <AdvSection title={`Talents du niveau ${v.careerLevel}`} count={v.talents.length}>
       <div className="adv-grid">
         {v.talents.length === 0 && <span className="muted">Aucun Talent de carrière disponible.</span>}
         {v.talents.map((t) =>
@@ -696,6 +712,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           ),
         )}
       </div>
+      </AdvSection>
 
       {(() => {
         // Sorts apprenables (LDB 46 « Mémoriser des Sorts » + Talents LDB 10) : visibles dès
@@ -704,8 +721,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         const learnable = learnableSpells(hero);
         if (!learnable.length) return null;
         return (
-          <>
-            <div className="mini-title">Sorts — mémorisation ({learnable.length})</div>
+          <AdvSection title="Sorts — mémorisation" count={learnable.length}>
             <div className="adv-grid">
               {learnable.map(({ spell, cost }) => {
                 const support = spellSupport(spellSpecFor(spell), isMagicMissile(spell));
@@ -724,11 +740,11 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                 );
               })}
             </div>
-          </>
+          </AdvSection>
         );
       })()}
 
-      <div className="mini-title">Carrière</div>
+      <AdvSection title="Carrière">
       <div className="adv-career">
         <div className="adv-career-cur">
           <b>{v.levelLabel}</b> <span className="muted">niv. {v.careerLevel} · {v.status}</span>
@@ -769,6 +785,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           </button>
         </div>
       </div>
+      </AdvSection>
     </div>
   );
 }
