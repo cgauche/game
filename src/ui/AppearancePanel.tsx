@@ -6,9 +6,10 @@ import { ColorPalettePickers } from './ColorPalettePickers';
 import { HAIRSTYLES } from '../gameIso/rig/parts/generated/hairstyles';
 
 /**
- * Panneau d'apparence réutilisable (créateur de personnage). Aperçu live du rig +
- * réglages cosmétiques (sexe, morphologie, variante). Le corps/arme/armure suit la
- * carrière (et plus tard l'équipement porté) ; sexe/morpho sont libres.
+ * Panneau d'apparence réutilisable (créateur de personnage). GRAND aperçu live du rig (c'est la
+ * récompense de l'écran) + réglages cosmétiques (sexe, morphologie, coiffure, variante, couleurs).
+ * Le corps/arme/armure suit la carrière ; sexe/morpho sont libres. Responsive : l'aperçu passe
+ * au-dessus des réglages sous 700 px (styles.css `.appear-panel`).
  */
 export function AppearancePanel({
   value,
@@ -23,48 +24,53 @@ export function AppearancePanel({
 }) {
   const set = (patch: Partial<Appearance>) => onChange({ ...value, ...patch });
   return (
-    <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-      <svg viewBox="0 0 120 150" width={108} height={135} style={{ flex: '0 0 auto', borderRadius: 6 }}>
+    <div className="appear-panel">
+      <svg viewBox="0 0 120 150" className="appear-figure">
         <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
         <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />
         <RigSprite appearance={value} equip={equip} career={career} />
       </svg>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-        <label>
-          Sexe
-          <select value={value.sex} onChange={(e) => set({ sex: e.target.value as 'M' | 'F' })}>
-            <option value="M">Masculin</option>
-            <option value="F">Féminin</option>
-          </select>
-        </label>
-        <label>
-          Morphologie <em style={{ opacity: 0.7 }}>(frêle ↔ corpulent)</em>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={value.build}
-            onChange={(e) => set({ build: Number(e.target.value) })}
-          />
-        </label>
-        <label>
-          Coiffure
-          <select
-            value={value.parts?.cheveux ?? 0}
-            onChange={(e) => set({ parts: { ...value.parts, cheveux: Number(e.target.value) } })}
-          >
-            <option value={0}>Défaut (espèce)</option>
-            {HAIRSTYLES[value.sex].map((h, i) => (
-              <option key={i} value={i + 1}>
-                {h.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" className="btn small" onClick={() => set({ seed: (value.seed ?? 0) + 1 })}>
-          🎲 Variante (visage)
-        </button>
+      <div className="appear-controls">
+        <div className="appear-fields">
+          <label>
+            Sexe
+            <select value={value.sex} onChange={(e) => set({ sex: e.target.value as 'M' | 'F' })}>
+              <option value="M">Masculin</option>
+              <option value="F">Féminin</option>
+            </select>
+          </label>
+          <label>
+            Coiffure
+            <select
+              value={value.parts?.cheveux ?? 0}
+              onChange={(e) => set({ parts: { ...value.parts, cheveux: Number(e.target.value) } })}
+            >
+              <option value={0}>Défaut (espèce)</option>
+              {HAIRSTYLES[value.sex].map((h, i) => (
+                <option key={i} value={i + 1}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Morphologie <em className="hint">(frêle ↔ corpulent)</em>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={value.build}
+              onChange={(e) => set({ build: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            Visage
+            <button type="button" className="btn small" onClick={() => set({ seed: (value.seed ?? 0) + 1 })}>
+              🎲 Variante
+            </button>
+          </label>
+        </div>
         <ColorPalettePickers colors={value.colors} onColors={(patch) => set({ colors: { ...(value.colors ?? {}), ...patch } })} />
       </div>
     </div>

@@ -40,19 +40,29 @@ export function ColorPalettePickers({
   slots?: [label: string, slot: keyof Palette][];
 }) {
   return (
-    <div className="ed-field">
-      <span>Couleurs (palette)</span>
-      {slots.map(([lbl, slot]) => (
-        <label key={slot} className="ed-subfield" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ flex: 1 }}>{lbl}</span>
-          <input type="color" value={colors?.[slot] ?? DEFAULT_PALETTE[slot]} onChange={(e) => onColors({ [slot]: e.target.value })} />
-          {colors?.[slot] && (
-            <button type="button" className="btn small" title="Réinitialiser" onClick={() => onColors({ [slot]: undefined })}>
-              ✕
-            </button>
-          )}
-        </label>
-      ))}
+    <div className="color-pickers">
+      <span className="color-pickers-title">Couleurs</span>
+      <div className="color-grid">
+        {slots.map(([lbl, slot]) => (
+          <label key={slot} className={`color-chip${colors?.[slot] ? ' custom' : ''}`} title={lbl}>
+            <input type="color" value={colors?.[slot] ?? DEFAULT_PALETTE[slot]} onChange={(e) => onColors({ [slot]: e.target.value })} />
+            <span className="color-chip-label">{lbl}</span>
+            {colors?.[slot] && (
+              <button
+                type="button"
+                className="color-chip-reset"
+                title="Réinitialiser"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onColors({ [slot]: undefined });
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </label>
+        ))}
+      </div>
     </div>
   );
 }

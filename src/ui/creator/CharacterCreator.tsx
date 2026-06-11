@@ -267,7 +267,7 @@ export function CharacterCreator() {
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
           ← Précédent
         </button>
-        <span className="hint" style={{ flex: 1, color: err ? 'var(--gold)' : undefined }}>
+        <span className="hint wizard-hint" style={{ color: err ? 'var(--gold)' : undefined }}>
           {err ?? ''}
         </span>
         {step < STEPS.length - 1 ? (

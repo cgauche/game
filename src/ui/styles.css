@@ -634,6 +634,128 @@ body {
   text-transform: none;
   letter-spacing: normal;
 }
+/* Champs de FORMULAIRE des sections du créateur : libellé AU-DESSUS du contrôle (colonne), comme
+   .panel label — sans toucher les labels-lignes (radios/checkboxes : le contrôle est avant le texte). */
+.zone-section label:has(> input:not([type='checkbox']):not([type='radio']), > select, > textarea, > .input-dice, > .btn) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Panneau d'apparence (créateur, étape Détails) : GRAND aperçu + réglages + couleurs ── */
+.appear-panel {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.appear-figure {
+  flex: 0 0 auto;
+  width: 184px;
+  height: 230px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.appear-controls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.appear-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 4px 14px;
+}
+.appear-fields .btn {
+  align-self: flex-start;
+}
+/* Couleurs : grille de pastilles compactes (fini les 7 longues rangées). */
+.color-pickers-title {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 8px;
+}
+.color-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+}
+.color-chip.custom {
+  border-color: var(--accent2);
+}
+.color-chip input[type='color'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.color-chip input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-chip input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+.color-chip-label {
+  font-size: 12px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.color-chip-reset {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+@media (max-width: 700px) {
+  .appear-panel {
+    flex-direction: column;
+    align-items: center;
+  }
+  .appear-figure {
+    width: 200px;
+    height: 250px;
+  }
+  .appear-controls {
+    width: 100%;
+  }
+}
 .ok-text {
   color: var(--ok);
 }
@@ -1032,6 +1154,37 @@ body {
   .creator-rail {
     padding: 12px;
   }
+  /* Fiche-bandeau VRAIMENT compacte : le travail de l'étape doit tenir dans le premier écran.
+     Les caractéristiques détaillées vivent dans l'étape 3 et au Récapitulatif — pas en double ici. */
+  .creator-shell > .creator-summary .char-stats {
+    display: none;
+  }
+  .creator-figure {
+    width: 52px;
+    max-height: 72px;
+  }
+  .creator-summary {
+    padding: 8px 12px;
+  }
+  /* Footer du créateur : boutons sur UNE ligne (Précédent ⟷ Suivant), le message de validation
+     passe en pleine largeur au-dessus — fini le wrap en escalier qui coupait « Suivant ». */
+  .screen.creator > footer.bar {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .screen.creator > footer.bar .wizard-hint {
+    order: -1;
+    flex: 1 1 100%;
+    text-align: center;
+    margin: 0;
+  }
+  .screen.creator > footer.bar .btn-primary {
+    margin-left: auto;
+  }
+}
+/* Le hint du footer prend l'espace entre les boutons (desktop). */
+.wizard-hint {
+  flex: 1;
 }
 .panel {
   background: var(--panel);
@@ -1108,6 +1261,7 @@ textarea:focus {
   gap: 6px;
 }
 .skill-adv {
+  display: flex;
   flex-direction: row !important;
   align-items: center;
   margin: 0 !important;
