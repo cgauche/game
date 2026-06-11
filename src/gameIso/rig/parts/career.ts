@@ -2,7 +2,7 @@ import careers from '../../../data/careers.json';
 import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
 import { CAREER_PALETTES } from './generated/careerPalettes';
 import TENUE_VIEWS_JSON from './generated/tenueViews.json';
-import { TENUES, TENUE_NUE, CLASS_PALETTES, type TenueSet } from './tenues';
+import { TENUES, TENUE_NUE, CLASS_PALETTES, CAREER_TENUE_DEF_PALETTES, type TenueSet } from './tenues';
 import type { StoredPalette } from '../palette';
 
 // Vues dos/profil des tenues (E·7, générées) — composées au front existant (torse/tête).
@@ -50,7 +50,7 @@ export function tenueCareerNames(): string[] {
  * défaut sans perte ET recoloriage cohérent, que la carrière ait sa tenue dédiée ou non.
  */
 export function tenuePaletteFor(career: string | undefined): StoredPalette {
-  return CAREER_PALETTES[career ?? ''] ?? CLASS_PALETTES[careerClass(career ?? '')] ?? {};
+  return CAREER_PALETTES[career ?? ''] ?? CAREER_TENUE_DEF_PALETTES[career ?? ''] ?? CLASS_PALETTES[careerClass(career ?? '')] ?? {};
 }
 
 /** Tenue résolue pour une carrière : art PAR CARRIÈRE si dispo, sinon archétype de CLASSE. */

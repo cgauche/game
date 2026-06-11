@@ -22,5 +22,15 @@ export const TENUE_NUE: TenueSet = TENUES.Nu;
  * tenues de carrière. Clé = `name` du def (classe WFRP). Consommée via `tenuePaletteFor`.
  */
 export const CLASS_PALETTES: Record<string, StoredPalette> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => d.palette).map((d) => [d.name, d.palette!]),
+  TENUE_DEFS.filter((d) => d.palette && !d.career).map((d) => [d.name, d.palette!]),
+);
+
+// --- Tenues de CARRIÈRE déposées en defs/ (flag `career: true`) ------------------------------
+/** Sets des tenues de carrière du registre — injectés dans GENERATED_CAREER_TENUES (prioritaires). */
+export const CAREER_TENUE_DEFS: Record<string, TenueSet> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => d.career).map((d) => [d.name, d.set]),
+);
+/** Palettes des tenues de carrière du registre — consultées par tenuePaletteFor. */
+export const CAREER_TENUE_DEF_PALETTES: Record<string, StoredPalette> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => d.career && d.palette).map((d) => [d.name, d.palette!]),
 );
