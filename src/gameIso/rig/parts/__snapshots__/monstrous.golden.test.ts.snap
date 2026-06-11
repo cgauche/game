@@ -591,7 +591,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-2 13 q-6 1 -8.5 -1 M2 13 q6 1 8.5 -1 M-2 14.2 q-6 2 -9 1 M2 14.2 q6 2 9 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
   <ellipse cx="0" cy="14.5" rx="2" ry="1.5" fill="#d68a96"/>
   <path d="M-1.3 15.6 l-0.2 2.6 M1.3 15.6 l0.2 2.6" stroke="#efe6cf" stroke-width="1.3" stroke-linecap="round"/>
-  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
         "profile": "<g>
   <circle cx="-2" cy="-2" r="4" fill="@peau" stroke="@peauO" stroke-width="0.5"/><circle cx="-2" cy="-2" r="2" fill="#caa597"/>
@@ -653,17 +653,22 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
 </g>",
         "front": "<g>
   <path d="M-8 7 Q-9 -6 0 -8 Q9 -6 8 7 Q8 13 4 15 Q0 17 -4 15 Q-8 13 -8 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="-4" cy="-1" r="1.4" fill="#160a04"/>
-  <circle cx="4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="4" cy="-1" r="1.4" fill="#160a04"/>
-  <path d="M-7 9 Q0 7 7 9 Q6 15 0 16 Q-6 15 -7 9 Z" fill="#1a0e06"/>
-  <path d="M-5 9.4 l-0.6 3.4 l1.4 0 z M-1.8 10 l0 4 M1.8 10 l0 4 M5 9.4 l0.6 3.4 l-1.4 0 z" fill="#e6ddc4"/>
-  <path d="M-4 13.6 l0 2.2 M4 13.6 l0 2.2" stroke="#e6ddc4" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="-2.4" cy="-5.8" r="0.9" fill="@peauH"/><circle cx="3.2" cy="-6.6" r="0.7" fill="@peauH"/><circle cx="6" cy="-2.6" r="0.8" fill="@peauH"/>
+  <path d="M-6.2 -3.6 q2.2 -1.8 4.6 -0.8 M1.6 -4.4 q2.4 -1 4.6 0.8" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="-3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <ellipse cx="3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <path d="M-7.2 8 Q0 5.4 7.2 8 Q6.4 14.6 0 15.6 Q-6.4 14.6 -7.2 8 Z" fill="#1a0e06"/>
+  <path d="M-6.3 8.3 l0.4 2.1 l1.2 -1.7 z M-4.4 7.7 l0.4 2.2 l1.2 -1.8 z M-2.3 7.3 l0.4 2.2 l1.2 -1.8 z M-0.2 7.2 l0.4 2.2 l1.2 -1.7 z M1.9 7.4 l0.4 2.1 l1.2 -1.7 z M3.9 7.8 l0.4 2 l1.1 -1.6 z M5.7 8.4 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M-3.4 15 l0.5 -2 l1 1.6 z M0.4 15.4 l0.5 -2 l1 1.6 z M3.8 14.6 l0.5 -1.9 l0.9 1.5 z" fill="#e6ddc4"/>
 </g>",
         "profile": "<g>
   <path d="M-7 7 Q-8 -6 1 -8 Q9 -6 9 4 L11 7 Q11 13 6 15 Q2 17 -2 15 Q-7 13 -7 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="2" cy="-1" r="3.2" fill="#f2c84a"/><circle cx="2" cy="-1" r="1.3" fill="#160a04"/>
-  <path d="M1 9 Q6 7 10 9 Q9 15 4 15 Q0 14 1 9 Z" fill="#1a0e06"/>
-  <path d="M3 9.4 l0 3.6 M6 9 l0 4 M8.6 9.4 l0.4 3.2" stroke="#e6ddc4" stroke-width="0.8"/>
+  <circle cx="-2.6" cy="-5.4" r="0.8" fill="@peauH"/><circle cx="2.6" cy="-6.2" r="0.7" fill="@peauH"/>
+  <path d="M0.4 -4.2 q2.4 -1.2 4.6 0.4" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="-1.6" rx="1.4" ry="1.5" fill="#e8d44a"/><circle cx="2.8" cy="-1.4" r="0.75" fill="#160a04"/>
+  <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
+  <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
 </g>",
       },
     },
@@ -1154,7 +1159,7 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
   <path d="M-2 13 q-6 1 -8.5 -1 M2 13 q6 1 8.5 -1 M-2 14.2 q-6 2 -9 1 M2 14.2 q6 2 9 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
   <ellipse cx="0" cy="14.5" rx="2" ry="1.5" fill="#d68a96"/>
   <path d="M-1.3 15.6 l-0.2 2.6 M1.3 15.6 l0.2 2.6" stroke="#efe6cf" stroke-width="1.3" stroke-linecap="round"/>
-  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
         "profile": "<g>
   <circle cx="-2" cy="-2" r="4" fill="@peau" stroke="@peauO" stroke-width="0.5"/><circle cx="-2" cy="-2" r="2" fill="#caa597"/>
@@ -1216,17 +1221,22 @@ exports[`monsterInjection — golden master > cornes/queue × toutes les têtes 
 </g>",
         "front": "<g>
   <path d="M-8 7 Q-9 -6 0 -8 Q9 -6 8 7 Q8 13 4 15 Q0 17 -4 15 Q-8 13 -8 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="-4" cy="-1" r="1.4" fill="#160a04"/>
-  <circle cx="4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="4" cy="-1" r="1.4" fill="#160a04"/>
-  <path d="M-7 9 Q0 7 7 9 Q6 15 0 16 Q-6 15 -7 9 Z" fill="#1a0e06"/>
-  <path d="M-5 9.4 l-0.6 3.4 l1.4 0 z M-1.8 10 l0 4 M1.8 10 l0 4 M5 9.4 l0.6 3.4 l-1.4 0 z" fill="#e6ddc4"/>
-  <path d="M-4 13.6 l0 2.2 M4 13.6 l0 2.2" stroke="#e6ddc4" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="-2.4" cy="-5.8" r="0.9" fill="@peauH"/><circle cx="3.2" cy="-6.6" r="0.7" fill="@peauH"/><circle cx="6" cy="-2.6" r="0.8" fill="@peauH"/>
+  <path d="M-6.2 -3.6 q2.2 -1.8 4.6 -0.8 M1.6 -4.4 q2.4 -1 4.6 0.8" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="-3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <ellipse cx="3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <path d="M-7.2 8 Q0 5.4 7.2 8 Q6.4 14.6 0 15.6 Q-6.4 14.6 -7.2 8 Z" fill="#1a0e06"/>
+  <path d="M-6.3 8.3 l0.4 2.1 l1.2 -1.7 z M-4.4 7.7 l0.4 2.2 l1.2 -1.8 z M-2.3 7.3 l0.4 2.2 l1.2 -1.8 z M-0.2 7.2 l0.4 2.2 l1.2 -1.7 z M1.9 7.4 l0.4 2.1 l1.2 -1.7 z M3.9 7.8 l0.4 2 l1.1 -1.6 z M5.7 8.4 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M-3.4 15 l0.5 -2 l1 1.6 z M0.4 15.4 l0.5 -2 l1 1.6 z M3.8 14.6 l0.5 -1.9 l0.9 1.5 z" fill="#e6ddc4"/>
 </g>",
         "profile": "<g>
   <path d="M-7 7 Q-8 -6 1 -8 Q9 -6 9 4 L11 7 Q11 13 6 15 Q2 17 -2 15 Q-7 13 -7 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="2" cy="-1" r="3.2" fill="#f2c84a"/><circle cx="2" cy="-1" r="1.3" fill="#160a04"/>
-  <path d="M1 9 Q6 7 10 9 Q9 15 4 15 Q0 14 1 9 Z" fill="#1a0e06"/>
-  <path d="M3 9.4 l0 3.6 M6 9 l0 4 M8.6 9.4 l0.4 3.2" stroke="#e6ddc4" stroke-width="0.8"/>
+  <circle cx="-2.6" cy="-5.4" r="0.8" fill="@peauH"/><circle cx="2.6" cy="-6.2" r="0.7" fill="@peauH"/>
+  <path d="M0.4 -4.2 q2.4 -1.2 4.6 0.4" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="-1.6" rx="1.4" ry="1.5" fill="#e8d44a"/><circle cx="2.8" cy="-1.4" r="0.75" fill="#160a04"/>
+  <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
+  <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
 </g>",
       },
     },
@@ -2624,7 +2634,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-2 13 q-6 1 -8.5 -1 M2 13 q6 1 8.5 -1 M-2 14.2 q-6 2 -9 1 M2 14.2 q6 2 9 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
   <ellipse cx="0" cy="14.5" rx="2" ry="1.5" fill="#d68a96"/>
   <path d="M-1.3 15.6 l-0.2 2.6 M1.3 15.6 l0.2 2.6" stroke="#efe6cf" stroke-width="1.3" stroke-linecap="round"/>
-  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
         "profile": "<g>
   <circle cx="-2" cy="-2" r="4" fill="@peau" stroke="@peauO" stroke-width="0.5"/><circle cx="-2" cy="-2" r="2" fill="#caa597"/>
@@ -2653,7 +2663,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-2 13 q-6 1 -8.5 -1 M2 13 q6 1 8.5 -1 M-2 14.2 q-6 2 -9 1 M2 14.2 q6 2 9 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
   <ellipse cx="0" cy="14.5" rx="2" ry="1.5" fill="#d68a96"/>
   <path d="M-1.3 15.6 l-0.2 2.6 M1.3 15.6 l0.2 2.6" stroke="#efe6cf" stroke-width="1.3" stroke-linecap="round"/>
-  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
         "profile": "<g>
   <circle cx="-2" cy="-2" r="4" fill="@peau" stroke="@peauO" stroke-width="0.5"/><circle cx="-2" cy="-2" r="2" fill="#caa597"/>
@@ -2682,7 +2692,7 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
   <path d="M-2 13 q-6 1 -8.5 -1 M2 13 q6 1 8.5 -1 M-2 14.2 q-6 2 -9 1 M2 14.2 q6 2 9 1" stroke="#cfc8b8" stroke-width="0.4" opacity="0.5"/>
   <ellipse cx="0" cy="14.5" rx="2" ry="1.5" fill="#d68a96"/>
   <path d="M-1.3 15.6 l-0.2 2.6 M1.3 15.6 l0.2 2.6" stroke="#efe6cf" stroke-width="1.3" stroke-linecap="round"/>
-  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>
+  <ellipse cx="-3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="-3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="-2.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/><ellipse cx="3.2" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="3.2" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="3.7" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>
 </g>",
         "profile": "<g>
   <circle cx="-2" cy="-2" r="4" fill="@peau" stroke="@peauO" stroke-width="0.5"/><circle cx="-2" cy="-2" r="2" fill="#caa597"/>
@@ -2786,17 +2796,22 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
 </g>",
         "front": "<g>
   <path d="M-8 7 Q-9 -6 0 -8 Q9 -6 8 7 Q8 13 4 15 Q0 17 -4 15 Q-8 13 -8 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="-4" cy="-1" r="1.4" fill="#160a04"/>
-  <circle cx="4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="4" cy="-1" r="1.4" fill="#160a04"/>
-  <path d="M-7 9 Q0 7 7 9 Q6 15 0 16 Q-6 15 -7 9 Z" fill="#1a0e06"/>
-  <path d="M-5 9.4 l-0.6 3.4 l1.4 0 z M-1.8 10 l0 4 M1.8 10 l0 4 M5 9.4 l0.6 3.4 l-1.4 0 z" fill="#e6ddc4"/>
-  <path d="M-4 13.6 l0 2.2 M4 13.6 l0 2.2" stroke="#e6ddc4" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="-2.4" cy="-5.8" r="0.9" fill="@peauH"/><circle cx="3.2" cy="-6.6" r="0.7" fill="@peauH"/><circle cx="6" cy="-2.6" r="0.8" fill="@peauH"/>
+  <path d="M-6.2 -3.6 q2.2 -1.8 4.6 -0.8 M1.6 -4.4 q2.4 -1 4.6 0.8" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="-3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <ellipse cx="3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <path d="M-7.2 8 Q0 5.4 7.2 8 Q6.4 14.6 0 15.6 Q-6.4 14.6 -7.2 8 Z" fill="#1a0e06"/>
+  <path d="M-6.3 8.3 l0.4 2.1 l1.2 -1.7 z M-4.4 7.7 l0.4 2.2 l1.2 -1.8 z M-2.3 7.3 l0.4 2.2 l1.2 -1.8 z M-0.2 7.2 l0.4 2.2 l1.2 -1.7 z M1.9 7.4 l0.4 2.1 l1.2 -1.7 z M3.9 7.8 l0.4 2 l1.1 -1.6 z M5.7 8.4 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M-3.4 15 l0.5 -2 l1 1.6 z M0.4 15.4 l0.5 -2 l1 1.6 z M3.8 14.6 l0.5 -1.9 l0.9 1.5 z" fill="#e6ddc4"/>
 </g>",
         "profile": "<g>
   <path d="M-7 7 Q-8 -6 1 -8 Q9 -6 9 4 L11 7 Q11 13 6 15 Q2 17 -2 15 Q-7 13 -7 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="2" cy="-1" r="3.2" fill="#f2c84a"/><circle cx="2" cy="-1" r="1.3" fill="#160a04"/>
-  <path d="M1 9 Q6 7 10 9 Q9 15 4 15 Q0 14 1 9 Z" fill="#1a0e06"/>
-  <path d="M3 9.4 l0 3.6 M6 9 l0 4 M8.6 9.4 l0.4 3.2" stroke="#e6ddc4" stroke-width="0.8"/>
+  <circle cx="-2.6" cy="-5.4" r="0.8" fill="@peauH"/><circle cx="2.6" cy="-6.2" r="0.7" fill="@peauH"/>
+  <path d="M0.4 -4.2 q2.4 -1.2 4.6 0.4" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="-1.6" rx="1.4" ry="1.5" fill="#e8d44a"/><circle cx="2.8" cy="-1.4" r="0.75" fill="#160a04"/>
+  <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
+  <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
 </g>",
       },
     },
@@ -2811,17 +2826,22 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
 </g>",
         "front": "<g>
   <path d="M-8 7 Q-9 -6 0 -8 Q9 -6 8 7 Q8 13 4 15 Q0 17 -4 15 Q-8 13 -8 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="-4" cy="-1" r="1.4" fill="#160a04"/>
-  <circle cx="4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="4" cy="-1" r="1.4" fill="#160a04"/>
-  <path d="M-7 9 Q0 7 7 9 Q6 15 0 16 Q-6 15 -7 9 Z" fill="#1a0e06"/>
-  <path d="M-5 9.4 l-0.6 3.4 l1.4 0 z M-1.8 10 l0 4 M1.8 10 l0 4 M5 9.4 l0.6 3.4 l-1.4 0 z" fill="#e6ddc4"/>
-  <path d="M-4 13.6 l0 2.2 M4 13.6 l0 2.2" stroke="#e6ddc4" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="-2.4" cy="-5.8" r="0.9" fill="@peauH"/><circle cx="3.2" cy="-6.6" r="0.7" fill="@peauH"/><circle cx="6" cy="-2.6" r="0.8" fill="@peauH"/>
+  <path d="M-6.2 -3.6 q2.2 -1.8 4.6 -0.8 M1.6 -4.4 q2.4 -1 4.6 0.8" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="-3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <ellipse cx="3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <path d="M-7.2 8 Q0 5.4 7.2 8 Q6.4 14.6 0 15.6 Q-6.4 14.6 -7.2 8 Z" fill="#1a0e06"/>
+  <path d="M-6.3 8.3 l0.4 2.1 l1.2 -1.7 z M-4.4 7.7 l0.4 2.2 l1.2 -1.8 z M-2.3 7.3 l0.4 2.2 l1.2 -1.8 z M-0.2 7.2 l0.4 2.2 l1.2 -1.7 z M1.9 7.4 l0.4 2.1 l1.2 -1.7 z M3.9 7.8 l0.4 2 l1.1 -1.6 z M5.7 8.4 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M-3.4 15 l0.5 -2 l1 1.6 z M0.4 15.4 l0.5 -2 l1 1.6 z M3.8 14.6 l0.5 -1.9 l0.9 1.5 z" fill="#e6ddc4"/>
 </g>",
         "profile": "<g>
   <path d="M-7 7 Q-8 -6 1 -8 Q9 -6 9 4 L11 7 Q11 13 6 15 Q2 17 -2 15 Q-7 13 -7 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="2" cy="-1" r="3.2" fill="#f2c84a"/><circle cx="2" cy="-1" r="1.3" fill="#160a04"/>
-  <path d="M1 9 Q6 7 10 9 Q9 15 4 15 Q0 14 1 9 Z" fill="#1a0e06"/>
-  <path d="M3 9.4 l0 3.6 M6 9 l0 4 M8.6 9.4 l0.4 3.2" stroke="#e6ddc4" stroke-width="0.8"/>
+  <circle cx="-2.6" cy="-5.4" r="0.8" fill="@peauH"/><circle cx="2.6" cy="-6.2" r="0.7" fill="@peauH"/>
+  <path d="M0.4 -4.2 q2.4 -1.2 4.6 0.4" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="-1.6" rx="1.4" ry="1.5" fill="#e8d44a"/><circle cx="2.8" cy="-1.4" r="0.75" fill="#160a04"/>
+  <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
+  <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
 </g>",
       },
     },
@@ -2836,17 +2856,22 @@ exports[`monsterInjection — golden master > toutes les têtes × 3 vues 1`] = 
 </g>",
         "front": "<g>
   <path d="M-8 7 Q-9 -6 0 -8 Q9 -6 8 7 Q8 13 4 15 Q0 17 -4 15 Q-8 13 -8 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="-4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="-4" cy="-1" r="1.4" fill="#160a04"/>
-  <circle cx="4" cy="-1" r="3.4" fill="#f2c84a"/><circle cx="4" cy="-1" r="1.4" fill="#160a04"/>
-  <path d="M-7 9 Q0 7 7 9 Q6 15 0 16 Q-6 15 -7 9 Z" fill="#1a0e06"/>
-  <path d="M-5 9.4 l-0.6 3.4 l1.4 0 z M-1.8 10 l0 4 M1.8 10 l0 4 M5 9.4 l0.6 3.4 l-1.4 0 z" fill="#e6ddc4"/>
-  <path d="M-4 13.6 l0 2.2 M4 13.6 l0 2.2" stroke="#e6ddc4" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="-2.4" cy="-5.8" r="0.9" fill="@peauH"/><circle cx="3.2" cy="-6.6" r="0.7" fill="@peauH"/><circle cx="6" cy="-2.6" r="0.8" fill="@peauH"/>
+  <path d="M-6.2 -3.6 q2.2 -1.8 4.6 -0.8 M1.6 -4.4 q2.4 -1 4.6 0.8" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="-3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <ellipse cx="3.8" cy="-1.6" rx="1.5" ry="1.6" fill="#e8d44a"/><circle cx="3.8" cy="-1.4" r="0.8" fill="#160a04"/>
+  <path d="M-7.2 8 Q0 5.4 7.2 8 Q6.4 14.6 0 15.6 Q-6.4 14.6 -7.2 8 Z" fill="#1a0e06"/>
+  <path d="M-6.3 8.3 l0.4 2.1 l1.2 -1.7 z M-4.4 7.7 l0.4 2.2 l1.2 -1.8 z M-2.3 7.3 l0.4 2.2 l1.2 -1.8 z M-0.2 7.2 l0.4 2.2 l1.2 -1.7 z M1.9 7.4 l0.4 2.1 l1.2 -1.7 z M3.9 7.8 l0.4 2 l1.1 -1.6 z M5.7 8.4 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M-3.4 15 l0.5 -2 l1 1.6 z M0.4 15.4 l0.5 -2 l1 1.6 z M3.8 14.6 l0.5 -1.9 l0.9 1.5 z" fill="#e6ddc4"/>
 </g>",
         "profile": "<g>
   <path d="M-7 7 Q-8 -6 1 -8 Q9 -6 9 4 L11 7 Q11 13 6 15 Q2 17 -2 15 Q-7 13 -7 7 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>
-  <circle cx="2" cy="-1" r="3.2" fill="#f2c84a"/><circle cx="2" cy="-1" r="1.3" fill="#160a04"/>
-  <path d="M1 9 Q6 7 10 9 Q9 15 4 15 Q0 14 1 9 Z" fill="#1a0e06"/>
-  <path d="M3 9.4 l0 3.6 M6 9 l0 4 M8.6 9.4 l0.4 3.2" stroke="#e6ddc4" stroke-width="0.8"/>
+  <circle cx="-2.6" cy="-5.4" r="0.8" fill="@peauH"/><circle cx="2.6" cy="-6.2" r="0.7" fill="@peauH"/>
+  <path d="M0.4 -4.2 q2.4 -1.2 4.6 0.4" stroke="@peauO" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="2.6" cy="-1.6" rx="1.4" ry="1.5" fill="#e8d44a"/><circle cx="2.8" cy="-1.4" r="0.75" fill="#160a04"/>
+  <path d="M0.6 8.4 Q5.5 6.4 10.4 8.4 Q9.6 14.2 4.5 15 Q0.4 14.2 0.6 8.4 Z" fill="#1a0e06"/>
+  <path d="M1.8 8.6 l0.4 2 l1.1 -1.6 z M4 8 l0.4 2.1 l1.1 -1.7 z M6.2 8 l0.4 2 l1.1 -1.6 z M8.3 8.5 l0.4 1.8 l1 -1.5 z" fill="#e6ddc4"/>
+  <path d="M3.2 14.6 l0.5 -1.9 l1 1.5 z M6.4 14.4 l0.5 -1.8 l0.9 1.4 z" fill="#e6ddc4"/>
 </g>",
       },
     },

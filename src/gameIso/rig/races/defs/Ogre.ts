@@ -16,26 +16,20 @@ export const race: RaceDef = {
       + '<circle cx="-6.5" cy="1" r="1.2" fill="#3a4048"/><circle cx="6.5" cy="1" r="1.2" fill="#3a4048"/>'
       + '<circle cx="-6.5" cy="16" r="1.2" fill="#3a4048"/><circle cx="6.5" cy="16" r="1.2" fill="#3a4048"/>'
       + '</g>' },
-    // Heaume cornu DERRIÈRE la tête (layer négatif) : cornes ivoire + rebord métal.
-    { bone: 'tete', scale: 'bone', layer: -1, svg:
-      '<g>'
-      + '<path d="M-12 -6 Q-19 -15 -15 -23 Q-10 -15 -7 -9 Z" fill="#cabfae" stroke="#3a3026" stroke-width="0.8"/>'
-      + '<path d="M12 -6 Q19 -15 15 -23 Q10 -15 7 -9 Z" fill="#cabfae" stroke="#3a3026" stroke-width="0.8"/>'
-      + '<path d="M-11 -7 Q0 -20 11 -7 L11 -2 Q0 -10 -11 -2 Z" fill="@metal" stroke="#3a4048" stroke-width="1"/>'
-      + '</g>' },
-    // Brassard de plates : manche d'armure complète épaule→poignet (sinon le bras-moignon trapu
-    // de l'ogre lit comme une « dalle » nue à l'échelle brute). Symétrique → mêmes lames G/D.
+    // Épaulière de CUIR (illustration LDB p.314 : peaux et lanières, PAS de plates grises —
+    // les manches d'armure complètes lisaient « armoire » ; le heaume cornu inventé est retiré,
+    // le crâne de l'ogre est nu). Haut de bras seul, avant-bras NU avec bandes de poignet.
     { bone: 'epauleG', scale: 'bone', layer: 60, svg:
-      '<g>'
-      + '<path d="M-10 -5 Q0 -10 10 -5 Q11 3 9 8 L8 44 Q0 47 -8 44 L-9 8 Q-11 3 -10 -5 Z" fill="@metal" stroke="#3a4048" stroke-width="1"/>'
-      + '<path d="M-9 8 L9 8 M-8.5 17 L8.5 17 M-8 26 L8 26 M-7.5 35 L7.5 35" stroke="#3a4048" stroke-width="0.8" opacity="0.85"/>'
-      + '<path d="M-6 -2 Q0 -6 6 -2" fill="none" stroke="#6a7078" stroke-width="1"/>'
+      '<g stroke-linejoin="round">'
+      + '<path d="M-9.5 -5 Q0 -9.5 9.5 -5 Q10.5 2 8.5 7 L7 12 Q0 14.5 -7 12 L-8.5 7 Q-10.5 2 -9.5 -5 Z" fill="@cuir" stroke="#2c1e12" stroke-width="0.9"/>'
+      + '<path d="M-8.5 1 Q0 -2 8.5 1 M-7.6 7 Q0 4.6 7.6 7" stroke="#2c1e12" stroke-width="0.7" fill="none" opacity="0.8"/>'
+      + '<circle cx="-5" cy="-2.4" r="0.9" fill="#3a4048"/><circle cx="5" cy="-2.4" r="0.9" fill="#3a4048"/>'
       + '</g>' },
     { bone: 'epauleD', scale: 'bone', layer: 60, svg:
-      '<g>'
-      + '<path d="M-10 -5 Q0 -10 10 -5 Q11 3 9 8 L8 44 Q0 47 -8 44 L-9 8 Q-11 3 -10 -5 Z" fill="@metal" stroke="#3a4048" stroke-width="1"/>'
-      + '<path d="M-9 8 L9 8 M-8.5 17 L8.5 17 M-8 26 L8 26 M-7.5 35 L7.5 35" stroke="#3a4048" stroke-width="0.8" opacity="0.85"/>'
-      + '<path d="M-6 -2 Q0 -6 6 -2" fill="none" stroke="#6a7078" stroke-width="1"/>'
+      '<g stroke-linejoin="round">'
+      + '<path d="M-9.5 -5 Q0 -9.5 9.5 -5 Q10.5 2 8.5 7 L7 12 Q0 14.5 -7 12 L-8.5 7 Q-10.5 2 -9.5 -5 Z" fill="@cuir" stroke="#2c1e12" stroke-width="0.9"/>'
+      + '<path d="M-8.5 1 Q0 -2 8.5 1 M-7.6 7 Q0 4.6 7.6 7" stroke="#2c1e12" stroke-width="0.7" fill="none" opacity="0.8"/>'
+      + '<circle cx="-5" cy="-2.4" r="0.9" fill="#3a4048"/><circle cx="5" cy="-2.4" r="0.9" fill="#3a4048"/>'
       + '</g>' },
   ],
   pose: { torse: 6, cou: 6, tete: -4 },

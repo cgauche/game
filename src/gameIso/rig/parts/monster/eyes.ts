@@ -6,9 +6,10 @@
 export const beastEye = (x: number, cy = 5, rx = 1.7, ry = 1.9) =>
   `<ellipse cx="${x}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#f2a81e"/><circle cx="${x}" cy="${cy}" r="${rx * 0.5}" fill="#160a04"/><circle cx="${x + 0.4}" cy="${cy - 0.5}" r="0.35" fill="#fff" opacity="0.6"/>`;
 
-/** Œil de skaven MAUVAIS : petit, jaune luisant à pupille fendue verticale (canon WHFB). */
+/** Œil de skaven MAUVAIS : petit, ROUGE luisant à pupille fendue verticale (illustration
+ *  LDB p.339 — l'iris jaune lisait « chat », le rouge est le tell skaven). */
 export const ratEye = (x: number) =>
-  `<ellipse cx="${x}" cy="5" rx="1.7" ry="1.5" fill="#e6a017"/><ellipse cx="${x}" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="${x + 0.5}" cy="4.4" r="0.35" fill="#fff" opacity="0.6"/>`;
+  `<ellipse cx="${x}" cy="5" rx="1.7" ry="1.5" fill="#cc3a1a"/><ellipse cx="${x}" cy="5" rx="0.55" ry="1.5" fill="#180a04"/><circle cx="${x + 0.5}" cy="4.4" r="0.35" fill="#ffd9a0" opacity="0.7"/>`;
 
 /** Œil CAPRIN : pupille HORIZONTALE en barre (chèvre/taureau) — fini le regard globuleux. */
 export const goatEye = (x: number, cy = 5, rx = 1.7, ry = 1.4) =>

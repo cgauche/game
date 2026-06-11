@@ -5,7 +5,8 @@ import type { TenueDef } from '../types';
 export const tenue: TenueDef = {
   name: 'Vermine de choc',
   career: true,
-  palette: { vet1: '#3a3630', vet2: '#7a2018', cuir: '#3a2c1e', metal: '#6a6e76' },
+  // métal BRONZE/laiton (illustration LDB p.339 : l'élite skavenne est cuirassée d'airain)
+  palette: { vet1: '#3a3630', vet2: '#7a2018', cuir: '#3a2c1e', metal: '#9a7a38' },
   set: {
     torse: `<g stroke-linejoin="round">`
       // plastron de lamelles régulières (3 rangs nets)
