@@ -5,7 +5,8 @@ import { TeamPortrait } from './CombatantBadge';
 
 /**
  * Écran de VICTOIRE plein écran (demande utilisateur) : récapitulatif de fin de combat — XP gagnée, or
- * récupéré, ennemis vaincus, et butin assignable à un héros (réutilise `giveItemToHero` = flux marchand).
+ * récupéré, ennemis vaincus, et butin d'ÉQUIPEMENT assignable à un héros (`assignVictoryGear` applique
+ * le `giveTrapping` de la rencontre sur le portrait choisi, qualités préservées).
  * « Continuer » revient à l'exploration. Ne s'affiche que sur `battle.over === 'victory'`.
  * COOP : écran SYNCHRONISÉ — chacun n'attribue le butin qu'à SES héros ; « Continuer » = ✓ de son
  * siège (portraits + ✓), l'hôte ferme à l'unanimité (spec §4bis).
