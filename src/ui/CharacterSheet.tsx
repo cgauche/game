@@ -294,8 +294,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         )}
         {hero.fate != null && (
           <div className="sheet-resources">
-            <div className="res" title="Points de Destin (permanents) / Chance (par session)"><span>🎲 Destin</span><b>{hero.fate}{hero.fortune != null ? ` · ${hero.fortune}` : ''}</b></div>
-            <div className="res" title="Résilience (permanente) / Détermination (par session)"><span>🛡 Résilience</span><b>{hero.resilience ?? 0}{hero.resolve != null ? ` · ${hero.resolve}` : ''}</b></div>
+            <div className="res" title="Points de Destin — permanents (« Meurs un autre jour »)"><span>Destin</span><b>{hero.fate}</b></div>
+            <div className="res" title="Points de Chance — réserve par session, relances"><span>Chance</span><b>{hero.fortune ?? 0}</b></div>
+            <div className="res" title="Résilience — permanente (« Je ne faillirai pas »)"><span>Résilience</span><b>{hero.resilience ?? 0}</b></div>
+            <div className="res" title="Détermination — par session, retire un État"><span>Détermination</span><b>{hero.resolve ?? 0}</b></div>
           </div>
         )}
         <div className="mini-title">Caractéristiques</div>
