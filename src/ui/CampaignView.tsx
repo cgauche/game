@@ -32,7 +32,6 @@ export function CampaignView() {
   const journal = useGame((s) => s.journal);
   const dialogue = useGame((s) => s.dialogue);
   const battle = useGame((s) => s.battle);
-  const inventory = useGame((s) => s.inventory);
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
@@ -112,7 +111,7 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation). */}
         {mode === 'battle' && battle && <TargetPrompt />}
-        <GameMenu sceneName={scene?.nom} money={money} inventory={inventory} dateLine={dateLine} onQuit={() => setScreen('party')} coop={<><CoopMenuSection /><AudioControls /></>} />
+        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} coop={<><CoopMenuSection /><AudioControls /></>} />
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (

@@ -71,8 +71,8 @@ function build(): Scene {
         interact: {
           consume: true, // l'ancien `loot` retirait le corps une fois ramassé → consume
           effects: [
-            { type: 'giveItem', item: 'Lettre scellée de Kastor Lieberung' },
-            { type: 'giveItem', item: "Papiers d'identité" },
+            { type: 'giveTrapping', trapping: 'Lettre scellée de Kastor Lieberung' },
+            { type: 'giveTrapping', trapping: "Papiers d'identité" },
           ],
         },
       },

@@ -68,6 +68,13 @@ export function itemFromTrapping(label: string): ItemInstance | null {
   };
 }
 
+/** Objet « custom » minimal (trinket / objet de quête) quand le nom n'est PAS un vrai trapping de la
+ *  base : permet de donner un objet au groupe via `giveTrapping` sans entrée de données (cf. retrait de
+ *  l'inventaire de groupe — « donner un objet = un trapping custom OU réel »). kind `misc`, sans stats. */
+export function customTrapping(name: string): ItemInstance {
+  return { uid: newUid(), name, kind: 'misc', qualities: [], enc: 0, equipped: false };
+}
+
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {

@@ -21,7 +21,6 @@ const EFFECT_TYPES: Effect['type'][] = [
   'journal',
   'setFlag',
   'document',
-  'giveItem',
   'giveTrapping',
   'giveMoney',
   'giveXp',
@@ -50,8 +49,7 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   journal: 'Journal',
   setFlag: 'Définir un flag',
   document: 'Document (handout)',
-  giveItem: 'Donner un objet (nom, inventaire groupe)',
-  giveTrapping: 'Donner un objet à stats (équipement/potion)',
+  giveTrapping: 'Donner un objet (équipement/potion/babiole — réel ou custom)',
   giveMoney: 'Donner/retirer de l’argent',
   giveXp: 'Donner des PX (groupe)',
   restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
@@ -82,8 +80,6 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'setFlag', flag: '', value: true };
     case 'document':
       return { type: 'document', title: '', text: '' };
-    case 'giveItem':
-      return { type: 'giveItem', item: '' };
     case 'giveTrapping':
       return { type: 'giveTrapping', trapping: '' };
     case 'giveMoney':
@@ -166,7 +162,6 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
             <textarea placeholder="Texte du document (sauts de ligne autorisés)" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />
           </>
         )}
-        {effect.type === 'giveItem' && <input placeholder="Nom de l’objet" value={e.item ?? ''} onChange={(ev) => upd({ item: ev.target.value })} />}
         {effect.type === 'giveTrapping' && (
           <>
             <input placeholder="Libellé exact (trappings.json), ex. Chemise de mailles" value={e.trapping ?? ''} onChange={(ev) => upd({ trapping: ev.target.value })} />

@@ -24,7 +24,7 @@ const hero = (): Combatant =>
 describe('Tome 1 — Chapitre 2 « Du Sang sur la Route »', () => {
   beforeEach(() => {
     vi.useFakeTimers(); // startCombat arme un timer d'IA
-    useGame.setState({ party: [hero()], flags: {}, battle: null, mode: 'exploration', document: null, money: { gold: 0, silver: 0, brass: 0 }, inventory: [] });
+    useGame.setState({ party: [hero()], flags: {}, battle: null, mode: 'exploration', document: null, money: { gold: 0, silver: 0, brass: 0 } });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -55,7 +55,7 @@ describe('Tome 1 — Chapitre 2 « Du Sang sur la Route »', () => {
     expect(st.flags.heritage_trouve).toBe(true);
     expect(st.party[0].xp).toBe(10); // « 10 points pour avoir découvert la lettre d'héritage »
     expect(st.document).not.toBeNull(); // un handout s'ouvre
-    expect(st.inventory).toEqual(expect.arrayContaining(['Lettre d\'héritage de Kastor Lieberung']));
+    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(expect.arrayContaining(['Lettre d\'héritage de Kastor Lieberung']));
   });
 
   it('fouiller le cocher remet une VRAIE Chemise de mailles (objet à stats, PA Corps)', () => {

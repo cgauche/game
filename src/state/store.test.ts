@@ -1410,18 +1410,18 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(st.party[0].xp).toBe(10);
   });
 
-  it('prop consommable (butin) : ramassage dans l’inventaire + disparition (consume)', () => {
+  it('prop consommable (butin) : ramassage sur le héros + disparition (consume)', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'loot-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, effects: [{ type: 'giveItem', item: 'Fiole' }, { type: 'giveItem', item: 'Lettre' }] } });
+    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, effects: [{ type: 'giveTrapping', trapping: 'Fiole' }, { type: 'giveTrapping', trapping: 'Lettre' }] } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
 
     useGame.getState().interactEntity('coffre');
     const st = useGame.getState();
-    expect(st.inventory).toEqual(expect.arrayContaining(['Fiole', 'Lettre']));
+    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(expect.arrayContaining(['Fiole', 'Lettre'])); // objets custom sur le héros
     expect(st.scene!.entities.find((e) => e.id === 'coffre')).toBeUndefined(); // ramassé → disparaît
   });
 
@@ -1701,7 +1701,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
       combatants: [bh], order: [bh.id], turn: 0, round: 1, action: 'pickup', selectedSpell: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
-    useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {}, inventory: [] });
+    useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {} });
     return bh;
   }
 
@@ -2275,7 +2275,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
       pendingCast: { x: 1 } as any,
       pendingRoundStart: { round: 7 },
       flags: { vieuxFlag: true },
-      inventory: ['vieil objet'],
       money: { gold: 99, silver: 99, brass: 99 },
       journal: ['vieille ligne'],
     });

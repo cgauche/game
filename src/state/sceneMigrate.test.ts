@@ -21,11 +21,11 @@ describe('migrateSceneEntity', () => {
     expect(e.interact?.consume).toBe(false);
     expect((e as any).search).toBeUndefined();
   });
-  it('objet + loot → prop qui DISPARAÎT (consume true), loot→giveItem', () => {
+  it('objet + loot → prop qui DISPARAÎT (consume true), loot→giveTrapping', () => {
     const e = migrateSceneEntity({ id: 'b', kind: 'objet', pos: { x: 0, y: 0 }, loot: ['Épée', 'Potion'] });
     expect(e.kind).toBe('prop');
     expect(e.interact?.consume).toBe(true);
-    expect(e.interact?.effects).toEqual([{ type: 'giveItem', item: 'Épée' }, { type: 'giveItem', item: 'Potion' }]);
+    expect(e.interact?.effects).toEqual([{ type: 'giveTrapping', trapping: 'Épée' }, { type: 'giveTrapping', trapping: 'Potion' }]);
     expect((e as any).loot).toBeUndefined();
   });
   it('objet + loot ET search → effets concaténés (search d’abord), reste (consume false)', () => {
@@ -37,7 +37,7 @@ describe('migrateSceneEntity', () => {
       loot: ['Bourse'],
     });
     expect(e.kind).toBe('prop');
-    expect(e.interact?.effects).toEqual([{ type: 'journal', text: 'Un corps.' }, { type: 'giveItem', item: 'Bourse' }]);
+    expect(e.interact?.effects).toEqual([{ type: 'journal', text: 'Un corps.' }, { type: 'giveTrapping', trapping: 'Bourse' }]);
     expect(e.interact?.consume).toBe(false); // search présent → reste
   });
   it('décor pur (prop sans loot/search) → pas d’interact', () => {

@@ -79,7 +79,7 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { recomputeLoadout, itemFromTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
@@ -224,7 +224,6 @@ export function entityPickables(ent: { interact?: { effects: Effect[] } }): { ke
   const out: { key: string; label: string }[] = [];
   (ent.interact?.effects ?? []).forEach((e, i) => {
     if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: e.trapping });
-    else if (e.type === 'giveItem') out.push({ key: `eff:${i}`, label: e.item });
     else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
   });
   return out;
@@ -256,10 +255,6 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         break;
       case 'journal':
         get().log(e.text);
-        break;
-      case 'giveItem':
-        set((s: GameState) => ({ inventory: [...s.inventory, e.item] }));
-        get().log(`Objet obtenu : ${e.item}.`);
         break;
       case 'giveMoney': {
         set((s: GameState) => ({
@@ -419,11 +414,8 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         break;
       }
       case 'giveTrapping': {
-        const it = itemFromTrapping(e.trapping);
-        if (!it) {
-          get().log(`Objet inconnu : « ${e.trapping} ».`);
-          break;
-        }
+        // Trapping RÉEL (base) sinon objet CUSTOM (misc) — « donner un objet = un trapping custom ou réel ».
+        const it = itemFromTrapping(e.trapping) ?? customTrapping(e.trapping);
         // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
         // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
         if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
@@ -3196,7 +3188,6 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
     // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
     const xpBefore = get().party[0]?.xp ?? 0;
     const brassBefore = toBrass(get().money);
-    const invBefore = get().inventory.length;
     // #9 : on sépare les effets onVictory. Récompenses/flags/journal s'appliquent MAINTENANT (pour peupler
     // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
     // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
@@ -3218,7 +3209,6 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
       pendingVictory: {
         xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
         gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
-        loot: after.inventory.slice(invBefore),
         gear: gear.length ? gear : undefined,
         defeated: [...counts].map(([name, count]) => ({ name, count })),
         messages: messages.length ? messages : undefined,

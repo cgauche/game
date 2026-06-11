@@ -63,7 +63,7 @@ import { canReroll } from '../engine/fortune';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, customTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst } from '../engine/qualities/dispatch';
 import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
@@ -231,7 +231,6 @@ export interface GameState {
   merchantStocks: MerchantStocks;
   battle: BattleState | null;
   campaignSceneId: string | null;
-  inventory: string[];
   money: Money;
   pendingTest: PendingTest | null;
   /** Exposition à une Influence corruptrice en cours (LDB 19) — Test différé par modale. */
@@ -288,9 +287,6 @@ export interface GameState {
   pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number } | null;
   /** Récompenses de victoire capturées (écran de fin de combat) ; null hors victoire. */
   pendingVictory: PendingVictory | null;
-  /** Écran de victoire : assigne un objet de butin à l'inventaire PERSONNEL d'un héros (retire du
-   *  stock de groupe). Réutilise `addItemToHero` (même flux que le marchand). */
-  giveItemToHero: (label: string, heroId: string) => void;
   /** Attribue un objet d'équipement (giveTrapping) du butin de victoire au héros choisi. */
   assignVictoryGear: (index: number, heroId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
@@ -803,7 +799,6 @@ export const useGame = create<GameState>((set, get) => ({
   merchantStocks: {},
   battle: null,
   campaignSceneId: null,
-  inventory: [],
   money: { gold: 0, silver: 0, brass: 0 },
   pendingTest: null,
   pendingCorruption: null,
@@ -1232,7 +1227,6 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
-  giveItemToHero: (label, heroId) => partyFlow.giveItemToHero(get, set, label, heroId),
   dismissVictory: () => {
     const pv = get().pendingVictory;
     const leftoverGear = (pv?.gear ?? []).map((g) => g.effect); // équipement non attribué → 1er héros par défaut
@@ -2492,11 +2486,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!eff) return;
     let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
     if (eff.type === 'giveTrapping') {
-      const it = itemFromTrapping(eff.trapping);
-      if (!it) {
-        get().log(`Objet inconnu : « ${eff.trapping} ».`);
-        return;
-      }
+      const it = itemFromTrapping(eff.trapping) ?? customTrapping(eff.trapping); // réel sinon objet custom
       label = it.name;
       // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
       active.items = [...(active.items ?? []), it];
@@ -2505,14 +2495,11 @@ export const useGame = create<GameState>((set, get) => ({
         party: s.party.map((h) => {
           if (h.id !== active.id) return h;
           const clone: Combatant = JSON.parse(JSON.stringify(h));
-          clone.items = [...(clone.items ?? []), itemFromTrapping(eff.trapping)!];
+          clone.items = [...(clone.items ?? []), JSON.parse(JSON.stringify(it))];
           recomputeLoadout(clone);
           return clone;
         }),
       }));
-    } else if (eff.type === 'giveItem') {
-      label = eff.item;
-      set((s) => ({ inventory: [...s.inventory, eff.item] })); // nom dans l'inventaire de groupe
     } else if (eff.type === 'giveMoney') {
       label = 'Argent';
       applyEffects(get, set, [eff]); // bourse party (or/argent/cuivre)

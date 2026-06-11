@@ -157,7 +157,6 @@ export interface BuildingFeature {
 
 export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
-  | { type: 'giveItem'; item: string }
   /** Donne un VRAI objet à stats (depuis trappings.json) à un héros (défaut : le premier).
    *  L'objet arrive NON équipé dans son inventaire — à équiper via la fiche. Champs MAGIQUES optionnels
    *  (butin/quête) : `qualities` AJOUTÉES (Atout/Défaut, ex. « De plaies atroces »), `identified:false`

@@ -411,19 +411,6 @@ export function creditPartyMoney(get: Get, set: Set, m: Money, note?: string): v
   if (note) get().log(`${note} : +${formatMoney(m)}.`);
 }
 
-/** Écran de victoire : assigne un objet du butin de groupe à un héros (même flux que le marchand). */
-export function giveItemToHero(_get: Get, set: Set, label: string, heroId: string): void {
-  set((s) => {
-    const idx = s.inventory.indexOf(label);
-    if (idx < 0) return {}; // déjà assigné / absent du stock de groupe
-    const inventory = [...s.inventory.slice(0, idx), ...s.inventory.slice(idx + 1)];
-    const party = s.party.map((h) => (h.id === heroId ? addItemToHero(h, label) : h));
-    const pv = s.pendingVictory;
-    const li = pv ? pv.loot.indexOf(label) : -1;
-    const pendingVictory = pv && li >= 0 ? { ...pv, loot: [...pv.loot.slice(0, li), ...pv.loot.slice(li + 1)] } : pv;
-    return { inventory, party, pendingVictory };
-  });
-}
 
 /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
  *  qu'en combat (`applyItemUse`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */

@@ -138,8 +138,8 @@ function build(): Scene {
             { type: 'journal', text: 'Deux carreaux dans le dos. En le retournant, vous le reconnaissez : c\'est le sosie de l\'un de vous ! Un parchemin dépasse de sa veste.' },
             { type: 'document', title: 'Document 3 — L\'héritage', text: HERITAGE },
             { type: 'document', title: 'Document 4 — L\'affidavit', text: AFFIDAVIT },
-            { type: 'giveItem', item: 'Lettre d\'héritage de Kastor Lieberung' },
-            { type: 'giveItem', item: 'Affidavit d\'identité' },
+            { type: 'giveTrapping', trapping: 'Lettre d\'héritage de Kastor Lieberung' },
+            { type: 'giveTrapping', trapping: 'Affidavit d\'identité' },
             { type: 'giveXp', amount: 10 }, // « 10 points chacun pour avoir découvert la lettre d'héritage »
             { type: 'setFlag', flag: 'heritage_trouve' },
           ],
@@ -251,8 +251,8 @@ function build(): Scene {
           { type: 'giveXp', amount: 20 },
           // Possessions de Knud (ch.2, p.30) : 2 CO 3/13, un anneau (3 CO), un médaillon d'argent (1 CO).
           { type: 'giveMoney', gold: 2, silver: 3, brass: 13 },
-          { type: 'giveItem', item: 'Anneau (3 CO)' },
-          { type: 'giveItem', item: 'Médaillon en argent' },
+          { type: 'giveTrapping', trapping: 'Anneau (3 CO)' },
+          { type: 'giveTrapping', trapping: 'Médaillon en argent' },
           { type: 'journal', text: 'Sur le corps écailleux de Knud : quelques pièces, un anneau et un médaillon d\'argent renfermant le portrait d\'un des artisans morts.' },
         ],
       },

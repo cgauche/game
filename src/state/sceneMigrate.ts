@@ -25,7 +25,7 @@ export function migrateSceneEntity(raw: any): SceneEntity {
   const out: SceneEntity = { ...rest, kind: migrateEntityKind(kind) };
   const effects: Effect[] = [
     ...((search ?? []) as Effect[]),
-    ...((loot ?? []) as string[]).map((item: string): Effect => ({ type: 'giveItem', item })),
+    ...((loot ?? []) as string[]).map((trapping: string): Effect => ({ type: 'giveTrapping', trapping })),
   ];
   if (effects.length) out.interact = { effects, consume: !!loot && !search };
   return out;
