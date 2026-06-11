@@ -3448,12 +3448,12 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
   //     suivants S'ENCHAÎNENT sans pause (le ✋ « ouvrir la fenêtre Chance » volontaire = P3).
   const b = get().battle!;
   const reset = { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
-  if (get().net.mode !== 'local' && b.round > 1) {
+  if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
     set({ battle: reset, pendingRoundStart: null });
     get().confirmRoundStart();
     return;
   }
-  set({ battle: reset, pendingRoundStart: { round: b.round } });
+  set({ battle: { ...reset, handRaised: false }, pendingRoundStart: { round: b.round } });
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */

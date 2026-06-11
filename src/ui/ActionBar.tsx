@@ -501,6 +501,17 @@ export function ActionBar() {
               </button>
             )}
 
+            {net.mode !== 'local' && (
+              <button
+                className={`ab-slot${battle.handRaised ? ' on' : ''}`}
+                disabled={!!battle.handRaised}
+                onClick={() => useGame.getState().raiseHand()}
+                title="Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)"
+              >
+                <span className="ab-ico">✋</span>
+                <span className="ab-lbl">{battle.handRaised ? 'Pause demandée' : 'Pause Round'}</span>
+              </button>
+            )}
             <button
               className={`ab-slot ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`}
               onClick={onEndTurn}

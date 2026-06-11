@@ -30,6 +30,8 @@ export interface PendingVictory {
   messages?: string[];
   /** Effets DIFFÉRÉS au clic « Continuer » (téléport/dialogue/combat) — sinon ils masquent l'écran (#9). */
   onContinue?: Effect[];
+  /** COOP (spec §4bis) : ✓ de chaque siège — l'écran est synchronisé, l'hôte ferme à l'unanimité. */
+  readyBySeat?: Record<number, boolean>;
 }
 /** Test de compétence interactif en attente d'acquittement par le joueur. */
 export interface PendingTest {

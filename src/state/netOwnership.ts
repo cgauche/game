@@ -54,9 +54,11 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
 }
 
 /** L'HÔTE accepte-t-il cet intent de `seat` ? Modale ouverte → seul son concerné agit ('*' = tous) ;
- *  sinon → seul le propriétaire du combattant ACTIF agit. `roundStartReady` marque son propre siège. */
-export function intentAllowedFor(s: GameState, seat: number, action: string): boolean {
-  if (action === 'roundStartReady') return true;
+ *  sinon → seul le propriétaire du combattant ACTIF agit. Cas à part : les ready-checks marquent
+ *  leur propre siège ; `giveItemToHero` n'attribue le butin qu'à SES héros. */
+export function intentAllowedFor(s: GameState, seat: number, action: string, args: unknown[] = []): boolean {
+  if (action === 'roundStartReady' || action === 'victoryReady' || action === 'raiseHand') return true;
+  if (action === 'giveItemToHero') return seatOwns(s, seat, typeof args[1] === 'string' ? args[1] : undefined);
   const owner = modalOwnerOf(s);
   if (owner === '*') return true;
   if (owner !== null) return seatOwns(s, seat, owner);

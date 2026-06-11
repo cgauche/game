@@ -1,18 +1,29 @@
 import { useGame } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import { Coins } from './Coins';
+import { TeamPortrait } from './CombatantBadge';
 
 /**
  * Écran de VICTOIRE plein écran (demande utilisateur) : récapitulatif de fin de combat — XP gagnée, or
  * récupéré, ennemis vaincus, et butin assignable à un héros (réutilise `giveItemToHero` = flux marchand).
  * « Continuer » revient à l'exploration. Ne s'affiche que sur `battle.over === 'victory'`.
+ * COOP : écran SYNCHRONISÉ — chacun n'attribue le butin qu'à SES héros ; « Continuer » = ✓ de son
+ * siège (portraits + ✓), l'hôte ferme à l'unanimité (spec §4bis).
  */
 export function VictoryScreen() {
   const battle = useGame((s) => s.battle);
   const pv = useGame((s) => s.pendingVictory);
   const party = useGame((s) => s.party);
+  const net = useGame((s) => s.net);
   const giveItemToHero = useGame((s) => s.giveItemToHero);
   const dismiss = useGame((s) => s.dismissVictory);
+  const victoryReady = useGame((s) => s.victoryReady);
+  const state = useGame();
   if (!battle || battle.over !== 'victory') return null;
+  const online = net.mode !== 'local';
+  const ready = pv?.readyBySeat ?? {};
+  const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
+  const assignable = online ? party.filter((h) => ownsLocally(state, h.id)) : party;
 
   const xp = pv?.xp ?? 0;
   const gold = pv?.gold ?? { gold: 0, silver: 0, brass: 0 };
@@ -58,7 +69,7 @@ export function VictoryScreen() {
                   <li key={`${label}-${i}`} className="victory-loot-row">
                     <span className="vl-name">{label}</span>
                     <span className="vl-assign">
-                      {party.map((h) => (
+                      {assignable.map((h) => (
                         <button key={h.id} className="btn small" onClick={() => giveItemToHero(label, h.id)} title={`Donner « ${label} » à ${h.name}`}>
                           {h.name}
                         </button>
@@ -72,7 +83,26 @@ export function VictoryScreen() {
           )}
         </div>
 
-        <button className="btn btn-primary victory-continue" onClick={dismiss}>Continuer</button>
+        {online ? (
+          <>
+            <div className="ready-row">
+              {seats.map(({ seat, name }) => {
+                const h = party.find((x) => !x.dead && (net.ownership[x.id] ?? 0) === seat);
+                return (
+                  <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
+                    {h ? <TeamPortrait combatant={h} size={28} /> : <span className="ready-noportrait">👤</span>}
+                    {ready[seat] ? '✓' : '…'}
+                  </span>
+                );
+              })}
+            </div>
+            <button className="btn btn-primary victory-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
+              {ready[net.mySeat] ? '⏳ En attente des autres…' : 'Continuer'}
+            </button>
+          </>
+        ) : (
+          <button className="btn btn-primary victory-continue" onClick={dismiss}>Continuer</button>
+        )}
       </div>
     </div>
   );

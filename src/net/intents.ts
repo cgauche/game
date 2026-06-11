@@ -53,5 +53,6 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'deviationApply', 'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
-  'bladeTrapResolve', 'dismissVictory',
+  // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
+  'bladeTrapResolve', 'victoryReady', 'giveItemToHero', 'raiseHand',
 ]);

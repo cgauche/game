@@ -179,6 +179,9 @@ export interface BattleState {
   /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.29) — une tentative par Tour :
    *  'passed' = approches libres ce Tour ; 'failed' = aucune approche ce Tour. Purgé au Tour/Round. */
   fearGate?: 'passed' | 'failed' | null;
+  /** COOP : ✋ un joueur demande la PAUSE du prochain début de Round (fenêtre Chance « agir en
+   *  premier ») — sinon les rounds s'enchaînent sans gate (arbitrage). Purgé à la pause. */
+  handRaised?: boolean;
   /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
    *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
   preview?:
@@ -290,6 +293,10 @@ export interface GameState {
   giveItemToHero: (label: string, heroId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
+  /** Coop : ✓ d'un siège sur l'écran de victoire — l'hôte ferme quand tous les requis ont validé. */
+  victoryReady: (seat: number) => void;
+  /** Coop : ✋ demande la pause du prochain début de Round (fenêtre Chance). */
+  raiseHand: () => void;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -1221,6 +1228,26 @@ export const useGame = create<GameState>((set, get) => ({
     const cont = get().pendingVictory?.onContinue;
     set({ pendingVictory: null, battle: null, mode: 'exploration' });
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
+  },
+  raiseHand: () => {
+    const b = get().battle;
+    if (!b || b.handRaised) return;
+    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', 'Un joueur demande la pause au prochain Round (✋).')] } });
+  },
+  victoryReady: (seat) => {
+    const pv = get().pendingVictory;
+    if (!pv) return;
+    const readyBySeat = { ...(pv.readyBySeat ?? {}), [seat]: true };
+    set({ pendingVictory: { ...pv, readyBySeat } });
+    const s = get();
+    if (s.net.mode === 'guest') return; // l'invité ne fait que marquer
+    const required = new Set<number>([0]);
+    for (const h of s.party) {
+      if (h.dead || h.outOfRencontre) continue;
+      const owner = s.net.ownership[h.id] ?? 0;
+      if (s.net.seatNames[owner] != null) required.add(owner);
+    }
+    if ([...required].every((st) => readyBySeat[st])) get().dismissVictory();
   },
 
   battleSelectAction: (a) => {

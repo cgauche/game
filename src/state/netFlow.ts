@@ -110,7 +110,7 @@ export function netHostStart(get: Get, set: Set, name: string): void {
     applyIntent: (action, args, seat) => {
       // Validation de POSSESSION (spec §4bis) : un invité ne pilote que SES combattants —
       // modale ouverte → seul son concerné agit ; sinon seul le propriétaire du tour actif.
-      if (!intentAllowedFor(useGame.getState(), seat, action)) {
+      if (!intentAllowedFor(useGame.getState(), seat, action, args)) {
         get().log(`Action réseau refusée (${action}) : pas le propriétaire.`);
         return;
       }
