@@ -28,21 +28,32 @@ const taper = (len: number, thTop: number, thBot: number, fill: string): string 
 };
 function hoof(foot: QuadFoot, far: boolean): string {
   const c = far ? '@cuirO' : '@cuir';
+  const body = far ? '@corpsO' : '@corps';
   if (foot === 'sabot') // sabot net : bloc trapézoïdal sombre + pince + couronne
     return `<path d="M-3.8 -2 L3.8 -2 L4.6 9 Q0 11.6 -4.6 9 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.6"/><path d="M-4.3 8.4 Q0 10.8 4.3 8.4 L3.9 11 Q0 12.6 -3.9 11Z" fill="#0e0b07" opacity="0.55"/><path d="M0 0 L0 9" stroke="#0e0b07" stroke-width="0.5" opacity="0.5"/>`;
-  if (foot === 'serre') // serre de rapace : tarse écailleux + 3 doigts griffus écartés + ergot arrière
-    return `<g><path d="M-2.6 -2 L2.6 -2 L1.8 4 L-1.8 4 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
-      `<path d="M-1.6 3 Q-6 6 -8 12 M0 4 Q0 9 0 13 M1.6 3 Q6 6 8 12 M-1.4 3 Q-4 5 -6 4" stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` +
-      `<path d="M-8 12 l-1.6 1.8 M0 13 l0 2 M8 12 l1.6 1.8 M-6 4 l-1.8 0.6" stroke="#0e0b07" stroke-width="1.2" stroke-linecap="round"/></g>`;
-  // patte : coussinet large + 3 griffes marquées
-  return `<g><path d="M-4.4 -2 Q-5.6 8 -2 10.5 L5.8 10.5 Q7.8 7 5.4 -2 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.6"/>` +
-    `<path d="M-1.6 10.5 l-0.7 3.6 M2 10.5 l0 3.8 M5.2 10.5 l1.3 3.2" stroke="#15110c" stroke-width="1.4" stroke-linecap="round"/></g>`;
+  if (foot === 'serre') // serre : tarse + 3 DOIGTS PLEINS posés au sol, griffes courbes — plus le râteau filaire
+    return `<g><path d="M-2.8 -3 L2.8 -3 Q3.2 2 2 4 L-2 4 Q-3.2 2 -2.8 -3 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
+      `<path d="M-2 3 Q-5.5 4 -7 8.5 Q-6.6 10 -5 9.8 Q-3 8 -1 5 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
+      `<path d="M-1 4 Q-1.4 7 -1 9.6 Q0.4 10.6 1.6 9.6 Q2 6.5 1.4 4 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
+      `<path d="M2 3 Q5.5 4.6 6.6 8.8 Q6 10.2 4.6 9.8 Q3 7.6 1.6 5 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>` +
+      `<path d="M-7 8.5 q-2 0.8 -2.4 2.8 M0.3 9.9 q0 2 -0.3 3 M6.6 8.8 q2 0.8 2.4 2.8" stroke="#0e0b07" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>`;
+  // patte : extrémité du MEMBRE (couleur du corps, plus le godet sombre), doigts ronds + griffes
+  return `<g><path d="M-4 -3 Q-5 5 -3 8.5 Q0 10.5 3.4 8.8 Q5.6 5 4.6 -3 Z" fill="${body}" stroke="@corpsO" stroke-width="0.5"/>` +
+    `<path d="M-3.4 8 Q-2.4 10.4 -1 10.6 Q0 9 -0.6 7.4 Z M-0.2 8.2 Q0.8 10.8 2.2 10.6 Q3 9 2.2 7.4 Z M2.8 7.6 Q4 9.8 5 9.2 Q5.4 7.6 4.4 6.4 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.4"/>` +
+    `<path d="M-1 10.6 l-0.3 2.6 M2.2 10.6 l0.2 2.6 M5 9.2 l0.8 2.2" stroke="#15110c" stroke-width="1.3" stroke-linecap="round"/></g>`;
 }
 function footFront(foot: QuadFoot, far: boolean): string {
   const c = far ? '@cuirO' : '@cuir';
+  const body = far ? '@corpsO' : '@corps';
   if (foot === 'sabot') return `<ellipse cx="0" cy="3" rx="3.4" ry="3" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/>`;
-  if (foot === 'serre') return `<path d="M0 0 Q-5 4 -6 9 M0 1 Q0 6 0 10 M0 0 Q5 4 6 9" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M-6 9 l-1.2 2 M0 10 l0 2.2 M6 9 l1.2 2" stroke="#0e0b07" stroke-width="1" stroke-linecap="round"/>`;
-  return `<path d="M-3.4 0 Q-4 6 0 7 Q4 6 3.4 0 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.5"/><path d="M-1.6 4 l0 3 M0 4 l0 3.4 M1.6 4 l0 3" stroke="#15110c" stroke-width="0.9" stroke-linecap="round"/>`;
+  if (foot === 'serre') // 3 doigts pleins écartés (pas des fils)
+    return `<g><path d="M-0.8 -1 Q-4.4 2.5 -5.2 7.5 Q-4.4 9 -3 8.4 Q-1.6 5 -0.4 2 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.4"/>` +
+      `<path d="M-0.8 0 Q-1.2 4 -0.8 8.6 Q0.2 9.6 1.2 8.6 Q1.4 4 1 0 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.4"/>` +
+      `<path d="M0.8 -1 Q4.4 2.5 5.2 7.5 Q4.4 9 3 8.4 Q1.6 5 0.4 2 Z" fill="${c}" stroke="#0e0b07" stroke-width="0.4"/>` +
+      `<path d="M-5.2 7.5 l-1 2 M0.2 8.9 l0 2.2 M5.2 7.5 l1 2" stroke="#0e0b07" stroke-width="1.1" stroke-linecap="round"/></g>`;
+  return `<g><path d="M-3.6 -1 Q-4.2 5 0 6.6 Q4.2 5 3.6 -1 Z" fill="${body}" stroke="@corpsO" stroke-width="0.45"/>` +
+    `<ellipse cx="-2" cy="5.8" rx="1.2" ry="1.5" fill="${c}"/><ellipse cx="0.1" cy="6.5" rx="1.2" ry="1.5" fill="${c}"/><ellipse cx="2.2" cy="5.8" rx="1.2" ry="1.5" fill="${c}"/>` +
+    `<path d="M-2 7.2 l0 2 M0.1 7.9 l0 2 M2.2 7.2 l0 2" stroke="#15110c" stroke-width="1" stroke-linecap="round"/></g>`;
 }
 // Articulation (épaule/genou/boulet) : pastille de la couleur du membre qui BOUCHE le trou
 // entre deux segments capsulés (défaut « segments empilés avec gaps »).
@@ -460,12 +471,16 @@ function wingSpread(p: QuadProps): string {
     `</g>`;
 }
 
-// Aile PLIÉE vue de bout (face/dos) : bosse d'épaule dépassant au-dessus du garrot — la
-// silhouette d'un rapace posé, pas l'envergure complète.
+// Aile PLIÉE vue de bout (face/dos) : panneau replié qui ÉPOUSE LE FLANC vers le bas (épaule
+// modeste + pan qui descend le long du corps) — l'ex-bosse dressée au garrot lisait comme de
+// grandes « oreilles d'âne » près de la tête (verdict unanime des juges aveugles, lot 4).
 function wingFoldedEnd(p: QuadProps): string {
   const c = p.wings === 'membrane' ? '@corpsO' : '@corps';
-  return `<g data-wing="folded"><path d="M2 2 Q4 -12 10 -17 Q13.5 -9 10.5 -1 Q7 3 2 3 Z" fill="${c}" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M4 -2 Q6 -9 9.4 -14" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.6"/></g>`;
+  return `<g data-wing="folded">` +
+    `<path d="M0 -2 Q5 -7 8 -4 Q10 1 9.5 8 Q9 15 6 19 Q3.6 20.5 2.4 18 Q1 9 0 0 Z" fill="${c}" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M3.4 -1 Q5.6 6 5 16 M6.4 -2 Q8.2 5 7.6 13" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.6"/>` +
+    (p.wings === 'membrane' ? `<path d="M7.4 -4.6 l2 -2 l0.8 2.6" fill="${c}" stroke="@corpsO" stroke-width="0.5"/>` : '') +
+    `</g>`;
 }
 
 // ============================ dispatch ============================
