@@ -10,7 +10,8 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { mutationOverlaysFor, mutationAppearance, randomMutationOverlays } from '../src/gameIso/rig/parts/mutations';
-import { injuryOverlaysFor } from '../src/gameIso/rig/parts/injuries';
+import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts/combatantVisuals';
+import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
 import { LABELS_PHYSIQUES } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
 import type { Combatant, Trauma } from '../src/engine/types';
@@ -85,7 +86,11 @@ const INJ: { label: string; c: Combatant }[] = [
   { label: 'Nez doré', c: wounded([trauma({ label: 'Nez amputé' })], 'Nez doré') },
 ];
 section('Amputations &amp; prothèses (LDB 18 / 73)', INJ.map(({ label, c }) =>
-  cell(label, APP, injuryOverlaysFor(c), { career: 'Soldat', bg: '#241f2a', tint: '#caf' })));
+  cell(label, combatantAppearance(APP, c), combatantOverlays(c), { career: 'Soldat', bg: '#241f2a', tint: '#caf' })));
+
+// 6) Catalogue d'yeux personnalisés (parts/eyes.ts) — mutations custom, créatures, éditeur.
+section('Yeux personnalisés (catalogue)', Object.values(EYE_OPTIONS).map(({ label, art }) =>
+  cell(label, { ...APP, eyes: { G: art, D: art } }, [], { bg: '#1f2430', tint: '#9cf' })));
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Mutations QC</title></head>
 <body style="background:#11141c;padding:16px">
