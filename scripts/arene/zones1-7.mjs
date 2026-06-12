@@ -1,6 +1,6 @@
 /** Zones 1-7 de l'échelle — refaites en GRAND (24×16 → 32×24), layouts structurés, fouilles,
  *  rencontres enrichies. Ids/flags conservés (`arene-zoneN`, `zoneN_clear`). */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS } from './lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS } from './lib.mjs';
 
 // ── Zone 1 — La Cour (24×16, sable) : échauffement, tutoriel du couvert ────────────────────
 
@@ -33,9 +33,6 @@ export function makeZone1() {
     base: 'sable',
     entities: [
       hero(2, 8),
-      NPC('spectateur-1', 19, 2, 'Spectateur', { anim: 'standing', facing: 'O' }),
-      NPC('spectateur-2', 20, 3, 'Spectatrice', { anim: 'cowering', facing: 'O', appearance: { sex: 'F' } }),
-      P(18, 1, 'tribune', { foot: { w: 3, h: 1 } }),
       P(12, 2, 'statue', { label: 'Le Premier Champion' }),
       P(5, 4, 'mannequin'),
       P(4, 11, 'rack-armes', {
@@ -373,7 +370,7 @@ export function makeZone4() {
   });
 }
 
-// ── Zone 5 — Les Lices (34×16, terre, pluie) : cavalerie, tribunes, monture alliée ──────────
+// ── Zone 5 — Les Lices (34×16, terre, pluie) : cavalerie, monture alliée ────────────────────
 
 export function makeZone5() {
   resetIds();
@@ -405,12 +402,6 @@ export function makeZone5() {
     base: 'terre',
     entities: [
       hero(2, 8),
-      NPC('spectateur-1', 7, 2, 'Parieur', { anim: 'standing', facing: 'S' }),
-      NPC('spectateur-2', 15, 2, 'Dame du Bourg', { anim: 'standing', facing: 'S', appearance: { sex: 'F' } }),
-      NPC('spectateur-3', 23, 2, 'Écuyer', { anim: 'cowering', facing: 'S' }),
-      P(6, 1, 'tribune', { foot: { w: 3, h: 1 } }),
-      P(14, 1, 'tribune', { foot: { w: 3, h: 1 } }),
-      P(22, 1, 'tribune', { foot: { w: 3, h: 1 } }),
       P(4, 1, 'etendard'),
       P(29, 1, 'etendard'),
       P(9, 8, 'barriere'),

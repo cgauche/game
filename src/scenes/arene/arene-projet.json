@@ -406,45 +406,7 @@
      }
     },
     {
-     "id": "spectateur-1",
-     "kind": "personnage",
-     "pos": {
-      "x": 19,
-      "y": 2
-     },
-     "label": "Spectateur",
-     "anim": "standing",
-     "facing": "O"
-    },
-    {
-     "id": "spectateur-2",
-     "kind": "personnage",
-     "pos": {
-      "x": 20,
-      "y": 3
-     },
-     "label": "Spectatrice",
-     "anim": "cowering",
-     "facing": "O",
-     "appearance": {
-      "sex": "F"
-     }
-    },
-    {
      "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 18,
-      "y": 1
-     },
-     "ref": "tribune",
-     "foot": {
-      "w": 3,
-      "h": 1
-     }
-    },
-    {
-     "id": "p1",
      "kind": "prop",
      "pos": {
       "x": 12,
@@ -454,7 +416,7 @@
      "label": "Le Premier Champion"
     },
     {
-     "id": "p2",
+     "id": "p1",
      "kind": "prop",
      "pos": {
       "x": 5,
@@ -463,7 +425,7 @@
      "ref": "mannequin"
     },
     {
-     "id": "p3",
+     "id": "p2",
      "kind": "prop",
      "pos": {
       "x": 4,
@@ -485,7 +447,7 @@
      }
     },
     {
-     "id": "p4",
+     "id": "p3",
      "kind": "prop",
      "pos": {
       "x": 9,
@@ -494,7 +456,7 @@
      "ref": "tonneau"
     },
     {
-     "id": "p5",
+     "id": "p4",
      "kind": "prop",
      "pos": {
       "x": 9,
@@ -503,7 +465,7 @@
      "ref": "tonneau"
     },
     {
-     "id": "p6",
+     "id": "p5",
      "kind": "prop",
      "pos": {
       "x": 13,
@@ -512,7 +474,7 @@
      "ref": "caisse"
     },
     {
-     "id": "p7",
+     "id": "p6",
      "kind": "prop",
      "pos": {
       "x": 17,
@@ -521,7 +483,7 @@
      "ref": "caisse"
     },
     {
-     "id": "p8",
+     "id": "p7",
      "kind": "prop",
      "pos": {
       "x": 21,
@@ -530,7 +492,7 @@
      "ref": "etendard"
     },
     {
-     "id": "p9",
+     "id": "p8",
      "kind": "prop",
      "pos": {
       "x": 2,
@@ -539,7 +501,7 @@
      "ref": "feu-camp"
     },
     {
-     "id": "p10",
+     "id": "p9",
      "kind": "prop",
      "pos": {
       "x": 6,
@@ -548,7 +510,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p11",
+     "id": "p10",
      "kind": "prop",
      "pos": {
       "x": 6,
@@ -6340,82 +6302,7 @@
      }
     },
     {
-     "id": "spectateur-1",
-     "kind": "personnage",
-     "pos": {
-      "x": 7,
-      "y": 2
-     },
-     "label": "Parieur",
-     "anim": "standing",
-     "facing": "S"
-    },
-    {
-     "id": "spectateur-2",
-     "kind": "personnage",
-     "pos": {
-      "x": 15,
-      "y": 2
-     },
-     "label": "Dame du Bourg",
-     "anim": "standing",
-     "facing": "S",
-     "appearance": {
-      "sex": "F"
-     }
-    },
-    {
-     "id": "spectateur-3",
-     "kind": "personnage",
-     "pos": {
-      "x": 23,
-      "y": 2
-     },
-     "label": "Écuyer",
-     "anim": "cowering",
-     "facing": "S"
-    },
-    {
      "id": "p0",
-     "kind": "prop",
-     "pos": {
-      "x": 6,
-      "y": 1
-     },
-     "ref": "tribune",
-     "foot": {
-      "w": 3,
-      "h": 1
-     }
-    },
-    {
-     "id": "p1",
-     "kind": "prop",
-     "pos": {
-      "x": 14,
-      "y": 1
-     },
-     "ref": "tribune",
-     "foot": {
-      "w": 3,
-      "h": 1
-     }
-    },
-    {
-     "id": "p2",
-     "kind": "prop",
-     "pos": {
-      "x": 22,
-      "y": 1
-     },
-     "ref": "tribune",
-     "foot": {
-      "w": 3,
-      "h": 1
-     }
-    },
-    {
-     "id": "p3",
      "kind": "prop",
      "pos": {
       "x": 4,
@@ -6424,7 +6311,7 @@
      "ref": "etendard"
     },
     {
-     "id": "p4",
+     "id": "p1",
      "kind": "prop",
      "pos": {
       "x": 29,
@@ -6433,7 +6320,7 @@
      "ref": "etendard"
     },
     {
-     "id": "p5",
+     "id": "p2",
      "kind": "prop",
      "pos": {
       "x": 9,
@@ -6442,7 +6329,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p6",
+     "id": "p3",
      "kind": "prop",
      "pos": {
       "x": 12,
@@ -6451,7 +6338,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p7",
+     "id": "p4",
      "kind": "prop",
      "pos": {
       "x": 15,
@@ -6460,7 +6347,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p8",
+     "id": "p5",
      "kind": "prop",
      "pos": {
       "x": 18,
@@ -6469,7 +6356,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p9",
+     "id": "p6",
      "kind": "prop",
      "pos": {
       "x": 21,
@@ -6478,7 +6365,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p10",
+     "id": "p7",
      "kind": "prop",
      "pos": {
       "x": 24,
@@ -6487,7 +6374,7 @@
      "ref": "barriere"
     },
     {
-     "id": "p11",
+     "id": "p8",
      "kind": "prop",
      "pos": {
       "x": 3,
@@ -6509,7 +6396,7 @@
      }
     },
     {
-     "id": "p12",
+     "id": "p9",
      "kind": "prop",
      "pos": {
       "x": 29,
@@ -6522,7 +6409,7 @@
      }
     },
     {
-     "id": "p13",
+     "id": "p10",
      "kind": "prop",
      "pos": {
       "x": 30,
@@ -6531,7 +6418,7 @@
      "ref": "tas-foin"
     },
     {
-     "id": "p14",
+     "id": "p11",
      "kind": "prop",
      "pos": {
       "x": 4,
