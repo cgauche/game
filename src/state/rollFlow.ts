@@ -47,10 +47,11 @@ export interface RollFlowSpec<P extends PendingBase> {
    * Patch du pending qui pose le jet (appelle le moteur + RNG). `null` → abandon silencieux
    * (précondition manquante : cible disparue, sort introuvable…) — AVANT toute dépense de point.
    * `actor` peut être `undefined` au premier jet (certains flux n'en ont pas besoin pour lancer).
+   * `get` : accès au store pour les résolveurs qui lisent l'environnement (resolveAttack).
    */
-  resolve: (s: GameState, p: P, actor: Combatant | undefined) => Partial<P> | null;
+  resolve: (s: GameState, p: P, actor: Combatant | undefined, get: Get) => Partial<P> | null;
   /** Patch de RELANCE (défaut : `resolve`) — utile en Test opposé où l'adversaire garde son jet figé. */
-  reresolve?: (s: GameState, p: P, actor: Combatant) => Partial<P> | null;
+  reresolve?: (s: GameState, p: P, actor: Combatant, get: Get) => Partial<P> | null;
   /** Jet « propre raté » → relançable par la Chance (LDB 12 : d100 raté, 1× max). */
   failed: (p: P) => boolean;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
@@ -86,7 +87,7 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       const s = get();
       const p = pendingOf(s);
       if (!p || spec.rolled(p)) return; // déjà lancé
-      const patch = spec.resolve(s, p, spec.actor(s, p));
+      const patch = spec.resolve(s, p, spec.actor(s, p), get);
       if (!patch) return;
       set({ [spec.key]: { ...p, ...patch } } as Partial<GameState>);
     },
@@ -100,7 +101,7 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       // est consommé à la place d'un Point de Chance (et permet la relance même à 0 Chance).
       const free = !!actor && hasActiveFlag(actor, 'freeReroll');
       if (!actor || (!free && (actor.fortune ?? 0) <= 0)) return;
-      const patch = (spec.reresolve ?? spec.resolve)(s, p, actor);
+      const patch = (spec.reresolve ?? spec.resolve)(s, p, actor, get);
       if (!patch) return;
       if (free) {
         const label = consumeActiveFlag(actor, 'freeReroll');
@@ -159,7 +160,7 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       if (!spec.failed(p)) return; // on ne pactise que pour relancer un Test RATÉ (LDB 19 l.16)
       const actor = spec.actor(s, p);
       if (!actor || actor.kind !== 'hero') return; // la Corruption ne suit que les héros
-      const patch = (spec.reresolve ?? spec.resolve)(s, p, actor);
+      const patch = (spec.reresolve ?? spec.resolve)(s, p, actor, get);
       if (!patch) return;
       // « recevoir volontairement un Point de Corruption pour pouvoir relancer un Test,
       // même si un deuxième jet a déjà été effectué » (l.41) — pas de drapeau `rerolled`,

@@ -13,22 +13,26 @@ import type {
   GameState,
   PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
-  PendingCorruption,
+  PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
 import { makeRollFlow } from './rollFlow';
 import { battleRng } from './battleRng';
 import { actorIn } from './combatOrParty';
-import { TRAMPLE_WEAPON } from './combatFlow';
-import { mountMovement } from './mount';
-import { resolveTrample, rederivePassiveAttack } from '../engine/combat';
+import {
+  TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
+  castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
+} from './combatFlow';
+import { mountMovement, mountedDodgePenalty } from './mount';
+import { sceneCombatModifiers } from './sceneRules';
+import { resolveTrample, rederivePassiveAttack, finishMelee, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
-import { resolveFocus } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR } from '../engine/magic';
 import { effectiveChar } from '../engine/characteristics';
 import {
   resolvePeurTest, resolveTerreurTest, resolveCalmeSimple, resolveFrenzyEntry, calmeValue, CIBLE_TYPES,
@@ -55,7 +59,214 @@ function psychResolve(s: GameState, p: PendingPsych, actor: Combatant | undefine
   return { result: resolvePeurTest(calmeValue(actor), p.indice, p.prevDR, battleRng()) };
 }
 
+/** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
+ *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
+function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack, atk2: TestResult): AttackResult {
+  const weapon = firedWeapon(attacker, target, p.weaponUid); // arme choisie (ou auto) + munition combinée
+  const r = p.result!;
+  if (r.defenderDetail) {
+    const dd = r.defenderDetail;
+    const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
+    return finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), p.location ?? undefined);
+  }
+  return rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', p.location ?? undefined);
+}
+
 export const FLOWS = {
+  /**
+   * Attaque (modale différée). Le JET INITIAL reste métier (`attackRoll` : +1 Avantage si cible
+   * Sonnée, annulation hors portée/LdV, victime de déviation dans la mêlée) — comme `attackConfirm`.
+   * Le cycle Chance/Pacte/Résilience/dé choisi vit ICI, identique à tous les flux.
+   */
+  attack: makeRollFlow<PendingAttack>({
+    key: 'pendingAttack',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => inBattle(s, p.attackerId),
+    // Relance (Chance/Pacte) : re-résolution complète — mêmes environnement et options de tir.
+    resolve: (s, p, actor, get) => {
+      const target = inBattle(s, p.targetId);
+      if (!actor || !target) return null;
+      const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid);
+      return r ? { result: r.res, victimId: r.victim?.id } : null;
+    },
+    // 2ᵉ frappe du Maniement de deux armes : jet IMPOSÉ (d100 inversé) — ni relance ni Pacte.
+    failed: (p) => !p.dualSecond && !!p.result && !p.result.attackerDetail?.success,
+    bonus: {
+      guard: (p) => !!p.result?.attackerDetail,
+      derive: (s, p, actor) => {
+        const target = inBattle(s, p.targetId);
+        if (!target) return null;
+        const ad = p.result!.attackerDetail!;
+        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
+        return { result: rederiveAttack(actor, target, p, atk2) };
+      },
+    },
+    force: {
+      guard: (p) => !!p.result?.attackerDetail,
+      derive: (s, p, actor) => {
+        const target = inBattle(s, p.targetId);
+        if (!target) return null;
+        const ad = p.result!.attackerDetail!;
+        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
+        const defSL = p.result!.defenderDetail?.sl ?? 0;
+        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
+        return { result: rederiveAttack(actor, target, p, atk2) };
+      },
+    },
+    // « vous choisissez le résultat » : 11 → Coup Critique (l'exemple Salundra l.75) ; 01 → DR max ;
+    // les unités nourrissent Percutante/Dévastatrice et la localisation inversée.
+    forceRoll: {
+      derive: (s, p, actor, roll) => {
+        const target = inBattle(s, p.targetId);
+        const ad = p.result?.attackerDetail;
+        if (!target || !ad || roll > Math.min(99, ad.target)) return null; // doit RESTER une réussite
+        const defSL = p.result!.defenderDetail?.sl ?? 0;
+        const sl = Math.max(evaluateTest(roll, ad.target).sl, defSL + 1, 1);
+        const atk2: TestResult = { roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(roll) };
+        return { result: rederiveAttack(actor, target, p, atk2) };
+      },
+    },
+  }),
+
+  /**
+   * Défense réactive (héros attaqué par l'IA) : le jet d'attaque (`p.atk`) reste FIGÉ dans tous
+   * les cas — seul le jet du défenseur se (re)joue. `defenseConfirm`/`defenseCancel` (métier :
+   * reprise du tour IA, « Subir ») restent au store.
+   */
+  defense: makeRollFlow<PendingDefense>({
+    key: 'pendingDefense',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => inBattle(s, p.defenderId),
+    resolve: (s, p, actor) => {
+      const attacker = inBattle(s, p.attackerId);
+      if (!attacker || !actor) return null;
+      // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
+      const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
+      const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
+      const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon);
+      return { def, result: finishMelee(attacker, actor, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry) };
+    },
+    failed: (p) => !!p.result && !p.def?.success,
+    bonus: {
+      guard: (p) => !!p.result?.defenderDetail,
+      derive: (s, p, actor) => {
+        const attacker = inBattle(s, p.attackerId);
+        if (!attacker) return null;
+        const dd = p.result!.defenderDetail!;
+        const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
+        const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
+        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined, [], 0, undefined, parry) };
+      },
+    },
+    force: {
+      guard: (p) => !!p.result?.defenderDetail && !!p.def,
+      derive: (s, p, actor) => {
+        const attacker = inBattle(s, p.attackerId);
+        if (!attacker) return null;
+        const dd = p.result!.defenderDetail!;
+        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
+        const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, p.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
+        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+      },
+    },
+    forceRoll: {
+      derive: (s, p, actor, roll) => {
+        const attacker = inBattle(s, p.attackerId);
+        if (!attacker || !p.def || roll > Math.min(99, p.def.target)) return null; // doit RESTER une réussite
+        const sl = Math.max(evaluateTest(roll, p.def.target).sl, p.atk.sl + 1, 1);
+        const def2: TestResult = { roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(roll) };
+        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+      },
+    },
+  }),
+
+  /**
+   * Incantation / Prière. Le JET INITIAL reste métier (`castRoll` : wards journalisés,
+   * Surincantation automatique de l'IA, déclaration de Contre-sort ennemi) — le cycle
+   * Chance/Pacte/Résilience/dé choisi vit ici.
+   */
+  cast: makeRollFlow<PendingCast>({
+    key: 'pendingCast',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.casterId),
+    // Relance (Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48).
+    resolve: (s, p, actor) => {
+      const target = actorIn(s, p.targetId);
+      const spell = effectiveSpellOf(p); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+      if (!actor || !target || !spell) return null;
+      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell);
+      const res = p.missile
+        ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
+        : resolveCasting(actor, spell, battleRng(), 'intermediaire', p.focused, ward);
+      return { result: res };
+    },
+    // Échec d'incantation = d100 propre raté (roll > cible) — relance/Pacte alignés.
+    failed: (p) => !!p.result && p.result.roll > p.result.target,
+    bonus: {
+      // Chance « +1 DR » : peut franchir le NI, cumulable.
+      derive: (s, p, actor) => {
+        const target = actorIn(s, p.targetId);
+        const spell = effectiveSpellOf(p);
+        if (!target || !spell) return null;
+        return { result: rederiveCastSL(actor, target, spell, p.result!, p.missile, p.focused, 1) };
+      },
+    },
+    force: {
+      guard: (p) => !!p.result,
+      // Plancher : le sort PART (DR ≥ NI) — on force aussi un d100 propre réussi.
+      derive: (s, p, actor) => {
+        const target = actorIn(s, p.targetId);
+        const spell = effectiveSpellOf(p);
+        if (!target || !spell) return null;
+        const ni = p.focused ? 0 : spell.cn ?? 0;
+        const cur = p.result!;
+        return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, p.missile, p.focused, Math.max(1, ni - cur.sl)) };
+      },
+    },
+    // « vous choisissez le résultat » : 11 → Incantation Critique ; 01 → DR max → Surincantation.
+    forceRoll: {
+      derive: (s, p, actor, roll) => {
+        const target = actorIn(s, p.targetId);
+        const spell = effectiveSpellOf(p);
+        if (!target || !spell || !p.result || roll > Math.min(99, p.result.target)) return null;
+        const ni = p.focused ? 0 : spell.cn ?? 0;
+        const sl = evaluateTest(roll, p.result.target).sl
+          + castTestTalentDR(actor, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
+        return { result: rederiveCastSL(actor, target, spell, { ...p.result, roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
+      },
+    },
+  }),
+
+  /**
+   * Désengagement — Test opposé d'Esquive (LDB 15-Dépl l.84-109). Le JET INITIAL reste métier
+   * (`disengageRoll` : transition de phase choice → esquive) ; le jet du foe (`p.atk`) reste figé.
+   * Issue BINAIRE (success/tie/fail) → pas de choix du dé.
+   */
+  disengage: makeRollFlow<PendingDisengage>({
+    key: 'pendingDisengage',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => inBattle(s, p.moverId),
+    resolve: (s, p, actor) => {
+      if (!actor || !p.atk) return null;
+      const def = rollMeleeDefender(actor, 'esquive', battleRng());
+      const opp = resolveOpposed(def, p.atk); // mover = « attaquant » du Test opposé
+      return { def, result: disengageOutcome(opp.winner) };
+    },
+    failed: (p) => !p.def?.success,
+    bonus: {
+      guard: (p) => !!p.def,
+      derive: (_s, p) => {
+        const def2: TestResult = { ...p.def!, sl: p.def!.sl + 1 };
+        const opp = resolveOpposed(def2, p.atk!);
+        return { def: def2, result: disengageOutcome(opp.winner) };
+      },
+    },
+    force: {
+      guard: (p) => !!p.result && !!p.def,
+      derive: () => ({ result: 'success' as const }), // l'emporte (LDB ch.17 l.73)
+    },
+  }),
+
   /** Piétinement (LDB 85 l.320-321) : attaque de Bagarre, action gratuite à 1 Avantage. */
   trample: makeRollFlow<PendingTrample>({
     key: 'pendingTrample',

@@ -10,9 +10,9 @@ import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
-  applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
+  applyEffects, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
-  effectiveSpellOf, finishPlayerAction, castInfoIsPrayer,
+  effectiveSpellOf, finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
@@ -34,7 +34,7 @@ import { pickActiveModalKey } from './modalArbiter';
  *  performClick d'IsoStage — pour rester neutre vis-à-vis des harnais de test sans UI.) */
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
   !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
-import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
+import { mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
 import * as netFlow from './netFlow';
@@ -67,18 +67,13 @@ import {
   combatValue,
   rollMeleeDefender,
   resolveBackstabAttack,
-  finishMelee,
   resolveMeleePassive,
   attackWeapon,
-  rederivePassiveAttack,
-  AttackResult,
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles, castTestTalentDR } from '../engine/magic';
-import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
-import { canReroll } from '../engine/fortune';
-import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { rollTest, resolveOpposed } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, customTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
@@ -132,7 +127,6 @@ import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow'
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
-import { sceneCombatModifiers } from './sceneRules';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
@@ -1517,54 +1511,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pc?.result || !counter || !caster || caster.kind !== 'enemy' || counter.kind !== 'hero') return;
     if (applyCounterspell(get, set, counter)) set({ ...touchActors(get()) });
   },
-  castReroll: () => {
-    const { pendingCast: pc } = get();
-    if (!pc || !pc.result) return;
-    // Échec d'incantation = d100 propre > cible (roll > target), 1× max.
-    if (!canReroll(pc.result.roll > pc.result.target, !!pc.rerolled)) return;
-    const caster = actorIn(get(), pc.casterId);
-    const target = actorIn(get(), pc.targetId);
-    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
-    const free = !!caster && hasActiveFlag(caster, 'freeReroll');
-    if (!caster || !target || !spell || (!free && (caster.fortune ?? 0) <= 0)) return;
-    if (free) consumeActiveFlag(caster, 'freeReroll');
-    else caster.fortune = (caster.fortune ?? 0) - 1; // Chance : relance le jet d'incantation
-    const ward = castWardPenalty(get(), target, spell) + domainCastBonus(get(), caster, spell); // Sorcière (LDB 42) + Aqshy (LDB 48)
-    const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
-      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
-    set({ pendingCast: { ...pc, result: res, rerolled: true }, ...touchActors(get()) });
-  },
-  /** Chance « +1 DR » : +1 DR à l'incantation figée (peut franchir le NI), cumulable. */
-  castBonusSL: () => {
-    const { pendingCast: pc } = get();
-    if (!pc || !pc.result) return;
-    const caster = actorIn(get(), pc.casterId);
-    const target = actorIn(get(), pc.targetId);
-    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    if (!caster || !target || !spell || (caster.fortune ?? 0) <= 0) return;
-    caster.fortune = (caster.fortune ?? 0) - 1;
-    const res = rederiveCastSL(caster, target, spell, pc.result, pc.missile, pc.focused, 1);
-    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
-  },
-  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une incantation dont le
-   *  jet propre est raté — même après la relance de Chance, répétable. */
-  castDarkPact: () => {
-    const { pendingCast: pc } = get();
-    if (!pc || !pc.result) return;
-    if (pc.result.roll > 0 && pc.result.roll <= pc.result.target) return; // jet propre réussi → rien à pactiser
-    const caster = actorIn(get(), pc.casterId);
-    const target = actorIn(get(), pc.targetId);
-    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    if (!caster || caster.kind !== 'hero' || !target || !spell) return;
-    for (const l of gainCorruption(get, set, caster, 1)) get().log(l);
-    const ward = castWardPenalty(get(), target, spell) + domainCastBonus(get(), caster, spell); // Sorcière (LDB 42) + Aqshy (LDB 48)
-    const res = pc.missile
-      ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
-      : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
-    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
-  },
+  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `cast` de rollFlows.ts).
+  castReroll: () => FLOWS.cast.reroll(get, set),
+  castBonusSL: () => FLOWS.cast.bonusSL(get, set),
+  castDarkPact: () => FLOWS.cast.darkPact(get, set),
   castConfirm: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
@@ -2587,58 +2537,10 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id } });
   },
-  attackReroll: () => {
-    const { battle, pendingAttack: pa } = get();
-    if (!battle || !pa || !pa.result) return;
-    if (pa.dualSecond) return; // 2ᵉ frappe du Maniement : jet imposé (d100 inversé / tableau des Critiques) — pas de relance
-    // Relance si le jet d'attaque propre est raté (succès du d100 de l'attaquant), 1× max.
-    if (!canReroll(!pa.result.attackerDetail?.success, !!pa.rerolled)) return;
-    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-    const target = battle.combatants.find((c) => c.id === pa.targetId);
-    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
-    const free = !!attacker && hasActiveFlag(attacker, 'freeReroll');
-    if (!attacker || !target || (!free && (attacker.fortune ?? 0) <= 0)) return;
-    if (free) consumeActiveFlag(attacker, 'freeReroll');
-    else attacker.fortune = (attacker.fortune ?? 0) - 1; // Dépense d'un point de Chance : relance le jet (LDB ch.17 l.24)
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
-    if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id, rerolled: true }, battle: { ...battle } });
-  },
-  /** Chance « +1 DR » : +1 DR au jet d'attaque figé, re-dérive l'issue (sans relancer). */
-  attackBonusSL: () => {
-    const { battle, pendingAttack: pa } = get();
-    if (!battle || !pa || !pa.result || !pa.result.attackerDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-    const target = battle.combatants.find((c) => c.id === pa.targetId);
-    if (!attacker || !target || (attacker.fortune ?? 0) <= 0) return;
-    attacker.fortune = (attacker.fortune ?? 0) - 1;
-    const r = pa.result;
-    const ad = r.attackerDetail!;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-    const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto) + munition combinée
-    let res: AttackResult;
-    if (r.defenderDetail) {
-      const dd = r.defenderDetail;
-      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
-      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
-    } else {
-      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
-    }
-    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
-  },
-  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER une attaque dont le jet
-   *  propre est raté — même après la relance de Chance, répétable (chaque usage corrompt). */
-  attackDarkPact: () => {
-    const { battle, pendingAttack: pa } = get();
-    if (!battle || !pa || !pa.result) return;
-    if (pa.dualSecond) return; // jet imposé (d100 inversé) — pas de relance possible
-    if (pa.result.attackerDetail?.success) return; // on ne pactise que sur un Test RATÉ
-    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-    const target = battle.combatants.find((c) => c.id === pa.targetId);
-    if (!attacker || attacker.kind !== 'hero' || !target) return;
-    for (const l of gainCorruption(get, set, attacker, 1)) get().log(l);
-    const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid);
-    if (r) set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id }, battle: { ...get().battle! } });
-  },
+  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `attack` de rollFlows.ts).
+  attackReroll: () => FLOWS.attack.reroll(get, set),
+  attackBonusSL: () => FLOWS.attack.bonusSL(get, set),
+  attackDarkPact: () => FLOWS.attack.darkPact(get, set),
   attackConfirm: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -2926,68 +2828,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pd || pd.result) return; // choix d'arme de parade avant le jet seulement
     set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
   },
-  defenseRoll: () => {
-    // « Défendre » : roule la défense du héros et résout le Test opposé (atk figé).
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || pd.result) return;
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender) return;
-    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.115-116/225)
-    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon); // Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320)
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
-    set({ pendingDefense: { ...pd, def, result: res } });
-  },
-  defenseReroll: () => {
-    // Dépense d'un point de Chance du DÉFENSEUR : relance UNIQUEMENT la défense (LDB Destin).
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || !pd.result) return;
-    if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // défense propre ratée, 1× max
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
-    const free = !!defender && hasActiveFlag(defender, 'freeReroll');
-    if (!attacker || !defender || (!free && (defender.fortune ?? 0) <= 0)) return;
-    if (free) consumeActiveFlag(defender, 'freeReroll');
-    else defender.fortune = (defender.fortune ?? 0) - 1; // le jet d'attaque (pd.atk) reste figé
-    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender); // neige −20 + cavalier −20 (LDB 14 l.225)
-    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon); // Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320)
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
-    set({ pendingDefense: { ...pd, def, result: res, rerolled: true }, battle: { ...battle } });
-  },
-  /** Chance « +1 DR » du défenseur : +1 DR à SA défense figée (le jet d'attaque reste figé). */
-  defenseBonusSL: () => {
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || !pd.result || !pd.result.defenderDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender || (defender.fortune ?? 0) <= 0) return;
-    defender.fortune = (defender.fortune ?? 0) - 1;
-    const dd = pd.result.defenderDetail!;
-    const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
-    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined; // arme de parade choisie (défaut = main principale)
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined, [], 0, undefined, parry);
-    set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
-  },
-  /** Sombre Pacte du défenseur (LDB 19 l.41) : +1 Corruption pour RELANCER sa défense ratée —
-   *  même déjà relancée par la Chance (le jet d'attaque reste figé). */
-  defenseDarkPact: () => {
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || !pd.result || pd.def?.success) return; // on ne pactise que pour relancer un Test RATÉ
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender || defender.kind !== 'hero') return; // la Corruption ne suit que les héros
-    const dodgeMod = (get().scene ? sceneCombatModifiers(get().scene!, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender);
-    const parry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined;
-    const def = rollMeleeDefender(defender, pd.mode, battleRng(), dodgeMod, parry, pd.weapon);
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def, pd.mode, pd.location ?? undefined, [], dodgeMod, undefined, parry);
-    const lines = gainCorruption(get, set, defender, 1);
-    for (const l of lines) get().log(l);
-    // Pas de drapeau `rerolled` : le Pacte reste disponible (chaque usage corrompt — c'est sa limite).
-    set({ pendingDefense: { ...get().pendingDefense!, def, result: res }, battle: { ...get().battle! } });
-  },
+  // Cycle COMPLET unifié (fabrique rollFlow — spec `defense` de rollFlows.ts) : le jet initial
+  // est une résolution pure (le jet d'attaque `atk` reste figé dans tous les cas).
+  defenseRoll: () => FLOWS.defense.roll(get, set),
+  defenseReroll: () => FLOWS.defense.reroll(get, set),
+  defenseBonusSL: () => FLOWS.defense.bonusSL(get, set),
+  defenseDarkPact: () => FLOWS.defense.darkPact(get, set),
   defenseConfirm: () => {
     // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
     const { battle, pendingDefense: pd } = get();
@@ -3145,169 +2991,23 @@ export const useGame = create<GameState>((set, get) => ({
     const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
     set({ pendingDisengage: { ...pd, phase: 'esquive', def, result: disengageOutcome(opp.winner) } });
   },
-  // Chance du mover : relance UNIQUEMENT son Esquive (le jet du foe reste figé).
-  disengageReroll: () => {
-    const { battle, pendingDisengage: pd } = get();
-    if (!battle || !pd || !pd.result) return;
-    if (!canReroll(!pd.def?.success, !!pd.rerolled)) return; // Esquive propre ratée, 1× max
-    const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
-    const free = !!mover && hasActiveFlag(mover, 'freeReroll');
-    if (!mover || (!free && (mover.fortune ?? 0) <= 0)) return;
-    if (free) consumeActiveFlag(mover, 'freeReroll');
-    else mover.fortune = (mover.fortune ?? 0) - 1;
-    const def = rollMeleeDefender(mover, 'esquive', battleRng());
-    const opp = resolveOpposed(def, pd.atk!);
-    set({ pendingDisengage: { ...pd, def, result: disengageOutcome(opp.winner), rerolled: true }, battle: { ...battle } });
-  },
-  /** Chance « +1 DR » du mover : +1 DR à l'Esquive figée (le jet du foe reste figé). */
-  disengageBonusSL: () => {
-    const { battle, pendingDisengage: pd } = get();
-    if (!battle || !pd || !pd.result || !pd.def) return;
-    const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    if (!mover || (mover.fortune ?? 0) <= 0) return;
-    mover.fortune = (mover.fortune ?? 0) - 1;
-    const def2: TestResult = { ...pd.def, sl: pd.def.sl + 1 };
-    const opp = resolveOpposed(def2, pd.atk!);
-    set({ pendingDisengage: { ...pd, def: def2, result: disengageOutcome(opp.winner) }, battle: { ...battle } });
-  },
-  /** Sombre Pacte du mover (LDB 19 l.41) : +1 Corruption pour RELANCER son Esquive ratée —
-   *  même déjà relancée (le jet du foe reste figé). */
-  disengageDarkPact: () => {
-    const { battle, pendingDisengage: pd } = get();
-    if (!battle || !pd || !pd.result || pd.def?.success) return; // Test RATÉ uniquement (LDB 19 l.16)
-    const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    if (!mover || mover.kind !== 'hero') return;
-    const def = rollMeleeDefender(mover, 'esquive', battleRng());
-    const opp = resolveOpposed(def, pd.atk!);
-    const lines = gainCorruption(get, set, mover, 1);
-    for (const l of lines) get().log(l);
-    set({ pendingDisengage: { ...get().pendingDisengage!, def, result: disengageOutcome(opp.winner) }, battle: { ...get().battle! } });
-  },
+  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `disengage` de rollFlows.ts) :
+  // le jet du foe (atk) reste figé, seule l'Esquive du mover se (re)joue.
+  disengageReroll: () => FLOWS.disengage.reroll(get, set),
+  disengageBonusSL: () => FLOWS.disengage.bonusSL(get, set),
+  disengageDarkPact: () => FLOWS.disengage.darkPact(get, set),
 
-  // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1) ──
+  // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1)
+  // et « vous choisissez le résultat » (dé choisi) — cycle UNIFIÉ par la fabrique rollFlow,
+  // une spec par flux dans rollFlows.ts. Plus AUCUNE implémentation sur mesure ici. ──
   testForceSuccess: () => FLOWS.test.forceSuccess(get, set),
-  attackForceSuccess: () => {
-    const { battle, pendingAttack: pa } = get();
-    if (!battle || !pa || !pa.result || !pa.result.attackerDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-    const target = battle.combatants.find((c) => c.id === pa.targetId);
-    if (!attacker || !target || (attacker.resilience ?? 0) <= 0) return;
-    attacker.resilience = (attacker.resilience ?? 0) - 1;
-    const r = pa.result;
-    const ad = r.attackerDetail!;
-    const defSL = r.defenderDetail?.sl ?? 0;
-    const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
-    const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto) + munition combinée
-    let res: AttackResult;
-    if (r.defenderDetail) {
-      const dd = r.defenderDetail;
-      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
-      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
-    } else {
-      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
-    }
-    // `forced` : sur un Coup Critique, le joueur pourra CHOISIR la localisation (RAW-2, LDB 17 l.73).
-    set({ pendingAttack: { ...pa, result: res, forced: true }, battle: { ...battle } });
-  },
-  /** « vous choisissez le résultat » (LDB 17 l.73) : après le force, le joueur peut poser la valeur du
-   *  dé (ex. 44 → Coup Critique, cf. l'exemple Salundra l.75 ; 01 → DR max ; X9 nourrit Percutante).
-   *  Même Test → ne re-dépense PAS de Résilience ; l'attaque est re-dérivée avec le dé choisi. */
-  attackSetForcedRoll: (roll) => {
-    const { battle, pendingAttack: pa } = get();
-    if (!battle || !pa || !pa.forced || !pa.result?.attackerDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-    const target = battle.combatants.find((c) => c.id === pa.targetId);
-    if (!attacker || !target) return;
-    const ad = pa.result.attackerDetail;
-    const chosen = Math.floor(roll);
-    if (chosen < 1 || chosen > Math.min(99, ad.target)) return; // doit RESTER une réussite (jamais 00)
-    const defSL = pa.result.defenderDetail?.sl ?? 0;
-    // Test opposé : « vous l'emportez avec au moins DR +1 » (même plancher que le force initial).
-    const sl = Math.max(evaluateTest(chosen, ad.target).sl, defSL + 1, 1);
-    const atk2: TestResult = { roll: chosen, target: ad.target, success: true, sl, isDouble: isDoubleRoll(chosen) };
-    const weapon = firedWeapon(attacker, target, pa.weaponUid);
-    let res: AttackResult;
-    if (pa.result.defenderDetail) {
-      const dd = pa.result.defenderDetail;
-      const def: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl, isDouble: isDoubleRoll(dd.roll) };
-      res = finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), pa.location ?? undefined);
-    } else {
-      res = rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', pa.location ?? undefined);
-    }
-    set({ pendingAttack: { ...pa, result: res }, battle: { ...battle } });
-  },
-  defenseForceSuccess: () => {
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || !pd.result || !pd.result.defenderDetail) return;
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender || (defender.resilience ?? 0) <= 0) return;
-    defender.resilience = (defender.resilience ?? 0) - 1;
-    const dd = pd.result.defenderDetail!;
-    const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, pd.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
-    // `forced` : le joueur peut maintenant CHOISIR la valeur de son dé (LDB 17 l.73).
-    set({ pendingDefense: { ...pd, def: def2, result: res, forced: true }, battle: { ...battle } });
-  },
-  /** « vous choisissez le résultat » (LDB 17 l.73) sur une défense forcée : re-dérive avec le dé
-   *  choisi (11 → double du défenseur ; 01 → DR max). Test opposé : « vous l'emportez avec au
-   *  moins DR +1 » (même plancher que le force) ; même Test → pas de re-dépense de Résilience. */
-  defenseSetForcedRoll: (roll) => {
-    const { battle, pendingDefense: pd } = get();
-    if (!battle || !pd || !pd.forced || !pd.def || !pd.result) return;
-    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
-    if (!attacker || !defender) return;
-    const chosen = Math.floor(roll);
-    if (chosen < 1 || chosen > Math.min(99, pd.def.target)) return; // doit RESTER une réussite
-    const sl = Math.max(evaluateTest(chosen, pd.def.target).sl, pd.atk.sl + 1, 1);
-    const def2: TestResult = { roll: chosen, target: pd.def.target, success: true, sl, isDouble: isDoubleRoll(chosen) };
-    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
-    set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
-  },
-  castForceSuccess: () => {
-    const { pendingCast: pc } = get();
-    if (!pc || !pc.result) return;
-    const caster = actorIn(get(), pc.casterId);
-    const target = actorIn(get(), pc.targetId);
-    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    if (!caster || !target || !spell || (caster.resilience ?? 0) <= 0) return;
-    caster.resilience = (caster.resilience ?? 0) - 1;
-    const ni = pc.focused ? 0 : spell.cn ?? 0;
-    const cur = pc.result;
-    const bonusNeeded = Math.max(1, ni - cur.sl); // au moins le NI ; on force aussi un d100 propre réussi
-    const res = rederiveCastSL(caster, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, pc.missile, pc.focused, bonusNeeded);
-    // `forced` : le joueur peut maintenant CHOISIR la valeur de son dé (LDB 17 l.73).
-    set({ pendingCast: { ...pc, result: res, forced: true }, ...touchActors(get()) });
-  },
-  /** « vous choisissez le résultat » (LDB 17 l.73) sur une incantation forcée : re-dérive avec le
-   *  dé choisi (11 → Incantation Critique, comme l'exemple Salundra ; 01 → DR max → Surincantation).
-   *  Plancher : le sort PART (DR ≥ NI, sémantique du force) ; les talents à bonus de DR du Test
-   *  d'incantation s'ajoutent comme au jet naturel. Même Test → pas de re-dépense de Résilience. */
-  castSetForcedRoll: (roll) => {
-    const { pendingCast: pc } = get();
-    if (!pc || !pc.forced || !pc.result) return;
-    const caster = actorIn(get(), pc.casterId);
-    const target = actorIn(get(), pc.targetId);
-    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
-    if (!caster || !target || !spell) return;
-    const chosen = Math.floor(roll);
-    if (chosen < 1 || chosen > Math.min(99, pc.result.target)) return; // doit RESTER une réussite
-    const ni = pc.focused ? 0 : spell.cn ?? 0;
-    const sl = evaluateTest(chosen, pc.result.target).sl
-      + castTestTalentDR(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
-    const res = rederiveCastSL(caster, target, spell, { ...pc.result, roll: chosen, sl }, pc.missile, pc.focused, Math.max(0, ni - sl));
-    set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
-  },
-  disengageForceSuccess: () => {
-    const { battle, pendingDisengage: pd } = get();
-    if (!battle || !pd || !pd.result || !pd.def) return;
-    const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    if (!mover || (mover.resilience ?? 0) <= 0) return;
-    mover.resilience = (mover.resilience ?? 0) - 1;
-    set({ pendingDisengage: { ...pd, result: 'success' }, battle: { ...battle } }); // l'emporte (LDB ch.17 l.73)
-  },
+  attackForceSuccess: () => FLOWS.attack.forceSuccess(get, set),
+  attackSetForcedRoll: (roll) => FLOWS.attack.setForcedRoll(get, set, roll),
+  defenseForceSuccess: () => FLOWS.defense.forceSuccess(get, set),
+  defenseSetForcedRoll: (roll) => FLOWS.defense.setForcedRoll(get, set, roll),
+  castForceSuccess: () => FLOWS.cast.forceSuccess(get, set),
+  castSetForcedRoll: (roll) => FLOWS.cast.setForcedRoll(get, set, roll),
+  disengageForceSuccess: () => FLOWS.disengage.forceSuccess(get, set),
 
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
   disengageConfirm: () => {
