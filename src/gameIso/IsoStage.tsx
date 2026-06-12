@@ -47,8 +47,9 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
 import { hoverTargeting } from '../state/targeting';
+import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
@@ -68,6 +69,23 @@ const VH = 720;
 const AMBIANCE_DEFS = `
   <radialGradient id="g_warm" cx="55%" cy="24%" r="78%"><stop offset="0%" stop-color="#ffce78" stop-opacity="0.10"/><stop offset="100%" stop-color="#ffce78" stop-opacity="0"/></radialGradient>
   <radialGradient id="g_vig" cx="50%" cy="48%" r="60%"><stop offset="52%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#05040a" stop-opacity="0.58"/></radialGradient>`;
+
+/** Tracé d'un DÉPLACEMENT (chemin + case d'arrivée + badge d'action) — source unique du rendu,
+ *  partagée entre l'aperçu tap-1 (battle.preview, tactile) et l'aperçu au SURVOL (desktop). */
+function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string): JSX.Element[] {
+  const els: JSX.Element[] = [];
+  if (path.length > 1) {
+    const pts = path.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
+    els.push(<polyline key={`${keyPrefix}-path`} points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} pointerEvents="none" />);
+  }
+  if (dest) els.push(<path key={`${keyPrefix}-dest`} d={diamondPath(dest.x, dest.y, d)} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.95} pointerEvents="none" />);
+  const at = dest ?? (path.length ? path[path.length - 1] : null);
+  if (label && at) {
+    const c0 = tileCenter(at.x, at.y, d);
+    els.push(<text key={`${keyPrefix}-lbl`} x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{label}</text>);
+  }
+  return els;
+}
 
 /** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'un décor, pour le move-to-interact (P5). */
 function adjacentWalkable(
@@ -274,8 +292,10 @@ export function IsoStage() {
     fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
     toId: string;
     line: 'dashed' | 'solid' | null;
-    /** Carte d'infobulle : 3 lignes (nom / compétence + valeur / dégâts) ou erreur ⛔ courte. */
-    tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null } | { kind: 'err'; text: string } | null;
+    /** Chemin RÉEL d'un déplacement combiné (Charge / rejoindre) — tracé à la place de la ligne droite. */
+    path?: { x: number; y: number }[];
+    /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur ⛔ courte. */
+    tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
     reticle: boolean;
   } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !hover) return null;
@@ -325,8 +345,19 @@ export function IsoStage() {
       const text = ht.reason === 'los' ? '⛔ pas de ligne de vue' : ht.reason === 'engaged' ? '⛔ Engagé — se désengager' : '⛔ hors de portée';
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
-    return { fromId: activeH.id, toId: occ.id, line: ht.line, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg }, reticle: true };
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, reticle: true };
   }, [hover, mode, battle, scene, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+
+  // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
+  // souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes
+  // sources que le clic (movePreviewAt) ; memoïsé : pathTo ne tourne pas à 60 Hz.
+  const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
+    if (mode !== 'battle' || !battle || battle.over || !hover || battle.preview) return null;
+    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
+    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+    if (occ) return null; // une cible a sa propre visée (hoverAim)
+    return movePreviewAt(useGame.getState, hover);
+  }, [hover, mode, battle, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
   // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés
@@ -352,24 +383,15 @@ export function IsoStage() {
       const [x, y] = k.split(',').map(Number);
       hl.push(<path key={`r${k}`} d={diamondPath(x, y, d)} fill="#9b6be0" opacity={0.24} />);
     }
-    // Aperçu tap-1 (modèle implicite) : chemin pointillé, case d'arrivée, badge de l'action du tap 2.
+    // Aperçu tap-1 (tactile) : chemin + case d'arrivée + badge — MÊME rendu que le survol desktop
+    // (movePreviewEls, source unique du tracé de déplacement).
     const pv = battle.preview;
     if (pv) {
-      const pvPath = pv.kind === 'attack' ? [] : pv.path;
-      if (pvPath.length > 1) {
-        const pts = pvPath.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
-        hl.push(<polyline key="pv-path" points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} pointerEvents="none" />);
-      }
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
-      if (pvDest) hl.push(<path key="pv-dest" d={diamondPath(pvDest.x, pvDest.y, d)} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.95} pointerEvents="none" />);
-      if (pvTgt?.pos) hl.push(<path key="pv-tgt" d={diamondPath(pvTgt.pos.x, pvTgt.pos.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />);
       const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
-      const pvAt = pvDest ?? pvTgt?.pos;
-      if (pvAt) {
-        const c0 = tileCenter(pvAt.x, pvAt.y, d);
-        hl.push(<text key="pv-lbl" x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{pvLbl}</text>);
-      }
+      hl.push(...movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, d, 'pv'));
+      if (pvTgt?.pos) hl.push(<path key="pv-tgt" d={diamondPath(pvTgt.pos.x, pvTgt.pos.y, d)} fill="#ffd75e" opacity={0.18} pointerEvents="none" />);
     }
     // Teinte d'équipe des CASES occupées (choix C, Lot 1) : allié vert / ennemi rouge / actif jaune.
     for (const c of battle.combatants) {
@@ -796,9 +818,10 @@ export function IsoStage() {
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
       // En mode incantation — ou pendant le choix des cibles de Surincantation (carte) — on peut
       // cibler n'importe quel combattant (allié, ennemi ou soi) ; sinon seuls les ennemis sont
-      // cliquables pour attaquer.
-      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast' || st.pendingCast?.pickingTargets)) st.battleClickEntity(occ.id);
-      else st.battleClickTile({ x, y });
+      // cliquables pour attaquer. Desktop (survol) : la visée a déjà tout montré → un clic COMMET
+      // l'attaque ; tactile : deux-taps (tap 1 = aperçu) — cf. pointerCaps.
+      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast' || st.pendingCast?.pickingTargets)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
+      else st.battleClickTile({ x, y }, { confirm: hoverClickCommits() });
       return;
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y);
@@ -1016,6 +1039,12 @@ export function IsoStage() {
             </g>
           );
         })()}
+        {/* Aperçu de DÉPLACEMENT au survol (desktop) : chemin + badge — le clic unique commet. */}
+        {mode === 'battle' && battle && hoverMove && hover && (
+          <g pointerEvents="none">
+            {movePreviewEls(hoverMove.path, hover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv')}
+          </g>
+        )}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
             survol (hoverAim) : réticule sur cible VALIDE + infobulle unifiée mêlée/tir/sort
             « arme ou sort · compétence base ±mod · Dégâts N » (états ⛔ LdV / portée / Engagé). */}
@@ -1056,9 +1085,15 @@ export function IsoStage() {
           const to = reticleAnchor(t);
           const a = byId(hoverAim.fromId);
           const tip = hoverAim.tip;
+          // Charge / rejoindre : on trace le CHEMIN réel du déplacement combiné (le clic UNIQUE
+          // commet mouvement + attaque) — la ligne droite ne vaut que pour l'attaque sur place.
+          const pathPts = (hoverAim.path?.length ?? 0) > 1
+            ? hoverAim.path!.map((p) => tileCenter(p.x, p.y, dims)).map((p) => `${p.cx},${p.cy}`).join(' ')
+            : null;
           return (
             <g pointerEvents="none">
-              {hoverAim.reticle && <TargetReticle from={a ? reticleAnchor(a) : null} to={to} line={hoverAim.line} lineColor="#ffd75e" />}
+              {pathPts && <polyline points={pathPts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} />}
+              {hoverAim.reticle && <TargetReticle from={pathPts ? null : a ? reticleAnchor(a) : null} to={to} line={pathPts ? null : hoverAim.line} lineColor="#ffd75e" />}
               {tip?.kind === 'err' && (() => {
                 const w = tip.text.length * 6.4 + 14;
                 return (
@@ -1072,27 +1107,34 @@ export function IsoStage() {
               })()}
               {tip?.kind === 'info' && (() => {
                 // Carte compacte : nom (or) / compétence + valeur EFFECTIVE (mod entre parenthèses) /
-                // dégâts « +N » — une info par ligne.
+                // dégâts « +N » / manœuvre (Charge…) — une info par ligne.
                 const eff = tip.base + tip.mod;
                 const modTxt = tip.mod ? ` (${tip.mod > 0 ? '+' : '−'}${Math.abs(tip.mod)})` : '';
                 const l2 = `${tip.skill}  ${eff}${modTxt}`;
                 const l3 = tip.dmg != null ? `Dégâts +${tip.dmg}` : null;
-                const w = Math.max(tip.title.length * 6.6, l2.length * 6, (l3 ?? '').length * 6) + 20;
-                const h = l3 ? 52 : 38;
+                const l4 = tip.note ?? null;
+                const w = Math.max(tip.title.length * 6.6, l2.length * 6, (l3 ?? '').length * 6, (l4 ?? '').length * 6) + 20;
+                const h = 38 + (l3 ? 14 : 0) + (l4 ? 14 : 0);
                 const x0 = -w / 2 + 10;
+                let y = -h + 30; // la ligne 2 démarre sous le titre ; chaque ligne suivante descend de 14
                 return (
                   <g transform={`translate(${to.cx},${to.cy - 60})`}>
                     <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="#14141c" fillOpacity={0.95} stroke="#ffd75e" strokeOpacity={0.75} strokeWidth={1} />
                     <text x={x0} y={-h + 16} fill="#ffd75e" fontSize={11.5} fontWeight={700}>{tip.title}</text>
-                    <text x={x0} y={-h + 30} fontSize={10.5}>
+                    <text x={x0} y={y} fontSize={10.5}>
                       <tspan fill="#b9b2a6">{tip.skill}</tspan>
                       <tspan fill="#f0f0f0" fontWeight={700}>{`  ${eff}`}</tspan>
                       {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? '#5db87a' : '#e0533a'} fontWeight={700}>{modTxt}</tspan>}
                     </text>
                     {l3 && (
-                      <text x={x0} y={-h + 44} fontSize={10.5}>
+                      <text x={x0} y={(y += 14)} fontSize={10.5}>
                         <tspan fill="#b9b2a6">Dégâts</tspan>
                         <tspan fill="#f0f0f0" fontWeight={700}>{`  +${tip.dmg}`}</tspan>
+                      </text>
+                    )}
+                    {l4 && (
+                      <text x={x0} y={(y += 14)} fontSize={10.5} fill="#e3c45a" fontWeight={600}>
+                        {l4}
                       </text>
                     )}
                   </g>

@@ -1012,6 +1012,28 @@ export function castSightBlocked(get: () => GameState, from: Pt, to: Pt): boolea
   return lineOfSightCover(scene, from, to, [], battle ? smokeOf(battle) : []).blocked;
 }
 
+/** Aperçu de DÉPLACEMENT vers `pt` (Marche ou Course) au SURVOL — composé des MÊMES sources que
+ *  le clic-sol (`displayedReach`/`computeRunReach`/`pathTo`, géométrie de la monture incluse) :
+ *  l'aperçu ne ment pas. Les gates de COMMIT (Peur à l'approche, Frénésie) restent au clic,
+ *  comme pour le tap-1 tactile. null = case non atteignable / pas en mode neutre. */
+export function movePreviewAt(get: () => GameState, pt: Pt): { kind: 'move' | 'run'; path: Pt[]; cost: number } | null {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || battle.over || battle.action !== null) return null;
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return null;
+  if (isEngaged(active) || !canMove(battle, active)) return null; // Engagé : le clic route vers le Désengagement
+  const k = `${pt.x},${pt.y}`;
+  const reach = displayedReach(get);
+  const inWalk = reach.has(k);
+  const runReach = inWalk ? null : computeRunReach(get);
+  if (!inWalk && !runReach?.has(k)) return null;
+  const geom = mountOf(battle, active) ?? active;
+  const path = pathTo(scene, active.pos, pt, occupied(battle, geom), sizeFootprint(geom.size)) ?? [];
+  if (path.length < 2) return null;
+  return { kind: inWalk ? 'move' : 'run', path, cost: (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0 };
+}
+
 /** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.170) — même grisage
  *  que le tir, mais indépendant de l'arme portée (mode incantation). */
 export function castOutOfSightTargetIds(get: () => GameState): Set<string> {

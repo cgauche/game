@@ -32,6 +32,10 @@ export type HoverTargeting =
       mod: number;
       /** Dégâts AVANT le DR du jet (arme : Force incluse ; Projectile magique : sort + BFM). null = sans dégâts (buff). */
       dmg: number | null;
+      /** Chemin RÉEL du déplacement combiné (Charge / rejoindre) — tracé au survol à la place de la ligne droite. */
+      path?: { x: number; y: number }[];
+      /** Nature de la manœuvre combinée (« Charge (+1 Avantage) », « Rejoindre + attaquer ») — info de décision. */
+      note?: string;
     };
 
 /** Libellé de la compétence d'attaque : Corps à corps/Projectiles + famille d'arme si connue. */
@@ -88,7 +92,8 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     const p = previewAttack(get, active, target);
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
   }
-  // Charge / rejoindre : aperçu calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact).
+  // Charge / rejoindre : aperçu calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact) ;
+  // le CHEMIN réel et la nature de la manœuvre remontent au survol (le clic UNIQUE commet tout).
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
   const p = previewAttack(get, from, target);
   return {
@@ -99,5 +104,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     base: p.base,
     mod: combineMods(p.mods),
     dmg: p.dmg,
+    path: plan.kind === 'attack' ? undefined : plan.path,
+    note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
   };
 }

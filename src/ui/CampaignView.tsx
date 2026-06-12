@@ -26,6 +26,7 @@ import { WorldMapView } from './WorldMapView';
 import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
+import { hoverClickCommits } from './pointerCaps';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -87,11 +88,11 @@ export function CampaignView() {
   const targetingAction = battle && !battle.over ? battle.action : null;
   const isTargeting = !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
   const onStripPortrait = (id: string) => {
-    if (isTargeting) { battleClickEntity(id); return; }
+    if (isTargeting) { battleClickEntity(id, { confirm: hoverClickCommits() }); return; } // desktop : un clic commet (cf. pointerCaps)
     if (inspectEnabled) setInspectId(id);
   };
   const onDockPortrait = (id: string) => {
-    if (isTargeting) { battleClickEntity(id); return; }
+    if (isTargeting) { battleClickEntity(id, { confirm: hoverClickCommits() }); return; }
     setSheetId(id);
   };
 
