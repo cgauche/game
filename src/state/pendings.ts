@@ -403,19 +403,22 @@ export interface PendingCast {
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */
   critChoice?: 'critique' | 'puissance' | 'ineluctable';
-  /** Surincantation (LDB 47 l.28-31) : « pour chaque +2 DR [au-delà du NI], ajouter une
-   *  valeur de Portée/ZdE/Durée/Cible égale à la valeur initiale », cumulable. Allocation
+  /** Surincantation (LDB 47 l.29) : « pour chaque +2 DR [au-delà du NI], ajouter une valeur
+   *  de Portée/Zone d'Effet/Durée/Cible égale à la valeur initiale », cumulable. Allocation
    *  du surplus dans la modale — `duration` = ×(1+n) sur la durée ; `targets` = n cibles
-   *  SUPPLÉMENTAIRES (`extraTargetIds`, choisies dans la modale). Sorts seulement. */
-  overcast?: { duration: number; targets: number };
+   *  SUPPLÉMENTAIRES (`extraTargetIds`) ; `zone` = n agrandissements du gabarit (+Ø initial
+   *  par allocation, sorts de ZdE). Sorts seulement. */
+  overcast?: { duration: number; targets: number; zone?: number };
   extraTargetIds?: string[];
   /** Choix des cibles supplémentaires EN COURS sur le champ de bataille : la modale s'efface
    *  (bandeau TargetPrompt + clic carte → castToggleExtraTarget), « Valider » la restaure. */
   pickingTargets?: boolean;
-  /** Sort à Zone d'Effet (LDB 47 l.44) ciblé sur une CASE : tous les combattants dans le
-   *  rayon (cases, Chebyshev) sont visés — `extraTargetIds` porte les cibles au-delà de la
-   *  première (résolution multi-cibles du même jet). Cibles figées au ciblage. */
-  zone?: { center: { x: number; y: number }; radius: number };
+  /** Sort à Zone d'Effet (LDB 47 l.44) — flux « jet PUIS pose » : la modale s'ouvre SANS cible
+   *  (`center: null`, `targetId` = ancre lanceur), le jet et la Surincantation (+Zone via `r0m`,
+   *  rayon initial en mètres) précèdent la pose ; `placing` = choix de la case en cours sur la
+   *  carte (la modale s'efface). À la pose : tous les combattants dans `radius` (cases,
+   *  Chebyshev) sont visés par le MÊME jet. */
+  zone?: { center: { x: number; y: number } | null; radius: number; r0m?: number; placing?: boolean };
   /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
    *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
   grimoire?: boolean;
@@ -423,13 +426,14 @@ export interface PendingCast {
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
  *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`
- *  (combat ⇄ groupe, cf. combatOrParty). `intBonus` figé à l'ouverture. */
+ *  (combat ⇄ groupe, cf. combatOrParty). `intBonus` figé à l'ouverture. La CHIRURGIE n'est PLUS un
+ *  mode de pendingHeal : c'est une opération « armée » sur l'infirmerie (state/medicFlow). */
 export interface PendingHeal {
   healerId: string;
   healerName: string;
   targetId: string;
   targetName: string;
-  mode: HealMode; // 'wounds' | 'bleed'
+  mode: HealMode; // 'wounds' | 'bleed' | 'trauma' (jamais 'surgery' — cf. medicFlow)
   intBonus: number; // Bonus d'Intelligence du soigneur
   skillValue: number; // testValue(soigneur, 'Guérison')
   difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)
@@ -438,14 +442,6 @@ export interface PendingHeal {
   success: boolean;
   sl: number; // DR
   rerolled?: boolean;
-  /** Soin par un PNJ (médecin payant) : héros éligibles parmi lesquels le JOUEUR choisit la cible
-   *  (>1 → sélecteur dans la modale). Absent = cible déjà fixée (auto-soin du groupe via la fiche). */
-  candidateIds?: string[];
-  /** CHIRURGIE = Test ÉTENDU de Guérison (LDB 10 l.154 / 12 l.200) : on cumule le DR de passe en passe
-   *  jusqu'à `surgeryTargetDR` (cible 5-10, MJ) ; `surgeryCumDR` = total courant (repart à 0 s'il passe
-   *  sous 0, LDB 12 l.200). CHAQUE passe inflige 1d10 PB + 1 Hémorragie. `surgeryTraumaIdx` = quelle
-   *  Blessure Critique opérer (choix du joueur). Présents seulement en mode 'surgery'. */
-  surgeryTargetDR?: number;
-  surgeryCumDR?: number;
-  surgeryTraumaIdx?: number;
+  /** Acte PAYANT d'un PNJ (infirmerie) : prix déjà débité — remboursé si Annuler AVANT le jet. */
+  paidCost?: { gold?: number; silver?: number; brass?: number };
 }

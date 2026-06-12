@@ -31,6 +31,7 @@ export { Dice } from './Dice';
  */
 export function RollFlowShell({
   variant = 'roll',
+  embedded = false,
   title,
   subtitle,
   extra,
@@ -61,6 +62,9 @@ export function RollFlowShell({
   onConfirm,
 }: {
   variant?: 'roll' | 'test';
+  /** Rendu EMBARQUÉ (zone de jet d'une modale persistante, ex. infirmerie) : même contenu,
+   *  sans l'enveloppe Modal (le parent EST la modale ; Échap géré par lui). */
+  embedded?: boolean;
   title: ReactNode;
   subtitle: ReactNode;
   /** Contenu optionnel entre le sous-titre et le jet (ex. sélecteur de cible du soin, portraits). */
@@ -130,8 +134,8 @@ export function RollFlowShell({
     : undefined;
   // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le permet).
   const escClose = (!rolled || cancelAfterRoll) ? onCancel : undefined;
-  return (
-    <Modal title={title} variant={variant} onClose={escClose}>
+  const body = (
+    <>
       <p className={subClass}>{subtitle}</p>
       {extra}
       {!rolled ? (
@@ -176,6 +180,19 @@ export function RollFlowShell({
           </div>
         </>
       )}
+    </>
+  );
+  if (embedded) {
+    return (
+      <div className={`rfs-embedded ${variant === 'test' ? 'test-modal' : 'roll-modal'}`}>
+        <div className="mini-title">{title}</div>
+        {body}
+      </div>
+    );
+  }
+  return (
+    <Modal title={title} variant={variant} onClose={escClose}>
+      {body}
     </Modal>
   );
 }

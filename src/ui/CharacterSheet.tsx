@@ -4,7 +4,7 @@ import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
-import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable } from '../engine/healing';
+import { hasHealSkill, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
@@ -255,12 +255,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const over = enc > maxEnc;
   const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
   const party = useGame((s) => s.party);
-  const healAlly = useGame((s) => s.healAlly);
+  const openMedic = useGame((s) => s.openMedic);
   const inBattle = useGame((s) => !!s.battle);
   // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps,
   // pour stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
   const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
-  const hasSurgeon = party.some((c) => hasHealSkill(c) && hasSurgerySkill(c)); // Chirurgie : un opérateur disponible
 
   const itemStats = (it: ItemInstance): string => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat).
@@ -292,12 +291,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         </div>
         {canSoigner && (
           <div className="row-flex">
-            {availableHealModes(hero).filter((m) => m !== 'surgery' || hasSurgeon).map((m) => (
-              <button key={m} className="btn small" onClick={() => healAlly(hero.id, m)}
-                title="Test de Guérison (Intermédiaire +0) par le meilleur soigneur du groupe (LDB 09-Compétences)">
-                {m === 'wounds' ? '🩹 Soigner' : m === 'bleed' ? '🩸 Stopper hémorragie' : m === 'trauma' ? '🦵 Soigner déchirure' : '🔪 Opérer'}
-              </button>
-            ))}
+            <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}
+              title="Soins du groupe (Tests de Guérison) — ouvre l'infirmerie sur ce héros">
+              🩺 Soins
+            </button>
           </div>
         )}
         {hero.fate != null && (

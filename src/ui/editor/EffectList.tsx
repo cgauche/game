@@ -122,7 +122,8 @@ export function newEffect(type: Effect['type']): Effect {
     case 'openMerchant':
       return { type: 'openMerchant', entityId: '' };
     case 'medicalAid':
-      return { type: 'medicalAid', act: 'wounds', skill: 50, intBonus: 4 };
+      // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
+      return { type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 };
     case 'test':
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'openWorldMap':
@@ -376,24 +377,54 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         ) : (
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
         ))}
-        {effect.type === 'medicalAid' && (
-          <div className="test-fields">
-            <div className="tf-row">
-              <label className="dr">
-                Acte
-                <select value={e.act ?? 'wounds'} onChange={(ev) => upd({ act: ev.target.value })}>
-                  <option value="wounds">Soin de Blessures (Guérison)</option>
-                  <option value="bleed">Arrêt d’hémorragie (Guérison)</option>
-                  <option value="surgery">Chirurgie (1d10 + Hémorragie, LDB 10/18)</option>
-                </select>
-              </label>
-              <label className="dr">Guérison (PNJ)<input type="number" value={e.skill ?? 50} onChange={(ev) => upd({ skill: Number(ev.target.value) })} /></label>
-              <label className="dr">Bonus Int<input type="number" value={e.intBonus ?? 4} onChange={(ev) => upd({ intBonus: Number(ev.target.value) })} /></label>
+        {effect.type === 'medicalAid' && (() => {
+          // Schéma étendu : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
+          // LEGACY : `act` simple ≡ `acts: [{ act }]` (prix porté par le choix de dialogue) — toute
+          // édition migre vers `acts`.
+          const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string }[] = [
+            { key: 'wounds', label: '🩹 Soin de Blessures' },
+            { key: 'bleed', label: '🩸 Arrêt d’hémorragie' },
+            { key: 'trauma', label: '🦵 Soin de déchirure' },
+            { key: 'surgery', label: '🔪 Chirurgie' },
+          ];
+          const acts: { act: string; cost?: { gold?: number; silver?: number; brass?: number } }[] =
+            e.acts ?? (e.act ? [{ act: e.act }] : []);
+          const setActs = (next: typeof acts) => upd({ acts: next, act: undefined });
+          const setCost = (k: string, field: 'gold' | 'silver' | 'brass', v: number) =>
+            setActs(acts.map((a) => (a.act === k ? { ...a, cost: { ...a.cost, [field]: v || undefined } } : a)));
+          return (
+            <div className="test-fields">
+              {ACTS.map(({ key, label }) => {
+                const en = acts.find((a) => a.act === key);
+                return (
+                  <div className="tf-row" key={key}>
+                    <label className="dr">
+                      <input
+                        type="checkbox"
+                        checked={!!en}
+                        onChange={() => setActs(en ? acts.filter((a) => a.act !== key) : [...acts, { act: key, cost: { silver: 5 } }])}
+                      />
+                      {label}
+                    </label>
+                    {en && (
+                      <>
+                        <label className="dr">CO<input type="number" min={0} value={en.cost?.gold ?? 0} onChange={(ev) => setCost(key, 'gold', Number(ev.target.value))} /></label>
+                        <label className="dr">pa<input type="number" min={0} value={en.cost?.silver ?? 0} onChange={(ev) => setCost(key, 'silver', Number(ev.target.value))} /></label>
+                        <label className="dr">sc<input type="number" min={0} value={en.cost?.brass ?? 0} onChange={(ev) => setCost(key, 'brass', Number(ev.target.value))} /></label>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="tf-row">
+                <label className="dr">Guérison (PNJ)<input type="number" value={e.skill ?? 50} onChange={(ev) => upd({ skill: Number(ev.target.value) })} /></label>
+                <label className="dr">Bonus Int<input type="number" value={e.intBonus ?? 4} onChange={(ev) => upd({ intBonus: Number(ev.target.value) })} /></label>
+              </div>
+              <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />
+              <span className="branch-label">Le PNJ soigne dans son infirmerie : chaque acte coché est proposé à son tarif, débité au lancement de l’acte.</span>
             </div>
-            <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />
-            <span className="branch-label">PNJ soigneur (jamais dans le groupe ; le joueur choisit qui soigner) ; prix via le coût du choix de dialogue (LDB 75).</span>
-          </div>
-        )}
+          );
+        })()}
         {effect.type === 'test' && (
           <div className="test-fields">
             <div className="tf-row">

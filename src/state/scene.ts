@@ -194,15 +194,15 @@ export type Effect =
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }
-  /** Acte de soin PAYANT d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », aide
-   *  médicale 4-6 pistoles ; le PRIX est porté par le CHOIX de dialogue, `cost`). Le PNJ (JAMAIS dans le
-   *  groupe) effectue le jet — on ouvre la MÊME modale de Guérison (le joueur voit le résultat sans
-   *  pouvoir l'influencer). `act` : soin de Blessures | arrêt d'hémorragie | chirurgie (1d10+Hémorragie,
-   *  LDB 10/18). `skill`/`intBonus` = compétence de Guérison du PNJ (sa fiche, éditable — rien d'inventé :
-   *  le moteur applique le RAW Guérison/Chirurgie existant). `entityId` = le PNJ soigneur (son `label`
-   *  donne le NOM affiché, son `id` le soigneur) → aucun nom codé en dur ; nommez-le « Frère Wilhelm »
-   *  et c'est lui qui opère. Le JOUEUR choisit le héros à soigner (modale). */
-  | { type: 'medicalAid'; act: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }
+  /** Soins PAYANTS d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », l'aide
+   *  médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante,
+   *  state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu
+   *  au lancement de chaque acte (remboursé si annulé avant le jet). `skill`/`intBonus` = compétence
+   *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant).
+   *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
+   *  joueur choisit les patients dans la modale. LEGACY : `act` simple (prix porté par le choix de
+   *  dialogue) ≡ `acts: [{ act }]`. */
+  | { type: 'medicalAid'; acts?: { act: 'wounds' | 'bleed' | 'trauma' | 'surgery'; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }

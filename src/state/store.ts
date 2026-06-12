@@ -17,7 +17,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  castSightBlocked, spellSightOf,
+  castSightBlocked, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt,
   counterspellCandidates, applyCounterspell,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
@@ -113,7 +113,10 @@ import {
   encounterPsychResolve as encounterPsychResolveFlow,
 } from './encounterPsychFlow';
 import { findSpell } from '../data/index';
-import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
+import { subtract as moneySub, add as moneyAdd, canAfford, toMoney } from '../engine/money';
+import * as medicFlow from './medicFlow';
+import type { MedicState, MedicNpc } from './medicFlow';
+export type { MedicState, MedicNpc } from './medicFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
@@ -264,6 +267,8 @@ export interface GameState {
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
+  /** Infirmerie ouverte (modale de soins persistante, hors combat — state/medicFlow). */
+  medic: MedicState | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
   /** Maniement de deux armes : sélection de la 2ᵉ cible (après une 1ʳᵉ frappe réussie). */
@@ -468,18 +473,19 @@ export interface GameState {
   battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
-  /** Guérison HORS COMBAT : le meilleur soigneur du groupe soigne `targetId`. */
-  healAlly: (targetId: string, mode: HealMode) => void;
-  /** Soin par un PNJ : le joueur choisit la cible parmi `pendingHeal.candidateIds` (avant le jet). */
-  healSetTarget: (targetId: string) => void;
-  /** Chirurgie (Test étendu) : choisit la Blessure Critique à opérer avant la 1re passe. */
-  surgerySetWound: (idx: number) => void;
-  /** #16 : pendant la Chirurgie (Test étendu), bander les Blessures / arrêter l'Hémorragie SANS
-   *  interrompre l'opération (Tests de Guérison appliqués sur le patient, n'avancent pas le DR). */
-  surgeryBandage: () => void;
-  surgeryStopBleed: () => void;
-  /** Chirurgie (Test étendu) : effectue une passe (1d10 PB + Hémorragie, cumule le DR jusqu'à la cible). */
-  surgeryPass: () => void;
+  /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes
+   *  (Guérison/Hémorragie/Déchirure/Chirurgie), PNJ payant via l'effet `medicalAid`. */
+  openMedic: (opts?: { patientId?: string; npc?: MedicNpc }) => void;
+  medicSelectPatient: (id: string) => void;
+  /** Lance un acte sur le patient courant (surgery → ARME l'opération). */
+  medicAct: (act: HealMode) => void;
+  /** Choisit la Blessure Critique à opérer (avant la 1re passe). */
+  medicSetWound: (idx: number) => void;
+  /** Une passe de Chirurgie (1d10 PB + Hémorragie, cumule le DR jusqu'à la cible). */
+  medicSurgeryPass: () => void;
+  /** Arrête l'opération (cumul perdu ; jamais commencée → acte remboursé). */
+  medicEndSurgery: () => void;
+  closeMedic: () => void;
   healRoll: () => void;
   healReroll: () => void;
   healBonusSL: () => void;
@@ -835,6 +841,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingInteract: null,
   pendingCast: null,
   pendingHeal: null,
+  medic: null,
   pendingCleave: null,
   pendingDualStrike: null,
   pendingReveals: [],
@@ -1330,30 +1337,19 @@ export const useGame = create<GameState>((set, get) => ({
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
         mode, intBonus: bonus(effectiveChar(healer, 'Int')),
         skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
-        ...(mode === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}),
       },
       battle: { ...battle, action: null },
     });
   },
 
-  healAlly: (targetId, mode) => {
-    const party = get().party;
-    const target = party.find((c) => c.id === targetId);
-    if (!target || !availableHealModes(target).includes(mode)) return;
-    // Chirurgie : le soigneur doit AUSSI posséder le Talent Chirurgie (LDB 10) ; sinon n'importe quel soigneur.
-    const pool = mode === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
-    const best = partyBest(pool, 'Guérison');
-    if (!best) return;
-    const healer = best.actor;
-    set({
-      pendingHeal: {
-        healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
-        mode, intBonus: bonus(effectiveChar(healer, 'Int')),
-        skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
-        ...(mode === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}),
-      },
-    });
-  },
+  // ── Infirmerie (hors combat) : modale de soins PERSISTANTE — cf. state/medicFlow ──
+  openMedic: (opts) => medicFlow.openMedic(get, set, opts),
+  medicSelectPatient: (id) => medicFlow.medicSelectPatient(get, set, id),
+  medicAct: (act) => medicFlow.medicAct(get, set, act),
+  medicSetWound: (idx) => medicFlow.medicSetWound(get, set, idx),
+  medicSurgeryPass: () => medicFlow.medicSurgeryPass(get, set),
+  medicEndSurgery: () => medicFlow.medicEndSurgery(get, set),
+  closeMedic: () => medicFlow.closeMedic(get, set),
 
   /** « Lancer » : effectue le jet de Guérison (Intermédiaire +0). */
   healRoll: () => FLOWS.heal.roll(get, set),
@@ -1363,11 +1359,11 @@ export const useGame = create<GameState>((set, get) => ({
   healDarkPact: () => FLOWS.heal.darkPact(get, set),
   healForceSuccess: () => FLOWS.heal.forceSuccess(get, set),
 
-  /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. */
+  /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. L'infirmerie
+   *  (`medic`) n'est PAS touchée : la modale persistante reste ouverte pour l'acte suivant. */
   healConfirm: () => {
     const ph = get().pendingHeal;
     if (!ph || ph.roll == null) return;
-    if (ph.mode === 'surgery') return; // Chirurgie = Test ÉTENDU multi-passes (surgeryPass), pas un « Appliquer » unique
     set({ pendingHeal: null });
     const st = get();
     const target = actorIn(st, ph.targetId);
@@ -1385,92 +1381,22 @@ export const useGame = create<GameState>((set, get) => ({
     finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
   },
 
-  /** Annule avant tout jet (aucun coût). */
-  healSetTarget: (targetId) => {
+  /** Annule avant tout jet. Acte PAYANT d'un PNJ (infirmerie) : remboursé tant que rien n'est lancé. */
+  healCancel: () => {
     const ph = get().pendingHeal;
-    if (!ph || ph.roll != null || !(ph.candidateIds ?? []).includes(targetId)) return; // choix avant le jet seulement
-    const t = get().party.find((c) => c.id === targetId);
-    if (!t) return;
-    set({ pendingHeal: { ...ph, targetId, targetName: t.name } });
+    if (ph?.paidCost && ph.roll == null) set((s) => ({ money: moneyAdd(s.money, toMoney(ph.paidCost!)) }));
+    set({ pendingHeal: null });
   },
 
-  /** Choix de la Blessure Critique à opérer (avant la 1re passe), s'il y en a plusieurs. */
-  surgerySetWound: (idx) => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.mode !== 'surgery' || (ph.surgeryCumDR ?? 0) > 0) return; // figé dès qu'on a commencé
-    set({ pendingHeal: { ...ph, surgeryTraumaIdx: idx } });
-  },
-
-  /** Une PASSE de Chirurgie (Test ÉTENDU de Guérison, LDB 10 l.154 / 12 l.200) : on cumule le DR du jet
-   *  (repart à 0 s'il passe sous 0) ; CHAQUE passe inflige 1d10 PB + 1 Hémorragie. À la cible atteinte :
-   *  retire la Blessure Critique choisie + Test de Résistance +20 ou Infection Mineure. Patient à 0 PB →
-   *  opération interrompue (« de fortes chances de tuer », LDB 10). Modale rouverte tant que ce n'est pas fini. */
-  surgeryPass: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.mode !== 'surgery') return;
-    const target = actorIn(get(), ph.targetId);
-    if (!target) { set({ pendingHeal: null }); return; }
-    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
-    let cum = (ph.surgeryCumDR ?? 0) + res.sl; // additionne le DR (signé)
-    if (cum < 0) cum = 0; // total < 0 → on recommence (LDB 12 l.200)
-    const cible = ph.surgeryTargetDR ?? 7;
-    const harm = battleRng().int(1, 10); // 1d10 PB + 1 Hémorragie PAR passe (LDB 10 l.154)
-    loseWounds(target, harm);
-    addCondition(target, 'Hémorragique');
-    const log = [`${ph.healerName} opère ${target.name} — passe : DR ${res.sl >= 0 ? '+' : ''}${res.sl} (total ${cum}/${cible}), ${harm} PB + 1 Hémorragie.`];
-    if (target.wounds.current <= 0) { // trop risqué de continuer : on interrompt
-      log.push(`${target.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
-      set({ pendingHeal: null });
-      finishPlayerAction(get, set, log, 'heal');
-      return;
-    }
-    if (cum >= cible) { // cible atteinte : la Blessure Critique est réparée
-      log.push(...removeSurgicalTrauma(target, ph.surgeryTraumaIdx ?? 0));
-      const resVal = effectiveChar(target, 'E') + (target.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-      log.push(...rollContraction(target, 'Infection Mineure', resVal, 'accessible', battleRng())); // LDB 10 l.365
-      set({ pendingHeal: null });
-      finishPlayerAction(get, set, log, 'heal');
-      return;
-    }
-    set({ pendingHeal: { ...ph, surgeryCumDR: cum, roll: res.roll, sl: res.sl, success: res.success }, ...touchActors(get()) });
-    get().log(log[0]);
-  },
-
-  /** #16 : BANDER les Blessures pendant la Chirurgie (Test de Guérison Intermédiaire, +BI+DR PB) —
-   *  pour empêcher le patient de sombrer à 0 PB sans interrompre l'opération. N'avance pas le DR. */
-  surgeryBandage: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.mode !== 'surgery') return;
-    const target = actorIn(get(), ph.targetId);
-    if (!target || target.wounds.current >= target.wounds.max) return;
-    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
-    const { log } = resolveWoundsHeal(target, ph.intBonus, res.sl, res.success, battleRng());
-    set({ pendingHeal: { ...ph }, ...touchActors(get()) });
-    for (const l of log) get().log(l);
-  },
-
-  /** #16 : ARRÊTER l'Hémorragie que les passes de Chirurgie infligent (Test de Guérison, retire 1+DR
-   *  pions) — sans interrompre l'opération. N'avance pas le DR. */
-  surgeryStopBleed: () => {
-    const ph = get().pendingHeal;
-    if (!ph || ph.mode !== 'surgery') return;
-    const target = actorIn(get(), ph.targetId);
-    if (!target || !(target.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)) return;
-    const res = rollTest(ph.skillValue, ph.difficulty, battleRng());
-    const log = resolveBleedHeal(target, res.sl, res.success);
-    set({ pendingHeal: { ...ph }, ...touchActors(get()) });
-    for (const l of log) get().log(l);
-  },
-
-  healCancel: () => set({ pendingHeal: null }),
-
-  /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. */
+  /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. Un sort de ZONE
+   *  ouvre la modale DIRECTEMENT (flux « jet puis pose », LDB 47 l.29) — pas de cible à désigner. */
   battleSelectSpell: (label) => {
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || battle.acted) return;
     set({ battle: { ...battle, action: 'cast', selectedSpell: label, reachable: new Map() } });
+    castZoneSpell(get, set, active, label); // no-op si le sort n'est pas une ZdE chiffrable
     bus.emit(EVT.SCENE_DIRTY);
   },
 

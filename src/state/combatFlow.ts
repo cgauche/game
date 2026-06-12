@@ -68,6 +68,7 @@ import {
   resolveCounterspell,
   rederiveCastSL,
   parseSpellDamage,
+  zdeDiameterMeters,
   type CastResult,
   type MissileResult,
 } from '../engine/magic';
@@ -90,10 +91,11 @@ import { domainOf, domainOnHitRiders, domainMissileMods, ghurFearAfterCast, hasA
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
-import { hasHealSkill } from '../engine/healing';
+import { hasHealSkill, type HealMode } from '../engine/healing';
+import { openMedic } from './medicFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaFromKind, hasSurgeryTrauma, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
+import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
 import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -525,7 +527,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
         break;
       case 'medicalAid':
-        openMedicalAid(get, set, e); // soin payant d'un PNJ : ouvre la modale de Guérison avec la compétence du PNJ
+        openMedicalAidEffect(get, set, e); // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
         break;
       case 'endDialogue':
         if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
@@ -536,39 +538,23 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
 }
 
 /**
- * Acte de soin PAYANT d'un PNJ (Effet `medicalAid`, LDB 75). Le PNJ n'est PAS dans le groupe : on
- * ouvre la modale `pendingHeal` avec SA compétence (`skill`/`intBonus`, fiche du PNJ) et le héros le
- * plus en besoin pour l'acte ; le joueur voit le jet sans pouvoir le relancer (la Chance interroge
- * `actorIn(healerId)` → introuvable pour un PNJ → boutons inertes). La résolution (`healConfirm`)
- * applique le RAW Guérison/Chirurgie existant : aucun calcul dupliqué. Le PRIX est déjà débité par
- * le choix de dialogue (`DialogueChoice.cost`). Sans patient pertinent : rien (le prix reste dû —
- * comme tout service, à ne déclencher qu'à bon escient).
+ * Soins PAYANTS d'un PNJ (Effet `medicalAid`, LDB 75) : ouvre l'INFIRMERIE (state/medicFlow) avec
+ * la compétence du PNJ et ses actes tarifés — le débit a lieu à l'acte, dans la modale. Le joueur
+ * choisit les patients ; le PNJ effectue les jets (la Chance interroge `actorIn(healerId)` →
+ * introuvable pour un PNJ → boutons inertes). LEGACY : `act` simple ≡ `acts: [{ act }]`, le prix
+ * restant porté par le choix de dialogue.
  */
-function openMedicalAid(get: () => GameState, set: any, e: { act: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
-  const party = get().party;
-  const needs = (h: Combatant): boolean => {
-    if (h.dead || h.outOfRencontre) return false; // #27a : un MORT ne se soigne pas (était omis pour bleed/chirurgie → soin sur un mort)
-    return e.act === 'wounds' ? h.wounds.current < h.wounds.max
-      : e.act === 'bleed' ? (h.conditions ?? []).some((c) => c.name === 'Hémorragique' && c.value > 0)
-        : hasSurgeryTrauma(h); // chirurgie
-  };
-  const cands = party.filter(needs);
-  if (!cands.length) { get().log(`Le soigneur examine le groupe : personne ne requiert cet acte pour l'instant.`); return; }
-  // Le PNJ soigneur : NOM et id viennent de l'entité de scène (`entityId`) — rien de codé en dur.
+function openMedicalAidEffect(get: () => GameState, set: any, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
+  const acts = e.acts ?? (e.act ? [{ act: e.act }] : []);
+  if (!acts.length) return;
   const npc = e.entityId ? get().scene?.entities.find((x) => x.id === e.entityId) : undefined;
-  const healerId = npc?.id ?? e.entityId ?? 'pnj-soigneur';
-  const healerName = npc?.label ?? 'Soigneur';
-  // Cible PAR DÉFAUT = le plus en besoin ; le joueur peut en choisir une autre (candidateIds).
-  const target = e.act === 'wounds'
-    ? cands.reduce((a, b) => (a.wounds.max - a.wounds.current) >= (b.wounds.max - b.wounds.current) ? a : b)
-    : cands[0];
-  set({
-    pendingHeal: {
-      healerId, healerName, targetId: target.id, targetName: target.name,
-      mode: e.act, intBonus: e.intBonus, skillValue: e.skill,
-      difficulty: 'intermediaire', target: e.skill, roll: null, success: false, sl: 0,
-      candidateIds: cands.map((c) => c.id),
-      ...(e.act === 'surgery' ? { surgeryTargetDR: 7, surgeryCumDR: 0, surgeryTraumaIdx: 0 } : {}), // cible MJ 5-10 (LDB 10)
+  openMedic(get, set, {
+    npc: {
+      id: npc?.id ?? e.entityId ?? 'pnj-soigneur',
+      name: npc?.label ?? 'Soigneur',
+      skill: e.skill,
+      intBonus: e.intBonus,
+      acts,
     },
   });
 }
@@ -2649,6 +2635,88 @@ export function castSpell(
       casterId: caster.id, targetId: target.id, spellLabel: label, missile: breathSpell ? false : isMagicMissile(spell),
       focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
     },
+  });
+}
+
+/** Rayon INITIAL d'un sort de ZONE en mètres (spec curée prioritaire sur le champ Cible —
+ *  même précédence que l'application). `null` = pas un sort de ZdE chiffrable. */
+export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
+  const specRadius = spellSpecFor(spell).zdeRadiusMeters;
+  if (specRadius != null) return Math.max(0, resolveFormula(specRadius, caster));
+  const d = zdeDiameterMeters(spell.target, caster);
+  return d == null ? null : d / 2;
+}
+
+/** Rayon en CASES après `alloc` Surincantations « +Zone » (LDB 47 l.29 : chaque allocation
+ *  ajoute la valeur INITIALE de Zone d'Effet — Ø ×(1+n)). 1 case = 2 m. */
+export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
+  Math.max(0, Math.floor((r0m * (1 + alloc)) / 2));
+
+/** Ouvre la modale d'un sort de ZONE — flux « jet PUIS pose » (LDB 47 l.29/44) : pas de cible à
+ *  désigner, le centre se choisit APRÈS le jet et la Surincantation (+Zone agrandit le gabarit).
+ *  `targetId` = ancre lanceur (aucun effet ne lui est appliqué — les cibles réelles sont
+ *  recensées à la pose). Retourne false si le sort n'est PAS une zone chiffrable. */
+export function castZoneSpell(get: () => GameState, set: any, caster: Combatant, label: string): boolean {
+  const spell = findSpell(label);
+  if (!spell) return false;
+  const r0m = zoneRadiusMeters(spell, caster);
+  if (r0m == null) return false;
+  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue');
+  if (blocked) {
+    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
+    return true; // c'était bien une zone — l'entrée est consommée (refus journalisé)
+  }
+  const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
+  set({
+    pendingCast: {
+      casterId: caster.id, targetId: caster.id, spellLabel: label, missile: isMagicMissile(spell),
+      focused: focusedNI0, result: null,
+      zone: { center: null, radius: zoneRadiusTilesAt(r0m, 0), r0m },
+    },
+  });
+  return true;
+}
+
+/** POSE de la zone (après le jet et la Surincantation) : gates portée (LDB 47) + Ligne de Vue
+ *  vers le point (LDB 46 l.170/202), puis applique le MÊME jet à tous les combattants du rayon
+ *  FINAL — parité avec l'ancien flux (premier = target, reste = extraTargets, evaluateMissile
+ *  par cible). Zone posée dans le vide : Sort lancé, Action consommée, personne de touché. */
+export function castCommitZone(get: () => GameState, set: any, pt: Pt): void {
+  const pc = get().pendingCast;
+  const battle = get().battle;
+  if (!pc?.zone || !pc.result || !battle) return;
+  const caster = battle.combatants.find((c) => c.id === pc.casterId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster?.pos || !spell) return;
+  const res = pc.result;
+  // « Puissance totale » (LDB 46 l.57) repêche un DR insuffisant — la pose reste permise (le
+  // repêchage est appliqué par applyCast) ; tout autre échec ne se pose pas.
+  const castable = res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
+  if (!castable) return;
+  const range = spellRangeTiles(spell.range, caster);
+  if (range != null && chebyshev(caster.pos, pt) > range) {
+    get().log(`${spell.label} : zone hors de portée (${range} cases).`);
+    return;
+  }
+  if (castSightBlocked(get, caster.pos, pt)) {
+    get().log(`${spell.label} : pas de ligne de vue.`);
+    return;
+  }
+  const radius = pc.zone.radius;
+  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
+  set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
+  if (!inZone.length) {
+    set({ pendingCast: null });
+    if (pc.focused) caster.focus = undefined; // le sort focalisé est consommé même à vide
+    finishPlayerAction(get, set, [`${spell.label} : la zone ne touche personne.`], 'cast');
+    return;
+  }
+  const first = inZone[0];
+  const r1 = pc.missile && res.cast ? evaluateMissile(caster, first, spell, res) : res;
+  set({ pendingCast: null });
+  applyCast(get, set, caster, first, spell, r1, pc.missile, pc.focused, pc.critChoice, {
+    durationMult: 1 + (pc.overcast?.duration ?? 0),
+    extraTargets: inZone.slice(1),
   });
 }
 

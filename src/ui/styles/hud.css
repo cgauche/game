@@ -426,6 +426,33 @@
 /* Sélecteur de cible de soin par PORTRAIT (#20) — tuiles-radio (CharFrame full, selected). */
 .heal-pick-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
 
+/* ── Infirmerie (modale de soins persistante — MedicModal) ── */
+.medic-modal { min-width: min(480px, 94vw); }
+.medic-purse { display: block; text-align: right; font-size: 12px; color: var(--muted); margin: -4px 0 4px; }
+.medic-patients { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 6px 0 10px; }
+.medic-acts { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.medic-act { display: flex; align-items: center; gap: 8px; text-align: left; }
+.medic-act .medic-price { margin-left: auto; font-variant-numeric: tabular-nums; }
+.medic-surgery {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  background: rgba(0, 0, 0, 0.18);
+}
+.medic-wound-pick { justify-content: center; }
+/* Zone de JET embarquée (RollFlowShell `embedded`) : encart dans la modale persistante —
+   neutralise le min-width des classes de modale autonome. */
+.rfs-embedded {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  background: rgba(0, 0, 0, 0.18);
+}
+.rfs-embedded.roll-modal,
+.rfs-embedded.test-modal { min-width: 0; }
+
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
 .dr-bar-track {

@@ -2175,14 +2175,18 @@
          ]
         },
         {
-         "text": "🔪 Opérer une blessure grave (Chirurgie) — 6 pa.",
-         "cost": {
-          "silver": 6
-         },
+         "text": "🔪 Passer sur la table (actes payants).",
          "effects": [
           {
            "type": "medicalAid",
-           "act": "surgery",
+           "acts": [
+            {
+             "act": "surgery",
+             "cost": {
+              "silver": 6
+             }
+            }
+           ],
            "skill": 55,
            "intBonus": 4,
            "entityId": "medecin"
@@ -3041,29 +3045,24 @@
        "text": "Sigmar garde les braves — et recoud les imprudents. Approche : la chapelle soigne, bénit, et accepte les dons.",
        "choices": [
         {
-         "text": "🩹 Soin des Blessures (jet de Guérison) — 5 pa.",
-         "cost": {
-          "silver": 5
-         },
+         "text": "⚕️ Recevoir des soins (actes payants).",
          "effects": [
           {
            "type": "medicalAid",
-           "act": "wounds",
-           "skill": 55,
-           "intBonus": 4,
-           "entityId": "frere"
-          }
-         ]
-        },
-        {
-         "text": "🩸 Stopper une hémorragie (jet de Guérison) — 5 pa.",
-         "cost": {
-          "silver": 5
-         },
-         "effects": [
-          {
-           "type": "medicalAid",
-           "act": "bleed",
+           "acts": [
+            {
+             "act": "wounds",
+             "cost": {
+              "silver": 5
+             }
+            },
+            {
+             "act": "bleed",
+             "cost": {
+              "silver": 5
+             }
+            }
+           ],
            "skill": 55,
            "intBonus": 4,
            "entityId": "frere"

@@ -39,7 +39,10 @@ export const MODAL_DEFS = [
   { key: 'approach', when: (s) => !!s.pendingApproach, owner: (s) => s.pendingApproach?.combatantId },
   { key: 'run', when: (s) => !!s.pendingRun, owner: (s) => s.pendingRun?.combatantId },
   { key: 'focus', when: (s) => !!s.pendingFocus, owner: (s) => s.pendingFocus?.casterId },
-  { key: 'heal', when: (s) => !!s.pendingHeal, owner: (s) => s.pendingHeal?.healerId },
+  // Infirmerie OUVERTE : c'est ELLE qui rend le jet de soin (zone embarquée) — la modale `heal`
+  // autonome ne sert qu'au combat (ActionBar). Owner : le soigneur du jet en cours, sinon tous.
+  { key: 'medic', when: (s) => !!s.medic, owner: (s) => s.pendingHeal?.healerId ?? '*' },
+  { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId },
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.

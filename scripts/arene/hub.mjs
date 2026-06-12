@@ -134,9 +134,8 @@ const dlgMedecin = {
       choices: [
         { text: '⚕️ Voir les remèdes et prothèses.', effects: [{ type: 'openMerchant', entityId: 'medecin' }] },
         {
-          text: '🔪 Opérer une blessure grave (Chirurgie) — 6 pa.',
-          cost: { silver: 6 },
-          effects: [{ type: 'medicalAid', act: 'surgery', skill: 55, intBonus: 4, entityId: 'medecin' }],
+          text: '🔪 Passer sur la table (actes payants).',
+          effects: [{ type: 'medicalAid', acts: [{ act: 'surgery', cost: { silver: 6 } }], skill: 55, intBonus: 4, entityId: 'medecin' }],
         },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
       ],
@@ -477,14 +476,8 @@ const dlgFrere = {
       text: 'Sigmar garde les braves — et recoud les imprudents. Approche : la chapelle soigne, bénit, et accepte les dons.',
       choices: [
         {
-          text: '🩹 Soin des Blessures (jet de Guérison) — 5 pa.',
-          cost: { silver: 5 },
-          effects: [{ type: 'medicalAid', act: 'wounds', skill: 55, intBonus: 4, entityId: 'frere' }],
-        },
-        {
-          text: '🩸 Stopper une hémorragie (jet de Guérison) — 5 pa.',
-          cost: { silver: 5 },
-          effects: [{ type: 'medicalAid', act: 'bleed', skill: 55, intBonus: 4, entityId: 'frere' }],
+          text: '⚕️ Recevoir des soins (actes payants).',
+          effects: [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'frere' }],
         },
         {
           text: '🙏 Recevoir la bénédiction du départ (retrouver la Chance).',
