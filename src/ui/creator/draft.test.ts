@@ -21,7 +21,8 @@ import {
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
 import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
-import { specOptionsFor } from './draft';
+import { specOptionsFor, pettySpellQuota } from './draft';
+import { spells } from '../../data';
 
 const draft = () => newDraft(1234);
 
@@ -145,5 +146,47 @@ describe('buildHero — bout en bout', () => {
     // Force un talent d'espèce résolu addSkill via careerTalent (Maître artisan n'est pas Soldat,
     // on vérifie juste que les 8 entrées du Niveau sont présentes).
     expect(careerSkillEntries(d).length).toBeGreaterThanOrEqual(8);
+  });
+});
+
+describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au Talent', () => {
+  /** Brouillon Sorcier valide (Niveau 1 : talent « Magie mineure » choisissable). */
+  function sorcererDraft() {
+    const base = withCareer(readyDraft(), 'Sorcier');
+    const level = draftLevel(base)!;
+    const specChoices: Record<string, string> = {};
+    for (const raw of level.skills) {
+      if (isUnresolvedChoice(raw)) specChoices[raw] = concreteLabel(splitLabel(raw).name, specOptionsFor(raw)[0]);
+    }
+    return {
+      ...base,
+      charAdvancesAlloc: { FM: 5 },
+      skillAdvances: Object.fromEntries(level.skills.map((s) => [s, 5])),
+      specChoices,
+      careerTalent: 'Magie mineure',
+    };
+  }
+  const minorsOf = (n: number) => spells.filter((s) => s.type === 'Magie mineure').slice(0, n).map((s) => s.label);
+
+  it('quota = BFM final ; l\'étape 4 exige EXACTEMENT ce nombre de sorts', () => {
+    const d = sorcererDraft();
+    const quota = pettySpellQuota(d);
+    expect(quota).toBeGreaterThan(0);
+    expect(validateStep(d, 4)).toMatch(/sorts de Magie mineure/);
+    expect(validateStep({ ...d, pettySpells: minorsOf(quota) }, 4)).toBeNull();
+    expect(validateStep({ ...d, pettySpells: minorsOf(quota - 1) }, 4)).toMatch(/sorts de Magie mineure/);
+  });
+
+  it('buildHero mémorise les sorts choisis (0 PX — inclus au Talent)', () => {
+    const d = sorcererDraft();
+    const picks = minorsOf(pettySpellQuota(d));
+    const hero = buildHero({ ...d, pettySpells: picks }, 'h-petty');
+    for (const m of picks) expect(hero.spells).toContain(m);
+    expect(hero.xp).toBe(xpTotal(d)); // rien payé
+  });
+
+  it('sans le Talent : quota 0, aucune exigence à l\'étape 4', () => {
+    expect(pettySpellQuota(readyDraft())).toBe(0);
+    expect(validateStep(readyDraft(), 4)).toBeNull();
   });
 });

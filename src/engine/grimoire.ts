@@ -2,10 +2,13 @@
  * Grimoire — apprentissage et mémorisation des sorts (LDB 46 « Mémoriser des
  * Sorts » l.44-47, 47 « Grimoires » l.33-34, et Talents de lanceur, LDB 10) :
  *
- *  - Magie mineure : mémorise BFM sorts au Talent ; sorts supplémentaires par
- *    bandes de BFM à 50/100/150… PX (« Jusqu'à Bonus FM ×1 : 50 PX… »).
+ *  - Magie mineure : « mémorise de façon permanente un nombre de Sorts égal à
+ *    votre Bonus de Force Mentale » au Talent (LDB 10 l.587) → GRATUITS tant que
+ *    le héros en connaît moins que BFM ; ensuite par bandes INCLUSIVES
+ *    (« Jusqu'à Bonus FM ×1 : 50 PX », ×2 : 100…).
  *  - Magie des Arcanes (Domaine) : sorts du Domaine + Sorts d'Arcane communs,
- *    par bandes de Bonus d'Intelligence à 100/200/300… PX.
+ *    par bandes de Bonus d'Intelligence à 100/200/300… PX (mêmes bandes
+ *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
  *  - Invocation (Culte) : « l'un des Miracles de son culte » au Talent (le 1er
  *    est inclus) ; suivants à 100 PX × Miracles connus.
  *  - Béni (Culte) : « reçoit les SIX Bénédictions de son culte » (LDB 41,
@@ -102,8 +105,11 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
  * Coût en PX pour APPRENDRE `spell` maintenant (LDB 10 — Talents de lanceur) ;
  * null si inapprenable (déjà connu / aucun Talent éligible).
  *  - Bénédictions : 0 (« reçoit les six Bénédictions de son culte »).
- *  - Magie mineure : 50 × (⌊connus/BFM⌋ + 1).
- *  - Arcanes : 100 × (⌊connus/BInt⌋ + 1).
+ *  - Magie mineure : BFM sorts INCLUS au Talent (l.587 « vous mémorisez… un
+ *    nombre de Sorts égal à votre Bonus de Force Mentale ») → 0 PX tant que
+ *    connus < BFM ; ensuite 50 × bande (« Jusqu'à BFM ×N » — bande INCLUSIVE :
+ *    à exactement BFM×N connus, le suivant est encore dans la bande N).
+ *  - Arcanes : 100 × bande de BInt (mêmes bandes inclusives, rien d'inclus).
  *  - Invocation : le 1er Miracle est inclus au Talent (0), puis 100 × connus.
  *  - Chaos : 100 PX (et +1 Point de Corruption — appliqué par l'acheteur).
  */
@@ -117,11 +123,12 @@ export function spellCost(c: Combatant, spell: SpellData): number | null {
   const known = knownCount(c, fam);
   if (fam === 'mineure') {
     const band = Math.max(1, bonus(effectiveChar(c, 'FM')));
-    return 50 * (Math.floor(known / band) + 1);
+    if (known < band) return 0; // inclus au Talent (LDB 10 l.587)
+    return 50 * Math.ceil(known / band);
   }
   if (fam === 'arcane') {
     const band = Math.max(1, bonus(effectiveChar(c, 'Int')));
-    return 100 * (Math.floor(known / band) + 1);
+    return 100 * Math.max(1, Math.ceil(known / band));
   }
   // Invocation
   return known === 0 ? 0 : 100 * known;

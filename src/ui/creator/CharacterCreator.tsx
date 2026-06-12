@@ -28,6 +28,7 @@ import {
   eyes as eyesTable,
   hairs as hairsTable,
   details as detailTables,
+  spells as allSpells,
   SpeciesData,
   CareerData,
 } from '../../data';
@@ -60,6 +61,7 @@ import {
   careerAdvTotal,
   careerTalentOptions,
   specOptionsFor,
+  pettySpellQuota,
   draftWealth,
   rolledDetails,
   validateStep,
@@ -953,9 +955,44 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
           ))}
         </div>
       </Section>
+      <PettySpellsSection d={d} setD={setD} />
     </>
   );
   return { rail, main };
+}
+
+/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) : le Talent pris → choisir
+ *  exactement BFM sorts, mémorisés de façon permanente à la création. */
+export function PettySpellsSection({ d, setD }: StepProps) {
+  const quota = pettySpellQuota(d);
+  if (!quota) return null;
+  const minors = allSpells.filter((s) => s.type === 'Magie mineure');
+  const toggle = (label: string) => {
+    if (d.pettySpells.includes(label)) setD({ ...d, pettySpells: d.pettySpells.filter((x) => x !== label) });
+    else if (d.pettySpells.length < quota) setD({ ...d, pettySpells: [...d.pettySpells, label] });
+  };
+  return (
+    <Section
+      title="Sorts de Magie mineure (inclus au Talent)"
+      right={<b className={d.pettySpells.length === quota ? 'ok-text' : 'warn-text'}>{d.pettySpells.length}/{quota}</b>}
+    >
+      <div className="talent-options-grid">
+        {minors.map((s) => {
+          const picked = d.pettySpells.includes(s.label);
+          return (
+            <div key={s.label} className={`talent-option ${picked ? 'selected' : ''}`}>
+              <label className="radio">
+                <input type="checkbox" checked={picked} disabled={!picked && d.pettySpells.length >= quota} onChange={() => toggle(s.label)} />
+                <b>{s.label}</b>
+                <em className="hint">NI {s.cn ?? 0} · {s.range} · {s.duration}</em>
+              </label>
+              <p className="hint talent-desc">{blurb(s.desc, 220)}</p>
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
 }
 
 /** Détail d'un objet d'équipement (trappings.json) : dégâts / PA / encombrement. */

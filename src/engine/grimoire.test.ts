@@ -41,12 +41,16 @@ describe('casterTalents — extraction des specs', () => {
 });
 
 describe('coûts de mémorisation (Talents LDB 10)', () => {
-  it('Magie mineure : bandes de BFM ×50 PX (BFM 3 : 3 sorts à 50, puis 100…)', () => {
-    const c = hero({ talents: [{ name: 'Magie mineure', times: 1 }] });
-    expect(spellCost(c, sp('Fléchette'))).toBe(50);
-    c.spells = ['Alerte', 'Bruits', 'Choc']; // 3 mineurs connus = BFM ×1 plein
+  it('Magie mineure : BFM sorts INCLUS au Talent (0 PX, l.587), puis bandes inclusives ×50', () => {
+    const c = hero({ talents: [{ name: 'Magie mineure', times: 1 }] }); // FM 35 → BFM 3
+    expect(spellCost(c, sp('Fléchette'))).toBe(0); // « vous mémorisez… BFM Sorts » au Talent
+    c.spells = ['Alerte', 'Bruits']; // 2 connus < BFM → toujours inclus
+    expect(spellCost(c, sp('Fléchette'))).toBe(0);
+    c.spells = ['Alerte', 'Bruits', 'Choc']; // BFM atteint → payant : « Jusqu'à BFM ×1 » = 50
     expect(knownCount(c, 'mineure')).toBe(3);
-    expect(spellCost(c, sp('Fléchette'))).toBe(100); // 2e bande
+    expect(spellCost(c, sp('Fléchette'))).toBe(50);
+    c.spells = [...c.spells, 'Fléchette']; // 4 connus → « Jusqu'à BFM ×2 » = 100
+    expect(spellCost(c, sp('Drain'))).toBe(100);
   });
 
   it('Magie des Arcanes : bandes de BInt ×100 PX ; Domaine exigé pour les sorts de Domaine', () => {
@@ -56,6 +60,15 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
     expect(spellCost(c, feu)).toBe(100);
     const ombres = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Ombres')!;
     expect(spellCost(c, ombres)).toBeNull(); // pas le Domaine
+  });
+
+  it('Arcanes — bande INCLUSIVE : à exactement BInt connus, le suivant reste à 100 PX', () => {
+    const c = hero({ talents: [{ name: 'Magie des Arcanes (Feu)', times: 1 }] }); // Int 42 → BInt 4
+    const arcanes = spells.filter((s) => s.type === 'Magie des Arcanes' && (s.subType === 'Feu' || s.subType == null));
+    c.spells = arcanes.slice(0, 4).map((s) => s.label); // « Jusqu'à BInt ×1 » plein
+    expect(spellCost(c, arcanes[4])).toBe(100);
+    c.spells = arcanes.slice(0, 5).map((s) => s.label); // 5 connus → « Jusqu'à BInt ×2 » = 200
+    expect(spellCost(c, arcanes[5])).toBe(200);
   });
 
   it('Invocation : 1er Miracle inclus (0 PX), puis 100 × connus ; culte exigé', () => {

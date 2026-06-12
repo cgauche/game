@@ -15,19 +15,20 @@ beforeEach(() => {
 });
 
 describe('buySpell', () => {
-  it('mémorise contre PX (Magie mineure 50 PX) ; refuse sans PX suffisants', () => {
+  it('mémorise contre PX (Magie mineure) ; refuse sans PX suffisants', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     w.talents.push({ name: 'Magie mineure', times: 1 });
     // Prémisse contrôlée (les stats des pré-tirés évoluent avec la création) : BFM 2, et
-    // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) → 2e bande = 100 PX (LDB 46).
+    // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) = ses BFM inclus au Talent.
+    // Le suivant est PAYANT : « Jusqu'à BFM ×1 » (bande inclusive) = 50 PX (LDB 10 l.591).
     w.characteristics.FM = 25;
-    w.xp = 150;
+    w.xp = 60;
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().buySpell(w.id, 'Drain');
     const after = useGame.getState().party[0];
     expect(after.spells).toContain('Drain');
-    expect(after.xp).toBe(50);
-    useGame.getState().buySpell(w.id, 'Éblouissant'); // 2e bande toujours : 100 PX > 50 restants
+    expect(after.xp).toBe(10);
+    useGame.getState().buySpell(w.id, 'Éblouissant'); // 3 connus → bande ×2 : 100 PX > 10 restants
     expect(useGame.getState().party[0].spells).not.toContain('Éblouissant');
     expect(useGame.getState().journal.join('\n')).toMatch(/PX requis/);
   });

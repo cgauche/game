@@ -33,7 +33,8 @@ import {
 } from '../../engine/creation';
 import { createHero, resolveSpeciesTalents } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached } from '../../engine/careerSlots';
-import { careerSkillAdditions } from '../../engine/talentEffects';
+import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
+import { bonus } from '../../engine/characteristics';
 import { findSpecies, findSkill, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
@@ -75,6 +76,8 @@ export interface CreatorDraft {
   specChoices: Record<string, string>;
   skillAdvances: Record<string, number>;
   careerTalent?: string;
+  /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) — exactement BFM à choisir. */
+  pettySpells: string[];
   // 5) Possessions
   weaponChoice?: string;
   // 6) Détails
@@ -120,6 +123,7 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
     randomSpecPicks: {},
     specChoices: {},
     skillAdvances: {},
+    pettySpells: [],
     name: '',
     motivation: '',
     ambitionShort: '',
@@ -153,6 +157,7 @@ export function withSpecies(d: CreatorDraft, label: string): CreatorDraft {
     speciesPlus3: [],
     speciesTalentChoices: {},
     randomSpecPicks: {},
+    pettySpells: [],
     careerRolls: [],
     careerFreeRolls: 0,
   };
@@ -186,7 +191,7 @@ export function careerXp(d: CreatorDraft): number {
 }
 export function withCareer(d: CreatorDraft, label: string): CreatorDraft {
   if (label === d.careerLabel) return d;
-  return { ...d, careerLabel: label, skillAdvances: {}, specChoices: {}, careerTalent: undefined, charAdvancesAlloc: {}, weaponChoice: undefined };
+  return { ...d, careerLabel: label, skillAdvances: {}, specChoices: {}, careerTalent: undefined, pettySpells: [], charAdvancesAlloc: {}, weaponChoice: undefined };
 }
 
 // ── 3) Caractéristiques ──
@@ -265,6 +270,17 @@ export function talentEntryChoices(entry: string): string[] | null {
   return out;
 }
 
+/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587 : « vous mémorisez… un nombre de
+ *  Sorts égal à votre Bonus de Force Mentale ») : quota à choisir = BFM FINAL (Augmentations
+ *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent. */
+export function pettySpellQuota(d: CreatorDraft): number {
+  const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
+  if (!all.some((t) => splitLabel(t).name === 'Magie mineure')) return 0;
+  let fm = draftChars(d).FM + (d.charAdvancesAlloc.FM ?? 0);
+  for (const t of all) if (talentCharBonus(t) === 'FM') fm += 5;
+  return bonus(fm);
+}
+
 /** Options du talent de carrière (entrées brutes du Niveau 1) : libellé sélectionné + Maxi. */
 export function careerTalentOptions(d: CreatorDraft): { entry: string; choices: string[] | null; selected: string | null; maxed: boolean }[] {
   const probe = probeHero(d, false);
@@ -333,6 +349,10 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
       }
       if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
       if (talentMaxReached(probeHero(d, false), d.careerTalent)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
+      const quota = pettySpellQuota(d);
+      if (quota && d.pettySpells.length !== quota) {
+        return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
+      }
       return null;
     }
     case 6: {
@@ -375,6 +395,13 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     id,
   });
   hero.appearance = { species: d.speciesLabel, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  // Sorts de Magie mineure inclus au Talent (LDB 10 l.587) — choisis à l'étape 4, mémorisés.
+  // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)
+  const quota = pettySpellQuota(d);
+  if (quota && d.pettySpells.length) {
+    const picked = d.pettySpells.slice(0, quota).filter((s) => !(hero.spells ?? []).includes(s));
+    hero.spells = [...(hero.spells ?? []), ...picked];
+  }
   return hero;
 }
 

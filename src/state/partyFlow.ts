@@ -27,6 +27,7 @@ import {
   splitLabel,
 } from '../engine/careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
 import { spellCost } from '../engine/grimoire';
@@ -315,6 +316,11 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
       clone.fortune = (clone.fortune ?? 0) + (fortuneMax(clone) - fortuneBefore); // Chanceux
       clone.resolve = (clone.resolve ?? 0) + (resolveMax(clone) - resolveBefore); // Obstiné
       msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
+      // Magie mineure (LDB 10 l.587) : BFM sorts inclus au Talent — à choisir (0 PX, Avancement).
+      if (name === 'Magie mineure') {
+        const q = bonus(effectiveChar(clone, 'FM'));
+        if (q > 0) msg += ` ${q} sorts de Magie mineure inclus — à mémoriser (Avancement).`;
+      }
       return clone;
     }),
   }));

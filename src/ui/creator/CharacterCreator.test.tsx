@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator } from './CharacterCreator';
+import { CharacterCreator, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
-import { newDraft } from './draft';
+import { newDraft, withCareer } from './draft';
 
 describe('CharacterCreator (assistant) — rendu statique', () => {
   it('étape 1 : trois zones (rail de sélection, profil, fiche vivante) + tirage d100', () => {
@@ -27,6 +27,16 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
     // Tirage aléatoire LDB 04
     expect(html).toContain('Tirer l&#x27;espèce (d100)');
     expect(html).toContain('Suivant →');
+  });
+
+  it('étape 4 — Magie mineure choisie : la section des sorts inclus apparaît (compteur n/BFM)', () => {
+    const d = { ...withCareer(newDraft(7), 'Sorcier'), careerTalent: 'Magie mineure' };
+    const html = renderToStaticMarkup(<PettySpellsSection d={d} setD={() => {}} />);
+    expect(html).toContain('Sorts de Magie mineure (inclus au Talent)');
+    expect(html).toContain('Fléchette'); // la liste des sorts de Magie mineure est proposée
+    expect(html).toMatch(/0\/\d/); // compteur de quota (BFM)
+    // Sans le Talent : aucune section.
+    expect(renderToStaticMarkup(<PettySpellsSection d={withCareer(newDraft(7), 'Soldat')} setD={() => {}} />)).toBe('');
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
