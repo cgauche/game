@@ -17,6 +17,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
+  castSightBlocked, spellSightOf,
   counterspellCandidates, applyCounterspell,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
@@ -130,7 +131,7 @@ export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'tes
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
 for (const c of campaign) sceneRegistry[c.scene.id] = c.scene;
-function registerScene(s: Scene) {
+export function registerScene(s: Scene) {
   sceneRegistry[s.id] = s;
 }
 
@@ -260,7 +261,7 @@ export interface GameState {
   pendingInteract: string | null;
   pendingCast: PendingCast | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
-  enemyAim: { fromId: string; toId: string } | null;
+  enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
@@ -337,13 +338,13 @@ export interface GameState {
   /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
   interludeLearn: (heroId: string, talent: string) => void;
   interludeOrder: (heroId: string, trapping: string) => void;
-  /** Coop en ligne (Jalon 7) : état réseau sérialisable + actions de session — délégué à netFlow.
-   *  Les objets réseau vivants (WebRTC) restent des singletons de module, jamais ici. */
+  /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
+   *  Les objets réseau vivants (sessions, sockets du relay) restent des singletons de module. */
   net: NetState;
-  netHostStart: (name: string) => void;
-  netInvite: () => Promise<string | null>;
-  netAcceptAnswer: (code: string) => Promise<boolean>;
-  netJoin: (inviteCode: string, name: string) => Promise<string | null>;
+  /** Crée une room sur le relay → code 6 chars dans `net.roomCode`. false = service injoignable. */
+  netHostStart: (name: string) => Promise<boolean>;
+  /** Rejoint une room par code. Résout null si connecté, sinon le message d'erreur à afficher. */
+  netJoin: (code: string, name: string) => Promise<string | null>;
   netAssign: (heroId: string, seat: number) => void;
   /** Attribue un EMPLACEMENT (0-3) de l'écran d'équipe à un siège (hôte). */
   netAssignSlot: (slot: number, seat: number) => void;
@@ -877,9 +878,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   net: netFlow.initialNet(),
   netHostStart: (name) => netFlow.netHostStart(get, set, name),
-  netInvite: () => netFlow.netInvite(get),
-  netAcceptAnswer: (code) => netFlow.netAcceptAnswer(get, set, code),
-  netJoin: (inviteCode, name) => netFlow.netJoin(get, set, inviteCode, name),
+  netJoin: (code, name) => netFlow.netJoin(get, set, code, name),
   netAssign: (heroId, seat) => netFlow.netAssign(get, set, heroId, seat),
   netAssignSlot: (slot, seat) => netFlow.netAssignSlot(get, set, slot, seat),
   netLeave: () => netFlow.netLeave(get, set),
@@ -1514,7 +1513,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
     // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
     const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
-      ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused)
+      ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
       : {};
     set({ pendingCast: { ...pc, result: res, ...auto } });
     // Dissipation (LDB 46 l.201-202) : un lanceur ENNEMI éligible chante un Contre-sort contre le
@@ -1633,7 +1632,7 @@ export const useGame = create<GameState>((set, get) => ({
     const pool = get().battle?.combatants ?? get().party;
     const caster = pool.find((c) => c.id === pc.casterId);
     const spell = findSpell(pc.spellLabel);
-    if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile).some((c) => c.id === id)) return;
+    if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, spellSightOf(get)).some((c) => c.id === id)) return;
     const cur = pc.extraTargetIds ?? [];
     const next = cur.includes(id)
       ? cur.filter((x) => x !== id)
@@ -1869,6 +1868,11 @@ export const useGame = create<GameState>((set, get) => ({
         const range = spellRangeTiles(spell.range, active);
         if (range != null && active.pos && chebyshev(active.pos, pt) > range) {
           get().log(`${spell.label} : zone hors de portée (${range} cases).`);
+          return;
+        }
+        // Ligne de Vue vers la case CENTRE (LDB 46 l.170/202 — « vise un point que vous pouvez voir »).
+        if (active.pos && castSightBlocked(get, active.pos, pt)) {
+          get().log(`${spell.label} : pas de ligne de vue.`);
           return;
         }
         const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);

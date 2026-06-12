@@ -1,27 +1,31 @@
 /**
- * Couture STORE ↔ réseau coop (Jalon 7, P1) — module `(get,set)` comme combatFlow.
+ * Couture STORE ↔ réseau coop — module `(get,set)` comme combatFlow.
  *
- * Modèle hôte-autoritaire (spec coop §3) :
- *  - HÔTE : exécute le store normalement ; un abonnement zustand THROTTLÉ diffuse un snapshot
- *    d'état complet (mêmes données JSON-sûres que la sauvegarde) après chaque changement —
- *    couvre aussi les tours d'IA (timers) sans instrumenter chaque action.
- *  - INVITÉ : les actions de combat de l'allowlist sont INTERCEPTÉES (enrobées au branchement,
- *    restaurées au départ) → parties en intent vers l'hôte ; l'état local n'est QUE le reflet
- *    des snapshots reçus. Son `net.mode/mySeat` est préservé à chaque application.
+ * Modèle hôte-autoritaire (spec coop §3) sur le relay WebSocket (`src/net/relay.ts`) :
+ *  - HÔTE : crée une room sur le Worker (code 6 caractères à partager), exécute le store
+ *    normalement ; un abonnement zustand THROTTLÉ diffuse un snapshot d'état complet après
+ *    chaque changement — couvre aussi les tours d'IA (timers) sans instrumenter chaque action.
+ *  - INVITÉ : rejoint par code ; les actions de combat de l'allowlist sont INTERCEPTÉES
+ *    (enrobées au branchement, restaurées au départ) → parties en intent vers l'hôte ;
+ *    l'état local n'est QUE le reflet des snapshots reçus.
  *
- * Les objets réseau vivants (sessions, RTCPeerConnection en attente) restent des SINGLETONS de
- * module — jamais dans le store (non sérialisables, jamais dans les snapshots).
+ * Reconnexion (spec v2 §6) : coupure d'un invité → son siège est réservé GRACE_MS (présence
+ * « away » côté hôte), il reprend par token (y compris après un F5 : token en sessionStorage) ;
+ * passé la grace, ses héros reviennent à l'hôte. La campagne custom voyage UNE fois au join
+ * (message `campaign`), jamais dans les snapshots.
+ *
+ * Les objets réseau vivants (sessions, sockets) restent des SINGLETONS de module — jamais dans
+ * le store (non sérialisables, jamais dans les snapshots).
  */
 import type { GameState } from './store';
-import { useGame } from './store';
+import { useGame, registerScene } from './store';
 import { snapshotSave } from './saves';
 import { HostSession, GuestSession } from '../net/session';
 import { GUEST_INTENTS, sanitizeIntentArgs } from '../net/intents';
 import { intentAllowedFor } from './netOwnership';
-import { encodeSignal, decodeSignal } from '../net/codes';
-import {
-  hostCreateOffer, guestAcceptOffer, hostAcceptAnswer, channelTransport, type Transport,
-} from '../net/transport';
+import { RoomGuest, RoomHost, relayHttpUrl } from '../net/relay';
+import type { NetMessage } from '../net/protocol';
+import type { Scene } from './scene';
 import { bus, EVT } from './bus';
 
 type Get = () => GameState;
@@ -32,37 +36,82 @@ type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)
 export interface NetState {
   mode: 'local' | 'host' | 'guest';
   mySeat: number;
+  /** Code de room à 6 caractères (affiché/copiable par l'hôte, voyage dans les snapshots). */
+  roomCode: string | null;
   seatNames: Record<number, string>;
+  /** Vue HÔTE : sièges en cours de reconnexion (absent = connecté). */
+  presence: Record<number, 'ok' | 'away'>;
+  /** Vue INVITÉ : sa propre connexion (préservée à l'application des snapshots). */
+  connection: 'ok' | 'reconnecting';
+  /** Vue INVITÉ : l'hôte est-il momentanément déconnecté ? */
+  hostAway: boolean;
   ownership: Record<string, number>;
   slots: number[];
 }
-export const initialNet = (): NetState => ({ mode: 'local', mySeat: 0, seatNames: {}, ownership: {}, slots: [0, 0, 0, 0] });
+export const initialNet = (): NetState => ({
+  mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {},
+  connection: 'ok', hostAway: false, ownership: {}, slots: [0, 0, 0, 0],
+});
 
 // ── Singletons réseau (non sérialisables) ──────────────────────────────────────────────────────
 let host: HostSession | null = null;
 let guest: GuestSession | null = null;
-const pendingInvites = new Map<number, { pc: RTCPeerConnection; channel: RTCDataChannel }>();
+let roomHost: RoomHost | null = null;
+let roomGuest: RoomGuest | null = null;
 let unsubscribe: (() => void) | null = null;
 let originals: Record<string, (...args: unknown[]) => unknown> | null = null;
-let broadcastTimer: number | null = null;
+let broadcastTimer: ReturnType<typeof setTimeout> | null = null;
+const graceTimers = new Map<number, ReturnType<typeof setTimeout>>();
+let lastCampaign: unknown = null;
+
+/** Siège réservé pendant la reconnexion d'un invité (spec v2 §6). */
+export const GRACE_MS = 120_000;
+/** Backpressure : au-delà, on diffère le snapshot (seul le DERNIER état partira). */
+const BUFFER_MAX = 256 * 1024;
+/** Token de reprise persisté par room — un reload de l'onglet reprend le même siège. */
+const tokenKey = (code: string) => `wfrp4.coop.token.${code}`;
 
 export const BUILD_ID = 'w4-dev'; // V1 : même build requis de part et d'autre (check au hello)
 
-/** Snapshot d'état pour le réseau — mêmes clés de données que la sauvegarde. */
+/** Snapshot d'état pour le réseau — mêmes clés que la sauvegarde, SANS le projet de campagne
+ *  (313 Ko pour l'Arène : il voyage UNE fois au join via le message `campaign`, spec v2 §5). */
 function netSnapshot(get: Get): Record<string, unknown> {
-  return snapshotSave(
+  const { data } = snapshotSave(
     get() as unknown as Record<string, unknown>,
     useGame.getInitialState() as unknown as Record<string, unknown>,
     'net',
-  ).data;
+  );
+  delete (data as Record<string, unknown>).pendingCampaign;
+  return data;
 }
 
-/** Diffusion throttlée (trailing ~120 ms) : un rafale de mutations (tour d'IA) = un snapshot. */
+function campaignMessage(pc: NonNullable<GameState['pendingCampaign']>): NetMessage {
+  return { kind: 'campaign', name: pc.name, scenes: pc.scenes, startSceneId: pc.startSceneId, worldMap: pc.worldMap ?? null };
+}
+
+function campaignMessages(get: Get): NetMessage[] {
+  const pc = get().pendingCampaign;
+  if (pc) lastCampaign = pc;
+  return pc ? [campaignMessage(pc)] : [];
+}
+
+/** Diffusion throttlée (trailing ~120 ms) : une rafale de mutations (tour d'IA) = un snapshot.
+ *  Upload saturé (bufferedAmount) → on retente, seul le DERNIER état partira (coalescing). */
 function scheduleBroadcast(get: Get): void {
   if (!host || broadcastTimer != null) return;
-  broadcastTimer = window.setTimeout(() => {
+  broadcastTimer = setTimeout(() => {
     broadcastTimer = null;
-    host?.broadcastSnapshot(netSnapshot(get));
+    if (!host) return;
+    if ((roomHost?.relay.buffered() ?? 0) > BUFFER_MAX) {
+      scheduleBroadcast(get);
+      return;
+    }
+    const pc = get().pendingCampaign;
+    if (pc && pc !== lastCampaign) {
+      lastCampaign = pc;
+      host.broadcast(campaignMessage(pc)); // campagne chargée APRÈS le join → rattrapage
+    }
+    host.broadcastSnapshot(netSnapshot(get));
   }, 120);
 }
 
@@ -78,7 +127,13 @@ function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
     ...base,
     ...(data as Partial<GameState>),
     ...(keepCreator ? { screen: 'creator' as const } : null),
-    net: { ...(incoming ?? mine.net), mode: 'guest', mySeat: mine.net.mySeat },
+    net: {
+      ...(incoming ?? mine.net),
+      mode: 'guest',
+      mySeat: mine.net.mySeat,
+      connection: mine.net.connection,
+      hostAway: mine.net.hostAway,
+    },
   });
   bus.emit(EVT.SCENE_DIRTY);
 }
@@ -105,11 +160,26 @@ function restoreGuestActions(): void {
   originals = null;
 }
 
+function setPresence(get: Get, set: Set, seat: number, p: 'ok' | 'away'): void {
+  set({ net: { ...get().net, presence: { ...get().net.presence, [seat]: p } } });
+}
+
 // ── Actions de store (déléguées par store.ts) ──────────────────────────────────────────────────
 
-/** Devient HÔTE : session prête à inviter, diffusion auto des changements d'état. */
-export function netHostStart(get: Get, set: Set, name: string): void {
-  if (get().net.mode !== 'local') return;
+/** Devient HÔTE : crée la room sur le Worker → code court, attend les invités.
+ *  false = service injoignable (l'UI affiche l'erreur). */
+export async function netHostStart(get: Get, set: Set, name: string): Promise<boolean> {
+  if (get().net.mode !== 'local') return false;
+  let room: { code: string; hostToken: string };
+  try {
+    const res = await fetch(`${relayHttpUrl()}/rooms`, { method: 'POST' });
+    if (!res.ok) return false;
+    room = (await res.json()) as { code: string; hostToken: string };
+  } catch {
+    return false;
+  }
+  const rh = new RoomHost(room.code, room.hostToken);
+  roomHost = rh;
   host = new HostSession({
     build: BUILD_ID,
     allow: GUEST_INTENTS,
@@ -126,64 +196,102 @@ export function netHostStart(get: Get, set: Set, name: string): void {
       if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args);
     },
     getSnapshot: () => netSnapshot(get),
+    extraJoinMessages: () => campaignMessages(get),
     onSeatClosed: (seat) => {
-      const { seatNames, ownership, slots } = get().net;
+      const { seatNames, presence, ownership, slots } = get().net;
       const names = { ...seatNames };
       delete names[seat];
+      const pres = { ...presence };
+      delete pres[seat];
       // Ses héros ET ses emplacements reviennent à l'hôte (spec §6) — son ✓ ne sera plus requis.
       const own = Object.fromEntries(Object.entries(ownership).map(([h, s]) => [h, s === seat ? 0 : s]));
-      set({ net: { ...get().net, seatNames: names, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)) } });
+      set({ net: { ...get().net, seatNames: names, presence: pres, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)) } });
       get().log(`Un joueur a quitté — ses héros reviennent à l'hôte.`);
     },
   });
-  set({ net: { mode: 'host', mySeat: 0, seatNames: { 0: name }, ownership: {}, slots: [0, 0, 0, 0] } });
+  rh.onFatal = () => {
+    get().log('Connexion au service coop perdue — session terminée.');
+    netLeave(get, set);
+  };
+  rh.onJoin = (seat, gname) => {
+    host?.addGuest(rh.seatTransport(seat), seat);
+    set({ net: { ...get().net, seatNames: { ...get().net.seatNames, [seat]: gname }, presence: { ...get().net.presence, [seat]: 'ok' } } });
+  };
+  rh.onResume = (seat, gname) => {
+    const t = graceTimers.get(seat);
+    if (t != null) {
+      clearTimeout(t);
+      graceTimers.delete(seat);
+    }
+    // Revenu APRÈS la grace : son siège a été fermé → re-join sur le même siège.
+    if (!host?.seats[seat]) host?.addGuest(rh.seatTransport(seat), seat);
+    set({ net: { ...get().net, seatNames: { ...get().net.seatNames, [seat]: gname }, presence: { ...get().net.presence, [seat]: 'ok' } } });
+  };
+  rh.onGone = (seat) => {
+    setPresence(get, set, seat, 'away');
+    graceTimers.set(seat, setTimeout(() => {
+      graceTimers.delete(seat);
+      rh.closeSeat(seat); // → onClose du transport virtuel → onSeatClosed (héros à l'hôte)
+    }, GRACE_MS));
+  };
+  set({ net: { ...initialNet(), mode: 'host', roomCode: room.code, seatNames: { 0: name } } });
   unsubscribe = useGame.subscribe(() => scheduleBroadcast(get));
-}
-
-/** HÔTE : crée un code d'INVITATION pour un siège (à envoyer à l'invité). */
-export async function netInvite(get: Get): Promise<string | null> {
-  if (get().net.mode !== 'host' || !host) return null;
-  const { pc, channel, offer } = await hostCreateOffer();
-  const seat = Object.keys(get().net.seatNames).length + pendingInvites.size; // prochain siège libre
-  pendingInvites.set(seat, { pc, channel });
-  return encodeSignal({ v: 1, seat, offer });
-}
-
-/** HÔTE : colle le code de RÉPONSE d'un invité → la connexion du siège s'établit. */
-export async function netAcceptAnswer(get: Get, set: Set, code: string): Promise<boolean> {
-  const payload = (await decodeSignal(code)) as { seat?: number; answer?: RTCSessionDescriptionInit; name?: string } | null;
-  if (!host || !payload?.answer || payload.seat == null) return false;
-  const inv = pendingInvites.get(payload.seat);
-  if (!inv) return false;
-  pendingInvites.delete(payload.seat);
-  await hostAcceptAnswer(inv.pc, payload.answer);
-  await new Promise<void>((resolve) => {
-    if (inv.channel.readyState === 'open') return resolve();
-    inv.channel.onopen = () => resolve();
-  });
-  host.addGuest(channelTransport(inv.channel) as Transport, payload.seat);
-  const name = payload.name || `Joueur ${payload.seat + 1}`;
-  set({ net: { ...get().net, seatNames: { ...get().net.seatNames, [payload.seat]: name } } });
   return true;
 }
 
-/** INVITÉ : colle le code d'invitation → retourne le code de RÉPONSE à renvoyer à l'hôte. */
-export async function netJoin(get: Get, set: Set, inviteCode: string, name: string): Promise<string | null> {
-  if (get().net.mode !== 'local') return null;
-  const payload = (await decodeSignal(inviteCode)) as { seat?: number; offer?: RTCSessionDescriptionInit } | null;
-  if (!payload?.offer || payload.seat == null) return null;
-  const seat = payload.seat;
-  const { answer, channelReady } = await guestAcceptOffer(payload.offer);
-  guest = new GuestSession({
-    build: BUILD_ID,
-    name,
-    applySnapshot: (data) => applyNetSnapshot(set, data),
-    onClosed: () => netLeave(get, set),
+/** INVITÉ : rejoint une room par son code. Résout null si connecté, sinon le message d'erreur.
+ *  Un token en sessionStorage (reload d'onglet) reprend le MÊME siège tant que la room vit. */
+export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Promise<string | null> {
+  if (get().net.mode !== 'local') return Promise.resolve('Déjà en session.');
+  const code = codeRaw.trim().toUpperCase();
+  if (!/^[A-Z0-9]{6}$/.test(code)) return Promise.resolve('Code invalide — 6 caractères.');
+  const stored = sessionStorage.getItem(tokenKey(code)) ?? undefined;
+  return new Promise((resolve) => {
+    let settled = false;
+    const fail = (msg: string) => {
+      if (settled) return;
+      settled = true;
+      netLeave(get, set);
+      resolve(msg);
+    };
+    const timeout = setTimeout(() => fail('Connexion impossible — réessayez.'), 15_000);
+    const rg = new RoomGuest(code, name, undefined, stored);
+    roomGuest = rg;
+    rg.onFatal = (reason) => {
+      if (settled) {
+        get().log(`Coop : ${reason}`);
+        netLeave(get, set);
+        return;
+      }
+      fail(reason);
+    };
+    rg.onHostAway = (away) => {
+      if (get().net.mode === 'guest') set({ net: { ...get().net, hostAway: away } });
+    };
+    rg.onConnState = (s) => {
+      if (get().net.mode === 'guest') set({ net: { ...get().net, connection: s === 'ok' ? 'ok' : 'reconnecting' } });
+    };
+    rg.onReconnected = () => guest?.rejoin();
+    rg.onSeated = (seat) => {
+      sessionStorage.setItem(tokenKey(code), rg.token);
+      if (settled) return; // reprise en cours de partie : déjà câblé
+      settled = true;
+      clearTimeout(timeout);
+      guest = new GuestSession({
+        build: BUILD_ID,
+        name,
+        applySnapshot: (data) => applyNetSnapshot(set, data),
+        onCampaign: (m) => {
+          for (const s of m.scenes) registerScene(s as Scene);
+        },
+        onClosed: () => netLeave(get, set),
+      });
+      set({ net: { ...initialNet(), mode: 'guest', mySeat: seat, roomCode: code, seatNames: { [seat]: name } } });
+      interceptGuestActions();
+      guest.connect(rg);
+      resolve(null);
+    };
   });
-  set({ net: { mode: 'guest', mySeat: seat, seatNames: { [seat]: name }, ownership: {}, slots: [0, 0, 0, 0] } });
-  interceptGuestActions();
-  void channelReady.then((channel) => guest?.connect(channelTransport(channel) as Transport));
-  return encodeSignal({ v: 1, seat, answer, name });
 }
 
 /** HÔTE : attribue un héros à un siège (lobby — « un certain nombre de personnages chacun »). */
@@ -205,13 +313,21 @@ export function netAssignSlot(get: Get, set: Set, slot: number, seat: number): v
 export function netLeave(get: Get, set: Set): void {
   unsubscribe?.();
   unsubscribe = null;
-  if (broadcastTimer != null) { window.clearTimeout(broadcastTimer); broadcastTimer = null; }
+  if (broadcastTimer != null) {
+    clearTimeout(broadcastTimer);
+    broadcastTimer = null;
+  }
+  for (const t of graceTimers.values()) clearTimeout(t);
+  graceTimers.clear();
+  lastCampaign = null;
   host?.close();
   host = null;
   guest?.close();
   guest = null;
-  for (const { pc } of pendingInvites.values()) pc.close();
-  pendingInvites.clear();
+  roomHost?.close();
+  roomHost = null;
+  roomGuest?.close();
+  roomGuest = null;
   restoreGuestActions();
   set({ net: initialNet() });
 }

@@ -104,14 +104,14 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
 
   it('invité : pas de « Reprendre » même partie en cours (l’hôte pilote)', () => {
     const html = render([], {
-      mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
+      ...initialNet(), mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
     }, true);
     expect(html).not.toContain('Reprendre');
   });
 
   it('invité : ses slots actifs, ceux des autres en attente, pas de « Commencer »', () => {
     const html = render([], {
-      mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
+      ...initialNet(), mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
     });
     expect((html.match(/Créer un personnage/g) ?? []).length).toBe(2); // slots 1 et 2 (siège 1)
     expect(html).toContain('En attente de Hôte'); // slots 0 et 3
@@ -121,7 +121,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
 
   it('hôte : select de siège sur les slots vides, « Commencer » grisé tant qu’un slot invité est vide', () => {
     const html = render([], {
-      mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
+      ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
     });
     expect(html).toContain('<select'); // attribution par slot
     expect(html).toContain('Antoine');
@@ -133,7 +133,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
   it('hôte : héros de l’invité dans SON slot, « Retirer » réservé au propriétaire', () => {
     const h = savedHero();
     const html = render([h], {
-      mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
+      ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
     });
     expect(html).toContain(h.name); // affiché dans le slot du siège 1
     expect(html).not.toContain('Retirer'); // pas à l'hôte → pas de retrait
