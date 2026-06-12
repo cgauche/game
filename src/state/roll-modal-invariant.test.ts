@@ -3,48 +3,99 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Garde-fou « un jet = une modale » (invariante projet) : aucune action du store ne doit RÉSOUDRE
- * un jet aléatoire en ligne. Elle doit ouvrir une modale `pending*` (jet différé) ou pousser une
- * révélation (`pendingReveals`). Seuls les résolveurs de modale (Lancer/Chance/Appliquer) tirent.
+ * Garde-fou « un jet = une modale » (invariante projet), v2 — DÉTECTEUR de jets cachés.
  *
- * Heuristique : on scanne le corps DIRECT de chaque action du store ; un appel à une primitive de
- * résolution dans une action non-whitelistée = violation. La whitelist est une convention de
- * suffixe (`*Roll`/`*Confirm`/…) + des extras explicites. (Test statique sur le texte source.)
+ * Règle : aucun point d'entrée JOUEUR ne résout un jet aléatoire en silence. Un jet est soit
+ *  1. DIFFÉRÉ : une modale `pending*` (fabrique rollFlow — Lancer/Chance/Pacte/Résilience) ;
+ *  2. RÉVÉLÉ : un jet SUBI montré après coup (pendingReveals, NightEntry du Repos, recap de
+ *     Voyage jour par jour, journal d'entretien) — listé ici avec sa JUSTIFICATION ;
+ *  3. AMBIANT : le monde tire sans Test de héros (réassort marchand, génération de créature).
+ *
+ * Ce que le scan COUVRE (statique, sur le texte source) :
+ *  - le corps direct de chaque action du store ;
+ *  - le corps direct de chaque fonction EXPORTÉE des modules de flux délégués ;
+ *  - les DÉLÉGATIONS À UN NIVEAU : une action du store non-résolveur qui APPELLE une fonction
+ *    de flux qui tire (c'est le trou qui a caché medicFlow autrefois).
+ *  Limite assumée : profondeur 1 (un helper appelé par un helper n'est pas suivi) — les
+ *  primitives du moteur restent confinées aux specs `rollFlows.ts` par la règle `FLOWS.`.
  */
-const STORE = readFileSync(fileURLToPath(new URL('./store.ts', import.meta.url)), 'utf8');
-// medicFlow.ts : les actions de l'INFIRMERIE (délégations du store) — scannées aussi, sinon un jet
-// en ligne pourrait s'y cacher derrière la délégation.
-const MEDIC = readFileSync(fileURLToPath(new URL('./medicFlow.ts', import.meta.url)), 'utf8');
+const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
+const read = (f: string) => readFileSync(here(f), 'utf8');
 
-const PRIMITIVES = [
-  'battleRng(', 'rollTest(', 'rollOups(', 'rollMiscast(', 'rollCritical(',
-  'resolveTrample(', 'resolveFocus(', 'resolveBackstabAttack(', 'resolveMelee(',
-  'resolveRanged(', 'resolveCasting(', 'resolveMagicMissile(', 'opposedTest(',
-  'applyAttackResult(', 'applyTrample(', 'applyMiscast(', 'focusSpell(',
-  // Handlers de flux générés (rollFlow/rollFlows) : ils RÉSOLVENT un jet → seuls les résolveurs
-  // de modale (*Roll/*Reroll/…) ont le droit de les invoquer. Les primitives ci-dessus, déplacées
-  // dans les specs `rollFlows.ts`, ne sont atteignables QUE par ces handlers (garantie structurelle).
-  'FLOWS.',
-];
-// `*DarkPact` : Sombre Pacte (LDB 19 l.41) — bouton de la modale ouverte, au même titre que la
-// Chance (« +1 Corruption pour relancer ») : un résolveur de modale, pas un jet en ligne.
-const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|Confirm|Cancel|DarkPact)$/;
-// `deviationApply` est le résolveur de la modale de Déviation Critique (le joueur a déjà choisi
-// Dévier/Subir) : il applique un résultat DÉJÀ décidé via applyAttackResult — comme defenseConfirm,
-// le jet de la table des Critiques n'est qu'une conséquence, pas un Test offrant un choix au joueur.
-// `startCombat` tire l'Initiative (I+1d10) en début de combat (l'ordre est lu dans la frise d'initiative (InitiativeStrip),
-// plus de modale d'Initiative depuis R2) — un jet d'entretien, sans Chance.
-// `medicSurgeryPass` est le résolveur « Opérer (une passe) » de l'INFIRMERIE (Chirurgie = Test
-// ÉTENDU, LDB 10 l.154) : il tire un jet de Guérison et garde la modale ouverte — un jet DE la
-// modale ouverte, comme healRoll. (Bander/Hémorragie pendant l'opération passent désormais par
-// pendingHeal — flux de jet complet.)
-// `resolveCorruption` est le résolveur (« Continuer ») de la modale d'exposition corruptrice — le
-// Test a déjà été lancé/relancé dans la modale ; le Test de Résistance du SEUIL (LDB 19 l.80) est
-// une conséquence subie, révélée au joueur (pendingReveals, kind 'mutation'), comme un Critique.
-const EXTRA_OK = new Set(['resolveTest', 'resolveCorruption', 'disengageConfirmA', 'disengageFlee', 'dismissReveal', 'deviationApply', 'startCombat', 'advanceTime', 'medicSurgeryPass']);
-// Dette temporaire (résolue au fil des tâches) — VIDÉE : tous les jets héros/conséquences sont en modale.
-const TODO = new Set<string>([]);
+/** Modules de flux DÉLÉGUÉS par le store (points d'entrée joueur) — tous scannés. */
+const FLOW_MODULES: Record<string, string> = {
+  combatFlow: read('./combatFlow.ts'),
+  medicFlow: read('./medicFlow.ts'),
+  partyFlow: read('./partyFlow.ts'),
+  merchantFlow: read('./merchantFlow.ts'),
+  restFlow: read('./restFlow.ts'),
+  travelFlow: read('./travelFlow.ts'),
+  corruptionFlow: read('./corruptionFlow.ts'),
+  encounterPsychFlow: read('./encounterPsychFlow.ts'),
+  interludeFlow: read('./interludeFlow.ts'),
+  upkeep: read('./upkeep.ts'),
+  outOfCombatUpkeep: read('./outOfCombatUpkeep.ts'),
+  spawn: read('./spawn.ts'),
+};
+const STORE = read('./store.ts');
 
+/** Primitives qui TIRENT (RNG / résolution de Test / application d'un jet) — regex mot-entier. */
+const PRIM_RE =
+  /\b(battleRng|rollTest|rollOups|rollMiscast|rollCritical|rollContraction|rollRandomTalent|rollMeleeDefender|resolveAttack|resolveTrample|resolveFocus|resolveBackstabAttack|resolveMelee|resolveMeleePassive|resolveRanged|resolveCasting|resolveMagicMissile|resolveRun|resolveFrenzyEntry|resolvePeurTest|resolveTerreurTest|resolveCalmeSimple|opposedTest|applyAttackResult|applyTrample|applyMiscast|focusSpell|makeRNG|d10|d100)\s*\(|\bFLOWS\.|\bdefaultRNG\b|\bMath\.random\b|\.int\(/;
+
+const offendersOf = (body: string): string[] => {
+  const m = body.match(new RegExp(PRIM_RE, 'g'));
+  return m ? [...new Set(m.map((x) => x.trim()))] : [];
+};
+
+// Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
+// `*Resolve` : résolveurs aussi (psychResolve, bladeTrapResolve, encounterPsychResolve).
+const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|SurgeryPass|Resolve)$/;
+
+/**
+ * Liste blanche JUSTIFIÉE — chaque entrée dit OÙ le jet est montré au joueur (catégories 2/3).
+ * Ajouter un nom ici sans justification vérifiable = refusé en revue. Le test d'hygiène en bas
+ * refuse toute entrée qui ne correspond plus à une action du store / fonction de flux réelle.
+ */
+const JUSTIFIED: Record<string, string> = {
+  // ── Résolveurs hors-suffixe (la modale est ouverte, le jet en est une conséquence acquittée) ──
+  resolveTest: 'résolveur de la modale de Test de scène',
+  resolveCorruption: 'résolveur « Continuer » de la modale d’exposition ; le Test de seuil est révélé (pendingReveals kind mutation)',
+  disengageConfirmA: 'option « Sacrifier l’Avantage » de la modale de Désengagement (aucun jet de héros : choix acquitté)',
+  disengageFlee: 'option « Fuir » de la modale : attaque dans le dos SUBIE, résultat poussé en révélation (backstab)',
+  dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
+  deviationApply: 'résolveur de la modale de Déviation Critique (résultat déjà décidé, le tirage de table est une conséquence)',
+  medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
+  startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
+  resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
+  applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',
+  // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
+  applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/contractDisease = conséquences subies journalisées + révélées',
+  applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',
+  advanceTurn: 'fin de tour : IA ennemie (instantanée par design) + entretien de fin de Round en file de révélation témoin',
+  // ── Jets d’ENTRETIEN / monde — subis et RÉVÉLÉS (catégorie 2) ou ambiants (catégorie 3) ──
+  startCombat: 'Initiative (I+1d10) en début de combat — lue dans la frise d’initiative (R2)',
+  advanceTime: 'cascade quotidienne #T3 (upkeep) — jets subis journalisés',
+  restParty: 'repos hors modale (scénarios/recette) — même cascade journalisée que la nuit',
+  runDailyUpkeep: 'entretien QUOTIDIEN (rations/maladies/convalescence) — chaque jet est journalisé ligne à ligne',
+  outOfCombatUpkeep: 'États récurrents hors combat (Hémorragique…) — rejoue endOfRound, journalisé',
+  sleepParty: 'source UNIQUE de la nuit : chaque jet devient une NightEntry LISTÉE (modale de Repos / recap) + journal',
+  restSleep: 'résolveur « Dormir » du Repos : délègue à sleepParty — NightEntry visibles',
+  startTravel: 'voyage #T2 : Tests de route (marche forcée, Survie, Perception) NARRÉS jour par jour dans le TravelRecapModal (🎲 jet/cible affichés)',
+  resumeTravel: 'reprise du voyage interrompu — mêmes jets narrés dans le recap',
+  continueTravelAfterNight: 'reprise après la halte de nuit — mêmes jets narrés dans le recap',
+  openMerchant: 'ouverture de boutique : réassort/Disponibilité (LDB 59) — le monde tire, pas un Test de héros',
+  spawnEnemy: 'génération de créature (caractéristiques/PB) — ambiant, hors Test',
+  gainCorruption: 'seuil de Corruption : Test SUBI révélé au joueur (pendingReveals kind mutation) + mutation tirée sur table révélée',
+  applyMutation: 'mutation tirée sur les Tableaux de Corruption (LDB 19) — RÉVÉLÉE (pendingReveals kind mutation, révélation 🧬)',
+  startInterlude: 'ouvre l’interlude : tirage d’Événement (d100 par héros) affiché sur la carte du héros (🎲 + libellé) et journalisé',
+  interludeEnd: 'clôture d’interlude : Revenus restants auto-résolus, journalisés',
+  openLearn: 'apprentissage en interlude : le d100 fixe le PRIX du tuteur (monde ambiant, LDB 23) — affiché avant de payer',
+  confirmActivity: 'résolveur « Appliquer » de la modale d’Activité : le TEST a eu lieu en modale ; les dés de Statut (montant des Revenus, LDB 08) sont la conséquence affichée',
+  bankDeposit: 'placement en interlude : l’Indice d’intérêts est tiré par le monde (ambiant) et AFFICHÉ (gains/risque de faillite)',
+};
+
+/** Extrait `nom: (args) => corps` des actions du store. */
 function storeActions(src: string): { name: string; body: string }[] {
   const out: { name: string; body: string }[] = [];
   const re = /^ {2}(\w+):\s*\([^)]*\)\s*=>\s*(\{)?/gm;
@@ -62,14 +113,12 @@ function storeActions(src: string): { name: string; body: string }[] {
   return out;
 }
 
-/** Fonctions exportées d'un MODULE de flux (medicFlow…) : `export function nom(...) { corps }`. */
+/** Fonctions exportées d'un MODULE de flux : `export function nom(...) { corps }`. */
 function moduleActions(src: string): { name: string; body: string }[] {
   const out: { name: string; body: string }[] = [];
-  const re = /^export function (\w+)\(/gm;
+  const re = /^export (?:async )?function (\w+)\(/gm;
   let m: RegExpExecArray | null;
   while ((m = re.exec(src))) {
-    // ferme d'abord la PARENTHÈSE de signature (les types des params peuvent contenir des accolades),
-    // puis la 1re accolade qui suit = début du corps.
     let p = 1, j = re.lastIndex;
     while (j < src.length && p > 0) { if (src[j] === '(') p++; else if (src[j] === ')') p--; j++; }
     const open = src.indexOf('{', j);
@@ -80,19 +129,53 @@ function moduleActions(src: string): { name: string; body: string }[] {
   return out;
 }
 
-describe('Invariante « un jet = une modale »', () => {
-  const actions = [...storeActions(STORE), ...moduleActions(MEDIC)];
+describe('Invariante « un jet = une modale » (détecteur de jets cachés, v2)', () => {
+  // ── 1. Carte des fonctions de flux qui TIRENT (directement) ──
+  const rollers = new Map<string, string>(); // nom → module
+  const flowFns = new Map<string, { module: string; body: string }>();
+  for (const [mod, src] of Object.entries(FLOW_MODULES)) {
+    for (const { name, body } of moduleActions(src)) {
+      flowFns.set(name, { module: mod, body });
+      if (offendersOf(body).length) rollers.set(name, mod);
+    }
+  }
 
+  // ── 2. Actions du store : ni primitive en ligne, ni APPEL d'une fonction de flux qui tire ──
+  const actions = storeActions(STORE);
   it('extrait un nombre plausible d’actions du store', () => {
     expect(actions.length).toBeGreaterThan(30);
   });
 
   for (const { name, body } of actions) {
-    const offenders = PRIMITIVES.filter((p) => body.includes(p));
-    const allowed = RESOLVER.test(name) || EXTRA_OK.has(name) || TODO.has(name);
-    it(`${name} ne résout pas de jet en ligne`, () => {
+    const allowed = RESOLVER.test(name) || name in JUSTIFIED;
+    it(`store.${name} ne résout pas de jet en ligne${name in JUSTIFIED ? ` (justifié : ${JUSTIFIED[name]})` : ''}`, () => {
       if (allowed) return;
-      expect(offenders, `${name} appelle ${offenders.join(', ')} — ouvre une modale pending*/pousse une révélation`).toEqual([]);
+      const direct = offendersOf(body);
+      // Délégation à UN niveau : `fn(...)` ou `module.fn(...)` vers une fonction de flux qui tire.
+      const called = [...body.matchAll(/\b(?:\w+\.)?(\w+)\(/g)].map((x) => x[1]);
+      const viaFlow = [...new Set(called.filter((c) => rollers.has(c) && !RESOLVER.test(c) && !(c in JUSTIFIED)))];
+      const all = [...direct, ...viaFlow.map((c) => `${rollers.get(c)}.${c}()`)];
+      expect(all, `${name} cache un jet (${all.join(', ')}) — différer en modale pending* / pousser une révélation / justifier dans JUSTIFIED`).toEqual([]);
     });
   }
+
+  // ── 3. Fonctions de flux exportées qui tirent : résolveur ou justifiées, sinon violation ──
+  for (const [name, mod] of rollers) {
+    const allowed = RESOLVER.test(name) || name in JUSTIFIED;
+    it(`${mod}.${name} (tire) est un résolveur ou est justifié${name in JUSTIFIED ? ` (${JUSTIFIED[name]})` : ''}`, () => {
+      // combatFlow = moteur du combat : ses helpers (IA instantanée par design + résolution
+      // appelée PAR les résolveurs/specs) sont couverts par la règle « FLOWS./primitives
+      // interdites aux actions non-résolveur » côté store — pas un point d'entrée joueur.
+      if (mod === 'combatFlow') return;
+      expect(allowed, `${mod}.${name} tire un jet sans être un résolveur de modale — le différer/révéler, ou le JUSTIFIER ici`).toBe(true);
+    });
+  }
+
+  // ── 4. Hygiène de la liste blanche : toute entrée doit pointer un nom RÉEL (action du store
+  // ou fonction de flux exportée) — sinon l'entrée est morte/mensongère et doit partir. ──
+  it('la liste blanche JUSTIFIED ne contient que des noms réels', () => {
+    const known = new Set([...actions.map((a) => a.name), ...flowFns.keys()]);
+    const stale = Object.keys(JUSTIFIED).filter((n) => !known.has(n));
+    expect(stale, `entrées JUSTIFIED sans action/fonction correspondante : ${stale.join(', ')}`).toEqual([]);
+  });
 });
