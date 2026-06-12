@@ -15,7 +15,7 @@ function setup(broken: boolean, enemyPos = { x: 9, y: 5 }) {
 }
 
 describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
-  beforeEach(() => useGame.setState({ battle: null }));
+  beforeEach(() => useGame.setState({ battle: null, pendingAttack: null })); // purge inter-tests (combatBusy gèle la hotbar sous un jet en cours)
 
   it('Brisé : le clic-ennemi est REFUSÉ (aucune action offensive)', () => {
     setup(true);

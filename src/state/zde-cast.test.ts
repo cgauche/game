@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
 import { zdeDiameterMeters, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
 
 function wiz() {
@@ -35,7 +36,7 @@ describe('parsing ZdE / portée (engine/magic)', () => {
   });
 });
 
-describe('clic-case ZdE en combat', () => {
+describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
   beforeEach(() => {
     useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
     useGame.getState().seedRng(17);
@@ -44,7 +45,7 @@ describe('clic-case ZdE en combat', () => {
   function setupBattle() {
     const w = wiz();
     w.pos = { x: 2, y: 2 };
-    w.characteristics.FM = 40; // BFM 4 → ZdE diamètre 4 m → rayon 1 case
+    w.characteristics.FM = 40; // BFM 4 → ZdE diamètre 4 m → rayon 1 case ; portée (FM) m → 20 cases
     const e1 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e1', { x: 6, y: 6 });
     const e2 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e2', { x: 7, y: 6 });
     const e3 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e3', { x: 12, y: 12 }); // hors zone
@@ -58,29 +59,59 @@ describe('clic-case ZdE en combat', () => {
     return { w, e1, e2, e3 };
   }
 
-  it('clic sur une case → pendingCast de zone avec toutes les cibles du rayon', () => {
-    setupBattle();
-    useGame.getState().battleClickTile({ x: 6, y: 6 });
-    const pc = useGame.getState().pendingCast;
-    expect(pc).toBeTruthy();
-    expect(pc!.zone).toBeTruthy();
-    // Explosion : ZdE (BFM) mètres → rayon 1 case autour de (6,6) → e1 (6,6) + e2 (7,6) ; e3 hors zone.
-    const ids = [pc!.targetId, ...(pc!.extraTargetIds ?? [])].sort();
-    expect(ids).toEqual(['e1', 'e2']);
+  /** Jet RÉUSSI posé directement (déterminisme) — sl au choix pour piloter le budget de Surincantation. */
+  const okCast = (sl: number) => ({ cast: true, roll: 11, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
+
+  it('tout clic (case ou token) OUVRE la modale sans centre ; la pose touche tous ceux du rayon FINAL', () => {
+    const { w, e1, e2, e3 } = setupBattle();
+    useGame.getState().battleClickTile({ x: 9, y: 9 }); // n'importe quelle case : la modale s'ouvre
+    let pc = useGame.getState().pendingCast!;
+    expect(pc.zone).toMatchObject({ center: null, radius: 1 });
+    expect(pc.targetId).toBe(w.id); // ancre lanceur — aucun effet ne lui est appliqué
+    useGame.setState({ pendingCast: { ...pc, result: okCast(4) as never } });
+    useGame.getState().castPlaceZone(true);
+    useGame.getState().battleClickTile({ x: 6, y: 6 }); // pose → application immédiate
+    expect(useGame.getState().pendingCast).toBeNull();
+    const hp = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!.wounds;
+    expect(hp('e1').current).toBeLessThan(hp('e1').max); // dans le rayon
+    expect(hp('e2').current).toBeLessThan(hp('e2').max);
+    expect(hp('e3').current).toBe(hp('e3').max); // hors zone
+    expect(useGame.getState().battle!.acted).toBe(true);
+    void e1; void e2; void e3;
   });
 
-  it('zone hors de portée → refus journalisé, pas de modale', () => {
+  it('Surincantation « +Zone » (LDB 47 l.29) : le gabarit s’agrandit du Ø initial et la pose ramasse plus loin', () => {
     const { w } = setupBattle();
-    w.characteristics.FM = 8; // portée (FM) mètres → 4 cases seulement
-    useGame.getState().battleClickTile({ x: 12, y: 12 });
-    expect(useGame.getState().pendingCast).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/hors de portée/);
+    const ni = findSpell('Explosion')!.cn ?? 0;
+    useGame.getState().battleClickTile({ x: 9, y: 9 });
+    let pc = useGame.getState().pendingCast!;
+    useGame.setState({ pendingCast: { ...pc, result: okCast(ni + 2) as never } }); // surplus 2 → 1 allocation
+    useGame.getState().castAllocOvercast('zone');
+    pc = useGame.getState().pendingCast!;
+    expect(pc.overcast?.zone).toBe(1);
+    expect(pc.zone!.radius).toBe(2); // r0m 2 m → ×2 = 4 m → 2 cases
+    useGame.getState().castPlaceZone(true);
+    useGame.getState().battleClickTile({ x: 10, y: 10 }); // e3 (12,12) à 2 cases du centre
+    const hp = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!.wounds;
+    expect(hp('e3').current).toBeLessThan(hp('e3').max);
+    expect(hp('e1').current).toBe(hp('e1').max); // loin du centre
+    void w;
   });
 
-  it('zone vide → refus journalisé', () => {
-    setupBattle();
+  it('pose hors de portée → refus journalisé, la pose RESTE en cours ; zone VIDE → autorisée (Action consommée)', () => {
+    const { w } = setupBattle();
+    w.characteristics.FM = 8; // portée (FM) mètres → 4 cases
     useGame.getState().battleClickTile({ x: 9, y: 9 });
+    const pc = useGame.getState().pendingCast!;
+    useGame.setState({ pendingCast: { ...pc, result: okCast(4) as never } });
+    useGame.getState().castPlaceZone(true);
+    useGame.getState().battleClickTile({ x: 12, y: 12 }); // 10 cases > 4 → refus
+    expect(useGame.getState().journal.join('\n')).toMatch(/hors de portée/);
+    expect(useGame.getState().pendingCast?.zone?.placing).toBe(true); // toujours en pose
+    useGame.getState().battleClickTile({ x: 4, y: 4 }); // dans la portée, PERSONNE dans le rayon
     expect(useGame.getState().pendingCast).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/personne dans la zone/);
+    // En combat, la sortie commune (finishPlayerAction) écrit dans le LOG de combat.
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/ne touche personne/);
+    expect(useGame.getState().battle!.acted).toBe(true);
   });
 });

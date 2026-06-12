@@ -17,13 +17,21 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  castSightBlocked, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt,
+  castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
+import { pickActiveModalKey } from './modalArbiter';
+
+/** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ou ciblage par carte : Frappe
+ *  Mortelle, 2ᵉ frappe, Surincantation +Cible, pose de zone) : toutes les actions d'INTENTION
+ *  de la hotbar sont inertes — on ne change pas d'action au milieu d'un jet. La barre est
+ *  masquée (ActionBar), mais ce garde-fou couvre AUSSI le clavier, les intents coop et la recette. */
+const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
+  !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import type { BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
@@ -550,13 +558,16 @@ export interface GameState {
   castCounterspell: (counterId: string) => void;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
-  /** Surincantation (LDB 47 l.28-31) : alloue +2 DR du surplus à un axe (Durée / Cible). */
-  castAllocOvercast: (axis: 'duration' | 'targets') => void;
+  /** Surincantation (LDB 47 l.29) : alloue +2 DR du surplus à un axe (Durée / Cible / Zone d'Effet). */
+  castAllocOvercast: (axis: 'duration' | 'targets' | 'zone') => void;
   /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
   castToggleExtraTarget: (id: string) => void;
   /** Surincantation « +Cible » : bascule le choix SUR LE CHAMP DE BATAILLE (la modale s'efface,
    *  bandeau TargetPrompt + clic carte → castToggleExtraTarget). En combat uniquement. */
   castPickTargets: (on: boolean) => void;
+  /** Sort de ZONE (flux « jet puis pose », LDB 47 l.29/44) : bascule la POSE sur la carte
+   *  (la modale s'efface, le gabarit final suit le curseur, clic-case = dépose). */
+  castPlaceZone: (on: boolean) => void;
   castConfirm: () => void;
   castCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -1290,6 +1301,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleSelectAction: (a) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle, scene } = get();
     if (!battle || !scene) return;
     const active = activeCombatant(battle);
@@ -1306,7 +1318,7 @@ export const useGame = create<GameState>((set, get) => ({
     // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
     // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
     if (hasCondition(active, 'Brisé') && a !== 'resolve' && a !== null) {
-      get().log(`${active.name} est Brisé : il ne peut que fuir (LDB 16) ou puiser dans sa Détermination.`);
+      get().log(`${active.name} est Brisé : il ne peut que fuir ou puiser dans sa Détermination.`);
       return;
     }
     // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement (clic-sol), Détermination et l'ouverture
@@ -1325,6 +1337,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Guérison (LDB 09-Compétences l.226-243) — soin de Blessures / arrêt d'Hémorragie ──
 
   battleHeal: (targetId, mode) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle) return;
     const healer = activeCombatant(battle);
@@ -1391,6 +1404,7 @@ export const useGame = create<GameState>((set, get) => ({
   /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. Un sort de ZONE
    *  ouvre la modale DIRECTEMENT (flux « jet puis pose », LDB 47 l.29) — pas de cible à désigner. */
   battleSelectSpell: (label) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1401,6 +1415,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleUseItem: (uid) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1428,14 +1443,18 @@ export const useGame = create<GameState>((set, get) => ({
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
     if (!caster || !target || !spell) return;
-    const sigmar = castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière » (LDB 42)
-    const aqshy = domainCastBonus(get(), caster, spell); // attribut d'Aqshy : +10/En flammes proche (LDB 48)
+    // ZONE non posée (flux « jet puis pose ») : pas de cible désignée au jet — pas de ward
+    // individuel (« N'écoutez point » protège une CIBLE), pas de résolution Projectile (les
+    // Dégâts par cible sont dérivés du même jet À LA POSE, evaluateMissile).
+    const unplacedZone = !!pc.zone && !pc.zone.center;
+    const sigmar = unplacedZone ? 0 : castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière »
+    const aqshy = domainCastBonus(get(), caster, spell); // attribut d'Aqshy : +10/En flammes proche
     const ward = sigmar + aqshy;
-    const res = pc.missile
+    const res = pc.missile && !unplacedZone
       ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
       : resolveCasting(caster, spell, battleRng(), 'intermediaire', pc.focused, ward);
     if (sigmar) get().log(`${caster.name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).`);
-    if (aqshy) get().log(`${caster.name} : +${aqshy} en Langue (Magick) — Aqshy se nourrit des flammes proches (LDB 48).`);
+    if (aqshy) get().log(`${caster.name} : +${aqshy} en Langue (Magick) — Aqshy se nourrit des flammes proches.`);
     // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
     // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
     const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
@@ -1444,10 +1463,12 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCast: { ...pc, result: res, ...auto } });
     // Dissipation (LDB 46 l.201-202) : un lanceur ENNEMI éligible chante un Contre-sort contre le
     // SORT d'un héros — opposé au Test d'Incantation (déclaré pendant l'incantation : l'IA n'attend
-    // pas l'issue du jet), un seul par Round. Un jet CRITIQUE n'est pas contré (« Force
-    // inéluctable », LDB 46 l.59 — le choix appartient au lanceur).
+    // pas l'issue du jet — il module les DR, donc le budget de Surincantation AVANT la pose), un
+    // seul par Round. Un jet CRITIQUE n'est pas contré (« Force inéluctable », LDB 46 l.59).
+    // Zone non posée : « vise un point que vous pouvez voir » n'a pas encore de point — ancre la
+    // moins inventive : le LANCEUR (même clause de distance FM mètres ; le RAW est muet).
     if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
-      const best = counterspellCandidates(get().battle, get().scene, caster, target)
+      const best = counterspellCandidates(get().battle, get().scene, caster, unplacedZone ? caster : target)
         .sort((a, b) => castingValue(b, 'Langue', 'Magick') - castingValue(a, 'Langue', 'Magick'))[0];
       if (best) applyCounterspell(get, set, best);
     }
@@ -1511,6 +1532,12 @@ export const useGame = create<GameState>((set, get) => ({
   castConfirm: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
+    // ZONE non posée et lançable → la confirmation EST le passage en pose (garde anti-application
+    // sur l'ancre lanceur — la vraie application se fait à la pose, castCommitZone).
+    if (pc.zone && !pc.zone.center && (pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'))) {
+      get().castPlaceZone(true);
+      return;
+    }
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
@@ -1547,8 +1574,14 @@ export const useGame = create<GameState>((set, get) => ({
     const oc = pc.overcast ?? { duration: 0, targets: 0 };
     const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
     const budget = Math.floor(Math.max(0, pc.result.sl - ni) / 2);
-    if (oc.duration + oc.targets >= budget) return; // surplus épuisé
-    set({ pendingCast: { ...pc, overcast: { ...oc, [axis]: oc[axis] + 1 } } });
+    if (oc.duration + oc.targets + (oc.zone ?? 0) >= budget) return; // surplus épuisé
+    const next = { ...oc, [axis]: (oc[axis] ?? 0) + 1 };
+    // « +Zone » (LDB 47 l.29) : chaque allocation ajoute la valeur INITIALE de Zone d'Effet —
+    // le rayon du gabarit est recalculé (la pose et l'aperçu lisent `zone.radius`).
+    const zone = axis === 'zone' && pc.zone
+      ? { ...pc.zone, radius: zoneRadiusTilesAt(pc.zone.r0m ?? 0, next.zone ?? 0) }
+      : pc.zone;
+    set({ pendingCast: { ...pc, overcast: next, ...(zone ? { zone } : {}) } });
   },
   castToggleExtraTarget: (id) => {
     const pc = get().pendingCast;
@@ -1571,6 +1604,13 @@ export const useGame = create<GameState>((set, get) => ({
     const pc = get().pendingCast;
     if (!pc || !pc.result?.cast || !get().battle) return; // hors combat : pas de carte tactique → picker en modale
     set({ pendingCast: { ...pc, pickingTargets: on } });
+  },
+  /** Pose de la ZONE (flux « jet puis pose ») : la modale s'efface, le gabarit FINAL suit le
+   *  curseur, le clic-case dépose (castCommitZone) ; `false` = revenir à la modale. */
+  castPlaceZone: (on) => {
+    const pc = get().pendingCast;
+    if (!pc?.zone || pc.zone.center || !pc.result || !get().battle) return;
+    set({ pendingCast: { ...pc, zone: { ...pc.zone, placing: on } } });
   },
   castCancel: () => {
     const pc = get().pendingCast;
@@ -1597,6 +1637,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
   battleFocusSpell: (label) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -1732,6 +1773,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
   battleFrenzy: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
@@ -1750,7 +1792,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFrenzy: null });
     if (!c) return;
     const log = pf.result.success
-      ? [`${c.name} entre en Frénésie : +1 Bonus de Force, immunité psychologique, doit attaquer (LDB 21).`]
+      ? [`${c.name} entre en Frénésie : +1 Bonus de Force, immunité psychologique, doit attaquer.`]
       : [`${c.name} ne parvient pas à entrer en Frénésie (Test de Force Mentale échoué).`];
     if (pf.result.success) c.frenzied = true;
     set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
@@ -1779,42 +1821,17 @@ export const useGame = create<GameState>((set, get) => ({
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
-    // Sort à ZONE D'EFFET (LDB 47 l.44) : en mode incantation, un clic-CASE cible la zone —
-    // tous les combattants dans le rayon sont visés par le MÊME jet (résolution multi-cibles).
-    if (battle.action === 'cast' && battle.selectedSpell && !battle.acted) {
-      const spell = findSpell(battle.selectedSpell);
-      // Rayon : spec curée (zone décrite dans la desc — Feu de l'âme…) prioritaire sur le champ Cible.
-      const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
-      const radius = spell
-        ? specRadius != null
-          ? Math.max(0, Math.floor(resolveFormula(specRadius, active) / 2))
-          : zdeRadiusTiles(spell.target, active)
-        : null;
-      if (spell && radius != null) {
-        const range = spellRangeTiles(spell.range, active);
-        if (range != null && active.pos && chebyshev(active.pos, pt) > range) {
-          get().log(`${spell.label} : zone hors de portée (${range} cases).`);
-          return;
-        }
-        // Ligne de Vue vers la case CENTRE (LDB 46 l.170/202 — « vise un point que vous pouvez voir »).
-        if (active.pos && castSightBlocked(get, active.pos, pt)) {
-          get().log(`${spell.label} : pas de ligne de vue.`);
-          return;
-        }
-        const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
-        if (!inZone.length) {
-          get().log(`${spell.label} : personne dans la zone.`);
-          return;
-        }
-        set({
-          pendingCast: {
-            casterId: active.id, targetId: inZone[0].id, spellLabel: spell.label,
-            missile: isMagicMissile(spell), focused: active.focus?.spell === spell.label && active.focus.dr >= (spell.cn ?? 0),
-            result: null, zone: { center: { ...pt }, radius }, extraTargetIds: inZone.slice(1).map((c) => c.id),
-          },
-        });
-        return;
-      }
+    // POSE de zone en cours (source UNIQUE placingZoneOf — toute zone à poser librement) :
+    // le clic-case dépose le gabarit FINAL (gates portée/LdV chez le consommateur).
+    if (placingZoneOf(get())) {
+      commitPlacedZone(get, set, pt);
+      return;
+    }
+    // Sort de ZONE sélectionné : le clic-case (comme le clic-token) OUVRE la modale — le centre
+    // se choisit APRÈS le jet (flux ci-dessus). Sort non-zone : clic-sol sans effet en mode cast.
+    if (battle.action === 'cast' && battle.selectedSpell && !battle.acted && !get().pendingCast) {
+      castZoneSpell(get, set, active, battle.selectedSpell);
+      return;
     }
     // Mode NEUTRE = clic-sol implicite (les modes restants — heal/ammo/trample/resolve… — ne
     // déplacent pas au clic-case ; le cas cast-zone est traité plus haut).
@@ -1916,6 +1933,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   cancelMove: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const snap = battle.moveSnapshot;
@@ -1945,6 +1963,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (get().pendingCleave && !get().pendingAttack) return get().cleaveAttack(id);
     if (get().pendingDualStrike && !get().pendingAttack) return get().dualStrikeAttack(id);
     if (get().pendingCast?.pickingTargets) return get().castToggleExtraTarget(id);
+    // Pose de zone en cours : cliquer un combattant = poser la zone sur SA case.
+    if (placingZoneOf(get())) {
+      const t = battle.combatants.find((c) => c.id === id);
+      if (t?.pos) get().battleClickTile({ ...t.pos });
+      return;
+    }
     // Piétinement : action GRATUITE (autorisée même Action consommée). Précède le verrou `battle.acted`.
     if (battle.action === 'trample') {
       get().battleTrample(id);
@@ -1962,6 +1986,8 @@ export const useGame = create<GameState>((set, get) => ({
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
     if (battle.action === 'cast' && battle.selectedSpell) {
+      // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
+      if (castZoneSpell(get, set, active, battle.selectedSpell)) return;
       // L'incantation peut viser un allié, un ennemi ou soi-même.
       castSpell(get, set, active, target, battle.selectedSpell);
       return;
@@ -2106,7 +2132,10 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null } });
   },
 
-  battleEndTurn: () => advanceTurn(get, set),
+  battleEndTurn: () => {
+    if (combatBusy(get())) return; // finir le tour sous un flux différé corromprait l'état
+    advanceTurn(get, set);
+  },
 
   // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB ch.17 l.27) ──
   roundStartPromote: (heroId) => {
@@ -2203,6 +2232,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleDefendTotal: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
@@ -2216,6 +2246,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Changer de set d'armes en combat (Action gratuite, 1/tour, AUTORISÉ même Engagé — LDB 13 l.116) ──
   battleSwitchLoadout: (loadoutId) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.loadoutSwapped) return; // 1 switch gratuit / tour
     const active = activeCombatant(battle);
@@ -2229,6 +2260,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Action Viser (LDB table des Difficultés, 14 - _GoBack.md l.90 : +20 au prochain tir, sans jet) ──
   battleAim: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
@@ -2251,6 +2283,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Rechargement = Test étendu de Projectiles (LDB 63-Armures l.28-29 + 12-Tests l.199-211) — par modale ──
   battleReload: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
@@ -2303,6 +2336,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
   battleRecoverState: (state) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
@@ -2349,6 +2383,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
   battleSelectAmmo: (uid) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle) return;
     const active = activeCombatant(battle);
@@ -2422,6 +2457,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Ramasser un objet au sol pendant un Round (un à la fois, LDB ch.13 l.115-116) ──
   battlePickup: (entityId, key) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle, scene } = get();
     if (!battle || battle.over || battle.acted || !scene) return;
     const active = activeCombatant(battle);
@@ -2679,6 +2715,7 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
   battleTrample: (targetId) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -2689,6 +2726,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
   },
   battleTentacle: (targetId) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
@@ -2727,6 +2765,7 @@ export const useGame = create<GameState>((set, get) => ({
   //    étendu (Marche + Course + DR) vers la destination cliquée dans la zone de Course. « Un jet = une
   //    modale » : le Test passe par pendingRun. ──
   battleRun: (dest) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
     const active = activeCombatant(battle);
@@ -2814,6 +2853,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Se relever d'À Terre (LDB 16-États l.37) : utilise le Mouvement pour se mettre debout. Impossible
   //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
   battleStandUp: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
@@ -2995,6 +3035,7 @@ export const useGame = create<GameState>((set, get) => ({
   // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement
   // sur/hors la monture). On consomme donc le Mouvement du tour, pas l'Action — on peut enfourcher PUIS attaquer.
   battleMount: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle, scene } = get();
     if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
@@ -3006,6 +3047,7 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
   },
   battleDismount: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle, scene } = get();
     if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
@@ -3026,6 +3068,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
   battleDisengage: () => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over) return; // option A (Sacrifier l'Avantage) reste possible même après avoir agi
     const active = activeCombatant(battle);
@@ -3283,7 +3326,7 @@ export const useGame = create<GameState>((set, get) => ({
     const actor = get().party.find((c) => c.id === pt.actorId);
     if (!actor || (actor.resolve ?? 0) <= 0) return;
     actor.resolve = (actor.resolve ?? 0) - 1;
-    get().log(`${actor.name} puise dans sa Détermination : insensible à la Psychologie (LDB 17 l.62) — malus social ignoré.`);
+    get().log(`${actor.name} puise dans sa Détermination : insensible à la Psychologie — malus social ignoré.`);
     // Le malus psy était intégré à skillValue/target (cf. PendingTest) : on le retranche des deux.
     set({
       pendingTest: { ...pt, skillValue: pt.skillValue - pt.psychMod, target: pt.target - pt.psychMod, psychMod: 0, psychDetail: undefined },

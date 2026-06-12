@@ -83,16 +83,21 @@ describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
   });
 });
 
-describe('clic-case ZdE — LdV vers la case centre', () => {
-  it('centre de zone derrière le mur → refus, ligne dégagée → modale de zone', () => {
+describe('ZdE « jet puis pose » — LdV vers la case centre À LA POSE', () => {
+  it('centre derrière le mur → refus (pose toujours en cours), brèche → zone posée', () => {
     const { w } = setup();
     const b = useGame.getState().battle!;
     useGame.setState({ battle: { ...b, selectedSpell: 'Explosion' } });
-    useGame.getState().battleClickTile({ x: 16, y: 4 }); // centre masqué (e-cache dans le rayon)
-    expect(useGame.getState().pendingCast).toBeNull();
+    useGame.getState().battleClickTile({ x: 3, y: 0 }); // tout clic ouvre la modale (centre null)
+    const pc = useGame.getState().pendingCast!;
+    expect(pc.zone).toMatchObject({ center: null });
+    useGame.setState({ pendingCast: { ...pc, result: { cast: true, roll: 11, target: 70, sl: 4, isCritical: false, isFumble: false, log: 'lancé' } as never } });
+    useGame.getState().castPlaceZone(true);
+    useGame.getState().battleClickTile({ x: 16, y: 4 }); // centre masqué par le mur
     expect(useGame.getState().journal.join('\n')).toMatch(/pas de ligne de vue/i);
-    useGame.getState().battleClickTile({ x: 16, y: 0 }); // brèche : e-vu dans le rayon
-    expect(useGame.getState().pendingCast?.zone).toBeTruthy();
+    expect(useGame.getState().pendingCast?.zone?.placing).toBe(true); // la pose continue
+    useGame.getState().battleClickTile({ x: 16, y: 0 }); // brèche : e-vu dans le rayon → appliqué
+    expect(useGame.getState().pendingCast).toBeNull();
     void w;
   });
 });

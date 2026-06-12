@@ -46,7 +46,8 @@ export const MODAL_DEFS = [
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.
-    when: (s) => !!s.pendingCast && !s.pendingCast.pickingTargets,
+    // Pose de ZONE (flux « jet puis pose ») : idem — le gabarit suit le curseur.
+    when: (s) => !!s.pendingCast && !s.pendingCast.pickingTargets && !s.pendingCast.zone?.placing,
     // Sort ENNEMI : chez tous (moment partagé + Contre-sort multi) ; sort d'un héros : son propriétaire.
     owner: (s) => {
       const casterId = s.pendingCast?.casterId;

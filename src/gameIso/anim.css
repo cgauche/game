@@ -143,3 +143,10 @@
   50% { opacity: 0.8; }
 }
 .interact-halo { animation: haloPulse 1.6s ease-in-out infinite; }
+
+/* Gabarit de zone à POSER (sorts/miracles ZdE) : pointillés « fourmis » qui tournent le long
+   du contour — le gabarit se voit, même par-dessus le sol chargé (cf. IsoStage, placingZoneOf). */
+@keyframes zdeMarch {
+  to { stroke-dashoffset: -32; }
+}
+.zde-ants { animation: zdeMarch 0.9s linear infinite; }

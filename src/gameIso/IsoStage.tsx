@@ -23,6 +23,7 @@ import {
   Dims,
   tileCenter,
   diamondPath,
+  diamondCorners,
   stageSize,
   screenToTile,
   depth,
@@ -46,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
 import { hoverTargeting } from '../state/targeting';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
@@ -527,7 +528,7 @@ export function IsoStage() {
   const hoverTracking =
     mode === 'battle' && !!battle && !battle.over &&
     (((battle.action === null || battle.action === 'cast' || battle.action === 'trample') && activeC?.kind === 'hero') ||
-      !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets);
+      !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, battle }));
 
   // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le
   //     token qui glisse : tether d'engagement, halo de l'actif) recalculés à la frame (peu coûteux). ---
@@ -953,30 +954,68 @@ export function IsoStage() {
             );
           })}
         <FxLayer dims={dims} floats={floats} projs={projs} auras={auras} aoes={aoes} />
-        {/* Gabarit de ZONE D'EFFET (LDB 47 l.44) au survol : sort ZdE sélectionné → halo du
-            diamètre autour de la case visée + portée respectée (vert = OK, gris = hors de portée). */}
-        {battle?.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && activeC.pos && hover && !pendingCast &&
-          (() => {
-            const spell = findSpell(battle.selectedSpell!);
-            // Même calcul que battleClickTile : rayon de spec curée prioritaire sur le champ Cible.
+        {/* Gabarit de ZONE D'EFFET (LDB 47 l.29/44) : pendant la POSE (rayon FINAL surincanté, le
+            gabarit suit le curseur) — ou aperçu au rayon initial si un sort de ZdE est sélectionné
+            sans modale (re-cliquer l'ouvre). Contour POINTILLÉ ROUGE ANIMÉ (fourmis) + remplissage ;
+            gris quand la case est invalide (hors portée OU hors Ligne de Vue). */}
+        {battle && hover && (() => {
+          // Source UNIQUE de pose (placingZoneOf — toute zone à poser librement) ; sinon aperçu
+          // au rayon initial quand un sort de ZdE est sélectionné sans modale ouverte.
+          const pz = placingZoneOf({ pendingCast, battle });
+          let radius: number | null = null;
+          let caster: Combatant | undefined;
+          let ok: boolean | null = null;
+          if (pz) {
+            radius = pz.radius;
+            caster = battle.combatants.find((c) => c.id === pz.casterId);
+            ok = placedZoneValidAt(useGame.getState, pz, hover);
+          } else if (battle.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && !pendingCast) {
+            const spell = findSpell(battle.selectedSpell);
+            // Même calcul que castZoneSpell : rayon de spec curée prioritaire sur le champ Cible.
             const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
-            const radius = spell
+            radius = spell
               ? specRadius != null
                 ? Math.max(0, Math.floor(resolveFormula(specRadius, activeC) / 2))
                 : zdeRadiusTiles(spell.target, activeC)
               : null;
-            if (spell == null || radius == null) return null;
-            const range = spellRangeTiles(spell.range, activeC);
-            const ok = range == null || cheb(activeC.pos!, hover) <= range;
-            const tiles: JSX.Element[] = [];
-            for (let dy = -radius; dy <= radius; dy++)
-              for (let dx = -radius; dx <= radius; dx++) {
-                const x = hover.x + dx, y = hover.y + dy;
-                if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-                tiles.push(<path key={`zde${x}-${y}`} d={diamondPath(x, y, dims)} fill={ok ? '#8e54c8' : '#666'} opacity={0.35} pointerEvents="none" />);
-              }
-            return <g pointerEvents="none">{tiles}</g>;
-          })()}
+            caster = activeC;
+            if (radius != null && spell && caster?.pos) {
+              const range = spellRangeTiles(spell.range, caster);
+              ok = (range == null || cheb(caster.pos, hover) <= range) && !castSightBlocked(useGame.getState, caster.pos, hover);
+            }
+          }
+          if (radius == null || !caster?.pos || ok == null) return null;
+          const col = ok ? '#e0533a' : '#777';
+          const tiles: JSX.Element[] = [];
+          for (let dy = -radius; dy <= radius; dy++)
+            for (let dx = -radius; dx <= radius; dx++) {
+              const x = hover.x + dx, y = hover.y + dy;
+              if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+              tiles.push(<path key={`zde${x}-${y}`} d={diamondPath(x, y, dims)} fill={col} opacity={0.22} pointerEvents="none" />);
+            }
+          // Contour du BLOC (2r+1)² : enveloppe des 4 tuiles d'angle — fourmis qui tournent (anim.css).
+          const x0 = hover.x - radius, x1 = hover.x + radius, y0 = hover.y - radius, y1 = hover.y + radius;
+          const pts = [diamondCorners(x0, y0, dims), diamondCorners(x1, y0, dims), diamondCorners(x1, y1, dims), diamondCorners(x0, y1, dims)]
+            .flatMap((c) => [c.top, c.right, c.bot, c.left]);
+          const top = pts.reduce((a, b) => (b[1] < a[1] ? b : a));
+          const right = pts.reduce((a, b) => (b[0] > a[0] ? b : a));
+          const bot = pts.reduce((a, b) => (b[1] > a[1] ? b : a));
+          const left = pts.reduce((a, b) => (b[0] < a[0] ? b : a));
+          return (
+            <g pointerEvents="none">
+              {tiles}
+              <path
+                className="zde-ants"
+                d={`M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`}
+                fill="none"
+                stroke={col}
+                strokeWidth={2.5}
+                strokeDasharray="9 7"
+                opacity={0.95}
+              />
+            </g>
+          );
+        })()}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
             survol (hoverAim) : réticule sur cible VALIDE + infobulle unifiée mêlée/tir/sort
             « arme ou sort · compétence base ±mod · Dégâts N » (états ⛔ LdV / portée / Engagé). */}
@@ -999,7 +1038,10 @@ export function IsoStage() {
           if (pendingCast && !pendingCast.pickingTargets) {
             const a = byId(pendingCast.casterId);
             const t = byId(pendingCast.targetId);
-            const to = pendingCast.zone ? tileCenter(pendingCast.zone.center.x, pendingCast.zone.center.y, dims) : t ? reticleAnchor(t) : null;
+            // Zone NON posée (flux « jet puis pose ») : rien à viser encore — le gabarit suit le curseur.
+            const to = pendingCast.zone
+              ? pendingCast.zone.center ? tileCenter(pendingCast.zone.center.x, pendingCast.zone.center.y, dims) : null
+              : t ? reticleAnchor(t) : null;
             if (!a || !to) return null;
             const self = !pendingCast.zone && pendingCast.casterId === pendingCast.targetId; // sort sur SOI : réticule seul
             return <TargetReticle from={self ? null : reticleAnchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} />;

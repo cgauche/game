@@ -93,6 +93,7 @@ import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
+import { openRest } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
@@ -298,9 +299,9 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         get().openWorldMap();
         break;
       case 'rest':
-        // Repos déclenché par l'éditeur (trigger/dialogue) : `days` journée(s) (défaut 1). Même flux que
-        // l'action « Dormir » — récup Exténué/Blessures + convalescence + cauchemars (no-op en combat).
-        restPartyOvernight(get, set, e.days ?? 1);
+        // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
+        // pitance par héros, prix RAW, bilan globalisé). LEGACY sans `lodging` : contexte maison.
+        openRest(get, set, { kind: e.lodging ?? 'maison', quality: e.quality, days: e.days ?? 1 });
         break;
       case 'mealParty': {
         // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
@@ -418,7 +419,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             }),
           };
         });
-        if (who) get().log(`${who} a contracté : ${e.disease} (LDB 20 — symptômes au repos).`);
+        if (who) get().log(`${who} a contracté : ${e.disease} (symptômes au repos).`);
         break;
       }
       case 'giveTrapping': {
@@ -1559,7 +1560,7 @@ export function applyAttackResult(
     const dd = res.defenderDetail;
     // (a) Attaquant : Critique au jet mais échange PERDU (pas de touche) → le défenseur subit un Critique sec.
     if (ad && ad.success && isDoubleRoll(ad.roll) && !res.hit && !isOutOfAction(target)) {
-      critLog.push(`${attacker.name} place un Critique malgré l'échange perdu (LDB 14).`);
+      critLog.push(`${attacker.name} place un Critique malgré l'échange perdu.`);
       applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
     }
     // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec. Un HÉROS qui PARE
@@ -1568,7 +1569,7 @@ export function applyAttackResult(
       if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
         set({ pendingBladeTrap: { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll } });
       } else {
-        critLog.push(`${target.name} place un Critique sur sa défense (LDB 14).`);
+        critLog.push(`${target.name} place un Critique sur sa défense.`);
         applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
       }
     }
@@ -2677,10 +2678,45 @@ export function castZoneSpell(get: () => GameState, set: any, caster: Combatant,
   return true;
 }
 
-/** POSE de la zone (après le jet et la Surincantation) : gates portée (LDB 47) + Ligne de Vue
- *  vers le point (LDB 46 l.170/202), puis applique le MÊME jet à tous les combattants du rayon
- *  FINAL — parité avec l'ancien flux (premier = target, reste = extraTargets, evaluateMissile
- *  par cible). Zone posée dans le vide : Sort lancé, Action consommée, personne de touché. */
+/** Source UNIQUE de la « pose de zone » en cours — le gabarit qui suit le curseur. Couvre TOUT
+ *  ce qui se pose librement : sorts ET miracles à ZdE (les prières passent par pendingCast).
+ *  Le Souffle/Vomissement ne se posent PAS (LDB 85 : centre imposé — cible visible la plus
+ *  proche, ou la cible du sort Souffle — cf. applyAreaAttack). Toute nouvelle source = une
+ *  entrée ICI + un bras à `commitPlacedZone` ; l'UI (gabarit animé, survol, clic) est commune. */
+export type PlacingZone = { source: 'cast'; label: string; casterId: string; radius: number; rangeTiles: number | null };
+export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'battle'>): PlacingZone | null {
+  const pc = s.pendingCast;
+  if (pc?.zone?.placing && !pc.zone.center) {
+    const caster = s.battle?.combatants.find((c) => c.id === pc.casterId);
+    const spell = effectiveSpellOf(pc);
+    return {
+      source: 'cast', label: pc.spellLabel, casterId: pc.casterId, radius: pc.zone.radius,
+      rangeTiles: spell && caster ? spellRangeTiles(spell.range, caster) : null,
+    };
+  }
+  return null;
+}
+
+/** La case `pt` est-elle une POSE valide pour la zone en cours ? Portée depuis l'ancre + Ligne
+ *  de Vue vers le point (LDB 46 l.170/202) — partagé par le gabarit (couleur) et le clic. */
+export function placedZoneValidAt(get: () => GameState, pz: PlacingZone, pt: Pt): boolean {
+  const caster = get().battle?.combatants.find((c) => c.id === pz.casterId);
+  if (!caster?.pos) return false;
+  if (pz.rangeTiles != null && chebyshev(caster.pos, pt) > pz.rangeTiles) return false;
+  return !castSightBlocked(get, caster.pos, pt);
+}
+
+/** Dépose la zone en cours sur `pt` — dispatch par source (chaque consommateur garde ses gates). */
+export function commitPlacedZone(get: () => GameState, set: any, pt: Pt): void {
+  const pz = placingZoneOf(get());
+  if (!pz) return;
+  if (pz.source === 'cast') castCommitZone(get, set, pt);
+}
+
+/** POSE de la zone d'un SORT (après le jet et la Surincantation) : gates portée (LDB 47) + Ligne
+ *  de Vue vers le point (LDB 46 l.170/202), puis applique le MÊME jet à tous les combattants du
+ *  rayon FINAL — parité avec l'ancien flux (premier = target, reste = extraTargets,
+ *  evaluateMissile par cible). Zone posée dans le vide : Sort lancé, Action consommée. */
 export function castCommitZone(get: () => GameState, set: any, pt: Pt): void {
   const pc = get().pendingCast;
   const battle = get().battle;
@@ -2849,11 +2885,14 @@ export function applyCounterspell(get: () => GameState, set: any, counter: Comba
   // Le Test d'Incantation du lanceur, reconstruit tel que figé (même convention que rederiveCastSL).
   const castT = { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
   const out = resolveCounterspell(counter, castT, battleRng());
+  // Zone NON POSÉE (flux « jet puis pose ») : pas de cible désignée — re-dériver le jet PUR (les
+  // Dégâts par cible seront dérivés du DR net à la pose), jamais un Projectile contre l'ancre.
+  const unplacedZone = !!pc.zone && !pc.zone.center;
   let next: typeof pc.result;
   if (out.dispelled) {
     next = { ...res, cast: false, dispelled: true, hit: false, damage: undefined, woundsLost: undefined, defenderDefeated: false, log: `${out.log}` };
   } else {
-    next = rederiveCastSL(caster, target, spell, res, pc.missile, pc.focused, out.casterNetSL - res.sl);
+    next = rederiveCastSL(caster, target, spell, res, pc.missile && !unplacedZone, pc.focused, out.casterNetSL - res.sl);
     next.log = `${out.log} ${next.log}`;
   }
   // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
@@ -2924,7 +2963,7 @@ export function applyCast(
     if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
       gainAdvantage(caster);
       caster.gainedAdvThisRound = true;
-      logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name} (LDB 46).`);
+      logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name}.`);
     }
     battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.subType! }))];
   }
@@ -3104,7 +3143,7 @@ export function applyCast(
             kind: 'souffle', label: 'Souffle', bonus: bonus(effectiveChar(caster, 'E')),
             trigger: 'free', avantage: 0, aoe: true, magic: true, ...(type ? { type } : {}),
           }, target);
-          if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (LDB 47 : « Le MJ détermine quel type… »).');
+          if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (« Le MJ détermine quel type… »).');
         } else {
           logLines.push(`${caster.name} crache un Souffle — hors combat, effet narratif (arbitrage MJ).`);
         }
@@ -3165,7 +3204,7 @@ export function applyCast(
           loseWounds(s, wl);
           if (s.wounds.current <= 0) applyZeroWounds(s);
         }
-        logLines.push(`L'arc d'Azyr saute sur ${s.name} : ${wl} Blessure(s) (attribut des Cieux, LDB 48).`);
+        logLines.push(`L'arc d'Azyr saute sur ${s.name} : ${wl} Blessure(s) (attribut des Cieux).`);
       }
     }
     // Bête (l.9) : le lanceur gagne Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi.
@@ -3409,7 +3448,7 @@ export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean):
   if (!defender || !attacker) return;
   const lines: string[] = [];
   if (!trap) {
-    lines.push(`${defender.name} place un Critique sur sa défense (LDB 14).`);
+    lines.push(`${defender.name} place un Critique sur sa défense.`);
     applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: pbt.parryWeaponName }, lines);
   } else if (!isOutOfAction(attacker)) {
     // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).

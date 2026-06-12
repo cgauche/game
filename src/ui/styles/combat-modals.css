@@ -333,33 +333,43 @@
   font-size: 12px;
   padding: 3px 12px;
 }
-/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation) :
-   posé au-dessus de la barre d'action, n'empêche pas de cliquer le champ de bataille. */
-.target-prompt {
-  position: absolute;
-  bottom: 96px;
-  left: 50%;
-  transform: translateX(-50%);
+/* INTERLUDE de ciblage par carte (Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible / pose de
+   zone) : la BARRE D'ACTION se transforme (cf. ActionBar) — liseré or pulsé = « la carte attend
+   ton clic », titre d'apparat à gauche, sortie à droite. Remplace l'ancienne pill flottante. */
+.action-bar.targeting-interlude {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  background: rgba(10, 14, 20, 0.88);
-  border: 1px solid var(--gold2);
-  border-radius: 20px;
-  padding: 7px 14px;
-  font-size: 13.5px;
-  z-index: 6;
-  max-width: 94vw;
+  padding: 10px 16px;
+  border-color: var(--gold2);
+  animation: tiPulse 1.8s ease-in-out infinite;
 }
-@media (max-width: 700px) {
-  .target-prompt {
-    bottom: 132px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.targeting-interlude .ti-icon {
+  font-size: 17px;
+}
+.targeting-interlude .ti-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+}
+.targeting-interlude .ti-badge {
+  font-size: 12.5px;
+  color: #cfc8ba;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 2px 9px;
+}
+@keyframes tiPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(227, 196, 90, 0); }
+  50% { box-shadow: 0 0 14px 0 rgba(227, 196, 90, 0.35); }
 }
 @media (pointer: coarse) {
-  .target-prompt .btn.small {
+  .targeting-interlude .btn.small {
     padding: 9px 14px;
   }
 }

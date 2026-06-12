@@ -8,7 +8,6 @@ import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { ActionBar } from './ActionBar';
 import { CombatBanner } from './CombatBanner';
-import { TargetPrompt } from './TargetPrompt';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
 import { BargainModal } from './BargainModal';
@@ -114,8 +113,8 @@ export function CampaignView() {
           />
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
-        {/* Bandeau NON bloquant de ciblage carte (Frappe Mortelle / Deux armes / Surincantation). */}
-        {mode === 'battle' && battle && <TargetPrompt />}
+        {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
+            la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
         <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} coop={<><CoopMenuSection /><AudioControls /></>} />
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}

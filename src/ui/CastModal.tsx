@@ -39,6 +39,7 @@ export function CastModal() {
   const allocOvercast = useGame((s) => s.castAllocOvercast);
   const toggleExtraTarget = useGame((s) => s.castToggleExtraTarget);
   const pickTargets = useGame((s) => s.castPickTargets);
+  const placeZone = useGame((s) => s.castPlaceZone);
   const forceSuccess = useGame((s) => s.castForceSuccess);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
@@ -54,6 +55,11 @@ export function CastModal() {
   const isPrayer = spell.cn == null;
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
+  // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose
+  // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
+  const zoneUnplaced = !!pc.zone && !pc.zone.center;
+  const placeable = zoneUnplaced && !!res && !res.dispelled &&
+    (res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'));
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui.
   const outcome = !res
     ? ''
@@ -71,7 +77,7 @@ export function CastModal() {
     <Modal title={isPrayer ? 'Prière' : 'Incantation'} onClose={!res && caster.kind !== 'enemy' ? cancel : undefined}>
       <VsHeader
         actor={caster}
-        target={selfTarget ? undefined : target}
+        target={selfTarget || zoneUnplaced ? undefined : target}
         label={
           <>
             {spell.label}
@@ -84,8 +90,8 @@ export function CastModal() {
         <p className="rm-vs">
           {pc.zone ? (
             <>
-              <strong>Zone d'Effet</strong> — {1 + (pc.extraTargetIds?.length ?? 0)} cible{(pc.extraTargetIds?.length ?? 0) > 0 ? 's' : ''} :{' '}
-              {[target.name, ...(pc.extraTargetIds ?? []).map((id) => pool.find((c) => c.id === id)?.name ?? '?')].join(', ')}
+              <strong>Zone d'Effet</strong> — gabarit {pc.zone.radius * 2 + 1}×{pc.zone.radius * 2 + 1} cases
+              {zoneUnplaced ? ' · la zone se pose après le jet' : ''}
             </>
           ) : (
             <>
@@ -144,14 +150,16 @@ export function CastModal() {
               DR entier pour une Bénédiction/un Miracle, LDB 41/42), étendre la Durée
               (+durée initiale) ou la Cible (+1) — jamais « Vous »/« Spécial »/Instantanée. */}
           {(() => {
-            if (!res.cast || caster.kind !== 'hero' || pc.zone) return null;
+            if (!res.cast || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
             const budget = Math.floor(Math.max(0, res.sl - (isPrayer || pc.focused ? 0 : ni)) / 2);
             if (budget <= 0) return null;
             const oc = pc.overcast ?? { duration: 0, targets: 0 };
-            const left = budget - oc.duration - oc.targets;
+            const left = budget - oc.duration - oc.targets - (oc.zone ?? 0);
             const canDuration = spell.duration != null && /rounds?/i.test(spell.duration ?? '');
-            const canTargets = typeof spell.target === 'number' && spell.target >= 1 && spell.range !== 'Vous';
-            if (!canDuration && !canTargets) return null;
+            const canTargets = !pc.zone && typeof spell.target === 'number' && spell.target >= 1 && spell.range !== 'Vous';
+            // « +Zone d'Effet » (LDB 47 l.29) : chaque allocation ajoute le Ø initial — gabarit agrandi.
+            const canZone = zoneUnplaced;
+            if (!canDuration && !canTargets && !canZone) return null;
             const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile);
             return (
               <div className="rm-overcast rm-options">
@@ -165,6 +173,11 @@ export function CastModal() {
                   {canTargets && (
                     <button className="btn small" disabled={left <= 0 && oc.targets === 0} onClick={() => { if (left > 0) allocOvercast('targets'); if (battle) pickTargets(true); }} title="Cible supplémentaire (même jet) — 2 DR. En combat : choisis les cibles SUR le champ de bataille.">
                       🎯 +Cible{oc.targets ? ` (+${oc.targets})` : ''}
+                    </button>
+                  )}
+                  {canZone && (
+                    <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast('zone')} title="Agrandit la Zone d'Effet du diamètre initial (cumulable) — 2 DR">
+                      🌀 +Zone{(oc.zone ?? 0) > 0 ? ` ×${(oc.zone ?? 0) + 1}` : ''} ({pc.zone!.radius * 2 + 1}×{pc.zone!.radius * 2 + 1})
                     </button>
                   )}
                 </div>
@@ -255,9 +268,15 @@ export function CastModal() {
             forceShow={!!res && !res.cast}
           />
           <div className="modal-actions">
-            <button className="btn btn-primary" onClick={confirm}>
-              Appliquer
-            </button>
+            {placeable ? (
+              <button className="btn btn-primary" onClick={() => placeZone(true)} title="La modale s'efface — clique une case du champ de bataille pour déposer la zone">
+                📍 Poser la zone
+              </button>
+            ) : (
+              <button className="btn btn-primary" onClick={confirm}>
+                Appliquer
+              </button>
+            )}
           </div>
         </>
       )}

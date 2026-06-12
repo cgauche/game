@@ -16,7 +16,8 @@ import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
 import { CharFrame } from './CharFrame';
-import { previewResourceDelta } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf } from '../state/combatFlow';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
@@ -60,6 +61,15 @@ export function ActionBar() {
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   const net = useGame((s) => s.net);
+  // Interludes de ciblage par carte : la barre SE TRANSFORME (cf. plus bas) au lieu de rester cliquable.
+  const pendingCleave = useGame((s) => s.pendingCleave);
+  const pendingDualStrike = useGame((s) => s.pendingDualStrike);
+  const pendingCast = useGame((s) => s.pendingCast);
+  const pendingAttack = useGame((s) => s.pendingAttack);
+  const cleaveEnd = useGame((s) => s.cleaveEnd);
+  const dualStrikeSkip = useGame((s) => s.dualStrikeSkip);
+  const pickTargets = useGame((s) => s.castPickTargets);
+  const placeZone = useGame((s) => s.castPlaceZone);
   const roundStartReady = useGame((s) => s.roundStartReady);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
@@ -113,6 +123,62 @@ export function ActionBar() {
     return (
       <div className="action-bar establishing-bar">
         <span className="ready-chip">⏳ {net.seatNames[seat] ?? 'L’hôte'} joue {active.name}…</span>
+      </div>
+    );
+  }
+
+  // INTERLUDE de ciblage par carte (Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible / pose de
+  // zone) : la barre SE TRANSFORME — même dock que « Commencer le combat » — au lieu de laisser
+  // les contrôles cliquables (changer d'intention au milieu d'un flux différé corromprait l'état,
+  // garde-fou store `combatBusy` en profondeur). La sortie du flux vit ici, à droite.
+  const interlude = (() => {
+    if (pendingCleave && !pendingAttack) {
+      const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
+      if (!atk) return null;
+      const left = cleaveTargets(battle, atk, pendingCleave.hitIds).length;
+      return {
+        icon: '⚔️', title: 'Frappe Mortelle',
+        badge: left ? `enchaînement ${pendingCleave.count + 1}/${bonus(effectiveChar(atk, 'CC'))}` : 'plus d’adversaire à portée',
+        exit: { label: 'Terminer', onClick: cleaveEnd, primary: !left },
+      };
+    }
+    if (pendingDualStrike && !pendingAttack) {
+      const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
+      const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
+      if (!atk || !off) return null;
+      const left = dualStrikeTargets(battle, atk, off).length;
+      return {
+        icon: '⚔️', title: 'Des deux armes',
+        badge: left ? `2ᵉ frappe — ${off.name}` : 'plus d’adversaire à portée',
+        exit: { label: 'Renoncer', onClick: dualStrikeSkip, primary: !left },
+      };
+    }
+    if (pendingCast?.pickingTargets) {
+      return {
+        icon: '🎯', title: 'Surincantation',
+        badge: `${pendingCast.extraTargetIds?.length ?? 0}/${pendingCast.overcast?.targets ?? 0} cibles`,
+        exit: { label: 'Valider', onClick: () => pickTargets(false), primary: true },
+      };
+    }
+    const pz = placingZoneOf({ pendingCast, battle });
+    if (pz) {
+      const d = pz.radius * 2 + 1;
+      return {
+        icon: '🌀', title: pz.label, badge: `gabarit ${d}×${d}`,
+        exit: { label: '↩ Modale', onClick: () => placeZone(false), primary: false },
+      };
+    }
+    return null;
+  })();
+  if (interlude) {
+    return (
+      <div className="action-bar targeting-interlude">
+        <span className="ti-icon">{interlude.icon}</span>
+        <span className="ti-title">{interlude.title}</span>
+        <span className="ti-badge">{interlude.badge}</span>
+        <button className={`btn small ${interlude.exit.primary ? 'btn-primary' : 'btn-ghost'}`} onClick={interlude.exit.onClick}>
+          {interlude.exit.label}
+        </button>
       </div>
     );
   }
@@ -226,7 +292,7 @@ export function ActionBar() {
 
   return (
     <div className="action-bar">
-      {hasSpells && battle.action === 'cast' && (
+      {hasSpells && battle.action === 'cast' && !pendingCast && (
         <div className="ab-spells">
           {active.spells!.map((label) => {
             const spell = findSpell(label);
