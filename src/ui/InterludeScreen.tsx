@@ -11,7 +11,7 @@ import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC } from '../engine/qualities/describe';
 import { findTalent } from '../data';
 import type { Combatant } from '../engine/types';
-import { ActivityModal } from './ActivityModal';
+import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — tooltips depuis le registre des qualités. */
@@ -26,6 +26,14 @@ const FAMILY_LABEL: Record<string, string> = {
 
 const fmt = (brass: number) => formatMoney(fromBrass(brass));
 
+/** Vue réseau minimale pour la possession (audit M7) — sous-ensemble de `GameState['net']`. */
+export interface InterludeNet {
+  mode: 'local' | 'host' | 'guest';
+  mySeat: number;
+  ownership: Record<string, number>;
+  seatNames: Record<number, string>;
+}
+
 /** Seam de test (rendu statique : le store SSR sert l'état initial — cf. WorldMapView). */
 export interface InterludeSeam {
   interlude: InterludeState;
@@ -35,6 +43,7 @@ export interface InterludeSeam {
   pendingOrders: { heroId: string; trapping: string }[];
   /** Phase d'ouverture forcée ('activities' saute l'intro Événements). */
   phase?: 'events' | 'activities' | 'closing';
+  net?: InterludeNet;
 }
 
 /**
@@ -53,14 +62,20 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const storeMoney = useGame((s) => s.money);
   const storeBank = useGame((s) => s.bank);
   const storeOrders = useGame((s) => s.pendingOrders);
+  const storeNet = useGame((s) => s.net);
   const interlude = seam?.interlude ?? storeInterlude;
   const party = seam?.party ?? storeParty;
   const money = seam?.money ?? storeMoney;
   const bank = seam?.bank ?? storeBank;
   const pendingOrders = seam?.pendingOrders ?? storeOrders;
+  const net: InterludeNet = seam?.net ?? storeNet;
   const [phase, setPhase] = useState<'events' | 'activities' | 'closing'>(seam?.phase ?? 'events');
   if (!interlude) return null;
   const heroes = party.filter((h) => !h.dead && interlude.perHero[h.id]);
+  // Possession coop (audit M7) : chaque joueur mène les Activités de SES héros ; l'hôte clôt.
+  const ownsHero = (id: string) => net.mode === 'local' || (net.ownership[id] ?? 0) === net.mySeat;
+  const ownerName = (id: string) => net.seatNames[net.ownership[id] ?? 0] ?? 'L\u2019h\u00f4te';
+  const isGuest = net.mode === 'guest';
   return (
     <div className="menu interlude-screen">
       <div className="menu-card interlude-card">
@@ -75,25 +90,37 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           <>
             <div className="interlude-heroes">
               {heroes.map((h) => (
-                <HeroCard key={h.id} hero={h} st={interlude.perHero[h.id]} weeks={interlude.weeks} money={money} />
+                <HeroCard
+                  key={h.id}
+                  hero={h}
+                  st={interlude.perHero[h.id]}
+                  weeks={interlude.weeks}
+                  money={money}
+                  canDrive={ownsHero(h.id)}
+                  ownerName={ownsHero(h.id) ? undefined : ownerName(h.id)}
+                />
               ))}
             </div>
             {bank.length > 0 && (
               <section className="interlude-hero panel">
                 <h3>🏦 Dépôts en cours</h3>
-                <BankList bank={bank} party={party} interlude={interlude} />
+                <BankList bank={bank} party={party} interlude={interlude} canDrive={ownsHero} />
               </section>
             )}
             <div className="interlude-close">
               <p className="interlude-warning" title="« Tout l'argent non sécurisé disparaît » (Argent à gaspiller, LDB 23) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
                 💸 À la clôture, l'or non déposé sera dilapidé.
               </p>
-              <button className="btn btn-primary" onClick={() => setPhase('closing')}>Clore l'interlude…</button>
+              {isGuest
+                ? <p className="interlude-warning">⏳ L'hôte clôt l'interlude pour tout le monde.</p>
+                : <button className="btn btn-primary" onClick={() => setPhase('closing')}>Clore l'interlude…</button>}
             </div>
           </>
         )}
       </div>
-      <ActivityModal />
+      {/* Arbitre partagé (audit M8) : la modale de jet d'Activité s'affiche chez le PROPRIÉTAIRE
+          du héros, les autres voient « X joue… ». */}
+      <ActiveModal />
       {phase === 'closing' && (
         <CloseRecap heroes={heroes} interlude={interlude} money={money} bank={bank} pendingOrders={pendingOrders} onCancel={() => setPhase('activities')} />
       )}
@@ -152,13 +179,18 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
 
 type Pane = 'craft' | 'learn' | 'order' | 'bank' | null;
 
-function HeroCard({ hero, st, weeks, money }: { hero: Combatant; st: InterludeHeroState; weeks: number; money: Money }) {
+function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
+  hero: Combatant; st: InterludeHeroState; weeks: number; money: Money;
+  /** Possession coop (audit M7) : false = ce héros est mené par un autre joueur (lecture seule). */
+  canDrive: boolean;
+  ownerName?: string;
+}) {
   const revenus = useGame((s) => s.interludeRevenus);
   const craftRoll = useGame((s) => s.interludeCraftRoll);
   const [pane, setPane] = useState<Pane>(null);
   const ev = interludeEventFor(st.eventRoll);
   const status = heroStatus(hero);
-  const none = st.left <= 0;
+  const none = st.left <= 0 || !canDrive;
   const blocked = st.fx?.revenueBlockedClasses;
   const revenusBlocked = !!blocked && (blocked.includes('*') || blocked.includes(heroClass(hero)));
   // « Gagner de l'argent grâce au Statut » (LDB 08 l.135-144) — la formule, lisible AVANT le jet.
@@ -170,9 +202,9 @@ function HeroCard({ hero, st, weeks, money }: { hero: Combatant; st: InterludeHe
   const paneBtn = (key: Pane, label: string, title: string) => (
     <button
       className={`btn small${pane === key ? ' btn-primary' : ''}`}
-      disabled={none && pane !== key}
+      disabled={!canDrive || (none && pane !== key)}
       onClick={() => setPane(pane === key ? null : key)}
-      title={title}
+      title={canDrive ? title : `Mené par ${ownerName ?? 'un autre joueur'}`}
     >
       {label}
     </button>
@@ -182,6 +214,7 @@ function HeroCard({ hero, st, weeks, money }: { hero: Combatant; st: InterludeHe
       <h3>
         {hero.name}
         <span className="interlude-left">
+          {!canDrive && <span className="interlude-owner">🎮 {ownerName ?? 'autre joueur'} · </span>}
           {'●'.repeat(st.left)}{'○'.repeat(Math.max(0, Math.min(3, weeks) - st.left))} {st.left} Activité{st.left > 1 ? 's' : ''} · Statut {status.tier} {status.standing}
         </span>
       </h3>
@@ -435,25 +468,31 @@ function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; d
   );
 }
 
-function BankList({ bank, party, interlude }: { bank: BankDeposit[]; party: Combatant[]; interlude: InterludeState }) {
+function BankList({ bank, party, interlude, canDrive }: {
+  bank: BankDeposit[]; party: Combatant[]; interlude: InterludeState;
+  canDrive: (heroId: string) => boolean;
+}) {
   const withdraw = useGame((s) => s.interludeWithdraw);
   return (
     <div className="interlude-actions">
       {bank.map((b, i) => {
         const owner = party.find((h) => h.id === b.heroId);
         const left = owner ? interlude.perHero[owner.id]?.left ?? 0 : 0;
+        const foreign = !canDrive(b.heroId);
         const lockedInvest = b.kind === 'invest' && left <= 0;
         return (
           <button
             key={i}
             className="btn small"
-            disabled={lockedInvest}
+            disabled={foreign || lockedInvest}
             onClick={() => withdraw(i)}
-            title={b.kind === 'invest'
-              ? lockedInvest
-                ? 'Retirer un investissement exige une Activité (LDB 23) — il n’en reste plus.'
-                : `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
-              : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
+            title={foreign
+              ? 'Dépôt d’un héros mené par un autre joueur.'
+              : b.kind === 'invest'
+                ? lockedInvest
+                  ? 'Retirer un investissement exige une Activité (LDB 23) — il n’en reste plus.'
+                  : `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
+                : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
           >
             {b.kind === 'invest' ? '🏦' : '🕳️'} {owner?.name} : {fmt(b.brass)}
             {b.kind === 'invest' ? ` → ${fmt(bankPayout('invest', b.brass, b.rate))} (Indice ${b.rate})` : ''} — Retirer

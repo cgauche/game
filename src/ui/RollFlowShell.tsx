@@ -168,7 +168,9 @@ export function RollFlowShell({
           </div>
           <div className="modal-actions">
             {cancelAfterRoll && cancelBtn}
-            <button className="btn btn-primary" onClick={onConfirm}>
+            {/* () => onConfirm() : ne PAS passer l'événement React à l'action — en coop l'invité
+                sérialise les args de l'intent (JSON), un événement (circulaire) perdrait l'intent. */}
+            <button className="btn btn-primary" onClick={() => onConfirm()}>
               {confirmLabel}
             </button>
           </div>

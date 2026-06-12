@@ -25,6 +25,7 @@ import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
 import { CorruptionModal } from './CorruptionModal';
+import { ActivityModal } from './ActivityModal';
 
 // REGISTRE des modales : state/modalArbiter (une entrée = quand + concerné, ordre = priorité).
 // Ajouter une modale = 1 entrée au registre + son composant dans COMPONENT ci-dessous.
@@ -37,7 +38,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
-  attack: RollModal, test: TestModal, corruption: CorruptionModal,
+  attack: RollModal, test: TestModal, corruption: CorruptionModal, activity: ActivityModal,
 };
 
 /** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */

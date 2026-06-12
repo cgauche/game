@@ -67,3 +67,37 @@ describe('InterludeScreen — refonte produit', () => {
     expect(html).toContain('Pas encore'); // annulable
   });
 });
+
+describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+
+  it('invité : ses héros actifs, ceux des autres en lecture seule (🎮), pas de « Clore »', () => {
+    const seam = buildSeam(2);
+    const [a, b] = seam.party; // a = Vétéran, b = Forgeron
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{
+        ...seam,
+        phase: 'activities',
+        net: { mode: 'guest', mySeat: 1, ownership: { [a.id]: 0, [b.id]: 1 }, seatNames: { 0: 'Hôte', 1: 'Moi' } },
+      }} />,
+    );
+    expect(html).toContain('🎮 Hôte'); // le héros de l'hôte est marqué « mené par »
+    expect(html).toContain('Mené par Hôte'); // … et ses volets sont désactivés (title)
+    expect(html).not.toContain('Clore l&#x27;interlude…'); // la clôture appartient à l'hôte
+    expect(html).toContain('L&#x27;hôte clôt l&#x27;interlude');
+  });
+
+  it('hôte : tout est actif chez lui, le héros de l’invité est en lecture seule', () => {
+    const seam = buildSeam(2);
+    const [a, b] = seam.party;
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{
+        ...seam,
+        phase: 'activities',
+        net: { mode: 'host', mySeat: 0, ownership: { [a.id]: 0, [b.id]: 1 }, seatNames: { 0: 'Hôte', 1: 'Antoine' } },
+      }} />,
+    );
+    expect(html).toContain('🎮 Antoine');
+    expect(html).toContain('Clore l&#x27;interlude…');
+  });
+});

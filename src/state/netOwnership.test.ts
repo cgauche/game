@@ -78,3 +78,35 @@ describe('possession réseau (netOwnership)', () => {
     expect(intentAllowedFor(s, 1, 'partyRemoveHero', ['h1'])).toBe(false);
   });
 });
+
+describe('Activités d’interlude en coop (audit M7/M8) — chacun mène SES héros', () => {
+  const interludeState = (over: Partial<GameState> = {}): GameState => base({
+    battle: null,
+    interlude: { weeks: 2, phase: 'activities', perHero: { h1: { eventRoll: 1, left: 2, revenueBrass: 0 }, h2: { eventRoll: 2, left: 2, revenueBrass: 0 } } },
+    bank: [{ heroId: 'h2', kind: 'stash', brass: 100, rate: 0 }],
+    ...over,
+  } as Partial<GameState>);
+
+  it('activité visant un héros : son propriétaire agit, pas les autres', () => {
+    const s = interludeState();
+    expect(intentAllowedFor(s, 1, 'interludeRevenus', ['h2'])).toBe(true);
+    expect(intentAllowedFor(s, 1, 'interludeRevenus', ['h1'])).toBe(false);
+    expect(intentAllowedFor(s, 0, 'interludeCraftStart', ['h1', 'Dague', [], []])).toBe(true);
+    expect(intentAllowedFor(s, 0, 'interludeLearn', ['h2', 'Chanceux'])).toBe(false);
+    expect(intentAllowedFor(s, 1, 'interludeBank', ['h2', 'stash', 120])).toBe(true);
+  });
+
+  it('retrait bancaire : le dépôt appartient à un héros — son propriétaire retire', () => {
+    const s = interludeState();
+    expect(intentAllowedFor(s, 1, 'interludeWithdraw', [0])).toBe(true); // dépôt de h2 (siège 1)
+    expect(intentAllowedFor(s, 0, 'interludeWithdraw', [0])).toBe(false);
+    expect(intentAllowedFor(s, 0, 'interludeWithdraw', [99])).toBe(false); // index inconnu → personne
+  });
+
+  it('modale de jet d’Activité (arbitre M8) : owner = héros du pending', () => {
+    const s = interludeState({ pendingActivity: { heroId: 'h2', kind: 'revenus' } as GameState['pendingActivity'] });
+    expect(modalOwnerOf(s)).toBe('h2');
+    expect(intentAllowedFor(s, 1, 'activityRoll')).toBe(true);
+    expect(intentAllowedFor(s, 0, 'activityRoll')).toBe(false);
+  });
+});

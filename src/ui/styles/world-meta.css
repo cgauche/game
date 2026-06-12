@@ -200,3 +200,4 @@
 .travel-recap-day { font-weight: 600; }
 .travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
 .travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
+.interlude-owner { color: var(--gold2); }

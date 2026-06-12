@@ -69,6 +69,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const close = useGame((s) => s.closeWorldMap);
   const startTravel = useGame((s) => s.startTravel);
   const resumeTravel = useGame((s) => s.resumeTravel);
+  // Coop : l'invité consulte la carte mais l'HÔTE décide des départs (le voyage déplace tout le
+  // groupe et résout des journées entières — audit Lot 4, arbitrage V1 « exploration = miroir »).
+  const isGuest = useGame((s) => s.net.mode) === 'guest';
   const [selId, setSelId] = useState<string | null>(initialRouteId ?? null);
   const [mode, setMode] = useState<TravelMode>('pied');
   const [classKey, setClassKey] = useState('');
@@ -251,7 +254,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             Voyage vers <b>{resumeDest.label}</b> interrompu — {Math.max(0, Math.round(travelPlan.km - travelPlan.kmDone))} km restants.
           </p>
           <div className="modal-actions">
-            <button type="button" className="btn btn-primary" onClick={resumeTravel}>▶ Reprendre le voyage</button>
+            <button type="button" className="btn btn-primary" disabled={isGuest} title={isGuest ? 'L’hôte décide des départs.' : undefined} onClick={resumeTravel}>▶ Reprendre le voyage</button>
           </div>
         </div>
       )}
@@ -305,7 +308,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <button
               type="button"
               className="btn btn-primary"
-              disabled={kmh <= 0 || !affordable}
+              disabled={kmh <= 0 || !affordable || isGuest}
+              title={isGuest ? 'L’hôte décide des départs.' : undefined}
               onClick={() => startTravel(selRoute.id, mode, { classKey: classKey || undefined, hoursPerDay: mode === 'pied' && forced ? maxH : undefined })}
             >
               🧭 Partir

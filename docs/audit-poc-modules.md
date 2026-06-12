@@ -97,14 +97,20 @@ par construction.
 Handshake par codes : OK. Composition partagée (slot attribué à l'invité, il le remplit,
 4/4, lancement) : OK. Interlude démarré chez l'hôte → l'invité bascule et voit tout : OK.
 
-- [ ] **M7 — Aucune propriété sur l'écran d'interlude** : l'invité voit TOUTES les activités de
+- [x] **M7 — Aucune propriété sur l'écran d'interlude** *(corrigé Lot 4 : possession par héros — `INTERLUDE_INTENTS` + `intentAllowedFor` par heroId/dépôt, UI verrouillée 🎮, clôture hôte seul)* : l'invité voit TOUTES les activités de
   TOUS les héros actives, ET « Clore l'interlude ». → griser les activités des héros qu'on ne
   possède pas (`net.ownership`, même règle que les modales de combat) ; « Clore » = hôte seul.
-- [ ] **M8 — `pendingActivity` absent de l'arbitre de modales** (`modalArbiter.MODAL_DEFS`) :
+- [x] **M8 — `pendingActivity` absent de l'arbitre de modales** *(corrigé Lot 4 : entrée `activity` au registre + ActiveModal dans l'écran — le propriétaire joue, les autres voient « X joue… »)* (`modalArbiter.MODAL_DEFS`) :
   la modale de jet d'Activité s'affiche chez TOUS les clients sans propriétaire (double-roll
   possible). → l'ajouter avec `owner = heroId` (comme `psych`).
 - [x] m — `worldMapOpen`/voyage : le bouton 🗺️ est rendu chez l'invité ; départ de voyage non
   gaté. *(corrigé Lot 4 : carte en lecture seule chez l'invité — « L'hôte décide des départs ».)*
+
+- [x] **B4 — (découvert au Lot 4) Tout « Appliquer » d'invité était MUET** : `onClick={onConfirm}`
+  (RollFlowShell) passait l'événement React en argument ; côté invité l'intent est sérialisé en
+  JSON → structure circulaire → l'intent était PERDU sans erreur. Touchait TOUTES les modales de
+  jet coop, pas que l'interlude. *(corrigé : `() => onConfirm()` + `sanitizeIntentArgs` à la
+  frontière réseau — défense en profondeur testée.)*
 
 ## Éditeur — effets récents & Monde
 
