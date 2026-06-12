@@ -1,5 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
+import { bestDetector } from '../state/merchantFlow';
+import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
@@ -247,6 +249,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
   const trainProsthesis = useGame((s) => s.trainProsthesis);
+  const appraiseItem = useGame((s) => s.appraiseItem);
   const inBattleNow = useGame((s) => !!s.battle);
   const [skinFor, setSkinFor] = useState<string | null>(null);
   const items = hero.items ?? [];
@@ -260,6 +263,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps,
   // pour stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
   const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
+  // Détection d'artefact (LDB 10) : visible seulement si un héros du groupe possède le Talent.
+  const canDetect = !!bestDetector(party);
+  // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.120).
+  const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
 
   const itemStats = (it: ItemInstance): string => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat).
@@ -457,12 +464,24 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <span className="ir-name">
                       {it.name}{skinned && ' ✨'}
                       {it.identified === false && (
-                        <span className="ir-unid" title="Objet non identifié — faites-le Évaluer chez un marchand pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>🔮 Non identifié</span>
+                        <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
+                          {it.magicKnown ? '✨ Magique — non identifié' : '🔮 Non identifié'}
+                        </span>
                       )}
                     </span>
                     <span className="ir-stats">{itemStats(it)}</span>
                   </div>
                   <span className="ir-enc">Enc {it.enc}</span>
+                  {it.identified === false && !inBattleNow && (
+                    <>
+                      {it.appraiseTriedDay !== today && (
+                        <button className="btn small" title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain" onClick={() => appraiseItem(it.uid, hero.id)}>Évaluer</button>
+                      )}
+                      {canDetect && !it.detectTried && (
+                        <button className="btn small" title="Détection d'artefact (Intuition, au toucher) : sentir l'aura magique — une seule tentative par objet" onClick={() => appraiseItem(it.uid, hero.id, 'detect')}>Détecter</button>
+                      )}
+                    </>
+                  )}
                   {isSkinnable && (
                     <button
                       className={`btn small ${open ? 'btn-primary' : ''}`}

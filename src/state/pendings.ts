@@ -19,6 +19,23 @@ export interface Money {
   silver: number;
   brass: number;
 }
+/** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
+ *  l'écran de victoire et la fenêtre de loot (fouille/Test/dialogue). `magic` = qualités cachées
+ *  ou ajoutées (✨, révélables par Évaluation). L'Effet d'origine est conservé tel quel. */
+export interface LootGear {
+  label: string;
+  magic: boolean;
+  effect: Extract<Effect, { type: 'giveTrapping' }>;
+}
+/** Butin HORS victoire (fouille d'un décor, branche de Test, dialogue…) : fenêtre d'attribution
+ *  « qui l'emporte ? » — même brique que l'écran de victoire. `gold` est DÉJÀ crédité à la bourse
+ *  (affichage), `messages` = textes d'ambiance (Effets `journal` du même lot). */
+export interface PendingLoot {
+  title: string;
+  messages?: string[];
+  gold?: Money;
+  gear: LootGear[];
+}
 /** Récompenses capturées à la victoire (pour l'écran de fin de combat) : XP de groupe gagnée, or récupéré,
  *  butin (noms d'objets, dans l'inventaire de groupe, assignables à un héros), ennemis vaincus (groupés). */
 export interface PendingVictory {
@@ -26,7 +43,7 @@ export interface PendingVictory {
   gold: Money;
   /** Équipement (giveTrapping) du butin — ATTRIBUABLE par portrait sur l'écran (qualités/skin
    *  conservés), au lieu d'aller d'office au 1er héros. Non attribué → 1er héros à la fermeture. */
-  gear?: { label: string; magic: boolean; effect: Extract<Effect, { type: 'giveTrapping' }> }[];
+  gear?: LootGear[];
   defeated: { name: string; count: number }[];
   /** Messages de journal de la victoire (Effets `journal` de onVictory) — affichés DANS l'écran (#9). */
   messages?: string[];
@@ -126,14 +143,23 @@ export interface PendingBargain {
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }
-/** Évaluation en attente (LDB 60 l.10 : « estimer les prix … à ±10 % »). Test d'Évaluation (Int) ;
+/** Évaluation en attente (LDB 60 l.10 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
  *  un succès RÉVÈLE l'objet (`identified = true`, ses qualités cachées deviennent visibles) et donne
- *  une fourchette de prix. La modale affiche « Lancer », le résultat puis Chance avant d'acquitter. */
+ *  une fourchette de prix. OU Détection d'artefact (`mode:'detect'`, LDB 10 l.310-312) — Test
+ *  d'Intuition au toucher : succès = l'objet est senti MAGIQUE, chaque DR apprend une règle (qualité) ;
+ *  une seule tentative par artefact. Même modale (« Lancer », résultat, Chance, acquittement). */
 export interface PendingAppraise {
   actorId: string;
   actorName: string;
-  itemUid: string;
+  /** Objet d'un héros (uid d'inventaire)… */
+  itemUid?: string;
+  /** …ou ligne de butin ENCORE en fenêtre (loot/victoire) — révélation AVANT attribution. */
+  gear?: { scope: 'loot' | 'victory'; index: number };
   itemName: string;
+  /** 'evaluate' (défaut) = Évaluation marchande ; 'detect' = Détection d'artefact (Intuition). */
+  mode?: 'evaluate' | 'detect';
+  /** Libellé de la compétence affiché en modale (« Évaluation » / « Intuition »). */
+  skillLabel?: string;
   truePriceBrass: number; // valeur réelle de base (catalogue) en sous de cuivre
   availability: string | null; // Disponibilité (Rare/Exotique → estimation ±10 %)
   skillValue: number;

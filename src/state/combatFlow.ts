@@ -4,6 +4,7 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState, RevealEntry } from './store';
+import type { LootGear } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -241,7 +242,7 @@ export function checkTriggers(get: () => GameState, set: any) {
     if (!inRect(partyPos, t.rect)) continue;
     if (t.condition && !condMet(t.condition, flags)) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
-    applyEffects(get, set, t.effects);
+    applyEffectsLoot(get, set, t.effects, 'Découverte');
     set({ flags: { ...flags } });
   }
 }
@@ -250,6 +251,56 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
   return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 }
 
+/** Sépare d'un lot d'Effets les giveTrapping ATTRIBUABLES (sans heroId) → lignes de butin
+ *  « qui l'emporte ? ». Brique partagée écran de victoire / fenêtre de loot. Un giveTrapping
+ *  AVEC heroId est un don d'auteur ciblé : il reste dans `rest` et s'applique directement. */
+export function gearFromEffects(effects: Effect[]): { gear: LootGear[]; rest: Effect[] } {
+  const gear: LootGear[] = [];
+  const rest: Effect[] = [];
+  for (const e of effects) {
+    if (e.type === 'giveTrapping' && !e.heroId) gear.push({ label: e.trapping, magic: !!e.qualities?.length || e.identified === false, effect: e });
+    else rest.push(e);
+  }
+  return { gear, rest };
+}
+
+/** applyEffects + fenêtre de loot : hors combat, l'équipement trouvé (giveTrapping sans heroId)
+ *  devient ATTRIBUABLE dans `pendingLoot` au lieu d'aller en silence au 1er héros ; l'argent
+ *  s'applique à la bourse ET s'affiche ; les textes `journal` du lot deviennent le texte
+ *  d'ambiance de la fenêtre. Sans butin (ou en combat : Ramasser/victoire ont leurs flux),
+ *  strictement équivalent à applyEffects. Fenêtre déjà ouverte → le butin s'y AJOUTE. */
+export function applyEffectsLoot(get: () => GameState, set: any, effects: Effect[], title: string) {
+  if (get().battle) { applyEffects(get, set, effects); return; }
+  const { gear, rest } = gearFromEffects(effects);
+  applyEffects(get, set, rest);
+  const found = effects
+    .filter((e): e is Extract<Effect, { type: 'giveMoney' }> => e.type === 'giveMoney')
+    .reduce((m, e) => m + toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 }), 0);
+  if (!gear.length && found <= 0) return; // dépense (giveMoney négatif) ou simple récit : pas de fenêtre
+  const messages = effects.filter((e): e is Extract<Effect, { type: 'journal' }> => e.type === 'journal').map((e) => e.text);
+  set((s: GameState) => {
+    const prev = s.pendingLoot;
+    if (!prev) return { pendingLoot: { title, messages: messages.length ? messages : undefined, gold: found > 0 ? fromBrass(found) : undefined, gear } };
+    return {
+      pendingLoot: {
+        ...prev,
+        gear: [...prev.gear, ...gear],
+        gold: found > 0 ? fromBrass(toBrass(prev.gold ?? { gold: 0, silver: 0, brass: 0 }) + found) : prev.gold,
+        messages: [...(prev.messages ?? []), ...messages.filter((m) => !(prev.messages ?? []).includes(m))],
+      },
+    };
+  });
+}
+
+/** Attribue la ligne `index` du butin (`pendingLoot` ou `pendingVictory`) au héros choisi :
+ *  l'Effet d'origine s'applique avec ce heroId (qualités/skin/identification conservés), la
+ *  ligne quitte la fenêtre. Source unique de l'attribution (victoire ET fenêtre de loot). */
+export function assignGearAt(get: () => GameState, set: any, key: 'pendingLoot' | 'pendingVictory', index: number, heroId: string) {
+  const bucket = get()[key];
+  if (!bucket?.gear || index < 0 || index >= bucket.gear.length) return;
+  applyEffects(get, set, [{ ...bucket.gear[index].effect, heroId }]);
+  set({ [key]: { ...bucket, gear: bucket.gear.filter((_, i) => i !== index) } });
+}
 
 export function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
   for (const e of effects) {
@@ -446,6 +497,9 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
         if (e.identified === false) it.identified = false;
         if (e.skin) it.skin = e.skin;
+        if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet
+        if (e.detectTried) it.detectTried = true;
+        if (e.appraiseTriedDay != null) it.appraiseTriedDay = e.appraiseTriedDay;
         let who = '';
         set((s: GameState) => {
           if (!s.party.length) return {};
@@ -3400,12 +3454,10 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
     const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
     const all = battle.onVictory ?? [];
     const deferred = all.filter((e) => CONTEXT.has(e.type));
-    // L'ÉQUIPEMENT (giveTrapping) devient du butin ATTRIBUABLE sur l'écran (qualités conservées) au lieu
-    // d'aller d'office au 1er héros : on le retire des effets immédiats et on le pose dans `gear`.
-    const gear = all
-      .filter((e): e is Extract<Effect, { type: 'giveTrapping' }> => e.type === 'giveTrapping')
-      .map((e) => ({ label: e.trapping, magic: !!e.qualities?.length || e.identified === false, effect: e }));
-    const immediate = all.filter((e) => !CONTEXT.has(e.type) && e.type !== 'giveTrapping');
+    // L'ÉQUIPEMENT (giveTrapping sans heroId) devient du butin ATTRIBUABLE sur l'écran (qualités
+    // conservées) au lieu d'aller d'office au 1er héros — même brique que la fenêtre de loot
+    // (gearFromEffects). Un giveTrapping ciblé (heroId d'auteur) s'applique directement.
+    const { gear, rest: immediate } = gearFromEffects(all.filter((e) => !CONTEXT.has(e.type)));
     const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
     if (immediate.length) applyEffects(get, set, immediate);
     const after = get();

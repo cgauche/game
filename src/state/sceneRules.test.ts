@@ -48,6 +48,12 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
   it('décor sans foot (1×1) ne bloque pas (comportement actuel préservé)', () => {
     expect(entityBlockedAt(scene, 0, 0)).toBe(false);
   });
+  it('décor INTERACTIF 1×1 (coffre fouillable) bloque sa case — on l’aborde, on ne marche pas dessus', () => {
+    const chest = { id: 'k', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'coffre', interact: { effects: [] } } as unknown as SceneEntity;
+    const sc2 = { entities: [chest] } as unknown as Scene;
+    expect(entityBlockedAt(sc2, 6, 6)).toBe(true);
+    expect(entityBlockedAt(sc2, 7, 6)).toBe(false); // adjacent libre (fouille P5 / Ramasser en combat)
+  });
 });
 
 describe('isWalkable — intègre l’empreinte des décors', () => {

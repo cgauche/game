@@ -48,11 +48,15 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>,
 }
 
 /** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
- *  Un décor 1×1 (sans `foot`) ne bloque PAS (comportement historique préservé). */
+ *  Un décor 1×1 (sans `foot`) ne bloque PAS (comportement historique préservé) — SAUF s'il est
+ *  INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde
+ *  en case adjacente (exploration P5 comme combat « Ramasser », LDB ch.13 l.115-116). */
 export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {
   return scene.entities.some((e: SceneEntity) => {
     if (e.kind !== 'prop') return false;
-    if (!e.foot) return false;
-    return x >= e.pos.x && x < e.pos.x + e.foot.w && y >= e.pos.y && y < e.pos.y + e.foot.h;
+    if (!e.foot && !e.interact) return false;
+    const w = e.foot?.w ?? 1;
+    const h = e.foot?.h ?? 1;
+    return x >= e.pos.x && x < e.pos.x + w && y >= e.pos.y && y < e.pos.y + h;
   });
 }

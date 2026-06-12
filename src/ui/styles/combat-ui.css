@@ -468,6 +468,18 @@ textarea:focus {
   transform: translateY(-1px);
 }
 .victory-empty { color: var(--muted); font-size: 12px; text-align: center; }
+/* Révélation du butin (partagé victoire/fenêtre de loot) : état d'identification + actions courtes. */
+.vl-unid { margin-left: 8px; font-size: 0.78em; color: #b388ff; white-space: nowrap; }
+.vl-quals { margin-left: 8px; font-size: 0.8em; color: var(--muted); }
+.vl-acts { display: flex; gap: 6px; }
+.vl-act { font-size: 12px; padding: 4px 10px; white-space: nowrap; }
+
+/* Fenêtre de loot hors combat — même squelette que les sections de victoire, en modale compacte. */
+.loot-modal { width: min(560px, 94vw); }
+.loot-modal .victory-rewards { justify-content: flex-start; margin: 10px 0; }
+.loot-messages { margin: 2px 0 10px; }
+.loot-messages .victory-msg { text-align: left; }
+.loot-modal .victory-continue { margin-top: 14px; }
 .victory-continue {
   display: block;
   margin: 20px auto 0;

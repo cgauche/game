@@ -161,7 +161,11 @@ export type Effect =
    *  L'objet arrive NON équipé dans son inventaire — à équiper via la fiche. Champs MAGIQUES optionnels
    *  (butin/quête) : `qualities` AJOUTÉES (Atout/Défaut, ex. « De plaies atroces »), `identified:false`
    *  = qualités masquées jusqu'à Évaluation (#2), `skin` = recoloration (objet légendaire). */
-  | { type: 'giveTrapping'; trapping: string; heroId?: string; qualities?: string[]; identified?: boolean; skin?: Record<string, string> }
+  | { type: 'giveTrapping'; trapping: string; heroId?: string; qualities?: string[]; identified?: boolean; skin?: Record<string, string>;
+      /** Aura détectée / Détection déjà tentée (Talent Détection d'artefact, LDB 10) / jour de la
+       *  dernière Évaluation ratée — posés par la fenêtre de loot AVANT attribution, propagés sur
+       *  l'ItemInstance à la remise. */
+      magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
   | { type: 'giveXp'; amount: number }

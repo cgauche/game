@@ -23,7 +23,7 @@
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
-import { applyEffects } from './combatFlow';
+import { applyEffectsLoot } from './combatFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { runDailyUpkeep } from './upkeep';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
@@ -289,7 +289,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
       markInterrupted();
       return true;
     }
-    applyEffects(get, set, peril.effects);
+    applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur en route → fenêtre d'attribution
     if (interrupted()) { markInterrupted(); return true; } // repli : un effet a surpris (dialogue…)
   }
 

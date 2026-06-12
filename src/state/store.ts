@@ -10,7 +10,7 @@ import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
-  applyEffects, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
+  applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
@@ -102,7 +102,7 @@ import * as partyFlow from './partyFlow';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
-  Money, PendingVictory, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
+  Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
@@ -317,6 +317,15 @@ export interface GameState {
   assignVictoryGear: (index: number, heroId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
+  /** Butin HORS combat (fouille/Test/dialogue/trigger) — fenêtre « qui l'emporte ? » (même brique). */
+  pendingLoot: PendingLoot | null;
+  /** Attribue une ligne de la fenêtre de loot au héros choisi. */
+  assignLootGear: (index: number, heroId: string) => void;
+  /** Ferme la fenêtre de loot ; l'équipement non attribué va au 1er héros (comme la victoire). */
+  dismissLoot: () => void;
+  /** Évaluation (LDB 60 l.10) ou Détection d'artefact (LDB 10) d'une ligne de butin ENCORE en
+   *  fenêtre (loot ou victoire) : révéler un objet ✨ AVANT de choisir qui l'emporte. */
+  appraiseGear: (scope: 'loot' | 'victory', index: number, mode?: 'evaluate' | 'detect') => void;
   /** Coop : ✓ d'un siège sur l'écran de victoire — l'hôte ferme quand tous les requis ont validé. */
   victoryReady: (seat: number) => void;
   /** Coop : ✋ demande la pause du prochain début de Round (fenêtre Chance). */
@@ -454,8 +463,9 @@ export interface GameState {
   bargainDarkPact: () => void;
   bargainConfirm: () => void;
   bargainCancel: () => void;
-  /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix. */
-  appraiseItem: (uid: string, heroId: string) => void;
+  /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix.
+   *  `mode:'detect'` = Détection d'artefact (LDB 10) : Intuition au toucher, une tentative par objet. */
+  appraiseItem: (uid: string, heroId: string, mode?: 'evaluate' | 'detect') => void;
   appraiseRoll: () => void;
   appraiseReroll: () => void;
   appraiseBonusSL: () => void;
@@ -886,6 +896,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingRoundStart: null,
   pendingFateSave: null,
   pendingVictory: null,
+  pendingLoot: null,
   document: null,
   previousScene: null,
 
@@ -1115,7 +1126,8 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
       get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
-      applyEffects(get, set, ent.interact.effects);
+      // Butin → fenêtre d'attribution (« qui l'emporte ? ») au lieu d'aller en silence au 1er héros.
+      applyEffectsLoot(get, set, ent.interact.effects, ent.label ?? 'Fouille');
       get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
       if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
       else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
@@ -1138,7 +1150,11 @@ export const useGame = create<GameState>((set, get) => ({
       if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
       set((s) => ({ money: moneySub(s.money, cost)! }));
     }
-    if (choice.effects) applyEffects(get, set, choice.effects);
+    // Objet/argent reçu en dialogue → fenêtre d'attribution aussi (titrée du donateur).
+    if (choice.effects) {
+      const speaker = st.scene?.entities.find((e) => e.id === st.dialogue?.speakerId)?.label;
+      applyEffectsLoot(get, set, choice.effects, speaker ?? 'Butin');
+    }
     if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId } });
     else {
       if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture (no-op si un Effect a déjà fermé)
@@ -1177,7 +1193,8 @@ export const useGame = create<GameState>((set, get) => ({
   bargainConfirm: () => merchantFlow.bargainConfirm(get, set),
   bargainCancel: () => set({ pendingBargain: null }),
 
-  appraiseItem: (uid, heroId) => merchantFlow.appraiseItem(get, set, uid, heroId),
+  appraiseItem: (uid, heroId, mode) => merchantFlow.appraiseItem(get, set, uid, heroId, mode),
+  appraiseGear: (scope, index, mode) => merchantFlow.appraiseGear(get, set, scope, index, mode),
   appraiseRoll: () => FLOWS.appraise.roll(get, set),
   appraiseReroll: () => FLOWS.appraise.reroll(get, set),
   appraiseBonusSL: () => FLOWS.appraise.bonusSL(get, set),
@@ -1294,13 +1311,16 @@ export const useGame = create<GameState>((set, get) => ({
     if (leftoverGear.length) applyEffects(get, set, leftoverGear);
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
   },
-  /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
-  assignVictoryGear: (index, heroId) => {
-    const pv = get().pendingVictory;
-    if (!pv?.gear || index < 0 || index >= pv.gear.length) return;
-    applyEffects(get, set, [{ ...pv.gear[index].effect, heroId }]);
-    set({ pendingVictory: { ...pv, gear: pv.gear.filter((_, i) => i !== index) } });
+  /** Ferme la fenêtre de loot — même contrat que la victoire : le non-attribué va au 1er héros. */
+  dismissLoot: () => {
+    const pl = get().pendingLoot;
+    const leftover = (pl?.gear ?? []).map((g) => g.effect);
+    set({ pendingLoot: null });
+    if (leftover.length) applyEffects(get, set, leftover);
   },
+  assignLootGear: (index, heroId) => assignGearAt(get, set, 'pendingLoot', index, heroId),
+  /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
+  assignVictoryGear: (index, heroId) => assignGearAt(get, set, 'pendingVictory', index, heroId),
   raiseHand: () => {
     const b = get().battle;
     if (!b || b.handRaised) return;
@@ -3162,7 +3182,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);
     }
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
-    if (branch && branch.length) applyEffects(get, set, branch);
+    if (branch && branch.length) applyEffectsLoot(get, set, branch, pt.label); // butin de Test → fenêtre d'attribution
   },
   closeDocument: () => set({ document: null }),
 
@@ -3206,7 +3226,7 @@ export const useGame = create<GameState>((set, get) => ({
     const then = recap?.then;
     if (!then || get().battle) return;
     if (then.kind === 'effects') {
-      applyEffects(get, set, then.effects);
+      applyEffectsLoot(get, set, then.effects, 'Découverte'); // trouvaille d'étape de voyage → fenêtre aussi
     } else {
       get().transitionTo(then.scene, then.entry);
       get().startCombat(then.encounter, undefined, { noSurprise: then.noSurprise });

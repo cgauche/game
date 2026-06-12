@@ -29,24 +29,28 @@ export function AppraiseModalView({
   onCancel: () => void;
 }) {
   const rolled = pa.roll != null;
+  const detect = pa.mode === 'detect';
+  const skill = pa.skillLabel ?? (detect ? 'Intuition' : 'Évaluation');
   return (
     <RollFlowShell
       variant="test"
-      title={`Évaluer — ${pa.itemName}`}
+      title={detect ? `Détecter l'aura — ${pa.itemName}` : `Évaluer — ${pa.itemName}`}
       subtitle={
         <>
-          <strong>{pa.actorName}</strong> — Évaluation, cible {pa.target}
+          <strong>{pa.actorName}</strong> — {skill}, cible {pa.target}
         </>
       }
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      breakdown={rolled ? testBreakdown('Évaluation', pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
-      pending={testPending('Évaluation', pa.skillValue, pa.target, pa.difficulty)}
+      breakdown={rolled ? testBreakdown(skill, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
+      pending={testPending(skill, pa.skillValue, pa.target, pa.difficulty)}
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
-          event={ev('info', pa.success ? `${pa.actorName} jauge ${pa.itemName} : révélé ✓.` : `${pa.actorName} n'en tire rien — ${pa.itemName} reste inchangé.`)}
+          event={ev('info', detect
+            ? (pa.success ? `${pa.actorName} perçoit quelque chose en touchant ${pa.itemName}…` : `${pa.actorName} ne perçoit rien — l'artefact ne se laissera plus sonder.`)
+            : (pa.success ? `${pa.actorName} jauge ${pa.itemName} : révélé ✓.` : `${pa.actorName} n'en tire rien — ${pa.itemName} reste inchangé.`))}
         />
       )}
       fortune={fortune}

@@ -353,33 +353,134 @@ export function bargainConfirm(get: Get, set: Set): void {
   else get().log(won ? 'Marchandage de vente réussi (½ du prix listé).' : 'Marchandage de vente échoué (¼ du prix listé).');
 }
 
-export function appraiseItem(get: Get, set: Set, uid: string, heroId: string): void {
-  const hero = get().party.find((h) => h.id === heroId);
-  const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-  const best = partyBest(get().party, 'Évaluation', 'Int'); if (!best) return;
-  const t = findTrapping(item.name);
+/** Talent « Détection d'artefact » (LDB 10 l.310-312) : Test d'Intuition au toucher — succès =
+ *  l'objet est senti magique, chaque DR apprend une règle spéciale ; UNE tentative par artefact. */
+export const DETECT_TALENT = "Détection d'artefact";
+
+/** Meilleur détecteur du groupe : meilleure Intuition PARMI les porteurs du Talent (c'est LUI qui
+ *  touche l'objet — pas un partyBest global comme l'Évaluation). null si personne ne l'a. */
+export function bestDetector(party: Combatant[]): { actor: Combatant; value: number } | null {
+  const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.name === DETECT_TALENT && (t.times ?? 1) >= 1));
+  if (!holders.length) return null;
+  const best = partyBest(holders, 'Intuition', 'I');
+  return best ? { actor: best.actor, value: best.value } : null;
+}
+
+/** Démarreur PARTAGÉ Évaluation/Détection — sur un objet d'inventaire (`itemUid`) OU une ligne de
+ *  butin encore en fenêtre (`gear`). Une seule modale, un seul flux de jet (rollFlows.appraise). */
+function openAppraise(
+  get: Get, set: Set,
+  target: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
+  itemName: string, mode: 'evaluate' | 'detect',
+): void {
+  const best = mode === 'detect' ? bestDetector(get().party) : partyBest(get().party, 'Évaluation', 'Int');
+  if (!best) return;
+  const t = findTrapping(itemName);
   set({ pendingAppraise: {
-    actorId: best.actor.id, actorName: best.actor.name, itemUid: uid, itemName: item.name,
+    actorId: best.actor.id, actorName: best.actor.name, ...target, itemName,
+    mode, skillLabel: mode === 'detect' ? 'Intuition' : 'Évaluation',
     truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
     availability: (t?.availability as string | undefined) ?? null,
     skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
   } });
 }
 
-/** Acquitte l'Évaluation : révèle l'objet (`identified`) + journalise l'estimation (LDB 60 l.10). */
-export function resolveAppraise(get: Get, set: Set): void {
-  const pa = get().pendingAppraise;
-  if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
-  set({ pendingAppraise: null });
-  if (!pa.success) { get().log(`Évaluation ratée : ${pa.itemName} reste non identifié.`); return; }
+/** Jour de jeu courant (verrou « pas de re-tentative d'Évaluation le même jour »). */
+export function gameDay(get: Get): number {
+  return Math.floor(get().gameTime / MINUTES_PER_DAY);
+}
+
+export function appraiseItem(get: Get, set: Set, uid: string, heroId: string, mode: 'evaluate' | 'detect' = 'evaluate'): void {
+  const hero = get().party.find((h) => h.id === heroId);
+  const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
+  if (mode === 'detect' && item.detectTried) return; // une seule tentative par artefact (LDB 10 l.312)
+  if (mode === 'evaluate' && item.appraiseTriedDay === gameDay(get)) {
+    get().log(`${item.name} a déjà été jaugé aujourd'hui sans succès — réessayez demain.`);
+    return;
+  }
+  openAppraise(get, set, { itemUid: uid }, item.name, mode);
+}
+
+/** Évaluation/Détection d'une ligne de butin ENCORE en fenêtre (loot ou victoire) — révéler AVANT
+ *  de choisir qui l'emporte (demande utilisateur). */
+export function appraiseGear(get: Get, set: Set, scope: 'loot' | 'victory', index: number, mode: 'evaluate' | 'detect' = 'evaluate'): void {
+  const bucket = scope === 'loot' ? get().pendingLoot : get().pendingVictory;
+  const line = bucket?.gear?.[index]; if (!line) return;
+  if (mode === 'detect' && line.effect.detectTried) return;
+  if (mode === 'evaluate' && line.effect.appraiseTriedDay === gameDay(get)) return;
+  openAppraise(get, set, { gear: { scope, index } }, line.label, mode);
+}
+
+/** Patch la cible de l'Évaluation/Détection — objet porté (party) ou ligne de butin en fenêtre. */
+function patchAppraiseTarget(get: Get, set: Set, pa: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
+  patch: { identified?: boolean; magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number }): void {
+  if (pa.gear) {
+    const key = pa.gear.scope === 'loot' ? 'pendingLoot' : 'pendingVictory';
+    const idx = pa.gear.index;
+    set((s) => {
+      const bucket = s[key];
+      if (!bucket?.gear?.[idx]) return {};
+      const gear = bucket.gear.map((g, i) => {
+        if (i !== idx) return g;
+        const effect = { ...g.effect, ...patch };
+        if (patch.identified) delete (effect as { identified?: boolean }).identified; // identifié = champ absent
+        return { ...g, magic: g.magic || !!patch.magicKnown, effect };
+      });
+      return { [key]: { ...bucket, gear } } as Partial<GameState>;
+    });
+    return;
+  }
   set((s) => ({
     party: s.party.map((h) => {
       if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
       const clone: Combatant = JSON.parse(JSON.stringify(h));
-      const it = clone.items?.find((i) => i.uid === pa.itemUid); if (it) it.identified = true;
+      const it = clone.items?.find((i) => i.uid === pa.itemUid);
+      if (it) Object.assign(it, patch);
       return clone;
     }),
   }));
+}
+
+/** Acquitte l'Évaluation (révèle `identified` + estimation, LDB 60 l.10) ou la Détection d'artefact
+ *  (aura sentie + règles apprises par DR, LDB 10 l.310-312 ; tentative unique). */
+export function resolveAppraise(get: Get, set: Set): void {
+  const pa = get().pendingAppraise;
+  if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet
+  set({ pendingAppraise: null });
+  if (pa.mode === 'detect') {
+    // Qualités MAGIQUES de la cible : sur une ligne de butin on les connaît (effet) ; sur un objet
+    // porté, l'ajout est fondu dans `qualities` → on compte 1 règle (cas du butin du jeu).
+    const line = pa.gear ? (pa.gear.scope === 'loot' ? get().pendingLoot : get().pendingVictory)?.gear?.[pa.gear.index] : undefined;
+    const item = pa.itemUid ? get().party.flatMap((h) => h.items ?? []).find((i) => i.uid === pa.itemUid) : undefined;
+    const isMagic = line ? line.magic : !!item && (item.identified === false || !!item.magicKnown);
+    const rules = line ? (line.effect.qualities?.length ?? (line.effect.identified === false ? 1 : 0)) : 1;
+    if (!pa.success) {
+      patchAppraiseTarget(get, set, pa, { detectTried: true });
+      get().log(`${pa.actorName} ne perçoit rien de net en touchant ${pa.itemName} (Détection d'artefact : une seule tentative).`);
+      return;
+    }
+    if (!isMagic) {
+      patchAppraiseTarget(get, set, pa, { detectTried: true });
+      get().log(`${pa.actorName} sonde ${pa.itemName} : aucune aura — l'objet n'est pas magique.`);
+      return;
+    }
+    // Succès : aura sentie ; chaque DR apprend une règle → tout révélé quand DR couvre les règles.
+    const allKnown = pa.sl >= Math.max(1, rules);
+    patchAppraiseTarget(get, set, pa, { detectTried: true, magicKnown: true, ...(allKnown ? { identified: true } : {}) });
+    get().log(allKnown
+      ? `${pa.actorName} sent l'aura de ${pa.itemName} — et en saisit les règles (DR ${pa.sl}) : objet identifié.`
+      : `${pa.actorName} sent que ${pa.itemName} est MAGIQUE, sans en percer les règles (DR ${pa.sl}).`);
+    return;
+  }
+  if (!pa.success) {
+    // Échec NET : pas de re-tentative le même jour (LDB 12 l.120 — seul un résultat marginal
+    // « permet de faire un nouvel essai » ; ADE2 : re-tenter une identification coûte du temps).
+    patchAppraiseTarget(get, set, pa, { appraiseTriedDay: gameDay(get) });
+    get().log(`Évaluation ratée : ${pa.itemName} reste non identifié (rien de plus à en tirer aujourd'hui).`);
+    return;
+  }
+  patchAppraiseTarget(get, set, pa, { identified: true });
+  if (pa.truePriceBrass <= 0) { get().log(`Évaluation : ${pa.itemName} révélé (pièce unique — sans prix de catalogue).`); return; }
   const est = appraiseEstimate(pa.availability as Parameters<typeof appraiseEstimate>[0], pa.truePriceBrass);
   const range = est.min === est.max ? formatMoney(fromBrass(est.min)) : `${formatMoney(fromBrass(est.min))} – ${formatMoney(fromBrass(est.max))}`;
   get().log(`Évaluation : ${pa.itemName} révélé (valeur estimée ${range}).`);

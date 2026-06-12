@@ -300,6 +300,15 @@ export interface ItemInstance {
   /** Objet NON identifié (objet magique/légendaire trouvé) : ses qualités sont MASQUÉES à l'affichage
    *  (elles restent ACTIVES mécaniquement) tant qu'une Évaluation ne l'a pas révélé. Absent/true = identifié. */
   identified?: boolean;
+  /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+   *  l'objet est magique ») — s'affiche ✨ magique même tant que ses règles restent non identifiées. */
+  magicKnown?: boolean;
+  /** Détection d'artefact déjà tentée sur cet objet (LDB 10 l.312 : « En principe, vous ne pouvez
+   *  tenter ce Test qu'une seule fois par artefact touché »). */
+  detectTried?: boolean;
+  /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
+   *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE2 : re-tenter coûte du temps). */
+  appraiseTriedDay?: number;
   /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
    *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
   prosthesisTrained?: boolean;

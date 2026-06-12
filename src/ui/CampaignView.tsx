@@ -12,6 +12,7 @@ import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de
 import { VictoryScreen } from './VictoryScreen';
 import { BargainModal } from './BargainModal';
 import { AppraiseModal } from './AppraiseModal';
+import { LootModal } from './LootModal';
 import { DocumentModal } from './DocumentModal';
 import { CharacterSheet } from './CharacterSheet';
 import { InspectPanel } from './InspectPanel';
@@ -197,7 +198,9 @@ export function CampaignView() {
       <VictoryScreen />{/* écran de fin de combat plein écran (se gate sur battle.over==='victory') */}
       {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}
       <ActiveModal />
-      {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment. */}
+      {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment.
+          LootModal AVANT AppraiseModal : Évaluer/Détecter une ligne s'empile AU-DESSUS de la fenêtre. */}
+      <LootModal />
       <BargainModal />
       <AppraiseModal />
       <DocumentModal />

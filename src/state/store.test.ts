@@ -9,7 +9,7 @@ import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
-import { applyAttackResult, applyEffects, computeMoveReach } from './combatFlow';
+import { applyAttackResult, applyEffects, applyEffectsLoot, computeMoveReach } from './combatFlow';
 import { mountUp } from './mount';
 import { combatValue } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
@@ -40,6 +40,8 @@ function reset() {
     pendingFateSave: null,
     pendingReload: null,
     pendingReveals: [],
+    pendingLoot: null,
+    pendingAppraise: null,
     document: null,
     merchant: null,
     merchantStocks: {},
@@ -1406,7 +1408,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(st.party[0].xp).toBe(10);
   });
 
-  it('prop consommable (butin) : ramassage sur le héros + disparition (consume)', () => {
+  it('prop consommable (butin) : fenêtre de loot (attribution + restes au 1er héros) + disparition (consume)', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'loot-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
@@ -1416,9 +1418,22 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     useGame.setState({ partyPos: { x: 0, y: 0 } });
 
     useGame.getState().interactEntity('coffre');
-    const st = useGame.getState();
-    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(expect.arrayContaining(['Fiole', 'Lettre'])); // objets custom sur le héros
+    let st = useGame.getState();
+    // Le butin N'EST PLUS donné en silence au 1er héros : il s'ouvre en fenêtre d'attribution.
+    expect(st.party[0].items ?? []).toEqual([]);
+    expect(st.pendingLoot?.title).toBe('Coffre');
+    expect(st.pendingLoot?.gear.map((g) => g.label)).toEqual(['Fiole', 'Lettre']);
     expect(st.scene!.entities.find((e) => e.id === 'coffre')).toBeUndefined(); // ramassé → disparaît
+
+    useGame.getState().assignLootGear(0, 'a'); // attribution explicite par portrait
+    st = useGame.getState();
+    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(['Fiole']);
+    expect(st.pendingLoot?.gear.map((g) => g.label)).toEqual(['Lettre']);
+
+    useGame.getState().dismissLoot(); // « Continuer » : le non-attribué va au 1er héros (contrat victoire)
+    st = useGame.getState();
+    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(expect.arrayContaining(['Fiole', 'Lettre']));
+    expect(st.pendingLoot).toBeNull();
   });
 
   it('Effet giveTrapping : crée un VRAI objet à stats sur le héros (non équipé, depuis trappings.json)', () => {
@@ -1453,6 +1468,8 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     useGame.setState({ partyPos: { x: 0, y: 0 } });
 
     useGame.getState().interactEntity('cadavre');
+    expect(useGame.getState().pendingLoot?.gear.map((g) => g.label)).toEqual(['Dague']); // fenêtre d'abord
+    useGame.getState().dismissLoot(); // non attribué → 1er héros
     const hero = useGame.getState().party[0];
     const dague = (hero.items ?? []).find((i) => i.name === 'Dague');
     expect(dague).toBeTruthy();
@@ -1493,6 +1510,146 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     useGame.getState().setPendingInteract(null);
     useGame.getState().moveParty({ x: 4, y: 0 });
     expect(useGame.getState().money.gold).toBe(0);
+  });
+});
+
+describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation', () => {
+  beforeEach(() => reset());
+  const looter = (over: Partial<Combatant> = {}): Combatant =>
+    ({ id: 'a', name: 'A', kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [],
+      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 30, Soc: 30 },
+      weapons: [], armour: {}, items: [], skills: [], talents: [], movement: 4, ...over }) as unknown as Combatant;
+
+  function lootScene() {
+    const scene = emptyScene(8, 8);
+    scene.id = 'pl-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({
+      id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre de la garnison',
+      interact: { effects: [
+        { type: 'journal', text: 'Sous une fausse planche, la solde du mois.' },
+        { type: 'giveMoney', silver: 18 },
+        { type: 'giveTrapping', trapping: 'Épée', qualities: ['De plaies atroces'], identified: false },
+      ] },
+    });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+  }
+
+  it('fouille avec butin : fenêtre titrée (texte + or + équipement), bourse créditée immédiatement', () => {
+    lootScene();
+    useGame.getState().interactEntity('coffre');
+    const st = useGame.getState();
+    expect(st.pendingLoot?.title).toBe('Coffre de la garnison');
+    expect(st.pendingLoot?.messages).toEqual(['Sous une fausse planche, la solde du mois.']);
+    expect(st.pendingLoot?.gold).toEqual({ gold: 0, silver: 18, brass: 0 }); // affiché…
+    expect(st.money.silver).toBe(18); // …ET déjà en bourse (l'argent est commun)
+    expect(st.pendingLoot?.gear.map((g) => g.label)).toEqual(['Épée']);
+    expect(st.pendingLoot?.gear[0].magic).toBe(true);
+    expect(st.party[0].items ?? []).toEqual([]); // rien en silence sur le héros 1
+  });
+
+  it('giveTrapping AVEC heroId (don d’auteur ciblé) : direct sur le héros, pas de fenêtre', () => {
+    lootScene();
+    applyEffectsLoot(useGame.getState, useGame.setState, [{ type: 'giveTrapping', trapping: 'Dague', heroId: 'a' }], 'Test');
+    const st = useGame.getState();
+    expect(st.pendingLoot).toBeNull();
+    expect((st.party[0].items ?? []).map((i) => i.name)).toEqual(['Dague']);
+  });
+
+  it('en combat : applyEffectsLoot passe en direct (pas de fenêtre — Ramasser/victoire ont leurs flux)', () => {
+    lootScene();
+    useGame.setState({ battle: {} as unknown as BattleState });
+    applyEffectsLoot(useGame.getState, useGame.setState, [{ type: 'giveTrapping', trapping: 'Dague' }], 'Test');
+    expect(useGame.getState().pendingLoot).toBeNull();
+    expect((useGame.getState().party[0].items ?? []).map((i) => i.name)).toEqual(['Dague']);
+  });
+
+  it('appraiseGear (Évaluation) : succès → la ligne est révélée, l’objet attribué arrive identifié', () => {
+    lootScene();
+    useGame.getState().interactEntity('coffre');
+    useGame.getState().appraiseGear('loot', 0);
+    const pa = useGame.getState().pendingAppraise!;
+    expect(pa.gear).toEqual({ scope: 'loot', index: 0 });
+    expect(pa.skillLabel ?? 'Évaluation').toBe('Évaluation');
+    useGame.setState({ pendingAppraise: { ...pa, roll: 10, success: true, sl: 2 } });
+    useGame.getState().resolveAppraise();
+    const line = useGame.getState().pendingLoot!.gear[0];
+    expect(line.effect.identified).toBeUndefined(); // révélé = champ absent
+    useGame.getState().assignLootGear(0, 'a');
+    const it2 = useGame.getState().party[0].items!.find((i) => i.name === 'Épée')!;
+    expect(it2.identified).not.toBe(false);
+    expect(it2.qualities).toContain('De plaies atroces');
+  });
+
+  it('Détection d’artefact (LDB 10) : succès DR≥1 → identifié ; échec → tentative unique consommée', () => {
+    lootScene();
+    // Le looter reçoit le Talent : le bouton/flux ne s'arme que pour un porteur (Intuition).
+    useGame.setState({ party: [looter({ talents: [{ name: "Détection d'artefact", times: 1 }] } as Partial<Combatant>)] });
+    useGame.getState().interactEntity('coffre');
+    useGame.getState().appraiseGear('loot', 0, 'detect');
+    let pa = useGame.getState().pendingAppraise!;
+    expect(pa.mode).toBe('detect');
+    expect(pa.skillLabel).toBe('Intuition');
+    // Échec : l'artefact ne se laisse plus sonder (detectTried), rien de révélé.
+    useGame.setState({ pendingAppraise: { ...pa, roll: 95, success: false, sl: -5 } });
+    useGame.getState().resolveAppraise();
+    let line = useGame.getState().pendingLoot!.gear[0];
+    expect(line.effect.detectTried).toBe(true);
+    expect(line.effect.identified).toBe(false);
+    // Une 2e tentative est refusée (« une seule fois par artefact »).
+    useGame.getState().appraiseGear('loot', 0, 'detect');
+    expect(useGame.getState().pendingAppraise).toBeNull();
+    // On force une nouvelle détection (autre ligne de vie du test) : succès DR 2 ≥ 1 règle → identifié.
+    line.effect.detectTried = false;
+    useGame.getState().appraiseGear('loot', 0, 'detect');
+    pa = useGame.getState().pendingAppraise!;
+    useGame.setState({ pendingAppraise: { ...pa, roll: 5, success: true, sl: 2 } });
+    useGame.getState().resolveAppraise();
+    line = useGame.getState().pendingLoot!.gear[0];
+    expect(line.effect.magicKnown).toBe(true);
+    expect(line.effect.identified).toBeUndefined(); // tout révélé
+  });
+
+  it('Détection sur un objet NON magique : « aucune aura », tentative consommée', () => {
+    lootScene();
+    useGame.setState({ party: [looter({ talents: [{ name: "Détection d'artefact", times: 1 }] } as Partial<Combatant>)] });
+    applyEffectsLoot(useGame.getState, useGame.setState, [{ type: 'giveTrapping', trapping: 'Dague' }], 'Sac');
+    useGame.getState().appraiseGear('loot', 0, 'detect');
+    const pa = useGame.getState().pendingAppraise!;
+    useGame.setState({ pendingAppraise: { ...pa, roll: 5, success: true, sl: 2 } });
+    useGame.getState().resolveAppraise();
+    const line = useGame.getState().pendingLoot!.gear[0];
+    expect(line.effect.detectTried).toBe(true);
+    expect(line.effect.magicKnown).toBeUndefined();
+  });
+
+  it('anti-spam Évaluation : un échec verrouille l’objet pour la JOURNÉE (re-tentative demain)', () => {
+    lootScene();
+    useGame.getState().interactEntity('coffre');
+    useGame.getState().appraiseGear('loot', 0);
+    const pa = useGame.getState().pendingAppraise!;
+    useGame.setState({ pendingAppraise: { ...pa, roll: 99, success: false, sl: -6 } });
+    useGame.getState().resolveAppraise();
+    expect(useGame.getState().pendingLoot!.gear[0].effect.appraiseTriedDay).toBeDefined();
+    // Même jour : la re-tentative est refusée (pas de modale).
+    useGame.getState().appraiseGear('loot', 0);
+    expect(useGame.getState().pendingAppraise).toBeNull();
+    // Le lendemain : on peut retenter.
+    useGame.getState().advanceTime(24 * 60);
+    useGame.getState().appraiseGear('loot', 0);
+    expect(useGame.getState().pendingAppraise).not.toBeNull();
+    useGame.setState({ pendingAppraise: null });
+  });
+
+  it('fenêtres successives : le butin s’AJOUTE à la fenêtre ouverte (pas d’écrasement)', () => {
+    lootScene();
+    useGame.getState().interactEntity('coffre');
+    applyEffectsLoot(useGame.getState, useGame.setState, [{ type: 'giveTrapping', trapping: 'Dague' }], 'Sac oublié');
+    const pl = useGame.getState().pendingLoot!;
+    expect(pl.title).toBe('Coffre de la garnison'); // la 1re fenêtre garde son titre
+    expect(pl.gear.map((g) => g.label)).toEqual(['Épée', 'Dague']);
   });
 });
 
