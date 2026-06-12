@@ -120,7 +120,8 @@ jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**. Depuis
 - `__wfrp.hover('id'|{x,y}|null)` → **survol programmatique** en combat (tooltip + réticule de visée se rendent
   sans souris) ; `__wfrp.aim('id')` → vérité state du ciblage (ok/invalid + raison, compétence, dégâts).
 - `__wfrp.battle()` → snapshot combat (round, actif, modales ouvertes, combattants une ligne chacun) ;
-  `__wfrp.turn('id')` → **donne le tour** (fini d'attendre l'IA) ; `__wfrp.place('id',{x,y})` → téléporte.
+  `__wfrp.turn('id')` → **donne le tour** (fini d'attendre l'IA) ; `__wfrp.place('id',{x,y})` → téléporte ;
+  `__wfrp.log(n)` → queue lisible des journaux (exploration + feed de combat).
 - `__wfrp.modal()` → modale(s) `pending*` ouvertes ; `__wfrp.roll()` / `__wfrp.confirm()` / `__wfrp.cancel()`
   → pilotent LA modale ouverte par convention `<flux>Roll/Confirm/Cancel` (révélations/Round : verbe propre).
 - Les tokens de combat portent `data-cid="<id du combattant>"` dans le SVG → survol/clic ciblé par sélecteur DOM.

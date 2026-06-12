@@ -23,6 +23,7 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.hover('id')    → survol PROGRAMMATIQUE (tooltip + réticule de visée, sans souris) ; null efface
  *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
+ *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
  *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
  *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
@@ -217,6 +218,16 @@ export function buildApi() {
       useGame.setState({ battle: { ...b } });
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ ${c.name} → (${pt.x},${pt.y})`;
+    },
+
+    /** Queue LISIBLE des journaux : les `n` dernières lignes du journal d'exploration ET du
+     *  feed de combat (texte brut) — fini le mapping à la main dans les recettes. */
+    log: (n = 8) => {
+      const s = g();
+      return {
+        journal: s.journal.slice(-n),
+        combat: (s.battle?.log ?? []).slice(-n).map((e) => `[${e.kind}] ${e.text}`),
+      };
     },
 
     /** Modale(s) `pending*` ouvertes + les actions de pilotage dérivées (convention <flux>Roll/Confirm/Cancel). */
