@@ -978,7 +978,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   `searchable` pré-arme `interact`). Sous-projet 2 livré aussi : sprites lettre/coffre/étagère/
   clé/bourse (+ cercle runique) au catalogue.
 
-## ✅ Jalon 7 — Coop en ligne *(V1 complète — 2026-06-11 ; V2 documentée non engagée)*
+## ✅ Jalon 7 — Coop en ligne *(V1 2026-06-11 ; transport REFONDU en v2 relay le 2026-06-12)*
 
 - Du hotseat au **réseau** (WebSocket ou WebRTC). **RNG de combat seedable** (`store.seedRng`,
   Jalon 0.6) + état sérialisable déjà en place.
@@ -1013,9 +1013,18 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   du menu ☰ hôte en partie : ré-inviter par code, réattribuer les héros d'un siège parti) ;
   **REGISTRE unique des modales** (`state/modalArbiter.ts` : une entrée = `when` + `owner`, ordre
   = priorité ; `pickActiveModalKey`/`modalOwnerOf` dérivés — partagé UI + validation réseau).
-- **V2 documentée (non engagée)** : recette bout-en-bout victoire/loot à 2 onglets, exploration
-  déléguée aux invités, deltas d'état (au lieu de snapshots), dissipation en Test Soutenu à
-  plusieurs sur le même Domaine.
+- ✅ **Coop v2 — relay WebSocket** *(2026-06-12, spec
+  `docs/superpowers/specs/2026-06-12-coop-relay-websocket-design.md`)* : le transport v1 (P2P +
+  codes copiés/collés, déconnexions ~1 min) est **SUPPRIMÉ**, remplacé par un **Worker
+  Cloudflare** (`server/` : Durable Object « Room », hibernation WS, TTL 30 min) — **code de
+  room à 6 caractères** + lien d'invitation `?join=`, **reconnexion automatique** (heartbeat
+  10 s, backoff, reprise de siège par token — y compris après F5 via sessionStorage, grace
+  2 min côté hôte avant retour des héros), **snapshots compressés** (deflate ~10:1,
+  backpressure/coalescing), **campagne custom transférée une fois au join** (hors snapshots).
+  `session.ts`/intents/arbitre des modales inchangés. Déploiement : `npm run relay:deploy`.
+- **Pistes futures** : recette bout-en-bout victoire/loot à 2 onglets, exploration déléguée aux
+  invités, deltas d'état (au lieu de snapshots), dissipation en Test Soutenu à plusieurs sur le
+  même Domaine, migration d'hôte.
 
 ## ✅ Jalon 8 — Polish & production *(complet — 2026-06-11 ; volet rig CLOS (galeries ✓, tenues/armes dos ✓, proportions Mutant ✓, clips d'attaque montés ✓) ; reste différé sur arbitrage : art des bâtiments)*
 
