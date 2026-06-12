@@ -55,7 +55,7 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   if (action === 'partyAddHero') return seatSlotsRemaining(s, seat) > 0;
   if (action === 'partyRemoveHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit.
-  if (/^interlude(Revenus|CraftStart|CraftRoll|Learn|Order|Bank)$/.test(action)) {
+  if (/^interlude(Revenus|CraftStart|CraftRoll|Learn|Order|Bank|Identify)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   // Retrait bancaire : le dépôt appartient à un héros — son propriétaire retire.

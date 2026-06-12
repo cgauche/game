@@ -435,7 +435,10 @@ function patchAppraiseTarget(get: Get, set: Set, pa: { itemUid?: string; gear?: 
       if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
       const clone: Combatant = JSON.parse(JSON.stringify(h));
       const it = clone.items?.find((i) => i.uid === pa.itemUid);
-      if (it) Object.assign(it, patch);
+      if (it) {
+        Object.assign(it, patch);
+        if (patch.identified) delete it.suspectedQualities; // la vraie révélation dissipe les fausses certitudes
+      }
       return clone;
     }),
   }));

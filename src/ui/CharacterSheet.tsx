@@ -269,8 +269,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
 
   const itemStats = (it: ItemInstance): string => {
-    // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat).
-    const quals = it.identified === false ? '' : it.qualities.join(', ');
+    // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
+    // une identification RATÉE de beaucoup (ADE2) peut y ancrer de FAUSSES certitudes, affichées telles.
+    const quals = it.identified === false
+      ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : '')
+      : it.qualities.join(', ');
     if (it.kind === 'melee' || it.kind === 'ranged')
       return [it.damage && `Dégâts ${it.damage}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
         .filter(Boolean)

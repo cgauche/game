@@ -309,6 +309,11 @@ export interface ItemInstance {
   /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
    *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE2 : re-tenter coûte du temps). */
   appraiseTriedDay?: number;
+  /** FAUSSES Particularités soupçonnées (ADE2 ch.4 : échec Impressionnant/Stupéfiant de
+   *  l'identification — « soupçonne que l'objet possède une Particularité qu'il n'a pas
+   *  réellement »). Affichées « soupçonné : … » tant que l'objet n'est pas identifié ; purgées
+   *  par une vraie révélation. AUCUN effet mécanique. */
+  suspectedQualities?: string[];
   /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
    *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
   prosthesisTrained?: boolean;

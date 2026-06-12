@@ -365,6 +365,8 @@ export interface GameState {
   /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
   interludeLearn: (heroId: string, talent: string) => void;
   interludeOrder: (heroId: string, trapping: string) => void;
+  /** Identifier un artefact magique (ADE2 ch.4) : une semaine d'étude, Test de Savoir (Magie) +0. */
+  interludeIdentify: (heroId: string, itemUid: string) => void;
   /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
    *  Les objets réseau vivants (sessions, sockets du relay) restent des singletons de module. */
   net: NetState;
@@ -923,6 +925,7 @@ export const useGame = create<GameState>((set, get) => ({
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
   interludeLearn: (heroId, talent) => interludeFlow.openLearn(get, set, heroId, talent),
   interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
+  interludeIdentify: (heroId, itemUid) => interludeFlow.openIdentify(get, set, heroId, itemUid),
 
   net: netFlow.initialNet(),
   netHostStart: (name) => netFlow.netHostStart(get, set, name),

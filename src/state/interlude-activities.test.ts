@@ -160,4 +160,60 @@ describe('Activités d’interlude (LDB 23)', () => {
     if (after > before) expect(journal).toMatch(/récupère/);
     else expect(journal).toMatch(/découverte|perdus/);
   });
+
+  // ── Identifier un artefact magique (ADE2 ch.4 l.46-59) ─────────────────────────────────────
+  function armArtefact(withSavoir = true) {
+    const h = hero();
+    if (withSavoir) h.skills.push({ name: 'Savoir (Magie)', characteristic: 'Int', advances: 10 });
+    h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: ['De plaies atroces'], enc: 1, equipped: false, identified: false } as never];
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl }, party: [...useGame.getState().party] });
+  }
+  const artefact = () => hero().items!.find((i) => i.uid === 'art1')!;
+  const forceRoll = (roll: number, success: boolean, sl: number) => {
+    useGame.getState().activityRoll();
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll, success, sl } });
+    useGame.getState().activityConfirm();
+  };
+
+  it('Identifier : exige Savoir (Magie) acquis (« la voie des sorciers », ADE2)', () => {
+    armArtefact(false);
+    useGame.getState().interludeIdentify(hero().id, 'art1');
+    expect(useGame.getState().pendingActivity).toBeNull();
+    expect(useGame.getState().journal.join('\n')).toMatch(/Savoir \(Magie\)/);
+  });
+
+  it('Identifier : Succès Impressionnant (DR ≥ 4) → objet identifié, Activité consommée', () => {
+    armArtefact();
+    useGame.getState().interludeIdentify(hero().id, 'art1');
+    expect(useGame.getState().pendingActivity?.kind).toBe('identify');
+    forceRoll(5, true, 4);
+    expect(artefact().identified).toBe(true);
+    expect(artefact().magicKnown).toBe(true);
+    expect(st().left).toBe(2);
+  });
+
+  it('Identifier : succès modeste (DR < 4) → nature magique cernée, règles toujours cachées', () => {
+    armArtefact();
+    useGame.getState().interludeIdentify(hero().id, 'art1');
+    forceRoll(20, true, 2);
+    expect(artefact().identified).toBe(false);
+    expect(artefact().magicKnown).toBe(true);
+  });
+
+  it('Identifier : Échec Stupéfiant (DR ≤ −6) → DEUX fausses Particularités soupçonnées, purgées par une vraie révélation', () => {
+    armArtefact();
+    useGame.getState().interludeIdentify(hero().id, 'art1');
+    forceRoll(99, false, -6);
+    const suspected = artefact().suspectedQualities ?? [];
+    expect(suspected).toHaveLength(2);
+    expect(suspected).not.toContain('De plaies atroces'); // jamais une qualité RÉELLE de l'objet
+    expect(artefact().identified).toBe(false);
+    // Une identification réussie dissipe les fausses certitudes.
+    useGame.getState().interludeIdentify(hero().id, 'art1');
+    forceRoll(3, true, 6);
+    expect(artefact().identified).toBe(true);
+    expect(artefact().suspectedQualities).toBeUndefined();
+  });
 });

@@ -178,7 +178,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
   );
 }
 
-type Pane = 'craft' | 'learn' | 'order' | 'bank' | null;
+type Pane = 'craft' | 'learn' | 'order' | 'bank' | 'identify' | null;
 
 function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
   hero: Combatant; st: InterludeHeroState; weeks: number; money: Money;
@@ -240,12 +240,50 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
         {paneBtn('learn', '📚 Apprentissage…', 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)')}
         {paneBtn('order', '📦 Commande…', 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure')}
         {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
+        {paneBtn('identify', '🔮 Identifier…', 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)')}
       </div>
       {pane === 'craft' && !st.craft && <CraftPane hero={hero} disabled={none} money={money} />}
       {pane === 'learn' && <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} />}
       {pane === 'order' && <OrderPane hero={hero} disabled={none} money={money} />}
       {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} />}
+      {pane === 'identify' && <IdentifyPane hero={hero} disabled={none} />}
     </section>
+  );
+}
+
+/** Identifier un artefact (ADE2 ch.4) : choisir un objet NON identifié du sac — une semaine
+ *  d'étude par tentative, Test de Savoir (Magie) Intermédiaire (+0). */
+function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }) {
+  const identify = useGame((s) => s.interludeIdentify);
+  const items = (hero.items ?? []).filter((i) => i.identified === false);
+  const [uid, setUid] = useState(items[0]?.uid ?? '');
+  const savoir = hero.skills.some((k) => k.name === 'Savoir (Magie)' && k.advances >= 1);
+  if (!items.length) {
+    return <div className="interlude-pane"><p className="interlude-blocked">Aucun objet non identifié dans le sac de {hero.name}.</p></div>;
+  }
+  return (
+    <div className="interlude-pane">
+      {!savoir && <p className="interlude-blocked">{hero.name} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE2).</p>}
+      <select className="interlude-select" value={uid} onChange={(e) => setUid(e.target.value)} aria-label="Artefact à étudier">
+        {items.map((i) => (
+          <option key={i.uid} value={i.uid}>
+            {i.name}{i.magicKnown ? ' ✨' : ''}{i.suspectedQualities?.length ? ' (certitudes douteuses)' : ''}
+          </option>
+        ))}
+      </select>
+      <p className="interlude-detail">
+        Une semaine d'étude (1 Activité) · Test de <b>Savoir (Magie)</b> Intermédiaire (+0) · un grand
+        succès révèle les Particularités ; une lourde méprise ancre de <b>fausses</b> certitudes.
+      </p>
+      <button
+        className="btn small btn-primary"
+        disabled={disabled || !savoir || !uid}
+        title={savoir ? 'Installer l’étude au laboratoire (consomme l’Activité au jet)' : 'Savoir (Magie) requis'}
+        onClick={() => uid && identify(hero.id, uid)}
+      >
+        Étudier l'artefact
+      </button>
+    </div>
   );
 }
 

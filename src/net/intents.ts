@@ -73,7 +73,7 @@ export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'part
  *  restent HORS allowlist (l'hôte seul ouvre et clôt la période). */
 export const INTERLUDE_INTENTS: ReadonlySet<string> = new Set([
   'interludeRevenus', 'interludeCraftStart', 'interludeCraftRoll', 'interludeLearn',
-  'interludeOrder', 'interludeBank', 'interludeWithdraw',
+  'interludeOrder', 'interludeBank', 'interludeWithdraw', 'interludeIdentify',
   'activityRoll', 'activityReroll', 'activityBonusSL', 'activityDarkPact',
   'activityConfirm', 'activityCancel',
 ]);

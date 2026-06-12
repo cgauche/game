@@ -19,6 +19,7 @@ import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrapping, recomputeLoadout } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
+import { QUALITIES } from '../engine/qualities/registry';
 import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
@@ -124,10 +125,11 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
 
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
-/** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu). */
+/** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu) / Apprentissage /
+ *  Identification d'artefact (ADE2 ch.4). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
-  kind: 'revenus' | 'craft' | 'learn';
+  kind: 'revenus' | 'craft' | 'learn' | 'identify';
   label: string;
   skillLabel: string;
   skillValue: number;
@@ -143,6 +145,8 @@ export interface PendingActivity extends PendingBase {
   talent?: string;
   xpCost?: number;
   tutorBrass?: number;
+  /** Identifier un artefact (ADE2) : objet visé dans l'inventaire du héros. */
+  itemUid?: string;
 }
 
 /** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
@@ -284,6 +288,47 @@ export function openLearn(get: Get, set: Set, heroId: string, talentLabel: strin
   });
 }
 
+/** Identifier un artefact magique (ADE2 ch.4 l.46-47) : sans le Talent Détection d'artefact, « la
+ *  tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un
+ *  laboratoire, une bibliothèque bien fournie… » — Test de **Savoir (Magie) Intermédiaire (+0)**.
+ *  Savoir est une Compétence AVANCÉE (« Pour d'autres sorciers ») : il faut l'avoir acquise. */
+export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  const item = (h.items ?? []).find((i) => i.uid === itemUid);
+  if (!item || item.identified !== false) return; // rien à identifier
+  const savoir = h.skills.find((k) => k.name === 'Savoir (Magie)' && k.advances >= 1);
+  if (!savoir) {
+    get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
+    return;
+  }
+  set({
+    pendingActivity: {
+      heroId, kind: 'identify', label: `Identifier un artefact — ${item.name}`,
+      skillLabel: 'Savoir (Magie)', skillValue: testValue(h, 'Savoir (Magie)'), difficulty: 'intermediaire',
+      roll: null, target: 0, sl: 0, success: false, itemUid,
+    },
+  });
+}
+
+/** Fausses Particularités (ADE2 : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
+ *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
+ *  hors qualités réellement portées par l'objet. */
+function falseQualities(item: { kind: string; qualities: string[] }, count: number): string[] {
+  const pool = Object.values(QUALITIES)
+    .filter((q) => q.type === 'Atout')
+    .filter((q) => (item.kind === 'armor' ? q.subType !== 'Arme' : q.subType !== 'Armure'))
+    .map((q) => q.key)
+    .filter((k) => !item.qualities.includes(k));
+  const out: string[] = [];
+  while (out.length < count && pool.length) {
+    const i = (d100(battleRng()) - 1) % pool.length; // tirage registre (biais négligeable — pur cosmétique)
+    out.push(pool.splice(i, 1)[0]);
+  }
+  return out;
+}
+
 /** Passer commande (ch.23 l.167-172) : objet de rareté Exotique payé MAINTENANT, « achevé après
  *  votre prochaine aventure » (livré à l'ouverture du prochain interlude). 1 objet par Activité. */
 export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: string): void {
@@ -355,6 +400,36 @@ export function confirmActivity(get: Get, set: Set): void {
       learnFails[pa.talent] = (learnFails[pa.talent] ?? 0) + 1;
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, learnFails };
       lines.push(`${h.name} échoue à apprendre ${pa.talent} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`);
+    }
+  } else if (pa.kind === 'identify' && pa.itemUid) {
+    // ADE2 ch.4 — tableau d'identification, mappé sur notre modèle (identified/magicKnown/soupçons),
+    // de façon MONOTONE : les rangs ≥ +4 « savent » les Particularités, ≤ +3 ne voient pas les
+    // cachées (la ligne 0/+1 « découvre une Particularité cachée » du tableau FR, incohérente avec
+    // +2/+3, est lue comme un artefact de conversion). Échec ≤ −4 : fausses certitudes.
+    const item = (h.items ?? []).find((i) => i.uid === pa.itemUid);
+    if (item) {
+      if (pa.success && pa.sl >= 4) {
+        item.identified = true;
+        item.magicKnown = true;
+        delete item.suspectedQualities;
+        lines.push(pa.sl >= 6
+          ? `${h.name} identifie parfaitement ${item.name} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
+          : `${h.name} identifie ${item.name} : ses Particularités sont révélées.`);
+      } else if (pa.success) {
+        item.magicKnown = true;
+        lines.push(`${h.name} cerne la nature magique de ${item.name} sans en percer les règles (DR ${pa.sl}) — l'étude peut reprendre une autre semaine.`);
+      } else if (pa.sl <= -4) {
+        const fakes = falseQualities(item, pa.sl <= -6 ? 2 : 1);
+        if (fakes.length) {
+          item.suspectedQualities = [...new Set([...(item.suspectedQualities ?? []), ...fakes])];
+          lines.push(`${h.name} se MÉPREND sur ${item.name} : il jurerait que l'objet possède « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`);
+        } else {
+          lines.push(`${h.name} confond ${item.name} avec un objet similaire — la semaine est perdue.`);
+        }
+      } else {
+        lines.push(`${h.name} n'identifie pas ${item.name} cette semaine — il en est conscient (l'étude peut reprendre).`);
+      }
+      itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
     }
   } else if (pa.kind === 'craft' && st.craft) {
     const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
