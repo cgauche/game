@@ -13,6 +13,9 @@ import { ev } from '../state/combatLog';
  * (Influence physique) ou de Calme (spirituelle) — le gain de Points de Corruption
  * dépend du niveau d'exposition ET du DR, donc la Chance « +1 DR » peut sauver
  * l'âme. Test imposé (pas d'« Annuler »).
+ *
+ * MÊME modale pour le SEUIL de Corruption (kind 'seuil', LDB 19 l.80) : Test de Résistance
+ * au franchissement — succès = contenu « pour cette fois » ; échec = « Je te renie ! »/mutation.
  */
 export function CorruptionModal() {
   const pc = useGame((s) => s.pendingCorruption);
@@ -27,19 +30,23 @@ export function CorruptionModal() {
   const pool = battle?.combatants ?? party;
   const hero = pool.find((c) => c.id === pc.heroId);
   const rolled = pc.roll != null;
+  const seuil = pc.kind === 'seuil';
   // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
   // AVANT le jet (même parité que les autres flux RollFlowShell).
   const base = hero ? testValue(hero, pc.skill) : 0;
-  const gain = rolled ? corruptionGain(pc.level, !!pc.success, pc.sl ?? 0) : 0;
-  const outcomeText =
-    gain === 0
+  const gain = rolled && !seuil ? corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0) : 0;
+  const outcomeText = seuil
+    ? pc.success
+      ? `${hero?.name ?? '?'} contient sa Corruption — pour cette fois.`
+      : `${hero?.name ?? '?'} échoue — une mutation menace de se développer…`
+    : gain === 0
       ? `${hero?.name ?? '?'} repousse l'Influence corruptrice.`
       : `${hero?.name ?? '?'} subit ${gain} Point${gain > 1 ? 's' : ''} de Corruption.`;
 
   return (
     <RollFlowShell
       variant="test"
-      title={<>🕯️ Influence corruptrice ({EXPOSURE_LABELS[pc.level]})</>}
+      title={seuil ? <>🧬 Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <>🕯️ Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
         <>
           <strong>{hero?.name ?? '?'}</strong> — Test de {pc.skill} Intermédiaire (+0)

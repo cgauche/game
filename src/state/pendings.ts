@@ -289,7 +289,11 @@ export interface RevealEntry {
  *  (+1 DR utile : les seuils de DR réduisent le gain) → Appliquer (gainCorruption). */
 export interface PendingCorruption {
   heroId: string;
-  level: import('../engine/corruption').ExposureLevel;
+  /** 'exposition' (défaut — LDB 19 l.23-75 : Test pour ne pas GAGNER de Points) ou
+   *  'seuil' (l.80 : Test de Résistance au franchissement — échec → « Je te renie ! »/mutation). */
+  kind?: 'exposition' | 'seuil';
+  /** Niveau d'exposition — EXPOSITION seulement (absent au seuil). */
+  level?: import('../engine/corruption').ExposureLevel;
   skill: 'Résistance' | 'Calme';
   roll?: number;
   target?: number;

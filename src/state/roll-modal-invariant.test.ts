@@ -86,7 +86,7 @@ const JUSTIFIED: Record<string, string> = {
   continueTravelAfterNight: 'reprise après la halte de nuit — mêmes jets narrés dans le recap',
   openMerchant: 'ouverture de boutique : réassort/Disponibilité (LDB 59) — le monde tire, pas un Test de héros',
   spawnEnemy: 'génération de créature (caractéristiques/PB) — ambiant, hors Test',
-  gainCorruption: 'seuil de Corruption : Test SUBI révélé au joueur (pendingReveals kind mutation) + mutation tirée sur table révélée',
+  gainCorruption: 'seuil de Corruption : Test DIFFÉRÉ en modale (pendingCorruption kind seuil, cycle Chance/Pacte) pour un héros ; repli auto-résolu + révélation témoin (PNJ, gains en rafale)',
   applyMutation: 'mutation tirée sur les Tableaux de Corruption (LDB 19) — RÉVÉLÉE (pendingReveals kind mutation, révélation 🧬)',
   startInterlude: 'ouvre l’interlude : tirage d’Événement (d100 par héros) affiché sur la carte du héros (🎲 + libellé) et journalisé',
   interludeEnd: 'clôture d’interlude : Revenus restants auto-résolus, journalisés',

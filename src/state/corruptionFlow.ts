@@ -2,9 +2,11 @@
  * Corruption & mutations — flux store (LDB 19, moteur pur : engine/corruption).
  *
  *  - `gainCorruption` : ajoute des Points, puis applique le SEUIL (l.80) — au-delà
- *    de BFM+BE (+ niveau d'Âme pure, LDB 10), Test de Résistance Intermédiaire (auto-résolu,
- *    révélé au joueur) ; échec → MUTATION (−BFM Points, d100 corps/esprit par espèce, tirage
- *    sur le Tableau physique/mentale) ; puis LIMITES (l.95) → damné (hors-jeu définitif).
+ *    de BFM+BE (+ niveau d'Âme pure, LDB 10), Test de Résistance Intermédiaire en MODALE
+ *    différée (pendingCorruption kind 'seuil' — Lancer/Chance/Pacte ; repli auto-résolu +
+ *    révélation pour les PNJ et les gains en rafale) ; échec → MUTATION (−BFM Points, d100
+ *    corps/esprit par espèce, tirage sur le Tableau physique/mentale) ; puis LIMITES (l.95)
+ *    → damné (hors-jeu définitif).
  *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
  *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
  *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
@@ -46,6 +48,15 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
   // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE (+ Âme pure), Test de Résistance
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
   if (!corruptionThresholdExceeded(hero)) return lines;
+  // « Un jet = une modale » : pour un HÉROS, le Test du seuil est un VRAI jet différé — modale
+  // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruption`
+  // (succès = contenu ; échec = « Je te renie ! »/mutation). Repli auto-résolu + révélation
+  // témoin : PNJ (l'IA ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
+  if (hero.kind === 'hero' && !get().pendingCorruption) {
+    lines.push(`${hero.name} : la Corruption déborde son seuil — Test de Résistance.`);
+    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'Résistance' } });
+    return lines;
+  }
   const t = rollTest(testValue(hero, 'Résistance'), 'intermediaire', rng);
   if (t.success) {
     lines.push(`${hero.name} contient sa Corruption — pour cette fois (Résistance : ${t.roll}/${t.target}).`);

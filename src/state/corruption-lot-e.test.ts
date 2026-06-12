@@ -33,22 +33,23 @@ describe('Âme pure (LDB 10) — seuil de Corruption +niveau', () => {
 });
 
 describe('« Je te renie ! » (LDB 17 l.71)', () => {
-  function corruptPastThreshold(h: Combatant): string[] {
-    // Force un échec du Test de Résistance en vidant la Résistance effective (E = 1 → cible minuscule)…
+  /** Franchit le seuil : le Test de Résistance est désormais une MODALE (kind 'seuil') —
+   *  on lance puis on FORCE l'échec (déterministe) avant d'acquitter. */
+  function corruptPastThreshold(h: Combatant): void {
     h.characteristics.E = 1;
     h.characteristics.FM = 1;
     h.corruption = 10; // largement au-delà du seuil (BFM+BE = 0)
-    return gainCorruption(useGame.getState, useGame.setState, h, 1);
+    gainCorruption(useGame.getState, useGame.setState, h, 1);
+    expect(useGame.getState().pendingCorruption?.kind).toBe('seuil'); // le jet est VISIBLE
+    useGame.getState().corruptionRoll();
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 5, sl: -9, success: false } });
+    useGame.getState().resolveCorruption();
   }
   it('héros avec Résilience → la mutation est SUSPENDUE (pendingRenounce)', () => {
     const h = hero();
     h.resilience = 1;
     useGame.setState({ party: [h] });
     corruptPastThreshold(h);
-    // Le Test de Résistance peut réussir selon la graine — on force le cas raté en re-tentant si besoin.
-    if (!useGame.getState().pendingRenounce) {
-      corruptPastThreshold(h);
-    }
     expect(useGame.getState().pendingRenounce).toBeTruthy();
     expect(h.mutations ?? []).toEqual([]);
     const before = h.corruption!;
@@ -63,18 +64,16 @@ describe('« Je te renie ! » (LDB 17 l.71)', () => {
     h.resilience = 1;
     useGame.setState({ party: [h] });
     corruptPastThreshold(h);
-    if (!useGame.getState().pendingRenounce) corruptPastThreshold(h);
     expect(useGame.getState().pendingRenounce).toBeTruthy();
     useGame.getState().renounceResolve(false);
     expect((h.mutations ?? []).length).toBe(1);
   });
-  it('sans Résilience → mutation directe (pas de modale)', () => {
+  it('sans Résilience → mutation à l’acquittement (pas de « Je te renie ! »)', () => {
     const h = hero();
     h.resilience = 0;
     useGame.setState({ party: [h] });
-    const first = corruptPastThreshold(h);
-    if (!first.some((l) => /MUTE/.test(l))) corruptPastThreshold(h);
+    corruptPastThreshold(h);
     expect(useGame.getState().pendingRenounce).toBeNull();
-    expect((h.mutations ?? []).length).toBeGreaterThanOrEqual(1);
+    expect((h.mutations ?? []).length).toBe(1);
   });
 });

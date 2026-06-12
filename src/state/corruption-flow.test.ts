@@ -61,36 +61,71 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     expect(lines[0]).toMatch(/\+1 Point de Corruption/);
   });
 
-  it('au-delà du seuil + Résistance ratée → mutation (−BFM Corruption), révélation 🧬 poussée', () => {
+  it('au-delà du seuil → MODALE de Test de Résistance (kind seuil) ; échec acquitté → mutation + révélation 🧬', () => {
     const { a, party } = party2();
-    // Résistance imbattable à rater : E à 2 (cible ~2) — l'échec est quasi certain mais PAS garanti…
-    // → on force la certitude en mettant E=1 et en répétant le gain jusqu'à seuil dépassé.
-    a.characteristics.E = 1;
+    a.characteristics.E = 1; // BE 0
     a.characteristics.FM = 30; // BFM 3
-    a.corruption = 4; // seuil = BFM(3) + BE(0) = 3 → déjà au-delà au prochain gain
+    a.corruption = 4; // seuil = BFM(3) + BE(0) = 3 → dépassé au prochain gain
     a.resilience = 0; // sans Résilience, pas de « Je te renie ! » (LDB 17 l.71) → mutation directe
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
-    expect(a.mutations?.length).toBe(1);
-    expect(a.corruption).toBe(Math.max(0, 5 - 3)); // −BFM après mutation
+    // « Un jet = une modale » : le Test du seuil est DIFFÉRÉ — visible, avec Chance/Pacte.
+    const pc = useGame.getState().pendingCorruption;
+    expect(pc).toBeTruthy();
+    expect(pc!.kind).toBe('seuil');
+    expect(pc!.heroId).toBe(a.id);
+    expect(a.mutations ?? []).toHaveLength(0); // rien n'est appliqué avant la résolution
+    useGame.getState().corruptionRoll();
+    // Échec forcé (déterministe) puis acquittement → mutation (−BFM) + révélation témoin.
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
+    useGame.getState().resolveCorruption();
+    const after = useGame.getState().party.find((h) => h.id === a.id)!;
+    expect(after.mutations?.length).toBe(1);
+    expect(after.corruption).toBe(Math.max(0, 5 - 3)); // −BFM après mutation
     const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'mutation');
     expect(reveal).toBeTruthy();
     expect(reveal!.subjectId).toBe(a.id);
   });
 
+  it('seuil RÉUSSI (acquitté) : Corruption contenue, aucune mutation', () => {
+    const { a, party } = party2();
+    a.characteristics.E = 1; // BE 0 → seuil = BFM seul
+    a.characteristics.FM = 30;
+    a.corruption = 4;
+    useGame.setState({ party });
+    gainCorruption(useGame.getState, useGame.setState, a, 1);
+    useGame.getState().corruptionRoll();
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 3, target: 30, sl: 2, success: true } });
+    useGame.getState().resolveCorruption();
+    expect(useGame.getState().party.find((h) => h.id === a.id)!.mutations ?? []).toHaveLength(0);
+    expect(useGame.getState().journal.join('\n')).toMatch(/contient sa Corruption/);
+  });
+
   it('limites dépassées → damné + hors-jeu (dead)', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0 → 1 mutation physique suffit ; Résistance ~toujours ratée
+    a.characteristics.E = 1; // BE 0 → 1 mutation physique suffit
     a.characteristics.FM = 1; // BFM 0 → 1 mutation mentale suffit ; perte de Corruption = 0
     a.corruption = 5; // seuil = 0 → dépassé
     a.resilience = 1; // AVEC Résilience : la mutation est suspendue (« Je te renie ! ») → on choisit de SUBIR
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
+    useGame.getState().corruptionRoll();
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 5, sl: -9, success: false } });
+    useGame.getState().resolveCorruption();
     expect(useGame.getState().pendingRenounce).toBeTruthy();
     useGame.getState().renounceResolve(false); // subir la mutation
-    expect(a.mutations?.length).toBe(1);
-    expect(a.damned).toBe(true);
-    expect(a.dead).toBe(true);
+    const after = useGame.getState().party.find((h) => h.id === a.id)!;
+    expect(after.mutations?.length).toBe(1);
+    expect(after.damned).toBe(true);
+    expect(after.dead).toBe(true);
+  });
+
+  it('PNJ (pas de modale) : seuil auto-résolu — la mutation tombe sans pendingCorruption', () => {
+    const { a, party } = party2();
+    const npc = { ...a, id: 'npc-1', kind: 'enemy', characteristics: { ...a.characteristics, E: 1, FM: 1 }, corruption: 5, resilience: 0, mutations: [] } as unknown as Combatant;
+    useGame.setState({ party, battle: { combatants: [npc], log: [] } as never });
+    gainCorruption(useGame.getState, useGame.setState, npc, 1);
+    expect(useGame.getState().pendingCorruption).toBeNull();
   });
 });
 

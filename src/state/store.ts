@@ -94,7 +94,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS } from './rollFlows';
-import { gainCorruption, resolveRenounce } from './corruptionFlow';
+import { gainCorruption, resolveRenounce, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { spellSpecFor } from '../data/spellspecs';
 import { resolveFormula } from '../engine/ops';
@@ -3113,14 +3113,28 @@ export const useGame = create<GameState>((set, get) => ({
   corruptionReroll: () => FLOWS.corruption.reroll(get, set),
   corruptionBonusSL: () => FLOWS.corruption.bonusSL(get, set),
   corruptionDarkPact: () => FLOWS.corruption.darkPact(get, set),
-  /** Acquitte l'exposition : Points de Corruption selon niveau + DR (puis seuil → mutation). */
+  /** Acquitte l'exposition (Points selon niveau + DR, puis seuil) OU le Test du SEUIL
+   *  (kind 'seuil', LDB 19 l.80) : succès = Corruption contenue « pour cette fois » ;
+   *  échec = « Je te renie ! » (Résilience) ou mutation (révélation 🧬). */
   resolveCorruption: () => {
     const pc = get().pendingCorruption;
     if (!pc || pc.roll == null) return;
     set({ pendingCorruption: null });
     const hero = actorIn(get(), pc.heroId);
     if (!hero) return;
-    const gain = corruptionGain(pc.level, !!pc.success, pc.sl ?? 0);
+    if (pc.kind === 'seuil') {
+      if (pc.success) {
+        get().log(`${hero.name} contient sa Corruption — pour cette fois (Résistance ${pc.roll}/${pc.target}).`);
+      } else if ((hero.resilience ?? 0) > 0) {
+        get().log(`${hero.name} échoue à contenir sa Corruption — la mutation menace…`);
+        set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0 } });
+      } else {
+        for (const l of applyMutation(set, hero, { roll: pc.roll, target: pc.target ?? 0 })) get().log(l);
+      }
+      set({ ...touchActors(get()) });
+      return;
+    }
+    const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
     if (gain <= 0) {
       get().log(`${hero.name} repousse l'Influence corruptrice (${pc.skill} ${pc.roll}/${pc.target}).`);
       return;
