@@ -7,7 +7,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { TeamPortrait } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 import { ModalSubject } from './ModalSubject';
 import { Modal } from './Modal';
 import { DrBar } from './DrBar';
@@ -49,12 +49,9 @@ export function HealModal() {
     <div className="heal-target-pick">
       <span className="branch-label">Qui soigner ?</span>
       <div className="heal-pick-grid">
+        {/* Tuile full : la jauge ET les États (Hémorragie, critiques…) guident le choix du patient. */}
         {choices.map((c) => (
-          <button key={c.id} type="button" className={`heal-pick${c.id === ph.targetId ? ' active' : ''}`} onClick={() => setTarget(c.id)} title={`Soigner ${c.name} (${c.wounds.current}/${c.wounds.max} PB)`}>
-            <TeamPortrait combatant={c} size={44} />
-            <span className="heal-pick-name">{c.name}</span>
-            <span className="heal-pick-pv">{c.wounds.current}/{c.wounds.max}</span>
-          </button>
+          <CharFrame key={c.id} c={c} variant="full" size="md" selected={c.id === ph.targetId} onClick={() => setTarget(c.id)} />
         ))}
       </div>
     </div>
@@ -72,7 +69,7 @@ export function HealModal() {
             <strong>{ph.healerName}</strong> opère <strong>{ph.targetName}</strong>{' '}
             <span className="rm-weapon">(cumuler {cible} DR · Intermédiaire +0)</span>
           </p>
-          {target && <ModalSubject c={target} />}
+          {target && <ModalSubject c={target} variant="full" />}
           {!started && targetPicker}
           {!started && wnds.length > 1 && (
             <div className="heal-target-pick">
@@ -88,7 +85,7 @@ export function HealModal() {
           )}
           <DrBar cum={cum} target={cible} />
           {rolled && (
-            <p className="rm-note">Dernière passe : {ph.sl >= 0 ? '+' : ''}{ph.sl} DR{target ? ` · ${target.name} ${target.wounds.current}/${target.wounds.max} PB` : ''}</p>
+            <p className="rm-note">Dernière passe : {ph.sl >= 0 ? '+' : ''}{ph.sl} DR</p>
           )}
           <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10). À 0 PB, l’opération s’interrompt.</p>
           {/* #16 : gérer le patient (bander / arrêter l'hémorragie) SANS interrompre l'opération. */}
@@ -128,7 +125,7 @@ export function HealModal() {
       }
       extra={
         <>
-          {target && <ModalSubject c={target} />}
+          {target && <ModalSubject c={target} variant="full" />}
           {targetPicker}
         </>
       }
