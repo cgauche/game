@@ -111,6 +111,10 @@ jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**. Depuis
 - `__wfrp.talk('id')` → téléporte le groupe à côté de l'entité et l'**interpelle** (ouvre dialogue/marchand).
 - `__wfrp.goto('id'|{x,y})` → place le groupe sur la case (déclenche portes/triggers au pas).
 - `__wfrp.screen('menu'|'party'|…)` → navigue ; `__wfrp.store` = store Zustand brut (`getState`/`setState`).
+- `__wfrp.scenario('ciblage')` → **lance un scénario de test directement** (sans menu) ; sans argument : liste les ids.
+- `__wfrp.hover('id'|{x,y}|null)` → **survol programmatique** en combat (tooltip + réticule de visée se rendent
+  sans souris) ; `__wfrp.aim('id')` → vérité state du ciblage (ok/invalid + raison, compétence, dégâts).
+- Les tokens de combat portent `data-cid="<id du combattant>"` dans le SVG → survol/clic ciblé par sélecteur DOM.
 - **Triches de recette** : `killEnemies()` (victoire par le flux normal), `healParty()` (PB max,
   états/critiques/maladies purgés), `give(co)` / `xp(n)`, `flags()` / `flag('id', bool)` (portes de
   l'arène), `go('scene-id')` (transition), `fight()` (liste/lance une rencontre de la scène),

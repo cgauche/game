@@ -9,13 +9,12 @@ import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable, normalizeEntityKind } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
-import { rangeBandModifier, rangeBandName } from '../engine/combat';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { findSpell } from '../data';
 import { bus, EVT } from '../state/bus';
-import { isOutOfAction } from '../engine/conditions';
+import { isOutOfAction, canTakeAction, hasCondition } from '../engine/conditions';
 import { Combatant } from '../engine/types';
 import {
   TW,
@@ -47,7 +46,9 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, previewAttack, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, displayedReach, computeRunReach, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { hoverTargeting } from '../state/targeting';
+import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
 import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
@@ -55,10 +56,6 @@ import { summarizeEffects, combatantFlags } from './effectIcons';
 import { setVisibleTileBounds } from './viewport';
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-/** Teinte d'une bande de portée selon son modificateur. Palette froide→chaude qui CONTRASTE avec
- *  l'herbe (cyan/bleu = proche/facile → orange/rouge = loin/difficile ; le vert se noierait au sol). */
-const bandColor = (mod: number): string =>
-  mod >= 60 ? '#46e0c0' : mod >= 40 ? '#5aa6ff' : mod >= 0 ? '#e6d24a' : mod >= -10 ? '#e8973f' : '#e0533a';
 const ZOOM_MIN = 0.4; // dézoom tactique large (cf. store.setZoom)
 const ZOOM_MAX = 2.6;
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -102,7 +99,8 @@ export function IsoStage() {
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
   const dialogue = useGame((s) => s.dialogue);
-  // Réticule = TÉLÉGRAPHE de tir ennemi (« qui l'adversaire vise ») ; rien sur les actions du joueur.
+  // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
+  // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
   const enemyAim = useGame((s) => s.enemyAim);
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
@@ -110,6 +108,11 @@ export function IsoStage() {
   // Ciblage carte des flux différés (TargetPrompt) : surbrillances des cibles cliquables.
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
+  // Réticule persistant sur la cible des jets différés à cible sur carte (Piétinement, Guérison,
+  // défense d'un héros attaqué).
+  const pendingTrample = useGame((s) => s.pendingTrample);
+  const pendingHeal = useGame((s) => s.pendingHeal);
+  const pendingDefense = useGame((s) => s.pendingDefense);
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
@@ -127,8 +130,16 @@ export function IsoStage() {
   const resetCamPan = useGame((s) => s.resetCamPan);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [turning, setTurning] = useState(false);
-  // Tuile survolée (pour l'infobulle de portée en mode tir).
+  // Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage).
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+  // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
+  // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as unknown as { __wfrpSetHover?: (t: { x: number; y: number } | null) => void };
+    w.__wfrpSetHover = (t) => setHover(t);
+    return () => { delete w.__wfrpSetHover; };
+  }, []);
   // Dépend de camRot SEUL (pas de shownRot) : sinon le swap de shownRot à mi-course
   // re-déclenche l'effet et son cleanup annule le timer qui rétablit `turning=false`
   // → la scène resterait sombre. `prevCamRot` filtre les re-rendus non liés.
@@ -250,9 +261,71 @@ export function IsoStage() {
   // catégorie Tir ouverte — tant que l'Action n'est pas consommée.
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
+    // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.170), indépendant de l'arme portée.
+    if (battle.action === 'cast' && battle.selectedSpell) return castOutOfSightTargetIds(useGame.getState);
     if (battle.acted || (battle.action !== null && battle.action !== 'tir')) return new Set();
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);
+
+  // Ciblage du JOUEUR au survol — MEMOÏSÉ (previewAttack/LdV ne tournent pas à 60 Hz pendant les
+  // glissements de token). Rejoue les MÊMES prédicats que le clic : réticule présent = clic valide.
+  const hoverAim = useMemo<{
+    fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
+    toId: string;
+    line: 'dashed' | 'solid' | null;
+    /** Carte d'infobulle : 3 lignes (nom / compétence + valeur / dégâts) ou erreur ⛔ courte. */
+    tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null } | { kind: 'err'; text: string } | null;
+    reticle: boolean;
+  } | null>(() => {
+    if (mode !== 'battle' || !battle || battle.over || !hover) return null;
+    // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
+    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
+    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+    if (!occ) return null;
+    const st = useGame.getState;
+    // Flux différés (bandeau TargetPrompt) : validité = appartenance aux ensembles candidats existants.
+    if (pendingCleave) {
+      const atk = battle.combatants.find((c) => c.id === pendingCleave.attackerId);
+      const ok = !!atk && cleaveTargets(battle, atk, pendingCleave.hitIds).some((t) => t.id === occ.id);
+      return ok ? { fromId: atk!.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
+    }
+    if (pendingDualStrike) {
+      const atk = battle.combatants.find((c) => c.id === pendingDualStrike.attackerId);
+      const off = atk?.weapons.find((w) => w.uid === pendingDualStrike.offWeaponUid);
+      const ok = !!atk && !!off && dualStrikeTargets(battle, atk, off).some((t) => t.id === occ.id);
+      return ok ? { fromId: atk!.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
+    }
+    if (pendingCast?.pickingTargets) {
+      const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
+      const spell = findSpell(pendingCast.spellLabel);
+      const ok = !!caster && !!spell && !!scene &&
+        overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) }).some((t) => t.id === occ.id);
+      return ok ? { fromId: caster!.id, toId: occ.id, line: 'dashed', tip: null, reticle: true } : null;
+    }
+    const activeH = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+    if (!activeH || activeH.kind !== 'hero' || !activeH.pos) return null;
+    // Mêmes verrous que battleClickEntity : Action consommée (sauf attaque libre de Frénésie),
+    // Sonné/Brisé, cible de Frénésie IMPOSÉE (le plus proche en LdV).
+    const freeFrenzy = battle.action === null && !!activeH.frenzied && !activeH.frenzyFreeUsed;
+    if (battle.acted && !freeFrenzy) return null;
+    if (battle.action === null && (!canTakeAction(activeH) || hasCondition(activeH, 'Brisé'))) return null;
+    if (battle.action === null && activeH.frenzied) {
+      const ft = frenzyTarget(st, activeH);
+      if (ft && ft.id !== occ.id) return null;
+    }
+    // Piétinement : mêmes prédicats que battleTrample (≥1 Avantage, adjacent plus petit).
+    if (battle.action === 'trample') {
+      const ok = (activeH.advantage ?? 0) >= 1 && !!trampleTarget(battle, activeH, occ.id);
+      return ok ? { fromId: activeH.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
+    }
+    const ht = hoverTargeting(st, activeH, occ);
+    if (ht.kind === 'none') return null;
+    if (ht.kind === 'invalid') {
+      const text = ht.reason === 'los' ? '⛔ pas de ligne de vue' : ht.reason === 'engaged' ? '⛔ Engagé — se désengager' : '⛔ hors de portée';
+      return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
+    }
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg }, reticle: true };
+  }, [hover, mode, battle, scene, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
   // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés
@@ -262,22 +335,8 @@ export function IsoStage() {
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const hl: JSX.Element[] = [];
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-    // Bandes de portée du tireur : toujours informatives en mode neutre (l'attaque est implicite au clic).
-    const aimWeapon =
-      battle.action === null && !battle.preview && activeC?.kind === 'hero' && activeC.pos
-        ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
-        : undefined;
-    // Bandes de portée concentriques autour du tireur (peintes SOUS les tokens).
-    if (aimWeapon && activeC?.pos) {
-      for (let y = 0; y < d.h; y++)
-        for (let x = 0; x < d.w; x++) {
-          const dist = cheb(activeC.pos, { x, y });
-          if (dist === 0) continue;
-          const m = rangeBandModifier(dist, aimWeapon.range!);
-          if (m == null) continue; // hors de portée → pas de teinte
-          hl.push(<path key={`rb${x}-${y}`} d={diamondPath(x, y, d)} fill={bandColor(m)} opacity={0.26} pointerEvents="none" />);
-        }
-    }
+    // (Plus AUCUN indicateur de distance au sol — ni bandes de tir ni portée de sort : la portée se
+    // lit au survol — réticule présent = cible valide, ⛔ sinon. Seuls marche/course restent.)
     // Portée de Marche AFFICHÉE EN PERMANENCE au tour d'un héros (modèle de clic implicite) :
     // budget spécial stocké (post-Désengagement) prioritaire, sinon Marche restante dérivée.
     const walkReach = displayedReach(useGame.getState);
@@ -298,7 +357,7 @@ export function IsoStage() {
       const pvPath = pv.kind === 'attack' ? [] : pv.path;
       if (pvPath.length > 1) {
         const pts = pvPath.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
-        hl.push(<polyline key="pv-path" points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} strokeDasharray="7 5" opacity={0.9} pointerEvents="none" />);
+        hl.push(<polyline key="pv-path" points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} pointerEvents="none" />);
       }
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
@@ -328,19 +387,6 @@ export function IsoStage() {
       for (const t of z.tiles) {
         hl.push(<path key={`zone-${z.label}-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d)} fill={fill} opacity={z.blocksLoS ? 0.5 : 0.35} pointerEvents="none" />);
       }
-    }
-    // Portée du SORT sélectionné (mode incantation) : cases à portée teintées — parité avec le tir.
-    // (`range` null = portée non chiffrable — le lanceur/au toucher — → rien.)
-    if (battle.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && activeC.pos) {
-      const spell = findSpell(battle.selectedSpell);
-      const range = spell ? spellRangeTiles(spell.range, activeC) : null;
-      if (range != null)
-        for (let y = 0; y < d.h; y++)
-          for (let x = 0; x < d.w; x++) {
-            const dist = cheb(activeC.pos, { x, y });
-            if (dist === 0 || dist > range) continue;
-            hl.push(<path key={`sr${x}-${y}`} d={diamondPath(x, y, d)} fill="#8e54c8" opacity={0.14} pointerEvents="none" />);
-          }
     }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
     // (attaque implicite), tant que l'Action est disponible (ou attaque libre de Frénésie).
@@ -379,7 +425,7 @@ export function IsoStage() {
         const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
         const spell = findSpell(pendingCast.spellLabel);
         if (caster && spell)
-          for (const t of overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile)) {
+          for (const t of overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) })) {
             // Cibles déjà cochées en vert (re-cliquer décoche), candidates restantes en rouge.
             if (t.pos) ring(t, `oct-${t.id}`, (pendingCast.extraTargetIds ?? []).includes(t.id) ? '#5db87a' : '#ff5a4d');
           }
@@ -466,14 +512,22 @@ export function IsoStage() {
   // Une marche est-elle en cours ? Si oui, la caméra suit le token image par image : on COUPE la
   // transition CSS du transform (sinon elle « chasse » une cible mobile et traîne ~0,3 s derrière).
   const anyWalking = Object.keys(walksRef.current).length > 0;
+  /** Ancre écran d'un combattant pour réticule/ligne de visée : centre de l'EMPREINTE (les grands
+   *  N×N sont visés au milieu, pas au coin NO) et suit le token qui GLISSE (walkPosOf). */
+  const reticleAnchor = (c: Combatant) => {
+    const off = (sizeFootprint(c.size) - 1) / 2;
+    const wp = walkPosOf(c.id, c.pos!.x, c.pos!.y);
+    return tileCenter(wp.x + off, wp.y + off, dims);
+  };
 
-  // Tir en cours de visée : le combattant actif est un héros en mode « attaque » avec une arme à
-  // distance → on peint les bandes de portée + une infobulle au survol (lisibilité du tir).
+  // Suivi du SURVOL : tout contexte où l'on cible par la carte — mode neutre (attaque implicite,
+  // mêlée comprise), incantation (tooltip + gabarit ZdE), Piétinement, et flux différés (Frappe
+  // Mortelle / 2ᵉ frappe / Surincantation). Le hover ne change qu'au changement de tuile.
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
-  const aimWeapon =
-    mode === 'battle' && battle && battle.action === null && activeC?.kind === 'hero' && activeC.pos
-      ? activeC.weapons.find((w) => w.type === 'ranged' && w.range)
-      : undefined;
+  const hoverTracking =
+    mode === 'battle' && !!battle && !battle.over &&
+    (((battle.action === null || battle.action === 'cast' || battle.action === 'trample') && activeC?.kind === 'hero') ||
+      !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets);
 
   // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le
   //     token qui glisse : tether d'engagement, halo de l'actif) recalculés à la frame (peu coûteux). ---
@@ -518,11 +572,11 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
     <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
-      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR}>
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid}>
       {child}
     </BodyToken>
   );
@@ -589,6 +643,7 @@ export function IsoStage() {
         portraitBox: r.portraitBox,
         discR: discR(c.size),
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
+        cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
@@ -638,23 +693,29 @@ export function IsoStage() {
   objs.sort((a, b) => a.d - b.d);
 
   // --- Caméra : recadre autour du point focal (groupe / combattant actif) ---
-  // Tir ENNEMI télégraphié (enemyAim) : ligne de tir + réticule + cadrage des deux. Uniquement
-  // pour les attaques ennemies — sur les actions du joueur, la modale suffit (réticule retiré).
-  let targeting: { from: { x: number; y: number }; to: { x: number; y: number } } | null = null;
+  // Attaque/sort ENNEMI télégraphié (enemyAim) : ligne (pleine en mêlée, pointillée tir/sort) +
+  // réticule + cadrage des deux. Le ciblage du JOUEUR a son propre réticule (survol + pending*).
+  let targeting: { from: Combatant; to: Combatant; melee?: boolean } | null = null;
   if (mode === 'battle' && battle && enemyAim) {
     const a = battle.combatants.find((c) => c.id === enemyAim.fromId);
     const b = battle.combatants.find((c) => c.id === enemyAim.toId);
-    if (a?.pos && b?.pos) targeting = { from: a.pos, to: b.pos };
+    if (a?.pos && b?.pos) targeting = { from: a, to: b, melee: enemyAim.melee };
   }
 
-  // Cadrage CAMÉRA (découplé du réticule, R8) : on cadre la paire attaquant↔cible aussi pour une attaque
-  // DU JOUEUR en cours de résolution (pendingAttack), pas seulement pour le télégraphe ennemi — sinon on
-  // voit mieux ce que fait l'IA que soi-même. Le RÉTICULE dessiné (`targeting`) reste, lui, ennemi-only.
-  let camPair = targeting;
+  // Cadrage CAMÉRA (découplé du réticule, R8) : on cadre la paire attaquant↔cible aussi pour une
+  // attaque OU une incantation en cours de résolution (pendingAttack/pendingCast) — sinon on voit
+  // mieux ce que fait l'IA que soi-même.
+  let camPair: { from: { x: number; y: number }; to: { x: number; y: number } } | null =
+    targeting ? { from: targeting.from.pos!, to: targeting.to.pos! } : null;
   if (!camPair && mode === 'battle' && battle && pendingAttack) {
     const a = battle.combatants.find((c) => c.id === pendingAttack.attackerId);
     const b = battle.combatants.find((c) => c.id === pendingAttack.targetId);
     if (a?.pos && b?.pos) camPair = { from: a.pos, to: b.pos };
+  }
+  if (!camPair && mode === 'battle' && battle && pendingCast) {
+    const a = battle.combatants.find((c) => c.id === pendingCast.casterId);
+    const to = pendingCast.zone?.center ?? battle.combatants.find((c) => c.id === pendingCast.targetId)?.pos;
+    if (a?.pos && to) camPair = { from: a.pos, to };
   }
 
   // Hors combat, la caméra suit la position VISUELLE du leader (qui glisse via ANIM_MOVE), pas la
@@ -803,7 +864,7 @@ export function IsoStage() {
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
       sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact || !!e.merchant));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
-    if (!aimWeapon) {
+    if (!hoverTracking) {
       if (hover) setHover(null);
       return;
     }
@@ -869,25 +930,15 @@ export function IsoStage() {
           <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
         )}
         <g>{objs.map((o) => o.el)}</g>
-        {/* Tir/sort à distance : ligne de tir tireur→cible + réticule (Lot 1 tranche 3). */}
-        {targeting && (() => {
-          const f = tileCenter(targeting.from.x, targeting.from.y, dims);
-          const t = tileCenter(targeting.to.x, targeting.to.y, dims);
-          const fy = f.cy - 34, ty = t.cy - 34; // viser le buste, pas les pieds
-          return (
-            <g pointerEvents="none">
-              <line x1={f.cx} y1={fy} x2={t.cx} y2={ty} stroke="#e0533a" strokeWidth={2.5} strokeDasharray="7 6" opacity={0.85} />
-              <g transform={`translate(${t.cx},${ty})`}>
-                <circle r={20} fill="none" stroke="#ffd34d" strokeWidth={2} />
-                <circle r={13} fill="none" stroke="#ffd34d" strokeWidth={1} opacity={0.6} />
-                <line x1={0} y1={-26} x2={0} y2={-14} stroke="#ffd34d" strokeWidth={2} />
-                <line x1={0} y1={14} x2={0} y2={26} stroke="#ffd34d" strokeWidth={2} />
-                <line x1={-26} y1={0} x2={-14} y2={0} stroke="#ffd34d" strokeWidth={2} />
-                <line x1={14} y1={0} x2={26} y2={0} stroke="#ffd34d" strokeWidth={2} />
-              </g>
-            </g>
-          );
-        })()}
+        {/* Télégraphe ENNEMI (enemyAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
+        {targeting && (
+          <TargetReticle
+            from={reticleAnchor(targeting.from)}
+            to={reticleAnchor(targeting.to)}
+            line={targeting.melee ? 'solid' : 'dashed'}
+            lineColor="#e0533a"
+          />
+        )}
         {/* Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance). */}
         {scene.entities
           .filter((e) => e.kind === 'prop' && e.ref === 'cadavre')
@@ -926,42 +977,88 @@ export function IsoStage() {
               }
             return <g pointerEvents="none">{tiles}</g>;
           })()}
-        {/* Infobulle de ciblage au survol (mode neutre — l'attaque est implicite, R4) — UNIFIÉE mêlée + tir :
-            • sur un ENNEMI → toucher % + dégâts probables (previewAttack), avec états « hors de portée » /
-              « pas de ligne de vue » ;
-            • sur une case VIDE avec une arme à distance → bande de portée (aide au positionnement). */}
-        {battle?.action === null && activeC?.kind === 'hero' && activeC.pos && hover && !pendingAttack &&
-          (() => {
-            const enemy = battle.combatants.find((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, c.size, hover.x, hover.y));
-            let label: string;
-            let col: string;
-            let at: { x: number; y: number };
-            if (enemy) {
-              const p = previewAttack(useGame.getState, activeC, enemy);
-              at = enemy.pos!;
-              if (p.blocked) { label = '⛔ pas de ligne de vue'; col = '#888'; }
-              else if (!p.inRange) { label = '⛔ hors de portée'; col = '#888'; }
-              else { label = `🎯 ${Math.max(0, Math.min(100, p.target))}% · ≈${Math.max(1, p.dmg - p.soak)}+ Bl.`; col = '#ff5a4d'; }
-            } else if (aimWeapon) {
-              const dist = cheb(activeC.pos!, hover);
-              if (dist === 0) return null;
-              const m = rangeBandModifier(dist, aimWeapon.range!);
-              const name = rangeBandName(dist, aimWeapon.range!);
-              at = hover;
-              label = m == null || !name ? `${dist * 2} m · hors de portée` : `${dist * 2} m · ${name} (${m >= 0 ? '+' : ''}${m})`;
-              col = m == null ? '#888' : bandColor(m);
-            } else return null;
-            const { cx, cy } = tileCenter(at.x, at.y, dims);
-            const w = label.length * 6.4 + 14;
-            return (
-              <g transform={`translate(${cx},${cy - 44})`} pointerEvents="none">
-                <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke={col} strokeWidth={1} />
-                <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
-                  {label}
-                </text>
-              </g>
-            );
-          })()}
+        {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
+            survol (hoverAim) : réticule sur cible VALIDE + infobulle unifiée mêlée/tir/sort
+            « arme ou sort · compétence base ±mod · Dégâts N » (états ⛔ LdV / portée / Engagé). */}
+        {mode === 'battle' && battle && (() => {
+          const byId = (id?: string | null) => (id ? battle.combatants.find((c) => c.id === id && c.pos) : undefined);
+          if (pendingAttack) {
+            const a = byId(pendingAttack.attackerId), t = byId(pendingAttack.victimId ?? pendingAttack.targetId);
+            if (!a || !t) return null;
+            const ranged = firedWeapon(a, t, pendingAttack.weaponUid).type === 'ranged';
+            return <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={ranged ? 'dashed' : 'solid'} lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} />;
+          }
+          if (pendingDefense) {
+            const a = byId(pendingDefense.attackerId), t = byId(pendingDefense.defenderId);
+            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line={pendingDefense.weapon.type === 'ranged' ? 'dashed' : 'solid'} lineColor="#e0533a" /> : null;
+          }
+          if (pendingTrample) {
+            const a = byId(pendingTrample.attackerId), t = byId(pendingTrample.targetId);
+            return a && t ? <TargetReticle from={reticleAnchor(a)} to={reticleAnchor(t)} line="solid" lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} /> : null;
+          }
+          if (pendingCast && !pendingCast.pickingTargets) {
+            const a = byId(pendingCast.casterId);
+            const t = byId(pendingCast.targetId);
+            const to = pendingCast.zone ? tileCenter(pendingCast.zone.center.x, pendingCast.zone.center.y, dims) : t ? reticleAnchor(t) : null;
+            if (!a || !to) return null;
+            const self = !pendingCast.zone && pendingCast.casterId === pendingCast.targetId; // sort sur SOI : réticule seul
+            return <TargetReticle from={self ? null : reticleAnchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? '#ffd75e' : '#e0533a'} />;
+          }
+          if (pendingHeal) {
+            const t = byId(pendingHeal.targetId);
+            return t ? <TargetReticle to={reticleAnchor(t)} /> : null;
+          }
+          if (!hoverAim) return null;
+          const t = byId(hoverAim.toId);
+          if (!t) return null;
+          const to = reticleAnchor(t);
+          const a = byId(hoverAim.fromId);
+          const tip = hoverAim.tip;
+          return (
+            <g pointerEvents="none">
+              {hoverAim.reticle && <TargetReticle from={a ? reticleAnchor(a) : null} to={to} line={hoverAim.line} lineColor="#ffd75e" />}
+              {tip?.kind === 'err' && (() => {
+                const w = tip.text.length * 6.4 + 14;
+                return (
+                  <g transform={`translate(${to.cx},${to.cy - 64})`}>
+                    <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="#14141c" opacity={0.94} stroke="#888" strokeWidth={1} />
+                    <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="#f0f0f0" fontSize={11} fontWeight={600}>
+                      {tip.text}
+                    </text>
+                  </g>
+                );
+              })()}
+              {tip?.kind === 'info' && (() => {
+                // Carte compacte : nom (or) / compétence + valeur EFFECTIVE (mod entre parenthèses) /
+                // dégâts « +N » — une info par ligne.
+                const eff = tip.base + tip.mod;
+                const modTxt = tip.mod ? ` (${tip.mod > 0 ? '+' : '−'}${Math.abs(tip.mod)})` : '';
+                const l2 = `${tip.skill}  ${eff}${modTxt}`;
+                const l3 = tip.dmg != null ? `Dégâts +${tip.dmg}` : null;
+                const w = Math.max(tip.title.length * 6.6, l2.length * 6, (l3 ?? '').length * 6) + 20;
+                const h = l3 ? 52 : 38;
+                const x0 = -w / 2 + 10;
+                return (
+                  <g transform={`translate(${to.cx},${to.cy - 60})`}>
+                    <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="#14141c" fillOpacity={0.95} stroke="#ffd75e" strokeOpacity={0.75} strokeWidth={1} />
+                    <text x={x0} y={-h + 16} fill="#ffd75e" fontSize={11.5} fontWeight={700}>{tip.title}</text>
+                    <text x={x0} y={-h + 30} fontSize={10.5}>
+                      <tspan fill="#b9b2a6">{tip.skill}</tspan>
+                      <tspan fill="#f0f0f0" fontWeight={700}>{`  ${eff}`}</tspan>
+                      {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? '#5db87a' : '#e0533a'} fontWeight={700}>{modTxt}</tspan>}
+                    </text>
+                    {l3 && (
+                      <text x={x0} y={-h + 44} fontSize={10.5}>
+                        <tspan fill="#b9b2a6">Dégâts</tspan>
+                        <tspan fill="#f0f0f0" fontWeight={700}>{`  +${tip.dmg}`}</tspan>
+                      </text>
+                    )}
+                  </g>
+                );
+              })()}
+            </g>
+          );
+        })()}
       </g>
       {/* Ambiance : fixe par-dessus la scène (ne suit pas la caméra) */}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_warm)" pointerEvents="none" />

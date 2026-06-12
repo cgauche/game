@@ -25,3 +25,25 @@ describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.123)', () => {
     expect(action.kind).not.toBe('shoot');
   });
 });
+
+describe('IA — respecte la PORTÉE (tir : bande Extrême ×3 ; sort : portée du sort)', () => {
+  it('héros au-delà de Portée ×3 → ne tire pas (s’approche) ; à exactement ×3 → tire', () => {
+    // Arc 10 m → Extrême ≤ 30 m = 15 cases.
+    const e = () => enemy({ weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 10, qualities: [] }] as never });
+    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(20)], scene: scene(25), blocked: new Set(), movement: 4 });
+    expect(far.kind).toBe('move');
+    const edge = chooseEnemyAction({ enemy: e(), heroes: [hero(15)], scene: scene(25), blocked: new Set(), movement: 4 });
+    expect(edge.kind).toBe('shoot');
+  });
+  it('sort hors de portée → ne lance pas (s’approche) ; à portée → cast', () => {
+    const e = () => enemy({ weapons: [] });
+    const far = chooseEnemyAction({ enemy: e(), heroes: [hero(5)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: 3 });
+    expect(far.kind).toBe('move');
+    const ok = chooseEnemyAction({ enemy: e(), heroes: [hero(3)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: 3 });
+    expect(ok.kind).toBe('cast');
+  });
+  it('portée non chiffrable (sort spécial / arme sans Portée) → pas de gate', () => {
+    const ok = chooseEnemyAction({ enemy: enemy({ weapons: [] }), heroes: [hero(8)], scene: scene(10), blocked: new Set(), movement: 4, offensiveSpell: 'Carreau', spellRange: null });
+    expect(ok.kind).toBe('cast');
+  });
+});

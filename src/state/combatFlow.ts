@@ -895,6 +895,8 @@ export function dualStrikeTargets(battle: BattleState, attacker: Combatant, offW
  *  `inRange` = cible atteignable (mêlée : Allonge ; tir : dans une bande de portée) ; `blocked` = tir sans LdV. */
 export interface AttackPreview {
   weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[];
+  /** Valeur de compétence NUE (combatValue) — décomposition `target = base + Σmods` pour l'affichage. */
+  base: number;
   /** Dégâts d'arme (Force incluse) AVANT le DR du jet. La Blessure réelle = `dmg` + DR − `soak` (plancher 1). */
   dmg: number;
   /** Encaissé par la cible à la localisation visée (Bonus d'Endurance + PA, réduction d'armure des Atouts déduite). */
@@ -913,16 +915,17 @@ export function previewAttack(
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
   // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
   const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'F')));
+  const base = combatValue(attacker, kind, weapon);
   const loc = location ?? 'corps';
   const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20);
-  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, mods: [], dmg, soak };
+  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, base, mods: [], dmg, soak };
   const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
-  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, mods: [], dmg, soak };
+  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
-  const target0 = combatValue(attacker, kind, weapon) + combineMods(mods);
+  const target0 = base + combineMods(mods);
   const inRange = kind === 'ranged' ? rangeBandModifier(dist, weapon.range ?? 0) != null : dist <= reachTiles(weapon);
-  return { weapon, kind, inRange, blocked: false, target: target0, mods, dmg, soak };
+  return { weapon, kind, inRange, blocked: false, target: target0, base, mods, dmg, soak };
 }
 
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit
@@ -1008,6 +1011,31 @@ export function outOfSightTargetIds(get: () => GameState): Set<string> {
   for (const c of battle.combatants) {
     if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
     if (previewAttack(get, active, c).blocked) ids.add(c.id);
+  }
+  return ids;
+}
+
+/** Ligne de Vue d'un SORT (LDB 46 l.170 : « sauf indication contraire, vous devez toujours être
+ *  capable de voir – par exemple, avoir en Ligne de vue – votre cible ») : BINAIRE — un Sort n'est
+ *  pas un tir, aucune règle ne lui applique de malus de couvert → seul `.blocked` compte.
+ *  Occupants ignorés (une créature ne bloque pas la vue, elle ne donne que du couvert — hors sorts). */
+export function castSightBlocked(get: () => GameState, from: Pt, to: Pt): boolean {
+  const { scene, battle } = get();
+  if (!scene) return false;
+  return lineOfSightCover(scene, from, to, [], battle ? smokeOf(battle) : []).blocked;
+}
+
+/** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.170) — même grisage
+ *  que le tir, mais indépendant de l'arme portée (mode incantation). */
+export function castOutOfSightTargetIds(get: () => GameState): Set<string> {
+  const battle = get().battle;
+  const ids = new Set<string>();
+  if (!battle) return ids;
+  const active = activeCombatant(battle);
+  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  for (const c of battle.combatants) {
+    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    if (castSightBlocked(get, active.pos, c.pos)) ids.add(c.id);
   }
   return ids;
 }
@@ -1215,9 +1243,16 @@ export function attackPlan(get: () => GameState, active: Combatant, target: Comb
   const battle = get().battle!;
   const scene = get().scene!;
   if (combatDistance(active, target) <= meleeReachTiles(active.weapons)) return { kind: 'attack' };
-  // L'arme du SET ACTIF décide : une arme à distance présente → tir (les messages rechargement/
-  // munitions restent gérés au commit par la logique d'attaque existante).
-  if (attackWeapon(active.weapons, false).type === 'ranged') return { kind: 'attack' };
+  // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
+  // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
+  // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
+  // résolution restent (défense en profondeur) ; rechargement/munitions restent gérés au commit.
+  if (attackWeapon(active.weapons, false).type === 'ranged') {
+    const p = previewAttack(get, active, target);
+    if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };
+    if (!p.inRange) return { kind: 'blocked', reason: 'Cible hors de portée.' };
+    return { kind: 'attack' };
+  }
   // Mêlée hors d'Allonge :
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
   const geom = mountOf(battle, active) ?? active;
@@ -2601,6 +2636,12 @@ export function castSpell(
       get().log(`${spell.label} : cible hors de portée (${range} cases).`);
       return;
     }
+    // Ligne de Vue (LDB 46 l.170 : « vous devez toujours être capable de voir […] votre cible ») —
+    // buff sur allié compris ; binaire, pas de malus de couvert pour un Sort. Couvre héros ET IA.
+    if (castSightBlocked(get, caster.pos, target.pos)) {
+      get().log(`${spell.label} : pas de ligne de vue.`);
+      return;
+    }
   }
   const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
   set({
@@ -2610,6 +2651,15 @@ export function castSpell(
     },
   });
 }
+
+/** Contexte de visibilité OPTIONNEL pour filtrer des cibles de sort par Ligne de Vue (LDB 46
+ *  l.170). Absent/null (hors combat, tests purs) : pas de filtre — comportement historique. */
+export type SpellSight = { scene: Scene; smoke?: Pt[] } | null;
+const spellSightBlocked = (sight: SpellSight | undefined, caster: Combatant, t: Combatant): boolean =>
+  !!sight && !!caster.pos && !!t.pos && lineOfSightCover(sight.scene, caster.pos, t.pos, [], sight.smoke ?? []).blocked;
+/** SpellSight depuis l'état courant (scène + fumée du combat), null hors combat. */
+export const spellSightOf = (get: () => GameState): SpellSight =>
+  get().scene && get().battle ? { scene: get().scene!, smoke: smokeOf(get().battle!) } : null;
 
 /** Meilleur Projectile magique CONNU et jouable d'un ennemi (IA). Un Sort n'aboutit que si
  *  DR ≥ NI (LDB 46) : le SL maximal d'un Test = valeur/10 (Avantage compris, LDB 46 l.176) →
@@ -2646,6 +2696,7 @@ export function aiOvercastPlan(
   res: { cast: boolean; sl: number },
   combatants: Combatant[],
   focusedNI0 = false,
+  sight?: SpellSight,
 ): { overcast?: { duration: number; targets: number }; extraTargetIds?: string[] } {
   if (!res.cast || !caster.pos) return {};
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
@@ -2653,7 +2704,7 @@ export function aiOvercastPlan(
   if (budget <= 0) return {};
   const range = spellRangeTiles(spell.range, caster) ?? Infinity;
   const extras = combatants
-    .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range)
+    .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range && !spellSightBlocked(sight, caster, t))
     .sort((a, b) => combatDistance(caster, a) - combatDistance(caster, b))
     .slice(0, budget)
     .map((t) => t.id);
@@ -2672,12 +2723,15 @@ export function overcastTargetCandidates(
   targetId: string,
   spell: { range: string | null },
   missile: boolean,
+  sight?: SpellSight,
 ): Combatant[] {
   const range = spellRangeTiles(spell.range, caster);
   return pool.filter((m) => {
     if (m.id === targetId) return false;
     if (missile ? m.kind === caster.kind || isOutOfAction(m) : m.kind !== caster.kind || m.dead || m.outOfRencontre) return false;
-    return range == null || !caster.pos || !m.pos || combatDistance(caster, m) <= range;
+    if (range != null && caster.pos && m.pos && combatDistance(caster, m) > range) return false;
+    // Ligne de Vue (LDB 46 l.170) : une cible supplémentaire doit aussi être visible du lanceur.
+    return !spellSightBlocked(sight, caster, m);
   });
 }
 
@@ -2736,7 +2790,7 @@ export function applyCounterspell(get: () => GameState, set: any, counter: Comba
   }
   // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
   const oc = caster.kind === 'enemy' && pc.missile && !pc.zone
-    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused)
+    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
     : {};
   set({ pendingCast: { ...pc, result: next, overcast: undefined, extraTargetIds: undefined, ...oc } });
   const b = get().battle;
@@ -3790,6 +3844,9 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   // Meilleur Projectile magique connu et JOUABLE (NI atteignable, Dégâts max — cf. aiBestMissile) :
   // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
   const offensiveSpell = aiBestMissile(enemy);
+  // Portée du sort en CASES, résolue ici (ai.ts est pur, sans données de sort) — gate de ciblage IA.
+  const offensiveSpellData = offensiveSpell ? findSpell(offensiveSpell) : undefined;
+  const spellRange = offensiveSpellData ? spellRangeTiles(offensiveSpellData.range, enemy) : undefined;
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy);
@@ -3806,6 +3863,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
     blocked,
     movement: moveBudget,
     offensiveSpell,
+    spellRange,
     smoke: smokeOf(battle),
     flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
   });
@@ -3814,7 +3872,12 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
   const attackThenAdvance = (target: Combatant, delay: number = TEMPO.preAttack) => {
+    // Télégraphe (réticule + ligne — PLEINE en mêlée, pointillée au tir) pendant la pré-attaque :
+    // même affordance que la visée du joueur, des deux côtés.
+    set({ enemyAim: { fromId: enemy.id, toId: target.id, melee: firedWeapon(enemy, target).type !== 'ranged' } });
+    bus.emit(EVT.SCENE_DIRTY);
     setTimeout(() => {
+      set({ enemyAim: null });
       const b = get().battle;
       if (!b || b.over) return;
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
@@ -3848,15 +3911,25 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
   switch (action.kind) {
     case 'end':
       return advanceTurn(get, set);
-    case 'cast':
+    case 'cast': {
       if (!canAct) return advanceTurn(get, set);
-      castSpell(get, set, enemy, targetOf(action.targetId), action.spell);
-      // La modale d'incantation témoin (Lancer → Contre-sort → Appliquer) SUSPEND le tour de
-      // l'IA : la reprise est portée par castConfirm/castCancel → resumeEnemyTurn (anti
-      // double-advance, même pattern que la défense). castSpell peut refuser (contrecoup
-      // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
-      if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
+      const ctgt = targetOf(action.targetId);
+      // Télégraphe d'incantation (parité tir) : ligne pointillée + réticule ~0,7 s avant le jet.
+      set({ enemyAim: { fromId: enemy.id, toId: ctgt.id } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => {
+        set({ enemyAim: null });
+        const b = get().battle;
+        if (!b || b.over) return;
+        castSpell(get, set, enemy, ctgt, action.spell);
+        // La modale d'incantation témoin (Lancer → Contre-sort → Appliquer) SUSPEND le tour de
+        // l'IA : la reprise est portée par castConfirm/castCancel → resumeEnemyTurn (anti
+        // double-advance, même pattern que la défense). castSpell peut refuser (contrecoup
+        // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
+        if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
+      }, TEMPO.aimTelegraph);
       return;
+    }
     case 'shoot': {
       if (!canAct) return advanceTurn(get, set);
       const tgt = targetOf(action.targetId);
@@ -3901,7 +3974,7 @@ export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
       // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
       const { plan, ran } = aiApproachPlan(
-        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, smoke: smokeOf(battle), flying: flyM != null },
+        { enemy, heroes, scene, blocked, movement: moveBudget, offensiveSpell, spellRange, smoke: smokeOf(battle), flying: flyM != null },
         geom, action, battleRng(),
       );
       const mv = plan.kind === 'move' ? plan : action;

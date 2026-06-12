@@ -3,6 +3,8 @@ import { checkBattleOver } from './combatFlow';
 import { ev } from './combatLog';
 import { isOutOfAction } from '../engine/conditions';
 import { formatImperial } from '../engine/clock';
+import { testScenarios } from '../scenes/test-scenarios';
+import { hoverTargeting } from './targeting';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -15,6 +17,9 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
+ *   __wfrp.scenario('id') → lance un scénario de test direct (sans menu) ; sans arg : liste les ids
+ *   __wfrp.hover('id')    → survol PROGRAMMATIQUE (tooltip + réticule de visée, sans souris) ; null efface
+ *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
  *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
  *   __wfrp.healParty()    → groupe à neuf (PB max, états/critiques/maladies purgés)
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
@@ -80,6 +85,50 @@ export function buildApi() {
     screen: (screen: string) => {
       g().setScreen(screen as never);
       return g().screen;
+    },
+
+    /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y
+     *  était — tooltip + réticule se rendent sans chasser les pixels. `null` efface. Accepte un id
+     *  de combattant, un id d'entité de scène, ou {x,y}. */
+    hover: (idOrXY: string | { x: number; y: number } | null) => {
+      const hook = (window as unknown as { __wfrpSetHover?: (t: { x: number; y: number } | null) => void }).__wfrpSetHover;
+      if (!hook) return '❌ IsoStage non monté';
+      if (idOrXY == null) {
+        hook(null);
+        return '✅ survol effacé';
+      }
+      const pt = typeof idOrXY === 'string'
+        ? g().battle?.combatants.find((c) => c.id === idOrXY)?.pos ?? find(idOrXY)?.pos
+        : idOrXY;
+      if (!pt) return '❌ cible introuvable (combattant ou entité)';
+      hook({ ...pt });
+      return `✅ survol (${pt.x},${pt.y})`;
+    },
+
+    /** Vérité STATE du ciblage au survol — ce que le clic ferait sur cette cible pour l'actif :
+     *  {kind:'ok'|'invalid'|'none', line, title, skill, base, mod, dmg | reason}. */
+    aim: (id: string) => {
+      const b = g().battle;
+      if (!b) return '❌ pas de combat';
+      const active = b.combatants.find((c) => c.id === b.order[b.turn]);
+      const target = b.combatants.find((c) => c.id === id);
+      if (!active || !target) return '❌ actif ou cible introuvable';
+      return hoverTargeting(() => useGame.getState(), active, target);
+    },
+
+    /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('ciblage').
+     *  Sans argument : liste les ids. Même flux que l'écran « Scénarios de test ». */
+    scenario: (id?: string) => {
+      if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.icon} ${sc.title}`);
+      const sc = testScenarios.find((t) => t.id === id);
+      if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
+      const s = g();
+      s.setParty(sc.makeParty());
+      if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
+      else s.startScene(sc.scene);
+      if (sc.autoCombat) g().startCombat(sc.autoCombat);
+      s.setScreen('campaign');
+      return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct)' : ''}`;
     },
 
     /** RECETTE : élimine tous les ennemis du combat en cours puis passe par le flux de

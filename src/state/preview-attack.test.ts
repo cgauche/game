@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { previewAttack, resolveAttack, eligibleAttackTargetIds, outOfSightTargetIds } from './combatFlow';
+import { previewAttack, resolveAttack, eligibleAttackTargetIds, outOfSightTargetIds, attackPlan } from './combatFlow';
+import { combineMods } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
@@ -117,5 +118,41 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     // En mêlée la LdV ne bloque pas le ciblage → aucun grisage.
     const swordsman = combatant({ id: 'A', pos: { x: 0, y: 0 } });
     expect(outOfSightTargetIds(mk([swordsman, hidden, seen], ['A', 'E1', 'E2'])).size).toBe(0);
+  });
+
+  it('décomposition : target = base (combatValue) + Σ mods', () => {
+    const a = combatant({ id: 'A', advantage: 1 });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const p = previewAttack(mkGet([a, b]), a, b);
+    expect(p.base + combineMods(p.mods)).toBe(p.target);
+    expect(p.base).toBe(50); // CC 50, pas de Spé
+  });
+});
+
+describe('attackPlan — gate PRÉ-clic du tir (parité avec le refus de sort)', () => {
+  // Arc de Portée 4 m : bande Extrême ≤ ×3 = 12 m = 6 cases (1 case = 2 m).
+  const archer = (over: Partial<Combatant> = {}) =>
+    combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 4, qualities: [] }] as never, ...over });
+
+  it('cible sans Ligne de Vue → blocked (la modale ne s’ouvre jamais)', () => {
+    const a = archer();
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
+    const s = scene();
+    (s.tiles as string[])[3] = 'mur';
+    const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 0 }, facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+    const plan = attackPlan(get, a, b);
+    expect(plan.kind).toBe('blocked');
+    expect((plan as { reason: string }).reason).toMatch(/ligne de vue/i);
+  });
+
+  it('au-delà de Portée ×3 → blocked « hors de portée » ; à exactement ×3 → attack', () => {
+    const a = archer();
+    const far = combatant({ id: 'B', kind: 'enemy', pos: { x: 7, y: 0 } }); // 14 m > 12 m
+    const edge = combatant({ id: 'C', kind: 'enemy', pos: { x: 6, y: 0 } }); // 12 m = Extrême
+    const get = mkGet([a, far, edge]);
+    const out = attackPlan(get, a, far);
+    expect(out.kind).toBe('blocked');
+    expect((out as { reason: string }).reason).toMatch(/hors de portée/i);
+    expect(attackPlan(get, a, edge).kind).toBe('attack');
   });
 });

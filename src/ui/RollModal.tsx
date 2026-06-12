@@ -95,7 +95,7 @@ export function RollModal() {
       <VsHeader
         actor={attacker}
         target={target}
-        label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts {preview.dmg} + DR</> : null}</>}
+        label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
       />
 
       {!res ? (

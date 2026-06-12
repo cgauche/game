@@ -15,6 +15,7 @@ import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
+import { rangeBandModifier } from '../engine/combat';
 import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
@@ -40,6 +41,9 @@ export interface EnemyTurnInput {
   movement: number;
   /** Libellé d'un sort offensif prêt, déjà résolu par l'appelant (qui a les données). */
   offensiveSpell?: string;
+  /** Portée du sort offensif en CASES (spellRangeTiles, résolue par l'appelant) ;
+   *  null/absent = portée non chiffrable → pas de gate (comportement historique). */
+  spellRange?: number | null;
   /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
   flying?: boolean;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
@@ -69,7 +73,7 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, heroes, scene, blocked, movement, offensiveSpell, smoke, flying } = input;
+  const { enemy, heroes, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
   if (heroes.length === 0) return { kind: 'end' };
   if (hasCondition(enemy, 'Surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
@@ -97,10 +101,17 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
   const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, [], smoke ?? []).blocked;
   const shootableHeroes = heroes.filter(visible);
+  // PORTÉE (parité avec le gate pré-clic du héros) : un tireur ne vise pas au-delà de la bande
+  // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.
+  // Sans portée chiffrée (arme sans `range`, sort spécial) : pas de gate (stubs/exotiques).
+  const fpDist = (h: Combatant) => footprintChebyshev(pos, enemy.size, h.pos!, h.size);
+  const maxWeaponRange = enemy.weapons.reduce((m, w) => (w.type === 'ranged' && w.range ? Math.max(m, w.range) : m), 0);
+  const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
+  const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = !!enemy.frenzied;
-  const canShoot = !frenzied && hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootableHeroes.length > 0;
-  const canCast = !frenzied && offensiveSpell != null && shootableHeroes.length > 0;
+  const canShoot = !frenzied && hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
+  const canCast = !frenzied && offensiveSpell != null && castPool.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
@@ -154,8 +165,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const visibleFoes = shootableHeroes.length ? shootableHeroes : heroes;
     target = nearest(pos, visibleFoes);
   } else if (canCast || canShoot) {
-    const pool = hatedOf(shootableHeroes);
-    target = weakestNearest(pos, pool.length ? pool : shootableHeroes);
+    // Vivier filtré par PORTÉE (le sort prime sur le tir, même priorité que la décision plus bas).
+    const vivier = canCast ? castPool : shootPool;
+    const pool = hatedOf(vivier);
+    target = weakestNearest(pos, pool.length ? pool : vivier);
   } else {
     // Un tireur RETENU au Combat rapproché (arme à distance + adversaire au contact) frappe
     // l'adversaire à son contact. Sinon, comportement de mêlée habituel (sécuriser le plus faible).

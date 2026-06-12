@@ -37,6 +37,7 @@ export function BodyToken({
   flat = false,
   portraitBox,
   discR,
+  cid,
 }: {
   x: number;
   y: number;
@@ -68,6 +69,8 @@ export function BodyToken({
   portraitBox?: string;
   /** Rayon du disque en px (calculé par l'appelant depuis l'empreinte) — requis en flat. */
   discR?: number;
+  /** Id du combattant exposé en `data-cid` (ciblage DOM des recettes Playwright). */
+  cid?: string;
 }) {
   const { cx, cy } = tileCenter(x, y, dims); // feetY = cy : pieds au centre de la tuile
   const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
@@ -79,7 +82,7 @@ export function BodyToken({
   const badgeY = flat ? -R : -150 * scale;
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
-    <g style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: ghost && !dim ? 'grayscale(0.85)' : undefined }}>
+    <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: ghost && !dim ? 'grayscale(0.85)' : undefined }}>
       {flat ? (
         // Pion-portrait (vue du dessus) : disque clippé centré sur la case, anneau circulaire.
         <>
