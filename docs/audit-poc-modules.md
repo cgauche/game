@@ -9,14 +9,14 @@ explicitement reporté avec justification.
 
 | Module | Verdict | Défauts B | Défauts M |
 |---|---|---|---|
-| Interlude/Activités | **POC — injouable en partie** | 3 | 3 |
-| Voyage & Carte du monde | Produit proche — restitution faible | 0 | 2 |
+| Interlude/Activités | **POC — injouable en partie** → corrigé Lot 1 | 3 | 3 |
+| Voyage & Carte du monde | Produit proche — restitution faible → corrigé Lot 2 | 0 | 2 |
 | Marchand | **Produit** (responsive 360 vérifié) | 0 | 0 |
 | Magie en combat (zones/ciblage) | Produit proche | 0 | 1 |
 | Corruption/mutations | Produit proche | 0 | 1 |
 | Sauvegarde/Chargement | **Produit** (aller-retour vérifié) | 0 | 0 |
-| Coop × nouveaux flux | Handshake/miroir OK — propriété non gérée hors combat | 0 | 2 |
-| Éditeur (effets récents/Monde) | Champs à id libre incohérents avec l'existant | 0 | 1 |
+| Coop × nouveaux flux | Handshake/miroir OK — propriété non gérée hors combat → corrigé Lot 4 (+B4 général) | 1 | 2 |
+| Éditeur (effets récents/Monde) | Champs à id libre incohérents avec l'existant → corrigé Lot 5 | 0 | 1 |
 
 0 erreur console sur TOUS les parcours déroulés (menu, interlude, voyage+embuscade+reprise,
 marchand, combat magie, corruption, mutations, save/load, coop 2 clients, éditeur).
@@ -116,7 +116,7 @@ Handshake par codes : OK. Composition partagée (slot attribué à l'invité, il
 
 Onglet Monde présent (lieux/routes), modale « Enregistrer » (bibliothèque + publication).
 
-- [ ] **M9 — Champs à id libre incohérents** : `learnSpell` (« Libellé exact du sort
+- [x] **M9 — Champs à id libre incohérents** *(corrigé Lot 5 : selects guidés — sorts en optgroups, scènes du projet + points d'entrée, entités marchandes de la scène ; `effectCtxOf` plombé dans Triggers/Dialogues/Rencontres/Inspecteur/Monde ; `heroId` optionnel reste libre — la composition du groupe n'est connue qu'au lancement)* : `learnSpell` (« Libellé exact du sort
   (spells.json) » !), `heroId` (×3 effets), `openMerchant.entityId`, `transition.scene` sont des
   inputs texte, alors que `startCombat`/`startDialogue` ont déjà des selects alimentés par le
   contexte. → selects (sorts de la base, héros du groupe-type, entités marchandes de la scène,

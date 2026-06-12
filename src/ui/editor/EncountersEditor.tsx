@@ -6,18 +6,21 @@ import { useState } from 'react';
 import { EncounterDef, Dialogue } from '../../state/scene';
 import { CreatureData } from '../../data';
 import { Modal } from '../Modal';
-import { EffectList } from './EffectList';
+import { EffectList, type Ctx } from './EffectList';
 
 export function EncountersEditor({
   encounters,
   creatures,
   dialogues,
+  ctxExtra,
   onSave,
   onClose,
 }: {
   encounters: EncounterDef[];
   creatures: CreatureData[];
   dialogues: Dialogue[];
+  /** Selects guidés (M9) : marchands de la scène + scènes du projet. */
+  ctxExtra?: Pick<Ctx, 'merchants' | 'scenes'>;
   onSave: (e: EncounterDef[]) => void;
   onClose: () => void;
 }) {
@@ -118,7 +121,7 @@ export function EncountersEditor({
                 <EffectList
                   effects={enc.onVictory ?? []}
                   onChange={(eff) => upd(ei, { onVictory: eff })}
-                  ctx={{ encounters: list, dialogues }}
+                  ctx={{ encounters: list, dialogues, ...ctxExtra }}
                 />
               </div>
             </div>
