@@ -83,6 +83,10 @@ npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
 
+# Coop en ligne (relay WebSocket — Worker Cloudflare, dossier server/)
+npm run relay:dev      # Worker relay en local (wrangler dev, port 8787) ; côté client : VITE_RELAY_URL=http://localhost:8787 npm run dev
+npm run relay:deploy   # déploie le Worker (compte Cloudflare) → URL dans RELAY_URL_PROD (src/net/relay.ts)
+
 # Déploiement en PRODUCTION (GitHub Pages → https://cgauche.github.io/jeu/)
 node scripts/deploy/deploy.mjs            # build:data + build (Vite) + copie dist/ → cgauche.github.io/jeu/
 node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement (pas de rebuild)
@@ -204,6 +208,12 @@ src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arè
                             embuscade ; AUTHORING par `scripts/arene/generate.mjs`, cartes ASCII → JSON canonique
                             qui RESTE la source éditable dans l'éditeur)
                             + test-fixture.ts (scène neutre `testScene` + rencontre `enc-mutants` des tests de combat)
+src/net/                    Coop en ligne (relay WebSocket) : relay.ts (RelayClient heartbeat/backoff,
+                            RoomHost = un Transport virtuel par siège, RoomGuest), session.ts (hôte-
+                            autoritaire : intents allowlist + snapshots), protocol.ts, compress.ts,
+                            intents.ts — codes de room 6 chars, reconnexion auto par token (grace 2 min)
+server/                     Worker Cloudflare du relay coop (Durable Object « Room », hibernation WS,
+                            TTL 30 min) — npm run relay:dev / relay:deploy
 art-ref/                    Illustrations extraites des PDFs + mapping.json (GITIGNORÉ — droits Cubicle 7)
 ```
 

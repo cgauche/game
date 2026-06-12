@@ -12,8 +12,8 @@
 import type { Transport } from './transport';
 import { deflateB64, inflateB64 } from './compress';
 
-/** URL de PROD du Worker — à remplacer après le premier `npm run relay:deploy`. */
-export const RELAY_URL_PROD = 'https://w4-coop-relay.A-REMPLACER.workers.dev';
+/** URL de PROD du Worker (`npm run relay:deploy`). */
+export const RELAY_URL_PROD = 'https://w4-coop-relay.gauche-c.workers.dev';
 
 export function relayHttpUrl(): string {
   return (import.meta.env?.VITE_RELAY_URL as string | undefined) ?? RELAY_URL_PROD;
