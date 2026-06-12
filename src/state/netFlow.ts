@@ -161,7 +161,7 @@ export async function netAcceptAnswer(get: Get, set: Set, code: string): Promise
     if (inv.channel.readyState === 'open') return resolve();
     inv.channel.onopen = () => resolve();
   });
-  host.addGuest(channelTransport(inv.channel) as Transport);
+  host.addGuest(channelTransport(inv.channel) as Transport, payload.seat);
   const name = payload.name || `Joueur ${payload.seat + 1}`;
   set({ net: { ...get().net, seatNames: { ...get().net.seatNames, [payload.seat]: name } } });
   return true;

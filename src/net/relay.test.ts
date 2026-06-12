@@ -84,7 +84,7 @@ describe('RoomHost (démultiplexage par siège)', () => {
     expect(got).toEqual(['BONJOUR']);
     t1.send('SALUT');
     await rh.idle();
-    expect(JSON.parse(ws.sent.at(-1)!)).toEqual({ to: 1, data: 'SALUT' });
+    expect(JSON.parse(ws.sent[ws.sent.length - 1])).toEqual({ to: 1, data: 'SALUT' });
   });
 
   it('gros payload → champ z compressé, restituable', async () => {
@@ -95,7 +95,7 @@ describe('RoomHost (démultiplexage par siège)', () => {
     const big = JSON.stringify({ blob: 'x'.repeat(5000) });
     t1.send(big);
     await rh.idle();
-    const env = JSON.parse(ws.sent.at(-1)!) as { to: number; z?: string; data?: string };
+    const env = JSON.parse(ws.sent[ws.sent.length - 1]) as { to: number; z?: string; data?: string };
     expect(env.data).toBeUndefined();
     expect(await inflateB64(env.z!)).toBe(big);
   });

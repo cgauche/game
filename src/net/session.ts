@@ -1,11 +1,12 @@
 /**
- * Session coop (Jalon 7) — modèle HÔTE-AUTORITAIRE sur Transport injecté (DataChannel en prod,
+ * Session coop — modèle HÔTE-AUTORITAIRE sur Transport injecté (transports du relay en prod,
  * FakeTransport en test). L'hôte est le SEUL à exécuter le store : les invités envoient des
  * intents (filtrés par allowlist), l'hôte les rejoue puis diffuse un snapshot d'état complet
- * (mêmes données JSON-sûres que la sauvegarde — cf. spec coop §3).
+ * (mêmes données JSON-sûres que la sauvegarde — cf. spec coop §3). Les sièges sont attribués
+ * par la room (Durable Object) et injectés via `addGuest`.
  *
  * Cette couche ignore TOUT du store : `applyIntent`/`getSnapshot`/`applySnapshot` sont
- * injectés (la couture store arrive avec le lobby, P1) — testable sans réseau ni navigateur.
+ * injectés — testable sans réseau ni navigateur.
  */
 import type { Transport } from './transport';
 import { PROTOCOL_VERSION, parseMessage, serializeMessage, type NetMessage } from './protocol';
@@ -19,7 +20,6 @@ export interface Seat {
 export class HostSession {
   /** Sièges CONNECTÉS (handshake accompli), indexés par numéro (1..3 — 0 = l'hôte). */
   readonly seats: Record<number, Seat> = {};
-  private nextSeat = 1;
 
   constructor(
     private readonly opts: {
@@ -28,13 +28,14 @@ export class HostSession {
       allow: ReadonlySet<string>;
       applyIntent: (action: string, args: unknown[], seat: number) => void;
       getSnapshot: () => Record<string, unknown>;
+      /** Envoyés au handshake ENTRE hello et snapshot (ex. la campagne custom — spec v2 §5). */
+      extraJoinMessages?: () => NetMessage[];
       onSeatClosed?: (seat: number) => void;
     },
   ) {}
 
-  /** Branche le transport d'un nouvel invité (avant son hello). Retourne son futur n° de siège. */
-  addGuest(transport: Transport): number {
-    const seat = this.nextSeat++;
+  /** Branche le transport d'un invité sur le siège attribué par la room (DO). */
+  addGuest(transport: Transport, seat: number): void {
     let joined = false;
     transport.onMessage((raw) => {
       const m = parseMessage(raw);
@@ -47,6 +48,7 @@ export class HostSession {
         this.seats[seat] = { seat, name: m.name, transport };
         joined = true;
         transport.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: 'hôte' }));
+        for (const extra of this.opts.extraJoinMessages?.() ?? []) transport.send(serializeMessage(extra));
         transport.send(serializeMessage({ kind: 'snapshot', data: this.opts.getSnapshot() }));
         return;
       }
@@ -63,13 +65,17 @@ export class HostSession {
         this.opts.onSeatClosed?.(seat);
       }
     });
-    return seat;
+  }
+
+  /** Diffuse un message à tous les sièges connectés. */
+  broadcast(m: NetMessage): void {
+    const msg = serializeMessage(m);
+    for (const s of Object.values(this.seats)) s.transport.send(msg);
   }
 
   /** Diffuse l'état autoritaire à tous les sièges connectés. */
   broadcastSnapshot(data: Record<string, unknown>): void {
-    const msg = serializeMessage({ kind: 'snapshot', data });
-    for (const s of Object.values(this.seats)) s.transport.send(msg);
+    this.broadcast({ kind: 'snapshot', data });
   }
 
   send(seat: number, m: NetMessage): void {
@@ -90,6 +96,8 @@ export class GuestSession {
       build: string;
       name: string;
       applySnapshot: (data: Record<string, unknown>) => void;
+      /** Projet de campagne custom reçu au join (enregistré localement pour le rendu). */
+      onCampaign?: (m: Extract<NetMessage, { kind: 'campaign' }>) => void;
       onAssign?: (heroId: string, seat: number) => void;
       onClosed?: () => void;
     },
@@ -108,13 +116,26 @@ export class GuestSession {
         this.opts.applySnapshot(m.data);
         return;
       }
+      if (m.kind === 'campaign') {
+        this.opts.onCampaign?.(m);
+        return;
+      }
       if (m.kind === 'assign') this.opts.onAssign?.(m.heroId, m.seat);
     });
     transport.onClose(() => {
       this.joined = false;
       this.opts.onClosed?.();
     });
-    transport.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: this.opts.name }));
+    this.sayHello();
+  }
+
+  private sayHello(): void {
+    this.transport?.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: this.opts.name }));
+  }
+
+  /** Reprise après reconnexion : re-handshake — l'hôte répond hello + extras + snapshot. */
+  rejoin(): void {
+    this.sayHello();
   }
 
   /** Demande à l'hôte de rejouer une action de store (il filtrera par allowlist). */
