@@ -1383,6 +1383,19 @@ pilote = **menu principal + écran de groupe**, validé à l'œil avant généra
 - ✅ **Éclairage nocturne des fenêtres** : recette navigateur rejouée (Playwright — verre ambré
   `#f2c45a` + halo + flicker confirmés vs verre froid `#33414d` de jour) + test unitaire de la
   branche `night` (`buildings.test.ts`).
+- ✅ **Éditeur v2 — interface refaite de 0** *(2026-06-12)* : fini les piles de boutons et les
+  modales d'édition du POC. **Rail d'outils** + contenu contextuel (catalogues recherchables :
+  décors, espèces, bâtiments, créatures — pose DIRECTE), **inspecteur docké** en sections
+  repliables (propriétés de la SCÈNE quand rien n'est sélectionné, dont `description`),
+  **panneau Logique** en bas (Triggers/Dialogues/Rencontres/Validation en master-détail,
+  **édition LIVE → undo global**, dialogues nœud par nœud), **sélection unifiée**
+  (`editorState.ts` pur + testé), **EffectList v2** (rangées repliées résumées en clair,
+  picker « + Effet » par catégorie, réordonnancement ↑/↓). **Manques comblés** : points
+  d'entrée ⚑ posés/renommés sur la carte (les transitions et la carte du monde les
+  référençaient sans UI), zones de repos dessinées au drag, **resize à la poignée** (coin SE),
+  barre de statut (case/terrain/outil/calques), menu Fichier + sélecteur de scènes (dupliquer).
+  Tiroirs tactiles ≤900px, dock plein écran mobile. Vérifié navigateur (Playwright, 0 erreur
+  console, 1380px + 360px) ; 41 tests éditeur, suite complète verte.
 
 ## Principes directeurs
 

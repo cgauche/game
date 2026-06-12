@@ -200,10 +200,12 @@ src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, m
                               (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
   RollFlowShell.tsx           coquille PARTAGÉE des modales de jet (Lancer→Chance→Résilience→Appliquer)
                               + <Dice> — pendant UI de state/rollFlow
-  editor/                     Éditeur : Editor.tsx (sélection + outils + canvas), Palette.tsx (volet
-                              gauche à onglets), Inspector.tsx (volet droit), useSceneHistory (undo/redo),
-                              useEditorView (caméra), TriggersEditor, DialogueEditor, EncountersEditor,
-                              EffectList (constructeur d'effets partagé)
+  editor/                     Éditeur v2 : Editor.tsx (shell), editorState.ts (sélection unifiée +
+                              mutations PURES), EditorCanvas (pointeur/overlays/resize), Palette (rail
+                              d'outils + contenu contextuel), Inspector (DOCKÉ, folds ; scène si rien
+                              de sélectionné), LogicDock (triggers/dialogues/rencontres/validation en
+                              master-détail, édition live), EffectList (rangées repliées + picker),
+                              useSceneHistory (undo/redo), useEditorView (caméra)
 src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arène, `arene/arene-projet.json`,
                             projet v2 {scenes, worldMap} — 20 scènes : Bourg+intérieurs, 13 zones, 3 expéditions,
                             embuscade ; AUTHORING par `scripts/arene/generate.mjs`, cartes ASCII → JSON canonique
@@ -233,8 +235,11 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   bipèdes (carrière + arme + armure + mutations visibles) et créatures non-bipèdes via gabarit corporel
   animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props) et le villageois.
   Le sprite monolithique (`creatureSprites.json` + `enemySprite`/`creatureView`) a été retiré (juin 2026).
-- **Éditeur** : iso WYSIWYG, onglets Carte/Logique/Scène, triggers/dialogues/rencontres
-  structurés, outil « Zone » (drag → trigger). Bouton « Tester » lance la scène en jeu.
+- **Éditeur v2** (juin 2026, interface refaite de 0) : iso WYSIWYG, rail d'outils + contenu
+  contextuel (pose directe depuis les catalogues), inspecteur DOCKÉ (plus aucune modale d'édition),
+  panneau Logique en bas (triggers/dialogues/rencontres/validation, master-détail, édition live →
+  undo global), points d'entrée ⚑ et zones de repos dessinés sur la carte, resize à la poignée,
+  barre de statut. Bouton « Tester » lance la scène en jeu.
 
 ## Workflows multi-agents (sur opt-in « ultracode »)
 

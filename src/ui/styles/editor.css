@@ -1,0 +1,879 @@
+/* ════════════ ÉDITEUR DE NIVEAU v2 ════════════
+   Layout : toolbar / [palette rail | canvas | inspecteur docké] / barre de statut / dock Logique.
+   Compose les primitives de components.css (.panel/.fold/.listrow/.chip/.count/.stack/.row-flex).
+   Responsive : ≤900px la palette et l'inspecteur deviennent des TIROIRS (barre tactile en bas),
+   le dock Logique ouvert passe en plein écran. Breakpoints canon : 900 / 700 / 560. */
+
+.editor-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Boutons custom de l'éditeur : hériter la police du document (pas de reset global `button`). */
+.menu-item,
+.pal-tool,
+.pal-item,
+.terrain-swatch,
+button.insp-row,
+.logic-tab,
+.eff-add-item {
+  font-family: inherit;
+}
+
+/* ── Toolbar ── */
+.editor-bar {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.editor-bar h2 {
+  margin-right: 6px;
+}
+.editor-file {
+  position: relative;
+}
+.editor-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 80;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.editor-menu hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 3px 0;
+  width: 100%;
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.menu-item:hover {
+  background: var(--bg2);
+}
+.editor-undo {
+  display: flex;
+  gap: 4px;
+}
+.editor-scenes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.editor-scenes select {
+  max-width: 180px;
+}
+.editor-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ── Corps : palette | canvas | inspecteur ── */
+.editor-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr) 304px;
+  overflow: hidden;
+}
+
+/* ── Palette : rail d'outils + contenu contextuel ── */
+.editor-palette {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+}
+.pal-rail {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pal-tool {
+  font-size: 17px;
+  line-height: 1;
+  padding: 9px 0;
+  background: var(--panel2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+}
+.pal-tool:hover {
+  border-color: var(--gold2);
+}
+.pal-tool.active {
+  border-color: var(--gold);
+  background: rgba(216, 169, 59, 0.14);
+}
+.pal-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pal-search {
+  width: 100%;
+}
+.pal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  text-align: left;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.pal-item:hover {
+  border-color: var(--gold2);
+}
+.pal-item.active {
+  border-color: var(--gold);
+  background: rgba(216, 169, 59, 0.12);
+}
+.terrain-palette {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.terrain-swatch {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 10px 4px;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  text-shadow: 0 1px 2px #000;
+  text-transform: capitalize;
+}
+.terrain-swatch.active {
+  border-color: var(--gold);
+}
+
+/* ── Canvas ── */
+.editor-canvas-wrap {
+  overflow: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.editor-iso-wrap {
+  position: relative; /* ancre l'overlay HTML (poignée, étiquettes) sur le SVG */
+  max-width: 100%;
+  line-height: 0;
+}
+.editor-iso {
+  background: radial-gradient(circle at 50% 28%, var(--bg), var(--bg));
+  border-radius: 8px;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+/* ── Inspecteur docké ── */
+.editor-inspector {
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.editor-inspector textarea {
+  width: 100%;
+  height: 80px;
+}
+.insp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.insp-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.4px;
+  color: var(--gold2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.insp-fold > summary {
+  padding: 7px 10px;
+}
+.insp-fold .fold-title {
+  font-size: 14px;
+}
+.insp-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+/* Rangée de liste CLIQUABLE (contenu de scène, masters du dock) — .listrow en <button>. */
+button.insp-row {
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+button.insp-row:hover {
+  border-color: var(--gold2);
+}
+button.insp-row.active {
+  border-color: var(--gold);
+  background: rgba(216, 169, 59, 0.1);
+}
+.insp-content {
+  max-height: 42vh;
+  overflow: auto;
+  margin-top: 6px;
+}
+.ent-preview {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 35%, #241830, #0e0b14);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+}
+.ed-dim {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ed-dim label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ed-dim input {
+  width: 56px;
+}
+.ed-foot-inputs {
+  display: flex;
+  gap: 4px;
+}
+.ed-rest-places {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ed-subfield {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: 2px 0;
+  color: var(--muted);
+}
+.ed-subfield select,
+.ed-subfield input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Barre de statut ── */
+.editor-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 4px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  font-size: 12px;
+  color: var(--muted);
+}
+.es-cell {
+  min-width: 130px;
+}
+.es-tool {
+  color: var(--gold2); /* l'outil actif est l'info clé de la barre */
+}
+.es-layers {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.es-layer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+
+/* ── Dock Logique ── */
+.logic-dock {
+  position: relative;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  flex: none;
+}
+.logic-resize {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  z-index: 5;
+  touch-action: none;
+}
+.logic-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px 0;
+}
+.logic-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.logic-tab:hover {
+  color: var(--text);
+}
+.logic-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+.logic-tab.alert .count {
+  background: var(--danger);
+  color: #fff;
+}
+.logic-collapse {
+  margin-left: auto;
+}
+.logic-body {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px 10px;
+}
+.logic-split {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+}
+.logic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: auto;
+  padding-right: 8px;
+  border-right: 1px solid var(--border);
+}
+.logic-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  min-height: 0;
+}
+.logic-detail-bar {
+  justify-content: flex-end;
+}
+.logic-validation {
+  height: 100%;
+  overflow: auto;
+}
+.ed-ok {
+  color: var(--ok);
+}
+.ed-validation ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ed-validation li {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel2);
+  font-size: 12.5px;
+  cursor: pointer; /* cliquer sélectionne l'élément fautif sur la carte/le dock */
+}
+.ed-validation .badge {
+  margin-right: 4px;
+}
+.ed-validation li.error {
+  border-color: var(--danger);
+}
+.ed-validation-head {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Détail Dialogues (master-détail de nœuds) ── */
+.dlg-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.dlg-id-field input {
+  width: 170px;
+}
+.dlg-split {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+.dlg-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: auto;
+}
+.dlg-node-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.node-id {
+  width: 90px;
+}
+.node-speaker {
+  flex: 1;
+}
+.node-text {
+  width: 100%;
+  height: 54px;
+}
+.choice-text {
+  width: 100%;
+}
+.choice-cond {
+  width: 140px;
+}
+.choice-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.choice-cost input {
+  width: 44px;
+}
+.dlg-choice .eff-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Constructeur d'effets v2 (rangées repliées + picker catégorisé) ── */
+.eff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.eff-row {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.eff-row > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.eff-row > summary::-webkit-details-marker {
+  display: none;
+}
+.eff-summary {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eff-actions {
+  display: flex;
+  gap: 3px;
+  flex: none;
+}
+.eff-body {
+  padding: 8px 9px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.eff-type {
+  width: 100%;
+}
+.eff-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.eff-fields input,
+.eff-fields select,
+.eff-fields textarea {
+  width: 100%;
+}
+.eff-fields textarea {
+  height: 70px;
+}
+.eff-add {
+  position: relative;
+  align-self: flex-start;
+}
+.eff-add > summary {
+  list-style: none;
+  display: inline-flex;
+  cursor: pointer;
+}
+.eff-add > summary::-webkit-details-marker {
+  display: none;
+}
+/* Ouverture vers le BAS : le débordement bas reste atteignable par le scroll du conteneur
+   (vers le haut il serait clippé quand la liste est en tête d'un panneau scrollable). */
+.eff-add-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 60;
+  width: 330px;
+  max-width: 80vw;
+  max-height: 320px;
+  overflow: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+}
+.eff-add-group + .eff-add-group {
+  margin-top: 6px;
+}
+.eff-add-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  padding: 5px 8px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.eff-add-item:hover {
+  background: var(--bg2);
+}
+.money-fields {
+  display: flex;
+  gap: 4px;
+}
+.money-fields label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.money-fields input {
+  width: 50px;
+  padding: 4px;
+}
+.test-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tf-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tf-row .dr,
+.row-flex .dr {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.tf-row .dr input {
+  width: 44px;
+}
+.branch {
+  border-left: 2px solid var(--border);
+  padding-left: 8px;
+}
+.branch-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+.branch-label.ok {
+  color: var(--ok);
+}
+.branch-label.fail {
+  color: #ff7a6c;
+}
+.trig-cond {
+  width: 170px;
+}
+
+/* ── Rencontres (détail du dock) ── */
+.enemy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 8px;
+  border-left: 2px solid var(--danger);
+}
+.enemy-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.enemy-row select {
+  flex: 1;
+  min-width: 140px;
+}
+.enemy-row label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.enemy-row input {
+  width: 44px;
+  padding: 4px;
+}
+.enemy-mount {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+  margin: 1px 0 7px 6px;
+  opacity: 0.92;
+}
+/* Aperçu du profil du bestiaire (volet spawn) — ligne M CC CT … B, « – » = inexistante */
+.creature-profile table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: center;
+}
+.creature-profile th {
+  color: var(--muted);
+  font-weight: 600;
+  padding: 1px 2px;
+}
+.creature-profile td {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
+}
+.creature-profile-traits {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 4px 0 6px;
+}
+/* Traits facultatifs (LDB 76) : une ligne = chaîne éditable + retrait. */
+.trait-row {
+  display: flex;
+  gap: 4px;
+  margin: 3px 0;
+}
+.trait-row input {
+  flex: 1;
+  min-width: 0;
+}
+/* Profil custom (créature à la carte) : grille de caractéristiques + rangée Taille. */
+.statblock-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.statblock-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.statblock-note {
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+/* ── Divers ── */
+.json-editor {
+  width: 100%;
+  height: 360px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+.editor-mobile-bar {
+  display: none;
+}
+.editor-drawer-backdrop {
+  display: none;
+}
+
+/* ── Tactile / petit écran : canvas plein écran, palette/inspecteur en TIROIRS, dock plein écran ── */
+@media (max-width: 900px) {
+  .editor-main {
+    grid-template-columns: 1fr;
+  }
+  .editor-palette,
+  .editor-inspector {
+    position: fixed;
+    top: 0;
+    bottom: 56px;
+    width: min(86vw, 340px);
+    z-index: 60;
+    border: none;
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  .editor-palette {
+    left: 0;
+    transform: translateX(-104%);
+    border-right: 1px solid var(--border);
+  }
+  .editor-inspector {
+    right: 0;
+    transform: translateX(104%);
+    border-left: 1px solid var(--border);
+  }
+  .editor-main.drawer-palette .editor-palette,
+  .editor-main.drawer-inspector .editor-inspector {
+    transform: translateX(0);
+  }
+  .editor-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0 0 56px 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 55;
+  }
+  .editor-mobile-bar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 56px;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    z-index: 65;
+  }
+  .editor-mobile-bar .btn {
+    flex: 1;
+  }
+  .editor-screen {
+    padding-bottom: 56px; /* place pour la barre tactile fixe */
+  }
+  /* Dock ouvert = plein écran (au-dessus du canvas, sous la barre tactile). */
+  .logic-dock.open {
+    position: fixed;
+    inset: 0 0 56px 0;
+    z-index: 58;
+    height: auto !important;
+  }
+  .logic-dock.open .logic-resize {
+    display: none;
+  }
+  .logic-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 0.45fr) minmax(0, 1fr);
+  }
+  .logic-list {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 8px;
+  }
+  .dlg-split {
+    grid-template-columns: 1fr;
+  }
+  .es-cell {
+    min-width: 0;
+  }
+}
+@media (max-width: 700px) {
+  .editor-scenes select {
+    max-width: 110px;
+  }
+  .logic-tab {
+    padding: 7px 6px;
+    font-size: 12px;
+  }
+}
+@media (pointer: coarse) {
+  .pal-tool {
+    min-height: 44px;
+  }
+  .logic-resize {
+    height: 16px;
+    top: -8px;
+  }
+}

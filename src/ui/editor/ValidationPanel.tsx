@@ -14,7 +14,7 @@ export function ValidationPanel({ warnings, onSelect }: { warnings: Warning[]; o
       </div>
       <ul>
         {warnings.map((w, i) => (
-          <li key={i} className={w.level} onClick={() => onSelect(w)} style={{ cursor: 'pointer' }}>
+          <li key={i} className={w.level} onClick={() => onSelect(w)}>
             <span className="badge">{w.level === 'error' ? '⛔' : '⚠️'}</span> [{w.scope}] {w.message}
           </li>
         ))}

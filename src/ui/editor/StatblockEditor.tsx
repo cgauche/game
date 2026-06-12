@@ -80,7 +80,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         Nom du profil
         <input value={stat.name} onChange={(e) => onChange({ ...stat, name: e.target.value })} />
       </label>
-      <div className="statblock-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+      <div className="statblock-grid">
         {(CHAR_KEYS as CharKey[]).map((k) => (
           <label key={k} className="ed-subfield" title={CHAR_LABELS[k]}>
             {k}
@@ -103,11 +103,11 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
           />
         </label>
       </div>
-      <div className="ed-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+      <div className="ed-field statblock-size">
         <span>Taille : <b>{SIZE_LABEL[size]}</b></span>
         <button type="button" onClick={() => applyResize(-1)} disabled={SIZE_ORDER[size] === 0} title="Réduire d'une catégorie (−10 F, −10 E, +5 Ag)">▼ Réduire</button>
         <button type="button" onClick={() => applyResize(1)} disabled={SIZE_ORDER[size] === 6} title="Agrandir d'une catégorie (+10 F, +10 E, −5 Ag)">Agrandir ▲</button>
-        <span style={{ opacity: 0.7, fontSize: '0.85em' }}>« Utiliser les Tailles » (LDB 85) : ±10 F/E, ∓5 Ag par catégorie</span>
+        <span className="statblock-note">« Utiliser les Tailles » (LDB 85) : ±10 F/E, ∓5 Ag par catégorie</span>
       </div>
       <label className="ed-field">
         Traits (un par ligne — armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ;
