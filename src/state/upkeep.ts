@@ -45,8 +45,9 @@ export function dayIndex(gameTime: number): number {
 /** Purge les effets à durée d'HORLOGE arrivés à échéance (`untilTime` ≤ maintenant) : contrecoups
  *  d'incantation (LDB 46/40) ET buffs de sort à durée en minutes/heures/jours (LDB 47 — cascade #T3).
  *  Appelée par advanceTime (donc à chaque Round de combat) ET par l'entretien quotidien (repos/voyage) ;
- *  couvre le groupe ET les combattants d'une bataille en cours (copies de spawn). */
-export function purgeClockEffects(get: Get, set: Set): void {
+ *  couvre le groupe ET les combattants d'une bataille en cours (copies de spawn).
+ *  RENVOIE les dissipations (reprises dans le rapport du jour au franchissement). */
+export function purgeClockEffects(get: Get, set: Set): string[] {
   const now = get().gameTime;
   const expiredLog: string[] = [];
   const pool = [...get().party, ...(get().battle?.combatants ?? [])];
@@ -65,6 +66,7 @@ export function purgeClockEffects(get: Get, set: Set): void {
     }
   }
   if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
+  return expiredLog;
 }
 
 /** Traite les journées écoulées depuis le dernier entretien (rations/faim, maladies, convalescence)
@@ -73,7 +75,9 @@ export function purgeClockEffects(get: Get, set: Set): void {
  *  RENVOIE les lignes du bilan : chaque appelant les AFFICHE (révélation témoin / bilan de nuit /
  *  recap de voyage) — le journal seul ne suffit pas (personne ne le lit). */
 export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean } = {}): string[] {
-  purgeClockEffects(get, set);
+  // Dissipations d'effets d'horloge : au FRANCHISSEMENT de jour, elles font partie du rapport
+  // visible (hors franchissement — rythme combat — le journal et les icônes d'État suffisent).
+  const purged = purgeClockEffects(get, set);
   const today = dayIndex(get().gameTime);
   const last = get().lastUpkeepDay;
   if (today <= last) return [];
@@ -100,5 +104,5 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
   set({ lastUpkeepDay: today, party: [...party], journal: [...get().journal.slice(-40), ...lines] });
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
-  return lines;
+  return [...purged, ...lines]; // les dissipations du jour font partie du bilan affiché
 }

@@ -31,7 +31,7 @@ import {
   TravelMode, TRAVEL_DEFAULTS, TRAVEL_MODE_LABEL, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
 } from '../engine/travel';
 import { PERIPETIES } from '../data/peripeties';
-import { rollTest } from '../engine/tests';
+import { rollTest, testDetail } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
@@ -320,7 +320,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
         if (t && best) {
           log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
           // Recap : LIGNE DE JET structurée (multijet), pas du texte.
-          day?.entries?.push({ actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur', d: { label: 'Survie en extérieur', base: best.value, modifier: t.target - best.value, target: t.target, roll: t.roll, success: t.success, sl: t.sl }, text: t.success ? 'itinéraire de substitution trouvé' : 'le groupe erre un jour de plus', tone: t.success ? 'ok' : 'bad' });
+          day?.entries?.push({ actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur', d: testDetail('Survie en extérieur', best.value, t), text: t.success ? 'itinéraire de substitution trouvé' : 'le groupe erre un jour de plus', tone: t.success ? 'ok' : 'bad' });
         }
         if (!t?.success) day?.lines.push(...applyEreintant(get, set));
         break;
@@ -333,7 +333,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
         if (t && best) {
           log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`]);
-          day?.entries?.push({ actorId: best.actor.id, icon: '👁️', label: 'Perception', d: { label: 'Perception', base: best.value, modifier: t.target - best.value, target: t.target, roll: t.roll, success: t.success, sl: t.sl }, text: t.success ? 'le groupe les voit venir !' : configured ? 'embuscade !' : 'ÉCHEC', tone: t.success ? 'ok' : 'bad' });
+          day?.entries?.push({ actorId: best.actor.id, icon: '👁️', label: 'Perception', d: testDetail('Perception', best.value, t), text: t.success ? 'le groupe les voit venir !' : configured ? 'embuscade !' : 'ÉCHEC', tone: t.success ? 'ok' : 'bad' });
         }
         if (configured) {
           // DIFFÉRÉ derrière le récit : le recap s'affiche d'abord, le combat démarre à

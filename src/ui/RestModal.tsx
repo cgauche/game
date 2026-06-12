@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { Coins } from './Coins';
 import { MultiRollList } from './MultiRollList';
+import { TravelDayBody } from './TravelRecapModal';
 import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood } from '../state/restFlow';
 import { weatherExposure, exposureTestCount, partyHasTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
@@ -90,18 +91,13 @@ export function RestModal() {
   return (
     <Modal title={`${title}${p.days > 1 ? ` — ${p.days} nuits` : ''}${p.quality === 'pietre' ? ' (piètre)' : ''}`} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
       {/* HALTE de voyage : le RAPPORT DU JOUR se lit le soir même (km, péripéties, jets en
-          lignes multijet) — avant de régler la nuit. */}
+          lignes multijet) — avant de régler la nuit. Même corps que le recap (TravelDayBody). */}
       {p.travelDay && (
         <div className="rest-travel-day">
           <p className="rest-time">
             🧭 Journée de route — {Math.round(p.travelDay.kmTo - p.travelDay.kmFrom)} km en {Math.round(p.travelDay.hours)} h
           </p>
-          {p.travelDay.lines.length > 0 && (
-            <ul className="rest-travel-lines">
-              {p.travelDay.lines.map((l, i) => <li key={i}>{l}</li>)}
-            </ul>
-          )}
-          {(p.travelDay.entries?.length ?? 0) > 0 && <MultiRollList entries={p.travelDay.entries!} />}
+          <TravelDayBody day={p.travelDay} />
         </div>
       )}
       {severity !== 'clement' && (

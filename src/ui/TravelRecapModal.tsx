@@ -5,6 +5,22 @@ import { TRAVEL_MODE_LABEL } from '../engine/travel';
 import { formatImperial, toDate } from '../engine/clock';
 import type { TravelRecap } from '../state/travelFlow';
 
+/** Corps PARTAGÉ du rapport d'une journée de route : péripéties/entretien en clair + JETS en
+ *  multijet (MÊME brique que le bilan de nuit) — utilisé par la halte du soir (RestModal) et le
+ *  recap de voyage. Une seule présentation des journées, pas deux. */
+export function TravelDayBody({ day }: { day: import('../state/travelFlow').TravelRecapDay }) {
+  return (
+    <>
+      {day.lines.length > 0 && (
+        <ul className="rest-travel-lines">
+          {day.lines.map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+      )}
+      {(day.entries?.length ?? 0) > 0 && <MultiRollList entries={day.entries!} />}
+    </>
+  );
+}
+
 /**
  * Récapitulatif de voyage (audit M4) — la résolution d'un trajet est SYNCHRONE (l'horloge saute
  * en bloc) : cette modale raconte au joueur ce qui vient de se passer, jour par jour (fatigue,
@@ -44,13 +60,7 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
             <span className="travel-recap-day">
               Jour {i + 1} — {Math.round(d.kmTo - d.kmFrom)} km en {Math.round(d.hours)} h de route
             </span>
-            {d.lines.length > 0 && (
-              <ul>
-                {d.lines.map((l, j) => <li key={j}>{l}</li>)}
-              </ul>
-            )}
-            {/* Les JETS du jour (marche forcée, Survie, Perception…) : multijet, comme la nuit. */}
-            {(d.entries?.length ?? 0) > 0 && <MultiRollList entries={d.entries!} />}
+            <TravelDayBody day={d} />
           </li>
         ))}
       </ol>

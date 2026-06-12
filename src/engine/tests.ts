@@ -46,6 +46,14 @@ export function evaluateTest(r: number, target: number): TestResult {
   return { roll: r, target, success, sl, isDouble };
 }
 
+/** Détail d'AFFICHAGE d'un Test (base + mod = cible · d100 · DR) — la forme des lignes de jet
+ *  (RollLine / NightEntry.d). UNE construction partagée, au lieu d'objets recopiés par site. */
+export function testDetail(label: string, base: number, t: TestResult): {
+  label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number;
+} {
+  return { label, base, modifier: t.target - base, target: t.target, roll: t.roll, success: t.success, sl: t.sl };
+}
+
 export interface OpposedResult {
   attacker: TestResult;
   defender: TestResult;

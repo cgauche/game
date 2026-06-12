@@ -21,7 +21,7 @@
  */
 import { Combatant } from './types';
 import { RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { rollTest, testDetail } from './tests';
 import { testValue } from './skills';
 import { addCondition } from './conditions';
 import { effectiveMovement, encumbrancePenalties } from './encumbrance';
@@ -129,7 +129,7 @@ export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarc
   if (c.dead) return null;
   const base = testValue(c, 'Résistance', 'E');
   const t = rollTest(base, 'intermediaire', rng);
-  const d = { label: 'Résistance', base, modifier: t.target - base, target: t.target, roll: t.roll, success: t.success, sl: t.sl };
+  const d = testDetail('Résistance', base, t);
   if (t.success) return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → il tient l'allure.`, gained: 0, d };
   const overloaded = encumbrancePenalties(c).tier > 0;
   const n = overloaded ? 2 : 1;
