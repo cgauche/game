@@ -282,7 +282,7 @@ export function restSleep(get: Get, set: Set): void {
       feedFromMeal(h);
       // Nourriture PIÈTRE (ch.66 l.51) : « 10 % d'exposition à la Courante galopante ».
       if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10) {
-        const log = rollContraction(h, 'Courante galopante', restResistVal(h), DISEASE_DEFS['Courante galopante']?.contractDifficulty ?? 'accessible', rng);
+        const log = rollContraction(h, 'Courante Galopante', restResistVal(h), DISEASE_DEFS['Courante Galopante']?.contractDifficulty ?? 'accessible', rng);
         pre.push({ actorId: h.id, icon: '🤢', label: 'Tambouille douteuse', text: log.join(' ') || 'Le repas passe mal…', tone: 'bad' });
       }
     }

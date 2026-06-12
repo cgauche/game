@@ -1,5 +1,6 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
+import { contractDisease } from '../../engine/disease';
 import { itemFromTrapping } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { WorldMap } from '../../state/worldMap';
@@ -20,15 +21,22 @@ function groupe(): Combatant[] {
   // Greta voyage SANS provisions : sur un long trajet, la faim s'installe (LDB 18 l.417-422).
   const greta = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });
   greta.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.45 };
-  // Le groupe part BLESSÉ : chaque nuit, le bilan montre le jet de Récupération (Résistance +20
-  // → DR+BE PB, +BE/jour) — et l'écart rations/faim entre Erik et Greta se voit sur la durée.
+  // Le groupe part DANS UN SALE ÉTAT pour que le bilan de nuit montre TOUS ses jets :
+  //  - BLESSÉS → jet de Récupération (Résistance +20 → DR+BE PB, +BE/jour) chaque nuit ;
+  //  - Erik fait des CAUCHEMARS (LDB 21 l.92) → Test de Calme chaque nuit, Exténué sur échec ;
+  //  - Greta couve la VÉROLE URTICANTE (active, contagieuse — LDB 20) → progression quotidienne
+  //    ET Test de Contagion d'Erik à chaque nuit de promiscuité ;
+  //  - la PLUIE sur les scènes de départ → Exposition (2 Tests/nuit) en dormant dehors sans tente.
   erik.wounds.current = Math.max(1, erik.wounds.max - 8);
   greta.wounds.current = Math.max(1, greta.wounds.max - 6);
+  erik.nightmares = true;
+  greta.diseases = [contractDisease('Vérole Urticante', makeRNG(1503), { incubation: 0, duration: 5 })!];
   return [erik, greta];
 }
 
 // ── Scènes : village de départ (auberge), hameau, bourg, théâtre d'embuscade ──
 const village = arena({ id: 'test-voyage-village', nom: 'Village de Weiler', w: 14, h: 9, heroStart: { x: 3, y: 4 } });
+village.weather = 'pluie'; // nuit dehors = Exposition (la météo de la scène de départ suit le voyage)
 village.startMessage =
   'Ouvrez la carte (🗺️) pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
   'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Le groupe part blessé : chaque nuit, ' +
@@ -58,7 +66,8 @@ village.dialogues = [
 ];
 
 const hameau = arena({ id: 'test-voyage-hameau', nom: 'Hameau de Federholz', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
-hameau.startMessage = 'Vous voilà à Federholz. (Reprenez la carte pour repartir.)';
+hameau.weather = 'pluie'; // la longue route part d'ici : camper sous la pluie expose
+hameau.startMessage = 'Vous voilà à Federholz. (Reprenez la carte pour repartir — la LONGUE route d’Eichenfeld part d’ici.)';
 
 const bourg = arena({ id: 'test-voyage-bourg', nom: 'Bourg de Steinbruck', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
 bourg.startMessage = 'Steinbruck, ses quais et sa halle. (Reprenez la carte pour repartir.)';
@@ -128,8 +137,8 @@ export const scenario: TestScenario = {
   order: 15,
   icon: '🧭',
   title: 'Voyage & Nourriture',
-  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), HALTES de nuit (modale de Repos — camp sur la piste, relais sur les routes), LONG voyage 96 km = 3 nuits avec récupération des blessés, faim RAW, péripéties + embuscade + reprise, auberge/🌙 au village',
-  partyNote: 'Erik (3 rations) & Greta (sans provisions) — blessés',
+  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), HALTES de nuit (modale de Repos — camp sur la piste, relais sur les routes), LONG voyage 96 km = 3 nuits, bilan de nuit COMPLET : récupération des blessés, cauchemars d’Erik, Vérole Urticante de Greta (progression + contagion), Exposition sous la pluie, faim RAW ; péripéties + embuscade + reprise, auberge/🌙 au village',
+  partyNote: 'Erik (3 rations, cauchemars) & Greta (sans provisions, Vérole) — blessés sous la pluie',
   makeParty: groupe,
   scene: village,
   extraScenes: [hameau, bourg, cite, embuscade],
