@@ -69,12 +69,14 @@ export function purgeClockEffects(get: Get, set: Set): void {
 
 /** Traite les journées écoulées depuis le dernier entretien (rations/faim, maladies, convalescence)
  *  + purge des effets d'horloge. No-op (hors purge) si aucun franchissement de jour. Appelé par
- *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage. */
-export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean } = {}): void {
+ *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage.
+ *  RENVOIE les lignes du bilan : chaque appelant les AFFICHE (révélation témoin / bilan de nuit /
+ *  recap de voyage) — le journal seul ne suffit pas (personne ne le lit). */
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean } = {}): string[] {
   purgeClockEffects(get, set);
   const today = dayIndex(get().gameTime);
   const last = get().lastUpkeepDay;
-  if (today <= last) return;
+  if (today <= last) return [];
   const party = get().party;
   const lines: string[] = [];
   let rations = 0;
@@ -98,4 +100,5 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
   set({ lastUpkeepDay: today, party: [...party], journal: [...get().journal.slice(-40), ...lines] });
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
+  return lines;
 }

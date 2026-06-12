@@ -3184,7 +3184,10 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à
     // durée d'horloge (contrecoups LDB 46/40) : traite les éventuels franchissements de jour.
-    runDailyUpkeep(get, set);
+    // VISIBLE (le journal seul ne suffit pas) : hors repos/voyage (qui affichent leurs propres
+    // bilans), le franchissement de jour pousse une révélation témoin groupée.
+    const upkeepLines = runDailyUpkeep(get, set);
+    if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => { restFlow.sleepParty(get, set, days); },

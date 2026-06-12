@@ -118,7 +118,11 @@ export function sleepParty(
   // Soins prolongés : un soignant valide (Guérison) veille les malades — Test supposé réussi sur la
   // durée (abstraction du repos, LDB 09 : −1 jour/jour de soins par maladie).
   const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
-  runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily });
+  // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
+  // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
+  for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
+    entries.push({ actorId: get().party.find((h) => text.startsWith(h.name))?.id, icon: '📆', label: 'Entretien quotidien', text, tone: 'info' });
+  }
 
   // Campement (modale) : abri + Exposition AVANT la récupération.
   opts.beforeRecovery?.(entries);

@@ -70,14 +70,14 @@ const JUSTIFIED: Record<string, string> = {
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
   applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',
   // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
-  applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/contractDisease = conséquences subies journalisées + révélées',
+  applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/inflictDisease poussent une RÉVÉLATION témoin 📜 (kind effet)',
   applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',
   advanceTurn: 'fin de tour : IA ennemie (instantanée par design) + entretien de fin de Round en file de révélation témoin',
   // ── Jets d’ENTRETIEN / monde — subis et RÉVÉLÉS (catégorie 2) ou ambiants (catégorie 3) ──
   startCombat: 'Initiative (I+1d10) en début de combat — lue dans la frise d’initiative (R2)',
-  advanceTime: 'cascade quotidienne #T3 (upkeep) — jets subis journalisés',
-  restParty: 'repos hors modale (scénarios/recette) — même cascade journalisée que la nuit',
-  runDailyUpkeep: 'entretien QUOTIDIEN (rations/maladies/convalescence) — chaque jet est journalisé ligne à ligne',
+  advanceTime: 'cascade quotidienne #T3 : franchissement de jour → RÉVÉLATION témoin « Entretien quotidien » (lignes du bilan)',
+  restParty: 'repos hors modale (scénarios/recette) — même bilan de nuit (NightEntry) que la modale de Repos',
+  runDailyUpkeep: 'entretien QUOTIDIEN (rations/maladies/convalescence) — RENVOIE ses lignes, chaque appelant les AFFICHE (révélation/bilan de nuit/recap de voyage)',
   outOfCombatUpkeep: 'États récurrents hors combat (Hémorragique…) — rejoue endOfRound, journalisé',
   sleepParty: 'source UNIQUE de la nuit : chaque jet devient une NightEntry LISTÉE (modale de Repos / recap) + journal',
   restSleep: 'résolveur « Dormir » du Repos : délègue à sleepParty — NightEntry visibles',

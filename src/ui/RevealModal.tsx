@@ -19,6 +19,7 @@ const ICON: Record<RevealEntry['kind'], string> = {
   calme: '😱',
   round: '⏳',
   mutation: '🧬',
+  effet: '📜', // effet d'AUTEUR (scénario) : Blessure Critique / maladie infligée
 };
 
 /** Nom de la table tirée pour la rangée d100 (présentation canonique `TableRollLine`). */

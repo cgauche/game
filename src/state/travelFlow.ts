@@ -196,11 +196,12 @@ function runTravelDays(get: Get, set: Set): void {
     const hoursToday = Math.min(plan.hoursPerDay, hoursLeft);
     set({ gameTime: get().gameTime + Math.round(hoursToday * 60) });
     bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(hoursToday * 60) });
-    runDailyUpkeep(get, set); // au cas où la marche franchit minuit
+    const upkeepLines = runDailyUpkeep(get, set); // au cas où la marche franchit minuit
     const kmDone = Math.min(plan.km, plan.kmDone + hoursToday * kmh);
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const arrived = plan.km - kmDone < 1e-9;
-    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [] };
+    // L'entretien quotidien (rations/faim, maladies, convalescence) fait partie du RÉCIT du jour.
+    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [...upkeepLines] };
     recap?.days.push(recapDay);
 
     // Fin de journée de route À PIED : fatigue d'Encombrement (p.295) + marche forcée (l.224).
@@ -321,7 +322,7 @@ function applyEreintant(get: Get, set: Set): string[] {
   }
   set({ party: [...party], gameTime: get().gameTime + 24 * 60 }); // un jour de plus sur la route
   bus.emit(EVT.TIME_ADVANCED, { minutes: 24 * 60 });
-  runDailyUpkeep(get, set);
+  lines.push(...runDailyUpkeep(get, set)); // l'entretien du jour perdu se RACONTE aussi
   lines.push('Le détour coûte une journée entière au groupe.');
   log(get, set, lines);
   return lines;

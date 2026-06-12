@@ -379,6 +379,8 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
         // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
         // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
         let who = '';
+        let whoId = '';
+        let labels: string[] = [];
         set((s: GameState) => {
           if (!s.party.length) return {};
           const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
@@ -387,6 +389,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
             party: s.party.map((h, i) => {
               if (i !== target) return h;
               who = h.name;
+              whoId = h.id;
               const be = Math.floor(effectiveChar(h, 'E') / 10);
               // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
               // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
@@ -394,17 +397,24 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
               const traumas = e.kind === 'amputation'
                 ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
                 : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
+              labels = traumas.map((t) => t.label);
               return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
             }),
           };
         });
-        if (who) get().log(`${who} subit une Blessure Critique (${e.kind}, ${e.location}).`);
+        if (who) {
+          const line = `${who} subit une Blessure Critique (${e.kind}, ${e.location}).`;
+          get().log(line);
+          // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
+          pushReveal(set, { kind: 'effet', title: `Blessure Critique — ${e.kind}`, lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
+        }
         break;
       }
       case 'inflictDisease': {
         // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
         // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
         let who = '';
+        let whoId = '';
         set((s: GameState) => {
           if (!s.party.length) return {};
           const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
@@ -415,11 +425,17 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
               const dz = contractDisease(e.disease, battleRng());
               if (!dz) return h;
               who = h.name;
+              whoId = h.id;
               return { ...h, diseases: [...(h.diseases ?? []), dz] };
             }),
           };
         });
-        if (who) get().log(`${who} a contracté : ${e.disease} (symptômes au repos).`);
+        if (who) {
+          const line = `${who} a contracté : ${e.disease} (symptômes au repos).`;
+          get().log(line);
+          // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
+          pushReveal(set, { kind: 'effet', title: `Maladie — ${e.disease}`, lines: [line], subjectId: whoId, severity: 'grave' });
+        }
         break;
       }
       case 'giveTrapping': {

@@ -39,6 +39,16 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
     expect(dz.phase).toBe('active'); // l'incubation (2 j) s'est écoulée — calendaire, pas « au repos »
   });
 
+  it('le bilan d’entretien d’advanceTime est VISIBLE : révélation « Entretien quotidien » (pas que le journal)', () => {
+    const c = hero({ items: [] }); // sans rations → lignes de faim garanties
+    useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0, pendingReveals: [] });
+    useGame.getState().advanceTime(2 * MINUTES_PER_DAY);
+    const reveal = useGame.getState().pendingReveals.find((r) => r.title === 'Entretien quotidien');
+    expect(reveal).toBeTruthy();
+    expect(reveal!.lines.length).toBeGreaterThan(0);
+    useGame.setState({ pendingReveals: [] }); // ne pas geler l'IA des tests suivants (piège connu)
+  });
+
   it('la convalescence d’un trauma décompte les jours CALENDAIRES (LDB 18 l.317), repos ou pas', () => {
     const c = hero({ traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
     useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0 });
