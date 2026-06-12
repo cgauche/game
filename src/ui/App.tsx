@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useGame } from '../state/store';
 import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
@@ -13,10 +13,31 @@ const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) 
 const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
 const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
 
+/** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
+function CoopBanner() {
+  const net = useGame((s) => s.net);
+  if (net.mode === 'guest' && net.connection === 'reconnecting')
+    return <div className="coop-banner">🔌 Reconnexion en cours…</div>;
+  if (net.mode === 'guest' && net.hostAway)
+    return <div className="coop-banner">⏳ L'hôte est déconnecté — la partie reprendra à son retour.</div>;
+  if (net.mode === 'host') {
+    const away = Object.entries(net.presence)
+      .filter(([, p]) => p === 'away')
+      .map(([s]) => net.seatNames[Number(s)] ?? `Joueur ${Number(s) + 1}`);
+    if (away.length) return <div className="coop-banner">🔌 {away.join(', ')} : reconnexion en cours…</div>;
+  }
+  return null;
+}
+
 export function App() {
   const screen = useGame((s) => s.screen);
+  // Lien d'invitation ?join=CODE → arrivée directe sur l'écran coop (code pré-rempli).
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('join')) useGame.getState().setScreen('coop');
+  }, []);
   return (
     <div className="app">
+      <CoopBanner />
       <Suspense fallback={<div className="lazy-fallback" role="status"><span aria-hidden>⚜</span> Chargement…</div>}>
         {screen === 'menu' && <MainMenu />}
         {screen === 'party' && <PartyScreen />}

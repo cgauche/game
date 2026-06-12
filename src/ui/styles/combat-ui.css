@@ -60,7 +60,7 @@
   font-size: 18px;
 }
 
-/* ── Lobby coop (Jalon 7) — carte centrée sur la charte (même coquille que le menu) ── */
+/* ── Lobby coop — carte centrée sur la charte (même coquille que le menu) ── */
 .coop-card {
   max-width: 460px;
   text-align: left;
@@ -99,21 +99,49 @@
 .coop-roles .coop-role {
   margin-bottom: 0;
 }
-.coop-role textarea,
-.coop-invite textarea {
-  width: 100%;
-  font-family: monospace;
-  font-size: 11px;
-  resize: vertical;
-}
 .coop-invite {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-start;
+  align-items: stretch;
 }
-.coop-invite textarea {
-  align-self: stretch;
+.coop-code {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em; /* compense le letter-spacing du dernier caractère */
+  text-align: center;
+  color: var(--gold2);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.25em 0.4em;
+  cursor: pointer;
+  user-select: all;
+}
+.coop-code-input {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  text-align: center;
+  font-size: 1.2rem;
+}
+.coop-banner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  background: var(--panel);
+  border: 1px solid var(--danger-soft);
+  color: var(--danger-soft);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.coop-seats .away {
+  color: var(--muted);
 }
 .coop-seats {
   list-style: none;
