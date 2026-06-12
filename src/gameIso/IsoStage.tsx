@@ -49,6 +49,7 @@ import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
 import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
 import { hoverTargeting } from '../state/targeting';
+import { controlsActive } from '../state/netOwnership';
 import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
@@ -121,6 +122,9 @@ export function IsoStage() {
   // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
   const enemyAim = useGame((s) => s.enemyAim);
+  // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance
+  // (grille de déplacement, visée au survol, anneaux de cible, clics). Source unique : netFlow.
+  const myTurn = useGame(controlsActive);
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture du combat : cadrer tout le champ
   const pendingAttack = useGame((s) => s.pendingAttack);
   const pendingCast = useGame((s) => s.pendingCast);
@@ -300,7 +304,7 @@ export function IsoStage() {
     preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     reticle: boolean;
   } | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || !hover) return null;
+    if (mode !== 'battle' || !battle || battle.over || !hover || !myTurn) return null;
     // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
     const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
@@ -348,18 +352,18 @@ export function IsoStage() {
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
-  }, [hover, mode, battle, scene, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [hover, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
   // souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes
   // sources que le clic (movePreviewAt) ; memoïsé : pathTo ne tourne pas à 60 Hz.
   const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || !hover || battle.preview) return null;
+    if (mode !== 'battle' || !battle || battle.over || !hover || battle.preview || !myTurn) return null;
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
     const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
     if (occ) return null; // une cible a sa propre visée (hoverAim)
     return movePreviewAt(useGame.getState, hover);
-  }, [hover, mode, battle, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Jauges EN DIRECT (clignotant de l'ActiveFrame) : le coût/gain (Action/Mouvement/Avantage) de
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par
@@ -380,25 +384,28 @@ export function IsoStage() {
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const hl: JSX.Element[] = [];
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+    // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
+    // (ni grille de déplacement, ni anneaux de cible, ni aperçu) ; teintes d'équipe/zones restent.
     // (Plus AUCUN indicateur de distance au sol — ni bandes de tir ni portée de sort : la portée se
     // lit au survol — réticule présent = cible valide, ⛔ sinon. Seuls marche/course restent.)
     // Portée de Marche AFFICHÉE EN PERMANENCE au tour d'un héros (modèle de clic implicite) :
     // budget spécial stocké (post-Désengagement) prioritaire, sinon Marche restante dérivée.
-    const walkReach = displayedReach(useGame.getState);
+    const walkReach = myTurn ? displayedReach(useGame.getState) : new Map<string, number>();
     for (const k of walkReach.keys()) {
       const [x, y] = k.split(',').map(Number);
       hl.push(<path key={`h${k}`} d={diamondPath(x, y, d)} fill="#4f8fe0" opacity={0.32} />);
     }
     // Zone de COURSE (LDB 15 l.79-82) au-delà de la Marche, dans une AUTRE couleur : y cliquer
     // demandera le Test d'Athlétisme, et le jet peut porter moins loin que la case visée.
-    for (const k of computeRunReach(useGame.getState).keys()) {
-      if (walkReach.has(k)) continue;
-      const [x, y] = k.split(',').map(Number);
-      hl.push(<path key={`r${k}`} d={diamondPath(x, y, d)} fill="#9b6be0" opacity={0.24} />);
-    }
+    if (myTurn)
+      for (const k of computeRunReach(useGame.getState).keys()) {
+        if (walkReach.has(k)) continue;
+        const [x, y] = k.split(',').map(Number);
+        hl.push(<path key={`r${k}`} d={diamondPath(x, y, d)} fill="#9b6be0" opacity={0.24} />);
+      }
     // Aperçu tap-1 (tactile) : chemin + case d'arrivée + badge — MÊME rendu que le survol desktop
     // (movePreviewEls, source unique du tracé de déplacement).
-    const pv = battle.preview;
+    const pv = myTurn ? battle.preview : null;
     if (pv) {
       const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
       const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
@@ -426,7 +433,7 @@ export function IsoStage() {
     }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
     // (attaque implicite), tant que l'Action est disponible (ou attaque libre de Frénésie).
-    if (battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || (activeC.frenzied && !activeC.frenzyFreeUsed))) {
+    if (myTurn && battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || (activeC.frenzied && !activeC.frenzyFreeUsed))) {
       const eligible = eligibleAttackTargetIds(useGame.getState);
       for (const c of battle.combatants) {
         if (!c.pos || !eligible.has(c.id)) continue;
@@ -445,7 +452,7 @@ export function IsoStage() {
     }
     // Ciblage CHAMP DE BATAILLE des flux différés (bandeau TargetPrompt) : anneau sur les cibles
     // cliquables — Frappe Mortelle / 2ᵉ frappe (Deux armes) / Surincantation « +Cible ».
-    if (!pendingAttack) {
+    if (myTurn && !pendingAttack) {
       const ring = (c: Combatant, key: string, color = '#ff5a4d') =>
         hl.push(<path key={key} d={diamondPath(c.pos!.x, c.pos!.y, d)} fill="none" stroke={color} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />);
       if (pendingCleave) {
@@ -468,7 +475,7 @@ export function IsoStage() {
       }
     }
     return hl;
-  }, [scene, shownRot, viewMode, mode, battle, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
+  }, [scene, shownRot, viewMode, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
 
   // Tokens des ENTITÉS de scène (exploration) memoïsés : ils ne BOUGENT pas pendant que le groupe
   // marche (seul le leader glisse, rendu à part). Sans ça, le rAF de marche (setWalkTick) re-rendait
@@ -828,6 +835,7 @@ export function IsoStage() {
     if (!sc || st.dialogue || !t) return;
     const { x, y } = t;
     if (st.mode === 'battle') {
+      if (!controlsActive(st)) return; // coop : tour du héros d'un AUTRE joueur — clics inertes
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
       // En mode incantation — ou pendant le choix des cibles de Surincantation (carte) — on peut
       // cibler n'importe quel combattant (allié, ennemi ou soi) ; sinon seuls les ennemis sont

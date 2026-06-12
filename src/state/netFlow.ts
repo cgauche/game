@@ -337,10 +337,6 @@ export function netLeave(get: Get, set: Set): void {
   set({ net: initialNet() });
 }
 
-/** Le siège LOCAL possède-t-il ce combattant ? (gating d'affichage P2 — vrai en solo/hôte par défaut.) */
-export function ownsLocally(state: GameState, combatantId: string | undefined): boolean {
-  const { mode, mySeat, ownership } = state.net;
-  if (mode === 'local') return true;
-  if (!combatantId) return mode === 'host';
-  return (ownership[combatantId] ?? 0) === mySeat;
-}
+// Gating d'affichage (P2) : prédicats PURS déplacés dans netOwnership (pas de cycle store↔netFlow) —
+// ré-exportés ici pour les sites d'import existants.
+export { ownsLocally, controlsActive } from './netOwnership';

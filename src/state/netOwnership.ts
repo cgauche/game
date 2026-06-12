@@ -14,6 +14,28 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
   return (s.net.ownership[combatantId] ?? 0) === seat;
 }
 
+/** Le siège LOCAL possède-t-il ce combattant ? (gating d'affichage P2 — vrai en solo/hôte par défaut.) */
+export function ownsLocally(state: GameState, combatantId: string | undefined): boolean {
+  const { mode, mySeat, ownership } = state.net;
+  if (mode === 'local') return true;
+  if (!combatantId) return mode === 'host';
+  return (ownership[combatantId] ?? 0) === mySeat;
+}
+
+/** Le joueur LOCAL contrôle-t-il le combattant ACTIF du combat ? Faux pendant le tour du héros
+ *  d'un AUTRE joueur (hôte inclus) : l'UI traite alors ce tour comme un tour ennemi — aucune
+ *  affordance (grille de déplacement, réticule, clics de carte/portrait). Tour ennemi → vrai :
+ *  l'IA tourne chez l'hôte et l'UI est déjà inerte par ses propres verrous. */
+export function controlsActive(state: GameState): boolean {
+  if (state.net.mode === 'local') return true;
+  const b = state.battle;
+  if (!b || b.over) return true;
+  const activeId = b.order[b.turn];
+  const active = b.combatants.find((c) => c.id === activeId);
+  if (!active || active.kind !== 'hero') return true;
+  return ownsLocally(state, activeId);
+}
+
 /** Emplacements de groupe encore à remplir par ce siège : slots attribués − héros possédés.
  *  (En mode local, slots = [0,0,0,0] → l'hôte garde les 4 emplacements, comme avant la coop.) */
 export function seatSlotsRemaining(s: GameState, seat: number): number {

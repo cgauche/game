@@ -62,6 +62,11 @@ export function ActiveModal(): JSX.Element | null {
   if (s.net.mode !== 'local') {
     const ownerId = modalOwnerOf(s);
     if (ownerId !== '*' && ownerId !== null && !ownsLocally(s, ownerId)) {
+      // Anti-doublon : pendant le TOUR d'un héros distant, la barre d'action affiche déjà
+      // « ⏳ X joue Héros… » — la puce ne sert que si la modale concerne un AUTRE combattant
+      // (ex. défense réactive d'un héros distant pendant un tour ennemi).
+      const activeId = s.battle && !s.battle.over ? s.battle.order[s.battle.turn] : undefined;
+      if (ownerId !== undefined && ownerId === activeId) return null;
       const seat = ownerId ? s.net.ownership[ownerId] ?? 0 : 0;
       return <SpectatorChip name={s.net.seatNames[seat] ?? 'L’hôte'} />;
     }

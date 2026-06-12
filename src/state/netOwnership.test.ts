@@ -3,7 +3,7 @@
  * le combattant concerné — modale ouverte → son concerné seul ('*' = tous) ; sinon le tour actif.
  */
 import { describe, it, expect } from 'vitest';
-import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining } from './netOwnership';
+import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining, controlsActive } from './netOwnership';
 import type { GameState } from './store';
 
 const base = (over: Partial<GameState>): GameState =>
@@ -76,6 +76,31 @@ describe('possession réseau (netOwnership)', () => {
     const s = base({ battle: null } as unknown as Partial<GameState>);
     expect(intentAllowedFor(s, 1, 'partyRemoveHero', ['h2'])).toBe(true);
     expect(intentAllowedFor(s, 1, 'partyRemoveHero', ['h1'])).toBe(false);
+  });
+});
+
+describe('controlsActive — gating d’affichage : le tour d’un héros distant est inerte (comme un tour ennemi)', () => {
+  const withSeat = (s: GameState, mySeat: number): GameState =>
+    ({ ...s, net: { ...s.net, mySeat } }) as GameState;
+
+  it('mode local / hors combat : toujours vrai', () => {
+    expect(controlsActive(base({ net: { ...base({}).net, mode: 'local' } } as unknown as Partial<GameState>))).toBe(true);
+    expect(controlsActive(base({ battle: null } as unknown as Partial<GameState>))).toBe(true);
+  });
+
+  it('tour du héros d’un AUTRE joueur : faux — pour l’hôte aussi', () => {
+    const s = base({ battle: { ...base({}).battle!, turn: 1 } }); // actif = h2 (siège 1), vu de l'hôte
+    expect(controlsActive(s)).toBe(false); // l'hôte ne pilote PAS le héros de l'invité
+    expect(controlsActive(withSeat(s, 1))).toBe(true); // son propriétaire, si
+  });
+
+  it('tour de SON héros : vrai ; tour ennemi : vrai pour tous (l’IA est déjà inerte)', () => {
+    const s = base({}); // actif = h1 (non attribué → hôte)
+    expect(controlsActive(s)).toBe(true);
+    expect(controlsActive(withSeat(s, 1))).toBe(false);
+    const enemyTurn = base({ battle: { ...base({}).battle!, order: ['e1', 'h1', 'h2'], turn: 0 } });
+    expect(controlsActive(enemyTurn)).toBe(true);
+    expect(controlsActive(withSeat(enemyTurn, 1))).toBe(true);
   });
 });
 

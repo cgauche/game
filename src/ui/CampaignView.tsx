@@ -27,6 +27,7 @@ import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
+import { controlsActive } from '../state/netOwnership';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -85,8 +86,10 @@ export function CampaignView() {
   });
   // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
   // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
+  // COOP : seulement quand le combattant actif est À SOI (le tour d'un autre joueur est inerte).
+  const controls = useGame(controlsActive);
   const targetingAction = battle && !battle.over ? battle.action : null;
-  const isTargeting = !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
+  const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
   const onStripPortrait = (id: string) => {
     if (isTargeting) { battleClickEntity(id, { confirm: hoverClickCommits() }); return; } // desktop : un clic commet (cf. pointerCaps)
     if (inspectEnabled) setInspectId(id);

@@ -11,7 +11,7 @@ import { compatibleAmmo } from '../engine/items';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
-import { ownsLocally } from '../state/netFlow';
+import { controlsActive } from '../state/netOwnership';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
@@ -120,7 +120,7 @@ export function ActionBar() {
   if (!active) return null;
 
   // COOP : le combattant actif appartient à un AUTRE joueur → barre spectateur (pas de contrôles).
-  if (net.mode !== 'local' && active.kind === 'hero' && !ownsLocally(useGame.getState(), active.id)) {
+  if (active.kind === 'hero' && !controlsActive(useGame.getState())) {
     const seat = net.ownership[active.id] ?? 0;
     return (
       <div className="action-bar establishing-bar">
