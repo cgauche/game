@@ -1,5 +1,6 @@
 import { useGame } from './store';
 import { checkBattleOver } from './combatFlow';
+import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction } from '../engine/conditions';
 import { formatImperial } from '../engine/clock';
@@ -17,9 +18,14 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
- *   __wfrp.scenario('id') → lance un scénario de test direct (sans menu) ; sans arg : liste les ids
+ *   __wfrp.scenario('id', seed?) → lance un scénario de test PRÊT À JOUER (sans menu, Round 1 acquitté,
+ *                           initiative déterministe si seed) ; sans arg : liste les ids
  *   __wfrp.hover('id')    → survol PROGRAMMATIQUE (tooltip + réticule de visée, sans souris) ; null efface
  *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
+ *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
+ *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte
+ *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
+ *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
  *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
  *   __wfrp.healParty()    → groupe à neuf (PB max, états/critiques/maladies purgés)
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
@@ -27,6 +33,35 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
  */
+/** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
+ *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
+ *  et les invites de CIBLAGE (Cleave/DualStrike/choix de monture) sont exclues. */
+function devFluxOf(open: string[]): string | null {
+  const special = new Set(['pendingReveals', 'pendingRoundStart', 'pendingVictory', 'pendingCleave', 'pendingDualStrike', 'pendingMountTarget']);
+  const k = open.find((x) => !special.has(x));
+  if (!k) return null;
+  const name = k.slice('pending'.length);
+  return name.charAt(0).toLowerCase() + name.slice(1);
+}
+
+/** Pilote LA modale ouverte par convention (cf. __wfrp.roll/confirm/cancel). */
+function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
+  const s = useGame.getState() as unknown as Record<string, unknown>;
+  const open = Object.keys(s).filter((k) => /^pending/.test(k) && (Array.isArray(s[k]) ? (s[k] as unknown[]).length > 0 : s[k] != null));
+  if (!open.length) return '❌ aucune modale ouverte';
+  // Files à verbe propre d'abord : révélation témoin, pause d'ouverture de Round.
+  if (verb === 'Confirm') {
+    if (open.includes('pendingReveals')) { (s.dismissReveal as () => void)(); return '✅ révélation acquittée'; }
+    if (open.includes('pendingRoundStart')) { (s.confirmRoundStart as () => void)(); return '✅ Round lancé'; }
+  }
+  const flux = devFluxOf(open);
+  if (!flux) return `❌ pas de flux pilotable parmi : ${open.join(', ')}`;
+  const fn = s[flux + verb];
+  if (typeof fn !== 'function') return `❌ action ${flux}${verb} introuvable (modales ouvertes : ${open.join(', ')})`;
+  (fn as () => void)();
+  return `✅ ${flux}${verb}()`;
+}
+
 export function buildApi() {
   const g = () => useGame.getState();
   const find = (id: string) => g().scene?.entities.find((e) => e.id === id);
@@ -116,20 +151,90 @@ export function buildApi() {
       return hoverTargeting(() => useGame.getState(), active, target);
     },
 
-    /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('ciblage').
-     *  Sans argument : liste les ids. Même flux que l'écran « Scénarios de test ». */
-    scenario: (id?: string) => {
+    /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('ciblage', 42).
+     *  Sans argument : liste les ids. `seed` (optionnel) rend l'initiative DÉTERMINISTE. Le combat
+     *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). */
+    scenario: (id?: string, seed?: number) => {
       if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.icon} ${sc.title}`);
       const sc = testScenarios.find((t) => t.id === id);
       if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
       const s = g();
+      if (seed != null) s.seedRng(seed);
       s.setParty(sc.makeParty());
       if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
       else s.startScene(sc.scene);
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
+      if (g().pendingRoundStart) g().confirmRoundStart();
       s.setScreen('campaign');
-      return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct)' : ''}`;
+      return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
     },
+
+    /** Snapshot COMBAT compact : round, actif, modales ouvertes, et chaque combattant en une ligne. */
+    battle: () => {
+      const s = g();
+      const b = s.battle;
+      if (!b) return '❌ pas de combat en cours';
+      const pendings = Object.keys(s).filter((k) => {
+        if (!/^pending/.test(k)) return false;
+        const v = (s as unknown as Record<string, unknown>)[k];
+        return Array.isArray(v) ? v.length > 0 : v != null;
+      });
+      return {
+        round: b.round, over: b.over, action: b.action, selectedSpell: b.selectedSpell,
+        actif: b.order[b.turn], acted: b.acted, movementUsed: b.movementUsed,
+        modales: pendings,
+        combatants: b.combatants.map((c) => ({
+          id: c.id, name: c.name, kind: c.kind, pos: c.pos,
+          pb: `${c.wounds.current}/${c.wounds.max}`,
+          états: (c.conditions ?? []).map((x) => `${x.name}${x.value > 1 ? ` ×${x.value}` : ''}`),
+        })),
+      };
+    },
+
+    /** TRICHE de recette : donne le TOUR à un combattant (réinitialise Action/Mouvement du tour).
+     *  Saute les bornes de Round (pas de cascade de fin de Round) — pour mettre en place une
+     *  situation, pas pour simuler une partie. */
+    turn: (id: string) => {
+      const b = g().battle;
+      if (!b || b.over) return '❌ pas de combat en cours';
+      const idx = b.order.indexOf(id);
+      const c = b.combatants.find((x) => x.id === id);
+      if (idx < 0 || !c) return `❌ « ${id} » absent de l'ordre d'initiative`;
+      if (isOutOfAction(c)) return `❌ ${c.name} est hors de combat`;
+      useGame.setState({
+        battle: { ...b, turn: idx, acted: false, movementUsed: 0, movedPreAction: false, action: null, selectedSpell: null, preview: null, reachable: new Map(), moveSnapshot: null },
+      });
+      bus.emit(EVT.SCENE_DIRTY);
+      return `✅ au tour de ${c.name}`;
+    },
+
+    /** TRICHE de recette : téléporte un COMBATTANT (mise en place de situations LdV/portée). */
+    place: (id: string, pt: { x: number; y: number }) => {
+      const b = g().battle;
+      const c = b?.combatants.find((x) => x.id === id);
+      if (!b || !c) return '❌ combattant introuvable (combat uniquement — hors combat : goto)';
+      c.pos = { ...pt };
+      useGame.setState({ battle: { ...b } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return `✅ ${c.name} → (${pt.x},${pt.y})`;
+    },
+
+    /** Modale(s) `pending*` ouvertes + les actions de pilotage dérivées (convention <flux>Roll/Confirm/Cancel). */
+    modal: () => {
+      const s = g() as unknown as Record<string, unknown>;
+      const open = Object.keys(s).filter((k) => /^pending/.test(k) && (Array.isArray(s[k]) ? (s[k] as unknown[]).length > 0 : s[k] != null));
+      if (!open.length) return { open: [], actions: [] };
+      const flux = devFluxOf(open);
+      const names = flux ? ['Roll', 'Confirm', 'Cancel'].map((v) => flux + v).filter((n) => typeof s[n] === 'function') : [];
+      return { open, pilote: flux ? names : open.includes('pendingReveals') ? ['dismissReveal'] : open.includes('pendingRoundStart') ? ['confirmRoundStart'] : [] };
+    },
+
+    /** Lance le jet de LA modale ouverte (convention <flux>Roll) — « un jet = une modale ». */
+    roll: () => devDriveModal('Roll'),
+    /** Applique/acquitte LA modale ouverte (reveals → dismissReveal, Round → confirmRoundStart, sinon <flux>Confirm). */
+    confirm: () => devDriveModal('Confirm'),
+    /** Annule LA modale ouverte (<flux>Cancel). */
+    cancel: () => devDriveModal('Cancel'),
 
     /** RECETTE : élimine tous les ennemis du combat en cours puis passe par le flux de
      *  victoire NORMAL (`checkBattleOver` : finalize, pendingVictory/butin, onVictory).
