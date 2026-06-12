@@ -1,0 +1,163 @@
+/**
+ * Barre d'outils de l'éditeur v2 : menu « Fichier ▾ » (fini les 8 boutons à plat du POC),
+ * annuler/rétablir, SÉLECTEUR DE SCÈNE du projet (+ nouvelle / dupliquer / retirer — remplace
+ * la liste de l'ancien onglet « Scène »), carte du monde et ▶ Tester.
+ */
+import { useEffect, useRef, useState } from 'react';
+import type { Scene } from '../../state/scene';
+
+export function EditorToolbar({
+  onBack,
+  projectName,
+  onNew,
+  onOpen,
+  onSave,
+  onImport,
+  onExport,
+  onAdvanced,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  scenes,
+  activeId,
+  onSwitchScene,
+  onAddScene,
+  onDuplicateScene,
+  onDeleteScene,
+  worldCount,
+  onWorld,
+  onTest,
+}: {
+  onBack: () => void;
+  projectName: string;
+  onNew: () => void;
+  onOpen: () => void;
+  onSave: () => void;
+  onImport: (f: File) => void;
+  onExport: () => void;
+  onAdvanced: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  /** Scènes du projet, l'active EN PREMIER. */
+  scenes: Scene[];
+  activeId: string;
+  onSwitchScene: (id: string) => void;
+  onAddScene: () => void;
+  onDuplicateScene: () => void;
+  onDeleteScene: () => void;
+  worldCount: number | null;
+  onWorld: () => void;
+  onTest: () => void;
+}) {
+  const [fileOpen, setFileOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  // Fermeture du menu au clic extérieur / Échap.
+  useEffect(() => {
+    if (!fileOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setFileOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFileOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [fileOpen]);
+  const item = (label: string, fn: () => void) => (
+    <button
+      className="menu-item"
+      onClick={() => {
+        setFileOpen(false);
+        fn();
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <header className="bar editor-bar">
+      <button className="btn small" onClick={onBack}>
+        ← Menu
+      </button>
+      <h2 title={projectName}>Éditeur</h2>
+
+      <div className="editor-file" ref={menuRef}>
+        <button className={`btn small${fileOpen ? ' btn-primary' : ''}`} onClick={() => setFileOpen(!fileOpen)} aria-haspopup="menu" aria-expanded={fileOpen}>
+          Fichier ▾
+        </button>
+        {fileOpen && (
+          <div className="editor-menu panel" role="menu">
+            {item('🗋 Nouveau projet', onNew)}
+            {item('📂 Ouvrir…', onOpen)}
+            {item('💾 Enregistrer…', onSave)}
+            <hr />
+            <label className="menu-item">
+              ⬆ Importer JSON…
+              <input
+                type="file"
+                accept="application/json"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = '';
+                  if (f) {
+                    setFileOpen(false);
+                    onImport(f);
+                  }
+                }}
+              />
+            </label>
+            {item('⬇ Exporter JSON', onExport)}
+            <hr />
+            {item('⚙ Avancé (JSON de la scène)', onAdvanced)}
+          </div>
+        )}
+      </div>
+
+      <div className="editor-undo">
+        <button className="btn small" onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)">
+          ↶
+        </button>
+        <button className="btn small" onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Y)">
+          ↷
+        </button>
+      </div>
+
+      <div className="editor-scenes" title="Scènes du projet">
+        <select value={activeId} onChange={(e) => onSwitchScene(e.target.value)} aria-label="Scène active">
+          {scenes.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nom || s.id}
+            </option>
+          ))}
+        </select>
+        <button className="btn small" onClick={onAddScene} title="Nouvelle scène dans le projet">
+          ＋
+        </button>
+        <button className="btn small" onClick={onDuplicateScene} title="Dupliquer la scène active">
+          ⧉
+        </button>
+        <button className="btn small danger" onClick={onDeleteScene} disabled={scenes.length <= 1} title="Retirer la scène active du projet">
+          ✕
+        </button>
+      </div>
+
+      <div className="editor-toolbar">
+        <button className="btn small" onClick={onWorld} title="Carte du monde du projet : lieux, routes, voyage">
+          🗺️ Monde{worldCount !== null ? ` (${worldCount})` : ''}
+        </button>
+        <button className="btn small btn-primary" onClick={onTest}>
+          ▶ Tester
+        </button>
+      </div>
+    </header>
+  );
+}

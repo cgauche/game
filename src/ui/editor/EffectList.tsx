@@ -1,7 +1,10 @@
 /**
- * Constructeur d'effets réutilisable (triggers ET dialogues).
- * Un effet = une action de gameplay (journal, flag, document, objet, argent,
- * combat, transition, dialogue, test de compétence avec branches…).
+ * Constructeur d'effets réutilisable (triggers, dialogues, rencontres, props interactifs).
+ * Un effet = une action de gameplay (journal, flag, objet, argent, combat, transition, test…).
+ *
+ * v2 : chaque effet est une rangée REPLIÉE résumée en clair (`effectSummary`) qu'on déplie pour
+ * éditer ; « + Effet » ouvre un picker par CATÉGORIE (fini le select plat de 27 types) ; les
+ * effets se réordonnent (l'ordre d'application compte — `applyEffects`).
  */
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
@@ -42,36 +45,7 @@ export interface Ctx {
   scenes?: { id: string; nom?: string; entries: string[] }[];
 }
 
-const EFFECT_TYPES: Effect['type'][] = [
-  'journal',
-  'setFlag',
-  'document',
-  'giveTrapping',
-  'giveMoney',
-  'giveXp',
-  'restoreFortune',
-  'inflictNightmares',
-  'inflictDisease',
-  'inflictTrauma',
-  'giveSin',
-  'corruptionExposure',
-  'giveCorruption',
-  'learnSpell',
-  'rest',
-  'mealParty',
-  'interlude',
-  'startCombat',
-  'transition',
-  'transitionBack',
-  'openWorldMap',
-  'startDialogue',
-  'openMerchant',
-  'medicalAid',
-  'test',
-  'setTime',
-  'endDialogue',
-];
-const EFFECT_LABEL: Record<Effect['type'], string> = {
+export const EFFECT_LABEL: Record<Effect['type'], string> = {
   journal: 'Journal',
   setFlag: 'Définir un flag',
   document: 'Document (handout)',
@@ -100,6 +74,68 @@ const EFFECT_LABEL: Record<Effect['type'], string> = {
   setTime: 'Régler l’heure (jour/nuit)',
   endDialogue: 'Fermer le dialogue',
 };
+
+/** Picker « + Effet » : les 27 types groupés par intention d'auteur. */
+export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
+  ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
+  ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
+  ['☠️ Afflictions', ['inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
+  ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime']],
+  ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
+  ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
+  ['🎲 Tests', ['test']],
+];
+
+const EFFECT_ICON: Record<Effect['type'], string> = {
+  journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
+  restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
+  corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
+  interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
+  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', setTime: '🕰', endDialogue: '✖️',
+};
+
+const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+
+/** Résumé HUMAIN d'un effet (rangée repliée) — PUR, testé. */
+export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string {
+  const e = effect as any;
+  const icon = EFFECT_ICON[effect.type] ?? '•';
+  switch (effect.type) {
+    case 'journal': return `${icon} Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
+    case 'setFlag': return `${icon} Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
+    case 'document': return `${icon} Document : ${e.title || '(sans titre)'}`;
+    case 'giveTrapping': return `${icon} Objet : ${e.trapping || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
+    case 'giveMoney': {
+      const parts = [e.gold ? `${e.gold} CO` : '', e.silver ? `${e.silver} pa` : '', e.brass ? `${e.brass} sc` : ''].filter(Boolean);
+      return `${icon} Argent : ${parts.join(' ') || '0'}`;
+    }
+    case 'giveXp': return `${icon} ${e.amount ?? 0} PX (groupe)`;
+    case 'restoreFortune': return `${icon} Regagner la Chance`;
+    case 'inflictNightmares': return `${icon} Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
+    case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
+    case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
+    case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
+    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'Résistance'})`;
+    case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
+    case 'learnSpell': return `${icon} Apprendre : ${e.spell || '?'}`;
+    case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
+    case 'mealParty': return `${icon} Repas du groupe`;
+    case 'interlude': return `${icon} Interlude : ${e.weeks ?? 1} semaine(s)`;
+    case 'startCombat': return `${icon} Combat : ${e.encounter || '?'}`;
+    case 'transition': {
+      const sc = ctx?.scenes?.find((s) => s.id === e.scene);
+      return `${icon} Vers ${sc?.nom ?? e.scene ?? '?'}${e.entry ? ` @ ${e.entry}` : ''}`;
+    }
+    case 'transitionBack': return `${icon} Retour scène précédente`;
+    case 'openWorldMap': return `${icon} Carte du monde (voyage)`;
+    case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
+    case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
+    case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
+    case 'test': return `${icon} Test ${e.skill || '?'} (${DIFFICULTY_LABELS[(e.difficulty ?? 'intermediaire') as Difficulty] ?? e.difficulty}) — ${e.onSuccess?.length ?? 0}✓ / ${e.onFailure?.length ?? 0}✗`;
+    case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
+    case 'endDialogue': return `${icon} Fermer le dialogue`;
+  }
+}
 
 export function newEffect(type: Effect['type']): Effect {
   switch (type) {
@@ -159,23 +195,23 @@ export function newEffect(type: Effect['type']): Effect {
   }
 }
 
-function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onChange: (e: Effect) => void; onRemove: () => void; ctx: Ctx }) {
+/** Corps DÉPLIÉ d'un effet : select de type (groupé) + champs spécifiques. */
+function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx }) {
   const e = effect as any;
   const upd = (patch: any) => onChange({ ...e, ...patch });
   return (
-    <div className="eff-row">
-      <div className="eff-head">
-        <select value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
-          {EFFECT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {EFFECT_LABEL[t]}
-            </option>
-          ))}
-        </select>
-        <button className="btn small danger" onClick={onRemove}>
-          ✕
-        </button>
-      </div>
+    <div className="eff-body">
+      <select className="eff-type" value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
+        {EFFECT_GROUPS.map(([g, types]) => (
+          <optgroup key={g} label={g}>
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {EFFECT_LABEL[t]}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
       <div className="eff-fields">
         {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />}
         {effect.type === 'setFlag' && (
@@ -483,21 +519,59 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
   );
 }
 
+/** Ferme le `<details>` parent du bouton cliqué (picker « + Effet »). */
+function closeDetails(el: HTMLElement) {
+  el.closest('details')?.removeAttribute('open');
+}
+
 export function EffectList({ effects, onChange, ctx }: { effects: Effect[]; onChange: (e: Effect[]) => void; ctx: Ctx }) {
+  const swap = (i: number, j: number) => {
+    if (j < 0 || j >= effects.length) return;
+    const next = [...effects];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
   return (
     <div className="eff-list">
       {effects.map((eff, i) => (
-        <EffectEditor
-          key={i}
-          effect={eff}
-          ctx={ctx}
-          onChange={(ne) => onChange(effects.map((x, j) => (j === i ? ne : x)))}
-          onRemove={() => onChange(effects.filter((_, j) => j !== i))}
-        />
+        <details className="eff-row" key={i}>
+          <summary>
+            <span className="eff-summary">{effectSummary(eff, ctx)}</span>
+            <span className="eff-actions" onClick={(e) => e.preventDefault()}>
+              <button className="btn small" title="Monter (l'ordre d'application compte)" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
+              <button className="btn small" title="Descendre" disabled={i === effects.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
+              <button className="btn small danger" title="Supprimer l'effet" onClick={() => onChange(effects.filter((_, j) => j !== i))}>✕</button>
+            </span>
+          </summary>
+          <EffectFields
+            effect={eff}
+            ctx={ctx}
+            onChange={(ne) => onChange(effects.map((x, j) => (j === i ? ne : x)))}
+          />
+        </details>
       ))}
-      <button className="btn small" onClick={() => onChange([...effects, newEffect('journal')])}>
-        + Effet
-      </button>
+      <details className="eff-add">
+        <summary className="btn small">+ Effet</summary>
+        <div className="eff-add-menu panel">
+          {EFFECT_GROUPS.map(([g, types]) => (
+            <div key={g} className="eff-add-group">
+              <div className="mini-title">{g}</div>
+              {types.map((t) => (
+                <button
+                  key={t}
+                  className="eff-add-item"
+                  onClick={(e) => {
+                    onChange([...effects, newEffect(t)]);
+                    closeDetails(e.currentTarget);
+                  }}
+                >
+                  {EFFECT_ICON[t]} {EFFECT_LABEL[t]}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }

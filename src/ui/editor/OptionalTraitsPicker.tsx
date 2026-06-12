@@ -61,7 +61,7 @@ export function OptionalTraitsPicker({
     <div className="ed-field">
       Traits facultatifs (LDB 76) — éditez la chaîne pour compléter l'Indice/la Cible
       {chosen.map((t, i) => (
-        <div key={i} className="bar" style={{ display: 'flex', gap: 4 }}>
+        <div key={i} className="trait-row">
           <input value={t} onChange={(e) => set(chosen.map((x, j) => (j === i ? e.target.value : x)))} />
           <button className="btn small danger" title="Retirer ce trait facultatif" onClick={() => set(chosen.filter((_, j) => j !== i))}>
             ✕

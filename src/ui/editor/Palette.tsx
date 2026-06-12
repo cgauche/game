@@ -1,195 +1,250 @@
-import type { Dispatch, SetStateAction } from 'react';
-import { Scene, Terrain } from '../../state/scene';
-import { TERRAINS as TERRAIN_META } from '../../state/terrain';
+/**
+ * Palette v2 : un RAIL d'outils à icônes + le contenu CONTEXTUEL de l'outil actif (un seul
+ * affiché à la fois — fini la pile infinie du POC). Pose DIRECTE depuis les catalogues
+ * recherchables (décors `PROPS`, espèces du rig, bâtiments par catégorie, créatures du bestiaire).
+ * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
+ */
+import { useState } from 'react';
+import type { Scene, Terrain } from '../../state/scene';
+import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
-import type { Warning } from '../../state/validateScene';
-import { ValidationPanel } from './ValidationPanel';
-import { Tool, Layers, KINDS, KIND_LABEL } from './tools';
-import { allMusicDefs } from '../../audio/music';
+import { PROPS } from '../../gameIso/catalog/decor';
+import { creatureSpeciesNames } from '../../gameIso/rig/creatures';
+import type { Tool } from './editorState';
 
-const TERRAIN_IDS = Object.keys(TERRAIN_META);
+const TERRAIN_IDS = Object.keys(TERRAINS);
 
-/** Sélecteur de musique de scène (ambiance/combat) : Auto (contexte) / Aucune / pistes du registre. */
-function MusicSelect({ label, value, onChange }: { label: string; value: string | null | undefined; onChange: (v: string | null | undefined) => void }) {
-  return (
-    <label className="ed-field">
-      {label}
-      <select
-        value={value === undefined ? '__auto' : value === null ? '__silence' : value}
-        onChange={(e) => onChange(e.target.value === '__auto' ? undefined : e.target.value === '__silence' ? null : e.target.value)}
-      >
-        <option value="__auto">Automatique</option>
-        <option value="__silence">Aucune</option>
-        {allMusicDefs().map((d) => (
-          <option key={d.id} value={d.id}>{d.id.replace(/^musique-/, '')}</option>
-        ))}
-      </select>
-    </label>
-  );
+type Family = 'select' | 'tile' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'erase';
+
+const RAIL: { key: Family; icon: string; label: string }[] = [
+  { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
+  { key: 'tile', icon: '🖌', label: 'Peindre le terrain' },
+  { key: 'personnage', icon: '🙂', label: 'Poser un personnage' },
+  { key: 'prop', icon: '🌳', label: 'Poser un décor' },
+  { key: 'heroStart', icon: '🏁', label: 'Départ des héros (case d’arrivée du groupe)' },
+  { key: 'building', icon: '🏠', label: 'Poser un bâtiment — glisser pour définir l’empreinte' },
+  { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
+  { key: 'entry', icon: '⚑', label: 'Poser un point d’entrée (cible des transitions)' },
+  { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
+  { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
+];
+
+/** Famille du rail correspondant à l'outil actif. */
+function familyOf(tool: Tool): Family {
+  if (tool.mode === 'entity') return tool.kind === 'prop' ? 'prop' : tool.kind === 'personnage' ? 'personnage' : 'heroStart';
+  return tool.mode as Family;
 }
 
-/**
- * Volet GAUCHE de l'éditeur : palette à onglets Carte (outils/terrains/entités/bâtiments/zones/
- * rencontres) · Logique (triggers/dialogues/rencontres + validation) · Scène (projet multi-scènes,
- * identité, dimensions, ambiance/météo). Composant de PRÉSENTATION : tout l'état vit dans Editor.
- */
 export function Palette({
   scene,
-  otherScenes,
-  setScene,
   tool,
   setTool,
-  layers,
-  setLayers,
   brush,
   setBrush,
   terrainRect,
   setTerrainRect,
-  palTab,
-  setPalTab,
   encTarget,
   setEncTarget,
   encRef,
   setEncRef,
-  creatureFilter,
-  setCreatureFilter,
   enemyCreatures,
-  warnings,
-  onSelectWarning,
-  openTriggers,
-  openDialogues,
-  openEncounters,
-  openAdvanced,
-  switchScene,
-  addScene,
-  deleteScene,
-  resize,
 }: {
   scene: Scene;
-  otherScenes: Scene[];
-  setScene: (s: Scene) => void;
   tool: Tool;
   setTool: (t: Tool) => void;
-  layers: Layers;
-  setLayers: Dispatch<SetStateAction<Layers>>;
   brush: number;
   setBrush: (n: number) => void;
   terrainRect: boolean;
   setTerrainRect: (b: boolean) => void;
-  palTab: 'carte' | 'logique' | 'scene';
-  setPalTab: (t: 'carte' | 'logique' | 'scene') => void;
   encTarget: string;
   setEncTarget: (s: string) => void;
   encRef: string;
   setEncRef: (s: string) => void;
-  creatureFilter: string;
-  setCreatureFilter: (s: string) => void;
   enemyCreatures: { label: string }[];
-  warnings: Warning[];
-  onSelectWarning: (w: Warning) => void;
-  openTriggers: () => void;
-  openDialogues: () => void;
-  openEncounters: () => void;
-  openAdvanced: () => void;
-  switchScene: (id: string) => void;
-  addScene: () => void;
-  deleteScene: (id: string) => void;
-  resize: (w: number, h: number) => void;
 }) {
+  const family = familyOf(tool);
+  const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
+  // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
+  const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
+  const [lastProp, setLastProp] = useState('tonneau');
+  const [lastBuilding, setLastBuilding] = useState(Object.keys(BUILDINGS_META)[0] ?? 'maison');
+
+  const pick = (f: Family) => {
+    setSearch('');
+    switch (f) {
+      case 'select': return setTool({ mode: 'select' });
+      case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
+      case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
+      case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
+      case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
+      case 'building': return setTool({ mode: 'building', type: lastBuilding });
+      case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
+      case 'entry': return setTool({ mode: 'entry' });
+      case 'encounter': return setTool({ mode: 'encounter' });
+      case 'erase': return setTool({ mode: 'erase' });
+    }
+  };
+
+  const match = (label: string) => label.toLowerCase().includes(search.toLowerCase());
+  const searchBox = (placeholder: string) => (
+    <input className="pal-search" placeholder={`🔎 ${placeholder}`} value={search} onChange={(e) => setSearch(e.target.value)} />
+  );
+
   return (
     <aside className="editor-palette">
-      <div className="pal-tabs">
-        <button className={palTab === 'carte' ? 'active' : ''} onClick={() => setPalTab('carte')}>
-          🗺️ Carte
-        </button>
-        <button className={palTab === 'logique' ? 'active' : ''} onClick={() => setPalTab('logique')}>
-          ⚙️ Logique
-        </button>
-        <button className={palTab === 'scene' ? 'active' : ''} onClick={() => setPalTab('scene')}>
-          📄 Scène
-        </button>
+      <div className="pal-rail" role="toolbar" aria-label="Outils">
+        {RAIL.map((r) => (
+          <button
+            key={r.key}
+            className={`pal-tool${family === r.key ? ' active' : ''}`}
+            title={r.label}
+            aria-label={r.label}
+            aria-pressed={family === r.key}
+            onClick={() => pick(r.key)}
+          >
+            {r.icon}
+          </button>
+        ))}
       </div>
 
-      {palTab === 'carte' && (
-        <div className="pal-tab">
-          <div className="mini-title">Calques</div>
-          <div className="layer-toggles">
-            {(['triggers', 'spawns', 'buildings'] as const).map((L) => (
-              <label key={L} className="ed-toggle">
-                <input type="checkbox" checked={layers[L]} onChange={(e) => setLayers((l) => ({ ...l, [L]: e.target.checked }))} /> {L === 'triggers' ? 'Zones' : L === 'spawns' ? 'Ennemis' : 'Bâtiments'}
-              </label>
-            ))}
-          </div>
-          <div className="mini-title">Terrains</div>
-          <div className="brush-sizes">
-            Pinceau :{' '}
-            {[1, 3, 5].map((n) => (
-              <button key={n} className={`btn small ${brush === n ? 'btn-primary' : ''}`} onClick={() => setBrush(n)}>
-                {n}×{n}
-              </button>
-            ))}
-            <label className="ed-toggle"> <input type="checkbox" checked={terrainRect} onChange={(e) => setTerrainRect(e.target.checked)} /> Rectangle</label>
-          </div>
-          <div className="terrain-palette">
-            {TERRAIN_IDS.map((t) => (
-              <button
-                key={t}
-                className={`terrain-swatch ${tool.mode === 'tile' && tool.terrain === t ? 'active' : ''}`}
-                style={{ background: TERRAIN_VIZ[t]?.swatch ?? '#888' }}
-                onClick={() => setTool({ mode: 'tile', terrain: t as Terrain })}
-                title={TERRAIN_META[t].label}
-              >
-                {TERRAIN_META[t].label}
-              </button>
-            ))}
-          </div>
+      <div className="pal-content">
+        {family === 'select' && (
+          <p className="hint">Cliquez un élément de la carte pour l'éditer dans l'inspecteur ; glissez pour le déplacer. Suppr = supprimer, flèches = décaler, Ctrl+C/V/D = copier/coller/dupliquer.</p>
+        )}
 
-          <button className={`btn small ${tool.mode === 'select' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'select' })}>
-            ↖ Sélection / Déplacer
-          </button>
-          <div className="mini-title">Entités</div>
-          <div className="entity-tools">
-            {KINDS.map((k) => (
-              <button
-                key={k}
-                className={`btn small ${tool.mode === 'entity' && tool.kind === k ? 'btn-primary' : ''}`}
-                onClick={() => setTool({ mode: 'entity', kind: k })}
-              >
-                {KIND_LABEL[k]}
+        {family === 'tile' && tool.mode === 'tile' && (
+          <>
+            <div className="mini-title">Pinceau</div>
+            <div className="row-flex">
+              {[1, 3, 5].map((n) => (
+                <button key={n} className={`btn small ${brush === n && !terrainRect ? 'btn-primary' : ''}`} onClick={() => { setBrush(n); setTerrainRect(false); }}>
+                  {n}×{n}
+                </button>
+              ))}
+              <button className={`btn small ${terrainRect ? 'btn-primary' : ''}`} title="Glisser pour remplir un rectangle" onClick={() => setTerrainRect(!terrainRect)}>
+                ▭ Rect
               </button>
-            ))}
-            <button className={`btn small danger ${tool.mode === 'erase' ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'erase' })}>
-              Gomme
-            </button>
-          </div>
+            </div>
+            <div className="mini-title">Terrains</div>
+            <div className="terrain-palette">
+              {TERRAIN_IDS.map((t) => (
+                <button
+                  key={t}
+                  className={`terrain-swatch ${tool.terrain === t ? 'active' : ''}`}
+                  style={{ background: TERRAIN_VIZ[t]?.swatch ?? '#888' }}
+                  onClick={() => {
+                    setLastTerrain(t as Terrain);
+                    setTool({ mode: 'tile', terrain: t as Terrain });
+                  }}
+                  title={TERRAINS[t].label}
+                >
+                  {TERRAINS[t].label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-          <div className="mini-title">Bâtiments</div>
-          <div className="entity-tools">
-            {Object.values(BUILDINGS_META).map((b) => (
-              <button
-                key={b.id}
-                className={`btn small ${tool.mode === 'building' && tool.type === b.id ? 'btn-primary' : ''}`}
-                onClick={() => setTool({ mode: 'building', type: b.id })}
-                title={`${b.label} (${b.category}) — glisser pour définir l'empreinte`}
-              >
-                {b.label}
+        {family === 'personnage' && tool.mode === 'entity' && (
+          <>
+            <div className="mini-title">Personnage à poser</div>
+            {searchBox('espèce…')}
+            <div className="pal-list">
+              {['Villageois', ...creatureSpeciesNames()].filter(match).map((name) => (
+                <button
+                  key={name}
+                  className={`pal-item${(tool.ref ?? 'Villageois') === name ? ' active' : ''}`}
+                  onClick={() => setTool({ mode: 'entity', kind: 'personnage', ref: name === 'Villageois' ? undefined : name })}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+            <p className="hint">Cliquez la carte pour poser. Apparence, dialogue et rôle de marchand s'éditent ensuite dans l'inspecteur.</p>
+          </>
+        )}
+
+        {family === 'prop' && tool.mode === 'entity' && (
+          <>
+            <div className="mini-title">Décor à poser</div>
+            {searchBox('décor…')}
+            <div className="pal-list">
+              {Object.values(PROPS).filter((p) => match(p.label)).map((p) => (
+                <button
+                  key={p.id}
+                  className={`pal-item${tool.ref === p.id ? ' active' : ''}`}
+                  onClick={() => {
+                    setLastProp(p.id);
+                    setTool({ mode: 'entity', kind: 'prop', ref: p.id });
+                  }}
+                >
+                  {p.label}
+                  {p.foot ? <span className="chip">{p.foot.w}×{p.foot.h}</span> : null}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {family === 'heroStart' && (
+          <p className="hint">Cliquez la carte pour poser la case de DÉPART du groupe (une seule utile — la première trouvée est utilisée).</p>
+        )}
+
+        {family === 'building' && tool.mode === 'building' && (
+          <>
+            {(['petit', 'monument'] as const).map((cat) => {
+              const list = Object.values(BUILDINGS_META).filter((b) => b.category === cat);
+              if (!list.length) return null;
+              return (
+                <div key={cat}>
+                  <div className="mini-title">{cat === 'petit' ? 'Bâtiments' : 'Monuments'}</div>
+                  <div className="pal-list">
+                    {list.map((b) => (
+                      <button
+                        key={b.id}
+                        className={`pal-item${tool.type === b.id ? ' active' : ''}`}
+                        title={`${b.label} — glisser sur la carte pour définir l'empreinte`}
+                        onClick={() => {
+                          setLastBuilding(b.id);
+                          setTool({ mode: 'building', type: b.id });
+                        }}
+                      >
+                        {b.label}
+                        <span className="chip">{b.defaultFoot.w}×{b.defaultFoot.h}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            <p className="hint">Glissez sur la carte pour poser (l'empreinte suit le geste). Porte, orientation et intérieur s'éditent dans l'inspecteur.</p>
+          </>
+        )}
+
+        {family === 'zone' && tool.mode === 'zone' && (
+          <>
+            <div className="mini-title">Type de zone</div>
+            <div className="stack">
+              <button className={`pal-item${tool.zone === 'trigger' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'trigger' })}>
+                🟦 Trigger — déclenche des effets quand le groupe y entre
               </button>
-            ))}
-          </div>
+              <button className={`pal-item${tool.zone === 'rest' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'rest' })}>
+                ⛺ Zone de repos — offre de repos locale (auberge/maison/camp)
+              </button>
+            </div>
+            <p className="hint">Glissez sur la carte pour dessiner le rectangle. Effets / lieux de repos s'éditent ensuite ({tool.zone === 'trigger' ? 'panneau Logique' : 'inspecteur'}).</p>
+          </>
+        )}
 
-          <div className="mini-title">Zones</div>
-          <button
-            className={`btn small ${tool.mode === 'trigger' ? 'btn-primary' : ''}`}
-            onClick={() => setTool({ mode: 'trigger' })}
-            title="Glisser sur la carte pour dessiner une zone de trigger"
-          >
-            🟦 Dessiner une zone (trigger)
-          </button>
+        {family === 'entry' && (
+          <p className="hint">Cliquez la carte pour poser un point d'entrée nommé (cible des transitions d'une autre scène et des arrivées de voyage). Renommez-le dans l'inspecteur.</p>
+        )}
 
-          <div className="mini-title">Rencontres (ennemis)</div>
-          <div className="entity-tools">
-            <select value={encTarget} onChange={(e) => setEncTarget(e.target.value)} title="Rencontre cible">
+        {family === 'encounter' && (
+          <>
+            <div className="mini-title">Rencontre cible</div>
+            <select value={encTarget} onChange={(e) => setEncTarget(e.target.value)}>
               <option value="">Nouvelle rencontre…</option>
               {scene.encounters.map((e) => (
                 <option key={e.id} value={e.id}>
@@ -197,196 +252,21 @@ export function Palette({
                 </option>
               ))}
             </select>
-            <input className="ed-search" placeholder="🔎 filtrer créature…" value={creatureFilter} onChange={(e) => setCreatureFilter(e.target.value)} />
-            <select value={encRef} onChange={(e) => setEncRef(e.target.value)} title="Créature à placer">
-              <option value="">{enemyCreatures[0]?.label ?? 'créature'}…</option>
-              {enemyCreatures
-                .filter((c) => c.label.toLowerCase().includes(creatureFilter.toLowerCase()))
-                .map((c) => (
-                  <option key={c.label} value={c.label}>
-                    {c.label}
-                  </option>
-                ))}
-            </select>
-            <button
-              className={`btn small ${tool.mode === 'encounter' ? 'btn-primary' : ''}`}
-              onClick={() => setTool({ mode: 'encounter' })}
-              title="Cliquer sur la carte pour ajouter des ennemis à la rencontre cible"
-            >
-              ⚔️ Placer des ennemis
-            </button>
-          </div>
-        </div>
-      )}
-
-      {palTab === 'logique' && (
-        <div className="pal-tab logic-buttons">
-          <button className="btn btn-primary" onClick={openTriggers}>
-            🎯 Triggers &amp; effets ({scene.triggers.length})
-          </button>
-          <button className="btn btn-primary" onClick={openDialogues}>
-            💬 Dialogues ({scene.dialogues.length})
-          </button>
-          <button className="btn btn-primary" onClick={openEncounters}>
-            ⚔️ Rencontres ({scene.encounters.length})
-          </button>
-          <button className="btn small" onClick={openAdvanced}>
-            Avancé (JSON)
-          </button>
-          <div className="mini-title">Validation{warnings.length ? ` (${warnings.length})` : ''}</div>
-          <ValidationPanel warnings={warnings} onSelect={onSelectWarning} />
-        </div>
-      )}
-
-      {palTab === 'scene' && (
-        <div className="pal-tab">
-          <div className="mini-title">Scènes du projet</div>
-          <div className="entity-tools">
-            {[scene, ...otherScenes].map((s) => (
-              <div key={s.id} className="proj-scene-row">
-                <button
-                  className={`btn small ${s.id === scene.id ? 'btn-primary' : ''}`}
-                  onClick={() => switchScene(s.id)}
-                  title={s.id}
-                >
-                  {s.nom || s.id}
+            <div className="mini-title">Créature à placer</div>
+            {searchBox('créature…')}
+            <div className="pal-list">
+              {enemyCreatures.filter((c) => match(c.label)).map((c) => (
+                <button key={c.label} className={`pal-item${(encRef || enemyCreatures[0]?.label) === c.label ? ' active' : ''}`} onClick={() => setEncRef(c.label)}>
+                  {c.label}
                 </button>
-                <button
-                  className="btn small danger"
-                  title="Retirer cette scène du projet"
-                  onClick={() => deleteScene(s.id)}
-                  disabled={s.id === scene.id && otherScenes.length === 0}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            <button className="btn small" onClick={addScene}>
-              + Nouvelle scène
-            </button>
-          </div>
-          <label className="ed-field">
-            Identifiant (référencé par les portes d'intérieur)
-            <input value={scene.id} onChange={(e) => setScene({ ...scene, id: e.target.value })} />
-          </label>
-          <label className="ed-field">
-            Nom
-            <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
-          </label>
-          <div className="ed-dim">
-            <label>
-              L
-              <input type="number" value={scene.dimensions.w} min={5} max={40} onChange={(e) => resize(Number(e.target.value) || 5, scene.dimensions.h)} />
-            </label>
-            <label>
-              H
-              <input type="number" value={scene.dimensions.h} min={5} max={40} onChange={(e) => resize(scene.dimensions.w, Number(e.target.value) || 5)} />
-            </label>
-          </div>
-          <label className="ed-field">
-            Ambiance
-            <select value={scene.ambiance === 'interieur' ? 'interieur' : 'exterieur'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
-              <option value="exterieur">Extérieur (jour/nuit = horloge)</option>
-              <option value="interieur">Intérieur (éclairé)</option>
-            </select>
-          </label>
-          <label className="ed-field">
-            Météo
-            <select value={scene.weather ?? 'clair'} onChange={(e) => setScene({ ...scene, weather: e.target.value as Scene['weather'] })}>
-              <option value="clair">Clair</option>
-              <option value="pluie">Pluie</option>
-              <option value="brouillard">Brouillard (−20 tir)</option>
-              <option value="neige">Neige épaisse (−20 attaque/esquive)</option>
-              <option value="tempete">Tempête (−20 attaque)</option>
-            </select>
-          </label>
-          {/* Offre de REPOS de la scène (bouton 🌙 d'exploration) — affinable PAR ZONE
-              (scene.restZones, rect prioritaire là où le groupe se tient). */}
-          <div className="ed-field">
-            Repos sur place
-            <div className="ed-rest-places">
-              {([['auberge', '🛏 Auberge'], ['maison', '🏠 Chez soi'], ['camp', '⛺ Camper']] as const).map(([k, label]) => (
-                <label key={k} className="ed-check">
-                  <input
-                    type="checkbox"
-                    checked={(scene.rest ?? { camp: true })[k] ?? false}
-                    onChange={(e) => setScene({ ...scene, rest: { ...(scene.rest ?? { camp: true }), [k]: e.target.checked } })}
-                  />
-                  {label}
-                </label>
               ))}
-              <label className="ed-check">
-                <input
-                  type="checkbox"
-                  checked={scene.rest?.quality === 'pietre'}
-                  onChange={(e) => setScene({ ...scene, rest: { ...(scene.rest ?? { camp: true }), quality: e.target.checked ? 'pietre' : undefined } })}
-                />
-                💸 Piètre (½ prix, tambouille à risque)
-              </label>
             </div>
-          </div>
-          {/* Zones de repos (prioritaires sur l'offre de scène, là où le groupe se tient). */}
-          <div className="ed-field">
-            Zones de repos
-            {(scene.restZones ?? []).map((z, i) => {
-              const upd = (patch: Partial<typeof z>) =>
-                setScene({ ...scene, restZones: scene.restZones!.map((x, j) => (j === i ? { ...x, ...patch } : x)) });
-              return (
-                <div key={i} className="ed-rest-zone">
-                  <div className="ed-dim">
-                    {(['x', 'y', 'w', 'h'] as const).map((k) => (
-                      <label key={k}>
-                        {k.toUpperCase()}
-                        <input type="number" value={z.rect[k]} onChange={(e) => upd({ rect: { ...z.rect, [k]: Number(e.target.value) || 0 } })} />
-                      </label>
-                    ))}
-                    <button className="btn small" onClick={() => setScene({ ...scene, restZones: scene.restZones!.filter((_, j) => j !== i) })} aria-label="Supprimer la zone">✕</button>
-                  </div>
-                  <div className="ed-rest-places">
-                    {([['auberge', '🛏'], ['maison', '🏠'], ['camp', '⛺']] as const).map(([k, label]) => (
-                      <label key={k} className="ed-check">
-                        <input type="checkbox" checked={z.places[k] ?? false} onChange={(e) => upd({ places: { ...z.places, [k]: e.target.checked } })} />
-                        {label}
-                      </label>
-                    ))}
-                    <label className="ed-check">
-                      <input type="checkbox" checked={z.quality === 'pietre'} onChange={(e) => upd({ quality: e.target.checked ? 'pietre' : undefined })} />
-                      💸
-                    </label>
-                  </div>
-                </div>
-              );
-            })}
-            <button
-              className="btn small"
-              onClick={() => setScene({ ...scene, restZones: [...(scene.restZones ?? []), { rect: { x: 0, y: 0, w: 4, h: 4 }, places: { auberge: true } }] })}
-            >
-              ➕ Zone de repos
-            </button>
-          </div>
-          <MusicSelect
-            label="Musique (ambiance)"
-            value={scene.music?.ambient}
-            onChange={(v) => {
-              const m = { ...scene.music, ambient: v };
-              setScene({ ...scene, music: m.ambient === undefined && m.combat === undefined ? undefined : m });
-            }}
-          />
-          <MusicSelect
-            label="Musique (combat)"
-            value={scene.music?.combat}
-            onChange={(v) => {
-              const m = { ...scene.music, combat: v };
-              setScene({ ...scene, music: m.ambient === undefined && m.combat === undefined ? undefined : m });
-            }}
-          />
+            <p className="hint">Chaque clic sur la carte ajoute la créature à la rencontre cible. Traits, sorts et apparence du spawn s'éditent dans l'inspecteur.</p>
+          </>
+        )}
 
-          <label className="ed-field">
-            Message d'introduction
-            <textarea value={scene.startMessage ?? ''} onChange={(e) => setScene({ ...scene, startMessage: e.target.value || undefined })} />
-          </label>
-        </div>
-      )}
+        {family === 'erase' && <p className="hint">Cliquez (ou glissez sur) les entités à effacer. Zones, bâtiments et spawns se suppriment via leur sélection (Suppr).</p>}
+      </div>
     </aside>
   );
 }

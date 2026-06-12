@@ -2,36 +2,46 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Editor } from './Editor';
 
-/** Test de fumée du rendu de l'éditeur (garde du découpage Palette / Inspector / canvas). */
-describe('Editor (rendu)', () => {
+/** Test de fumée du rendu de l'éditeur v2 (toolbar / rail / canvas / inspecteur / statut / dock). */
+describe('Editor v2 (rendu)', () => {
   const html = renderToStaticMarkup(<Editor />);
 
-  it('rend la barre d’outils (Nouveau / Importer / Exporter / Tester / undo-redo)', () => {
-    expect(html).toContain('Éditeur de niveau');
-    expect(html).toContain('Nouveau');
-    expect(html).toContain('Importer');
-    expect(html).toContain('Exporter JSON');
+  it('rend la toolbar (Fichier ▾, undo/redo, sélecteur de scène, Monde, Tester)', () => {
+    expect(html).toContain('Fichier ▾');
+    expect(html).toContain('↶');
+    expect(html).toContain('↷');
+    expect(html).toContain('Scène active'); // aria-label du sélecteur de scènes
+    expect(html).toContain('🗺️ Monde');
     expect(html).toContain('▶ Tester');
-    expect(html).toContain('↶ Annuler');
-    expect(html).toContain('↷ Rétablir');
   });
 
-  it('rend la palette (onglets + outils Carte par défaut)', () => {
-    expect(html).toContain('🗺️ Carte');
-    expect(html).toContain('⚙️ Logique');
-    expect(html).toContain('📄 Scène');
-    expect(html).toContain('Calques');
-    expect(html).toContain('Pinceau');
-    expect(html).toContain('↖ Sélection / Déplacer');
-    expect(html).toContain('Gomme');
-    expect(html).toContain('Dessiner une zone (trigger)');
+  it('rend le rail d’outils de la palette (sélection par défaut + outils v2)', () => {
+    expect(html).toContain('Peindre le terrain');
+    expect(html).toContain('Poser un décor');
+    expect(html).toContain('Poser un point d’entrée'); // manque du POC comblé
+    expect(html).toContain('Dessiner une zone');
     expect(html).toContain('Placer des ennemis');
+    expect(html).toContain('Gomme');
   });
 
-  it('rend le canvas iso (SVG) et l’inspecteur par défaut', () => {
+  it('rend le canvas iso (SVG) et l’inspecteur docké sur les propriétés de la scène', () => {
     expect(html).toContain('editor-iso');
     expect(html).toContain('viewBox');
-    expect(html).toContain('Inspecteur');
-    expect(html).toContain('Sélectionnez un élément sur la carte');
+    expect(html).toContain('Identité');
+    expect(html).toContain('Ambiance &amp; météo');
+    expect(html).toContain('Points d&#x27;entrée');
+  });
+
+  it('rend la barre de statut (calques) et le dock Logique (onglets + compteurs)', () => {
+    expect(html).toContain('Calques');
+    expect(html).toContain('🟦 Triggers');
+    expect(html).toContain('💬 Dialogues');
+    expect(html).toContain('⚔️ Rencontres');
+    expect(html).toContain('Validation');
+  });
+
+  it('ne rend AUCUNE modale d’édition (l’édition est dockée)', () => {
+    expect(html).not.toContain('editor-edit-modal');
+    expect(html).not.toContain('modal-overlay');
   });
 });
