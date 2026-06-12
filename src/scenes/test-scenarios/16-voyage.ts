@@ -20,14 +20,19 @@ function groupe(): Combatant[] {
   // Greta voyage SANS provisions : sur un long trajet, la faim s'installe (LDB 18 l.417-422).
   const greta = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });
   greta.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.45 };
+  // Le groupe part BLESSÉ : chaque nuit, le bilan montre le jet de Récupération (Résistance +20
+  // → DR+BE PB, +BE/jour) — et l'écart rations/faim entre Erik et Greta se voit sur la durée.
+  erik.wounds.current = Math.max(1, erik.wounds.max - 8);
+  greta.wounds.current = Math.max(1, greta.wounds.max - 6);
   return [erik, greta];
 }
 
 // ── Scènes : village de départ (auberge), hameau, bourg, théâtre d'embuscade ──
 const village = arena({ id: 'test-voyage-village', nom: 'Village de Weiler', w: 14, h: 9, heroStart: { x: 3, y: 4 } });
 village.startMessage =
-  'Ouvrez la carte (🗺️ en haut à gauche) pour voyager : le hameau (24 km à pied, route peu sûre) ou le bourg ' +
-  '(30 km, diligence, relais en chemin). L’aubergiste ou le bouton 🌙 ouvrent la nuit (chambres/repas par héros).';
+  'Ouvrez la carte (🗺️) pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
+  'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Le groupe part blessé : chaque nuit, ' +
+  'le bilan montre la récupération. L’aubergiste ou le bouton 🌙 ouvrent la nuit.';
 // L'offre de repos du village : l'auberge (la modale propose aussi la belle étoile).
 village.rest = { auberge: true };
 village.entities.push({ id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' });
@@ -58,6 +63,9 @@ hameau.startMessage = 'Vous voilà à Federholz. (Reprenez la carte pour reparti
 const bourg = arena({ id: 'test-voyage-bourg', nom: 'Bourg de Steinbruck', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
 bourg.startMessage = 'Steinbruck, ses quais et sa halle. (Reprenez la carte pour repartir.)';
 
+const cite = arena({ id: 'test-voyage-cite', nom: 'Eichenfeld, la cité aux chênes', w: 12, h: 8, heroStart: { x: 3, y: 4 } });
+cite.startMessage = 'Eichenfeld, au bout de la longue route. (Reprenez la carte pour repartir.)';
+
 const embuscade = arena({ id: 'test-voyage-embuscade', nom: 'Sous-bois — embuscade', w: 14, h: 9, terrain: 'herbe', heroStart: { x: 2, y: 4 } });
 embuscade.encounters = [{
   id: 'enc-vembuscade',
@@ -76,6 +84,7 @@ const carte: WorldMap = {
     { id: 'p-village', label: 'Weiler', pos: { x: 24, y: 62 }, scene: 'test-voyage-village', icon: '🏠' },
     { id: 'p-hameau', label: 'Federholz', pos: { x: 72, y: 30 }, scene: 'test-voyage-hameau', icon: '🌲' },
     { id: 'p-bourg', label: 'Steinbruck', pos: { x: 70, y: 78 }, scene: 'test-voyage-bourg', icon: '⚓' },
+    { id: 'p-cite', label: 'Eichenfeld', pos: { x: 90, y: 20 }, scene: 'test-voyage-cite', icon: '🏰' },
   ],
   routes: [
     {
@@ -102,6 +111,15 @@ const carte: WorldMap = {
       perilDie: 0, // grand-route sûre : pas de tirage d10 (paramétrable par route)
       inns: true, // relais de diligence : la halte de nuit propose l'auberge (modale de Repos)
     },
+    {
+      // LONG voyage (96 km à M4 = 4 jours / 3 nuits à pied) : récupération nocturne des blessés,
+      // rations qui fondent, faim de Greta — relais d'auberges en chemin (ou belle étoile, au choix).
+      id: 'r-longue',
+      a: 'p-hameau', b: 'p-cite',
+      km: 96,
+      modes: ['pied', 'diligence'],
+      inns: true,
+    },
   ],
 };
 
@@ -110,11 +128,11 @@ export const scenario: TestScenario = {
   order: 15,
   icon: '🧭',
   title: 'Voyage & Nourriture',
-  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), HALTES de nuit (modale de Repos — camp sur la piste, relais sur la grand-route), faim RAW, péripéties + embuscade + reprise, auberge/🌙 au village',
-  partyNote: 'Erik (3 rations) & Greta (sans provisions)',
+  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), HALTES de nuit (modale de Repos — camp sur la piste, relais sur les routes), LONG voyage 96 km = 3 nuits avec récupération des blessés, faim RAW, péripéties + embuscade + reprise, auberge/🌙 au village',
+  partyNote: 'Erik (3 rations) & Greta (sans provisions) — blessés',
   makeParty: groupe,
   scene: village,
-  extraScenes: [hameau, bourg, embuscade],
+  extraScenes: [hameau, bourg, cite, embuscade],
   worldMap: carte,
   // De quoi payer la diligence (intérieur : 2 sc/km × 30 km × 2 passagers = 10 pa), l'auberge
   // (chambre 10 pa pour 2 + repas 1 pa/tête) et plusieurs repas en chemin.
