@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { Coins } from './Coins';
-import { TeamPortrait } from './CombatantBadge';
+import { TeamPortrait } from './TeamPortrait';
 
 /**
  * Écran de VICTOIRE plein écran (demande utilisateur) : récapitulatif de fin de combat — XP gagnée, or

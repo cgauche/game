@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
-import { CombatantBadge } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 
 /**
  * En-tête A → B partagé des modales (« A attaque B », « A fait peur à B », « A lance un sort
@@ -23,7 +23,7 @@ export function VsHeader({
   if (!actor && !target) return null;
   return (
     <div className="rm-vs">
-      {actor && <CombatantBadge combatant={actor} />}
+      {actor && <CharFrame c={actor} variant="vital" size="md" />}
       {target && actor && (
         <span className="rm-vs-arrow">
           {label && (
@@ -35,7 +35,7 @@ export function VsHeader({
           {verb}
         </span>
       )}
-      {target && <CombatantBadge combatant={target} />}
+      {target && <CharFrame c={target} variant="vital" size="md" />}
     </div>
   );
 }

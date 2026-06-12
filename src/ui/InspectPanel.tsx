@@ -2,8 +2,7 @@ import { useRef } from 'react';
 import type { Combatant, HitLocation, CharKey } from '../engine/types';
 import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../engine/types';
 import { useModalA11y } from './Modal';
-import { RigPortrait } from './RigPortrait';
-import { hpColor, ENEMY_RING, HERO_RING } from '../gameIso/teamColors';
+import { CharFrame } from './CharFrame';
 import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
 import { SIZE_LABEL, effectiveSize } from '../engine/size';
 import { parseTrait } from '../engine/traits/dispatch';
@@ -33,7 +32,6 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (tête portrait+PV) → hook a11y partagé
   const c = combatant;
   const isHero = c.kind === 'hero';
-  const ratio = c.wounds.max > 0 ? c.wounds.current / c.wounds.max : 0;
   const fx = summarizeEffects(c.conditions, c.activeEffects ?? [], Infinity, combatantFlags(c));
   const weapons = c.weapons ?? [];
   const armour = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
@@ -42,12 +40,11 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
     <div className="modal-overlay" onClick={onClose}>
       <div ref={boxRef} role="dialog" aria-modal="true" className="modal inspect-panel" onClick={(e) => e.stopPropagation()}>
         <div className="insp-head">
-          <RigPortrait combatant={c} size={48} ring={isHero ? HERO_RING[0] : ENEMY_RING} />
+          {/* Tuile vital (les États ont leur rangée détaillée plus bas) ; le NOM reste — l'Inspection
+              est la « fiche » de l'adversaire, et les PB exacts y sont autorisés (texte ci-dessous). */}
+          <CharFrame c={c} variant="vital" size="lg" />
           <div className="insp-id">
             <h3>{c.name}</h3>
-            <div className="insp-pv">
-              <i style={{ width: `${Math.max(0, ratio) * 100}%`, background: hpColor(ratio) }} />
-            </div>
             <span className="insp-pv-num">{c.wounds.current}/{c.wounds.max} PB</span>
           </div>
         </div>

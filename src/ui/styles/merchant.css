@@ -172,7 +172,6 @@
 .dist-list { display: flex; flex-direction: column; gap: 6px; }
 .dist-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 .dist-row .merch-name { flex: 1; }
-.dist-row select { background-color: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 26px 5px 8px; font-size: 13px; }
 .haggle-bar { margin-bottom: 10px; min-height: 30px; }
 /* Familles repliables */
 .merch-section { margin-bottom: 6px; }
@@ -228,7 +227,6 @@
 .mc-hero { padding: 6px 0; border-top: 1px solid var(--border); }
 .mc-hero:first-of-type { border-top: none; }
 .mc-hero-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-.mc-hero-head .mc-name { font-weight: 600; }
 .mc-hero-head .mc-cur { color: var(--muted); font-size: 12px; }
 .mc-hero-head .mc-actions { margin-left: auto; display: flex; gap: 6px; }
 .mc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }

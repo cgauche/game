@@ -423,17 +423,8 @@
   margin: -2px 0 6px;
 }
 
-/* Sélecteur de cible de soin par PORTRAIT (#20) — on clique le portrait, pas un bouton nommé. */
+/* Sélecteur de cible de soin par PORTRAIT (#20) — tuiles-radio (CharFrame full, selected). */
 .heal-pick-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
-.heal-pick {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  background: var(--panel); border: 1.5px solid var(--border); border-radius: 10px;
-  padding: 6px 8px; cursor: pointer; color: var(--text);
-}
-.heal-pick:hover { border-color: var(--accent2); }
-.heal-pick.active { border-color: var(--gold); outline: 1px solid var(--gold); }
-.heal-pick-name { font-size: 12px; font-weight: 600; }
-.heal-pick-pv { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
@@ -507,12 +498,6 @@
   border-radius: 9px;
   padding: 4px 7px;
 }
-.ab-heal-pick .ab-heal-name {
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 2px;
-}
-
 /* Protection de la zone touchée dans la modale de Déviation Critique (#critique). */
 .dev-zone {
   text-align: center;

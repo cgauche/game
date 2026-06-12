@@ -12,7 +12,7 @@ import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import { Coins } from './Coins';
 import { CharFrame } from './CharFrame';
-import { TeamPortrait } from './CombatantBadge';
+import { TeamPortrait } from './TeamPortrait';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 

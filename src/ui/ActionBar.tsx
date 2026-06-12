@@ -14,7 +14,7 @@ import { mountableNear } from '../state/mount';
 import { ownsLocally } from '../state/netFlow';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
-import { TeamPortrait } from './CombatantBadge';
+import { TeamPortrait } from './TeamPortrait';
 import { CharFrame } from './CharFrame';
 import { previewResourceDelta } from '../state/combatFlow';
 import { ActiveFrame } from './ActiveFrame';

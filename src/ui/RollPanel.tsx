@@ -1,7 +1,7 @@
 import type { Combatant } from '../engine/types';
 import type { RollBreakdown } from '../engine/combat';
 import { RollLine, PendingRollLine, type PendingRoll } from './RollLine';
-import { TeamPortrait } from './CombatantBadge';
+import { TeamPortrait } from './TeamPortrait';
 
 /**
  * LE panneau de jet unique — même géométrie AVANT et APRÈS le jet (l'avant-jet est le même bloc

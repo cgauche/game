@@ -57,44 +57,6 @@
 @media (prefers-reduced-motion: reduce) {
   .rm-die { animation: none; }
 }
-/* Badge d'identité d'un combattant dans les modales (R10) : portrait + couleur d'équipe + PV. */
-.cb-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  min-width: 84px;
-}
-.cb-name {
-  font-size: 13px;
-  max-width: 110px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cb-pv {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  width: 70px;
-}
-.cb-pv-bar {
-  width: 100%;
-  height: 5px;
-  border-radius: 3px;
-  background: #2a2a30;
-  overflow: hidden;
-}
-.cb-pv-bar i {
-  display: block;
-  height: 100%;
-}
-.cb-pv-val {
-  font-size: 10px;
-  color: var(--muted);
-}
 .rm-loc {
   margin-bottom: 12px;
 }
@@ -229,16 +191,6 @@
 }
 .insp-id h3 {
   margin: 0 0 4px;
-}
-.insp-pv {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.insp-pv i {
-  display: block;
-  height: 100%;
 }
 .insp-pv-num {
   font-size: 11px;

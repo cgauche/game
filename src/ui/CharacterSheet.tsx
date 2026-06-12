@@ -14,8 +14,8 @@ import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { LoadoutSection } from './LoadoutSection';
-import { RigPortrait } from './RigPortrait';
 import { CharFrame } from './CharFrame';
+import { PortraitTile } from './PortraitTile';
 import { pickView } from '../gameIso/rig/parts/types';
 import { DEFS } from '../gameIso/sprites';
 import type { Palette } from '../gameIso/rig/palette';
@@ -103,7 +103,8 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
         <div className="sheet-layout">
           <aside className="sheet-aside">
             <div className="sheet-portrait">
-              <RigPortrait combatant={hero} size={112} ring="var(--gold)" />
+              {/* Tuile full xl : jauge + États sur la fiche aussi (anneau or « méta »). */}
+              <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
                 {hero.species} · {hero.career}
