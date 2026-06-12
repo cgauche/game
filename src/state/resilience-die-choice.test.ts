@@ -89,3 +89,103 @@ describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé
     expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(22);
   });
 });
+
+describe('castSetForcedRoll — même choix sur une INCANTATION forcée (parité des modales)', () => {
+  function setupForcedCast() {
+    seedBattleRng(7);
+    const caster = C({ id: 'A', name: 'Mage', resilience: 2 });
+    const target = C({ id: 'B', name: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 } });
+    useGame.setState({
+      battle: { combatants: [caster, target], log: [] } as never,
+      pendingCast: {
+        casterId: 'A', targetId: 'A', spellLabel: 'Drain', missile: false, focused: false,
+        result: { cast: false, roll: 88, target: 45, sl: -4, isCritical: false, isFumble: false, log: 'raté' },
+      } as never,
+    });
+    useGame.getState().castForceSuccess();
+  }
+
+  it('11 (le plus bas double réussi) → Incantation Critique', () => {
+    setupForcedCast();
+    expect(useGame.getState().pendingCast!.forced).toBe(true);
+    useGame.getState().castSetForcedRoll(11);
+    const res = useGame.getState().pendingCast!.result!;
+    expect(res.roll).toBe(11);
+    expect(res.cast).toBe(true);
+    expect(res.isCritical).toBe(true);
+  });
+
+  it('01 → DR maximal (Surincantation), pas de Critique ; valeur > cible refusée', () => {
+    setupForcedCast();
+    useGame.getState().castSetForcedRoll(1);
+    const res = useGame.getState().pendingCast!.result!;
+    expect(res.roll).toBe(1);
+    expect(res.isCritical).toBe(false);
+    expect(res.sl).toBe(4); // dizaine(45) − dizaine(01)
+    useGame.getState().castSetForcedRoll(77);
+    expect(useGame.getState().pendingCast!.result!.roll).toBe(1); // inchangé
+  });
+});
+
+describe('defenseSetForcedRoll — même choix sur une DÉFENSE forcée', () => {
+  function setupForcedDefense() {
+    seedBattleRng(7);
+    const attacker = C({ id: 'E', name: 'Orque', kind: 'enemy' });
+    const defender = C({ id: 'H', name: 'Héros', resilience: 2, pos: { x: 1, y: 0 } });
+    const atk = { roll: 30, target: 40, success: true, sl: 1, isDouble: false };
+    useGame.setState({
+      battle: { combatants: [attacker, defender], log: [] } as never,
+      pendingDefense: {
+        attackerId: 'E', defenderId: 'H', weapon: { name: 'Gourdin', type: 'melee', damage: '+4', qualities: [] },
+        location: null, atk, mode: 'esquive',
+        def: { roll: 95, target: 50, success: false, sl: -4, isDouble: false },
+        result: {
+          hit: true, attackerRoll: 30, netSL: 5, critical: false, advantageTo: 'attacker', defenderDefeated: false, log: '',
+          attackerDetail: { label: 'Corps à corps', base: 40, modifier: 0, target: 40, roll: 30, success: true, sl: 1 },
+          defenderDetail: { label: 'Esquive', base: 50, modifier: 0, target: 50, roll: 95, success: false, sl: -4 },
+        },
+      } as never,
+    });
+    useGame.getState().defenseForceSuccess();
+  }
+
+  it('le force pose `forced`, puis le défenseur choisit son dé (11 = double)', () => {
+    setupForcedDefense();
+    const pd = useGame.getState().pendingDefense!;
+    expect(pd.forced).toBe(true);
+    expect(pd.result!.hit).toBe(false); // « vous l'emportez avec au moins DR +1 »
+    useGame.getState().defenseSetForcedRoll(11);
+    const after = useGame.getState().pendingDefense!;
+    expect(after.def!.roll).toBe(11);
+    expect(after.def!.isDouble).toBe(true);
+    expect(after.result!.hit).toBe(false); // l'emporte toujours
+    useGame.getState().defenseSetForcedRoll(88); // > cible (50) : refusé
+    expect(useGame.getState().pendingDefense!.def!.roll).toBe(11);
+  });
+});
+
+describe('trampleSetForcedRoll — même choix sur un PIÉTINEMENT forcé (fabrique rollFlow)', () => {
+  it('11 → Coup Critique ; valeur > cible refusée', () => {
+    seedBattleRng(7);
+    const attacker = C({ id: 'A', name: 'Ogre', resilience: 2 });
+    const target = C({ id: 'B', name: 'Gnoblar', kind: 'enemy', pos: { x: 1, y: 0 } });
+    useGame.setState({
+      battle: { combatants: [attacker, target], log: [] } as never,
+      pendingTrample: {
+        attackerId: 'A', targetId: 'B',
+        result: {
+          hit: false, attackerRoll: 90, netSL: -5, critical: false, advantageTo: 'defender', defenderDefeated: false, log: 'raté',
+          attackerDetail: { label: 'Bagarre', base: 45, modifier: 0, target: 45, roll: 90, success: false, sl: -5 },
+        },
+      } as never,
+    });
+    useGame.getState().trampleForceSuccess();
+    expect(useGame.getState().pendingTrample!.forced).toBe(true);
+    useGame.getState().trampleSetForcedRoll(11);
+    const res = useGame.getState().pendingTrample!.result!;
+    expect(res.attackerRoll).toBe(11);
+    expect(res.critical).toBe(true);
+    useGame.getState().trampleSetForcedRoll(66); // > cible (45) : refusé
+    expect(useGame.getState().pendingTrample!.result!.attackerRoll).toBe(11);
+  });
+});

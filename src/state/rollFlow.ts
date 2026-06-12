@@ -32,6 +32,8 @@ type Set = (s: Partial<GameState>) => void;
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
   rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
+  forced?: boolean;
 }
 
 export interface RollFlowSpec<P extends PendingBase> {
@@ -55,6 +57,10 @@ export interface RollFlowSpec<P extends PendingBase> {
   bonus?: { guard?: (p: P) => boolean; derive: (s: GameState, p: P, actor: Combatant) => Partial<P> | null };
   /** Résilience « Je ne faillirai pas ! » (absent → le flux ne l'offre pas). Marche AVANT le jet. */
   force?: { guard?: (p: P) => boolean; derive: (s: GameState, p: P, actor: Combatant) => Partial<P> | null };
+  /** « vous choisissez le résultat » (LDB 17 l.73) : re-dérive avec un dé IMPOSÉ après `forceSuccess`
+   *  (absent → le flux n'offre pas le choix du dé — flux binaires/déjà au maximum). Même Test →
+   *  pas de re-dépense de Résilience ; `derive` rend null si la valeur n'est pas une réussite. */
+  forceRoll?: { derive: (s: GameState, p: P, actor: Combatant, roll: number) => Partial<P> | null };
   /** Patch de re-rendu après mutation en place de l'acteur. Défaut : `touchActors` (combat ⇄ groupe). */
   touch?: (s: GameState) => Partial<GameState>;
 }
@@ -64,6 +70,8 @@ export interface RollFlowHandlers {
   reroll: (get: Get, set: Set) => void;
   bonusSL: (get: Get, set: Set) => void;
   forceSuccess: (get: Get, set: Set) => void;
+  /** Choix du dé d'un Test forcé (no-op sans `spec.forceRoll` ou avant `forceSuccess`). */
+  setForcedRoll: (get: Get, set: Set, roll: number) => void;
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
@@ -126,7 +134,20 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       const patch = spec.force.derive(s, p, actor);
       if (!patch) return;
       actor.resilience = (actor.resilience ?? 0) - 1;
-      set({ [spec.key]: { ...p, ...patch }, ...touch(s) } as Partial<GameState>);
+      set({ [spec.key]: { ...p, ...patch, forced: true }, ...touch(s) } as Partial<GameState>);
+    },
+    setForcedRoll(get, set, roll) {
+      if (!spec.forceRoll) return;
+      const s = get();
+      const p = pendingOf(s);
+      if (!p || !p.forced) return; // seulement après « Je ne faillirai pas ! » (même Test)
+      const actor = spec.actor(s, p);
+      if (!actor) return;
+      const chosen = Math.floor(roll);
+      if (chosen < 1) return;
+      const patch = spec.forceRoll.derive(s, p, actor, chosen);
+      if (!patch) return;
+      set({ [spec.key]: { ...p, ...patch } } as Partial<GameState>);
     },
     cancel(_get, set) {
       set({ [spec.key]: null } as Partial<GameState>);

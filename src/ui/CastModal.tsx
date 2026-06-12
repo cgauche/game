@@ -7,6 +7,7 @@ import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { InfluenceRow } from './InfluenceRow';
+import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
 import { CharFrame } from './CharFrame';
 import { RollPanel } from './RollPanel';
@@ -41,6 +42,7 @@ export function CastModal() {
   const pickTargets = useGame((s) => s.castPickTargets);
   const placeZone = useGame((s) => s.castPlaceZone);
   const forceSuccess = useGame((s) => s.castForceSuccess);
+  const setForcedRoll = useGame((s) => s.castSetForcedRoll);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
   if (!pc) return null;
@@ -256,6 +258,11 @@ export function CastModal() {
                 })}
               </div>
             </div>
+          )}
+          {/* LDB 17 l.73 « vous choisissez le résultat » : 01 = DR max (Surincantation) ;
+              11 = double le plus bas → Incantation Critique au meilleur DR. */}
+          {pc.forced && res.target > 0 && (
+            <ForcedRollPicker roll={res.roll} target={res.target} onSet={setForcedRoll} critable={!isPrayer} />
           )}
           <InfluenceRow
             actor={caster}

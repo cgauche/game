@@ -20,6 +20,7 @@ export function TrampleModal() {
   const bonusSL = useGame((s) => s.trampleBonusSL);
   const darkPact = useGame((s) => s.trampleDarkPact);
   const force = useGame((s) => s.trampleForceSuccess);
+  const setForcedRoll = useGame((s) => s.trampleSetForcedRoll);
   const confirm = useGame((s) => s.trampleConfirm);
   const cancel = useGame((s) => s.trampleCancel);
   if (!pt || !battle) return null;
@@ -58,6 +59,8 @@ export function TrampleModal() {
         force();
       }}
       forceShow={!r?.hit}
+      /* LDB 17 l.73 : Piétinement forcé = attaque → le dé se choisit (11 → Coup Critique). */
+      forcedRoll={pt.forced && r?.attackerDetail ? { roll: r.attackerDetail.roll, target: r.attackerDetail.target, onSet: setForcedRoll } : undefined}
       onConfirm={confirm}
     />
   );

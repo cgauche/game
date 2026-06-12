@@ -28,9 +28,9 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'attackCancel',
   // défense réactive
   'defenseSetMode', 'defenseSetParryWeapon', 'defenseRoll', 'defenseReroll', 'defenseBonusSL',
-  'defenseDarkPact', 'defenseForceSuccess', 'defenseConfirm', 'defenseCancel',
+  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseConfirm', 'defenseCancel',
   // incantation / prière
-  'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice',
+  'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice', 'castSetForcedRoll',
   'castAllocOvercast', 'castToggleExtraTarget', 'castPickTargets', 'castPlaceZone', 'castForceSuccess',
   'castCounterspell', 'castConfirm', 'castCancel',
   // désengagement
@@ -41,7 +41,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'mountTargetSelect', 'mountTargetCancel',
   // jets divers en combat (fabrique rollFlow) + témoin/critiques/Destin
   'trampleRoll', 'trampleReroll', 'trampleBonusSL', 'trampleDarkPact', 'trampleForceSuccess',
-  'trampleConfirm', 'trampleCancel', 'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
+  'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel', 'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel', 'psychRoll', 'psychReroll',
   'psychBonusSL', 'psychDarkPact', 'psychForceSuccess', 'psychConfirm', 'psychResolve',

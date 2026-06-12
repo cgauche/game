@@ -87,6 +87,17 @@ export const FLOWS = {
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       },
     },
+    // « vous choisissez le résultat » (LDB 17 l.73) : un Piétinement est une attaque — un double
+    // choisi (11) inflige un Coup Critique, comme l'exemple Salundra (l.75).
+    forceRoll: {
+      derive: (s, p, actor, roll) => {
+        const target = inBattle(s, p.targetId);
+        const ad = p.result?.attackerDetail;
+        if (!target || !ad || roll > Math.min(99, ad.target)) return null; // doit RESTER une réussite
+        const atk2: TestResult = { roll, target: ad.target, success: true, sl: Math.max(evaluateTest(roll, ad.target).sl, 1), isDouble: isDoubleRoll(roll) };
+        return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
+      },
+    },
   }),
 
   /** Course (LDB 15 l.79-82) : Athlétisme (+20) — à cheval, Chevaucher + Mouvement de la monture (LDB 14 l.215). */
@@ -129,8 +140,11 @@ export const FLOWS = {
     force: {
       derive: (_s, p, actor) => {
         const base = p.result;
-        // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-        return { result: { dr: Math.max(base?.dr ?? 0, 1), isCritical: base?.isCritical ?? false, isFumble: false, roll: base?.roll ?? 1, target: base?.target, sl: Math.max(base?.sl ?? 1, 1), log: `${actor.name} force la focalisation (Résilience).` } };
+        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
+        // rationnel est 01 → DR MAXIMUM quand la cible du Test est connue (post-échec) ;
+        // pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
+        const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
+        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: 1, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
       },
     },
   }),
@@ -283,8 +297,14 @@ export const FLOWS = {
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
     force: {
       guard: (p) => !p.success, // rien à forcer si déjà réussi
-      // RAW LDB 17 l.73 : AVANT le jet (« au lieu de lancer les dés » → on choisit 01) OU après un échec.
-      derive: (_s, p) => ({ roll: p.roll ?? 1, success: true, sl: Math.max(p.sl, p.requireSL, 1), forced: true }),
+      // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
+      // compétence, le choix rationnel est 01 → DR MAXIMUM (les talents à bonus de DR s'ajoutent
+      // comme sur un jet naturel, le seuil `requireSL` reste garanti).
+      derive: (_s, p, actor) => ({
+        roll: 1, success: true,
+        sl: Math.max(evaluateTest(1, p.target).sl + (actor ? talentTestDR(actor, p.label) : 0), p.requireSL, 1),
+        forced: true,
+      }),
     },
   }),
 
@@ -359,8 +379,9 @@ export const FLOWS = {
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // le soin scale avec le DR (LDB 17 l.26)
     force: {
       guard: (p) => !p.success && p.mode !== 'surgery',
-      // RAW LDB 17 l.73 : AVANT le jet (roll==null → on choisit 01) OU après un échec (roll conservé).
-      derive: (_s, p) => ({ roll: p.roll ?? 1, success: true, sl: Math.max(p.sl, 1) }),
+      // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
+      // rationnel est 01 → DR MAXIMUM (le soin scale avec le DR : BI + DR Blessures soignées).
+      derive: (_s, p) => ({ roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) }),
     },
   }),
 };

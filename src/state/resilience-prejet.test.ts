@@ -35,12 +35,13 @@ describe('testForceSuccess — Résilience AVANT le jet', () => {
     expect(useGame.getState().pendingTest!.sl).toBeGreaterThanOrEqual(3);
   });
 
-  it('APRÈS un Test échoué (RAW l.73) : réussite forcée, dé conservé, 1 Résilience dépensée', () => {
+  it('APRÈS un Test échoué (RAW l.73 « vous choisissez le résultat ») : dé CHOISI 01 → DR max', () => {
     setPendingTest({ roll: 88, success: false, sl: -2 });
     useGame.getState().testForceSuccess();
     const pt = useGame.getState().pendingTest!;
     expect(pt.success).toBe(true);
-    expect(pt.roll).toBe(88); // le dé raté est conservé (post-jet)
+    expect(pt.roll).toBe(1); // sans enjeu de double, le choix rationnel est le score le plus bas
+    expect(pt.sl).toBe(4); // dizaine(40) − dizaine(01) : DR maximum, plus le plancher 1 d'antan
     expect(pt.forced).toBe(true);
     expect(useGame.getState().party[0].resilience).toBe(1);
   });

@@ -6,6 +6,7 @@ import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { InfluenceRow } from './InfluenceRow';
+import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
 import { DeterminationButton } from './DeterminationButton';
 import { RollPanel } from './RollPanel';
@@ -37,6 +38,7 @@ export function DefenseModal() {
   const bonusSL = useGame((s) => s.defenseBonusSL);
   const darkPact = useGame((s) => s.defenseDarkPact);
   const forceSuccess = useGame((s) => s.defenseForceSuccess);
+  const setForcedRoll = useGame((s) => s.defenseSetForcedRoll);
   const confirm = useGame((s) => s.defenseConfirm);
   const subir = useGame((s) => s.defenseCancel);
   const spendResolve = useGame((s) => s.spendResolveCondition);
@@ -165,6 +167,11 @@ export function DefenseModal() {
             event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', outcome, attacker.id, defender.id)}
             combatants={battle.combatants}
           />
+          {/* LDB 17 l.73 « vous choisissez le résultat » : 01 = DR max ; 11 = double le plus bas
+              du défenseur (le moteur en tire les conséquences du Test opposé). */}
+          {pd.forced && pd.def && (
+            <ForcedRollPicker roll={pd.def.roll} target={pd.def.target} onSet={setForcedRoll} />
+          )}
           <InfluenceRow
             actor={defender}
             rerollable={rerollable}

@@ -8,6 +8,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../state/combatFlow';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { InfluenceRow } from './InfluenceRow';
+import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
 import { DeterminationButton } from './DeterminationButton';
 import { RollPanel } from './RollPanel';
@@ -227,35 +228,11 @@ export function RollModal() {
             event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', outcome, attacker.id, target.id)}
             combatants={battle.combatants}
           />
-          {pa.forced && res.attackerDetail && (() => {
-            // LDB 17 l.73 « vous choisissez le résultat » : plus haut double réussi (→ Coup Critique).
-            const maxRoll = Math.min(99, res.attackerDetail!.target);
-            const bestDouble = Math.floor(maxRoll / 11) * 11;
-            return (
-              <div className="rm-options">
-                <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>
-                <div className="rm-loc-grid">
-                  <button className={`btn small ${res.attackerRoll === 1 ? 'btn-primary' : ''}`} title="DR maximum" onClick={() => setForcedRoll(1)}>
-                    01 · DR max
-                  </button>
-                  {bestDouble >= 11 && (
-                    <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique" onClick={() => setForcedRoll(bestDouble)}>
-                      {String(bestDouble).padStart(2, '0')} · Critique
-                    </button>
-                  )}
-                  <input
-                    className="rm-die-input"
-                    type="number"
-                    min={1}
-                    max={maxRoll}
-                    value={res.attackerRoll}
-                    onChange={(e) => setForcedRoll(Number(e.target.value))}
-                    title={`Choisir librement la valeur du dé (1 à ${maxRoll})`}
-                  />
-                </div>
-              </div>
-            );
-          })()}
+          {/* LDB 17 l.73 « vous choisissez le résultat » : 01 = DR max ; 11 = double LE PLUS BAS
+              → Coup Critique au meilleur DR (l'exemple Salundra l.75 choisit 11). */}
+          {pa.forced && res.attackerDetail && (
+            <ForcedRollPicker roll={res.attackerRoll} target={res.attackerDetail.target} onSet={setForcedRoll} />
+          )}
           {res.critical && pa.forced && (
             <div className="rm-options">
               {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}

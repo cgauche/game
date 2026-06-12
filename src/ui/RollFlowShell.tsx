@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { RollBreakdown } from '../engine/combat';
 import { bus, EVT } from '../state/bus';
 import { ChanceButtons } from './ChanceButtons';
+import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
 import { RollPanel, type RollRowData } from './RollPanel';
 import type { PendingRoll } from './RollLine';
@@ -58,6 +59,7 @@ export function RollFlowShell({
   onForce,
   preRollForce,
   forceShow = false,
+  forcedRoll,
   confirmLabel = 'Appliquer',
   onConfirm,
 }: {
@@ -108,6 +110,9 @@ export function RollFlowShell({
   preRollForce?: () => void;
   /** Montre la Résilience APRÈS le jet (condition d'échec propre au flux). */
   forceShow?: boolean;
+  /** « vous choisissez le résultat » (LDB 17 l.73) : sélecteur du dé d'un Test FORCÉ — fourni par
+   *  les flux où la valeur a un enjeu (double → Critique). Absent → pas de sélecteur. */
+  forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean };
   confirmLabel?: string;
   onConfirm: () => void;
 }) {
@@ -157,6 +162,7 @@ export function RollFlowShell({
         <>
           {panelRows && <RollPanel rows={panelRows} winnerIndex={winnerIndex} netSL={netSL} />}
           {outcome}
+          {forcedRoll && <ForcedRollPicker {...forcedRoll} />}
           <div className="rm-influence">
             <ChanceButtons
               fortune={fortune}

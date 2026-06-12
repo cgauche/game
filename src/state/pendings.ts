@@ -205,6 +205,8 @@ export interface PendingTrample {
   targetId: string;
   result: AttackResult | null; // null = pas encore lancé
   rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  forced?: boolean;
 }
 /** Course en attente (LDB 15-Déplacement l.79-82) : Test d'Athlétisme (+20) ; succès → déplacement
  *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
@@ -362,6 +364,8 @@ export interface PendingDefense {
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Défense forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  forced?: boolean;
   /** Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : ne consomme pas l'Action, applique
    *  ses effets RAW et enchaîne la file au resolve (cf. aiCreatureFreeAttacks). */
   free?: boolean;
@@ -399,6 +403,8 @@ export interface PendingCast {
   result: (CastResult & Partial<MissileResult>) | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
+  /** Incantation forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  forced?: boolean;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix du lanceur — Blessure Critique
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */

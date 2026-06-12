@@ -12,7 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
-  effectiveSpellOf, finishPlayerAction,
+  effectiveSpellOf, finishPlayerAction, castInfoIsPrayer,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
@@ -75,7 +75,7 @@ import {
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
-import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, rederiveCastSL, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles, castTestTalentDR } from '../engine/magic';
 import { rollTest, TestResult, resolveOpposed, isDoubleRoll, evaluateTest } from '../engine/tests';
 import { canReroll } from '../engine/fortune';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
@@ -760,6 +760,10 @@ export interface GameState {
   defenseForceSuccess: () => void;
   castForceSuccess: () => void;
   disengageForceSuccess: () => void;
+  // « vous choisissez le résultat » (l.73) : valeur du dé d'un Test forcé (11 → Critique, 01 → DR max).
+  defenseSetForcedRoll: (roll: number) => void;
+  castSetForcedRoll: (roll: number) => void;
+  trampleSetForcedRoll: (roll: number) => void;
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageCancel: () => void;
@@ -2779,6 +2783,7 @@ export const useGame = create<GameState>((set, get) => ({
   trampleBonusSL: () => FLOWS.trample.bonusSL(get, set),
   trampleDarkPact: () => FLOWS.trample.darkPact(get, set),
   trampleForceSuccess: () => FLOWS.trample.forceSuccess(get, set),
+  trampleSetForcedRoll: (roll) => FLOWS.trample.setForcedRoll(get, set, roll),
   trampleConfirm: () => {
     const { battle, pendingTrample: pt } = get();
     if (!battle || !pt || !pt.result) return;
@@ -3242,6 +3247,23 @@ export const useGame = create<GameState>((set, get) => ({
     const dd = pd.result.defenderDetail!;
     const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, pd.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
     const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
+    // `forced` : le joueur peut maintenant CHOISIR la valeur de son dé (LDB 17 l.73).
+    set({ pendingDefense: { ...pd, def: def2, result: res, forced: true }, battle: { ...battle } });
+  },
+  /** « vous choisissez le résultat » (LDB 17 l.73) sur une défense forcée : re-dérive avec le dé
+   *  choisi (11 → double du défenseur ; 01 → DR max). Test opposé : « vous l'emportez avec au
+   *  moins DR +1 » (même plancher que le force) ; même Test → pas de re-dépense de Résilience. */
+  defenseSetForcedRoll: (roll) => {
+    const { battle, pendingDefense: pd } = get();
+    if (!battle || !pd || !pd.forced || !pd.def || !pd.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
+    const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+    if (!attacker || !defender) return;
+    const chosen = Math.floor(roll);
+    if (chosen < 1 || chosen > Math.min(99, pd.def.target)) return; // doit RESTER une réussite
+    const sl = Math.max(evaluateTest(chosen, pd.def.target).sl, pd.atk.sl + 1, 1);
+    const def2: TestResult = { roll: chosen, target: pd.def.target, success: true, sl, isDouble: isDoubleRoll(chosen) };
+    const res = finishMelee(attacker, defender, pd.weapon, pd.atk, def2, pd.mode, pd.location ?? undefined);
     set({ pendingDefense: { ...pd, def: def2, result: res }, battle: { ...battle } });
   },
   castForceSuccess: () => {
@@ -3256,6 +3278,26 @@ export const useGame = create<GameState>((set, get) => ({
     const cur = pc.result;
     const bonusNeeded = Math.max(1, ni - cur.sl); // au moins le NI ; on force aussi un d100 propre réussi
     const res = rederiveCastSL(caster, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, pc.missile, pc.focused, bonusNeeded);
+    // `forced` : le joueur peut maintenant CHOISIR la valeur de son dé (LDB 17 l.73).
+    set({ pendingCast: { ...pc, result: res, forced: true }, ...touchActors(get()) });
+  },
+  /** « vous choisissez le résultat » (LDB 17 l.73) sur une incantation forcée : re-dérive avec le
+   *  dé choisi (11 → Incantation Critique, comme l'exemple Salundra ; 01 → DR max → Surincantation).
+   *  Plancher : le sort PART (DR ≥ NI, sémantique du force) ; les talents à bonus de DR du Test
+   *  d'incantation s'ajoutent comme au jet naturel. Même Test → pas de re-dépense de Résilience. */
+  castSetForcedRoll: (roll) => {
+    const { pendingCast: pc } = get();
+    if (!pc || !pc.forced || !pc.result) return;
+    const caster = actorIn(get(), pc.casterId);
+    const target = actorIn(get(), pc.targetId);
+    const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+    if (!caster || !target || !spell) return;
+    const chosen = Math.floor(roll);
+    if (chosen < 1 || chosen > Math.min(99, pc.result.target)) return; // doit RESTER une réussite
+    const ni = pc.focused ? 0 : spell.cn ?? 0;
+    const sl = evaluateTest(chosen, pc.result.target).sl
+      + castTestTalentDR(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
+    const res = rederiveCastSL(caster, target, spell, { ...pc.result, roll: chosen, sl }, pc.missile, pc.focused, Math.max(0, ni - sl));
     set({ pendingCast: { ...pc, result: res }, ...touchActors(get()) });
   },
   disengageForceSuccess: () => {
