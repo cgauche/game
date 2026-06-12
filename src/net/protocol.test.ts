@@ -1,8 +1,8 @@
 /**
- * Protocole coop (Jalon 7) : messages typés sur le DataChannel — hello (version), intent
- * (action d'invité rejouée par l'hôte), snapshot (état autoritaire), assign (propriété d'un
- * héros), bye. `parseMessage` valide la FORME : tout message inconnu/malformé → null (jamais
- * d'exception — le réseau est une entrée non fiable).
+ * Protocole coop : messages typés du transport — hello (version), intent (action d'invité
+ * rejouée par l'hôte), snapshot (état autoritaire), campaign (projet custom transféré au join),
+ * assign (propriété d'un héros), bye. `parseMessage` valide la FORME : tout message
+ * inconnu/malformé → null (jamais d'exception — le réseau est une entrée non fiable).
  */
 import { describe, it, expect } from 'vitest';
 import { PROTOCOL_VERSION, parseMessage, serializeMessage, type NetMessage } from './protocol';
@@ -28,6 +28,14 @@ describe('protocole coop (net/protocol)', () => {
       '{kind:intent}', '{"kind":"assign","heroId":3,"seat":1}']) {
       expect(parseMessage(bad), bad).toBeNull();
     }
+  });
+
+  it('campaign : projet de campagne transféré une fois au join (spec coop v2 §5)', () => {
+    const m = parseMessage(serializeMessage({
+      kind: 'campaign', name: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null,
+    }));
+    expect(m).toEqual({ kind: 'campaign', name: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null });
+    expect(parseMessage('{"kind":"campaign","name":"X"}')).toBeNull(); // scenes/startSceneId manquants
   });
 
   it('un intent ne transporte que du JSON-sûr (args sérialisables tels quels)', () => {

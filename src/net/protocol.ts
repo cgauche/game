@@ -1,8 +1,9 @@
 /**
- * Protocole coop (Jalon 7) — messages typés du DataChannel, modèle hôte-autoritaire :
- * les invités envoient des INTENTS (action de store rejouable), l'hôte renvoie des SNAPSHOTS
- * (état complet, mêmes données JSON-sûres que la sauvegarde). `parseMessage` valide la FORME
- * de chaque message : le réseau est une entrée non fiable → null, jamais d'exception.
+ * Protocole coop — messages typés du transport, modèle hôte-autoritaire : les invités envoient
+ * des INTENTS (action de store rejouable), l'hôte renvoie des SNAPSHOTS (état complet, mêmes
+ * données JSON-sûres que la sauvegarde) et transfère la campagne custom UNE fois au join
+ * (`campaign`). `parseMessage` valide la FORME de chaque message : le réseau est une entrée
+ * non fiable → null, jamais d'exception.
  */
 export const PROTOCOL_VERSION = 1;
 
@@ -10,6 +11,7 @@ export type NetMessage =
   | { kind: 'hello'; protocol: number; build: string; name: string }
   | { kind: 'intent'; action: string; args: unknown[]; seat: number }
   | { kind: 'snapshot'; data: Record<string, unknown> }
+  | { kind: 'campaign'; name: string; scenes: unknown[]; startSceneId: string; worldMap: unknown }
   | { kind: 'assign'; heroId: string; seat: number }
   | { kind: 'bye' };
 
@@ -38,6 +40,10 @@ export function parseMessage(raw: string): NetMessage | null {
     case 'snapshot':
       return m.data != null && typeof m.data === 'object' && !Array.isArray(m.data)
         ? { kind: 'snapshot', data: m.data as Record<string, unknown> }
+        : null;
+    case 'campaign':
+      return typeof m.name === 'string' && Array.isArray(m.scenes) && typeof m.startSceneId === 'string'
+        ? { kind: 'campaign', name: m.name, scenes: m.scenes, startSceneId: m.startSceneId, worldMap: m.worldMap ?? null }
         : null;
     case 'assign':
       return typeof m.heroId === 'string' && typeof m.seat === 'number'
