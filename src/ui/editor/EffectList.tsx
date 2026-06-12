@@ -246,7 +246,24 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
           </>
         )}
         {effect.type === 'rest' && (
-          <label>Journées de repos <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          <div className="tf-row">
+            <label className="dr">
+              Lieu
+              <select value={e.lodging ?? 'maison'} onChange={(ev) => upd({ lodging: ev.target.value })}>
+                <option value="auberge">Auberge (chambres/repas payants)</option>
+                <option value="maison">Chez soi (gratuit)</option>
+                <option value="camp">Campement (dehors)</option>
+              </select>
+            </label>
+            <label className="dr">
+              Qualité
+              <select value={e.quality ?? 'normale'} onChange={(ev) => upd({ quality: ev.target.value === 'pietre' ? 'pietre' : undefined })}>
+                <option value="normale">Normale</option>
+                <option value="pietre">Piètre (½ prix, à risque)</option>
+              </select>
+            </label>
+            <label className="dr">Nuits <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          </div>
         )}
         {effect.type === 'interlude' && (
           <label>Semaines d'interlude <input type="number" min={1} max={12} value={e.weeks ?? 1} onChange={(ev) => upd({ weeks: Math.max(1, Number(ev.target.value) || 1) })} /></label>

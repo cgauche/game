@@ -22,6 +22,7 @@ import { EncounterPsychModal } from './EncounterPsychModal';
 import { FrenzyModal } from './FrenzyModal';
 import { HealModal } from './HealModal';
 import { MedicModal } from './MedicModal';
+import { RestModal } from './RestModal';
 import { CastModal } from './CastModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
@@ -38,7 +39,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   trample: TrampleModal, reveal: RevealModal, defense: DefenseModal, psych: PsychModal,
   encounterPsych: EncounterPsychModal, disengage: DisengageModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
-  medic: MedicModal, heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
+  medic: MedicModal, rest: RestModal, heal: HealModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   attack: RollModal, test: TestModal, corruption: CorruptionModal, activity: ActivityModal,
 };
 

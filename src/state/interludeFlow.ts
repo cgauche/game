@@ -17,7 +17,7 @@ import { d100 } from '../engine/dice';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrapping, recomputeLoadout } from '../engine/items';
-import { restPartyOvernight } from './combatFlow';
+import { sleepParty } from './restFlow';
 import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
 import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
@@ -471,8 +471,8 @@ export function interludeEnd(get: Get, set: Set): void {
   if (revenue > 0) lines.push(`Les Revenus de la période sont disponibles : ${formatMoney(fromBrass(revenue))}.`);
   set({ interlude: null, screen: 'campaign', party: [...get().party] });
   for (const l of lines) get().log(l);
-  // Le temps de l'interlude s'écoule (récupération, convalescence, horloge — flux de repos
-  // standard). `fedDaily` : la vie en ville (gîte ET couvert) est couverte par l'Argent à
+  // Le temps de l'interlude s'écoule (récupération, convalescence, horloge — moteur de nuit
+  // unique). `fedDaily` : la vie en ville (gîte ET couvert) est couverte par l'Argent à
   // gaspiller — la Faim RAW ne s'applique pas à la période (LDB 23, « le coût de la vie »).
-  restPartyOvernight(get, set, itl.weeks * 7, { fedDaily: true });
+  sleepParty(get, set, itl.weeks * 7, { fedDaily: true });
 }

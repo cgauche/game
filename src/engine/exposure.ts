@@ -1,0 +1,109 @@
+/**
+ * Exposition (LDB 18-Traumatisme l.408-415) — dormir DEHORS dans un environnement difficile.
+ * « Après 4 heures passées dans un environnement difficile – comme lorsque les températures sont
+ * négatives, dans un désert brûlant ou une tempête, vous devez effectuer un Test de Résistance.
+ * Lorsque vous vous retrouvez dans un environnement aux conditions extrêmes, ce Test doit être
+ * effectué toutes les deux heures. »
+ * FROID (l.415) : 1ᵉʳ échec → −10 CT/Agilité/Dextérité ; 2ᵉ → −10 toutes les autres ; 3ᵉ+ →
+ * 1d10 Dégâts ignorant les PA (min 1) ; à 0 PB → Inconscient. « Certaines Possessions accordent
+ * des bonus et des pénalités pour ces Tests » : sans bon Manteau, pénalité au Test de Froid
+ * (ch.66 l.46 — non chiffrée dans le canon : application déclarée −10).
+ *
+ * Applications déclarées (le canon ne chiffre pas le sommeil dehors) :
+ *  - une NUIT (~8 h) en environnement difficile = 2 Tests (1/4 h) ; extrême = 4 Tests (1/2 h) ;
+ *  - un ABRI (Tente, ch.74 — ou abri construit, Survie en extérieur ch.09 l.559) ANNULE
+ *    l'Exposition d'une nuit difficile, et ramène une nuit extrême au rythme difficile (2 Tests) ;
+ *  - les pénalités d'Exposition se dissipent après 24 h (purge d'horloge #T3) ;
+ *  - la météo de scène donne la sévérité : pluie/neige = difficile, tempête = extrême (froid).
+ * Pur : mute `c`, renvoie jets + journal.
+ */
+import type { Combatant, CharKey } from './types';
+import type { RNG } from './dice';
+import { rollTest } from './tests';
+import { COMBAT_PERSIST } from './ops';
+import { addCondition, hasCondition, loseWounds } from './conditions';
+
+export type ExposureSeverity = 'clement' | 'difficile' | 'extreme';
+
+/** Sévérité d'Exposition dérivée de la météo de scène (donnée d'auteur — pas de simulation). */
+export function weatherExposure(weather?: string): ExposureSeverity {
+  if (weather === 'tempete') return 'extreme';
+  if (weather === 'pluie' || weather === 'neige') return 'difficile';
+  return 'clement';
+}
+
+/** Le personnage porte-t-il un bon manteau (ch.66 l.46) ? Cape « protège contre les éléments » aussi. */
+export function hasCoat(c: Combatant): boolean {
+  return (c.items ?? []).some((it) => /^(manteau|cape)\b/i.test(it.name));
+}
+
+/** Une Tente dans le paquetage du groupe ? (abri pour le campement — application déclarée). */
+export function partyHasTent(party: Combatant[]): boolean {
+  return party.some((h) => (h.items ?? []).some((it) => /^tente\b/i.test(it.name)));
+}
+
+export interface ExposureRoll {
+  base: number;
+  target: number;
+  roll: number;
+  sl: number;
+  success: boolean;
+}
+
+const FIRST_FAIL: CharKey[] = ['CT', 'Ag', 'Dex'];
+const SECOND_FAIL: CharKey[] = ['CC', 'F', 'E', 'I', 'Int', 'FM', 'Soc'];
+
+/** Nombre de Tests d'une nuit dehors selon sévérité et abri. */
+export function exposureTestCount(severity: ExposureSeverity, sheltered: boolean): number {
+  if (severity === 'clement') return 0;
+  if (severity === 'extreme') return sheltered ? 2 : 4;
+  return sheltered ? 0 : 2;
+}
+
+/**
+ * Une NUIT d'Exposition au froid pour `c` : `count` Tests de Résistance (+0) — sans manteau, −10.
+ * Applique les échecs en cascade (RAW l.415). Renvoie les jets et le journal.
+ */
+export function exposureNight(c: Combatant, count: number, resVal: number, rng: RNG): { rolls: ExposureRoll[]; log: string[]; failures: number; wounds: number } {
+  const rolls: ExposureRoll[] = [];
+  const log: string[] = [];
+  let failures = 0;
+  let wounds = 0;
+  const coat = hasCoat(c);
+  const malus = coat ? 0 : -10;
+  for (let i = 0; i < count; i++) {
+    const res = rollTest(Math.max(0, resVal + malus), 'intermediaire', rng);
+    rolls.push({ base: resVal + malus, target: res.target, roll: res.roll, sl: res.sl, success: res.success });
+    if (res.success) continue;
+    failures++;
+    if (failures === 1) {
+      for (const k of FIRST_FAIL) {
+        c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+      }
+      log.push(`${c.name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).`);
+    } else if (failures === 2) {
+      for (const k of SECOND_FAIL) {
+        c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+      }
+      log.push(`${c.name} est transi — −10 à toutes les autres Caractéristiques.`);
+    } else {
+      const dmg = Math.max(1, rng.int(1, 10));
+      wounds += dmg;
+      loseWounds(c, dmg);
+      log.push(`${c.name} souffre du froid : ${dmg} Blessure(s) (ignore les PA).`);
+      if (c.wounds.current <= 0 && !hasCondition(c, 'Inconscient')) {
+        addCondition(c, 'Inconscient');
+        log.push(`${c.name} sombre, gelé — Inconscient.`);
+      }
+    }
+  }
+  if (!coat && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−10 aux Tests d'Exposition).`);
+  return { rolls, log, failures, wounds };
+}
+
+/** Pose une échéance d'horloge sur les pénalités d'Exposition (dissipation après 24 h au chaud). */
+export function expireExposureEffects(c: Combatant, untilTime: number): void {
+  for (const e of c.activeEffects ?? []) {
+    if (e.label === 'Exposition (froid)' && e.untilTime == null) e.untilTime = untilTime;
+  }
+}

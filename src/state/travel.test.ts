@@ -76,17 +76,39 @@ describe('startTravel — à pied', () => {
     expect(st.journal.some((l) => l.includes('Arrivée à Bourg B'))).toBe(true);
   });
 
-  it('trajet multi-jours (30 km à M4) : 6 h/jour (l.224), nuit de camp, rations consommées', () => {
+  it('trajet multi-jours (30 km à M4) : 6 h/jour (l.224), HALTE de nuit (modale de Repos), rations consommées', () => {
     setup(map({ km: 30 }));
     const t0 = useGame.getState().gameTime;
     useGame.getState().startTravel('r1', 'pied');
-    const st = useGame.getState();
+    // Nuit 1 : le voyage se SUSPEND sur la modale de Repos (campement — pas d'auberge sur la route).
+    let st = useGame.getState();
+    expect(st.scene?.id).toBe('lieu-a-scene'); // toujours en route
+    expect(st.pendingRest?.phase).toBe('setup');
+    expect(st.pendingRest?.places.auberge).toBeFalsy();
+    useGame.getState().restSleep();
+    expect(useGame.getState().pendingRest?.phase).toBe('bilan');
+    useGame.getState().restContinue(); // « Reprendre la route » au matin
+    st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
     // Jour 1 : 6 h de marche (24 km) + nuit jusqu'à l'aube ; jour 2 : 1 h 30 (6 km) → > 17 h au total.
     expect(st.gameTime - t0).toBeGreaterThan(17 * 60);
     expect(st.journal.some((l) => /dort jusqu|aube/i.test(l))).toBe(true);
     // L'entretien quotidien a consommé une ration au franchissement de jour.
     expect(rationCount(st.party[0])).toBe(2);
+  });
+
+  it('route à RELAIS (inns) : la halte de nuit propose l’auberge — chambre privée débitée, puis arrivée', () => {
+    setup(map({ km: 30, inns: true }));
+    useGame.setState({ money: { gold: 2, silver: 0, brass: 0 } });
+    useGame.getState().startTravel('r1', 'pied');
+    const p = useGame.getState().pendingRest!;
+    expect(p.places.auberge).toBe(true);
+    expect(p.perHero[useGame.getState().party[0].id].lodging).toBe('privee'); // défaut auberge
+    const before = toBrass(useGame.getState().money);
+    useGame.getState().restSleep();
+    expect(toBrass(useGame.getState().money)).toBe(before - 120 - 12); // chambre 10 pa + repas 1 pa
+    useGame.getState().restContinue();
+    expect(useGame.getState().scene?.id).toBe('lieu-b-scene');
   });
 
   it('la vitesse est celle du PLUS LENT (l.222) : M3 dans le groupe → 4 h pour 12 km', () => {
@@ -186,6 +208,11 @@ describe('nourriture en voyage (LDB 18 l.417-422)', () => {
   it('sans rations, un long voyage affame le groupe (compteur de faim) et bloque la récup nocturne', () => {
     setup(map({ km: 72 }), [hero({ items: [], wounds: { current: 5, max: 12 } })]); // 3 jours pleins à M4
     useGame.getState().startTravel('r1', 'pied');
+    // Chaque nuit : halte (modale de Repos) → dormir → reprendre la route au matin.
+    for (let n = 0; n < 4 && useGame.getState().pendingRest; n++) {
+      useGame.getState().restSleep();
+      useGame.getState().restContinue();
+    }
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
     const h = st.party[0];

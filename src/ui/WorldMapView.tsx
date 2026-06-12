@@ -309,7 +309,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               type="button"
               className="btn btn-primary"
               disabled={kmh <= 0 || !affordable || isGuest}
-              title={isGuest ? 'L’hôte décide des départs.' : undefined}
+              title={isGuest ? 'L’hôte décide des départs.'
+                : kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
+                : !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
+                : undefined}
               onClick={() => startTravel(selRoute.id, mode, { classKey: classKey || undefined, hoursPerDay: mode === 'pied' && forced ? maxH : undefined })}
             >
               🧭 Partir

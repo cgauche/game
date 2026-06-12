@@ -11,9 +11,10 @@
  *    → tirage sur la table VERBATIM (`data/peripeties.ts`) ; en PLUS, péripéties d'AUTEUR par route
  *    (probabilité par jour + Effects d'éditeur).
  *
- * Chaque nuit en route : campement = `restPartyOvernight` (sommeil RAW — l'horloge saute à l'aube,
- * l'entretien de nourriture tourne, la récupération est bloquée si affamé). Comme pour le repos,
- * on n'avance PAS l'horloge minute par minute (cf. justification dans restPartyOvernight).
+ * Chaque nuit en route : HALTE — la modale de Repos s'ouvre (campement, ou auberge de relais si la
+ * route en a — `MapRoute.inns`) et le voyage se SUSPEND ; le « Continuer » du bilan reprend la
+ * route au matin (`continueTravelAfterNight`). Le récapitulatif traverse les nuits via
+ * `travelPlan.recapDays`.
  *
  * Une péripétie qui déclenche un combat/une transition INTERROMPT le voyage : `travelPlan` mémorise
  * la progression (`kmDone`) et la carte propose « Reprendre le voyage » (`resumeTravel`).
@@ -21,7 +22,8 @@
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
-import { applyEffects, restPartyOvernight } from './combatFlow';
+import { applyEffects } from './combatFlow';
+import { openRest, placesOfKind } from './restFlow';
 import { runDailyUpkeep } from './upkeep';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
 import {
@@ -73,6 +75,8 @@ export interface TravelPlan {
   kmDone: number;
   /** Interrompu par une péripétie (combat/transition) — reprise via `resumeTravel`. */
   interrupted: boolean;
+  /** Journées du récapitulatif déjà jouées (le récap traverse les HALTES de nuit). */
+  recapDays?: TravelRecapDay[];
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -149,7 +153,8 @@ function runTravelDays(get: Get, set: Set): void {
   const recap: TravelRecap | null = plan0 ? {
     fromLabel: placeById(worldMap, plan0.fromPlaceId)?.label ?? '?',
     toLabel: placeById(worldMap, plan0.toPlaceId)?.label ?? '?',
-    mode: plan0.mode, status: 'arrived', km: plan0.km, kmDone: plan0.kmDone, days: [],
+    mode: plan0.mode, status: 'arrived', km: plan0.km, kmDone: plan0.kmDone,
+    days: [...(plan0.recapDays ?? [])], // les journées d'avant la halte de nuit
   } : null;
   const finishRecap = (status: TravelRecap['status']) => {
     if (!recap) return;
@@ -221,9 +226,19 @@ function runTravelDays(get: Get, set: Set): void {
       get().transitionTo(to.scene, to.entry);
       return;
     }
-    // Nuit en route : campement (sommeil RAW — entretien + récupération, bloquée si affamé).
-    restPartyOvernight(get, set, 1);
+    // Nuit en route : HALTE — modale de Repos (auberge de relais si la route en a, sinon
+    // campement). Le voyage se suspend ; « Continuer » du bilan reprend la route au matin.
+    set({ travelPlan: { ...get().travelPlan!, recapDays: recap ? [...recap.days] : undefined } });
+    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true });
+    return;
   }
+}
+
+/** Reprise au MATIN après la halte de nuit (« Continuer » du bilan de la modale de Repos). */
+export function continueTravelAfterNight(get: Get, set: Set): void {
+  const plan = get().travelPlan;
+  if (!plan || plan.interrupted || get().battle) return;
+  runTravelDays(get, set);
 }
 
 /** Tire et résout les péripéties du jour. Renvoie `true` si le voyage est INTERROMPU. */

@@ -54,6 +54,11 @@ export interface MapRoute {
   perils?: RoutePeril[];
   /** Cible du « Attaqués ! » (péripétie 10) : scène d'embuscade + rencontre. Absent = narratif. */
   ambush?: { scene: string; entry?: string; encounter: string };
+  /** Relais d'auberges en bord de route (section Voyage : « Les auberges en bord de route sont
+   *  souvent placées à la convenance des relais de diligences ») : la halte de NUIT propose
+   *  l'auberge (chambres/repas payants, modale de Repos) en plus du campement. Absent = belle
+   *  étoile seulement. */
+  inns?: boolean;
 }
 
 export interface WorldMapParams {

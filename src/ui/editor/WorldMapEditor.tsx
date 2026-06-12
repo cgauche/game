@@ -264,6 +264,14 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   onChange={(e) => updRoute(selRoute.id, { perilDie: e.target.value === '' ? undefined : Math.max(0, Math.min(10, Number(e.target.value))) })}
                 />
               </label>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={selRoute.inns ?? false}
+                  onChange={(e) => updRoute(selRoute.id, { inns: e.target.checked || undefined })}
+                />
+                🛏 Relais d'auberges (la halte de nuit propose l'auberge)
+              </label>
 
               <div className="mini-title">Embuscade (« Attaqués ! » de la table d10)</div>
               <label className="ed-field">Scène d'embuscade (vide = narratif seul)

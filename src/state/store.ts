@@ -12,7 +12,7 @@ import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, bestDefenseMode, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
-  effectiveSpellOf, finishPlayerAction, restPartyOvernight,
+  effectiveSpellOf, finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
@@ -26,10 +26,12 @@ export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 export { movementRemaining, canMove } from './mount';
 import { pickActiveModalKey } from './modalArbiter';
 
-/** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ou ciblage par carte : Frappe
- *  Mortelle, 2ᵉ frappe, Surincantation +Cible, pose de zone) : toutes les actions d'INTENTION
- *  de la hotbar sont inertes — on ne change pas d'action au milieu d'un jet. La barre est
- *  masquée (ActionBar), mais ce garde-fou couvre AUSSI le clavier, les intents coop et la recette. */
+/** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ciblage par carte : Frappe Mortelle,
+ *  2ᵉ frappe, Surincantation +Cible, pose de zone) :
+ *  toutes les actions d'INTENTION de la hotbar sont inertes — on ne change pas d'action au milieu
+ *  d'un jet. La barre est masquée (ActionBar), mais ce garde-fou couvre AUSSI le clavier, les
+ *  intents coop et la recette. (La PAUSE de début de Round, elle, est gatée à l'entrée UI —
+ *  performClick d'IsoStage — pour rester neutre vis-à-vis des harnais de test sans UI.) */
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
   !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
 import { mountedDodgePenalty, mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
@@ -125,6 +127,9 @@ import { subtract as moneySub, add as moneyAdd, canAfford, toMoney } from '../en
 import * as medicFlow from './medicFlow';
 import type { MedicState, MedicNpc } from './medicFlow';
 export type { MedicState, MedicNpc } from './medicFlow';
+import * as restFlow from './restFlow';
+import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
+export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
 import { sceneCombatModifiers } from './sceneRules';
@@ -277,6 +282,8 @@ export interface GameState {
   pendingHeal: PendingHeal | null;
   /** Infirmerie ouverte (modale de soins persistante, hors combat — state/medicFlow). */
   medic: MedicState | null;
+  /** Modale de Repos (nuit à l'auberge / chez soi / campement — state/restFlow). */
+  pendingRest: PendingRest | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
   /** Maniement de deux armes : sélection de la 2ᵉ cible (après une 1ʳᵉ frappe réussie). */
@@ -494,6 +501,14 @@ export interface GameState {
   /** Arrête l'opération (cumul perdu ; jamais commencée → acte remboursé). */
   medicEndSurgery: () => void;
   closeMedic: () => void;
+  /** REPOS (state/restFlow) : modale de nuit — réglages PAR HÉROS (couchage + pitance,
+   *  orthogonaux : on peut manger à l'auberge et dormir dehors), puis bilan globalisé. */
+  openRest: (opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean }) => void;
+  restSet: (heroId: string, patch: Partial<{ lodging: RestLodging; food: RestFood }>) => void;
+  restReady: (seat: number) => void;
+  restSleep: () => void;
+  restCancel: () => void;
+  restContinue: () => void;
   healRoll: () => void;
   healReroll: () => void;
   healBonusSL: () => void;
@@ -853,6 +868,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCast: null,
   pendingHeal: null,
   medic: null,
+  pendingRest: null,
   pendingCleave: null,
   pendingDualStrike: null,
   pendingReveals: [],
@@ -1242,7 +1258,10 @@ export const useGame = create<GameState>((set, get) => ({
       combatants: all,
       order,
       baseOrder: order,
-      turn: 0,
+      // Pause d'ouverture : PERSONNE n'est actif (turn -1) tant qu'on n'a pas « Commencé » —
+      // toutes les affordances (marche/course, anneaux, visée, clics, IA) dérivent de l'actif
+      // et se taisent d'elles-mêmes ; confirmRoundStart pose le vrai tour (LDB ch.17 l.27).
+      turn: -1,
       round: 1,
       action: null,
       selectedSpell: null,
@@ -1363,6 +1382,14 @@ export const useGame = create<GameState>((set, get) => ({
   medicSurgeryPass: () => medicFlow.medicSurgeryPass(get, set),
   medicEndSurgery: () => medicFlow.medicEndSurgery(get, set),
   closeMedic: () => medicFlow.closeMedic(get, set),
+
+  // ── Repos (modale de nuit) : cf. state/restFlow ──
+  openRest: (opts) => restFlow.openRest(get, set, opts),
+  restSet: (heroId, patch) => restFlow.restSet(get, set, heroId, patch),
+  restReady: (seat) => restFlow.restReady(get, set, seat),
+  restSleep: () => restFlow.restSleep(get, set),
+  restCancel: () => restFlow.restCancel(get, set),
+  restContinue: () => restFlow.restContinue(get, set),
 
   /** « Lancer » : effectue le jet de Guérison (Intermédiaire +0). */
   healRoll: () => FLOWS.heal.roll(get, set),
@@ -3399,7 +3426,7 @@ export const useGame = create<GameState>((set, get) => ({
     runDailyUpkeep(get, set);
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
-  restParty: (days = 1) => restPartyOvernight(get, set, days),
+  restParty: (days = 1) => { restFlow.sleepParty(get, set, days); },
 
   // ── Voyage & nourriture (#T2) ──
   openWorldMap: () => { if (!get().battle && get().worldMap) set({ worldMapOpen: true }); },

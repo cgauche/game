@@ -93,7 +93,7 @@ import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
-import { openRest } from './restFlow';
+import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
@@ -301,7 +301,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
       case 'rest':
         // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
         // pitance par héros, prix RAW, bilan globalisé). LEGACY sans `lodging` : contexte maison.
-        openRest(get, set, { kind: e.lodging ?? 'maison', quality: e.quality, days: e.days ?? 1 });
+        openRest(get, set, { places: placesOfKind(e.lodging ?? 'maison'), quality: e.quality, days: e.days ?? 1 });
         break;
       case 'mealParty': {
         // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
@@ -2536,53 +2536,7 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
   }
 }
 
-/**
- * « Dormir » — sommeil d'une nuit hors combat (LDB 16 l.91/102, 18 l.380, 21 l.92). Avance l'horloge
- * jusqu'à la prochaine aube (un cycle complet si on y est déjà), laisse `advanceTime` faire les ticks
- * d'États, puis applique `restRecovery` à chaque héros (retrait Exténué + soin de Blessures + cauchemars).
- * Résolution NON interactive (journal, pas de Chance) — cohérent avec l'entretien hors combat existant.
- */
-export function restPartyOvernight(get: () => GameState, set: any, days = 1, opts: { fedDaily?: boolean } = {}): void {
-  if (get().battle) return; // pas de repos en plein combat
-  const n = Math.max(1, Math.floor(days));
-  const before = get().gameTime;
-  const toDawn = minutesUntilNext(before, DAWN_MINUTE);
-  const firstNight = toDawn === 0 ? MINUTES_PER_DAY : toDawn; // déjà à l'aube → un cycle entier
-  const minutes = firstNight + (n - 1) * MINUTES_PER_DAY; // chaque journée de repos se termine à l'aube
-  // Un sommeil N'EST PAS une suite de Rounds de combat : on avance l'horloge SANS rejouer l'entretien
-  // périodique (`advanceTime` ferait ~1 Round/min → des centaines de jets de mort par hémorragie/poison/
-  // feu, qui TUERAIENT le dormeur avant tout soin). RAW 16-États l.105 : le repos suppose des États
-  // stabilisés ; restRecovery refuse d'ailleurs le repos d'un héros encore Hémorragique/En flammes/Empoisonné.
-  set({ gameTime: before + minutes });
-  bus.emit(EVT.TIME_ADVANCED, { minutes });
-  // Soin des maladies (LDB 09-Compétences) : si un soignant apte (Guérison) veille le groupe, la durée
-  // des maladies des patients est réduite plus vite (−1 j/jour de soins, min 1). Test de Guérison supposé
-  // réussi sur des soins prolongés (abstraction, comme le soin de Blessures hors combat).
-  const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
-  // Entretien quotidien (#T2/#T3) : manger AVANT la récupération — un héros ravitaillé ce soir n'est
-  // plus affamé pour la nuit (rest.ts bloque la récup naturelle des affamés, LDB 18 l.418) ; les
-  // maladies/convalescences des jours franchis avancent ici (cascade ; `caredFor` réduit les durées).
-  runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily });
-  const party = get().party;
-  const lines: string[] = [];
-  for (const h of party) lines.push(...restRecovery(h, battleRng(), n));
-  // Contagion (LDB 20 l.185, « Toux et Éternuements ») : un malade contagieux expose son entourage —
-  // un Test de Contraction par JOUR de promiscuité pour chaque autre membre (approximation de
-  // l'exposition horaire, échelle du repos).
-  for (const sick of party) {
-    for (const dz of contagiousDiseases(sick)) {
-      for (const other of party) {
-        if (other === sick || other.dead) continue;
-        const resVal = effectiveChar(other, 'E') + (other.skills?.find((sk) => sk.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
-        const def = DISEASE_DEFS[dz.name];
-        for (let d = 0; d < n; d++) lines.push(...rollContraction(other, dz.name, resVal, def?.contractDifficulty ?? 'accessible', battleRng()));
-      }
-    }
-  }
-  const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
-  set({ party: [...party], journal: [...get().journal.slice(-40), title, ...lines] });
-  bus.emit(EVT.SCENE_DIRTY);
-}
+// (Le sommeil de groupe vit dans state/restFlow — `sleepParty`, source unique de la nuit.)
 
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
 /** Ouvre la modale d'incantation (jet différé, façon attaque) : pose `pendingCast` sans lancer. */
@@ -3493,6 +3447,9 @@ export function resumeEnemyTurn(get: () => GameState, set: any): void {
 
 export function advanceTurn(get: () => GameState, set: any) {
   const battle = get().battle;
+  // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
+  // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
+  if (get().pendingRoundStart) return;
   if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
@@ -3691,7 +3648,8 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
     get().confirmRoundStart();
     return;
   }
-  set({ battle: { ...reset, handRaised: false }, pendingRoundStart: { round: b.round } });
+  // Pause de début de Round : PERSONNE n'est actif (turn -1) — confirmRoundStart posera le tour.
+  set({ battle: { ...reset, turn: -1, handRaised: false }, pendingRoundStart: { round: b.round } });
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */

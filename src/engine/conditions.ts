@@ -6,7 +6,7 @@ import { Combatant } from './types';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
-import { rollTest, isDoubleRoll } from './tests';
+import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
@@ -240,9 +240,10 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
  * Test de **Calme Facile (+40)** ; sur un échec, il est en proie à de terribles cauchemars et gagne
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */
-export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG): string[] {
+export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
   const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
+  out?.push({ base: calme, result: res });
   if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];
   addCondition(c, 'Exténué');
   return [`${c.name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.`];

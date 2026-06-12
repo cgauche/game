@@ -103,14 +103,25 @@ export function blessDiseaseDuration(c: Combatant, days = 1): string[] {
   return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${dz.daysLeft} j).`];
 }
 
+/** Jet d'une nuit (bilan structuré de la modale de Repos) : récupération ou cauchemars. */
+export interface RestRoll {
+  kind: 'recovery' | 'nightmare';
+  base: number;
+  target: number;
+  roll: number;
+  sl: number;
+  success: boolean;
+}
+
 /**
  * Repos de `days` journée(s) pour UN personnage (défaut 1 = « Dormir jusqu'à l'aube »). Par journée :
  * dissipe l'Exténué (sommeil, 16-États l.91/102), soigne les PB (l.380 volet a Résistance +20 → DR+BE,
  * ET volet b +BE inconditionnel), puis les cauchemars (21 l.92) peuvent en regagner un. Réveille un
  * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (l.28). Mute `c`, renvoie un résumé.
+ * `collect` (modale de Repos) reçoit les JETS structurés (récupération, cauchemars) pour le bilan.
  * (Maladies/convalescence : décomptées par l'entretien quotidien — cf. en-tête #T3.)
  */
-export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): string[] {
+export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, collect?: RestRoll[]): string[] {
   if (c.dead || c.outOfRencontre) return []; // un mort / éjecté ne se repose pas
   // LDB 16 l.105 : un héros qui saigne, brûle ou est empoisonné ne trouve pas le repos — à stabiliser
   // d'abord (Test de Guérison, Sort). Pas de récupération réparatrice tant que ces États subsistent.
@@ -139,6 +150,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
     // volet a (l.380) : Test de Résistance Accessible (+20) → DR + BE PB (une fois par jour).
     if (!starving && c.wounds.current < c.wounds.max) {
       const res = rollTest(resVal, 'accessible', rng); // Accessible = +20
+      collect?.push({ kind: 'recovery', base: resVal, target: res.target, roll: res.roll, sl: res.sl, success: res.success });
       if (res.success) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, res.sl) + be);
     }
     // volet b (l.380) : +BE par journée de repos, INCONDITIONNEL (même Test raté).
@@ -148,7 +160,9 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
     // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
     if (c.nightmares) {
       const before = stacks(c, 'Exténué');
-      nightmareCheck(c, rng);
+      const out: { base: number; result: import('./tests').TestResult }[] = [];
+      nightmareCheck(c, rng, out);
+      for (const o of out) collect?.push({ kind: 'nightmare', base: o.base, target: o.result.target, roll: o.result.roll, sl: o.result.sl, success: o.result.success });
       if (stacks(c, 'Exténué') > before) nightmareNights++;
     }
   }

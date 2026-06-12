@@ -25,6 +25,7 @@ import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
+import { restPlacesHere } from '../state/restFlow';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -55,6 +56,10 @@ export function CampaignView() {
   const toggleViewMode = useGame((s) => s.toggleViewMode);
   const battleClickEntity = useGame((s) => s.battleClickEntity);
   const netMode = useGame((s) => s.net.mode);
+  const openRest = useGame((s) => s.openRest);
+  const partyPos = useGame((s) => s.partyPos);
+  // Offre de repos LÀ OÙ SE TIENT le groupe (zone d'auteur > scène > camp ; null = interdit).
+  const restHere = mode === 'exploration' && scene ? restPlacesHere({ scene, partyPos } as Parameters<typeof restPlacesHere>[0]) : null;
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [inspectId, setInspectId] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
@@ -128,6 +133,18 @@ export function CampaignView() {
             title={travelPlan?.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
           >
             🗺️
+          </button>
+        )}
+        {/* 🌙 Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
+            groupe, sinon de la scène (donnée d'auteur, restPlacesHere). */}
+        {mode === 'exploration' && !travelPlan && restHere && (
+          <button
+            type="button"
+            className="worldmap-btn camp-btn"
+            onClick={() => openRest({ places: restHere.places, quality: restHere.quality })}
+            title={restHere.places.auberge ? 'Dormir — auberge ou belle étoile' : restHere.places.maison ? 'Dormir — chez soi' : 'Camper — dormir sur place jusqu’à l’aube'}
+          >
+            {restHere.places.auberge ? '🛏' : restHere.places.maison ? '🌙' : '⛺'}
           </button>
         )}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />

@@ -300,6 +300,70 @@ export function Palette({
               <option value="tempete">Tempête (−20 attaque)</option>
             </select>
           </label>
+          {/* Offre de REPOS de la scène (bouton 🌙 d'exploration) — affinable PAR ZONE
+              (scene.restZones, rect prioritaire là où le groupe se tient). */}
+          <div className="ed-field">
+            Repos sur place
+            <div className="ed-rest-places">
+              {([['auberge', '🛏 Auberge'], ['maison', '🏠 Chez soi'], ['camp', '⛺ Camper']] as const).map(([k, label]) => (
+                <label key={k} className="ed-check">
+                  <input
+                    type="checkbox"
+                    checked={(scene.rest ?? { camp: true })[k] ?? false}
+                    onChange={(e) => setScene({ ...scene, rest: { ...(scene.rest ?? { camp: true }), [k]: e.target.checked } })}
+                  />
+                  {label}
+                </label>
+              ))}
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={scene.rest?.quality === 'pietre'}
+                  onChange={(e) => setScene({ ...scene, rest: { ...(scene.rest ?? { camp: true }), quality: e.target.checked ? 'pietre' : undefined } })}
+                />
+                💸 Piètre (½ prix, tambouille à risque)
+              </label>
+            </div>
+          </div>
+          {/* Zones de repos (prioritaires sur l'offre de scène, là où le groupe se tient). */}
+          <div className="ed-field">
+            Zones de repos
+            {(scene.restZones ?? []).map((z, i) => {
+              const upd = (patch: Partial<typeof z>) =>
+                setScene({ ...scene, restZones: scene.restZones!.map((x, j) => (j === i ? { ...x, ...patch } : x)) });
+              return (
+                <div key={i} className="ed-rest-zone">
+                  <div className="ed-dim">
+                    {(['x', 'y', 'w', 'h'] as const).map((k) => (
+                      <label key={k}>
+                        {k.toUpperCase()}
+                        <input type="number" value={z.rect[k]} onChange={(e) => upd({ rect: { ...z.rect, [k]: Number(e.target.value) || 0 } })} />
+                      </label>
+                    ))}
+                    <button className="btn small" onClick={() => setScene({ ...scene, restZones: scene.restZones!.filter((_, j) => j !== i) })} aria-label="Supprimer la zone">✕</button>
+                  </div>
+                  <div className="ed-rest-places">
+                    {([['auberge', '🛏'], ['maison', '🏠'], ['camp', '⛺']] as const).map(([k, label]) => (
+                      <label key={k} className="ed-check">
+                        <input type="checkbox" checked={z.places[k] ?? false} onChange={(e) => upd({ places: { ...z.places, [k]: e.target.checked } })} />
+                        {label}
+                      </label>
+                    ))}
+                    <label className="ed-check">
+                      <input type="checkbox" checked={z.quality === 'pietre'} onChange={(e) => upd({ quality: e.target.checked ? 'pietre' : undefined })} />
+                      💸
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+            <button
+              className="btn small"
+              onClick={() => setScene({ ...scene, restZones: [...(scene.restZones ?? []), { rect: { x: 0, y: 0, w: 4, h: 4 }, places: { auberge: true } }] })}
+            >
+              ➕ Zone de repos
+            </button>
+          </div>
           <MusicSelect
             label="Musique (ambiance)"
             value={scene.music?.ambient}

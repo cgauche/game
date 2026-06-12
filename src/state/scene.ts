@@ -206,11 +206,13 @@ export type Effect =
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }
-  /** Repos (LDB 16/18/21) : `days` journée(s) de sommeil (défaut 1, « jusqu'à l'aube ») → dissipe
-   *  l'Exténué + soigne des PB (Résistance +20 → DR+BE, +BE/jour) ; avance l'horloge jusqu'à l'aube.
-   *  GRATUIT en soi (on peut dormir chez soi) ; un prix éventuel (auberge) est porté par le CHOIX de
-   *  dialogue (`DialogueChoice.cost`), pas par le repos. */
-  | { type: 'rest'; days?: number }
+  /** Repos (LDB 16/18/21) : ouvre la MODALE DE NUIT (state/restFlow) — par héros : couchage +
+   *  pitance, prix RAW calculés (LDB ch.66 : commune 10 sc, privée 10 pa pour 2, repas 1 pa —
+   *  débit dans la modale), puis bilan globalisé (Exposition dehors, récupération, cauchemars,
+   *  contagion). `lodging` : contexte du lieu (auberge/chez soi/campement) ; `quality: 'pietre'`
+   *  = ½ prix mais nourriture à risque (Courante galopante 10 %, ch.66 l.51). LEGACY : sans
+   *  `lodging`, contexte « maison » (gratuit — prix porté par le choix de dialogue). */
+  | { type: 'rest'; days?: number; lodging?: 'auberge' | 'maison' | 'camp'; quality?: 'normale' | 'pietre' }
   /** Repas (#T2 — auberge, hôte généreux…) : nourrit TOUT le groupe pour la journée SANS consommer de
    *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.417-422). Le prix éventuel (« Repas,
    *  auberge », LDB p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
@@ -335,6 +337,14 @@ export interface Scene {
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
+  /** OFFRE DE REPOS de la scène (bouton 🌙 d'exploration → modale de Repos) : lieux disponibles
+   *  (auberge/chez soi/camp, combinables) + qualité (piètre = ½ prix, nourriture à risque).
+   *  Absent = camp seulement ; tout à false = repos interdit ici. La météo ci-dessus donne la
+   *  sévérité d'Exposition d'une nuit dehors (engine/exposure). */
+  rest?: { auberge?: boolean; maison?: boolean; camp?: boolean; quality?: 'normale' | 'pietre' };
+  /** Offre de repos PAR ZONE (prioritaire sur `rest` là où le groupe se tient) — « paramétrable
+   *  sur la zone » : le quartier de l'auberge offre des chambres, la place du marché non. */
+  restZones?: { rect: { x: number; y: number; w: number; h: number }; places: { auberge?: boolean; maison?: boolean; camp?: boolean }; quality?: 'normale' | 'pietre' }[];
   /** Musique de la scène — ids de pistes du registre audio (defs `music`). Champ absent/undefined
    *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
    *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */

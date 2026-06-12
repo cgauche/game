@@ -52,6 +52,8 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
   'medicSelectPatient', 'medicAct', 'medicSetWound', 'medicSurgeryPass', 'medicEndSurgery', 'closeMedic',
+  // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
+  'restSet', 'restReady',
   'encounterPsychRoll', 'encounterPsychReroll', 'encounterPsychDarkPact',
   'encounterPsychForceSuccess', 'encounterPsychConfirm', 'encounterPsychResolve',
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',

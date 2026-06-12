@@ -42,6 +42,8 @@ export const MODAL_DEFS = [
   // Infirmerie OUVERTE : c'est ELLE qui rend le jet de soin (zone embarquée) — la modale `heal`
   // autonome ne sert qu'au combat (ActionBar). Owner : le soigneur du jet en cours, sinon tous.
   { key: 'medic', when: (s) => !!s.medic, owner: (s) => s.pendingHeal?.healerId ?? '*' },
+  // Repos (nuit) : chacun règle SES héros, ready-check, l'hôte dort — modale chez tous.
+  { key: 'rest', when: (s) => !!s.pendingRest, owner: () => '*' },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId },
   {
     key: 'cast',

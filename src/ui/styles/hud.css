@@ -453,6 +453,31 @@
 .rfs-embedded.roll-modal,
 .rfs-embedded.test-modal { min-width: 0; }
 
+/* ── Modale de REPOS (nuit) ── */
+.rest-modal { min-width: min(520px, 94vw); }
+.rest-weather { text-align: center; font-size: 13px; color: var(--danger-soft); margin: 0 0 8px; }
+.rest-time { text-align: center; font-size: 14px; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
+.rest-time-len { color: var(--muted); }
+.rest-rows { display: flex; flex-direction: column; gap: 8px; }
+.rest-row { display: flex; gap: 10px; align-items: flex-start; }
+.rest-choices { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.rest-seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.rest-warn { font-size: 11px; color: var(--danger-soft); }
+.rest-foot { margin: 10px 0 0; text-align: center; font-size: 13px; }
+.rest-cost.over { color: var(--danger-soft); }
+
+/* ── Brique MULTI-JETS (bilan de nuit, cascades globalisées) ── */
+.mrl { display: flex; flex-direction: column; gap: 4px; max-height: min(46vh, 420px); overflow-y: auto; }
+.mrl-row { display: flex; gap: 6px; align-items: center; }
+.mrl-port { flex: 0 0 34px; display: flex; justify-content: center; }
+.mrl-ic { flex: 0 0 18px; text-align: center; }
+.mrl-roll { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: center; }
+.mrl-roll .rm-roll-block { flex: 1; min-width: 0; }
+.mrl-label { font-size: 12px; color: var(--muted); flex: 0 0 auto; }
+.mrl-text { font-size: 12.5px; }
+.mrl-row.bad .mrl-text { color: var(--danger-soft); }
+.mrl-row.ok .mrl-text { color: var(--ok-bright); }
+
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
 .dr-bar-track {
