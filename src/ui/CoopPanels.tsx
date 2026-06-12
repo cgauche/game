@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { CharFrame } from './CharFrame';
 
 /**
  * Briques coop PARTAGÉES (lobby « Jouer en ligne » ET menu ☰ en partie) : code de room à
@@ -48,6 +49,8 @@ export function CoopAssignList() {
     <div className="coop-assign">
       {party.map((h) => (
         <label key={h.id} className="coop-assign-row">
+          {/* Tuile + nom : lobby coop = écran méta (l'invité ne connaît pas encore les visages). */}
+          <CharFrame c={h} variant="identity" size="xs" />
           <span>{h.name}</span>
           <select value={net.ownership[h.id] ?? 0} onChange={(e) => assign(h.id, Number(e.target.value))}>
             {seats.map(({ seat, name: n }) => (

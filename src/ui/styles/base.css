@@ -468,8 +468,14 @@ h3 {
 }
 .char-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
+}
+.char-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .char-sub {
   color: var(--gold);

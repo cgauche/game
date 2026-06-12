@@ -1,4 +1,5 @@
 import { Combatant, CHAR_KEYS, CharKey } from '../engine/types';
+import { PortraitTile } from './PortraitTile';
 
 const SHORT: Record<CharKey, string> = {
   CC: 'CC',
@@ -17,10 +18,15 @@ export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean
   return (
     <div className={`char-card panel ${compact ? 'compact' : ''}`}>
       <div className="char-head">
-        <strong>{hero.name}</strong>
-        <span className="char-sub">
-          {hero.species} · {hero.career}
-        </span>
+        {/* identity sans jauge : hors partie, la vie courante n'informe de rien (toujours au max).
+            Anneau or « méta » — pas encore de couleur de groupe. Le nom RESTE : écran méta. */}
+        <PortraitTile c={hero} ring="var(--gold)" variant="identity" size={compact ? 'sm' : 'lg'} />
+        <div className="char-id">
+          <strong>{hero.name}</strong>
+          <span className="char-sub">
+            {hero.species} · {hero.career}
+          </span>
+        </div>
       </div>
       <div className="char-stats">
         {CHAR_KEYS.map((k) => (

@@ -13,6 +13,7 @@ import { findTalent } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
+import { CharFrame } from './CharFrame';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — tooltips depuis le registre des qualités. */
 const ATOUTS = ['Léger', 'Pratique', 'Raffiné', 'Solide'];
@@ -158,7 +159,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
           return (
             <section key={h.id} className="interlude-hero panel">
               <h3>
-                {h.name} <span className="interlude-left">🎲 {st.eventRoll}</span>
+                <CharFrame c={h} variant="full" size="sm" /> <span className="interlude-left">🎲 {st.eventRoll}</span>
               </h3>
               <p className="interlude-event"><strong>{ev.label}.</strong> {ev.text}</p>
               {chips.length > 0 && (
@@ -212,7 +213,7 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
   return (
     <section className="interlude-hero panel">
       <h3>
-        {hero.name}
+        <CharFrame c={hero} variant="full" size="sm" />
         <span className="interlude-left">
           {!canDrive && <span className="interlude-owner">🎮 {ownerName ?? 'autre joueur'} · </span>}
           {'●'.repeat(st.left)}{'○'.repeat(Math.max(0, Math.min(3, weeks) - st.left))} {st.left} Activité{st.left > 1 ? 's' : ''} · Statut {status.tier} {status.standing}
