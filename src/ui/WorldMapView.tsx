@@ -251,7 +251,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       {travelPlan?.interrupted && resumeDest && (
         <div className="worldmap-panel">
           <p>
-            Voyage vers <b>{resumeDest.label}</b> interrompu — {Math.max(0, Math.round(travelPlan.km - travelPlan.kmDone))} km restants.
+            Voyage vers <b>{resumeDest.label}</b> interrompu —{' '}
+            {Math.round(travelPlan.km - travelPlan.kmDone) > 0
+              ? `${Math.round(travelPlan.km - travelPlan.kmDone)} km restants.`
+              : `le groupe est aux portes de ${resumeDest.label}.`}
           </p>
           <div className="modal-actions">
             <button type="button" className="btn btn-primary" disabled={isGuest} title={isGuest ? 'L’hôte décide des départs.' : undefined} onClick={resumeTravel}>▶ Reprendre le voyage</button>

@@ -3197,7 +3197,21 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
-  dismissTravelRecap: () => set({ travelRecap: null }),
+  /** Acquitte le récit de voyage. Une EMBUSCADE différée (`recap.then`) se déclenche ICI :
+   *  le joueur a lu ce qui lui arrive, le combat démarre — fermer la modale (bouton/Échap)
+   *  ne l'évite pas, et `resumeTravel` refuse tant qu'elle n'est pas acquittée. */
+  dismissTravelRecap: () => {
+    const recap = get().travelRecap;
+    set({ travelRecap: null });
+    const then = recap?.then;
+    if (!then || get().battle) return;
+    if (then.kind === 'effects') {
+      applyEffects(get, set, then.effects);
+    } else {
+      get().transitionTo(then.scene, then.entry);
+      get().startCombat(then.encounter, undefined, { noSurprise: then.noSurprise });
+    }
+  },
 }));
 
 // Exposition DEV-ONLY du store pour le pilotage en vérification navigateur (Playwright/Puppeteer) :

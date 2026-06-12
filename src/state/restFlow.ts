@@ -83,6 +83,9 @@ export interface PendingRest {
   readyBySeat?: Record<number, boolean>;
   /** Halte de NUIT d'un voyage (travelFlow) : « Continuer » du bilan REPREND la route. */
   travelHalt?: boolean;
+  /** HALTE de voyage : le RAPPORT DU JOUR (km, jets, péripéties) — affiché en tête de la modale
+   *  (la journée se lit le soir même, le recap final ne re-déroule plus tout le trajet). */
+  travelDay?: import('./travelFlow').TravelRecapDay;
 }
 
 type Get = () => GameState;
@@ -220,7 +223,7 @@ export function restPlacesHere(st: GameState): { places: RestPlaces; quality: 'n
 }
 
 /** Ouvre la modale de Repos avec une OFFRE de lieux (effet, halte de voyage, bouton 🌙). */
-export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean }): void {
+export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean; travelDay?: import('./travelFlow').TravelRecapDay }): void {
   const st = get();
   if (st.battle || st.pendingRest) return;
   const places = opts?.places ?? { maison: true, camp: true };
@@ -229,7 +232,7 @@ export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quali
     if (h.dead) continue;
     perHero[h.id] = { lodging: lodgingOptions(places)[0], food: foodOptions(places, h)[0] };
   }
-  set({ pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt } });
+  set({ pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt, travelDay: opts?.travelDay } });
 }
 
 export function restSet(get: Get, set: Set, heroId: string, patch: Partial<{ lodging: RestLodging; food: RestFood }>): void {

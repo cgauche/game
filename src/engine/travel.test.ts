@@ -82,11 +82,13 @@ describe('transportCost (l.207-219 : prix par km par passager)', () => {
 });
 
 describe('forcedMarchTest (l.224 : Test de Résistance ou Exténué, +1 si Encombré)', () => {
-  it('échec non surchargé → +1 Exténué', () => {
+  it('échec non surchargé → +1 Exténué (résultat structuré : ligne + jet)', () => {
     const c = hero({ E: 1 }); // Résistance ≈ 1 → échec quasi garanti
-    const log = forcedMarchTest(c, makeRNG(7));
+    const r = forcedMarchTest(c, makeRNG(7))!;
     expect(stacks(c, 'Exténué')).toBe(1);
-    expect(log[0]).toContain('marche forcée');
+    expect(r.line).toContain('marche forcée');
+    expect(r.gained).toBe(1);
+    expect(r.d.success).toBe(false); // le jet est exposé pour la ligne de jet du recap
   });
   it('échec surchargé → +2 Exténué', () => {
     const c = hero({ E: 1, enc: 8 });

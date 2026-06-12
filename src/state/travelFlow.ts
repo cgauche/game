@@ -13,8 +13,9 @@
  *
  * Chaque nuit en route : HALTE — la modale de Repos s'ouvre (campement, ou auberge de relais si la
  * route en a — `MapRoute.inns`) et le voyage se SUSPEND ; le « Continuer » du bilan reprend la
- * route au matin (`continueTravelAfterNight`). Le récapitulatif traverse les nuits via
- * `travelPlan.recapDays`.
+ * route au matin (`continueTravelAfterNight`). Le RAPPORT DU JOUR (km, jets, péripéties) s'affiche
+ * DANS la halte du soir (`pendingRest.travelDay`) — chaque journée se lit le soir même, avec ses
+ * conséquences ; le recap final ne couvre que le DERNIER segment (plus de déroulé intégral).
  *
  * Une péripétie qui déclenche un combat/une transition INTERROMPT le voyage : `travelPlan` mémorise
  * la progression (`kmDone`) et la carte propose « Reprendre le voyage » (`resumeTravel`).
@@ -44,9 +45,19 @@ export interface TravelRecapDay {
   kmFrom: number;
   kmTo: number;
   hours: number;
-  /** Fatigue, marche forcée, péripéties… (les mêmes lignes que le journal). */
+  /** Fatigue, péripéties narratives, entretien… (les mêmes lignes que le journal). */
   lines: string[];
+  /** Les JETS du jour (marche forcée, Survie, Perception…) en lignes de jet structurées —
+   *  même brique multijet que le bilan de nuit (MultiRollList), pas du texte. */
+  entries?: import('./restFlow').NightEntry[];
 }
+
+/** Suite DIFFÉRÉE derrière le récit du voyage (embuscade d'auteur ou « Attaqués ! » de la table
+ *  d10) : le combat ne démarre qu'à l'ACQUITTEMENT du recap — d'abord comprendre ce qui arrive,
+ *  ensuite se battre. Fermer la modale (bouton/Échap) DÉCLENCHE la suite : pas d'évitement. */
+export type TravelThen =
+  | { kind: 'effects'; effects: import('./scene').Effect[] }
+  | { kind: 'ambush'; scene: string; entry?: string; encounter: string; noSurprise: boolean };
 
 /** Récapitulatif d'un segment de voyage — la résolution étant SYNCHRONE (l'horloge saute en
  *  bloc), le joueur n'en voyait rien hors journal (audit M4) : modale à l'arrivée, à
@@ -59,6 +70,8 @@ export interface TravelRecap {
   km: number;
   kmDone: number;
   days: TravelRecapDay[];
+  /** Embuscade en attente : déclenchée par `dismissTravelRecap` (le récit passe AVANT le combat). */
+  then?: TravelThen;
 }
 
 /** Voyage en cours / interrompu (persiste pour « Reprendre le voyage »). */
@@ -75,8 +88,6 @@ export interface TravelPlan {
   kmDone: number;
   /** Interrompu par une péripétie (combat/transition) — reprise via `resumeTravel`. */
   interrupted: boolean;
-  /** Journées du récapitulatif déjà jouées (le récap traverse les HALTES de nuit). */
-  recapDays?: TravelRecapDay[];
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -139,6 +150,7 @@ export function startTravel(
 export function resumeTravel(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || get().battle) return;
+  if (get().travelRecap?.then) return; // une embuscade ATTEND son acquittement — pas d'esquive
   set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
   runTravelDays(get, set);
@@ -154,13 +166,13 @@ function runTravelDays(get: Get, set: Set): void {
     fromLabel: placeById(worldMap, plan0.fromPlaceId)?.label ?? '?',
     toLabel: placeById(worldMap, plan0.toPlaceId)?.label ?? '?',
     mode: plan0.mode, status: 'arrived', km: plan0.km, kmDone: plan0.kmDone,
-    days: [...(plan0.recapDays ?? [])], // les journées d'avant la halte de nuit
+    days: [], // SEGMENT courant seulement — les journées passées ont été lues à leur halte du soir
   } : null;
-  const finishRecap = (status: TravelRecap['status']) => {
+  const finishRecap = (status: TravelRecap['status'], then?: TravelThen) => {
     if (!recap) return;
     recap.status = status;
     recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
-    set({ travelRecap: { ...recap, days: [...recap.days] } });
+    set({ travelRecap: { ...recap, days: [...recap.days], then } });
   };
   let guard = 0;
   while (true) {
@@ -201,7 +213,7 @@ function runTravelDays(get: Get, set: Set): void {
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const arrived = plan.km - kmDone < 1e-9;
     // L'entretien quotidien (rations/faim, maladies, convalescence) fait partie du RÉCIT du jour.
-    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [...upkeepLines] };
+    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [...upkeepLines], entries: [] };
     recap?.days.push(recapDay);
 
     // Fin de journée de route À PIED : fatigue d'Encombrement (p.295) + marche forcée (l.224).
@@ -209,16 +221,27 @@ function runTravelDays(get: Get, set: Set): void {
     if (plan.mode === 'pied' && hoursToday >= base - 1e-9) {
       for (const h of party) {
         if (h.dead || h.outOfRencontre) continue;
-        dayLines.push(...applyTravelFatigue(h));
-        if (plan.hoursPerDay > base) dayLines.push(...forcedMarchTest(h, battleRng()));
+        const fatigue = applyTravelFatigue(h);
+        dayLines.push(...fatigue);
+        recapDay.lines.push(...fatigue);
+        if (plan.hoursPerDay > base) {
+          const r = forcedMarchTest(h, battleRng());
+          if (r) {
+            // Journal en texte ; recap en LIGNE DE JET (multijet, comme le bilan de nuit).
+            dayLines.push(r.line);
+            recapDay.entries!.push({ actorId: h.id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' });
+          }
+        }
       }
       if (dayLines.length) set({ party: [...party] });
     }
     log(get, set, dayLines);
-    recapDay.lines.push(...dayLines);
 
-    // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage.
-    if (resolvePerils(get, set, route, to.label, recapDay.lines)) { finishRecap('interrupted'); return; }
+    // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage — une
+    // EMBUSCADE est alors DIFFÉRÉE derrière le récit (`recap.then`) : le joueur lit d'abord
+    // ce qui lui arrive, le combat démarre à l'acquittement du recap.
+    const out: { then?: TravelThen } = {};
+    if (resolvePerils(get, set, route, to.label, recapDay, out)) { finishRecap('interrupted', out.then); return; }
 
     if (arrived) {
       set({ travelPlan: null });
@@ -229,9 +252,9 @@ function runTravelDays(get: Get, set: Set): void {
     }
     // Nuit en route : HALTE — modale de Repos (auberge de relais si la route en a, sinon
     // campement). Le voyage se suspend ; « Continuer » du bilan reprend la route au matin.
-    set({ travelPlan: { ...get().travelPlan!, recapDays: recap ? [...recap.days] : undefined } });
-    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true });
-    return;
+    // Le RAPPORT DU JOUR s'affiche dans la halte (le soir même, avec ses conséquences).
+    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true, travelDay: { ...recapDay, lines: [...recapDay.lines], entries: [...(recapDay.entries ?? [])] } });
+    return; // au matin, runTravelDays repart sur un recap NEUF (segment suivant)
   }
 }
 
@@ -242,24 +265,32 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   runTravelDays(get, set);
 }
 
-/** Tire et résout les péripéties du jour. Renvoie `true` si le voyage est INTERROMPU. */
-function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, recapLines?: string[]): boolean {
+/** Tire et résout les péripéties du jour. Renvoie `true` si le voyage est INTERROMPU.
+ *  `out.then` : suite DIFFÉRÉE (embuscade) — le combat ne démarre qu'à l'acquittement du recap. */
+function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, day: TravelRecapDay | undefined, out: { then?: TravelThen }): boolean {
   const before = { sceneId: get().scene?.id, inBattle: !!get().battle };
   const interrupted = () => !!get().battle || get().scene?.id !== before.sceneId;
   // Journal ET récapitulatif du jour (audit M4) : les mêmes lignes, une seule écriture.
-  const tell = (lines: string[]) => { log(get, set, lines); recapLines?.push(...lines); };
+  const tell = (lines: string[]) => { log(get, set, lines); day?.lines.push(...lines); };
   const markInterrupted = () => {
     const plan = get().travelPlan;
     if (plan) set({ travelPlan: { ...plan, interrupted: true } });
     tell([`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`]);
   };
 
-  // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur).
+  // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur). Une péripétie qui DÉCLENCHE
+  // un combat/une transition est DIFFÉRÉE derrière le récit (recap d'abord, combat ensuite —
+  // sinon le joueur se retrouve en combat sans savoir pourquoi).
   for (const peril of route.perils ?? []) {
     if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
     tell([`Péripétie : ${peril.label}`]);
+    if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
+      out.then = { kind: 'effects', effects: peril.effects };
+      markInterrupted();
+      return true;
+    }
     applyEffects(get, set, peril.effects);
-    if (interrupted()) { markInterrupted(); return true; }
+    if (interrupted()) { markInterrupted(); return true; } // repli : un effet a surpris (dialogue…)
   }
 
   // 2. Table d10 RAW (l.237 : « 1d10 par jour … événement sur un résultat de 8 », seuil paramétrable).
@@ -286,22 +317,35 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, r
         // Test de Survie en extérieur Accessible (+20), sinon +1 jour de retard et +1 Exténué chacun.
         const best = partyBest(party, 'Survie en extérieur');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) tell([`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
-        if (!t?.success) recapLines?.push(...applyEreintant(get, set));
+        if (t && best) {
+          log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
+          // Recap : LIGNE DE JET structurée (multijet), pas du texte.
+          day?.entries?.push({ actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur', d: { label: 'Survie en extérieur', base: best.value, modifier: t.target - best.value, target: t.target, roll: t.roll, success: t.success, sl: t.sl }, text: t.success ? 'itinéraire de substitution trouvé' : 'le groupe erre un jour de plus', tone: t.success ? 'ok' : 'bad' });
+        }
+        if (!t?.success) day?.lines.push(...applyEreintant(get, set));
         break;
       }
       case 'attaque': {
-        // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route).
+        // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route) ;
+        // réussi → le combat a quand même lieu, mais SANS surprise (« le groupe les voit venir »).
+        const configured = !!(route.ambush?.scene && route.ambush.encounter);
         const best = partyBest(party, 'Perception');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) tell([`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : 'ÉCHEC — embuscade !'}`]);
-        if (route.ambush?.scene && route.ambush.encounter) {
-          get().transitionTo(route.ambush.scene, route.ambush.entry);
-          get().startCombat(route.ambush.encounter, undefined, { noSurprise: !!t?.success });
+        if (t && best) {
+          log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`]);
+          day?.entries?.push({ actorId: best.actor.id, icon: '👁️', label: 'Perception', d: { label: 'Perception', base: best.value, modifier: t.target - best.value, target: t.target, roll: t.roll, success: t.success, sl: t.sl }, text: t.success ? 'le groupe les voit venir !' : configured ? 'embuscade !' : 'ÉCHEC', tone: t.success ? 'ok' : 'bad' });
+        }
+        if (configured) {
+          // DIFFÉRÉ derrière le récit : le recap s'affiche d'abord, le combat démarre à
+          // son acquittement (dismissTravelRecap) — on comprend ce qui arrive AVANT de se battre.
+          out.then = { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: !!t?.success };
           markInterrupted();
           return true;
         }
-        break; // pas de rencontre configurée → narratif seul (rien d'inventé)
+        // Pas de rencontre configurée sur la route : rien d'inventé — on le DIT (sinon le texte
+        // promet une embuscade qui n'arrive jamais).
+        tell(['(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)']);
+        break;
       }
       default:
         break; // narratif : le texte au journal suffit

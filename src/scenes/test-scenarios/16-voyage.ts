@@ -128,6 +128,8 @@ const carte: WorldMap = {
       km: 96,
       modes: ['pied', 'diligence'],
       inns: true,
+      // « Attaqués ! » (table d10) a besoin d'une rencontre configurée — sinon l'alerte reste sans suite.
+      ambush: { scene: 'test-voyage-embuscade', encounter: 'enc-vembuscade' },
     },
   ],
 };

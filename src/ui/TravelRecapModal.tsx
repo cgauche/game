@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { MultiRollList } from './MultiRollList';
 import { TRAVEL_MODE_LABEL } from '../engine/travel';
 import { formatImperial, toDate } from '../engine/clock';
 import type { TravelRecap } from '../state/travelFlow';
@@ -20,16 +21,19 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
   const openWorldMap = useGame((s) => s.openWorldMap);
   const recap = seam ?? storeRecap;
   if (!recap) return null;
-  const title = recap.status === 'arrived'
-    ? `🧭 Arrivée à ${recap.toLabel}`
-    : recap.status === 'interrupted'
-      ? '🧭 Voyage interrompu !'
-      : '🧭 Le convoi s\'arrête';
+  const ambush = !!recap.then; // une embuscade ATTEND : l'acquittement déclenche le combat
+  const title = ambush
+    ? '⚔️ Embuscade en chemin !'
+    : recap.status === 'arrived'
+      ? `🧭 Arrivée à ${recap.toLabel}`
+      : recap.status === 'interrupted'
+        ? '🧭 Voyage interrompu !'
+        : '🧭 Le convoi s\'arrête';
   const kmLeft = Math.max(0, Math.round(recap.km - recap.kmDone));
   const clock = toDate(gameTime);
   const onContinue = () => { dismiss(); openWorldMap(); };
   return (
-    <Modal title={title} variant="plain" className="travel-recap" onClose={dismiss} backdropClose>
+    <Modal title={title} variant="plain" className="travel-recap" onClose={dismiss} backdropClose={!ambush}>
       <p className="travel-recap-route">
         {recap.fromLabel} → <b>{recap.toLabel}</b> · {recap.km} km, {TRAVEL_MODE_LABEL[recap.mode].toLowerCase()}
         {recap.status !== 'arrived' && <> · <b>{kmLeft > 0 ? `${kmLeft} km restants` : `aux portes de ${recap.toLabel}`}</b></>}
@@ -38,13 +42,15 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
         {recap.days.map((d, i) => (
           <li key={i}>
             <span className="travel-recap-day">
-              {Math.round(d.kmTo - d.kmFrom)} km en {Math.round(d.hours)} h de route
+              Jour {i + 1} — {Math.round(d.kmTo - d.kmFrom)} km en {Math.round(d.hours)} h de route
             </span>
             {d.lines.length > 0 && (
               <ul>
                 {d.lines.map((l, j) => <li key={j}>{l}</li>)}
               </ul>
             )}
+            {/* Les JETS du jour (marche forcée, Survie, Perception…) : multijet, comme la nuit. */}
+            {(d.entries?.length ?? 0) > 0 && <MultiRollList entries={d.entries!} />}
           </li>
         ))}
       </ol>
@@ -53,17 +59,20 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
           Le groupe arrive {clock.weekday ? `${clock.weekday.toLowerCase()}, ` : ''}le {formatImperial(gameTime)}.
         </p>
       )}
-      {recap.status === 'interrupted' && (
+      {ambush ? (
+        <p className="travel-recap-foot">Impossible de poursuivre : il faut faire face. (Le voyage pourra reprendre ensuite depuis la carte 🗺️.)</p>
+      ) : recap.status === 'interrupted' ? (
         <p className="travel-recap-foot">Le voyage pourra reprendre depuis la carte du monde (🗺️).</p>
-      )}
-      {recap.status === 'stalled' && (
+      ) : recap.status === 'stalled' ? (
         <p className="travel-recap-foot">Le groupe est trop chargé pour avancer — allégez les sacs, puis reprenez depuis la carte.</p>
-      )}
+      ) : null}
       <div className="modal-actions">
-        <button className="btn" onClick={dismiss}>Fermer</button>
-        {recap.status === 'arrived'
-          ? <button className="btn btn-primary" onClick={onContinue}>🗺️ Continuer le voyage</button>
-          : <button className="btn btn-primary" onClick={onContinue}>🗺️ Ouvrir la carte</button>}
+        {!ambush && <button className="btn" onClick={dismiss}>Fermer</button>}
+        {ambush
+          ? <button className="btn btn-primary" onClick={() => dismiss()}>⚔️ Faire face</button>
+          : recap.status === 'arrived'
+            ? <button className="btn btn-primary" onClick={onContinue}>🗺️ Continuer le voyage</button>
+            : <button className="btn btn-primary" onClick={onContinue}>🗺️ Ouvrir la carte</button>}
       </div>
     </Modal>
   );

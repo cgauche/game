@@ -113,16 +113,28 @@ export function transportCost(
   return fromBrass(Math.ceil(perKm * km) * Math.max(1, passengers));
 }
 
+/** Résultat STRUCTURÉ de la marche forcée : le jet s'affiche en RollLine (recap de voyage),
+ *  la ligne au journal — même donnée, deux présentations. */
+export interface ForcedMarchResult {
+  line: string;
+  /** Exténué gagnés (0 = a tenu l'allure). */
+  gained: number;
+  /** Détail du Test pour la ligne de jet (base + mod = cible · d100 · DR). */
+  d: { label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number };
+}
+
 /** Marche forcée (l.224) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
- *  échec = +1 Exténué (+1 de plus si Surchargé/Encombré, p.293). Mute `c`, renvoie le journal. */
-export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): string[] {
-  if (c.dead) return [];
-  const t = rollTest(testValue(c, 'Résistance', 'E'), 'intermediaire', rng);
-  if (t.success) return [`${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → il tient l'allure.`];
+ *  échec = +1 Exténué (+1 de plus si Surchargé/Encombré, p.293). Mute `c` ; null = mort. */
+export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarchResult | null {
+  if (c.dead) return null;
+  const base = testValue(c, 'Résistance', 'E');
+  const t = rollTest(base, 'intermediaire', rng);
+  const d = { label: 'Résistance', base, modifier: t.target - base, target: t.target, roll: t.roll, success: t.success, sl: t.sl };
+  if (t.success) return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → il tient l'allure.`, gained: 0, d };
   const overloaded = encumbrancePenalties(c).tier > 0;
   const n = overloaded ? 2 : 1;
   addCondition(c, 'Exténué', n);
-  return [`${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`];
+  return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n, d };
 }
 
 /** Fatigue d'Encombrement d'une journée de voyage à pied (LDB p.295 — `travelFatigue` enfin

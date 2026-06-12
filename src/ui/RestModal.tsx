@@ -89,6 +89,21 @@ export function RestModal() {
 
   return (
     <Modal title={`${title}${p.days > 1 ? ` — ${p.days} nuits` : ''}${p.quality === 'pietre' ? ' (piètre)' : ''}`} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
+      {/* HALTE de voyage : le RAPPORT DU JOUR se lit le soir même (km, péripéties, jets en
+          lignes multijet) — avant de régler la nuit. */}
+      {p.travelDay && (
+        <div className="rest-travel-day">
+          <p className="rest-time">
+            🧭 Journée de route — {Math.round(p.travelDay.kmTo - p.travelDay.kmFrom)} km en {Math.round(p.travelDay.hours)} h
+          </p>
+          {p.travelDay.lines.length > 0 && (
+            <ul className="rest-travel-lines">
+              {p.travelDay.lines.map((l, i) => <li key={i}>{l}</li>)}
+            </ul>
+          )}
+          {(p.travelDay.entries?.length ?? 0) > 0 && <MultiRollList entries={p.travelDay.entries!} />}
+        </div>
+      )}
       {severity !== 'clement' && (
         <p className="rest-weather">{severity === 'extreme' ? '🌩 Temps de chien' : '🌧 Mauvais temps'}{sheltered ? ' — la tente abritera le camp' : ''}</p>
       )}

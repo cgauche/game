@@ -160,17 +160,29 @@ describe('startTravel — transports payants (l.207-219)', () => {
 });
 
 describe('péripéties d’auteur — interruption et reprise', () => {
-  it('péripétie à 100 % qui démarre un combat : voyage interrompu, puis resumeTravel arrive à destination', () => {
+  it('péripétie à 100 % qui démarre un combat : le RÉCIT s’affiche AVANT — le combat part à l’acquittement', () => {
     setup(map({
       km: 30,
       perils: [{ label: 'Brigands sur la route !', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-test' }] }],
     }));
     useGame.getState().startTravel('r1', 'pied');
     let st = useGame.getState();
-    expect(st.battle).toBeTruthy(); // le combat de la péripétie a démarré
+    // DIFFÉRÉ derrière le récit : pas de combat tant que le recap n'est pas acquitté
+    // (sinon on se retrouve en combat sans comprendre ce qui arrive).
+    expect(st.battle).toBeNull();
+    expect(st.travelRecap?.then?.kind).toBe('effects');
     expect(st.travelPlan?.interrupted).toBe(true);
     expect(st.travelPlan!.kmDone).toBeGreaterThan(0);
     expect(st.journal.some((l) => l.includes('Brigands sur la route'))).toBe(true);
+    // Pas d'esquive : la reprise est REFUSÉE tant que l'embuscade attend son acquittement.
+    useGame.getState().resumeTravel();
+    expect(useGame.getState().travelRecap?.then).toBeTruthy();
+    expect(useGame.getState().travelPlan?.interrupted).toBe(true);
+    // « Faire face » : l'acquittement déclenche le combat.
+    useGame.getState().dismissTravelRecap();
+    st = useGame.getState();
+    expect(st.battle).toBeTruthy();
+    expect(st.travelRecap).toBeNull();
     // Victoire simulée → reprise (la péripétie est neutralisée pour ne pas re-déclencher).
     useGame.setState({ battle: null, mode: 'exploration' });
     const wm = useGame.getState().worldMap!;
@@ -188,11 +200,27 @@ describe('péripéties d’auteur — interruption et reprise', () => {
     useGame.getState().startTravel('r1', 'pied');
     expect(useGame.getState().travelPlan?.interrupted).toBe(true);
     expect(useGame.getState().travelPlan?.kmDone).toBeCloseTo(12);
+    useGame.getState().dismissTravelRecap(); // « Faire face » → le combat démarre
+    expect(useGame.getState().battle).toBeTruthy();
     useGame.setState({ battle: null, mode: 'exploration' });
     useGame.getState().resumeTravel(); // péripétie TOUJOURS à 100 % — ne doit plus se déclencher
     const st = useGame.getState();
     expect(st.travelPlan).toBeNull();
     expect(st.scene?.id).toBe('lieu-b-scene');
+  });
+
+  it('« Attaqués ! » (table d10) configuré : l’acquittement transitionne et lance la rencontre (noSurprise)', () => {
+    setup(map());
+    useGame.setState({
+      travelRecap: {
+        fromLabel: 'Village A', toLabel: 'Bourg B', mode: 'pied', status: 'interrupted', km: 12, kmDone: 6, days: [],
+        then: { kind: 'ambush', scene: 'lieu-a-scene', encounter: 'enc-test', noSurprise: true },
+      },
+    });
+    useGame.getState().dismissTravelRecap();
+    const st = useGame.getState();
+    expect(st.battle).toBeTruthy();
+    expect(st.travelRecap).toBeNull();
   });
 
   it('péripétie purement narrative (journal) : le voyage continue', () => {
@@ -254,6 +282,9 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
     expect(r.status).toBe('interrupted');
     expect(r.kmDone).toBeLessThan(30);
     expect(r.days[0].lines.some((l) => l.includes('Brigands'))).toBe(true);
+    // « Faire face » : le combat différé démarre à l'acquittement du recap.
+    useGame.getState().dismissTravelRecap();
+    expect(useGame.getState().battle).toBeTruthy();
     // victoire simulée → reprise : nouveau segment, nouveau recap
     useGame.setState({ battle: null, mode: 'exploration' });
     const wm = useGame.getState().worldMap!;
