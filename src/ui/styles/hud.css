@@ -52,6 +52,20 @@
   outline: 2px solid var(--gold2);
   outline-offset: 1px;
 }
+/* Rangée de tuiles-radio (désigner un héros) — remplace les <select> de noms. */
+.frame-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  vertical-align: middle;
+}
+/* « Donner à… » d'une ligne d'inventaire : 🎁 + mini-tuiles des autres héros. */
+.give-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 /* Choix par tuile-portrait avec légende sous la tuile (monture/cavalier, modes de soin…). */
 .frame-pick {
   display: inline-flex;

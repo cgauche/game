@@ -11,6 +11,8 @@ import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import { Coins } from './Coins';
+import { CharFrame } from './CharFrame';
+import { TeamPortrait } from './CombatantBadge';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -153,8 +155,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     const cmp = compareEquip(item, h);
     return (
       <div className="mc-hero" key={h.id}>
-        <div className="mc-hero-head">
-          <span className="mc-name">{h.name}</span>
+        <div className="mc-hero-head" title={h.name}>
+          <TeamPortrait combatant={h} size={24} />
           <span className="mc-cur">{cmp.currentName ? `actuel : ${cmp.currentName}` : 'rien d’équipé'}</span>
         </div>
         {cmp.rows.length > 0 && (
@@ -217,9 +219,11 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
         {(dist ?? []).map((d, i) => (
           <div className="dist-row" key={d.item.uid}>
             <span className="merch-name">{d.item.name}</span>
-            <select value={d.heroId} onChange={(e) => onAssignDist(i, e.target.value)}>
-              {party.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-            </select>
+            <div className="frame-row">
+              {party.map((h) => (
+                <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={d.heroId === h.id} onClick={() => onAssignDist(i, h.id)} />
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -397,8 +401,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
         </div>
         <div className="merch-subtabs" role="tablist">
           {sellHeroes.map((h) => (
-            <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)}>
-              {h.name}<span className="tab-count">{(h.items ?? []).length}</span>
+            <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)} title={h.name}>
+              <TeamPortrait combatant={h} size={24} /><span className="tab-count">{(h.items ?? []).length}</span>
             </button>
           ))}
         </div>
@@ -438,7 +442,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             <tbody>
               {sellCartItems.map(({ hero, it }) => (
                 <tr key={it.uid}>
-                  <td className="cart-name">{it.name}<span className="cart-owner">{hero.name}</span></td>
+                  <td className="cart-name">{it.name}<span className="cart-owner" title={hero.name}><TeamPortrait combatant={hero} size={18} /></span></td>
                   <td className="cart-sub"><Coins money={sellPriceMoney(it)} /></td>
                   <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveSellCart(it.uid)} aria-label="Retirer">✕</button></td>
                 </tr>
@@ -491,7 +495,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             <div className="merch-tab">
               {damaged.map(({ h, it }) => (
                 <div className="merch-row repair" key={it.uid}>
-                  <span className="merch-name">{h.name} : {it.name}</span>
+                  <span className="merch-name" title={h.name}><TeamPortrait combatant={h} size={20} /> {it.name}</span>
                   <span className="merch-price">{repairPrice(it)}</span>
                   <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
                 </div>

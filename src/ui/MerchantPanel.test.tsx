@@ -11,6 +11,16 @@ const noop = {
 };
 const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as const, resaleRate: 0.5, stock: [] as { label: string; qty: number }[], cart: [] as { label: string; qty: number }[], bargainLocked: false };
 
+/** Stub RIGGABLE : le marchand rend des tuiles-portraits (CharFrame/TeamPortrait) — le rig a
+ *  besoin d'armour/wounds/conditions/characteristics pour dessiner le héros. */
+const stubHero = (id: string, name: string, items: ItemInstance[] = []) =>
+  ({
+    id, name, kind: 'hero', wounds: { current: 10, max: 12 }, conditions: [], advantage: 0,
+    weapons: [], skills: [], items, movement: 4,
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  }) as unknown as Combatant;
+
 describe('MerchantPanel (#2 — panier)', () => {
   it('Parcourir : tableau par famille + bouton « Ajouter » + barre panier', () => {
     const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
@@ -35,7 +45,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('fiche de détail (clic sur le nom) : stats + Atouts/Défauts, sans bouton d’équipement', () => {
-    const party = [{ id: 'h', name: 'Hans', items: [] } as unknown as Combatant];
+    const party = [stubHero('h', 'Hans')];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ label: 'Hallebarde', qty: 1 }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} initialDetails="Hallebarde" />,
     );
@@ -60,10 +70,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('Répartition (après paiement) : un menu héros par objet + Confirmer', () => {
-    const party = [
-      { id: 'h1', name: 'Anna', items: [] } as unknown as Combatant,
-      { id: 'h2', name: 'Bruno', items: [] } as unknown as Combatant,
-    ];
+    const party = [stubHero('h1', 'Anna'), stubHero('h2', 'Bruno')];
     const bought = { uid: 'b1', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false } as ItemInstance;
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, pendingDistribution: [{ item: bought, heroId: 'h1' }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
@@ -71,7 +78,7 @@ describe('MerchantPanel (#2 — panier)', () => {
     expect(html).toContain('Répartition');
     expect(html).toContain('qui récupère quoi');
     expect(html).toContain('Anna');
-    expect(html).toContain('Bruno'); // option de l'autre héros
+    expect(html).toContain('Bruno'); // tuile de l'autre héros (nom en title/aria-label)
     expect(html).toMatch(/Confirmer la répartition/);
   });
 
@@ -97,10 +104,10 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('onglet Vendre / Réparer + Marchandage par onglet (#2c/#2d)', () => {
-    const party = [{ id: 'h', name: 'H', items: [
+    const party = [stubHero('h', 'H', [
       { uid: 'x', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false },
       { uid: 'a', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true },
-    ] } as unknown as Combatant];
+    ] as ItemInstance[])];
     const sell = renderToStaticMarkup(<MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} initialTab="sell" />);
     expect(sell).toContain('Dague');
     expect(sell).toMatch(/Marchander la vente/);

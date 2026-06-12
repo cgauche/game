@@ -15,6 +15,7 @@ import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { LoadoutSection } from './LoadoutSection';
 import { RigPortrait } from './RigPortrait';
+import { CharFrame } from './CharFrame';
 import { pickView } from '../gameIso/rig/parts/types';
 import { DEFS } from '../gameIso/sprites';
 import type { Palette } from '../gameIso/rig/palette';
@@ -162,16 +163,22 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           ⚖️ Péché : {hero.sinPoints}
         </span>
       )}
-      <label className="spell-target">
+      <div className="spell-target">
         Cible :{' '}
-        <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+        <div className="frame-row">
           {party.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.id === hero.id ? `${m.name} (soi)` : m.name}
-            </option>
+            <CharFrame
+              key={m.id}
+              c={m}
+              variant="vital"
+              size="xs"
+              selected={m.id === targetId}
+              onClick={() => setTargetId(m.id)}
+              title={m.id === hero.id ? `${m.name} (soi)` : m.name}
+            />
           ))}
-        </select>
-      </label>
+        </div>
+      </div>
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
@@ -506,21 +513,15 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                   ) : (
                     <span className="ir-kind">{it.kind}</span>
                   )}
-                  {party.length > 1 && (
-                    <select
-                      className="give-sel"
-                      value=""
-                      disabled={inBattleNow}
-                      title={inBattleNow ? 'Transfert verrouillé en combat' : 'Donner cet objet à un autre héros'}
-                      onChange={(e) => {
-                        if (e.target.value) transferItem(it.uid, hero.id, e.target.value);
-                      }}
-                    >
-                      <option value="">Donner à…</option>
-                      {party.filter((p) => p.id !== hero.id).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
+                  {party.length > 1 && !inBattleNow && (
+                    <span className="give-row" title="Donner cet objet à un autre héros">
+                      🎁
+                      <span className="frame-row">
+                        {party.filter((p) => p.id !== hero.id).map((p) => (
+                          <CharFrame key={p.id} c={p} variant="identity" size="xs" onClick={() => transferItem(it.uid, hero.id, p.id)} title={`Donner à ${p.name}`} />
+                        ))}
+                      </span>
+                    </span>
                   )}
                 </div>
                 {open && (
