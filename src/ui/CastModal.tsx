@@ -8,7 +8,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
-import { TeamPortrait } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
@@ -171,14 +171,16 @@ export function CastModal() {
                 {/* Hors combat (pas de carte tactique) : repli boutons-portraits dans la modale. */}
                 {oc.targets > 0 && !battle && (
                   <div className="rm-loc-grid">
-                    {candidates.map((m) => {
-                      const on = (pc.extraTargetIds ?? []).includes(m.id);
-                      return (
-                        <button key={m.id} className={`btn small ${on ? 'btn-primary' : ''}`} onClick={() => toggleExtraTarget(m.id)}>
-                          <TeamPortrait combatant={m} size={22} /> {on ? '✓ ' : ''}{m.name}
-                        </button>
-                      );
-                    })}
+                    {candidates.map((m) => (
+                      <CharFrame
+                        key={m.id}
+                        c={m}
+                        variant="vital"
+                        size="sm"
+                        selected={(pc.extraTargetIds ?? []).includes(m.id)}
+                        onClick={() => toggleExtraTarget(m.id)}
+                      />
+                    ))}
                   </div>
                 )}
                 {oc.targets > 0 && battle && (
@@ -207,9 +209,14 @@ export function CastModal() {
                 <span className="mini-title">🛡️ Contre-sort (Dissipation) — Test opposé de Langue (Magick), 1/Round</span>
                 <div className="rm-loc-grid">
                   {cands.map((h) => (
-                    <button key={h.id} className="btn small" onClick={() => counterspell(h.id)} title="Gagné : le Sort est dissipé. Perdu : l'incantation se résout au DR net du Test opposé.">
-                      <TeamPortrait combatant={h} size={22} /> {h.name}
-                    </button>
+                    <CharFrame
+                      key={h.id}
+                      c={h}
+                      variant="vital"
+                      size="sm"
+                      onClick={() => counterspell(h.id)}
+                      title={`${h.name} — Gagné : le Sort est dissipé. Perdu : l'incantation se résout au DR net du Test opposé.`}
+                    />
                   ))}
                 </div>
               </div>

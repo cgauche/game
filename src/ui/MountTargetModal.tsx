@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
-import { TeamPortrait } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 
 /**
  * Combat monté (Livre de base p.14 l.219) : « Si vous tentez de toucher un Personnage qui est sur une
@@ -26,12 +26,14 @@ export function MountTargetModal() {
       </p>
       <div className="rm-options">
         <div className="rm-loc-grid">
-          <button className="btn small" onClick={() => select(mount.id)} title="Frapper la monture — l'abattre désarçonne le cavalier">
-            <TeamPortrait combatant={mount} size={26} /> 🐎 {mount.name} ({mount.wounds.current}/{mount.wounds.max})
-          </button>
-          <button className="btn small btn-primary" onClick={() => select(rider.id)} title="Frapper le cavalier (−10 si vous êtes plus petit que la monture)">
-            <TeamPortrait combatant={rider} size={26} /> 🗡️ {rider.name} ({rider.wounds.current}/{rider.wounds.max})
-          </button>
+          <span className="frame-pick">
+            <CharFrame c={mount} variant="vital" size="sm" onClick={() => select(mount.id)} title={`${mount.name} — l'abattre désarçonne le cavalier`} />
+            <span className="cap">🐎 Monture</span>
+          </span>
+          <span className="frame-pick">
+            <CharFrame c={rider} variant="vital" size="sm" onClick={() => select(rider.id)} title={`${rider.name} — −10 si vous êtes plus petit que la monture`} />
+            <span className="cap">🗡️ Cavalier</span>
+          </span>
         </div>
       </div>
       <div className="modal-actions">

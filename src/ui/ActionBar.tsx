@@ -15,6 +15,7 @@ import { ownsLocally } from '../state/netFlow';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 import { previewResourceDelta } from '../state/combatFlow';
 import { ActiveFrame } from './ActiveFrame';
 
@@ -259,11 +260,10 @@ export function ActionBar() {
           {/* #20 : choisir QUI soigner par son PORTRAIT (puis le mode : Blessures / Hémorragie). */}
           {healTargets.map((t) => (
             <div key={t.id} className="ab-heal-pick">
-              <TeamPortrait combatant={t} size={34} />
-              <span className="ab-heal-name">{t.name}</span>
+              <CharFrame c={t} variant="full" size="md" />
               {availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
                 <button key={m} className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action (LDB 09-Compétences)">
-                  {m === 'wounds' ? `🩹 ${t.wounds.current}/${t.wounds.max}` : `🩸 ${bleedStacks(t)} pion`}
+                  {m === 'wounds' ? '🩹 Blessures' : `🩸 Hémorragie ×${bleedStacks(t)}`}
                 </button>
               ))}
             </div>
