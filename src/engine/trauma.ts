@@ -54,8 +54,8 @@ export function traumaFromKind(
       ...(onLeg ? { movementHalved: true, dodgePenalty: dodge } : {}),
       ...staged,
       note: onLeg
-        ? `LDB 18 l.315 : Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
-        : 'LDB 18 l.315 : −10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours.',
+        ? `Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
+        : '−10/−20 aux Tests de la Localisation (non modélisé en combat). Guérison 30−BE jours.',
     };
   }
   // fracture
@@ -66,7 +66,7 @@ export function traumaFromKind(
       movementHalved: true,
       charPenalty: { F: -30, Ag: -30 },
       ...staged,
-      note: 'LDB 18 l.298 (Torse) : −30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
+      note: '−30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
     };
   }
   if (LEG.includes(location)) {
@@ -76,7 +76,7 @@ export function traumaFromKind(
       movementHalved: true,
       dodgePenalty: -20, // règle du Pied (l.369) : −20 aux Tests de mobilité, dont l'Esquive
       ...staged,
-      note: 'LDB 18 l.298 (Jambe) : Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
+      note: 'Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
     };
   }
   return {
@@ -84,8 +84,8 @@ export function traumaFromKind(
     location,
     ...staged,
     note: location === 'tete'
-      ? 'LDB 18 l.298 (Tête) : −30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours.'
-      : 'LDB 18 l.298 (Bras) : membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours.',
+      ? '−30 aux Tests de Langue, régime liquide (non modélisé en combat). Guérison 30+1d10 jours.'
+      : 'membre inutilisable (latéralité non modélisée en combat). Guérison 30+1d10 jours.',
   };
 }
 
@@ -105,8 +105,8 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  */
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, skillPenalty: { langue: pen }, note: `LDB 18 l.300/309 : ${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `LDB 18 l.300/309 : ${pen} permanent en Agilité (os mal ressoudé).` };
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, skillPenalty: { langue: pen }, note: `${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `${pen} permanent en Agilité (os mal ressoudé).` };
 }
 
 /**
@@ -203,17 +203,17 @@ export function consolidateAmputations(c: Combatant): string[] {
     if (total >= 4) {
       if (grp.length > 1) log.push(`${c.name} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
       if (!kept.some((t) => t.label?.startsWith('Main/bras amputé') && t.location === loc)) {
-        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `LDB 18 l.344 : ${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
+        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
       }
     } else {
-      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(dominant ? { charPenalty: { CC: -5 * total, CT: -5 * total } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `LDB 18 l.341 : ${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
+      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(dominant ? { charPenalty: { CC: -5 * total, CT: -5 * total } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
     }
   }
   const teeth = traumas.filter(isTeeth);
   if (teeth.length) {
     const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
     const soc = -Math.floor(total / 2);
-    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `LDB 18 l.338 : ${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois (LDB 73).` });
+    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
   }
   c.traumas = kept;
   return log;
@@ -230,11 +230,11 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   const eyes = (c.traumas ?? []).filter((t) => t.label === 'Œil perdu').length;
   const ears = (c.traumas ?? []).filter((t) => t.label === 'Oreille perdue').length;
   if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Cécité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', charPenalty: { CC: -30, CT: -30 }, dodgePenalty: -30, skillPenalty: { chevaucher: -30 }, note: 'LDB 18 l.360 : perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
+    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', charPenalty: { CC: -30, CT: -30 }, dodgePenalty: -30, skillPenalty: { chevaucher: -30 }, note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
     log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
   }
   if (ears >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Surdité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', skillPenalty: { perception: -20 }, note: 'LDB 18 l.363 : perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
+    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', skillPenalty: { perception: -20 }, note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
     log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
   }
   return log;

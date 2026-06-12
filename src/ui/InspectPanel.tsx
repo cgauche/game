@@ -72,7 +72,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
               <b>{k}</b> {c.characteristics[k] > 0 || isHero ? c.characteristics[k] : '–'}
             </span>
           ))}
-          <span className="insp-char" title="Taille (LDB 85)">
+          <span className="insp-char" title="Taille">
             <b>Taille</b> {SIZE_LABEL[effectiveSize(c.size)]}
           </span>
         </div>

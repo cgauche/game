@@ -51,7 +51,7 @@ export const INTERLUDE_EVENTS: InterludeEvent[] = [
   { min: 41, max: 44, label: 'Météo défavorable', text: 'Conditions détestables : pour la prochaine aventure, les Tests sociaux subissent −10 et le prix des aliments augmente de 20 %. Arbitrage table.' },
   { min: 45, max: 48, label: 'Météo radieuse', text: 'Les magnifiques conditions vous inspirent : vous pouvez ajouter une nouvelle Ambition.' },
   { min: 49, max: 52, label: 'Mauvaise récolte', text: 'La nourriture devient extrêmement rare : les Ruraux ne peuvent pas entreprendre Revenus, et le prix des aliments double pour la prochaine aventure.', fx: { revenueBlockedClasses: ['Ruraux'] } },
-  { min: 53, max: 56, label: 'Maladie pernicieuse', text: 'Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie (LDB ch.20). Arbitrage table (maladie hors registre V1).' },
+  { min: 53, max: 56, label: 'Maladie pernicieuse', text: 'Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie. Arbitrage table (maladie hors registre V1).' },
   { min: 57, max: 60, label: 'Complications monstrueuses', text: 'Un monstre sème la panique : Revenus ne fournit aucun fonds tant que la bête rôde (la régler = une rencontre à jouer).', fx: { revenueBlockedClasses: ['*'] } },
   { min: 61, max: 63, label: 'L’étreinte de Morr', text: 'Un parent, ami ou allié meurt — causes naturelles, accident… ou le début de quelque chose de plus sinistre.' },
   { min: 64, max: 65, label: 'Nouvelle lune', text: 'Les nuits sont particulièrement noires : les Voleurs qui entreprennent Revenus gagnent +20 %.', fx: { revenuePct: 20, revenueClasses: ['Roublards'] } },

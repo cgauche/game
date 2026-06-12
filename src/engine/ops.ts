@@ -521,7 +521,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
           suffocates: true,
         });
-        lines.push(`${target.name} suffoque (${ctx.label ?? 'sort'}) — −1 PB par Round (LDB 18).`);
+        lines.push(`${target.name} suffoque (${ctx.label ?? 'sort'}) — −1 PB par Round.`);
         break;
       }
       case 'noBreath': {

@@ -261,7 +261,7 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   if (isDoubleRoll(r)) {
     removeCondition(c, 'Hémorragique', 1); // coagulation (le double prime sur la mort)
     const log = [`${c.name} : une plaie coagule (${r === 100 ? '00' : r}, double) — un État Hémorragique en moins.`];
-    if (!hasCondition(c, 'Hémorragique')) { addCondition(c, 'Exténué'); log.push(`${c.name} est Exténué (dernière plaie refermée, LDB 16 l.109).`); } // tous retirés → 1 Exténué
+    if (!hasCondition(c, 'Hémorragique')) { addCondition(c, 'Exténué'); log.push(`${c.name} est Exténué (dernière plaie refermée).`); } // tous retirés → 1 Exténué
     return { died: false, log };
   }
   if (r <= 10 * n) return { died: true, log: [`${c.name} succombe à l'hémorragie (${r} ≤ ${10 * n}).`] };

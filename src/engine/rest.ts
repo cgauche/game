@@ -164,7 +164,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1): str
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
-  if (isStarving(c)) log.push(`${c.name} est affamé — pas de récupération naturelle (Faim & Soif, LDB 18).`);
+  if (isStarving(c)) log.push(`${c.name} est affamé — pas de récupération naturelle (Faim & Soif).`);
   if (hadFatigue && stacks(c, 'Exténué') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
   if (nightmareNights > 0) log.push(`${c.name} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
   return log;

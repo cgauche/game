@@ -273,7 +273,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             </div>
           </div>
           {mode === 'pied' && (
-            <label className="wm-opt" title={`${maxH} h de route par jour au lieu de ${base} — Test de Résistance en fin de journée, ou État Exténué (LDB)`}>
+            <label className="wm-opt" title={`${maxH} h de route par jour au lieu de ${base} — Test de Résistance en fin de journée, ou État Exténué`}>
               <input type="checkbox" checked={forced} onChange={(e) => setForced(e.target.checked)} />
               <span>Marche forcée <span className="wm-opt-hint">({maxH} h/jour)</span></span>
             </label>

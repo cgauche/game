@@ -19,7 +19,7 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
       <button
         className={`btn btn-resource ${open ? 'btn-primary' : ''}`}
         onClick={() => setOpen(!open)}
-        title="Détermination (LDB 17 l.66) : retire un État négatif — le jet recalcule ses modificateurs"
+        title="Détermination : retire un État négatif — le jet recalcule ses modificateurs"
       >
         ✊ Détermination ×{resolve}
       </button>
@@ -32,7 +32,7 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
               setOpen(false);
               onSpend(c.name);
             }}
-            title={`Retirer 1 pion ${c.name} (LDB 17 l.66)`}
+            title={`Retirer 1 pion ${c.name}`}
           >
             {conditionMeta(c.name).icon} {c.name}
             {c.value > 1 ? ` ×${c.value}` : ''}

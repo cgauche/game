@@ -262,7 +262,7 @@ export function ActionBar() {
             <div key={t.id} className="ab-heal-pick">
               <CharFrame c={t} variant="full" size="md" />
               {availableHealModes(t).filter((m) => m !== 'trauma' && m !== 'surgery').map((m) => ( // convalescence/chirurgie = hors combat
-                <button key={m} className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action (LDB 09-Compétences)">
+                <button key={m} className="btn btn-sm" onClick={() => heal(t.id, m)} title="Test de Guérison Intermédiaire (+0) — coûte l'Action">
                   {m === 'wounds' ? '🩹 Blessures' : `🩸 Hémorragie ×${bleedStacks(t)}`}
                 </button>
               ))}
@@ -275,17 +275,17 @@ export function ActionBar() {
           {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
           {canStandUp && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement (LDB 16)">🧍 Se relever</button>
+              <button className="btn btn-sm" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement">🧍 Se relever</button>
             </div>
           )}
           {engaged && !frenzied && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage — LDB 15 l.84-89)">🚪 Se désengager</button>
+              <button className="btn btn-sm" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)">🚪 Se désengager</button>
             </div>
           )}
           {mountCandidate && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté, LDB 14) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
+              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
             </div>
           )}
           {mounted && (
@@ -295,12 +295,12 @@ export function ActionBar() {
           )}
           {rangedW && !frenzied && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action (LDB Difficultés)">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
             </div>
           )}
           {canPush && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts (LDB 62)">↩️ {active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</button>
+              <button className="btn btn-sm" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts">↩️ {active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</button>
             </div>
           )}
           {needsReload && !frenzied && (
@@ -320,22 +320,22 @@ export function ActionBar() {
           ))}
           {!frenzied && groundItems.map((g) => (
             <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action) — LDB Combat">✋ {g.label}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action)">✋ {g.label}</button>
             </div>
           ))}
           {canFrenzy && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action (LDB 21)">🐗 Frénésie</button>
+              <button className="btn btn-sm" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action">🐗 Frénésie</button>
             </div>
           )}
           {canTrample && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => selectAction('trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage (LDB Taille)">🐾 Piétiner</button>
+              <button className="btn btn-sm" onClick={() => selectAction('trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage">🐾 Piétiner</button>
             </div>
           )}
           {canTentacle && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => selectAction('tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts (LDB Traits)">🐙 Tentacule</button>
+              <button className="btn btn-sm" onClick={() => selectAction('tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts">🐙 Tentacule</button>
             </div>
           )}
         </div>
@@ -352,20 +352,20 @@ export function ActionBar() {
       {battle.action === 'resolve' && resolve > 0 && (
         <div className="ab-spells">
           <div className="ab-spell-row">
-            <button className="btn btn-sm" onClick={resolvePsychImmune} title="Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)">
+            <button className="btn btn-sm" onClick={resolvePsychImmune} title="Détermination : immunisé à la Psychologie jusqu'à la fin du prochain Round">
               🛡️ Immunité Psychologie (ce Round + le prochain)
             </button>
           </div>
           {(active.traumas?.length ?? 0) > 0 && (
             <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={resolveIgnoreCrit} title="Détermination : ignorer les modificateurs de Blessure critique ce Round (LDB 17 l.64)">
+              <button className="btn btn-sm" onClick={resolveIgnoreCrit} title="Détermination : ignorer les modificateurs de Blessure critique ce Round">
                 🩹 Ignorer modifs de critique (ce Round)
               </button>
             </div>
           )}
           {removableConditions.map((c) => (
             <div key={c.name} className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => spendResolve(c.name)} title="Dépense un point de Détermination pour retirer cet État (LDB Destin)">
+              <button className="btn btn-sm" onClick={() => spendResolve(c.name)} title="Dépense un point de Détermination pour retirer cet État">
                 ✊ Retirer {c.name}{c.value > 1 ? ` (${c.value})` : ''}
               </button>
             </div>
@@ -389,7 +389,7 @@ export function ActionBar() {
               <div className="ab-actor-top">
                 {assailliN >= 2 && <span className="ab-assailli" title={`${assailliN} ennemis au contact`}>⚔️ ×{assailliN}</span>}
                 {isHero && battle.fearGate === 'failed' && (
-                  <span className="ab-assailli" title="Test de Calme d'approche raté : impossible de se rapprocher de la source de sa Peur ce Tour (LDB 21 l.29)">😨 Cloué</span>
+                  <span className="ab-assailli" title="Test de Calme d'approche raté : impossible de se rapprocher de la source de sa Peur ce Tour">😨 Cloué</span>
                 )}
               </div>
             )}
@@ -430,7 +430,7 @@ export function ActionBar() {
                 className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
                 disabled={battle.acted || stunned || broken}
                 onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
-                title="Incanter un sort (Test de Langage mystique) — coûte l'Action (LDB Magie)"
+                title="Incanter un sort (Test de Langage mystique) — coûte l'Action"
               >
                 <span className="ab-ico">✨</span>
                 <span className="ab-lbl">Incanter{battle.acted && ' ✓'}</span>
@@ -441,7 +441,7 @@ export function ActionBar() {
                 className={`ab-slot ${battle.action === 'heal' ? 'on' : ''}`}
                 disabled={battle.acted || stunned || broken}
                 onClick={() => selectAction(battle.action === 'heal' ? null : 'heal')}
-                title="Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action (LDB 09-Compétences)"
+                title="Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action"
               >
                 <span className="ab-ico">🩹</span>
                 <span className="ab-lbl">Soigner</span>
@@ -463,7 +463,7 @@ export function ActionBar() {
                 className="ab-slot"
                 disabled={battle.acted || stunned}
                 onClick={() => recoverState('En flammes')}
-                title="Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action, LDB 16 l.77)"
+                title="Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)"
               >
                 <span className="ab-ico">🔥</span>
                 <span className="ab-lbl">Se rouler{battle.acted && ' ✓'}</span>
@@ -474,7 +474,7 @@ export function ActionBar() {
                 className="ab-slot"
                 disabled={battle.acted || stunned}
                 onClick={() => recoverState('Empêtré')}
-                title="Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action, LDB 16 l.61)"
+                title="Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)"
               >
                 <span className="ab-ico">🪢</span>
                 <span className="ab-lbl">Se libérer{battle.acted && ' ✓'}</span>
@@ -498,7 +498,7 @@ export function ActionBar() {
               <button
                 className={`ab-slot ab-alert ${battle.action === 'resolve' ? 'on' : ''}`}
                 onClick={() => selectAction(battle.action === 'resolve' ? null : 'resolve')}
-                title="Détermination : retirer un État (ne coûte pas l'Action) — LDB Destin"
+                title="Détermination : retirer un État (ne coûte pas l'Action)"
               >
                 <span className="ab-ico">✊</span>
                 <span className="ab-lbl">Détermination ({resolve})</span>

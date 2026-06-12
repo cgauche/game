@@ -22,7 +22,7 @@ export function MountTargetModal() {
     <Modal title="Combat monté — cibler ?" variant="test" onClose={cancel}>
       <p className="rm-log">
         {rider.name} chevauche {mount.name} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
-        plus petit que la monture ; abattre la monture désarçonne le cavalier (LDB 14 l.219).
+        plus petit que la monture ; abattre la monture désarçonne le cavalier.
       </p>
       <div className="rm-options">
         <div className="rm-loc-grid">

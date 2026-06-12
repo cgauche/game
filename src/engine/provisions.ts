@@ -127,7 +127,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     const t = rollTest(resVal, 'intermediaire', rng, -10 * h.tests);
     h.tests += 1;
     res.log.push(
-      `${c.name} — Faim (LDB 18) : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
+      `${c.name} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
     );
     if (!t.success) {
       h.failures += 1;

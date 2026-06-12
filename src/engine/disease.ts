@@ -319,7 +319,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
           const be = Math.floor(resistVal / 10); // approximation BE ≈ Endurance/10 (resistVal = E + avances)
           if (dz.gangreneFails > be) {
             dz.gangreneLost = true;
-            log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise, LDB 20).`);
+            log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
           } else log.push(`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);
         }
       }

@@ -109,7 +109,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
               </section>
             )}
             <div className="interlude-close">
-              <p className="interlude-warning" title="« Tout l'argent non sécurisé disparaît » (Argent à gaspiller, LDB 23) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
+              <p className="interlude-warning" title="« Tout l'argent non sécurisé disparaît » (Argent à gaspiller) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
                 💸 À la clôture, l'or non déposé sera dilapidé.
               </p>
               {isGuest
@@ -140,7 +140,7 @@ function fxChips(fx: InterludeEventFx | undefined, weeks: number, hero: Combatan
   if (fx?.bankPct) chips.push(`${fx.bankPct} % sur l'argent placé en banque`);
   if (fx?.stashRaided) chips.push('Planque dévalisée !');
   if (fx?.bankCrashCheck) chips.push('Les banques vérifient leur faillite immédiatement');
-  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push('−1 Activité (devoir elfique, LDB 23)');
+  if (weeks >= 3 && /elfe/i.test(hero.species ?? '')) chips.push('−1 Activité (devoir elfique)');
   return chips;
 }
 
@@ -149,7 +149,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
   return (
     <>
       <p className="interlude-phase-hint">
-        Pendant que le groupe souffle, la vie suit son cours — chacun tire un Événement (d100, LDB 22).
+        Pendant que le groupe souffle, la vie suit son cours — chacun tire un Événement (d100).
       </p>
       <div className="interlude-heroes">
         {heroes.map((h) => {
@@ -225,7 +225,7 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
           className="btn small"
           disabled={none || revenusBlocked}
           onClick={() => revenus(hero.id)}
-          title={revenusBlocked ? `Interdit par l'événement de la période (${ev.label})` : `Une semaine de travail — Test Accessible (+20) de la compétence de carrière ; succès = ${incomeFormula}, échec = moitié (LDB 08)`}
+          title={revenusBlocked ? `Interdit par l'événement de la période (${ev.label})` : `Une semaine de travail — Test Accessible (+20) de la compétence de carrière ; succès = ${incomeFormula}, échec = moitié`}
         >
           💰 Revenus <span className="interlude-hint">({incomeFormula})</span>
         </button>
@@ -235,11 +235,11 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
             🔨 Travailler — {st.craft.trapping} ({st.craft.drDone}/{st.craft.drTarget})
           </button>
         ) : (
-          paneBtn('craft', '🔨 Artisanat…', 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier — LDB 23)')
+          paneBtn('craft', '🔨 Artisanat…', 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier)')
         )}
-        {paneBtn('learn', '📚 Apprentissage…', 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec — LDB 23)')}
-        {paneBtn('order', '📦 Commande…', 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure (LDB 23)')}
-        {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires, LDB 23)')}
+        {paneBtn('learn', '📚 Apprentissage…', 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)')}
+        {paneBtn('order', '📦 Commande…', 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure')}
+        {paneBtn('bank', '🏦 Banque…', 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
       </div>
       {pane === 'craft' && !st.craft && <CraftPane hero={hero} disabled={none} money={money} />}
       {pane === 'learn' && <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} />}
@@ -307,7 +307,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
   const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
     setList(list.includes(q) ? list.filter((x) => x !== q) : [...list, q]);
   const blockedReason = !metier
-    ? 'Aucune Compétence Métier avec avances — impossible de fabriquer (LDB 23).'
+    ? 'Aucune Compétence Métier avec avances — impossible de fabriquer.'
     : !affordable && sel
       ? `Matériaux trop chers (${fmt(sel.materialsBrass)}) pour la bourse du groupe.`
       : null;
@@ -376,7 +376,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
         <p className="interlude-detail" title={desc}>
           {desc ? `${desc.slice(0, 140)}${desc.length > 140 ? '…' : ''} — ` : ''}
           Test <b>Difficile (−20)</b>{failCount ? <> (+{failCount * 10} d'acharnement)</> : null} · coût <b>{sel.xpCost} PX</b> (il vous en reste {xp})
-          + tuteur <b>2d10 pa / 100 PX</b> — PX et argent perdus même sur un échec (LDB 23).
+          + tuteur <b>2d10 pa / 100 PX</b> — PX et argent perdus même sur un échec.
         </p>
       )}
       <button
@@ -404,7 +404,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
       {sel && (
         <p className="interlude-detail">
           Payé <b>{fmt(sel.priceBrass)}</b> maintenant — « l'objet sera achevé après votre prochaine
-          aventure » (livré à l'ouverture du prochain interlude, LDB 23).
+          aventure » (livré à l'ouverture du prochain interlude).
         </p>
       )}
       <button
@@ -447,7 +447,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; d
           className="btn small"
           disabled={disabled || bronzeBlocked || amountBrass > purseBrass}
           onClick={() => bankDeposit(hero.id, 'invest', amountBrass)}
-          title={bronzeBlocked ? '« Vous devez être des échelons Or et Argent pour épargner dans une banque » (LDB 23)' : 'Intérêts = Indice d’intérêts (1-10) % ; au retrait, faillite sur 🎲 ≤ Indice (retrait = 1 Activité)'}
+          title={bronzeBlocked ? '« Vous devez être des échelons Or et Argent pour épargner dans une banque »' : 'Intérêts = Indice d’intérêts (1-10) % ; au retrait, faillite sur 🎲 ≤ Indice (retrait = 1 Activité)'}
         >
           🏦 Investir
         </button>
@@ -462,7 +462,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money }: { hero: Combatant; d
       </div>
       <p className="interlude-detail">
         Investir : intérêts de l'Indice (1-10) %, faillite au retrait sur 🎲 ≤ Indice — retirer coûte
-        une Activité. Planquer : aucun intérêt, retrait libre, découverte sur 🎲 ≤ 10 (LDB 23).
+        une Activité. Planquer : aucun intérêt, retrait libre, découverte sur 🎲 ≤ 10.
         {bronzeBlocked && <span className="interlude-blocked"> Investir exige le Statut Argent ou Or.</span>}
       </p>
     </div>
@@ -491,7 +491,7 @@ function BankList({ bank, party, interlude, canDrive }: {
               ? 'Dépôt d’un héros mené par un autre joueur.'
               : b.kind === 'invest'
                 ? lockedInvest
-                  ? 'Retirer un investissement exige une Activité (LDB 23) — il n’en reste plus.'
+                  ? 'Retirer un investissement exige une Activité — il n’en reste plus.'
                   : `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur 🎲 ≤ ${b.rate})`
                 : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur 🎲 ≤ 10`}
           >
@@ -524,7 +524,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
       <ul className="interlude-recap-list">
         <li>
           💸 {wasted > 0
-            ? <><b>{fmt(wasted)}</b> seront dépensés, bus, pariés ou donnés — en totalité (« Argent à gaspiller », LDB 23).</>
+            ? <><b>{fmt(wasted)}</b> seront dépensés, bus, pariés ou donnés — en totalité (« Argent à gaspiller »).</>
             : 'La bourse est vide — rien à gaspiller.'}
         </li>
         <li>💰 Revenus crédités à la reprise : <b>{revenue > 0 ? fmt(revenue) : 'aucun'}</b>.</li>
@@ -538,7 +538,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
         {demoted.map((h) => (
           <li key={h.id} className="interlude-blocked">
             ⚠️ {h.name} n'a pas entrepris Revenus : retour au Niveau {(h.careerLevel ?? 1) - 1} de sa
-            Carrière (« Avec le pouvoir », LDB 23).
+            Carrière (« Avec le pouvoir »).
           </li>
         ))}
         <li>🌙 Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>

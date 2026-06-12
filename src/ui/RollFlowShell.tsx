@@ -121,7 +121,7 @@ export function RollFlowShell({
     <button
       className="btn btn-resource"
       onClick={determination.onResolve}
-      title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round (LDB 17 l.62)"
+      title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round"
     >
       ✊ Détermination ×{determination.resolve}
     </button>

@@ -41,7 +41,7 @@ export function DeviationModal() {
           className="btn btn-primary"
           disabled={!canDeviate}
           onClick={() => apply(true)}
-          title={canDeviate ? "Sacrifier 1 Point d'Armure pour ignorer le Coup Critique (LDB 63 l.63-66)" : 'Aucune armure à sacrifier à cette localisation'}
+          title={canDeviate ? "Sacrifier 1 Point d'Armure pour ignorer le Coup Critique" : 'Aucune armure à sacrifier à cette localisation'}
         >
           🛡️ Dévier (−1 PA)
         </button>

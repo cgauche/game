@@ -101,12 +101,12 @@ export function domainOnHitRiders(
   const lines: string[] = [];
   if (dom === 'Feu' && hostile && !hasArcaneTalent(target, 'Feu')) {
     addCondition(target, 'En flammes');
-    lines.push(`${target.name} s'embrase — +1 En flammes (attribut d'Aqshy, LDB 48).`);
+    lines.push(`${target.name} s'embrase — +1 En flammes (attribut d'Aqshy).`);
   }
   if (dom === 'Lumière') {
     if (hostile && !hasArcaneTalent(target, 'Lumière')) {
       addCondition(target, 'Aveuglé');
-      lines.push(`${target.name} est ébloui — +1 Aveuglé (attribut d'Hysh, LDB 48).`);
+      lines.push(`${target.name} est ébloui — +1 Aveuglé (attribut d'Hysh).`);
     }
     if (isUndead(target) || isDaemon(target)) {
       const extra = Math.max(0, bonus(effectiveChar(caster, 'Int')));
@@ -120,7 +120,7 @@ export function domainOnHitRiders(
   if (dom === 'Mort' && hostile && isLiving(target) && !target.shyishExhausted) {
     addCondition(target, 'Exténué');
     target.shyishExhausted = true; // « un seul État Exténué gagné de cette façon à la fois »
-    lines.push(`${target.name} est drainé — +1 Exténué (attribut de Shyish, LDB 48).`);
+    lines.push(`${target.name} est drainé — +1 Exténué (attribut de Shyish).`);
   }
   if (dom === 'Vie') {
     if (isLiving(target)) {
@@ -128,7 +128,7 @@ export function domainOnHitRiders(
       const hem = stacks(target, 'Hémorragique');
       if (ext > 0) removeCondition(target, 'Exténué', ext);
       if (hem > 0) removeCondition(target, 'Hémorragique', hem);
-      if (ext > 0 || hem > 0) lines.push(`${target.name} est revigoré par Ghyran : Exténué et Hémorragique retirés (attribut de Vie, LDB 48).`);
+      if (ext > 0 || hem > 0) lines.push(`${target.name} est revigoré par Ghyran : Exténué et Hémorragique retirés (attribut de Vie).`);
     } else if (isUndead(target)) {
       const extra = Math.max(0, bonus(effectiveChar(caster, 'FM')));
       if (extra > 0) {
@@ -149,5 +149,5 @@ export function ghurFearAfterCast(caster: Combatant, spell: { type?: string; sub
   grantTrait(caster, 'Peur 1');
   caster.activeEffects = caster.activeEffects ?? [];
   caster.activeEffects.push({ label: 'Attribut de Ghur (Peur 1)', bonus: 0, roundsLeft: rounds, grantedTrait: 'Peur 1' });
-  return [`${caster.name} irradie la férocité de Ghur — Peur 1 pendant ${rounds} Round(s) (LDB 48).`];
+  return [`${caster.name} irradie la férocité de Ghur — Peur 1 pendant ${rounds} Round(s).`];
 }

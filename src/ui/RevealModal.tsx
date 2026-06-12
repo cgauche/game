@@ -42,7 +42,7 @@ export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; ac
 
       {entry.crit && (
         <div className="crit-stats">
-          <span className="crit-stat" title="Blessures du Coup Critique : elles ignorent l'Endurance ET l'Armure (LDB 18 l.30).">
+          <span className="crit-stat" title="Blessures du Coup Critique : elles ignorent l'Endurance ET l'Armure.">
             💥 {entry.crit.woundsLost} Blessure{entry.crit.woundsLost > 1 ? 's' : ''}
           </span>
           {entry.crit.conditions?.map((c) => (

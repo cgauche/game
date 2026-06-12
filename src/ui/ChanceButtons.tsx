@@ -33,7 +33,7 @@ export function ChanceButtons({
     <button
       className="btn btn-resource"
       onClick={onDarkPact}
-      title="Sombre Pacte (LDB 19) : recevoir volontairement 1 Point de Corruption pour relancer ce Test — même après une relance de Chance. Les Dieux Sombres écoutent…"
+      title="Sombre Pacte : recevoir volontairement 1 Point de Corruption pour relancer ce Test — même après une relance de Chance. Les Dieux Sombres écoutent…"
     >
       🩸 Pacte
     </button>
@@ -43,8 +43,8 @@ export function ChanceButtons({
       className="btn btn-resource"
       onClick={onReroll}
       title={freeReroll
-        ? 'Bénédiction de Chance (LDB 41) : relance gratuite du Test raté — sans dépenser de Chance'
-        : 'Dépense un point de Chance pour relancer le jet (LDB Destin)'}
+        ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance'
+        : 'Dépense un point de Chance pour relancer le jet'}
     >
       {freeReroll ? '🙏 Relancer' : `🍀 Relancer ×${fortune}`}
     </button>
@@ -53,7 +53,7 @@ export function ChanceButtons({
     <>
       {rerollBtn}
       {fortune > 0 && onBonusSL && (
-        <button className="btn btn-resource" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR (LDB Destin)">
+        <button className="btn btn-resource" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR">
           ➕ +1 DR ×{fortune}
         </button>
       )}

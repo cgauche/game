@@ -314,7 +314,7 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
       return null;
     }
     case 4: {
-      if (d.speciesPlus5.length !== 3 || d.speciesPlus3.length !== 3) return 'Choisissez 3 Compétences d\'espèce à +5 et 3 à +3 (LDB 05 l.510).';
+      if (d.speciesPlus5.length !== 3 || d.speciesPlus3.length !== 3) return 'Choisissez 3 Compétences d\'espèce à +5 et 3 à +3.';
       if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
       for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
         if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
@@ -329,10 +329,10 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
       for (const e of entries) {
         const adv = d.skillAdvances[e] ?? 0;
         if (adv < 0 || adv > 10) return `Maximum 10 Augmentations par Compétence à la création (« ${e} »).`;
-        if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} » (LDB 09 l.38).`;
+        if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
       }
       if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
-      if (talentMaxReached(probeHero(d, false), d.careerTalent)) return `« ${d.careerTalent} » : Maxi déjà atteint (LDB 10).`;
+      if (talentMaxReached(probeHero(d, false), d.careerTalent)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
       return null;
     }
     case 6: {

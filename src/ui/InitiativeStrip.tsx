@@ -57,8 +57,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                   className="is-first"
                   onClick={() => p.onPromote(id)}
                   title={p.freeFirstIds?.includes(id)
-                    ? `${c.name} agit en premier ce Round — gratuit (arme Rapide, LDB 62)`
-                    : `Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round (LDB Destin)`}
+                    ? `${c.name} agit en premier ce Round — gratuit (arme Rapide)`
+                    : `Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round`}
                 >
                   {p.freeFirstIds?.includes(id) ? '⏫⚡' : `⏫🍀${c.fortune ?? 0}`}
                 </button>

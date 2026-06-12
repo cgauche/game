@@ -24,7 +24,7 @@ const PHYSIQUE: Row[] = [
   { min: 21, max: 25, label: 'Œil énorme', fx: { note: '+10 aux Tests de Perception impliquant la vue.' } },
   { min: 26, max: 30, label: 'Articulation supplémentaire aux jambes', fx: { charMods: { Ag: 5 } } },
   { min: 31, max: 35, label: 'Bouche supplémentaire', fx: { note: 'Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît.' } },
-  { min: 36, max: 40, label: 'Tentacule épais', fx: { traits: ['Tentacules'], note: 'Trait de créature Tentacule (LDB p.343).' } },
+  { min: 36, max: 40, label: 'Tentacule épais', fx: { traits: ['Tentacules'], note: 'Trait de créature Tentacule.' } },
   { min: 41, max: 45, label: 'Peau brillante', fx: { note: 'Produit une lumière équivalente à celle d’une bougie.' } },
   { min: 46, max: 50, label: 'Beauté surnaturelle', fx: { charMods: { Soc: 10 }, note: 'Ne garde jamais de cicatrice.' } },
   { min: 51, max: 55, label: 'Visage inversé', fx: { testMods: [{ char: 'Soc', mod: -20 }] } },
@@ -33,10 +33,10 @@ const PHYSIQUE: Row[] = [
   { min: 66, max: 70, label: 'Plumes éparses', fx: { note: 'Deux lancers de Localisation pour déterminer où ces plumes apparaissent.' } },
   { min: 71, max: 75, label: 'Court sur pattes', fx: { movement: -1 } },
   { min: 76, max: 80, label: 'Écailles épineuses', fx: { apAll: 1 } },
-  { min: 81, max: 85, label: 'Cornes asymétriques', fx: { apLocations: { tete: 1 }, note: 'Compte comme une Arme de Créature (Dégâts = Bonus de Force, LDB p.338).' } },
+  { min: 81, max: 85, label: 'Cornes asymétriques', fx: { apLocations: { tete: 1 }, note: 'Compte comme une Arme de Créature (Dégâts = Bonus de Force).' } },
   { min: 86, max: 90, label: 'Suintement de pus', fx: { note: 'Lancer de Localisation pour déterminer l’origine du suintement.' } },
   { min: 91, max: 95, label: 'Groin poilu', fx: { skillMods: { pistage: 10 } } },
-  { min: 96, max: 100, label: 'Choix du MJ', fx: { note: 'Le MJ choisit une mutation ou un Trait de Créature (LDB p.340).' } },
+  { min: 96, max: 100, label: 'Choix du MJ', fx: { note: 'Le MJ choisit une mutation ou un Trait de Créature.' } },
 ];
 
 // --- Tableau de Corruption mentale (LDB 19 l.152-176) -------------------------
@@ -47,7 +47,7 @@ const MENTALE: Row[] = [
   { min: 16, max: 20, label: 'Formication', fx: { charMods: { I: -5, Dex: -5 } } },
   { min: 21, max: 25, label: 'Imprévisible fantaisiste', fx: { charMods: { Int: -5, FM: -5 } } },
   { min: 26, max: 30, label: 'Terrible inquiétude', fx: { charMods: { FM: -10 } } },
-  { min: 31, max: 35, label: 'Pulsions de haine', fx: { note: 'Sujet à l’Hostilité (LDB 21) envers tous ceux qui ne sont pas de votre race.' } },
+  { min: 31, max: 35, label: 'Pulsions de haine', fx: { note: 'Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race.' } },
   { min: 36, max: 40, label: 'Cœur desséché', fx: { charMods: { FM: 10, Soc: -10 } } },
   { min: 41, max: 45, label: 'Pensées envieuses', fx: { charMods: { Soc: -10 } } },
   { min: 46, max: 50, label: 'Esprit solitaire', fx: { note: '-10 aux Tests lorsque vous êtes seul.' } },
@@ -59,7 +59,7 @@ const MENTALE: Row[] = [
   { min: 76, max: 80, label: 'Visions torturées', fx: { charMods: { I: -10 } } },
   { min: 81, max: 85, label: 'Totalement déséquilibré', fx: { charMods: { Soc: -20, FM: 10 } } },
   { min: 86, max: 90, label: 'Infinie malveillance', fx: { note: '-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui.' } },
-  { min: 91, max: 95, label: 'Colère impie', fx: { charMods: { CC: 10 }, psychTraits: [{ type: 'frenesie' }], note: 'Sujet à Frénésie (LDB 21).' } },
+  { min: 91, max: 95, label: 'Colère impie', fx: { charMods: { CC: 10 }, psychTraits: [{ type: 'frenesie' }], note: 'Sujet à Frénésie.' } },
   { min: 96, max: 100, label: 'Affreusement nerveux', fx: { charMods: { Ag: 5, Soc: -5 } } },
 ];
 

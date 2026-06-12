@@ -291,11 +291,11 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
       const { name, spec } = splitLabel(talentName);
       const status = inCareerStatus(ctx.tSlots, ctx.designations, name, spec, [...ctx.sSlots, ...ctx.tSlots]);
       if (!status) {
-        msg = `${clone.name} : Talent « ${talentName} » hors carrière (LDB l.97).`;
+        msg = `${clone.name} : Talent « ${talentName} » hors carrière.`;
         return h;
       }
       if (talentMaxReached(clone, talentName)) {
-        msg = `${clone.name} : ${talentName} — Maxi atteint (LDB 10).`;
+        msg = `${clone.name} : ${talentName} — Maxi atteint.`;
         return h;
       }
       const fortuneBefore = fortuneMax(clone);

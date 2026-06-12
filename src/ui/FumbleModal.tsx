@@ -23,7 +23,7 @@ export function FumbleModalView({
   return (
     <Modal title="🎲 Maladresse !" subject={combatant} variant="test">
       <p className="test-actor">
-        <strong>{name}</strong> — Test de combat raté sur un double (Tableau des Oups !, LDB)
+        <strong>{name}</strong> — Test de combat raté sur un double (Tableau des Oups !)
       </p>
 
       {!r ? (

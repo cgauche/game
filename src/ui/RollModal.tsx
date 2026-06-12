@@ -239,7 +239,7 @@ export function RollModal() {
                     01 · DR max
                   </button>
                   {bestDouble >= 11 && (
-                    <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique (LDB 17 l.75)" onClick={() => setForcedRoll(bestDouble)}>
+                    <button className={`btn small ${res.attackerRoll === bestDouble ? 'btn-primary' : ''}`} title="Double réussi → Coup Critique" onClick={() => setForcedRoll(bestDouble)}>
                       {String(bestDouble).padStart(2, '0')} · Critique
                     </button>
                   )}

@@ -100,7 +100,7 @@ export function applyStopBleed(target: Combatant, dr: number): string[] {
   const log = [`${target.name} : ${removed} État(s) Hémorragique stoppé(s).`];
   if (gainExtenue) {
     addCondition(target, 'Exténué');
-    log.push(`${target.name} est Exténué (après l'arrêt de l'hémorragie, LDB 16 l.109).`);
+    log.push(`${target.name} est Exténué (après l'arrêt de l'hémorragie).`);
   }
   return log;
 }

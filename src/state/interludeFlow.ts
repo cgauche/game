@@ -98,12 +98,12 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
     if (/elfe/i.test(h.species ?? '') && w >= 3) {
       left -= 1;
-      lines.push(`${h.name} consacre une Activité au contact des siens (devoir elfique, LDB 23).`);
+      lines.push(`${h.name} consacre une Activité au contact des siens (devoir elfique).`);
     }
     if (ev.fx?.moneyPct) worstMoneyPct = Math.min(worstMoneyPct, ev.fx.moneyPct);
     if (ev.fx?.fortuneMaxDelta) {
       h.fortune = (h.fortune ?? 0) + ev.fx.fortuneMaxDelta;
-      lines.push(`${h.name} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage — LDB 22).`);
+      lines.push(`${h.name} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage).`);
     }
     if (ev.fx?.stashRaided && bank.some((b) => b.heroId === h.id && b.kind === 'stash')) {
       bank = bank.filter((b) => !(b.heroId === h.id && b.kind === 'stash'));
@@ -204,7 +204,7 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
   }
   const metier = metierOf(h);
   if (!metier) {
-    get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer (LDB 23).`);
+    get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer.`);
     return;
   }
   const t = findTrapping(trappingLabel);
@@ -296,7 +296,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: str
     return;
   }
   if (t.availability !== 'Exotique' && t.availability !== 'ND') {
-    get().log(`${t.label} (${t.availability ?? '?'}) s'achète chez un marchand — Passer commande sert aux objets Exotiques (LDB 23).`);
+    get().log(`${t.label} (${t.availability ?? '?'}) s'achète chez un marchand — Passer commande sert aux objets Exotiques.`);
     return;
   }
   const price = toBrass({ gold: t.price.gold, silver: t.price.silver, brass: t.price.bronze });
@@ -308,7 +308,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: str
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
-  get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure (LDB 23).`);
+  get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure.`);
 }
 
 /** Applique le jet d'Activité confirmé (consomme l'Activité). */
@@ -354,7 +354,7 @@ export function confirmActivity(get: Get, set: Set): void {
       const learnFails = { ...(st.learnFails ?? {}) };
       learnFails[pa.talent] = (learnFails[pa.talent] ?? 0) + 1;
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, learnFails };
-      lines.push(`${h.name} échoue à apprendre ${pa.talent} — PX et argent dépensés en vain ; +10 à la prochaine tentative (LDB 23).`);
+      lines.push(`${h.name} échoue à apprendre ${pa.talent} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`);
     }
   } else if (pa.kind === 'craft' && st.craft) {
     const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
@@ -382,7 +382,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
   if (kind === 'invest' && heroStatus(h).tier === 'bronze') {
-    get().log(`${h.name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque » (LDB 23).`);
+    get().log(`${h.name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».`);
     return;
   }
   const amount = Math.max(1, Math.floor(amountBrass));
@@ -420,7 +420,7 @@ export function bankWithdraw(get: Get, set: Set, index: number): void {
   if (dep.kind === 'invest') {
     const st = heroState(get(), dep.heroId);
     if (!st || st.left <= 0) {
-      get().log('Retirer un investissement exige une Activité (LDB 23).');
+      get().log('Retirer un investissement exige une Activité.');
       return;
     }
     const itl = get().interlude!;
@@ -458,12 +458,12 @@ export function interludeEnd(get: Get, set: Set): void {
     if (!st) continue;
     if ((h.careerLevel ?? 1) >= 3 && !st.didRevenus) {
       h.careerLevel = (h.careerLevel ?? 1) - 1;
-      lines.push(`${h.name} a négligé ses responsabilités (pas de Revenus) : retour au Niveau ${h.careerLevel} de sa Carrière (« Avec le pouvoir », LDB 23).`);
+      lines.push(`${h.name} a négligé ses responsabilités (pas de Revenus) : retour au Niveau ${h.careerLevel} de sa Carrière (« Avec le pouvoir »).`);
     }
   }
   const wasted = toBrass(get().money);
   if (wasted > 0) {
-    lines.push(`L'argent restant (${formatMoney(get().money)}) est dépensé, bu, parié ou donné — en totalité (Argent à gaspiller, LDB 23).`);
+    lines.push(`L'argent restant (${formatMoney(get().money)}) est dépensé, bu, parié ou donné — en totalité (Argent à gaspiller).`);
   }
   let revenue = 0;
   for (const h of get().party) revenue += itl.perHero[h.id]?.revenueBrass ?? 0;

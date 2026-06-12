@@ -9,7 +9,7 @@ export function ResilienceButton({ resilience, show, onForce }: { resilience: nu
     <button
       className="btn btn-resource"
       onClick={onForce}
-      title="« Je ne faillirai pas ! » : sacrifie un Point de Résilience pour une réussite garantie (LDB 17 l.73 — avant le jet ou après un échec)"
+      title="« Je ne faillirai pas ! » : sacrifie un Point de Résilience pour une réussite garantie (avant le jet ou après un échec)"
     >
       🔥 Garantie ×{resilience}
     </button>

@@ -71,7 +71,7 @@ describe('Interlude — flux start/end', () => {
     useGame.getState().interludeEnd(); // 21 jours — sans le couvert, la Faim RAW tuerait le groupe
     const party = useGame.getState().party;
     party.forEach((h, i) => expect(h.wounds.current, h.name).toBeGreaterThanOrEqual(before[i]));
-    expect(useGame.getState().journal.join('\n')).not.toMatch(/dépérit|Faim \(LDB 18\)/);
+    expect(useGame.getState().journal.join('\n')).not.toMatch(/dépérit|Faim :/);
   });
 
   it('« Avec le pouvoir » : Niveau 3 sans Revenus → retombe au Niveau 2 (LDB 23 l.30)', () => {

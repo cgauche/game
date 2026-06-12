@@ -159,7 +159,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       {(hero.sinPoints ?? 0) > 0 && (
         <span
           className="muted"
-          title="Points de Péché (LDB 40) : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
+          title="Points de Péché : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
         >
           ⚖️ Péché : {hero.sinPoints}
         </span>
@@ -215,7 +215,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           );
         })}
         {grimoireSpells.map((sp) => (
-          <div className="spell-row" key={`g-${sp.label}`} title={`${sp.desc}\n\nLecture au grimoire (LDB 47) : sort non mémorisé de votre Domaine — NI doublé, deux mains.`}>
+          <div className="spell-row" key={`g-${sp.label}`} title={`${sp.desc}\n\nLecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.`}>
             <span className="spell-name">
               📖 {sp.label}
               {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
@@ -395,7 +395,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
             {(hero.corruption ?? 0) > 0 && (
-              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption (LDB 19) : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
+              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
                 <span className="ir-name">🕯️ Corruption</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
@@ -477,7 +477,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     return (
                       <button
                         className="btn small"
-                        title={it.name === 'Crochet' ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX) — LDB 73' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX) — LDB 73'}
+                        title={it.name === 'Crochet' ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX)'}
                         disabled={(hero.xp ?? 0) < px}
                         onClick={() => trainProsthesis(hero.id, it.uid)}
                       >
@@ -494,7 +494,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <button
                       className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
                       disabled={inBattleNow}
-                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant — LDB 73)' : undefined}
+                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : undefined}
                       onClick={() => toggleEquip(hero.id, it.uid)}
                     >
                       {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}

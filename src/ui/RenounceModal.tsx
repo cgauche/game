@@ -24,13 +24,13 @@ export function RenounceModal() {
       </p>
       <p className="rm-log">
         « Je te renie ! » : sacrifier <b>1 Point de Résilience</b> ({resilience} restant{resilience > 1 ? 's' : ''}) pour
-        refuser la mutation. Les Points de Corruption restent — la menace reviendra (LDB 17).
+        refuser la mutation. Les Points de Corruption restent — la menace reviendra.
       </p>
       <div className="modal-actions">
         <button className="btn" onClick={() => resolve(false)} title="Laisser la mutation se développer (tirage sur le Tableau des Corruptions)">
           🎲 Subir la mutation
         </button>
-        <button className="btn btn-primary" disabled={resilience <= 0} onClick={() => resolve(true)} title="Refuser la mutation — 1 Point de Résilience (LDB 17 l.71)">
+        <button className="btn btn-primary" disabled={resilience <= 0} onClick={() => resolve(true)} title="Refuser la mutation — 1 Point de Résilience">
           ✊ Je te renie ! (−1 Résilience)
         </button>
       </div>

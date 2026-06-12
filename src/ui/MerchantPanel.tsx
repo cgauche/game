@@ -203,9 +203,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
 
   // Contrôle de Marchandage du panier (clair : ce qu'il fait + son effet).
   const buyHaggleControl = () => {
-    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie (LDB 60 l.12)">🚫 Marchand méfiant — fini de marchander</span>;
+    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie">🚫 Marchand méfiant — fini de marchander</span>;
     if (merchant.bargainLocked) return <span className="bargain-tag locked" title="Vous avez déjà négocié puis quitté sans conclure ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>;
-    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 % (LDB 60 l.12)">💬 Marchander le panier</button>;
+    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 %">💬 Marchander le panier</button>;
     return merchant.bargainBuy.won
       ? <span className="bargain-tag won">✔ Prix réduits de {buyDiscount} %</span>
       : <span className="bargain-tag">✘ Marchandage raté — prix plein</span>;
@@ -415,7 +415,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             </span>
             <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
             {it.identified === false && (
-              <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées (LDB 60)">Évaluer</button>
+              <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées">Évaluer</button>
             )}
             {sellInCart(it.uid)
               ? <button className="btn small" onClick={() => onRemoveSellCart(it.uid)} title="Retirer du panier de vente">✓ au panier</button>
@@ -481,7 +481,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
               <div className="haggle-bar">
                 {merchant.soured ? <span className="bargain-tag soured">🚫 Marchand méfiant — fini de marchander</span>
                   : merchant.bargainLocked ? <span className="bargain-tag locked" title="Vous avez refusé/renié un marché ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>
-                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼ (LDB 60 l.12/22)">💬 Marchander la vente</button>
+                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼">💬 Marchander la vente</button>
                   : <>
                       <span className={`bargain-tag ${merchant.bargainSell.won ? 'won' : ''}`}>{merchant.bargainSell.won ? '✔ Rachat à ½ du prix' : '✘ Rachat à ¼ du prix'}</span>
                       <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>

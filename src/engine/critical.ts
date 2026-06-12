@@ -45,11 +45,11 @@ export function permanentAmputations(name: string, note: string, location: HitLo
   if (location === 'jambeG' || location === 'jambeD') {
     if (/orteil/.test(t)) {
       out.push({ label: `Orteil(s) amputé(s) (${HIT_LOCATION_LABELS[location]})`, location, charPenalty: { Ag: -1, CC: -1 },
-        note: 'LDB 18 l.366 : −1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
+        note: '−1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
     } else {
       out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, movementHalved: true, dodgePenalty: -20,
         prosthesis: [MERVEILLE, { name: 'Fausse jambe', cancels: 'movement' }],
-        note: 'LDB 18 l.369/347 : Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse (LDB 73) : Fausse jambe / Merveille.' });
+        note: 'Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse : Fausse jambe / Merveille.' });
     }
     return out;
   }
@@ -59,37 +59,37 @@ export function permanentAmputations(name: string, note: string, location: HitLo
       // 1 doigt par critique (« Doigt sectionné » / « Main ouverte : perdez 1 doigt »). Cumulé par consolidateAmputations.
       out.push({ label: `Doigts amputés (${HIT_LOCATION_LABELS[location]})`, location, count: 1, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
         prosthesis: [MERVEILLE],
-        note: `LDB 18 l.341 : −5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille (LDB 73).` });
+        note: `−5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille.` });
     } else if (/\bmain\b|bras inutilisable/.test(t)) {
       out.push({ label: `Main/bras amputé (${HIT_LOCATION_LABELS[location]})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
         prosthesis: [MERVEILLE],
-        note: `LDB 18 l.352/335 : pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille (LDB 73).` });
+        note: `pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille.` });
     }
     return out;
   }
   if (location === 'tete') {
     if (/langue/.test(t)) {
       out.push({ label: 'Langue amputée', location, skillPenalty: { langue: -100 }, // « auto-échec » de la parole
-        note: 'LDB 18 l.349 : sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
+        note: 'sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
     }
     if (/\bnez\b/.test(t)) {
       out.push({ label: 'Nez amputé', location, charPenalty: { Soc: -20 }, prosthesis: [{ name: 'Nez doré', cancels: 'all' }],
-        note: 'LDB 18 l.357 : −20 Sociabilité permanent (perte du nez). Prothèse : Nez doré (LDB 73).' });
+        note: '−20 Sociabilité permanent (perte du nez). Prothèse : Nez doré.' });
     }
     if (/œil|oeil/.test(t)) {
       out.push({ label: 'Œil perdu', location, charPenalty: { Soc: -5 },
         prosthesis: [{ name: 'Cache-œil', cancels: 'all' }, { name: 'Œil de verre', cancels: 'all' }],
-        note: 'LDB 18 l.360 : −5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre (LDB 73).' });
+        note: '−5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre.' });
     }
     if (/oreille/.test(t)) {
       out.push({ label: 'Oreille perdue', location, charPenalty: { Soc: -5 }, prosthesis: [MERVEILLE],
-        note: 'LDB 18 l.363 : −5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille (LDB 73).' });
+        note: '−5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille.' });
     }
     if (/dents?\b/.test(t)) {
       const n = /1d10/.test(t) ? d10(rng) : 1; // « 1d10 dents » (Bouche explosée/Mâchoire) ou 1 dent. Cumulé.
       const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
       out.push({ label: 'Dents perdues', location, count: n, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
-        note: `LDB 18 l.338 : ${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois (LDB 73).` });
+        note: `${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois.` });
     }
     return out;
   }
@@ -168,7 +168,7 @@ export function rollCritical(
       label: `Amputation (${HIT_LOCATION_LABELS[location]})`,
       location,
       needsSurgery: true,
-      note: `LDB 18 l.333/401 : ${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
+      note: `${entry.note} La Blessure ne guérit pas tant qu'un chirurgien n'a pas opéré (Talent Chirurgie).`,
     });
     // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler
     // (la perte de dents tire 1d10 — placé après le Test de Résistance d'amputation pour ne pas décaler le reste).

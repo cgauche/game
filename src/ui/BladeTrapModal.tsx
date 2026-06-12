@@ -27,10 +27,10 @@ export function BladeTrapModal() {
         Critique est perdu.
       </p>
       <div className="modal-actions">
-        <button className="btn" onClick={() => resolve(false)} title="Infliger le Coup Critique normal (LDB 14)">
+        <button className="btn" onClick={() => resolve(false)} title="Infliger le Coup Critique normal">
           💥 Coup Critique
         </button>
-        <button className="btn btn-primary" onClick={() => resolve(true)} title="Tenter de piéger la lame (Test opposé de Force, LDB 62)">
+        <button className="btn btn-primary" onClick={() => resolve(true)} title="Tenter de piéger la lame (Test opposé de Force)">
           🗡️ Piéger la lame
         </button>
       </div>

@@ -38,7 +38,7 @@ export function TestModal() {
         <>
           <strong>{pt.actorName}</strong> — cible {pt.target}
           {pt.psychMod ? (
-            <span className="test-psych-mod" title="Trait psychologique envers l'interlocuteur (LDB 21)">
+            <span className="test-psych-mod" title="Trait psychologique envers l'interlocuteur">
               {' '}
               · {pt.psychDetail ?? `psychologie ${pt.psychMod}`}
             </span>

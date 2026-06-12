@@ -194,13 +194,13 @@ export function validateCareerChange(
     const cur = hero.careerLevel ?? 1;
     if (newLevel === cur) return { ok: false, cost: base, reason: 'déjà à ce niveau' };
     if (newLevel === cur + 1) {
-      if (!ctx.completed) return { ok: false, cost: base, reason: 'niveau actuel non complété (LDB 07 l.137)' };
+      if (!ctx.completed) return { ok: false, cost: base, reason: 'niveau actuel non complété' };
       return { ok: true, cost: base };
     }
     if (newLevel < cur) return { ok: true, cost: base };
-    return { ok: false, cost: base, reason: 'saut de niveau impossible (LDB 07 l.137)' };
+    return { ok: false, cost: base, reason: 'saut de niveau impossible' };
   }
-  if (newLevel !== 1) return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement (LDB 08 l.9)' };
+  if (newLevel !== 1) return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement' };
   return { ok: true, cost: base + (ctx.sameClass ? 0 : 100) };
 }
 
