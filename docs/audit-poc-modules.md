@@ -52,11 +52,11 @@ Moteur `state/interludeFlow.ts` : conforme à sa spec (RAW LDB 22-23 cité), con
 Parcours : carte → Federholz à pied (24 km) → péripétie d'auteur (90 %) → embuscade gobeline →
 victoire → carte « attention » → Reprendre → arrivée. Tout fonctionne, 0 erreur.
 
-- [ ] **M4 — Restitution du trajet quasi nulle** : « Partir » téléporte (la journée de 6 h est
+- [x] **M4 — Restitution du trajet quasi nulle** *(corrigé Lot 2 : `TravelRecap` + modale jour par jour à l'arrivée/interruption/surcharge)* : « Partir » téléporte (la journée de 6 h est
   résolue en synchrone) ; fatigue, faim, péripéties, nuits ne sont visibles que dans le tiroir
   journal. À l'interruption, on apparaît au milieu d'un sous-bois sans bandeau de contexte. →
   récapitulatif de voyage (jour par jour) à l'arrivée ET à l'interruption.
-- [ ] **M5 — Pas d'enchaînement multi-étapes** : la carte explique « voyagez d'étape en étape »
+- [x] **M5 — Pas d'enchaînement multi-étapes** *(corrigé Lot 2 : « Continuer le voyage » ré-ouvre la carte à l'arrivée)* : la carte explique « voyagez d'étape en étape »
   mais n'offre ni file de routes ni ré-ouverture à l'étape. → ré-ouvrir la carte à l'arrivée
   (option « continuer vers… »).
 - [x] m — L'estimation n'affiche les rations que si days > 1 — correct (les nuits mangent) mais

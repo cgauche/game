@@ -201,3 +201,47 @@ describe('nourriture en voyage (LDB 18 l.417-422)', () => {
     expect(useGame.getState().worldMapOpen).toBe(false);
   });
 });
+
+describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interruption', () => {
+  it('arrivée : recap « arrived » avec ses journées et les lignes de péripétie', () => {
+    setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', text: 'Il vend des amulettes.' }] }] }));
+    useGame.getState().startTravel('r1', 'pied');
+    const r = useGame.getState().travelRecap!;
+    expect(r.status).toBe('arrived');
+    expect(r.fromLabel).toBe('Village A');
+    expect(r.toLabel).toBe('Bourg B');
+    expect(r.kmDone).toBeCloseTo(12);
+    expect(r.days.length).toBe(1); // 12 km à M4 = 3 h
+    expect(r.days[0].lines.some((l) => l.includes('colporteur'))).toBe(true);
+    useGame.getState().dismissTravelRecap();
+    expect(useGame.getState().travelRecap).toBeNull();
+  });
+
+  it('interruption par péripétie de combat : recap « interrupted » avec km restants ; la reprise produit SON recap', () => {
+    setup(map({
+      km: 30,
+      perils: [{ label: 'Brigands sur la route !', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-test' }] }],
+    }));
+    useGame.getState().startTravel('r1', 'pied');
+    let r = useGame.getState().travelRecap!;
+    expect(r.status).toBe('interrupted');
+    expect(r.kmDone).toBeLessThan(30);
+    expect(r.days[0].lines.some((l) => l.includes('Brigands'))).toBe(true);
+    // victoire simulée → reprise : nouveau segment, nouveau recap
+    useGame.setState({ battle: null, mode: 'exploration' });
+    const wm = useGame.getState().worldMap!;
+    useGame.setState({ worldMap: { ...wm, routes: wm.routes.map((x) => ({ ...x, perils: [] })) } });
+    useGame.getState().resumeTravel();
+    r = useGame.getState().travelRecap!;
+    expect(r.status).toBe('arrived');
+    expect(useGame.getState().scene?.id).toBe('lieu-b-scene');
+  });
+
+  it('surcharge (vitesse 0) : recap « stalled »', () => {
+    // Force la vitesse à pied à 0 via le Déplacement d'auteur de la route.
+    setup(map({ speed: { pied: 0 } }));
+    useGame.getState().startTravel('r1', 'pied');
+    expect(useGame.getState().travelRecap?.status).toBe('stalled');
+    expect(useGame.getState().travelPlan?.interrupted).toBe(true);
+  });
+});

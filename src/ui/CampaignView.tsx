@@ -24,6 +24,7 @@ import { SaveLoadModal } from './SaveLoadModal';
 import { CoopMenuSection } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
+import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { campaign } from '../scenes/campaign';
 
@@ -44,6 +45,7 @@ export function CampaignView() {
   const worldMapOpen = useGame((s) => s.worldMapOpen);
   const openWorldMap = useGame((s) => s.openWorldMap);
   const travelPlan = useGame((s) => s.travelPlan);
+  const travelRecap = useGame((s) => s.travelRecap);
   const setScreen = useGame((s) => s.setScreen);
   const startScene = useGame((s) => s.startScene);
   const party = useGame((s) => s.party);
@@ -144,6 +146,9 @@ export function CampaignView() {
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}
+        {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
+            le trajet (jamais par-dessus le combat/un dialogue). */}
+        {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
         {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
         {mode === 'battle' && battle && <ActionBar />}
         {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). */}

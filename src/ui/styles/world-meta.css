@@ -191,3 +191,12 @@
 .interlude-amount input { width: 90px; }
 .interlude-recap { max-width: min(560px, 94vw); }
 .interlude-recap-list { text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; margin: 10px 0; padding-left: 18px; }
+
+/* Récapitulatif de voyage (audit M4) */
+.travel-recap { max-width: min(560px, 94vw); }
+.travel-recap-route { margin: 4px 0 10px; font-size: 14px; }
+.travel-recap-days { text-align: left; margin: 0 0 10px; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; max-height: 40vh; overflow-y: auto; }
+.travel-recap-days > li::marker { content: 'Jour ' counter(list-item) ' — '; color: var(--gold); font-weight: 700; }
+.travel-recap-day { font-weight: 600; }
+.travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
+.travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
