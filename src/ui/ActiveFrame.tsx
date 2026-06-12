@@ -35,7 +35,7 @@ export function ActiveFrame({ c, ring, isHero, actAvail, actMax, moveLeft, moveM
     <div className="aframe">
       {isHero && <Notches kind="action" vertical value={actAvail} max={actMax} spend={spendAction} title={`Action : ${actAvail}/${actMax}`} />}
       <div className="af-mid">
-        <PortraitTile c={c} ring={ring} size={72} showPv hideStates team={isHero ? 'ally' : 'enemy'} title={title} />
+        <PortraitTile c={c} ring={ring} variant="vital" size="lg" team={isHero ? 'ally' : 'enemy'} title={title} />
         <Notches kind="adv" value={Math.min(c.advantage, ADVANTAGE_CAP)} max={ADVANTAGE_CAP} gain={gainAdv} title={`Avantage : ${c.advantage}/${ADVANTAGE_CAP}`} />
       </div>
       {isHero && <Notches kind="move" vertical value={moveLeft} max={moveMax} spend={spendMove} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />}

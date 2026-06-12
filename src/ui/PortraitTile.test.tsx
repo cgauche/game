@@ -25,13 +25,31 @@ describe('PortraitTile', () => {
     expect(html).toContain('#e74c3c'); // hpColor critique
   });
 
-  it('PV chiffrés sur la jauge seulement si showPv (cartouche ptile-pv)', () => {
+  it('PV chiffrés : héros à partir de md ; jamais en sm ni pour un ennemi (jauge seule)', () => {
     const c = base();
     c.wounds = { current: 11, max: 11 };
-    const withPv = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" showPv />);
-    expect(withPv).toContain('ptile-pv');
-    expect(withPv).toContain('11/11');
-    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('ptile-pv');
+    const heroMd = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" size="md" />);
+    expect(heroMd).toContain('ptile-pv');
+    expect(heroMd).toContain('11/11');
+    // sm (frise) : illisible → jauge seule
+    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" size="sm" />)).not.toContain('ptile-pv');
+    // ennemi : PB exacts réservés à l'Inspection — ni cartouche, ni fuite par le title
+    const foe = { ...base(), kind: 'enemy' } as Combatant;
+    foe.wounds = { current: 9, max: 11 };
+    const foeMd = renderToStaticMarkup(<PortraitTile c={foe} ring="#c0392b" size="md" />);
+    expect(foeMd).not.toContain('ptile-pv');
+    expect(foeMd).not.toContain('9/11');
+  });
+
+  it('variantes : vital = jauge sans états ; identity = portrait seul', () => {
+    const c = base();
+    c.conditions = [{ name: 'Sonné', value: 1 }] as Combatant['conditions'];
+    const vital = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" variant="vital" />);
+    expect(vital).toContain('ptile-gauge');
+    expect(vital).not.toContain('ptile-states');
+    const identity = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" variant="identity" />);
+    expect(identity).not.toContain('ptile-gauge');
+    expect(identity).not.toContain('ptile-states');
   });
 
   it('fond d’équipe : classe team-ally / team-enemy selon `team`', () => {
@@ -40,7 +58,7 @@ describe('PortraitTile', () => {
     expect(renderToStaticMarkup(<PortraitTile c={c} ring="#c0392b" team="enemy" />)).toContain('team-enemy');
   });
 
-  it('≤ 4 états visibles puis chevron ▾', () => {
+  it('≤ 4 états visibles puis chevron ▾ (variante full)', () => {
     const c = base();
     c.conditions = [
       { name: 'Sonné', value: 1 }, { name: 'À Terre', value: 1 }, { name: 'Aveuglé', value: 1 },
@@ -55,7 +73,7 @@ describe('PortraitTile', () => {
     expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('▾');
   });
 
-  it('KO : croix + classe ko ; actif : classe active + caret', () => {
+  it('KO : croix + classe ko ; actif : classe active + caret ; selected : classe sel', () => {
     const c = base();
     c.wounds = { current: 0, max: 12 };
     const ko = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
@@ -65,5 +83,14 @@ describe('PortraitTile', () => {
     const act = renderToStaticMarkup(<PortraitTile c={c2} ring="#4f8fe0" active />);
     expect(act).toContain('active');
     expect(act).toContain('▼');
+    expect(renderToStaticMarkup(<PortraitTile c={c2} ring="#4f8fe0" selected />)).toContain('sel');
+  });
+
+  it('le nom n’est JAMAIS rendu visible — il vit dans title/aria-label', () => {
+    const c = base();
+    const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
+    expect(html).toContain('title="Gunnar"');
+    expect(html).toContain('aria-label="Gunnar"');
+    expect(html.replace(/(title|aria-label)="Gunnar"/g, '')).not.toContain('Gunnar');
   });
 });

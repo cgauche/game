@@ -45,7 +45,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}
                 team={isHero ? 'ally' : 'enemy'}
-                size={44}
+                variant="full"
+                size="sm"
                 active={!p.over && i === p.turn}
                 onClick={p.onInspect ? () => p.onInspect!(id) : undefined}
                 title={p.targeting ? `${c.name} — cibler` : p.onInspect ? `${c.name} — inspecter` : c.name}

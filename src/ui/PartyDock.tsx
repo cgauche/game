@@ -23,9 +23,9 @@ export function PartyDock({ heroes, activeId, targeting, onOpen }: {
           c={c}
           ring={HERO_RING[idx % HERO_RING.length]}
           team="ally"
-          size={56}
+          variant="full"
+          size="md"
           active={c.id === activeId}
-          showPv
           onClick={() => onOpen(c.id)}
           title={targeting ? `${c.name} — cibler` : `${c.name} — fiche du personnage`}
         />

@@ -4,50 +4,61 @@ import { StateChips } from './StateChips';
 import type { Combatant } from '../engine/types';
 
 /**
- * Tuile-portrait compacte et UNIFIÉE (HUD façon BG3) — la SEULE façon d'afficher « portrait + vie ».
- * Réutilisée par le dock d'équipe (haut), la frise d'initiative (gauche) et le cadre du combattant
- * actif (barre d'action). Affichage cohérent partout :
- *  - cadre = couleur d'identité/équipe (`ring`), forme pleine/tirets (R9 daltonisme) via RigPortrait ;
- *  - FOND d'équipe (`team`) : vert allié / rouge ennemi derrière le portrait (indice secondaire) ;
- *  - JAUGE DE VIE HORIZONTALE en bas (comme tous les autres écrans), PV chiffrés dessus (option) ;
- *  - unité ACTIVE mise en évidence : portrait AGRANDI + liseré or + caret ▼ ;
- *  - états en colonne à droite (max N + « ▾ » en débordement).
- * Pur à props (testable en SSR), aucune lecture du store.
+ * Tuile-portrait compacte et UNIFIÉE — la SEULE façon d'afficher un personnage (HUD, modales,
+ * pickers, écrans). L'API est volontairement fermée : 3 variantes × 5 tailles, AUCUN booléen
+ * d'affichage (la soupe showPv/showGauge/hideStates est ce qui avait fait diverger les écrans).
+ *  - `full`     : portrait + jauge + pastilles d'États (HUD, médecin, inspection) ;
+ *  - `vital`    : portrait + jauge, sans États (sujet de modale, cibles) ;
+ *  - `identity` : portrait seul (butin, ready-check, lignes de jet, marchand).
+ * Règles dérivées (arbitrées 2026-06-12) :
+ *  - PV chiffrés : HÉROS uniquement (ennemi/PNJ = jauge seule, les PB exacts restent à
+ *    l'Inspection) et à partir de `md` (illisible en dessous) ;
+ *  - le NOM n'est jamais affiché — il vit dans `title`/`aria-label` (a11y) et dans la prose ;
+ *  - cadre = couleur d'identité/équipe (`ring`), fond d'équipe (`team`), KO grisé ✕,
+ *    unité ACTIVE agrandie + liseré or + caret ▼, `selected` = tuile-radio des pickers.
+ * Pur à props (testable en SSR), aucune lecture du store — voir CharFrame pour le wrapper connecté.
  */
+export type CharVariant = 'full' | 'vital' | 'identity';
+export type CharSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+/** Côté de la vignette en px par taille (xs = lignes de jet, sm = frise, md = dock/modales,
+ *  lg = cadre actif/inspection, xl = fiche). */
+export const CHAR_SIZE_PX: Record<CharSize, number> = { xs: 28, sm: 44, md: 56, lg: 72, xl: 112 };
+
 export interface PortraitTileProps {
   c: Combatant;
   /** Couleur du cadre : teinte d'équipe (frise) ou couleur d'identité du héros (dock). */
   ring: string;
-  /** Côté de la vignette en px (dock 56, frise 44, actif 72). L'unité active est agrandie (~×1.28). */
-  size?: number;
-  /** Unité active : portrait agrandi + liseré or + caret ▼. */
+  variant?: CharVariant;
+  size?: CharSize;
+  /** Unité active (HUD) : portrait agrandi ~×1.28 + liseré or + caret ▼. */
   active?: boolean;
-  /** PV chiffrés sur la jauge. */
-  showPv?: boolean;
-  /** Jauge de vie horizontale (bas du portrait). */
-  showGauge?: boolean;
+  /** Tuile-radio d'un picker : accentuée comme choix courant. */
+  selected?: boolean;
   /** Fond d'équipe derrière le portrait (vert allié / rouge ennemi). */
   team?: 'ally' | 'enemy';
   maxStates?: number;
-  /** Ne pas rendre les pastilles d'États ici (ex. ActiveFrame les pose À DROITE de la jauge). */
-  hideStates?: boolean;
   onClick?: () => void;
   title?: string;
 }
 
-export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = true, team, maxStates = 4, hideStates, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, team, maxStates = 4, onClick, title }: PortraitTileProps) {
+  const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
+  const showGauge = variant !== 'identity';
+  const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
-  const s = active ? Math.round(size * 1.28) : size;
+  const s = active ? Math.round(px * 1.28) : px;
   return (
     <div className="ptile-wrap">
       <button
         type="button"
-        className={`ptile ${active ? 'active' : ''} ${ko ? 'ko' : ''} ${team ? `team-${team}` : ''}`}
+        className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${ko ? 'ko' : ''} ${team ? `team-${team}` : ''}`}
         style={{ width: s }}
         onClick={onClick}
         title={title ?? c.name}
+        aria-label={title ?? c.name}
       >
         {active && <i className="ptile-caret">▼</i>}
         <span className="ptile-face" style={{ width: s, height: s }}>
@@ -55,13 +66,13 @@ export function PortraitTile({ c, ring, size = 56, active, showPv, showGauge = t
           {ko && <span className="ko-cross">✕</span>}
         </span>
         {showGauge && (
-          <span className="ptile-gauge" title={`Blessures : ${c.wounds.current}/${c.wounds.max}`}>
+          <span className="ptile-gauge" title={showPv ? `Blessures : ${c.wounds.current}/${c.wounds.max}` : 'Blessures'}>
             <b style={{ width: `${Math.round(ratio * 100)}%`, background: hpColor(ratio) }} />
             {showPv && <span className="ptile-pv">{c.dead ? '☠️' : `${c.wounds.current}/${c.wounds.max}`}</span>}
           </span>
         )}
       </button>
-      {!hideStates && <StateChips c={c} max={maxStates} />}
+      {variant === 'full' && <StateChips c={c} max={maxStates} />}
     </div>
   );
 }

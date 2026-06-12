@@ -63,7 +63,6 @@ const VARIANT_CLASS = { roll: ' roll-modal', test: ' test-modal', plain: '' } as
 export function Modal({
   title,
   subject,
-  subjectPv = false,
   variant = 'roll',
   className,
   onClose,
@@ -71,9 +70,8 @@ export function Modal({
   children,
 }: {
   title: ReactNode;
-  /** Combattant concerné → portrait + nom en bandeau (omis si absent). */
+  /** Combattant concerné → tuile-portrait en bandeau (omis si absent). */
   subject?: Combatant | null;
-  subjectPv?: boolean;
   variant?: 'roll' | 'test' | 'plain';
   className?: string;
   /** Échap = ce callback (l'équivalent du bouton Fermer/Annuler visible). Absent → modale
@@ -95,7 +93,7 @@ export function Modal({
         onClick={backdropClose ? (e) => e.stopPropagation() : undefined}
       >
         <h3>{title}</h3>
-        {subject && <ModalSubject c={subject} pv={subjectPv} />}
+        {subject && <ModalSubject c={subject} />}
         {children}
       </div>
     </div>

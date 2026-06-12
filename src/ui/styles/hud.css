@@ -47,6 +47,11 @@
   box-shadow: 0 0 12px rgba(255, 224, 102, 0.55);
   z-index: 1;
 }
+/* Tuile-radio d'un picker (cible de soin, répartition…) : le choix courant, liseré or sans halo. */
+.ptile.sel {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+}
 .ptile.ko .rig-portrait {
   filter: grayscale(0.9);
   opacity: 0.6;
@@ -356,17 +361,14 @@
   min-width: 240px;
 }
 
-/* Bandeau « sujet » des modales (R10 généralisé) : portrait + nom du combattant concerné,
-   pour qu'on sache TOUJOURS à qui une modale (Critique/Maladresse/Colère/Déviation…) s'applique. */
+/* Bandeau « sujet » des modales (R10 généralisé) : la tuile-portrait unifiée du combattant
+   concerné, pour qu'on sache TOUJOURS à qui une modale (Critique/Maladresse/Colère…) s'applique. */
 .modal-subject {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   margin: 4px 0 10px;
-}
-.modal-subject strong {
-  font-size: 14px;
 }
 
 /* ── Monnaie colorée par dénomination (LDB 57) : or / argent / cuivre ── */
@@ -407,7 +409,6 @@
 .heal-pick.active { border-color: var(--gold); outline: 1px solid var(--gold); }
 .heal-pick-name { font-size: 12px; font-weight: 600; }
 .heal-pick-pv { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.modal-subject .ms-pv { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }

@@ -1,17 +1,16 @@
-import { TeamPortrait } from './CombatantBadge';
+import { CharFrame } from './CharFrame';
 import type { Combatant } from '../engine/types';
 
 /**
- * Bandeau « sujet » d'une modale : portrait + nom (+ PV optionnel) du combattant concerné.
- * Brique PARTAGÉE (R10 généralisé) — « on sait toujours à qui une modale s'applique » : Critique,
- * Maladresse, Colère, Déviation, Soin, Psychologie, Rencontre… Une seule source pour ce motif.
+ * Bandeau « sujet » d'une modale : la tuile-portrait unifiée (variante `vital` — jauge, sans nom)
+ * du combattant concerné. Brique PARTAGÉE (R10 généralisé) — « on sait toujours à qui une modale
+ * s'applique » : Critique, Maladresse, Colère, Soin, Psychologie… Le nom vit dans la prose de la
+ * modale et dans le `title`, jamais ici.
  */
-export function ModalSubject({ c, size = 38, pv = false }: { c: Combatant; size?: number; pv?: boolean }) {
+export function ModalSubject({ c }: { c: Combatant }) {
   return (
     <div className="modal-subject">
-      <TeamPortrait combatant={c} size={size} />
-      <strong>{c.name}</strong>
-      {pv && <span className="ms-pv">{c.wounds.current}/{c.wounds.max} PB</span>}
+      <CharFrame c={c} variant="vital" size="md" />
     </div>
   );
 }

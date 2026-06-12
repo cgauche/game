@@ -72,7 +72,7 @@ export function HealModal() {
             <strong>{ph.healerName}</strong> opère <strong>{ph.targetName}</strong>{' '}
             <span className="rm-weapon">(cumuler {cible} DR · Intermédiaire +0)</span>
           </p>
-          {target && <ModalSubject c={target} size={40} pv />}
+          {target && <ModalSubject c={target} />}
           {!started && targetPicker}
           {!started && wnds.length > 1 && (
             <div className="heal-target-pick">
@@ -128,7 +128,7 @@ export function HealModal() {
       }
       extra={
         <>
-          {target && <ModalSubject c={target} pv />}
+          {target && <ModalSubject c={target} />}
           {targetPicker}
         </>
       }

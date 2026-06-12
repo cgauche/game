@@ -19,7 +19,7 @@ export function FateSaveModal() {
   const fate = hero.fate ?? 0;
 
   return (
-    <Modal title={`Le Destin de ${hero.name}`} subject={hero} subjectPv variant="test">
+    <Modal title="☄️ Le Destin" subject={hero} variant="test">
       <p className="rm-log">
         {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
         (il en reste {fate})
