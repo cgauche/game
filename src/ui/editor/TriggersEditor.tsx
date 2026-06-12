@@ -10,17 +10,20 @@ export function TriggersEditor({
   triggers,
   encounters,
   dialogues,
+  ctxExtra,
   onSave,
   onClose,
 }: {
   triggers: Trigger[];
   encounters: EncounterDef[];
   dialogues: Dialogue[];
+  /** Selects guidés (M9) : marchands de la scène + scènes du projet. */
+  ctxExtra?: Pick<Ctx, 'merchants' | 'scenes'>;
   onSave: (t: Trigger[]) => void;
   onClose: () => void;
 }) {
   const [list, setList] = useState<Trigger[]>(() => JSON.parse(JSON.stringify(triggers)));
-  const ctx: Ctx = { encounters, dialogues };
+  const ctx: Ctx = { encounters, dialogues, ...ctxExtra };
   const upd = (i: number, patch: Partial<Trigger>) => setList(list.map((t, j) => (j === i ? { ...t, ...patch } : t)));
 
   // Cadre partagé <Modal> ; pas de onClose (champs de saisie → fermeture explicite seulement).

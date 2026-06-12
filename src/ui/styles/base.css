@@ -529,3 +529,11 @@ h3 {
   border-color: var(--gold);
   color: var(--gold);
 }
+
+/* Fallback des écrans lazy (Suspense) : centré et charté, pas un coin d'écran nu. */
+.lazy-fallback {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  gap: 8px; color: var(--muted); font-size: 15px; letter-spacing: 0.4px;
+}
+.lazy-fallback span { color: var(--gold); animation: lazy-pulse 1.2s ease-in-out infinite; }
+@keyframes lazy-pulse { 50% { opacity: 0.35; } }

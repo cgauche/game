@@ -744,6 +744,9 @@ export interface GameState {
   closeWorldMap: () => void;
   /** Voyage en cours/interrompu (progression km — « Reprendre le voyage » après une embuscade). */
   travelPlan: import('./travelFlow').TravelPlan | null;
+  /** Récapitulatif du dernier segment de voyage (audit M4) — modale à l'arrivée/interruption. */
+  travelRecap: import('./travelFlow').TravelRecap | null;
+  dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
   startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
@@ -760,6 +763,7 @@ export const useGame = create<GameState>((set, get) => ({
   worldMap: campaignWorldMap,
   worldMapOpen: false,
   travelPlan: null,
+  travelRecap: null,
   party: [],
   scene: null,
   mode: 'exploration',
@@ -3429,6 +3433,7 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
+  dismissTravelRecap: () => set({ travelRecap: null }),
 }));
 
 // Exposition DEV-ONLY du store pour le pilotage en vérification navigateur (Playwright/Puppeteer) :

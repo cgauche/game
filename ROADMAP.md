@@ -1233,6 +1233,35 @@ L'arène passe de 14 petites scènes (~15×11, 13 effets utilisés, 0 bâtiment,
   sortie d'intérieur par la porte, contrats, carte valide, garde-fous économie/XP/auberge)
   + scénario 🧪 `18-arene` (recette au Bourg).
 
+## ✅ Jalon 8.8 — Audit « POC → produit » des modules récents *(2026-06-12 — demande utilisateur « modules POC inutilisables »)*
+
+Audit navigateur systématique (Playwright + `__wfrp`, grille B/M/m dans **`docs/audit-poc-modules.md`**)
+des modules livrés aux jalons 1.6→8.7, puis correction par lots (1 lot = suite verte + recette + commit) :
+
+- **Lot 1 — Interlude/Activités** (le vrai POC : saisie du libellé EXACT — « Épée » n'existe pas) :
+  sélecteurs catalogue purs et testés (`craftCatalog`/`learnableTalents`/`orderCatalog`,
+  `engine/activities`), coûts affichés AVANT (matériaux ¼, DR+difficulté, PX+tuteur), phase
+  « Événements » racontée, banque lisible (¼/½/Tout + payouts), clôture récapitulative confirmée.
+  Pré-jet réparé sur les modales Activité ET Corruption (« 0 = 0 »).
+- **Lot 2 — Voyage** : `TravelRecap` jour par jour (fatigue/péripéties/nuits) en modale à
+  l'arrivée/interruption/surcharge ; « Continuer le voyage » ré-ouvre la carte (multi-étapes).
+- **Lot 3 — Magie/corruption** : audit seul (ciblage ZdE, imparfaites, mutations vérifiés en jeu) —
+  RAS hors pré-jet ci-dessus.
+- **Lot 4 — Coop** : l'interlude se joue à plusieurs (INTERLUDE_INTENTS + possession par héros/dépôt,
+  UI verrouillée 🎮, clôture hôte seul, modale d'Activité à l'arbitre) ; carte du monde en
+  consultation chez l'invité. **Bug GÉNÉRAL trouvé et corrigé** : `onClick={onConfirm}` faisait fuir
+  l'événement React dans les args d'intent (JSON circulaire → intent PERDU en silence) — tous les
+  « Appliquer » d'invité étaient muets ; fix RollFlowShell + `sanitizeIntentArgs` testé.
+- **Lot 5 — Éditeur** : selects guidés (sorts en optgroups, scènes du projet + points d'entrée,
+  entités marchandes) sur learnSpell/transition/openMerchant via `effectCtxOf` ; boucle
+  Enregistrer→publier→« Mes campagnes »→jouer rejouée.
+
+Vérifiés sans action : Marchand (produit, 360px), Sauvegarde (aller-retour), handshake coop.
+Recette finale : Arène de bout en bout (combat→butin→voyage interrompu→reprise→interlude→save/load),
+0 erreur console partout. Suite 2 940 → **2 968 tests**.
+
+---
+
 ## 🎯 Jalon 9 — Refonte UI/UX mobile/PC & charte graphique *(ajouté 2026-06-11)*
 
 Beaucoup d'écrans sont des POC hétérogènes. Objectif : **tous les écrans** (éditeur compris —

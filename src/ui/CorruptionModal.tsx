@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { corruptionGain, EXPOSURE_LABELS } from '../engine/corruption';
+import { testValue } from '../engine/skills';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -26,6 +27,9 @@ export function CorruptionModal() {
   const pool = battle?.combatants ?? party;
   const hero = pool.find((c) => c.id === pc.heroId);
   const rolled = pc.roll != null;
+  // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
+  // AVANT le jet (même parité que les autres flux RollFlowShell).
+  const base = hero ? testValue(hero, pc.skill) : 0;
   const gain = rolled ? corruptionGain(pc.level, !!pc.success, pc.sl ?? 0) : 0;
   const outcomeText =
     gain === 0
@@ -43,8 +47,8 @@ export function CorruptionModal() {
       }
       rolled={rolled}
       onRoll={roll}
-      breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, pc.target ?? 0, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }) : undefined}
-      pending={testPending(`Test de ${pc.skill}`, pc.target ?? 0, pc.target)}
+      breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
+      pending={testPending(`Test de ${pc.skill}`, base, undefined, 'intermediaire')}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pc.heroId)} combatants={pool} />}
       fortune={hero?.fortune ?? 0}
       freeReroll={freeRerollOf(hero)}

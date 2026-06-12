@@ -11,16 +11,19 @@ import { EffectList, Ctx } from './EffectList';
 export function DialogueEditor({
   dialogues,
   encounters,
+  ctxExtra,
   onSave,
   onClose,
 }: {
   dialogues: Dialogue[];
   encounters: EncounterDef[];
+  /** Selects guidés (M9) : marchands de la scène + scènes du projet. */
+  ctxExtra?: Pick<Ctx, 'merchants' | 'scenes'>;
   onSave: (d: Dialogue[]) => void;
   onClose: () => void;
 }) {
   const [list, setList] = useState<Dialogue[]>(() => JSON.parse(JSON.stringify(dialogues)));
-  const ctx: Ctx = { encounters, dialogues: list };
+  const ctx: Ctx = { encounters, dialogues: list, ...ctxExtra };
 
   const updDlg = (di: number, patch: Partial<Dialogue>) => setList(list.map((d, i) => (i === di ? { ...d, ...patch } : d)));
   const updNode = (di: number, ni: number, patch: Partial<DialogueNode>) =>

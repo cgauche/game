@@ -16,6 +16,7 @@ import { buildingObj } from '../../gameIso/BuildingSprite';
 import { perimeterTiles, defaultDoor } from '../../state/buildings';
 import { BuildingFeature, Trigger, EncounterDef } from '../../state/scene';
 import { ViewControls } from '../ViewControls';
+import { effectCtxOf } from './EffectList';
 import { TriggersEditor } from './TriggersEditor';
 import { DialogueEditor } from './DialogueEditor';
 import { EncountersEditor } from './EncountersEditor';
@@ -815,6 +816,7 @@ export function Editor() {
           triggers={scene.triggers}
           encounters={scene.encounters}
           dialogues={scene.dialogues}
+          ctxExtra={effectCtxOf(scene, otherScenes)}
           onSave={(t) => setScene({ ...scene, triggers: t })}
           onClose={() => setTrigOpen(false)}
         />
@@ -824,6 +826,7 @@ export function Editor() {
         <DialogueEditor
           dialogues={scene.dialogues}
           encounters={scene.encounters}
+          ctxExtra={effectCtxOf(scene, otherScenes)}
           onSave={(d) => setScene({ ...scene, dialogues: d })}
           onClose={() => setDlgOpen(false)}
         />
@@ -834,6 +837,7 @@ export function Editor() {
           encounters={scene.encounters}
           creatures={enemyCreatures}
           dialogues={scene.dialogues}
+          ctxExtra={effectCtxOf(scene, otherScenes)}
           onSave={(e) => setScene({ ...scene, encounters: e })}
           onClose={() => setEncOpen(false)}
         />

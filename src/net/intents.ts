@@ -2,8 +2,10 @@
  * Allowlist des actions de store qu'un INVITÉ peut demander (intents) — périmètre : LE COMBAT
  * (arbitrage utilisateur V1 : « pour le moment on ne gère que la partie combat » ;
  * l'exploration est un miroir de l'hôte) + la COMPOSITION DU GROUPE (chaque joueur remplit
- * les emplacements que l'hôte lui a attribués). Tout le reste (sauvegarde, voyage, marchand,
- * interlude, éditeur…) est refusé par l'hôte.
+ * les emplacements que l'hôte lui a attribués) + les ACTIVITÉS D'INTERLUDE de SES héros
+ * (audit POC→produit M7 : « Entre deux aventures » est par nature individuel — chaque joueur
+ * mène les Activités de ses personnages ; ouvrir/CLORE l'interlude reste l'hôte). Tout le
+ * reste (sauvegarde, voyage, marchand, éditeur…) est refusé par l'hôte.
  *
  * La liste est VOLONTAIREMENT explicite (pas de regex sur les noms d'actions) : ajouter une
  * action réseau = un choix conscient ici. Le test `intents.test.ts` vérifie que chaque nom
@@ -62,5 +64,33 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
  *  L'hôte injecte le siège autoritaire dans `partyAddHero` (netFlow) — jamais celui de l'invité. */
 export const PARTY_INTENTS: ReadonlySet<string> = new Set(['partyAddHero', 'partyRemoveHero']);
 
+/** Activités d'interlude (LDB 23) : chacune vise un héros (1er argument ou pending/dépôt) —
+ *  l'hôte valide la possession dans `intentAllowedFor`. `startInterlude`/`interludeEnd`
+ *  restent HORS allowlist (l'hôte seul ouvre et clôt la période). */
+export const INTERLUDE_INTENTS: ReadonlySet<string> = new Set([
+  'interludeRevenus', 'interludeCraftStart', 'interludeCraftRoll', 'interludeLearn',
+  'interludeOrder', 'interludeBank', 'interludeWithdraw',
+  'activityRoll', 'activityReroll', 'activityBonusSL', 'activityDarkPact',
+  'activityConfirm', 'activityCancel',
+]);
+
 /** Allowlist complète côté hôte / interception côté invité. */
-export const GUEST_INTENTS: ReadonlySet<string> = new Set([...COMBAT_INTENTS, ...PARTY_INTENTS]);
+export const GUEST_INTENTS: ReadonlySet<string> = new Set([...COMBAT_INTENTS, ...PARTY_INTENTS, ...INTERLUDE_INTENTS]);
+
+/** Args JSON-sûrs pour un intent : les handlers React passent parfois l'ÉVÉNEMENT en argument
+ *  (`onClick={action}`) — circulaire, il ferait échouer la sérialisation et PERDRAIT l'intent
+ *  (bug trouvé à l'audit coop : « Appliquer » d'invité muet). On TRONQUE la queue non
+ *  sérialisable (l'événement est toujours en dernier) sans toucher aux vrais arguments. */
+export function sanitizeIntentArgs(args: unknown[]): unknown[] {
+  const jsonSafe = (v: unknown) => {
+    try {
+      JSON.stringify(v);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const out = [...args];
+  while (out.length && (!jsonSafe(out[out.length - 1]) || typeof out[out.length - 1] === 'function')) out.pop();
+  return out;
+}

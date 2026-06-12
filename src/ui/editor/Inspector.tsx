@@ -11,7 +11,7 @@ import { perimeterTiles, defaultDoor } from '../../state/buildings';
 import { MERCHANTS } from '../../state/merchants/index';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { ParamFields } from './ParamFields';
-import { EffectList } from './EffectList';
+import { EffectList, effectCtxOf } from './EffectList';
 import { EntityListPanel } from './EntityListPanel';
 import { Modal } from '../Modal';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
@@ -553,7 +553,7 @@ export function Inspector({
                       <EffectList
                         effects={sel.interact.effects}
                         onChange={(eff) => updateSel({ interact: { ...sel.interact!, effects: eff } })}
-                        ctx={{ encounters: scene.encounters, dialogues: scene.dialogues }}
+                        ctx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes) }}
                       />
                     </div>
                   </>

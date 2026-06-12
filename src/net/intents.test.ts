@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { useGame } from '../state/store';
-import { GUEST_INTENTS, PARTY_INTENTS } from './intents';
+import { GUEST_INTENTS, PARTY_INTENTS, INTERLUDE_INTENTS, sanitizeIntentArgs } from './intents';
 
 describe('allowlist coop (net/intents)', () => {
   it('chaque intent correspond à une action existante du store', () => {
@@ -27,5 +27,24 @@ describe('allowlist coop (net/intents)', () => {
       'startScene', 'setParty', 'grantXp', 'seedRng', 'netAssignSlot', 'netAssign']) {
       expect(GUEST_INTENTS.has(forbidden), forbidden).toBe(false);
     }
+  });
+});
+
+describe('sanitizeIntentArgs — l’événement React ne part pas sur le réseau (audit coop)', () => {
+  it('tronque la queue non sérialisable (événement circulaire, fonction) sans toucher aux vrais args', () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular; // un SyntheticEvent est circulaire (nativeEvent/target)
+    expect(sanitizeIntentArgs(['h2', 'stash', 120, circular])).toEqual(['h2', 'stash', 120]);
+    expect(sanitizeIntentArgs([circular])).toEqual([]);
+    expect(sanitizeIntentArgs([() => {}])).toEqual([]);
+    expect(sanitizeIntentArgs(['h1', { x: 1 }])).toEqual(['h1', { x: 1 }]);
+  });
+});
+
+describe('Activités d’interlude allowlistées (audit M7) — l’ouverture/clôture reste à l’hôte', () => {
+  it('les activités par héros et le flux de jet sont permis à l’invité', () => {
+    for (const name of INTERLUDE_INTENTS) expect(GUEST_INTENTS.has(name), name).toBe(true);
+    expect(INTERLUDE_INTENTS.has('interludeRevenus')).toBe(true);
+    expect(INTERLUDE_INTENTS.has('activityConfirm')).toBe(true);
   });
 });

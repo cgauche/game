@@ -37,6 +37,28 @@ import { d10, d100 } from '../engine/dice';
 type Get = () => GameState;
 type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
 
+/** Une journée du récapitulatif de voyage (audit M4) : progression + ce qui s'y est passé. */
+export interface TravelRecapDay {
+  kmFrom: number;
+  kmTo: number;
+  hours: number;
+  /** Fatigue, marche forcée, péripéties… (les mêmes lignes que le journal). */
+  lines: string[];
+}
+
+/** Récapitulatif d'un segment de voyage — la résolution étant SYNCHRONE (l'horloge saute en
+ *  bloc), le joueur n'en voyait rien hors journal (audit M4) : modale à l'arrivée, à
+ *  l'interruption (péripétie) et à l'arrêt (surcharge). */
+export interface TravelRecap {
+  fromLabel: string;
+  toLabel: string;
+  mode: TravelMode;
+  status: 'arrived' | 'interrupted' | 'stalled';
+  km: number;
+  kmDone: number;
+  days: TravelRecapDay[];
+}
+
 /** Voyage en cours / interrompu (persiste pour « Reprendre le voyage »). */
 export interface TravelPlan {
   routeId: string;
@@ -104,7 +126,7 @@ export function startTravel(
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
     classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
   };
-  set({ travelPlan: plan, worldMapOpen: false });
+  set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
   log(get, set, [`— En route vers ${to.label} (${route.km} km, ${TRAVEL_MODE_LABEL[mode].toLowerCase()}) —`]);
   runTravelDays(get, set);
 }
@@ -113,7 +135,7 @@ export function startTravel(
 export function resumeTravel(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || get().battle) return;
-  set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false });
+  set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
   runTravelDays(get, set);
 }
@@ -122,6 +144,19 @@ export function resumeTravel(get: Get, set: Set): void {
 function runTravelDays(get: Get, set: Set): void {
   const worldMap = get().worldMap!;
   const base = baseHoursPerDay(worldMap);
+  // Récapitulatif du SEGMENT (audit M4) — depuis le départ, ou depuis la reprise.
+  const plan0 = get().travelPlan;
+  const recap: TravelRecap | null = plan0 ? {
+    fromLabel: placeById(worldMap, plan0.fromPlaceId)?.label ?? '?',
+    toLabel: placeById(worldMap, plan0.toPlaceId)?.label ?? '?',
+    mode: plan0.mode, status: 'arrived', km: plan0.km, kmDone: plan0.kmDone, days: [],
+  } : null;
+  const finishRecap = (status: TravelRecap['status']) => {
+    if (!recap) return;
+    recap.status = status;
+    recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
+    set({ travelRecap: { ...recap, days: [...recap.days] } });
+  };
   let guard = 0;
   while (true) {
     if (guard++ > 400) break; // garde-fou (durée d'année) — un trajet ne dure jamais autant
@@ -137,6 +172,7 @@ function runTravelDays(get: Get, set: Set): void {
     if (kmh <= 0) {
       set({ travelPlan: { ...plan, interrupted: true } });
       log(get, set, ['Le groupe est trop chargé pour avancer — le voyage s’arrête là (alléger les sacs, puis reprendre).']);
+      finishRecap('stalled');
       return;
     }
 
@@ -145,6 +181,7 @@ function runTravelDays(get: Get, set: Set): void {
     if (plan.km - plan.kmDone < 1e-9) {
       set({ travelPlan: null });
       log(get, set, [`— Arrivée à ${to.label} —`]);
+      finishRecap('arrived');
       get().transitionTo(to.scene, to.entry);
       return;
     }
@@ -158,6 +195,8 @@ function runTravelDays(get: Get, set: Set): void {
     const kmDone = Math.min(plan.km, plan.kmDone + hoursToday * kmh);
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const arrived = plan.km - kmDone < 1e-9;
+    const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [] };
+    recap?.days.push(recapDay);
 
     // Fin de journée de route À PIED : fatigue d'Encombrement (p.295) + marche forcée (l.224).
     const dayLines: string[] = [];
@@ -170,13 +209,15 @@ function runTravelDays(get: Get, set: Set): void {
       if (dayLines.length) set({ party: [...party] });
     }
     log(get, set, dayLines);
+    recapDay.lines.push(...dayLines);
 
     // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage.
-    if (resolvePerils(get, set, route, to.label)) return;
+    if (resolvePerils(get, set, route, to.label, recapDay.lines)) { finishRecap('interrupted'); return; }
 
     if (arrived) {
       set({ travelPlan: null });
       log(get, set, [`— Arrivée à ${to.label} —`]);
+      finishRecap('arrived');
       get().transitionTo(to.scene, to.entry);
       return;
     }
@@ -186,19 +227,21 @@ function runTravelDays(get: Get, set: Set): void {
 }
 
 /** Tire et résout les péripéties du jour. Renvoie `true` si le voyage est INTERROMPU. */
-function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string): boolean {
+function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, recapLines?: string[]): boolean {
   const before = { sceneId: get().scene?.id, inBattle: !!get().battle };
   const interrupted = () => !!get().battle || get().scene?.id !== before.sceneId;
+  // Journal ET récapitulatif du jour (audit M4) : les mêmes lignes, une seule écriture.
+  const tell = (lines: string[]) => { log(get, set, lines); recapLines?.push(...lines); };
   const markInterrupted = () => {
     const plan = get().travelPlan;
     if (plan) set({ travelPlan: { ...plan, interrupted: true } });
-    log(get, set, [`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`]);
+    tell([`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`]);
   };
 
   // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur).
   for (const peril of route.perils ?? []) {
     if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
-    log(get, set, [`Péripétie : ${peril.label}`]);
+    tell([`Péripétie : ${peril.label}`]);
     applyEffects(get, set, peril.effects);
     if (interrupted()) { markInterrupted(); return true; }
   }
@@ -207,7 +250,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string): 
   const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if (die >= 1 && d10(battleRng()) === die) {
     const entry = PERIPETIES[d10(battleRng()) - 1];
-    log(get, set, [`Péripétie de voyage (🎲 ${entry.roll}) — ${entry.label} : ${entry.text}`]);
+    tell([`Péripétie de voyage (🎲 ${entry.roll}) — ${entry.label} : ${entry.text}`]);
     const party = get().party;
     switch (entry.kind) {
       case 'reposant': {
@@ -220,22 +263,22 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string): 
           if (n > 0) { removeCondition(h, 'Exténué', n); lines.push(`${h.name} n’est plus Exténué.`); }
         }
         set({ party: [...party] });
-        log(get, set, lines);
+        tell(lines);
         break;
       }
       case 'ereintant': {
         // Test de Survie en extérieur Accessible (+20), sinon +1 jour de retard et +1 Exténué chacun.
         const best = partyBest(party, 'Survie en extérieur');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
-        if (!t?.success) applyEreintant(get, set);
+        if (t && best) tell([`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
+        if (!t?.success) recapLines?.push(...applyEreintant(get, set));
         break;
       }
       case 'attaque': {
         // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route).
         const best = partyBest(party, 'Perception');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
-        if (t && best) log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : 'ÉCHEC — embuscade !'}`]);
+        if (t && best) tell([`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : 'ÉCHEC — embuscade !'}`]);
         if (route.ambush?.scene && route.ambush.encounter) {
           get().transitionTo(route.ambush.scene, route.ambush.entry);
           get().startCombat(route.ambush.encounter, undefined, { noSurprise: !!t?.success });
@@ -251,8 +294,9 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string): 
   return false;
 }
 
-/** « Voyage éreintant » raté : +1 jour de retard (le groupe erre) et +1 Exténué chacun. */
-function applyEreintant(get: Get, set: Set): void {
+/** « Voyage éreintant » raté : +1 jour de retard (le groupe erre) et +1 Exténué chacun.
+ *  Renvoie les lignes journalisées (reprises par le récapitulatif de voyage). */
+function applyEreintant(get: Get, set: Set): string[] {
   const party = get().party;
   const lines: string[] = [];
   for (const h of party) {
@@ -265,4 +309,5 @@ function applyEreintant(get: Get, set: Set): void {
   runDailyUpkeep(get, set);
   lines.push('Le détour coûte une journée entière au groupe.');
   log(get, set, lines);
+  return lines;
 }

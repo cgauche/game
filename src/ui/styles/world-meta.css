@@ -170,3 +170,34 @@
 .interlude-craft summary, .interlude-bank summary { cursor: pointer; }
 .interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
 .interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }
+
+/* Refonte POC→produit (audit 2026-06-11) : phase Événements, volets d'Activité à sélecteurs */
+.interlude-phase-hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.interlude-fx { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.interlude-fx-chip {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  border: 1px solid var(--border); color: var(--ink, inherit);
+}
+.interlude-hint { font-weight: normal; font-size: 11px; color: var(--muted); }
+.interlude-pane { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
+.interlude-search { max-width: 280px; }
+.interlude-select { width: 100%; font-size: 13px; }
+.interlude-select optgroup { font-style: normal; font-weight: 700; }
+.interlude-detail { font-size: 12px; color: var(--muted); margin: 0; }
+.interlude-detail b { color: inherit; }
+.interlude-blocked { font-size: 12px; color: #e36c6c; margin: 0; }
+.interlude-pane .btn-primary { align-self: flex-start; }
+.interlude-amount input { width: 90px; }
+.interlude-recap { max-width: min(560px, 94vw); }
+.interlude-recap-list { text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; margin: 10px 0; padding-left: 18px; }
+
+/* Récapitulatif de voyage (audit M4) */
+.travel-recap { max-width: min(560px, 94vw); }
+.travel-recap-route { margin: 4px 0 10px; font-size: 14px; }
+.travel-recap-days { text-align: left; margin: 0 0 10px; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; max-height: 40vh; overflow-y: auto; }
+.travel-recap-days > li::marker { content: 'Jour ' counter(list-item) ' — '; color: var(--gold); font-weight: 700; }
+.travel-recap-day { font-weight: 600; }
+.travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
+.travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
+.interlude-owner { color: var(--gold2); }

@@ -16,7 +16,7 @@ import type { GameState } from './store';
 import { useGame } from './store';
 import { snapshotSave } from './saves';
 import { HostSession, GuestSession } from '../net/session';
-import { GUEST_INTENTS } from '../net/intents';
+import { GUEST_INTENTS, sanitizeIntentArgs } from '../net/intents';
 import { intentAllowedFor } from './netOwnership';
 import { encodeSignal, decodeSignal } from '../net/codes';
 import {
@@ -93,7 +93,7 @@ function interceptGuestActions(): void {
     const fn = state[name];
     if (typeof fn !== 'function') continue;
     originals[name] = fn as (...args: unknown[]) => unknown;
-    wrapped[name] = (...args: unknown[]) => guest?.sendIntent(name, args);
+    wrapped[name] = (...args: unknown[]) => guest?.sendIntent(name, sanitizeIntentArgs(args));
   }
   useGame.setState(wrapped as Partial<GameState>);
 }

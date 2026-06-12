@@ -3,18 +3,43 @@
  * Un effet = une action de gameplay (journal, flag, document, objet, argent,
  * combat, transition, dialogue, test de compétence avec branches…).
  */
-import { Effect, EncounterDef, Dialogue } from '../../state/scene';
+import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
+import { spells } from '../../data';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
 
+/** Sorts de la base groupés pour le select de `learnSpell` (audit M9 : fini « libellé exact »). */
+const SPELL_GROUPS: [string, string[]][] = (() => {
+  const m = new Map<string, string[]>();
+  for (const sp of spells) {
+    const g = `${sp.type ?? 'Sorts'}${sp.subType ? ` — ${sp.subType}` : ''}`;
+    if (!m.has(g)) m.set(g, []);
+    m.get(g)!.push(sp.label);
+  }
+  for (const list of m.values()) list.sort((a, b) => a.localeCompare(b));
+  return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
+})();
+
+/** Contexte « projet » des selects guidés (M9), depuis la scène active + les autres scènes. */
+export function effectCtxOf(scene: Scene, otherScenes: Scene[] = []): Pick<Ctx, 'merchants' | 'scenes'> {
+  return {
+    merchants: scene.entities.filter((e) => e.merchant).map((e) => ({ id: e.id, label: e.label })),
+    scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
+  };
+}
+
 export interface Ctx {
   encounters: EncounterDef[];
   dialogues: Dialogue[];
+  /** Entités marchandes de la scène (audit M9 : select au lieu d'un id à taper). Absent = input. */
+  merchants?: { id: string; label?: string }[];
+  /** Scènes du projet (id + nom + points d'entrée) pour les transitions. Absent = input. */
+  scenes?: { id: string; nom?: string; entries: string[] }[];
 }
 
 const EFFECT_TYPES: Effect['type'][] = [
@@ -253,7 +278,16 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
         )}
         {effect.type === 'learnSpell' && (
           <>
-            <input placeholder="Libellé exact du sort (spells.json), ex. Fléchette" value={e.spell ?? ''} onChange={(ev) => upd({ spell: ev.target.value })} />
+            <select value={e.spell ?? ''} onChange={(ev) => upd({ spell: ev.target.value })}>
+              <option value="">— sort de la base —</option>
+              {SPELL_GROUPS.map(([g, list]) => (
+                <optgroup key={g} label={g}>
+                  {list.map((sp) => (
+                    <option key={sp} value={sp}>{sp}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
             <input placeholder="id du héros (vide = premier au Talent éligible)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
         )}
@@ -292,12 +326,32 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
             ))}
           </select>
         )}
-        {effect.type === 'transition' && (
+        {effect.type === 'transition' && (ctx.scenes ? (
+          <>
+            <select value={e.scene ?? ''} onChange={(ev) => upd({ scene: ev.target.value, entry: '' })}>
+              <option value="">— scène du projet —</option>
+              {ctx.scenes.map((sc) => (
+                <option key={sc.id} value={sc.id}>{sc.nom ? `${sc.nom} (${sc.id})` : sc.id}</option>
+              ))}
+            </select>
+            {(() => {
+              const entries = ctx.scenes!.find((sc) => sc.id === e.scene)?.entries ?? [];
+              return entries.length ? (
+                <select value={e.entry ?? ''} onChange={(ev) => upd({ entry: ev.target.value })}>
+                  <option value="">— point d'entrée : départ par défaut —</option>
+                  {entries.map((en) => (
+                    <option key={en} value={en}>{en}</option>
+                  ))}
+                </select>
+              ) : null;
+            })()}
+          </>
+        ) : (
           <>
             <input placeholder="id de la scène cible" value={e.scene ?? ''} onChange={(ev) => upd({ scene: ev.target.value })} />
             <input placeholder="point d’entrée (optionnel)" value={e.entry ?? ''} onChange={(ev) => upd({ entry: ev.target.value })} />
           </>
-        )}
+        ))}
         {effect.type === 'startDialogue' && (
           <select value={e.dialogue ?? ''} onChange={(ev) => upd({ dialogue: ev.target.value })}>
             <option value="">— dialogue —</option>
@@ -308,9 +362,20 @@ function EffectEditor({ effect, onChange, onRemove, ctx }: { effect: Effect; onC
             ))}
           </select>
         )}
-        {effect.type === 'openMerchant' && (
+        {effect.type === 'openMerchant' && (ctx.merchants ? (
+          ctx.merchants.length ? (
+            <select value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })}>
+              <option value="">— entité marchande de la scène —</option>
+              {ctx.merchants.map((mch) => (
+                <option key={mch.id} value={mch.id}>{mch.label ? `${mch.label} (${mch.id})` : mch.id}</option>
+              ))}
+            </select>
+          ) : (
+            <span className="branch-label">Aucune entité marchande dans la scène — donnez d'abord un archétype de marchand à un PNJ (Inspecteur).</span>
+          )
+        ) : (
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
-        )}
+        ))}
         {effect.type === 'medicalAid' && (
           <div className="test-fields">
             <div className="tf-row">

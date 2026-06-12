@@ -87,6 +87,9 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
   const effCtx = {
     encounters: scenes.flatMap((s) => s.encounters),
     dialogues: scenes.flatMap((s) => s.dialogues),
+    // Selects guidés (M9) : transitions de péripétie vers les scènes du projet (le marchand,
+    // lié à la scène COURANTE au moment du voyage, reste un id libre ici).
+    scenes: scenes.map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
   };
   const ambushScene = selRoute?.ambush?.scene ? scenes.find((s) => s.id === selRoute.ambush!.scene) : undefined;
 

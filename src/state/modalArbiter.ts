@@ -55,6 +55,9 @@ export const MODAL_DEFS = [
   { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId },
   { key: 'attack', when: (s) => !!s.pendingAttack, owner: (s) => s.pendingAttack?.attackerId },
   { key: 'test', when: (s) => !!s.pendingTest, owner: (s) => s.pendingTest?.actorId },
+  // Jet d'Activité d'interlude (LDB 23) — hors combat, mais même règle coop : le PROPRIÉTAIRE
+  // du héros joue, les autres voient « X joue… » (audit M8 : fini la modale chez tout le monde).
+  { key: 'activity', when: (s) => !!s.pendingActivity, owner: (s) => s.pendingActivity?.heroId },
   { key: 'corruption', when: (s) => !!s.pendingCorruption, owner: (s) => s.pendingCorruption?.heroId },
 ] as const satisfies readonly ModalDef[];
 

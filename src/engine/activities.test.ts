@@ -77,3 +77,66 @@ describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l
     expect(toBrass(statusIncome('or', 5, seq([]), 'astoundingFail'))).toBe(0);
   });
 });
+
+// ── Catalogues UI (sélecteurs alimentés par la donnée — audit POC→produit) ──────────────────
+import { craftSpecOf, craftCatalog, learnableTalents, orderCatalog, tutorCostRange, metierOf } from './activities';
+import { createHero } from './character';
+import { makeRNG } from './dice';
+import { findTrapping } from '../data';
+
+describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
+  it('matériaux = ¼ du prix (ch.23 l.66), gamme par pièce dominante', () => {
+    const dague = findTrapping('Dague')!;
+    const spec = craftSpecOf(dague);
+    expect(spec.materialsBrass).toBe(Math.max(1, Math.floor(spec.priceBrass / 4)));
+    expect(['bronze', 'argent', 'or']).toContain(spec.tier);
+  });
+  it('Disponibilité ND/absente → Rare prudent (arbitrage documenté)', () => {
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Rare');
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: null }).avail).toBe('Rare');
+  });
+});
+
+describe('craftCatalog / orderCatalog', () => {
+  it('le catalogue d’Artisanat ne liste que des objets à prix chiffré, avec cible de Test', () => {
+    const cat = craftCatalog();
+    expect(cat.length).toBeGreaterThan(100);
+    for (const o of cat.slice(0, 20)) {
+      expect(o.priceBrass).toBeGreaterThan(0);
+      expect(o.dr).toBeGreaterThanOrEqual(1);
+    }
+    // « Épée » n’existe pas : le sélecteur évite le piège du libellé deviné (audit B1).
+    expect(cat.some((o) => o.label === 'Épée bâtarde')).toBe(true);
+  });
+  it('Passer commande : objets Exotiques/jamais en vente, payables (prix > 0)', () => {
+    const cat = orderCatalog();
+    expect(cat.length).toBeGreaterThan(0);
+    for (const o of cat) expect(o.priceBrass).toBeGreaterThan(0);
+    expect(cat.every((o) => { const t = findTrapping(o.label)!; return t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null; })).toBe(true);
+  });
+});
+
+describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.23 l.59)', () => {
+  const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'T', rng: makeRNG(7) });
+  it('exclut les talents de la Carrière courante (eux passent par l’Avancement)', () => {
+    const labels = learnableTalents(hero).map((t) => t.label);
+    // « Guerrier né » est un talent du Soldat Niveau 1 (Recrue) → exclu de l'Apprentissage.
+    expect(labels).not.toContain('Guerrier né');
+    expect(labels).not.toContain('Infatigable');
+    expect(labels).toContain('Chanceux'); // hors carrière Soldat
+  });
+  it('coût PX de la prochaine acquisition + fourchette tuteur 2d10 pa/100 PX', () => {
+    const lt = learnableTalents(hero);
+    const fresh = lt.find((x) => !hero.talents.some((t) => t.name === x.label))!;
+    expect(fresh.xpCost).toBe(100); // 1re acquisition
+    // Chanceux est déjà pris 1× (tirage de création) → la 2e acquisition coûte 200 PX.
+    expect(lt.find((x) => x.label === 'Chanceux')!.xpCost).toBe(200);
+    expect(fresh.tutorMinBrass).toBe(tutorCostRange(fresh.xpCost).minBrass);
+    expect(tutorCostRange(250)).toEqual({ minBrass: 3 * 2 * 12, maxBrass: 3 * 20 * 12 }); // 3 tranches
+  });
+  it('metierOf : Compétence Métier avec avances seulement', () => {
+    expect(metierOf(hero)).toBeUndefined();
+    hero.skills.push({ name: 'Métier (Forgeron)', characteristic: 'Dex', advances: 5 });
+    expect(metierOf(hero)?.name).toBe('Métier (Forgeron)');
+  });
+});
