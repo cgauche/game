@@ -121,11 +121,12 @@ export class Room {
   async webSocketClose(ws: WebSocket): Promise<void> {
     const att = ws.deserializeAttachment() as Attachment | null;
     // Un WS « remplacé » (reprise) ferme APRÈS l'arrivée du nouveau : ne signaler l'absence
-    // que s'il ne reste AUCUNE connexion pour ce rôle/siège (sinon faux `gone` → fausse grace).
+    // que s'il ne reste AUCUNE AUTRE connexion pour ce rôle/siège (sinon faux `gone` → fausse
+    // grace). Le socket en train de se fermer est encore listé par getWebSockets : l'exclure.
     if (att?.role === 'host') {
-      if (!this.hostSocket()) this.broadcastGuests({ evt: 'host-down' });
+      if (!this.hostSocket(ws)) this.broadcastGuests({ evt: 'host-down' });
     } else if (att?.role === 'guest') {
-      if (!this.guestSocket(att.seat)) this.hostSocket()?.send(JSON.stringify({ evt: 'gone', seat: att.seat }));
+      if (!this.guestSocket(att.seat, ws)) this.hostSocket()?.send(JSON.stringify({ evt: 'gone', seat: att.seat }));
     }
   }
 
@@ -138,11 +139,11 @@ export class Room {
     await this.state.storage.deleteAll();
   }
 
-  private hostSocket(): WebSocket | null {
-    return this.state.getWebSockets('host')[0] ?? null;
+  private hostSocket(except?: WebSocket): WebSocket | null {
+    return this.state.getWebSockets('host').find((w) => w !== except) ?? null;
   }
-  private guestSocket(seat: number): WebSocket | null {
-    return this.state.getWebSockets(`seat-${seat}`)[0] ?? null;
+  private guestSocket(seat: number, except?: WebSocket): WebSocket | null {
+    return this.state.getWebSockets(`seat-${seat}`).find((w) => w !== except) ?? null;
   }
   private broadcastGuests(env: unknown): void {
     for (const ws of this.state.getWebSockets()) {
