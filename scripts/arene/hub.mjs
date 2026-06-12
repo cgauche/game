@@ -135,7 +135,17 @@ const dlgMedecin = {
         { text: '⚕️ Voir les remèdes et prothèses.', effects: [{ type: 'openMerchant', entityId: 'medecin' }] },
         {
           text: '🔪 Passer sur la table (actes payants).',
-          effects: [{ type: 'medicalAid', acts: [{ act: 'surgery', cost: { silver: 6 } }], skill: 55, intBonus: 4, entityId: 'medecin' }],
+          // « Une simple visite coûte 4-6 pistoles pour une aide médicale » (LDB 75 l.34) — tarif PAR ACTE.
+          effects: [{
+            type: 'medicalAid',
+            acts: [
+              { act: 'wounds', cost: { silver: 4 } },
+              { act: 'bleed', cost: { silver: 4 } },
+              { act: 'trauma', cost: { silver: 5 } },
+              { act: 'surgery', cost: { silver: 6 } },
+            ],
+            skill: 55, intBonus: 4, entityId: 'medecin',
+          }],
         },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
       ],

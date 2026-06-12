@@ -1421,7 +1421,7 @@ export const useGame = create<GameState>((set, get) => ({
     } else {
       log = ph.mode === 'bleed'
         ? resolveBleedHeal(target, ph.sl, ph.success)
-        : ph.success ? treatTrauma(target, ph.sl) : [`${target.name} : le soin du trauma échoue.`]; // mode 'trauma'
+        : treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
     }
     finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
   },

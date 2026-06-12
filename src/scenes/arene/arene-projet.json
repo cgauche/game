@@ -2144,6 +2144,24 @@
            "type": "medicalAid",
            "acts": [
             {
+             "act": "wounds",
+             "cost": {
+              "silver": 4
+             }
+            },
+            {
+             "act": "bleed",
+             "cost": {
+              "silver": 4
+             }
+            },
+            {
+             "act": "trauma",
+             "cost": {
+              "silver": 5
+             }
+            },
+            {
              "act": "surgery",
              "cost": {
               "silver": 6
@@ -19831,6 +19849,7 @@
      "pied",
      "diligence"
     ],
+    "inns": true,
     "perils": [
      {
       "label": "Charrette de réfugiés",
@@ -19846,8 +19865,7 @@
     "ambush": {
      "scene": "arene-route-embuscade",
      "encounter": "enc-embuscade"
-    },
-    "inns": true
+    }
    },
    {
     "id": "route-tourbiere",

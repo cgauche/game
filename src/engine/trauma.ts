@@ -279,38 +279,41 @@ export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
 }
 
 /** Le personnage a-t-il un trauma que la Compétence Guérison peut encore traiter ?
- *  Déchirure non encore accélérée, OU fracture encore dans la fenêtre de pose d'une semaine (l.302). */
+ *  Déchirure ou fracture dans sa fenêtre de pose (l.302), dont le jet unique (l.317) n'a pas été employé. */
 export function hasTreatableTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some(eligibleForHeal);
 }
 
 function eligibleForHeal(t: Trauma): boolean {
-  if (t.recoveryDays == null) return false;
-  if (t.kind === 'dechirure') return !t.healAccelerated;
+  // Un seul jet de Guérison par trauma (l.317 : « une seule fois ») — l'échec consomme aussi le jet.
+  if (t.recoveryDays == null || t.healAccelerated) return false;
+  if (t.kind === 'dechirure') return true;
   // fracture : la pose (bandage) doit intervenir dans la SEMAINE suivant la fracture (l.302).
   return t.kind === 'fracture' && !t.fractureSet && t.recoveryTotal != null && t.recoveryDays > t.recoveryTotal - 7;
 }
 
 /**
- * Soin assisté d'un trauma par la Compétence Guérison (LDB 18) :
- *  - déchirure (l.317) → raccourcit la convalescence de **1 jour + 1 par DR**, une seule fois ;
+ * Soin assisté d'un trauma par la Compétence Guérison (LDB 18). Le JET est consommé, réussi ou
+ * non (l.317 : « vous ne pouvez obtenir cet avantage qu'une seule fois ») — sans quoi, sans MJ,
+ * on relancerait gratuitement jusqu'au succès. Sur un succès :
+ *  - déchirure (l.317) → raccourcit la convalescence de **1 jour + 1 par DR** ;
  *  - fracture dans la semaine (l.302) → « réduite » (bandée) ⟹ pas de Test de Résistance de fin.
  * La déchirure majeure n'est PAS accélérée (l.326 : la Guérison ne fait qu'informer — laissé en dette).
  */
-export function treatTrauma(c: Combatant, dr: number): string[] {
+export function treatTrauma(c: Combatant, dr: number, success = true): string[] {
   const t = (c.traumas ?? []).find(eligibleForHeal);
   if (!t) return [`${c.name} : aucun trauma que la Guérison puisse traiter pour l'instant.`];
+  t.healAccelerated = true; // ce trauma a eu son jet de Guérison (l.317)
+  if (!success) return [`${c.name} : le traitement de ${t.label} échoue — le mal suivra son cours.`];
   if (t.kind === 'fracture') {
     t.fractureSet = true;
     return [`${c.name} : la fracture (${t.location}) est réduite et bandée — elle ressoudera proprement.`];
   }
   if (t.severity === 'majeur') { // déchirure majeure : Guérison sans effet d'accélération (l.326)
-    t.healAccelerated = true;
     return [`${c.name} : la Guérison ne peut qu'accompagner la déchirure majeure (rémission en deux temps, l.326).`];
   }
   const cut = 1 + Math.max(0, dr);
   t.recoveryDays = Math.max(0, (t.recoveryDays ?? 0) - cut);
-  t.healAccelerated = true;
   return [`${c.name} : la Guérison raccourcit la convalescence de ${t.label} de ${cut} jour(s) (reste ${t.recoveryDays}).`];
 }
 

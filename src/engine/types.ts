@@ -247,7 +247,8 @@ export interface Trauma {
   /** Type / sévérité, pour la convalescence à étapes (déchirure : Guérison accélère ; fracture : Test de fin). */
   kind?: 'dechirure' | 'fracture';
   severity?: 'mineur' | 'majeur';
-  /** Accélération par la Compétence Guérison déjà appliquée (l.317 : −1 j −1/DR, une seule fois). */
+  /** La Compétence Guérison a déjà été EMPLOYÉE sur ce trauma — succès (l.317 : −1 j −1/DR, une
+   *  seule fois) comme échec : le jet est consommé, on ne relance pas jusqu'au succès. */
   healAccelerated?: boolean;
   /** Fracture « réduite » : bandée par un Test de Guérison dans la semaine (l.302) → pas de Test de Résistance de fin. */
   fractureSet?: boolean;

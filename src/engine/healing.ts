@@ -109,6 +109,9 @@ export function applyStopBleed(target: Combatant, dr: number): string[] {
  *  + Infection Mineure sur Échec Stupéfiant (DR ≤ −6, LDB 09). Partagée par le soin de combat, le
  *  médecin payant ET la chirurgie (bandage). Renvoie le journal + le nombre de PB rendus. */
 export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: number, success: boolean, rng: RNG): { log: string[]; healed: number } {
+  // « Un patient ne peut bénéficier que d'UN JET de Guérison après chaque rencontre » (LDB 09
+  // l.233) : le jet est consommé même raté — sans MJ, on relancerait gratuitement jusqu'au succès.
+  target.soinRencontreUtilise = true;
   const healed = healWoundsDelta(intBonus, sl, success);
   const log = applyHealWounds(target, healed);
   if (!success && sl <= -6) {

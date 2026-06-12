@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
+import { availableHealModes } from '../engine/healing';
 import { traumaFromKind } from '../engine/trauma';
 import { seedBattleRng } from './battleRng';
 
@@ -135,6 +136,37 @@ describe('Guérison — infirmerie (hors combat)', () => {
     const p = useGame.getState().party.find((c) => c.id === 'p')!;
     expect(p.traumas![0].recoveryDays).toBe(26 - (1 + 2)); // −1 jour −1/DR
     expect(p.traumas![0].healAccelerated).toBe(true);
+  });
+
+  it('mode trauma : un ÉCHEC consomme aussi le jet — la même déchirure ne se re-traite pas (LDB 18 l.317)', () => {
+    const doc = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], traumas: [traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'p' });
+    useGame.getState().medicAct('trauma');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: false, sl: -2 } });
+    useGame.getState().healConfirm();
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.traumas![0].recoveryDays).toBe(26); // aucun bénéfice…
+    expect(p.traumas![0].healAccelerated).toBe(true); // …mais le jet est consommé
+    expect(availableHealModes(p)).not.toContain('trauma'); // l'acte n'est plus proposé
+  });
+
+  it('soin de Blessures : un jet RATÉ consomme le soin de la rencontre (LDB 09 l.233 : « un jet »)', () => {
+    const doc = hero({ id: 'doc', skills: [{ name: 'Guérison', advances: 30, characteristic: 'Int' }] });
+    const al = hero({ id: 'al', name: 'Blessé', wounds: { current: 4, max: 12 }, skills: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'al' });
+    useGame.getState().medicAct('wounds');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: false, sl: -1 } }); // BI+DR ≥ 0 : pas de dégâts
+    useGame.getState().healConfirm();
+    const p = useGame.getState().party.find((c) => c.id === 'al')!;
+    expect(p.wounds.current).toBe(4); // rien gagné…
+    expect(p.soinRencontreUtilise).toBe(true); // …mais le patient a eu SON jet de Guérison
+    useGame.getState().medicAct('wounds'); // refusé : plus re-tentable cette rencontre
+    expect(useGame.getState().pendingHeal).toBeNull();
   });
 
   it('Guérison Échec Stupéfiant (DR ≤ −6) : le patient contracte une Infection Mineure (LDB 09-Compétences)', () => {

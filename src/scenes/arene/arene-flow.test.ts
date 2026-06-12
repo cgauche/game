@@ -133,13 +133,14 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
 const hub = project.find((s) => s.id === 'arene-hub')!;
 
 describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => {
-  it('les 3 actes payants (Guérison/hémorragie/Chirurgie) sont proposés entre Médecin (Bourg) et Frère (chapelle), tarifés 4-6 pa', () => {
+  it('les 4 actes payants (Guérison/hémorragie/déchirure/Chirurgie) sont tarifés 4-6 pa ; le Médecin (Bourg) les offre TOUS', () => {
     const chapelle = project.find((s) => s.id === 'arene-int-chapelle')!;
     const dlgs = [hub.dialogues.find((d) => d.id === 'dlg-medecin')!, chapelle.dialogues.find((d) => d.id === 'dlg-frere')!];
     const aids = dlgs.flatMap((d) => d.nodes.flatMap((n) => n.choices.flatMap((c) => (c.effects ?? []).filter((e) => e.type === 'medicalAid'))));
     const acts = aids.flatMap((e: any) => e.acts as { act: string; cost?: { silver?: number } }[]);
     expect(acts.every((a) => (a.cost?.silver ?? 0) >= 4 && (a.cost?.silver ?? 0) <= 6)).toBe(true); // 4-6 pistoles RAW
-    expect(new Set(acts.map((a) => a.act))).toEqual(new Set(['wounds', 'bleed', 'surgery']));
+    const medecin = aids.find((e: any) => e.entityId === 'medecin') as any;
+    expect(new Set(medecin.acts.map((a: { act: string }) => a.act))).toEqual(new Set(['wounds', 'bleed', 'trauma', 'surgery']));
   });
 
   it('medicalAid ouvre l’infirmerie du PNJ : nom/id viennent de l’entité (pas codés en dur), jamais dans le groupe', () => {
