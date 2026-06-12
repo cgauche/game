@@ -23,6 +23,7 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     return { b, hero: b.combatants.find((c) => c.kind === 'hero')!, enemy: b.combatants.find((c) => c.kind === 'enemy')! };

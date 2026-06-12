@@ -63,4 +63,5 @@ describe('battleClickEntity — tir refusé AVANT la modale', () => {
     useGame.getState().battleClickEntity('e-vu');
     expect(useGame.getState().battle?.preview).toMatchObject({ kind: 'attack', targetId: 'e-vu' });
   });
+
 });

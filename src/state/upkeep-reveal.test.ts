@@ -24,6 +24,7 @@ describe('Entretien de Round en révélation (store)', () => {
     vi.clearAllTimers();
     const st = useGame.getState();
     expect(st.pendingRoundStart?.round).toBe(1); // ouverture = pause du Round 1 : champ visible, IA gelée
+    expect(st.battle!.turn).toBe(-1); // PERSONNE n'est actif pendant la pause (confirmRoundStart posera le tour)
     expect(st.pendingReveals.find((r) => r.title === 'Initiative')).toBeUndefined(); // plus de modale d'Initiative
     expect(st.battle!.order.length).toBeGreaterThan(1); // l'ordre est posé (frise d'initiative (InitiativeStrip))
   });
@@ -34,6 +35,7 @@ describe('Entretien de Round en révélation (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;

@@ -25,6 +25,7 @@ describe('Souffle — délégation à l’attaque de zone du Trait (LDB 47 p.244
     useGame.setState({ party: [W] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     useGame.getState().seedRng(2);
     const b = useGame.getState().battle!;

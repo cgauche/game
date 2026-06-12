@@ -20,6 +20,7 @@ describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)',
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;

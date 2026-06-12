@@ -91,6 +91,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat — on pilote l'ordre nous-mêmes
 
     const b = useGame.getState().battle!;
@@ -280,6 +281,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [{ ...hero, conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'À Terre', value: 1 }] }] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const h = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
     expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(1); // persistant ré-importé
@@ -292,6 +294,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [a, { ...b, dead: true }] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const heroes = useGame.getState().battle!.combatants.filter((c) => c.kind === 'hero');
     expect(heroes.length).toBe(1);
@@ -303,6 +306,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
@@ -319,6 +323,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
@@ -334,6 +339,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
@@ -353,6 +359,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
@@ -386,6 +393,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance
@@ -397,8 +405,10 @@ describe('Boucle de jeu (store)', () => {
     let st = useGame.getState();
     expect(st.battle!.order[st.battle!.order.length - 1]).toBe(h.id); // héros repoussé en dernier ce Round
     expect(st.battle!.combatants.find((c) => c.id === h.id)!.actLastNextRound).toBeFalsy(); // flag purgé
-    // Franchir un 2e Round : l'ordre canonique est restauré (effet limité à 1 Round).
-    const b2 = st.battle!;
+    // Franchir un 2e Round : « Commencer le round 2 » d'abord (pendant la pause PERSONNE n'est
+    // actif et advanceTurn est inerte), puis fin du dernier tour → ordre canonique restauré.
+    useGame.getState().confirmRoundStart();
+    const b2 = useGame.getState().battle!;
     useGame.setState({ battle: { ...b2, turn: b2.order.length - 1 } });
     useGame.getState().battleEndTurn();
     st = useGame.getState();
@@ -410,6 +420,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     let b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
@@ -431,6 +442,7 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().party[0].items!.find((i) => i.name === witem.name)!.damageTaken).toBe(1);
     // (3) Combat suivant : l'usure est ré-importée (carry-in + recomputeLoadout).
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const h2 = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
     expect(h2.items!.find((i) => i.name === witem.name)!.damageTaken).toBe(1);
@@ -466,6 +478,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -493,6 +506,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [pretre] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
@@ -543,6 +557,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(2); // RNG de combat contrôlé : seed 2 ⇒ touche avec dégâts (cf. recherche)
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -604,6 +619,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -625,6 +641,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(4);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -662,6 +679,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -689,6 +707,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -723,6 +742,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     H.conditions.push({ name: 'Sonné', value: 1 });
@@ -741,6 +761,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers(); // purge le timer d'IA armé par startCombat → on pilote nous-mêmes l'ordre du tour
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -771,6 +792,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -791,6 +813,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(7);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -814,6 +837,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -834,6 +858,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -847,6 +872,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -879,6 +905,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -906,6 +933,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -938,6 +966,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -972,6 +1001,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(4);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -999,6 +1029,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(6);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -1019,6 +1050,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -1050,6 +1082,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemies = st.battle!.combatants.filter((c) => c.kind === 'enemy');
@@ -1080,6 +1113,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -1101,6 +1135,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -1129,6 +1164,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
@@ -1772,6 +1808,7 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(H.id);
@@ -2198,6 +2235,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance

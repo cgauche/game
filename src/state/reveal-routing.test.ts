@@ -63,6 +63,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingRoundStart: null });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
   });
 

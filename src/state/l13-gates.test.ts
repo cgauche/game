@@ -33,6 +33,7 @@ describe('L13 — gates & redirections', () => {
     useGame.setState({ party: [H, P] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     useGame.getState().seedRng(7);
     const b = useGame.getState().battle!;

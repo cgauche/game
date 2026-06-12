@@ -66,6 +66,7 @@ describe('Balayage en combat (store)', () => {
     useGame.setState({ party });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers(); // on pilote l'ordre nous-mêmes
     return useGame.getState().battle!;
   }

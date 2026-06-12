@@ -91,6 +91,7 @@ describe('Interlude — flux start/end', () => {
 
   it('en combat : refusé', () => {
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     useGame.getState().startInterlude(1);
     expect(useGame.getState().interlude).toBeNull();

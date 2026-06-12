@@ -26,6 +26,7 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;

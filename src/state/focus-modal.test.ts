@@ -25,6 +25,7 @@ describe('Focalisation en modale (store)', () => {
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
@@ -51,6 +52,7 @@ describe('Focalisation en modale (store)', () => {
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;

@@ -18,6 +18,7 @@ function setup() {
   useGame.setState({ party: [hero] });
   useGame.getState().startScene(testScene);
   useGame.getState().startCombat('enc-mutants');
+  useGame.getState().confirmRoundStart();
   const b = useGame.getState().battle!;
   const H = b.combatants.find((c) => c.kind === 'hero')!;
   // Éloigne tous les ennemis pour libérer la grille autour du héros (couloir y=10 libre).

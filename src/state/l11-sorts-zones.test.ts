@@ -22,6 +22,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     useGame.setState({ party: [W] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     useGame.getState().seedRng(5);
     const b = useGame.getState().battle!;

@@ -26,6 +26,7 @@ describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, vict
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
 
     const out = buildApi().killEnemies();

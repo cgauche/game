@@ -19,6 +19,7 @@ describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () =
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
     let st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
