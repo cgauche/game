@@ -14,6 +14,7 @@ export function TestScenariosScreen() {
     // Scénario multi-scènes / avec carte du monde (#T2) → chargé comme un projet ; sinon scène simple.
     if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
     else startScene(sc.scene);
+    if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
     if (sc.autoCombat) startCombat(sc.autoCombat);
     setScreen('campaign');
   };

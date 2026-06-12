@@ -613,7 +613,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Utilisez le couvert (tonneaux, caisses, murets) — et fouillez le râtelier avant d’avancer."
+   "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Utilisez le couvert (tonneaux, caisses, murets) — et fouillez le râtelier avant d’avancer.",
+   "rest": {}
   },
   {
    "id": "arene-hub",
@@ -2344,6 +2345,9 @@
      "x": 16,
      "y": 12
     }
+   },
+   "rest": {
+    "auberge": true
    }
   },
   {
@@ -2630,7 +2634,7 @@
          ]
         },
         {
-         "text": "🍲 Repas chaud pour le groupe — 4 pa (LDB p.302).",
+         "text": "🍲 Repas chaud pour le groupe — 4 pa.",
          "cost": {
           "silver": 4
          },
@@ -2645,20 +2649,11 @@
          ]
         },
         {
-         "text": "🛏️ Souper et dormir — gîte et couvert pour le groupe, 7 pa.",
-         "cost": {
-          "silver": 7
-         },
+         "text": "🛏️ Prendre des chambres pour la nuit.",
          "effects": [
           {
-           "type": "mealParty"
-          },
-          {
-           "type": "rest"
-          },
-          {
-           "type": "journal",
-           "text": "Ventres pleins et paillasses propres : le Trophée veille sur vos rêves jusqu’à l’aube."
+           "type": "rest",
+           "lodging": "auberge"
           }
          ]
         },
@@ -2771,6 +2766,9 @@
      "x": 6,
      "y": 7
     }
+   },
+   "rest": {
+    "auberge": true
    }
   },
   {
@@ -3137,7 +3135,8 @@
      "x": 5,
      "y": 8
     }
-   }
+   },
+   "rest": {}
   },
   {
    "id": "arene-zone2",
@@ -4014,7 +4013,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LES RUINES. Des gobelins nichent dans les chambres effondrées. On murmure qu’une salle au nord-est garde encore son trésor… et son gardien."
+   "startMessage": "LES RUINES. Des gobelins nichent dans les chambres effondrées. On murmure qu’une salle au nord-est garde encore son trésor… et son gardien.",
+   "rest": {}
   },
   {
    "id": "arene-zone3",
@@ -4837,7 +4837,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LES ÉGOUTS. Un canal d’eau croupie coupe le collecteur — deux passerelles de planches le franchissent. Retenez votre souffle : les miasmes rendent MALADE."
+   "startMessage": "LES ÉGOUTS. Un canal d’eau croupie coupe le collecteur — deux passerelles de planches le franchissent. Retenez votre souffle : les miasmes rendent MALADE.",
+   "rest": {}
   },
   {
    "id": "arene-zone4",
@@ -5735,7 +5736,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LE CHARNIER. Les vaincus de l’arène finissent ici… et n’y restent pas. Les morts SURGISSENT — attendez-vous à être surpris."
+   "startMessage": "LE CHARNIER. Les vaincus de l’arène finissent ici… et n’y restent pas. Les morts SURGISSENT — attendez-vous à être surpris.",
+   "rest": {}
   },
   {
    "id": "arene-zone5",
@@ -6528,7 +6530,8 @@
    ],
    "flags": {},
    "weather": "pluie",
-   "startMessage": "LES LICES, sous la pluie battante. Des cavaliers vous attendent — un destrier SELLÉ broute près de la barrière : enfourchez-le ! (Et fouillez le râtelier de lances.)"
+   "startMessage": "LES LICES, sous la pluie battante. Des cavaliers vous attendent — un destrier SELLÉ broute près de la barrière : enfourchez-le ! (Et fouillez le râtelier de lances.)",
+   "rest": {}
   },
   {
    "id": "arene-zone6",
@@ -7653,7 +7656,8 @@
    ],
    "flags": {},
    "weather": "brouillard",
-   "startMessage": "LE MARAIS, noyé de brouillard. La harde chasse en silence et l’eau cache pire encore. Restez groupés — l’embuscade est CERTAINE."
+   "startMessage": "LE MARAIS, noyé de brouillard. La harde chasse en silence et l’eau cache pire encore. Restez groupés — l’embuscade est CERTAINE.",
+   "rest": {}
   },
   {
    "id": "arene-zone7",
@@ -8646,7 +8650,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LE NID. Toiles, cocons… et un sifflement de VOUIVRE au fond. Les cocons cachent des trésors — et des morsures. Prudence en fouillant."
+   "startMessage": "LE NID. Toiles, cocons… et un sifflement de VOUIVRE au fond. Les cocons cachent des trésors — et des morsures. Prudence en fouillant.",
+   "rest": {}
   },
   {
    "id": "arene-zone8",
@@ -9495,7 +9500,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LA FOSSE. Des gouffres coupent l’arène en passes étroites — et un GLADIATEUR enchaîné combat à vos côtés : la harde a capturé le mauvais homme."
+   "startMessage": "LA FOSSE. Des gouffres coupent l’arène en passes étroites — et un GLADIATEUR enchaîné combat à vos côtés : la harde a capturé le mauvais homme.",
+   "rest": {}
   },
   {
    "id": "arene-zone9",
@@ -10489,7 +10495,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LA CAVERNE DU TROLL. Ça pue le rance et la chair faisandée. Au fond, une alcôve murée abrite le magot — et son NOUVEAU propriétaire."
+   "startMessage": "LA CAVERNE DU TROLL. Ça pue le rance et la chair faisandée. Au fond, une alcôve murée abrite le magot — et son NOUVEAU propriétaire.",
+   "rest": {}
   },
   {
    "id": "arene-zone10",
@@ -11708,7 +11715,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LE NID DE VERMINE. Les hommes-rats ont percé leurs terriers sous le vieux quartier. Une voix appelle depuis une CAGE — et mille yeux rouges vous regardent."
+   "startMessage": "LE NID DE VERMINE. Les hommes-rats ont percé leurs terriers sous le vieux quartier. Une voix appelle depuis une CAGE — et mille yeux rouges vous regardent.",
+   "rest": {}
   },
   {
    "id": "arene-zone11",
@@ -12785,7 +12793,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LE CERCLE MAUDIT. Le culte psalmodie autour de l’idole noire — leur CHAMANE tisse déjà ses sorts et l’air vous corrompt la moelle. Frappez vite."
+   "startMessage": "LE CERCLE MAUDIT. Le culte psalmodie autour de l’idole noire — leur CHAMANE tisse déjà ses sorts et l’air vous corrompt la moelle. Frappez vite.",
+   "rest": {}
   },
   {
    "id": "arene-zone12",
@@ -13754,7 +13763,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "LE SÉPULCRE. La porte se referme : il fera NUIT, quoi qu’en dise le soleil. Le seigneur des lieux apprécie les visites — ses gens hurlent déjà."
+   "startMessage": "LE SÉPULCRE. La porte se referme : il fera NUIT, quoi qu’en dise le soleil. Le seigneur des lieux apprécie les visites — ses gens hurlent déjà.",
+   "rest": {}
   },
   {
    "id": "arene-zone13",
@@ -15214,7 +15224,8 @@
     }
    ],
    "flags": {},
-   "startMessage": "L’ANTRE DU DRAGON. La chaleur racle la gorge, l’or scintille entre les coulées de lave. Le dragon DORT. On peut chiper une poignée d’or sans le réveiller… en théorie."
+   "startMessage": "L’ANTRE DU DRAGON. La chaleur racle la gorge, l’or scintille entre les coulées de lave. Le dragon DORT. On peut chiper une poignée d’or sans le réveiller… en théorie.",
+   "rest": {}
   },
   {
    "id": "arene-exp-foret",
@@ -19835,7 +19846,8 @@
     "ambush": {
      "scene": "arene-route-embuscade",
      "encounter": "enc-embuscade"
-    }
+    },
+    "inns": true
    },
    {
     "id": "route-tourbiere",

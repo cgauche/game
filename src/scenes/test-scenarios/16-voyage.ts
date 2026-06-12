@@ -7,10 +7,11 @@ import { arena } from './_shared';
 import type { TestScenario } from './_shared';
 
 /**
- * #T2 Voyage & Nourriture : carte du monde (3 lieux), voyage à pied (6 h/jour, nuits de camp,
- * rations consommées, faim RAW si on en manque), marche forcée, diligence payante, péripéties
- * d'auteur (embuscade gobeline → interruption + « Reprendre le voyage ») et table d10 RAW.
- * L'auberge du village vend le gîte ET le couvert (effets `rest` + `mealParty`).
+ * #T2 Voyage & Nourriture : carte du monde (3 lieux), voyage à pied (6 h/jour, HALTES de nuit —
+ * modale de Repos, campement ou relais d'auberge sur la grand-route), rations consommées, faim
+ * RAW si on en manque, marche forcée, diligence payante, péripéties d'auteur (embuscade gobeline
+ * → interruption + « Reprendre le voyage ») et table d10 RAW. L'auberge du village ouvre la
+ * modale de Repos (chambres/repas PAR HÉROS, prix RAW) ; le bouton 🌙 dort sur place.
  */
 function groupe(): Combatant[] {
   const erik = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Erik (test)', motivation: 'Test', rng: makeRNG(1501), id: 'erik' });
@@ -26,7 +27,9 @@ function groupe(): Combatant[] {
 const village = arena({ id: 'test-voyage-village', nom: 'Village de Weiler', w: 14, h: 9, heroStart: { x: 3, y: 4 } });
 village.startMessage =
   'Ouvrez la carte (🗺️ en haut à gauche) pour voyager : le hameau (24 km à pied, route peu sûre) ou le bourg ' +
-  '(30 km, diligence possible). L’aubergiste offre gîte et couvert (repas = faim remise à zéro).';
+  '(30 km, diligence, relais en chemin). L’aubergiste ou le bouton 🌙 ouvrent la nuit (chambres/repas par héros).';
+// L'offre de repos du village : l'auberge (la modale propose aussi la belle étoile).
+village.rest = { auberge: true };
 village.entities.push({ id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' });
 village.dialogues = [
   {
@@ -38,10 +41,10 @@ village.dialogues = [
         speaker: 'Aubergiste',
         text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
         choices: [
-          // « Repas, auberge » + « Chambre, commune » (LDB p.302) — prix d'auteur groupés ; le
-          // repas remet la faim à zéro (mealParty), la nuit applique le repos (rest).
-          { text: 'Repas chaud et une nuit (10 sous).', cost: { brass: 10 }, effects: [{ type: 'mealParty' }, { type: 'rest', days: 1 }] },
-          { text: 'Juste un repas (4 sous).', cost: { brass: 4 }, effects: [{ type: 'mealParty' }] },
+          // Nuit = MODALE DE REPOS (chambres/repas PAR HÉROS, prix RAW dans la modale).
+          { text: '🛏️ Prendre des chambres pour la nuit.', effects: [{ type: 'rest', lodging: 'auberge' }] },
+          // Repas de midi sans dormir (prix d'auteur) : remet la faim à zéro.
+          { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, effects: [{ type: 'mealParty' }] },
           { text: 'Une autre fois. (Partir)' },
         ],
       },
@@ -97,6 +100,7 @@ const carte: WorldMap = {
       km: 30,
       modes: ['pied', 'diligence'],
       perilDie: 0, // grand-route sûre : pas de tirage d10 (paramétrable par route)
+      inns: true, // relais de diligence : la halte de nuit propose l'auberge (modale de Repos)
     },
   ],
 };
@@ -106,10 +110,13 @@ export const scenario: TestScenario = {
   order: 15,
   icon: '🧭',
   title: 'Voyage & Nourriture',
-  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), faim RAW, péripéties + embuscade + reprise, repas d’auberge',
+  tests: 'carte du monde, voyage à pied/diligence (temps, rations, marche forcée), HALTES de nuit (modale de Repos — camp sur la piste, relais sur la grand-route), faim RAW, péripéties + embuscade + reprise, auberge/🌙 au village',
   partyNote: 'Erik (3 rations) & Greta (sans provisions)',
   makeParty: groupe,
   scene: village,
   extraScenes: [hameau, bourg, embuscade],
   worldMap: carte,
+  // De quoi payer la diligence (intérieur : 2 sc/km × 30 km × 2 passagers = 10 pa), l'auberge
+  // (chambre 10 pa pour 2 + repas 1 pa/tête) et plusieurs repas en chemin.
+  money: { gold: 2, silver: 10, brass: 0 },
 };

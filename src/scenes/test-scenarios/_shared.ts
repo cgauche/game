@@ -17,6 +17,8 @@ export interface TestScenario {
   extraScenes?: Scene[];
   /** Carte du monde du scénario (#T2 Voyage). */
   worldMap?: WorldMap;
+  /** Bourse de départ (le lancement écrase la richesse par défaut) — ex. payer la diligence. */
+  money?: { gold: number; silver: number; brass: number };
 }
 
 /** Arène dégagée + point de départ des héros (base des scénarios de combat direct). */

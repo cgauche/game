@@ -362,20 +362,16 @@ const dlgTaverne = {
       choices: [
         { text: '🧺 Voir le garde-manger (rations, vivres, pintes).', effects: [{ type: 'openMerchant', entityId: 'taverniere' }] },
         {
-          text: '🍲 Repas chaud pour le groupe — 4 pa (LDB p.302).',
+          // Repas de MIDI (sans dormir) : prix de groupe d'auteur — la nuit passe par la modale de Repos.
+          text: '🍲 Repas chaud pour le groupe — 4 pa.',
           cost: { silver: 4 },
           effects: [{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }],
         },
         {
-          // Gîte ET couvert : dormir sans souper affamerait le groupe pendant la nuit (Faim RAW) —
-          // l'auberge nourrit TOUJOURS ses dormeurs (repas du soir compris dans le prix).
-          text: '🛏️ Souper et dormir — gîte et couvert pour le groupe, 7 pa.',
-          cost: { silver: 7 },
-          effects: [
-            { type: 'mealParty' },
-            { type: 'rest' },
-            { type: 'journal', text: 'Ventres pleins et paillasses propres : le Trophée veille sur vos rêves jusqu’à l’aube.' },
-          ],
+          // Nuit au Trophée : la MODALE DE REPOS fait le reste (chambre/repas PAR HÉROS, prix RAW
+          // dans la modale — plus de forfait sur le choix de dialogue).
+          text: '🛏️ Prendre des chambres pour la nuit.',
+          effects: [{ type: 'rest', lodging: 'auberge' }],
         },
         { text: '👂 Écouter la salle.', next: 'rumeurs' },
         { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },

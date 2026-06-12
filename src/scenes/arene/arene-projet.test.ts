@@ -153,12 +153,22 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(ladder).toBeGreaterThanOrEqual(2500);
   });
 
-  it('AUBERGE : dormir au Trophée inclut le souper (gîte ET couvert — dormir n’affame jamais le groupe)', () => {
+  it('AUBERGE : dormir au Trophée ouvre la modale de Repos en contexte auberge (chambres/repas PAR HÉROS, prix RAW dans la modale)', () => {
     const taverne = project.find((s) => s.id === 'arene-int-taverne')!;
     const choices = taverne.dialogues.flatMap((d) => d.nodes.flatMap((n) => n.choices));
     const sleeps = choices.filter((c) => c.effects?.some((e) => e.type === 'rest'));
     expect(sleeps.length).toBeGreaterThanOrEqual(1);
-    for (const c of sleeps) expect(c.effects!.some((e) => e.type === 'mealParty'), 'rest accompagné de mealParty').toBe(true);
+    for (const c of sleeps) {
+      expect(c.cost, 'plus de forfait sur le choix — les prix vivent dans la modale').toBeUndefined();
+      expect(c.effects!.some((e) => e.type === 'rest' && (e as { lodging?: string }).lodging === 'auberge'), 'contexte auberge').toBe(true);
+    }
+    // L'offre de repos (bouton 🌙) : Bourg/taverne = auberge ; zones d'arène = repos interdit.
+    expect(taverne.rest?.auberge).toBe(true);
+    expect(project.find((s) => s.id === 'arene-hub')!.rest?.auberge).toBe(true);
+    const zone1 = project.find((s) => s.id === 'arene-zone1')!;
+    expect(!!zone1.rest && !zone1.rest.auberge && !zone1.rest.maison && !zone1.rest.camp, 'pas de bivouac dans l’arène').toBe(true);
+    // La grand-route de Felsbach a des relais : la halte de nuit du voyage propose l'auberge.
+    expect(doc.worldMap?.routes.find((r) => r.id === 'route-felsbach')?.inns).toBe(true);
   });
 
   it('BUTIN magique : au moins un giveTrapping avec qualités magiques NON identifiées (vitrine Évaluation)', () => {

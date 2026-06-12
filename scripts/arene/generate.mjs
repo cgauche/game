@@ -69,6 +69,7 @@ const worldMap = {
       b: 'village',
       km: 24,
       modes: ['pied', 'diligence'],
+      inns: true, // relais de diligence : la halte de nuit propose l'auberge (modale de Repos)
       perils: [
         {
           label: 'Charrette de réfugiés',
@@ -114,6 +115,18 @@ for (const s of scenes) {
   if (starts.length !== 1) throw new Error(`${s.id} : ${starts.length} heroStart (1 attendu)`);
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
+
+// Offre de REPOS par scène (bouton 🌙 — modale de Repos) : le Bourg et la taverne offrent
+// l'auberge ; chapelle et zones d'arène = repos interdit ; expéditions = camp (défaut, absent).
+const REST_OFFERS = {
+  'arene-hub': { auberge: true },
+  'arene-int-taverne': { auberge: true },
+  'arene-int-chapelle': {},
+};
+for (const s of scenes) {
+  if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
+  else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
+}
 
 const doc = { schema: 2, scenes, worldMap };
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');
