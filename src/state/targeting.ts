@@ -36,6 +36,9 @@ export type HoverTargeting =
       path?: { x: number; y: number }[];
       /** Nature de la manœuvre combinée (« Charge (+1 Avantage) », « Rejoindre + attaquer ») — info de décision. */
       note?: string;
+      /** Aperçu SYNTHÉTISÉ de la forme `battle.preview` — pour le clignotant des jauges
+       *  (`previewResourceDelta`) : MÊME source de coût/gain que le tap-1 tactile. */
+      preview: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     };
 
 /** Libellé de la compétence d'attaque : Corps à corps/Projectiles + famille d'arme si connue. */
@@ -81,6 +84,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       mod: pv.target - pv.base,
       // Dégâts d'un Projectile AVANT DR (evaluateMissile : sort + DR + BFM) — parité arme (Force incluse).
       dmg: dmg ? dmg.damage + bonus(effectiveChar(active, 'FM')) : null,
+      preview: { kind: 'attack', targetId: target.id }, // l'incantation consomme l'Action (jauges)
     };
   }
 
@@ -106,5 +110,9 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     dmg: p.dmg,
     path: plan.kind === 'attack' ? undefined : plan.path,
     note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
+    // Aperçu de la forme `battle.preview` (tap-1) : le clignotant des jauges lit le MÊME objet.
+    preview: plan.kind === 'attack'
+      ? { kind: 'attack', targetId: target.id }
+      : { kind: plan.kind, targetId: target.id, path: plan.path, dest: plan.dest, ...(plan.kind === 'moveAttack' ? { cost: plan.cost } : { adv: plan.adv }) },
   };
 }

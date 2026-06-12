@@ -278,6 +278,10 @@ export interface GameState {
   pendingCast: PendingCast | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
+  /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
+   *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
+   *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */
+  hoverDelta: { action: number; move: number; adv: number } | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
   /** Infirmerie ouverte (modale de soins persistante, hors combat — state/medicFlow). */
@@ -856,6 +860,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingAppraise: null,
   pendingAttack: null,
   enemyAim: null,
+  hoverDelta: null,
   pendingReload: null,
   pendingStateRecovery: null,
   pendingDefense: null,

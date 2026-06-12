@@ -957,13 +957,16 @@ export function previewResourceDelta(battle: BattleState | null): { action: numb
   const p = battle?.preview;
   if (!p) return { action: 0, move: 0, adv: 0 };
   // AUCUNE valeur de coût/gain n'est codée ici (anti-duplication — Action comme Mouvement comme Avantage) :
-  //  - Mouvement : lu sur `p.cost`, le MÊME coût que le commit consomme (`movementUsed += cost`).
+  //  - Mouvement : lu sur `p.cost`, le MÊME coût que le commit consomme (`movementUsed += cost`) ;
+  //                la CHARGE est une manœuvre PLEINE → tout le Mouvement (mountMovement, comme le commit).
   //  - Avantage  : lu sur `p.adv`, SOURCE UNIQUE `chargeAdvantage()` partagée par preview / commit / IA.
-  //  - Action    : DÉRIVÉE de la structure — une opération qui VISE un ennemi (`targetId`) est une
-  //                attaque → consomme l'unique Action (binaire `battle.acted`) ; Marche/Course non.
-  // Le Mouvement d'une Charge (portée de Course) est montré par le tracé sur la carte, pas la jauge.
-  const action = 'targetId' in p ? 1 : 0;
-  const move = p.kind === 'move' || p.kind === 'run' || p.kind === 'moveAttack' ? p.cost : 0;
+  //  - Action    : DÉRIVÉE de la structure — viser un ennemi (`targetId`) = attaque, et la COURSE
+  //                consomme aussi l'Action (LDB 15 l.79 — le commit passe par pendingRun).
+  const action = 'targetId' in p || p.kind === 'run' ? 1 : 0;
+  const active = battle?.combatants ? activeCombatant(battle) : undefined; // (les tests passent des battles minces)
+  const move = p.kind === 'move' || p.kind === 'run' || p.kind === 'moveAttack'
+    ? p.cost
+    : p.kind === 'charge' && battle && active ? mountMovement(battle, active) : 0;
   const adv = p.kind === 'charge' ? p.adv : 0;
   return { action, move, adv };
 }

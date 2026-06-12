@@ -47,7 +47,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
 import { hoverTargeting } from '../state/targeting';
 import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
@@ -296,6 +296,8 @@ export function IsoStage() {
     path?: { x: number; y: number }[];
     /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur ⛔ courte. */
     tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
+    /** Aperçu synthétisé (forme battle.preview) pour le clignotant des jauges (previewResourceDelta). */
+    preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     reticle: boolean;
   } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !hover) return null;
@@ -345,7 +347,7 @@ export function IsoStage() {
       const text = ht.reason === 'los' ? '⛔ pas de ligne de vue' : ht.reason === 'engaged' ? '⛔ Engagé — se désengager' : '⛔ hors de portée';
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
-    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, reticle: true };
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
   }, [hover, mode, battle, scene, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
@@ -358,6 +360,17 @@ export function IsoStage() {
     if (occ) return null; // une cible a sa propre visée (hoverAim)
     return movePreviewAt(useGame.getState, hover);
   }, [hover, mode, battle, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+
+  // Jauges EN DIRECT (clignotant de l'ActiveFrame) : le coût/gain (Action/Mouvement/Avantage) de
+  // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par
+  // la MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
+  useEffect(() => {
+    const pvLike = hoverAim?.preview ?? (hoverMove && hover ? { kind: hoverMove.kind, tile: { ...hover }, path: hoverMove.path, cost: hoverMove.cost } : null);
+    const delta = pvLike && battle ? previewResourceDelta({ ...battle, preview: pvLike as never }) : null;
+    const cur = useGame.getState().hoverDelta;
+    const same = (!delta && !cur) || (!!delta && !!cur && delta.action === cur.action && delta.move === cur.move && delta.adv === cur.adv);
+    if (!same) useGame.setState({ hoverDelta: delta });
+  }, [hoverAim, hoverMove, battle, hover]);
 
   // Surbrillances de combat LOURDES (grilles W×H) — figées hors changement d'état de combat. Les
   // éléments qui SUIVENT le token qui glisse (tether d'engagement, halo de l'actif) restent calculés

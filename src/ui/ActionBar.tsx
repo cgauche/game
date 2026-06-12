@@ -70,6 +70,8 @@ export function ActionBar() {
   const dualStrikeSkip = useGame((s) => s.dualStrikeSkip);
   const pickTargets = useGame((s) => s.castPickTargets);
   const placeZone = useGame((s) => s.castPlaceZone);
+  // Coût/gain de l'intention SOUS LA SOURIS (desktop) — posé par IsoStage, même source que le tap-1.
+  const hoverDelta = useGame((s) => s.hoverDelta);
   const roundStartReady = useGame((s) => s.roundStartReady);
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
@@ -229,8 +231,10 @@ export function ActionBar() {
   // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
   const actMax = 1 + (active.frenzied ? 1 : 0);
   const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
-  // Aperçu de clic (tap 1) : les jauges clignotent pour montrer le coût/gain avant le commit (tap 2).
-  const previewDelta = previewResourceDelta(battle);
+  // Coût/gain de l'INTENTION en cours : aperçu tap-1 (tactile) prioritaire, sinon SURVOL (desktop,
+  // hoverDelta posé par IsoStage) — même source previewResourceDelta, les jauges clignotent pareil.
+  const tapDelta = previewResourceDelta(battle);
+  const previewDelta = tapDelta.action || tapDelta.move || tapDelta.adv ? tapDelta : hoverDelta ?? tapDelta;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
