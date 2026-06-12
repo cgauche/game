@@ -73,15 +73,20 @@ const tokenKey = (code: string) => `wfrp4.coop.token.${code}`;
 
 export const BUILD_ID = 'w4-dev'; // V1 : même build requis de part et d'autre (check au hello)
 
-/** Snapshot d'état pour le réseau — mêmes clés que la sauvegarde, SANS le projet de campagne
- *  (313 Ko pour l'Arène : il voyage UNE fois au join via le message `campaign`, spec v2 §5). */
+/** Snapshot d'état pour le réseau — mêmes clés que la sauvegarde, SANS les scènes du projet de
+ *  campagne (313 Ko pour l'Arène : elles voyagent UNE fois au join via le message `campaign`,
+ *  spec v2 §5). Un stub nom-seul reste : les invités affichent la campagne choisie (cartouche
+ *  de l'écran d'équipe) sans jamais la charger eux-mêmes (« Commencer » est hôte-seul). */
 function netSnapshot(get: Get): Record<string, unknown> {
   const { data } = snapshotSave(
     get() as unknown as Record<string, unknown>,
     useGame.getInitialState() as unknown as Record<string, unknown>,
     'net',
   );
-  delete (data as Record<string, unknown>).pendingCampaign;
+  const pc = (data as { pendingCampaign?: GameState['pendingCampaign'] }).pendingCampaign;
+  (data as Record<string, unknown>).pendingCampaign = pc
+    ? { name: pc.name, scenes: [], startSceneId: pc.startSceneId, worldMap: null }
+    : null;
   return data;
 }
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useGame } from '../state/store';
+import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
 import { makePregens } from '../data/pregens';
 import { rosterLoad, rosterRemove } from '../state/roster';
 import { campaign } from '../scenes/campaign';
+import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money, formatMoney } from '../engine/money';
 import { CharCard } from './CharCard';
@@ -12,7 +13,13 @@ import { CharCard } from './CharCard';
  * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque EMPLACEMENT (Aventurier 1-4)
  * à un siège (`net.slots`) ; chaque joueur remplit LES SIENS (créer / charger son roster local /
  * pré-tiré) via `partyAddHero` — enveloppé en intent côté invité, l'hôte reste autoritaire.
+ *
+ * C'est AUSSI ici que se choisit la campagne (cartouche 📜 + « Changer ») — solo comme coop
+ * (hôte seul ; les invités voient le nom via le snapshot). Le choix par défaut est l'Arène.
  */
+
+/** Nom affiché de la campagne intégrée (l'Arène — `pendingCampaign` null). */
+export const BUILTIN_CAMPAIGN_NAME = "L'Arène";
 
 /** Appariement emplacements → héros : le k-ième emplacement du siège S affiche le k-ième héros
  *  possédé par S (ordre de `party`). Les héros orphelins (siège sans emplacement, ex. réattribution
@@ -44,6 +51,7 @@ export function PartyScreen() {
   const removeHero = useGame((s) => s.partyRemoveHero);
   const assignSlot = useGame((s) => s.netAssignSlot);
   const leave = useGame((s) => s.netLeave);
+  const [campaignPick, setCampaignPick] = useState(false);
 
   const startCampaign = () => {
     if (pendingCampaign) {
@@ -54,21 +62,72 @@ export function PartyScreen() {
     setScreen('campaign');
   };
 
+  const inProgress = sceneInProgress && !pendingCampaign;
+  // Le choix de campagne appartient à l'hôte (ou au solo), hors partie en cours (« Reprendre »).
+  const canPickCampaign = net.mode !== 'guest' && !inProgress;
+
   return (
-    <PartyScreenView
-      party={party}
-      net={net}
-      title={pendingCampaign ? pendingCampaign.name : "Votre groupe d'aventuriers"}
-      inProgress={sceneInProgress && !pendingCampaign}
-      onMenu={() => setScreen('menu')}
-      onQuitCoop={() => { leave(); setScreen('menu'); }}
-      onCreate={() => setScreen('creator')}
-      onAddHero={addHero}
-      onRemoveHero={removeHero}
-      onAssignSlot={assignSlot}
-      onStart={startCampaign}
-      onResume={() => setScreen('campaign')}
-    />
+    <>
+      <PartyScreenView
+        party={party}
+        net={net}
+        title="Votre groupe d'aventuriers"
+        campaignName={pendingCampaign ? pendingCampaign.name : BUILTIN_CAMPAIGN_NAME}
+        onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
+        inProgress={inProgress}
+        onMenu={() => setScreen('menu')}
+        onQuitCoop={() => { leave(); setScreen('menu'); }}
+        onCreate={() => setScreen('creator')}
+        onAddHero={addHero}
+        onRemoveHero={removeHero}
+        onAssignSlot={assignSlot}
+        onStart={startCampaign}
+        onResume={() => setScreen('campaign')}
+      />
+      {campaignPick && (
+        <CampaignSelect currentName={pendingCampaign?.name ?? null} onClose={() => setCampaignPick(false)} />
+      )}
+    </>
+  );
+}
+
+/** Modale de choix de la campagne : l'Arène (intégrée) + les projets PUBLIÉS de l'éditeur. */
+function CampaignSelect({ currentName, onClose }: { currentName: string | null; onClose: () => void }) {
+  const setPendingCampaign = useGame((s) => s.setPendingCampaign);
+  const published = useState(() => publishedProjects())[0];
+  const pick = (pc: GameState['pendingCampaign']) => {
+    setPendingCampaign(pc);
+    onClose();
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3 className="picker-title">Choisir la campagne</h3>
+        <div className="pregen-list">
+          <div className="pregen-row">
+            <span className="campaign-row-name">⚔️ {BUILTIN_CAMPAIGN_NAME}</span>
+            <button className="btn small btn-primary" disabled={currentName == null} onClick={() => pick(null)}>
+              {currentName == null ? 'Actuelle' : 'Choisir'}
+            </button>
+          </div>
+          {published.map((p) => (
+            <div key={p.id} className="pregen-row">
+              <span className="campaign-row-name">📜 {p.name}</span>
+              <button
+                className="btn small btn-primary"
+                disabled={currentName === p.name}
+                onClick={() => pick({ name: p.name, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
+              >
+                {currentName === p.name ? 'Actuelle' : 'Choisir'}
+              </button>
+            </div>
+          ))}
+        </div>
+        <button className="btn" onClick={onClose}>
+          Fermer
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -78,6 +137,8 @@ export function PartyScreenView({
   party,
   net,
   title,
+  campaignName,
+  onChangeCampaign,
   inProgress,
   onMenu,
   onQuitCoop,
@@ -91,6 +152,10 @@ export function PartyScreenView({
   party: Combatant[];
   net: NetState;
   title: string;
+  /** Campagne sélectionnée (cartouche 📜). Absent = cartouche masqué (vue partielle/tests). */
+  campaignName?: string;
+  /** Ouvre le choix de campagne — absent = lecture seule (invité coop, partie en cours). */
+  onChangeCampaign?: () => void;
   /** Une partie est en cours (scène vivante, hors lancement explicite de campagne) :
    *  « Reprendre » prend la primauté, « Commencer » resterait sinon le seul chemin et
    *  écraserait silencieusement la progression (chargement d'une save coop inclus). */
@@ -134,6 +199,17 @@ export function PartyScreenView({
           </button>
         )}
         <h2>{title} ({party.length}/4)</h2>
+        {campaignName && (
+          <div className="campaign-pill">
+            <span aria-hidden>📜</span>
+            <span className="campaign-pill-name">{campaignName}</span>
+            {onChangeCampaign && (
+              <button className="btn small" onClick={onChangeCampaign}>
+                Changer
+              </button>
+            )}
+          </div>
+        )}
         {net.mode === 'guest' ? (
           <span className="hint">⏳ L'hôte lance la partie</span>
         ) : (

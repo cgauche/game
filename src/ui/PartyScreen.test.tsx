@@ -68,12 +68,14 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
   });
 
   const noop = () => {};
-  const render = (party: Combatant[], net: NetState, inProgress = false) =>
+  const render = (party: Combatant[], net: NetState, inProgress = false, campaign?: { name: string; canChange?: boolean }) =>
     renderToStaticMarkup(
       <PartyScreenView
         party={party}
         net={net}
         title="Votre groupe d'aventuriers"
+        campaignName={campaign?.name}
+        onChangeCampaign={campaign?.canChange ? noop : undefined}
         inProgress={inProgress}
         onMenu={noop}
         onQuitCoop={noop}
@@ -92,6 +94,17 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect((html.match(/Créer un personnage/g) ?? []).length).toBe(4);
     expect(html).toContain('Commencer');
     expect(html).not.toContain('Reprendre'); // pas de partie en cours
+  });
+
+  it('cartouche campagne : nom + « Changer » quand on peut choisir, lecture seule sinon', () => {
+    const editable = render([], initialNet(), false, { name: "L'Arène", canChange: true });
+    expect(editable).toContain('Arène'); // l'apostrophe est échappée (&#x27;) dans le HTML statique
+    expect(editable).toContain('Changer');
+    const guest = render([], { ...initialNet(), mode: 'guest', mySeat: 1 }, false, { name: 'Ma campagne' });
+    expect(guest).toContain('Ma campagne'); // l'invité voit le choix de l'hôte…
+    expect(guest).not.toContain('Changer'); // …sans pouvoir le modifier
+    const absent = render([], initialNet());
+    expect(absent).not.toContain('campaign-pill'); // pas de cartouche sans campagne fournie
   });
 
   it('partie en cours : « Reprendre » prend la primauté, « Commencer » reste (rétrogradé)', () => {

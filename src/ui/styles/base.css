@@ -456,6 +456,29 @@ h3 {
   margin: 0 0 6px;
 }
 
+/* Cartouche campagne (écran d'équipe) : campagne choisie + « Changer » (hôte/solo). */
+.campaign-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.campaign-pill-name {
+  font-family: var(--font-display);
+  color: var(--gold2);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.campaign-row-name {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.4px;
+}
+
 /* Character card */
 /* .char-card = primitive .panel (components.css) + fond plein --panel et radius 12 propres à la carte */
 .char-card.panel {
