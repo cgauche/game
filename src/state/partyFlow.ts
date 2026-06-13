@@ -35,8 +35,7 @@ import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData } fr
 import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
 
-type Get = () => GameState;
-type Set = (s: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Recalcule les Blessures max (BF + 2·BE + BFM × Taille + Dur à cuire) après une Augmentation
  *  de Caractéristique ou un nouveau Talent ; un gain de max augmente aussi le courant (mute). */

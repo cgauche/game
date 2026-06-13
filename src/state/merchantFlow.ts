@@ -18,8 +18,7 @@ import { MINUTES_PER_DAY } from '../engine/clock';
 import { findTrapping, trappings } from '../data/index';
 import { MERCHANTS } from './merchants/index';
 
-type Get = () => GameState;
-type Set = (s: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Issue d'un Marchandage conclu (achat OU vente) — module les prix de la visite. */
 export interface BargainOutcome {

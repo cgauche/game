@@ -16,6 +16,7 @@
  *    `giveCorruption` (gain direct, artefact maudit…).
  */
 import type { GameState } from './store';
+import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import { battleRng } from './battleRng';
 import { bonus, effectiveChar, refreshWounds } from '../engine/characteristics';
@@ -39,7 +40,7 @@ import { evLines } from './combatLog';
  * lignes de journal. La révélation (dés du Test/de la table) est poussée dans la
  * file `pendingReveals` (« un jet = une modale », jet SUBI → révélation témoin).
  */
-export function gainCorruption(get: () => GameState, set: any, hero: Combatant, n: number): string[] {
+export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   hero.corruption = (hero.corruption ?? 0) + n;
@@ -78,7 +79,7 @@ export function gainCorruption(get: () => GameState, set: any, hero: Combatant, 
 
 /** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
  *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
-export function applyMutation(set: any, hero: Combatant, test?: { roll: number; target: number }): string[] {
+export function applyMutation(set: Set, hero: Combatant, test?: { roll: number; target: number }): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   const lost = bonus(effectiveChar(hero, 'FM'));
@@ -109,7 +110,7 @@ export function applyMutation(set: any, hero: Combatant, test?: { roll: number; 
 
 /** Résolution du choix « Je te renie ! » (LDB 17 l.71) : `renounce` → −1 Résilience, pas de
  *  mutation NI de perte de Points de Corruption ; sinon la mutation s'applique. */
-export function resolveRenounce(get: () => GameState, set: any, renounce: boolean): void {
+export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   const pr = get().pendingRenounce;
   if (!pr) return;
   set({ pendingRenounce: null });

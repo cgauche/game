@@ -59,8 +59,7 @@ export interface MedicState {
   };
 }
 
-type Get = () => GameState;
-type Set = (partial: any) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number } | null {

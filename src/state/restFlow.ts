@@ -88,8 +88,7 @@ export interface PendingRest {
   travelDay?: import('./travelFlow').TravelRecapDay;
 }
 
-type Get = () => GameState;
-type Set = (partial: any) => void;
+import type { Get, Set } from './flowTypes';
 
 /**
  * LE moteur de nuit (sans modale) : avance l'horloge à l'aube (× days), entretien #T3, récupération
