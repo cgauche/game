@@ -60,6 +60,17 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: false,
     hint: 'Sur une réussite, le DR = le chiffre des dizaines du jet.',
   },
+  {
+    id: 'combat-advantage-cap',
+    label: 'Plafond d’Avantage',
+    ref: 'LDB 15 l.17',
+    group: 'Combat',
+    kind: 'param',
+    default: 10,
+    min: 1,
+    max: 20,
+    hint: 'Limiter les Avantages : valeur maximale d’Avantage qu’un combattant peut accumuler.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
