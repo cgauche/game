@@ -1,5 +1,5 @@
 /**
- * Domaine des Cieux (Azyr) — LDB 47 « Magie des Arcanes (Cieux) », 8 sorts.
+ * Domaine des Cieux (Azyr) — LDB 48 « Magie des Arcanes (Cieux) », 8 sorts.
  * Curation B4. Les Projectiles magiques (Arc de T'Essla, Comète de Cassandora) sont résolus par
  * le moteur missile (Dégâts lus de la desc) ; la spec ne porte que les États additionnels à la
  * touche. Les Signes d'Amul accordent Chance/Destin (ops gainFortune/gainFate, retirés à
@@ -16,7 +16,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'condition', name: 'Aveuglé' }],
     durationRounds: null,
     curated: true,
-    source: "LDB 47 — Domaine des Cieux « Arc de T'Essla »",
+    source: "LDB 48 — Domaine des Cieux « Arc de T'Essla »",
   },
   {
     label: 'Bouclier céruléen',
@@ -26,7 +26,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'narrative', text: 'Bouclier céruléen : +DR PA à toutes les Localisations contre les attaques de Corps à corps ; un attaquant à l’arme métallique subit BFM Dégâts — arbitrage MJ.' }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 47 — Domaine des Cieux « Bouclier céruléen »',
+    source: 'LDB 48 — Domaine des Cieux « Bouclier céruléen »',
   },
   {
     label: 'Comète de Cassandora',
@@ -41,7 +41,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ],
     durationRounds: null, // « Spécial » (impact différé)
     curated: true,
-    source: 'LDB 47 — Domaine des Cieux « Comète de Cassandora »',
+    source: 'LDB 48 — Domaine des Cieux « Comète de Cassandora »',
   },
   {
     label: 'Ironie du Destin',
@@ -51,7 +51,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'narrative', text: 'Ironie du Destin : les alliés de la ZdE (hors Magie des Arcanes (Cieux)) partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — arbitrage MJ.' }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 47 — Domaine des Cieux « Ironie du Destin »',
+    source: 'LDB 48 — Domaine des Cieux « Ironie du Destin »',
   },
   {
     label: "Le Premier Signe d'Amul",
@@ -60,7 +60,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'gainFortune', amount: 1, perSL: { every: 2, amount: 1 }, temporary: true }],
     durationRounds: { bonusOf: 'I' }, // « (Bonus d'Initiative) Rounds »
     curated: true,
-    source: "LDB 47 — Domaine des Cieux « Le Premier Signe d'Amul »",
+    source: "LDB 48 — Domaine des Cieux « Le Premier Signe d'Amul »",
   },
   {
     label: "Le Second Signe d'Amul",
@@ -73,7 +73,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ],
     durationRounds: { bonusOf: 'I' },
     curated: true,
-    source: "LDB 47 — Domaine des Cieux « Le Second Signe d'Amul »",
+    source: "LDB 48 — Domaine des Cieux « Le Second Signe d'Amul »",
   },
   {
     label: "Le Troisième Signe d'Amul",
@@ -82,7 +82,7 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'gainFate', amount: 1, temporary: true }],
     durationRounds: { bonusOf: 'I' },
     curated: true,
-    source: "LDB 47 — Domaine des Cieux « Le Troisième Signe d'Amul »",
+    source: "LDB 48 — Domaine des Cieux « Le Troisième Signe d'Amul »",
   },
   {
     label: 'Maudit',
@@ -92,6 +92,6 @@ export const DOMAINE_CIEUX: SpellSpec[] = [
     ops: [{ op: 'narrative', text: 'Maudit : tant que le Sort dure, vous pouvez dépenser un Point de Chance pour forcer la cible à relancer un Test — arbitrage MJ.' }],
     durationRounds: { bonusOf: 'I' },
     curated: true,
-    source: 'LDB 47 — Domaine des Cieux « Maudit »',
+    source: 'LDB 48 — Domaine des Cieux « Maudit »',
   },
 ];

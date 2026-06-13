@@ -1,5 +1,5 @@
 /**
- * Domaine de la Lumière (Hysh) — LDB 47 « Magie des Arcanes (Lumière) », 8 sorts.
+ * Domaine de la Lumière (Hysh) — LDB 48 « Magie des Arcanes (Lumière) », 8 sorts.
  * Curation B4 : chaque entrée recopie sa description canon (spells.json) ; les volets
  * réellement arbitrés (bannissements opposés, barrières de zone, ciblage « quiconque vous
  * regarde ») restent en ops `narrative` — journalisés verbatim, rien d'inventé.
@@ -20,7 +20,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null,
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Bannissement »',
+    source: 'LDB 48 — Domaine de la Lumière « Bannissement »',
   },
   {
     label: "Clarté d'esprit",
@@ -35,7 +35,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null, // « (Intelligence) minutes » → échelle d'horloge (durationClockMinutes)
     curated: true,
-    source: "LDB 47 — Domaine de la Lumière « Clarté d'esprit »",
+    source: "LDB 48 — Domaine de la Lumière « Clarté d'esprit »",
   },
   {
     label: 'Fauche-démon',
@@ -47,7 +47,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null,
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Fauche-démon »',
+    source: 'LDB 48 — Domaine de la Lumière « Fauche-démon »',
   },
   {
     label: "Filet d'Amyntok",
@@ -61,7 +61,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null, // durée = « (Bonus d'Int de la CIBLE) Rounds » (hors barème lanceur)
     curated: true,
-    source: "LDB 47 — Domaine de la Lumière « Filet d'Amyntok »",
+    source: "LDB 48 — Domaine de la Lumière « Filet d'Amyntok »",
   },
   {
     label: 'Lumière aveuglante',
@@ -74,7 +74,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null,
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Lumière aveuglante »',
+    source: 'LDB 48 — Domaine de la Lumière « Lumière aveuglante »',
   },
   {
     label: 'Lumière de guérison',
@@ -90,7 +90,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: null, // Instantané
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Lumière de guérison »',
+    source: 'LDB 48 — Domaine de la Lumière « Lumière de guérison »',
   },
   {
     label: 'Pensée rapide',
@@ -101,7 +101,7 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Pensée rapide »',
+    source: 'LDB 48 — Domaine de la Lumière « Pensée rapide »',
   },
   {
     label: 'Protection de Phâ',
@@ -114,6 +114,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 47 — Domaine de la Lumière « Protection de Phâ »',
+    source: 'LDB 48 — Domaine de la Lumière « Protection de Phâ »',
   },
 ];
