@@ -1,0 +1,41 @@
+/**
+ * Politique de résolution d'un Test d100 (LDB 12) — dérivée du registre des règles optionnelles.
+ *
+ * `evaluateTest`, `rollTest` et `maxForcedRoll` (tests.ts) LISENT cette policy : c'est le SEUL
+ * endroit qui décide comment une réussite, un DR et les bandes automatiques sont calculés. Changer
+ * une règle de Test (panneau in-game ou défaut du registre) suffit ; aucun autre fichier ne bouge.
+ *
+ * - bandsMode : 'normal' = RAW (01..autoSuccessMax réussite auto, autoFailMin..00 échec auto, LDB 12
+ *   l.46) ; 'inverted' = règle maison (les deux bandes échangées) ; 'off' = aucune bande.
+ * - slMode : 'standard' = DR par différence de dizaines ; 'fast' = sur une réussite, DR = dizaines
+ *   du jet (« Calculer Rapidement un DR », LDB 12 l.128).
+ */
+import { rule } from './policy';
+
+export type BandsMode = 'normal' | 'inverted' | 'off';
+export type SLMode = 'standard' | 'fast';
+
+export interface TestPolicy {
+  /** 01..autoSuccessMax = bande basse (LDB 12 l.46). */
+  autoSuccessMax: number;
+  /** autoFailMin..00 = bande haute (LDB 12 l.46). */
+  autoFailMin: number;
+  bandsMode: BandsMode;
+  slMode: SLMode;
+  /** Bornes d'une valeur cible (LDB 12 : 1..99). */
+  targetMin: number;
+  targetMax: number;
+}
+
+/** Policy EFFECTIVE courante (lit les règles optionnelles). Appelée à chaque Test → reflète les
+ *  surcharges in-game en direct. */
+export function getTestPolicy(): TestPolicy {
+  return {
+    autoSuccessMax: 5,
+    autoFailMin: 96,
+    bandsMode: rule('test-auto-bands') as BandsMode,
+    slMode: rule('test-fast-sl') ? 'fast' : 'standard',
+    targetMin: 1,
+    targetMax: 99,
+  };
+}

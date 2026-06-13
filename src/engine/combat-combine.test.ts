@@ -34,4 +34,13 @@ describe('defenseModifiers — Avantage hors plafond, malus plafonnés (B1, pari
     expect(mods.find((m) => m.label === 'Avantage')).toMatchObject({ value: 80, uncapped: true });
     expect(combineMods(mods)).toBe(80);
   });
+
+  it('les malus de défense cumulés sont plafonnés à −30 (LDB 14 l.129) ; l’Avantage reste hors plafond', () => {
+    // Esquive en neige (−20) + aura Perturbante (−20, État) + Maniement de deux armes (−10) = −50 brut
+    // → plafonné à −30 ; Avantage +30 hors plafond → net 0.
+    const d = { advantage: 3, conditions: [], perturbed: true, weapons: [], defensiveStance: false, dualStrikeDefensePenalty: true } as unknown as Combatant;
+    const mods = defenseModifiers(d, 'esquive', -20);
+    expect(mods.filter((m) => m.value < 0).every((m) => !m.uncapped)).toBe(true); // les malus NE sont PAS uncapped
+    expect(combineMods(mods)).toBe(0); // +30 (Avantage) + max(−30, −50)
+  });
 });

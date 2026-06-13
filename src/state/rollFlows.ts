@@ -29,7 +29,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest } from '../engine/tests';
+import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR } from '../engine/magic';
@@ -91,7 +91,7 @@ export const FLOWS = {
         if (forced.roll != null) {
           // Dé CHOISI : 11 → Coup Critique (l'exemple Salundra l.75) ; 01 → DR max ; les unités
           // nourrissent Percutante/Dévastatrice et la localisation inversée. Doit RESTER une réussite.
-          if (forced.roll > Math.min(99, ad.target)) return null;
+          if (forced.roll > maxForcedRoll(ad.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, ad.target).sl, defSL + 1, 1);
           const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
           return { result: rederiveAttack(actor, target, p, atk2) };
@@ -139,7 +139,7 @@ export const FLOWS = {
         if (!dd || !p.def) return null; // (ancien `force.guard`)
         if (forced.roll != null) {
           // Dé CHOISI — doit RESTER une réussite.
-          if (forced.roll > Math.min(99, p.def.target)) return null;
+          if (forced.roll > maxForcedRoll(p.def.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, p.def.target).sl, p.atk.sl + 1, 1);
           const def2: TestResult = { roll: forced.roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
           return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
@@ -200,7 +200,7 @@ export const FLOWS = {
         const ni = p.focused ? 0 : spell.cn ?? 0;
         if (forced.roll != null) {
           // Dé CHOISI (setForcedRoll) : 11 → Incantation Critique ; 01 → DR max → Surincantation.
-          if (forced.roll > Math.min(99, cur.target)) return null; // doit RESTER une réussite
+          if (forced.roll > maxForcedRoll(cur.target)) return null; // doit RESTER une réussite
           const sl = evaluateTest(forced.roll, cur.target).sl
             + castTestTalentDR(actor, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
           return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
@@ -278,7 +278,7 @@ export const FLOWS = {
         if (forced.roll != null) {
           // « vous choisissez le résultat » (LDB 17 l.73) : un Piétinement est une attaque — un
           // double choisi (11) inflige un Coup Critique, comme l'exemple Salundra (l.75). Doit RESTER réussi.
-          if (forced.roll > Math.min(99, ad.target)) return null;
+          if (forced.roll > maxForcedRoll(ad.target)) return null;
           const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl: Math.max(evaluateTest(forced.roll, ad.target).sl, 1), isDouble: isDoubleRoll(forced.roll) };
           return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
         }
@@ -372,7 +372,7 @@ export const FLOWS = {
         // vers l'Indice (LDB 21). Le dé choisi doit RESTER une réussite (≤ cible).
         const target = p.result?.target ?? calmeValue(actor);
         const roll = forced.roll ?? 1;
-        if (roll > Math.min(99, target)) return null;
+        if (roll > maxForcedRoll(target)) return null;
         const dr = Math.max(evaluateTest(roll, target).sl, forced.roll != null ? 0 : 1);
         const calmeDR = (p.prevDR ?? 0) + dr;
         return { result: { roll, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };

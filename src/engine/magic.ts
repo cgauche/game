@@ -17,7 +17,7 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, resolveOpposed, TestResult } from './tests';
+import { rollTest, resolveOpposed, isDoubleRoll, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
@@ -609,7 +609,7 @@ export function rederiveCastSL(
     target: current.target,
     success: current.roll <= current.target,
     sl: current.sl + bonusSL,
-    isDouble: current.roll === 100 || current.roll % 11 === 0,
+    isDouble: isDoubleRoll(current.roll),
   };
   const cr = evaluateCasting(caster, spell, t, focusedNI0);
   return missile ? evaluateMissile(caster, target, spell, cr) : cr;

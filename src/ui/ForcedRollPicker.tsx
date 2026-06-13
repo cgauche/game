@@ -1,5 +1,6 @@
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import type { HitLocation } from '../engine/types';
+import { maxForcedRoll } from '../engine/tests';
 
 /** Les 6 localisations d'un Coup Critique (ordre du tableau LDB). */
 const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
@@ -42,7 +43,7 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true }: {
   /** Le double a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
   critable?: boolean;
 }) {
-  const maxRoll = Math.min(99, target);
+  const maxRoll = maxForcedRoll(target); // ≤ cible ET hors bande d'échec auto (dérivé de la policy)
   return (
     <div className="rm-options">
       <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>

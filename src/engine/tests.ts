@@ -7,8 +7,10 @@
  */
 import { d100, RNG, defaultRNG } from './dice';
 import { Difficulty, DIFFICULTY_MODIFIERS } from './types';
+import { type TestPolicy, getTestPolicy } from './testPolicy';
 
-const tens = (n: number) => Math.floor(n / 10);
+/** Chiffre des dizaines d'un d100 (00 = 100 → 10). SOURCE UNIQUE du calcul de DR. */
+export const tens = (n: number): number => Math.floor(n / 10);
 
 export interface TestResult {
   roll: number;
@@ -26,10 +28,11 @@ export function rollTest(
   difficulty: Difficulty = 'intermediaire',
   rng: RNG = defaultRNG,
   modifier = 0,
+  policy: TestPolicy = getTestPolicy(),
 ): TestResult {
-  const target = clamp(value + DIFFICULTY_MODIFIERS[difficulty] + modifier);
+  const target = clamp(value + DIFFICULTY_MODIFIERS[difficulty] + modifier, policy);
   const r = d100(rng);
-  return evaluateTest(r, target);
+  return evaluateTest(r, target, policy);
 }
 
 /** Évalue un jet déjà obtenu contre une cible (utile pour rejouer un jet). */
@@ -38,12 +41,35 @@ export function isDoubleRoll(roll: number): boolean {
   return roll === 100 || roll % 11 === 0;
 }
 
-export function evaluateTest(r: number, target: number): TestResult {
-  const success = r <= target;
-  // SL = dizaine(cible) − dizaine(jet). Un 100 (« 00 ») compte comme 0 dizaines de jet réussi.
-  const sl = tens(target) - tens(r === 100 ? 100 : r);
-  const isDouble = isDoubleRoll(r);
-  return { roll: r, target, success, sl, isDouble };
+export function evaluateTest(r: number, target: number, policy: TestPolicy = getTestPolicy()): TestResult {
+  // 1) Réussite « numérique » : jet ≤ cible.
+  let success = r <= target;
+  // 2) Bandes automatiques (LDB 12 l.46). 'normal' = RAW (01..autoSuccessMax réussite auto,
+  //    autoFailMin..00 échec auto) ; 'inverted' = maison (bandes échangées) ; 'off' = aucune.
+  const lowBand = r <= policy.autoSuccessMax;
+  const highBand = r >= policy.autoFailMin;
+  let forced: 'success' | 'fail' | null = null;
+  if (policy.bandsMode === 'normal') {
+    if (lowBand) { success = true; forced = 'success'; }
+    else if (highBand) { success = false; forced = 'fail'; }
+  } else if (policy.bandsMode === 'inverted') {
+    if (lowBand) { success = false; forced = 'fail'; }
+    else if (highBand) { success = true; forced = 'success'; }
+  }
+  // 3) DR : 'fast' = dizaines du jet sur une RÉUSSITE (LDB 12 l.128) ; sinon différence de dizaines.
+  const baseSL = policy.slMode === 'fast' && success ? tens(r) : tens(target) - tens(r);
+  // 4) DR auto des bandes (LDB 12 l.147-149) : réussite forcée ≥ +1 ; échec forcé ≤ −1.
+  const sl = forced === 'success' ? Math.max(1, baseSL) : forced === 'fail' ? Math.min(-1, baseSL) : baseSL;
+  return { roll: r, target, success, sl, isDouble: isDoubleRoll(r) };
+}
+
+/** Valeur maximale d'un dé FORCÉ par la Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : le dé
+ *  choisi doit RESTER une réussite — ≤ cible ET hors bande d'échec auto. En mode 'normal' la bande
+ *  haute (≥ autoFailMin) échoue toujours (LDB 12 l.46), d'où le plafond `autoFailMin − 1` — DÉRIVÉ
+ *  de la policy, jamais un nombre en dur. SOURCE UNIQUE (sélecteur + résolveurs de jet forcé). */
+export function maxForcedRoll(target: number, policy: TestPolicy = getTestPolicy()): number {
+  const ceil = policy.bandsMode === 'normal' ? policy.autoFailMin - 1 : policy.targetMax;
+  return Math.min(target, ceil);
 }
 
 /** Détail d'AFFICHAGE d'un Test (base + mod = cible · d100 · DR) — la forme des lignes de jet
@@ -95,6 +121,6 @@ export function resolveOpposed(attacker: TestResult, defender: TestResult): Oppo
   return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL };
 }
 
-function clamp(v: number): number {
-  return Math.max(1, Math.min(99, v));
+function clamp(v: number, policy: TestPolicy): number {
+  return Math.max(policy.targetMin, Math.min(policy.targetMax, v));
 }
