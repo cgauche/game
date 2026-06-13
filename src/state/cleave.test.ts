@@ -4,6 +4,7 @@ import { cleaveTargets, doAttack, autoCleave } from './combatFlow';
 import { occupiesTile } from './footprint';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { setRule, resetRule } from '../engine/policy';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
@@ -102,6 +103,39 @@ describe('Balayage en combat (store)', () => {
     const h2 = st.combatants.find((c) => c.id === H2.id)!;
     expect(h1.wounds.current).toBeLessThan(60); // touche primaire
     expect(h2.wounds.current).toBeLessThan(60); // enchaînement (balayage)
+  });
+
+  it('Frappe Mortelle (option, hors Taille) : un attaquant de taille NORMALE qui TUE en un coup enchaîne — rien sans la règle', () => {
+    useGame.getState().seedRng(2);
+    const b = setupBattle(2);
+    const heroes = b.combatants.filter((c) => c.kind === 'hero');
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const E = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    E.size = 'moyenne'; // PAS plus grand → balayage de Taille INACTIF (res.cleave = false)
+    E.characteristics.CC = 90;
+    E.characteristics.F = 50;
+    E.pos = { x: 10, y: 10 };
+    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }];
+    const [primary, h2] = heroes;
+    primary.dead = true; // cible primaire TUÉE en un coup (déclencheur Frappe Mortelle)
+    primary.pos = { x: 9, y: 10 }; // E se recale ICI après le kill (LDB 14 l.10)
+    h2.pos = { x: 8, y: 10 }; // adjacent à la case du MORT (où E se déplace), pas à la case d'origine de E
+    h2.conditions = [{ name: 'Surpris', value: 1 }]; // pas de défense → enchaînement instantané
+    h2.wounds = { current: 60, max: 60, base: 60 } as Combatant['wounds'];
+    h2.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    useGame.setState({ battle: { ...b } });
+
+    // Sans la règle : aucun enchaînement (taille normale, res.cleave = false).
+    resetRule('combat-frappe-mortelle');
+    autoCleave(useGame.getState, useGame.setState, E, primary, { cleave: false } as AttackResult);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === h2.id)!.wounds.current).toBe(60);
+
+    // Avec la règle : la cible primaire tuée → enchaînement sur h2.
+    setRule('combat-frappe-mortelle', true);
+    autoCleave(useGame.getState, useGame.setState, E, primary, { cleave: false } as AttackResult);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === h2.id)!.wounds.current).toBeLessThan(60);
+    resetRule('combat-frappe-mortelle');
   });
 
   it('Héros plus grand : pendingCleave s’ouvre après la touche, l’enchaînement le ferme', () => {

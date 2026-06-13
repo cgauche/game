@@ -71,6 +71,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     max: 20,
     hint: 'Limiter les Avantages : valeur maximale d’Avantage qu’un combattant peut accumuler.',
   },
+  {
+    id: 'combat-frappe-mortelle',
+    label: 'Frappe Mortelle',
+    ref: 'LDB 14 l.9',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'Tuer un adversaire en un seul coup permet d’enchaîner sur un autre (jusqu’au Bonus de CC). La règle de Taille enchaîne déjà sur une simple touche, indépendamment de cette option.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));

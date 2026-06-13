@@ -213,6 +213,9 @@ export interface PendingCleave {
   attackerId: string;
   hitIds: string[];
   count: number;
+  /** Mode Frappe Mortelle (option, hors Taille) : la poursuite EXIGE de tuer chaque cible (LDB 14
+   *  l.9). Absent/false = balayage de Taille (enchaîne sur une simple touche, LDB 85 l.299). */
+  fm?: boolean;
 }
 /** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.638), après une 1ʳᵉ frappe RÉUSSIE.
  *  Calqué sur PendingCleave : le joueur clique une cible (ou renonce via `dualStrikeSkip`). `mainRoll` = jet

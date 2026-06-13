@@ -7,6 +7,7 @@ import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
+import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { TEMPO } from './tempo';
@@ -1593,7 +1594,11 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
  *  se déplaçant sur la case d'une cible tuée (l.10). Résolution instantanée — les enchaînements
  *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA). */
 export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
-  if (attacker.kind !== 'enemy' || !res.cleave) return;
+  if (attacker.kind !== 'enemy') return;
+  const sizeCleave = !!res.cleave; // Taille/Nuée : enchaîne sur une simple TOUCHE (LDB 85 l.299)
+  // Frappe Mortelle (option, hors Taille) : enchaîner seulement après avoir TUÉ en un coup (LDB 14 l.9).
+  const fm = !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(primaryTarget);
+  if (!sizeCleave && !fm) return;
   const bcc = bonus(effectiveChar(attacker, 'CC'));
   if (bcc < 1) return;
   const hitIds = [primaryTarget.id];
@@ -1611,10 +1616,12 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
     const r = resolveAttack(get, attacker, next);
     if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
     applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : résolution instantanée (pas de modale de déviation imbriquée)
-    if (isOutOfAction(next) && next.pos) {
+    const killed = isOutOfAction(next);
+    if (killed && next.pos) {
       attacker.pos = { ...next.pos }; // se déplace sur la case libérée
       displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.308-309)
     }
+    if (fm && !killed) break; // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
   }
   set({ battle: { ...get().battle! } });
   bus.emit(EVT.SCENE_DIRTY);
@@ -1628,7 +1635,11 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
 export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
   if (attacker.kind !== 'hero') return;
   const pc = get().pendingCleave;
-  if (!pc && !res.cleave) return; // ni balayage en cours, ni déclenché par cette touche
+  const sizeCleave = !!res.cleave; // Taille : enchaîne sur une simple TOUCHE (LDB 85 l.299)
+  // Démarrage Frappe Mortelle (option, hors Taille) : la cible doit être TUÉE en un coup (LDB 14 l.9).
+  const fmStart = !pc && !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(target);
+  if (!pc && !sizeCleave && !fmStart) return; // ni balayage en cours, ni déclenché par cette touche
+  const fm = pc ? !!pc.fm : fmStart; // mode porté par le pending (Taille vs Frappe Mortelle)
   const count = wasChain ? (pc?.count ?? 0) + 1 : pc?.count ?? 0; // un enchaînement résolu consomme une attaque
   const hitIds = pc ? [...new Set([...pc.hitIds, target.id])] : [target.id];
   if (isOutOfAction(target) && target.pos) {
@@ -1638,8 +1649,10 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
   const battle = get().battle!;
   const bcc = bonus(effectiveChar(attacker, 'CC'));
   const remaining = cleaveTargets(battle, attacker, hitIds);
-  if (!battle.over && count < bcc && remaining.length) {
-    set({ pendingCleave: { attackerId: attacker.id, hitIds, count }, battle: { ...battle } });
+  // Frappe Mortelle : la poursuite EXIGE d'avoir tué la cible enchaînée (LDB 14 l.9) ; la Taille enchaîne sur une touche.
+  const fmStop = fm && wasChain && !isOutOfAction(target);
+  if (!battle.over && count < bcc && remaining.length && !fmStop) {
+    set({ pendingCleave: { attackerId: attacker.id, hitIds, count, fm }, battle: { ...battle } });
   } else {
     set({ pendingCleave: null, battle: { ...battle } });
   }
