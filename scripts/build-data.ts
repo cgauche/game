@@ -374,9 +374,9 @@ function main() {
   write('spells.json', spells, spells.length);
 
   // --- Étoiles (signes astraux, ADE2) ---------------------------------------
-  // Table d100 : `rand` = borne haute cumulée. Les derniers signes (rand ≥ 100 déjà
-  // atteint) ne sont PAS tirables au hasard — sélection manuelle uniquement.
-  const stars = keep(raw.star as Any[]).map((s: Any) => ({
+  // Table d100 : `rand` = borne haute cumulée (les signes ADE2 « extra » à rand=100 sont
+  // choisissables mais jamais tirés). On écarte la sentinelle de test `rand > 100`.
+  const stars = keep(raw.star as Any[]).filter((s: Any) => Number(s.rand) <= 100).map((s: Any) => ({
     label: s.label,
     rand: s.rand,
     signe: norm(s.signe),

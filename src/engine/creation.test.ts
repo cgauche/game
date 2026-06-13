@@ -13,13 +13,14 @@ import {
   rollHeight,
   rollEyes,
   rollHair,
+  rollStar,
   XP_SPECIES_ACCEPTED,
   XP_CAREER_FIRST,
   XP_CAREER_TOP3,
   XP_CHARS_KEPT,
   XP_CHARS_REASSIGNED,
 } from './creation';
-import { careers, findSpecies } from '../data';
+import { careers, findSpecies, stars } from '../data';
 
 describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () => {
   it('valeurs verbatim', () => {
@@ -28,6 +29,23 @@ describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () =>
     expect(XP_CAREER_TOP3).toBe(25);
     expect(XP_CHARS_KEPT).toBe(50);
     expect(XP_CHARS_REASSIGNED).toBe(25);
+  });
+});
+
+describe('rollStar — signe astral (ADE2, table d100)', () => {
+  it('renvoie toujours un signe existant', () => {
+    const labels = new Set(stars.map((s) => s.label));
+    for (let seed = 0; seed < 200; seed++) {
+      expect(labels.has(rollStar(makeRNG(seed)))).toBe(true);
+    }
+  });
+
+  it('déterministe pour un même seed', () => {
+    expect(rollStar(makeRNG(1234))).toBe(rollStar(makeRNG(1234)));
+  });
+
+  it('la sentinelle de test « TEST » est absente des données émises', () => {
+    expect(stars.some((s) => s.label === 'TEST' || s.rand > 100)).toBe(false);
   });
 });
 

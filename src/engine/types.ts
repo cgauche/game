@@ -421,6 +421,8 @@ export interface Combatant {
   resilience?: number;
   resolve?: number;
   motivation?: string;
+  /** Signe astral (« Naissance sous les Étoiles », ADE2) — libellé du signe ; flavor. */
+  star?: string;
   /** Détails supplémentaires (âge, taille, yeux, cheveux, ambitions — LDB 05 étape 6). */
   details?: HeroDetails;
   // Traumatisme (LDB 18) — modèle de mort

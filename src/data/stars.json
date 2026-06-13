@@ -389,22 +389,5 @@
       "book": "ADE2",
       "page": 47
     }
-  },
-  {
-    "label": "TEST",
-    "rand": 101,
-    "signe": "Signe de l'Endurance",
-    "classique": "Wymenos",
-    "ascendant": "cœur de l'hiver",
-    "dates": "12 vorhexen - 27 vorhexen",
-    "dieux": "Manaan",
-    "apparence": "un visage sévère",
-    "characteristics": "+100 Capacité de Combat, +100 Capacité de Tir, +100 Force, +100 Endurance, +100 Initiative, +100 Agilité, +100 Dextérité, +100 Intelligence, +100 Force Mentale, +100 Sociabilité",
-    "talent": "Magie mineure",
-    "desc": "Les individus nés sous la lumière de Wymund l'Anachorète sont patients et méthodiques. Ils préfèrent étudier la situation dans ses moindres détails avant de prendre une décision.<br><br>Leur lenteur à porter des jugements et leur tolérance à l'égard des faiblesses des autres en font des amis gentils et loyaux, ce qui les dessert parfois. Souvent, ils pardonnent aux autres l'impardonnable, à leur propre détriment. Mais lorsqu'ils décident que quelqu'un n'est plus digne de leurs grâces, ils deviennent des ennemis durs et implacables.",
-    "source": {
-      "book": "ADE2",
-      "page": 40
-    }
   }
 ]

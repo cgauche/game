@@ -28,6 +28,7 @@ import {
   eyes as eyesTable,
   hairs as hairsTable,
   details as detailTables,
+  stars as starsTable,
   spells as allSpells,
   SpeciesData,
   CareerData,
@@ -1078,7 +1079,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           className="btn small"
           onClick={() => {
             const r = rolledDetails(d);
-            setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
+            setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair, star: r.star });
           }}
         >
           🎲 Tirer
@@ -1101,6 +1102,19 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         Cheveux
         <input value={d.hair ?? ''} onChange={(e) => setD({ ...d, hair: e.target.value })} />
       </label>
+      <label>
+        Signe astral
+        <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
+          <option value="">— aucun —</option>
+          {starsTable.map((s) => (
+            <option key={s.label} value={s.label}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+      {(() => {
+        const s = starsTable.find((x) => x.label === d.star);
+        return s ? <p className="hint" style={{ margin: '2px 0 0' }}>{[s.signe, s.dates].filter(Boolean).join(' · ')}</p> : null;
+      })()}
     </Section>
   );
   const main = (

@@ -25,6 +25,7 @@ import {
   rollHeight,
   rollEyes,
   rollHair,
+  rollStar,
   XP_SPECIES_ACCEPTED,
   XP_CAREER_FIRST,
   XP_CAREER_TOP3,
@@ -89,6 +90,8 @@ export interface CreatorDraft {
   height?: number;
   eyes?: string;
   hair?: string;
+  /** Signe astral (ADE2) — libellé du signe ; flavor à la création. */
+  star?: string;
   sex: 'M' | 'F';
   build: number;
   appSeed: number;
@@ -297,10 +300,10 @@ export function draftWealth(d: CreatorDraft): Money {
 }
 
 // ── 6) Détails ──
-export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string } {
+export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string; star: string } {
   const sp = draftSpecies(d);
   const rng = makeRNG(d.seed ^ 0xde7a);
-  return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng) };
+  return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng), star: rollStar(rng) };
 }
 
 // ── Validation par étape ──
@@ -394,6 +397,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     id,
   });
   hero.appearance = { species: d.speciesLabel, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  if (d.star) hero.star = d.star;
   // Sorts de Magie mineure inclus au Talent (LDB 10 l.587) — choisis à l'étape 4, mémorisés.
   // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)
   const quota = pettySpellQuota(d);

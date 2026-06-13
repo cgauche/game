@@ -17,7 +17,7 @@
 import { RNG, defaultRNG, roll } from './dice';
 import { CharKey, CHAR_KEYS } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable } from '../data';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -147,4 +147,14 @@ function rollDetail(table: { rand: number; color: Record<string, string> }[], sp
   const sorted = [...table].sort((a, b) => a.rand - b.rand);
   const entry = sorted.find((e) => r <= e.rand) ?? sorted[sorted.length - 1];
   return entry.color[sp.refChar] ?? entry.color['Humain'] ?? '';
+}
+
+/** Signe astral (table d100 « Naissance sous les Étoiles », ADE2) → libellé du signe. `rand` =
+ *  borne haute cumulée ; les signes ADE2 « extra » (rand ≥ 100 déjà couvert) ne sortent jamais
+ *  au tirage — sélection manuelle seulement. Flavor par défaut (cf. plan : effet mécanique ADE2
+ *  à sourcer avant d'être appliqué). */
+export function rollStar(rng: RNG = defaultRNG): string {
+  const r = roll(1, 100, rng);
+  const sorted = [...starsTable].sort((a, b) => a.rand - b.rand);
+  return (sorted.find((e) => r <= e.rand) ?? sorted[0]).label;
 }

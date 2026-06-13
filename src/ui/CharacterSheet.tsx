@@ -12,7 +12,7 @@ import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
-import { careers, findSpell, spells as allSpells } from '../data';
+import { careers, findSpell, findStar, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { EquipmentPanel } from './EquipmentPanel';
@@ -111,6 +111,15 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 {hero.species} · {hero.career}
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
+              {hero.star && (
+                <span className="char-sub star-sub">
+                  🌟 {hero.star}
+                  {(() => {
+                    const s = findStar(hero.star);
+                    return s?.signe ? ` — ${s.signe}` : '';
+                  })()}
+                </span>
+              )}
             </div>
             <FicheBody hero={hero} section="profil" />
           </aside>
