@@ -6,7 +6,7 @@
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import { Scene, SceneEntity, BuildingFeature, Trigger, EncounterDef } from '../../state/scene';
+import { Scene, SceneEntity, BuildingFeature, Trigger } from '../../state/scene';
 import type { Settlement } from '../../engine/disponibilite';
 import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
@@ -25,7 +25,7 @@ import { EffectList, effectCtxOf } from './EffectList';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry } from './editorState';
+import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember } from './editorState';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -83,7 +83,6 @@ export function Inspector({
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
   const selB = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
-  const spawn = sel?.type === 'spawn' ? scene.encounters[sel.enc]?.enemies[sel.idx] ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
   const entry = sel?.type === 'entry' ? scene.entryPoints?.[sel.id] ?? null : null;
 
@@ -93,15 +92,6 @@ export function Inspector({
     setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (selB && b.id === selB.id ? { ...b, ...patch } : b)) });
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
-  const updateSpawn = (patch: Partial<EncounterDef['enemies'][number]>) => {
-    if (sel?.type !== 'spawn') return;
-    setScene({
-      ...scene,
-      encounters: scene.encounters.map((e, ei) =>
-        ei === sel.enc ? { ...e, enemies: e.enemies.map((en, ni) => (ni === sel.idx ? { ...en, ...patch } : en)) } : e,
-      ),
-    });
-  };
   const updateZone = (patch: Partial<NonNullable<Scene['restZones']>[number]>) => {
     if (sel?.type !== 'restZone') return;
     setScene({ ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, ...patch } : z)) });
@@ -117,13 +107,11 @@ export function Inspector({
       ? `🏠 ${selB.label ?? BUILDINGS_META[selB.type]?.label ?? selB.type}`
       : selT
         ? `🟦 ${selT.id}`
-        : spawn
-          ? `⚔️ ${spawn.statblock?.name ?? spawn.ref ?? 'Ennemi'}`
-          : zone
-            ? '⛺ Zone de repos'
-            : entry
-              ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
-              : null;
+        : zone
+          ? '⛺ Zone de repos'
+          : entry
+            ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
+            : null;
 
   return (
     <aside className="editor-inspector">
@@ -137,6 +125,81 @@ export function Inspector({
           </div>
 
           {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} updateSel={updateSel} removeSel={removeSel} />}
+
+          {ent && ent.kind === 'personnage' && (
+            <Fold title="⚔️ Combat">
+              <p className="hint">Donne à ce personnage un rôle de COMBAT : profil, traits, et rattachement à une ou plusieurs rencontres. Un embusqué reste invisible jusqu'au combat.</p>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={!!ent.combat?.hiddenUntilCombat}
+                  onChange={(e) => updateSel({ combat: { ...ent.combat, hiddenUntilCombat: e.target.checked || undefined } })}
+                />{' '}
+                🥷 Embusqué (invisible hors combat)
+              </label>
+              {ent.statblock ? (
+                <>
+                  <StatblockEditor stat={ent.statblock} onChange={(sb) => updateSel({ statblock: sb })} />
+                  <button className="btn small" onClick={() => updateSel({ statblock: undefined })}>↩ Utiliser une créature du bestiaire</button>
+                </>
+              ) : (
+                <>
+                  <label className="ed-field">
+                    Créature (profil de combat)
+                    <select value={ent.ref ?? ''} onChange={(e) => updateSel({ ref: e.target.value || undefined, label: ent.label ?? e.target.value })}>
+                      <option value="">— créature —</option>
+                      {enemyCreatures.map((c) => (
+                        <option key={c.label} value={c.label}>{c.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {(() => {
+                    const cr = ent.ref ? findCreature(ent.ref) : undefined;
+                    if (!cr) return null;
+                    return (
+                      <>
+                        <CreatureProfile creature={cr} />
+                        <OptionalTraitsPicker creature={cr} value={ent.combat?.optionals} onChange={(optionals) => updateSel({ combat: { ...ent.combat, optionals } })} />
+                        <SpellsField value={ent.combat?.spells} onChange={(spells) => updateSel({ combat: { ...ent.combat, spells } })} />
+                        <label className="ed-check" title="LDB 78 : « soustrayez -10 et ajoutez 2d10 ». Tirage stable au spawn (rejouable).">
+                          <input
+                            type="checkbox"
+                            checked={ent.combat?.randomChars ?? false}
+                            onChange={(e) => updateSel({ combat: { ...ent.combat, randomChars: e.target.checked || undefined } })}
+                          />{' '}
+                          🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+                        </label>
+                      </>
+                    );
+                  })()}
+                  <button className="btn small" onClick={() => updateSel({ statblock: emptyStatblock(ent.ref || ent.label || 'Ennemi') })}>⚙️ Profil personnalisé…</button>
+                </>
+              )}
+              <div className="mini-title">Rencontres</div>
+              {scene.encounters.length === 0 && <p className="hint">Aucune rencontre — l'outil ⚔️ en crée une, ou utilisez le dock Logique.</p>}
+              {scene.encounters.map((enc) => {
+                const m = (enc.members ?? []).find((mm) => mm.entityId === ent.id);
+                return (
+                  <div key={enc.id} className="ed-subfield">
+                    <label title="Enrôler ce personnage dans cette rencontre">
+                      <input
+                        type="checkbox"
+                        checked={!!m}
+                        onChange={(e) => setScene(e.target.checked ? addMember(scene, enc.id, ent.id).scene : removeMember(scene, enc.id, ent.id))}
+                      />{' '}
+                      {enc.id}
+                    </label>
+                    {m && (
+                      <select value={m.side ?? 'enemy'} onChange={(e) => setScene(patchMember(scene, enc.id, ent.id, { side: e.target.value === 'ally' ? 'ally' : undefined }))}>
+                        <option value="enemy">Ennemi</option>
+                        <option value="ally">Allié</option>
+                      </select>
+                    )}
+                  </div>
+                );
+              })}
+            </Fold>
+          )}
 
           {selB && (
             <>
@@ -266,99 +329,6 @@ export function Inspector({
                 <button className="btn small btn-primary" onClick={() => openLogic('triggers', selT.id)}>
                   ⚙ Effets ({selT.effects.length})…
                 </button>
-                <button className="btn small danger" onClick={removeSel}>
-                  Supprimer
-                </button>
-              </div>
-            </>
-          )}
-
-          {spawn && sel?.type === 'spawn' && (
-            <>
-              <p className="hint">
-                Rencontre <b>{scene.encounters[sel.enc].id}</b>{' '}
-                <button className="btn small" onClick={() => openLogic('encounters', scene.encounters[sel.enc].id)}>
-                  ⚙ Éditer la rencontre…
-                </button>
-              </p>
-              <Fold title="Créature" open>
-                {spawn.statblock ? (
-                  <>
-                    <StatblockEditor stat={spawn.statblock} onChange={(sb) => updateSpawn({ statblock: sb })} />
-                    <button className="btn small" onClick={() => updateSpawn({ statblock: undefined })}>
-                      ↩ Utiliser une créature du bestiaire
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <label className="ed-field">
-                      Créature
-                      <select value={spawn.ref ?? ''} onChange={(e) => updateSpawn({ ref: e.target.value })}>
-                        <option value="">— créature —</option>
-                        {enemyCreatures.map((c) => (
-                          <option key={c.label} value={c.label}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    {(() => {
-                      const cr = spawn.ref ? findCreature(spawn.ref) : undefined;
-                      if (!cr) return null;
-                      return (
-                        <>
-                          {/* Aperçu du profil posé (LDB 76 : « – » = caractéristique inexistante) */}
-                          <CreatureProfile creature={cr} />
-                          <OptionalTraitsPicker creature={cr} value={spawn.optionals} onChange={(optionals) => updateSpawn({ optionals })} />
-                          <SpellsField value={spawn.spells} onChange={(spells) => updateSpawn({ spells })} />
-                          <label className="ed-field" title="LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable).">
-                            <input
-                              type="checkbox"
-                              checked={spawn.randomChars ?? false}
-                              onChange={(e) => updateSpawn({ randomChars: e.target.checked || undefined })}
-                            />{' '}
-                            🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
-                          </label>
-                        </>
-                      );
-                    })()}
-                    <button className="btn small" onClick={() => updateSpawn({ ref: undefined, statblock: emptyStatblock(spawn.ref || 'Ennemi') })}>
-                      ⚙️ Profil personnalisé…
-                    </button>
-                  </>
-                )}
-              </Fold>
-              <Fold title="Apparence">
-                <MonsterPartsFields
-                  monster={spawn.appearance?.monster}
-                  weapon={spawn.weapon}
-                  colors={spawn.appearance?.colors}
-                  sex={spawn.appearance?.sex}
-                  build={spawn.appearance?.build}
-                  parts={spawn.appearance?.parts}
-                  career={spawn.appearance?.career}
-                  onMonster={(patch) => updateSpawn({ appearance: { ...spawn.appearance, monster: { ...(spawn.appearance?.monster ?? {}), ...patch } } })}
-                  onWeapon={(w) => updateSpawn({ weapon: w })}
-                  onColors={(patch) => updateSpawn({ appearance: { ...spawn.appearance, colors: { ...(spawn.appearance?.colors ?? {}), ...patch } } })}
-                  onSex={(s) => updateSpawn({ appearance: { ...spawn.appearance, sex: s } })}
-                  onBuild={(b) => updateSpawn({ appearance: { ...spawn.appearance, build: b } })}
-                  onParts={(patch) => updateSpawn({ appearance: { ...spawn.appearance, parts: { ...(spawn.appearance?.parts ?? {}), ...patch } } })}
-                  onCareer={(c) => updateSpawn({ appearance: { ...spawn.appearance, career: c } })}
-                  eyes={spawn.appearance?.eyes}
-                  onEyes={(patch) => updateSpawn({ appearance: { ...spawn.appearance, eyes: { ...(spawn.appearance?.eyes ?? {}), ...patch } } })}
-                />
-              </Fold>
-              <Fold title="Position">
-                <div className="ed-dim">
-                  <label>
-                    X<input type="number" value={spawn.pos.x} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, x: Number(e.target.value) } })} />
-                  </label>
-                  <label>
-                    Y<input type="number" value={spawn.pos.y} onChange={(e) => updateSpawn({ pos: { ...spawn.pos, y: Number(e.target.value) } })} />
-                  </label>
-                </div>
-              </Fold>
-              <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
                   Supprimer
                 </button>

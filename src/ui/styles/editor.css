@@ -92,6 +92,7 @@ button.insp-row,
   min-height: 0;
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr) 304px;
+  grid-template-rows: minmax(0, 1fr); /* sinon la ligne implicite = auto → l'inspecteur s'étire au contenu et ne scrolle jamais */
   overflow: hidden;
 }
 
@@ -216,6 +217,11 @@ button.insp-row,
   flex-direction: column;
   gap: 8px;
   min-height: 0;
+}
+/* Les enfants gardent leur hauteur NATURELLE (sinon le flex column les comprime pour tenir dans
+   la colonne → folds écrasés, aperçu qui mange tout, et AUCUN scroll). Ils débordent → scrollbar. */
+.editor-inspector > * {
+  flex: none;
 }
 .editor-inspector textarea {
   width: 100%;

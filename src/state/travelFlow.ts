@@ -175,7 +175,8 @@ function runTravelDays(get: Get, set: Set): void {
   };
   let guard = 0;
   while (true) {
-    if (guard++ > 400) break; // garde-fou (durée d'année) — un trajet ne dure jamais autant
+    guard += 1;
+    if (guard > 400) break; // garde-fou (durée d'année) — un trajet ne dure jamais autant
     const plan = get().travelPlan;
     if (!plan || plan.interrupted) return;
     const route = worldMap.routes.find((r) => r.id === plan.routeId);

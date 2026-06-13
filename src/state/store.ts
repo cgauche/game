@@ -125,7 +125,7 @@ export type { MedicState, MedicNpc } from './medicFlow';
 import * as restFlow from './restFlow';
 import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
-import { Scene, Dialogue, Effect, isWalkable } from './scene';
+import { Scene, SceneEntity, Dialogue, Effect, isWalkable } from './scene';
 import { migrateScene } from './sceneMigrate';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
@@ -1119,7 +1119,7 @@ export const useGame = create<GameState>((set, get) => ({
     const { scene, partyPos } = get();
     if (!scene) return;
     const ent = scene.entities.find((e) => e.id === entityId);
-    if (!ent) return;
+    if (!ent || ent.combat?.hiddenUntilCombat) return; // un ennemi d'embuscade n'est pas interpellable en exploration
     if (chebyshev(partyPos, ent.pos) > 1) {
       // Trop loin : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
       return;
@@ -1252,20 +1252,29 @@ export const useGame = create<GameState>((set, get) => ({
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     });
-    const enemies = enc.enemies.map((e, i) =>
-      spawnEnemy(e.ref, e.statblock, `enemy-${i}`, { ...e.pos }, {
-        appearance: e.appearance, weapon: e.weapon,
-        optionals: e.optionals, spells: e.spells, randomChars: e.randomChars, // personnalisations d'auteur (LDB 76/78)
+    // Chaque membre RÉFÉRENCE une entité de la scène (le normaliseur a injecté les ennemis legacy).
+    // L'entité PORTE le profil/apparence/arme/traits — on résout (membre + entité appariés), puis
+    // on spawne (id `enemy-${i}`, conservé pour les tests/recettes de combat).
+    const byEntity = new Map(scene.entities.map((e) => [e.id, e]));
+    const roster = (enc.members ?? [])
+      .map((m) => ({ m, ent: byEntity.get(m.entityId) }))
+      .filter((r): r is { m: typeof r.m; ent: SceneEntity } => !!r.ent);
+    const enemies = roster.map(({ ent }, i) =>
+      spawnEnemy(ent.ref, ent.statblock, `enemy-${i}`, { ...ent.pos }, {
+        appearance: ent.appearance, weapon: ent.weapon,
+        optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
       }));
-    // Combat monté (LDB 14) : marquer les montures rideables, basculer les acteurs « alliés », puis appairer
-    // les couples pré-montés (rides → index de la monture dans `enemies`). Le cavalier monte SUR sa monture.
-    enc.enemies.forEach((e, i) => {
-      if (e.side === 'ally') enemies[i].kind = 'hero';
-      if (e.mount) enemies[i].mountable = true;
+    // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer
+    // les couples pré-montés (ridesEntityId → la monture). Le cavalier monte SUR sa monture.
+    const idxByEntity = new Map(roster.map((r, i) => [r.ent.id, i]));
+    roster.forEach(({ m }, i) => {
+      if (m.side === 'ally') enemies[i].kind = 'hero';
+      if (m.mount) enemies[i].mountable = true;
     });
-    enc.enemies.forEach((e, i) => {
-      if (e.rides == null) return;
-      const mount = enemies[e.rides];
+    roster.forEach(({ m }, i) => {
+      if (m.ridesEntityId == null) return;
+      const mi = idxByEntity.get(m.ridesEntityId);
+      const mount = mi == null ? undefined : enemies[mi];
       if (!mount) return;
       mount.mountable = true;
       mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)

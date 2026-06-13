@@ -248,7 +248,7 @@ export function IsoStage() {
       for (const c of battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);
     } else {
       actorTiles.push(partyPos);
-      for (const ent of scene.entities) if (ent.kind === 'personnage') actorTiles.push(ent.pos);
+      for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) actorTiles.push(ent.pos);
     }
     const occludesActor = (tx: number, ty: number) =>
       actorTiles.some((a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7);
@@ -504,6 +504,7 @@ export function IsoStage() {
       );
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
+      if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       if (covered(ent.pos.x, ent.pos.y)) continue;
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
@@ -1166,7 +1167,7 @@ export function IsoStage() {
                       </text>
                     )}
                     {l4 && (
-                      <text x={x0} y={(y += 14)} fontSize={10.5} fill="#e3c45a" fontWeight={600}>
+                      <text x={x0} y={y + 14} fontSize={10.5} fill="#e3c45a" fontWeight={600}>
                         {l4}
                       </text>
                     )}
