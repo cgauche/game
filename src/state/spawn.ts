@@ -184,7 +184,7 @@ export function talentsFromBook(list: string[] | undefined): TalentInstance[] {
   return (list ?? []).map((name) => ({ name: name.trim(), times: 1 })).filter((t) => t.name);
 }
 
-/** Personnalisations d'AUTEUR d'un spawn de créature du bestiaire (EncounterDef.enemies[i]). */
+/** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */
 export interface SpawnExtras {
   /** Traits FACULTATIFS choisis (LDB 76 l.49), chaînes éditées — fusionnés avant toute dérivation. */
   optionals?: string[];
