@@ -271,7 +271,7 @@ export function EditorCanvas({
               // Ennemis des rencontres (points d'apparition).
               if (layers.spawns)
                 for (const [encIdx, enc] of scene.encounters.entries()) {
-                  enc.enemies.forEach((en, idx) => {
+                  (enc.enemies ?? []).forEach((en, idx) => {
                     const isSel = sameSel(sel, { type: 'spawn', enc: encIdx, idx });
                     const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos, appearance: en.appearance, weapon: en.weapon } as SceneEntity;
                     objs.push({

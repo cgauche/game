@@ -62,7 +62,7 @@ export function sameSel(a: Sel, b: Sel): boolean {
 export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
   if (layers.spawns)
     for (let ei = 0; ei < scene.encounters.length; ei++) {
-      const ii = scene.encounters[ei].enemies.findIndex((en) => en.pos.x === p.x && en.pos.y === p.y);
+      const ii = (scene.encounters[ei].enemies ?? []).findIndex((en) => en.pos.x === p.x && en.pos.y === p.y);
       if (ii >= 0) return { type: 'spawn', enc: ei, idx: ii };
     }
   const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
@@ -96,7 +96,7 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
 /** Position d'ancrage de la sélection (coin NW pour les rects) — cible des flèches de nudge. */
 export function selPos(scene: Scene, sel: Sel): Pt | null {
   if (sel?.type === 'entity') return scene.entities.find((e) => e.id === sel.id)?.pos ?? null;
-  if (sel?.type === 'spawn') return scene.encounters[sel.enc]?.enemies[sel.idx]?.pos ?? null;
+  if (sel?.type === 'spawn') return (scene.encounters[sel.enc]?.enemies ?? [])[sel.idx]?.pos ?? null;
   if (sel?.type === 'entry') return scene.entryPoints?.[sel.id] ?? null;
   const r = selRect(scene, sel);
   return r ? { x: r.x, y: r.y } : null;
@@ -108,10 +108,10 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
   if (sel?.type === 'entity')
     return { ...scene, entities: scene.entities.map((e) => (e.id === sel.id ? { ...e, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } } : e)) };
   if (sel?.type === 'spawn') {
-    const encs = scene.encounters.map((e) => ({ ...e, enemies: [...e.enemies] }));
-    const en = encs[sel.enc]?.enemies[sel.idx];
+    const encs = scene.encounters.map((e) => ({ ...e, enemies: [...(e.enemies ?? [])] }));
+    const en = (encs[sel.enc]?.enemies ?? [])[sel.idx];
     if (!en) return scene;
-    encs[sel.enc].enemies[sel.idx] = { ...en, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } };
+    encs[sel.enc].enemies![sel.idx] = { ...en, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } };
     return { ...scene, encounters: encs };
   }
   if (sel?.type === 'entry') {
@@ -163,7 +163,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   if (sel?.type === 'spawn')
     return {
       ...scene,
-      encounters: scene.encounters.map((e, ei) => (ei === sel.enc ? { ...e, enemies: e.enemies.filter((_, ni) => ni !== sel.idx) } : e)),
+      encounters: scene.encounters.map((e, ei) => (ei === sel.enc ? { ...e, enemies: (e.enemies ?? []).filter((_, ni) => ni !== sel.idx) } : e)),
     };
   if (sel?.type === 'entry') {
     const entries = { ...scene.entryPoints };
@@ -268,7 +268,7 @@ export function addBuilding(scene: Scene, type: string, rect: Rect): { scene: Sc
 
 /** Ajoute un ennemi `ref` à la rencontre `encId` (créée si absente/vide) à la case p. */
 export function addSpawn(scene: Scene, encId: string, ref: string, p: Pt): { scene: Scene; encId: string } {
-  const encs = scene.encounters.map((e) => ({ ...e, enemies: [...e.enemies] }));
+  const encs = scene.encounters.map((e) => ({ ...e, enemies: [...(e.enemies ?? [])] }));
   let target = encs.find((e) => e.id === encId);
   if (!target) {
     target = { id: encId || nextEntityId('enc', scene.encounters.map((e) => e.id)), enemies: [] };

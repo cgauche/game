@@ -60,7 +60,7 @@ describe('editorState — moveSel (clampé)', () => {
   });
   it('déplace un point d’entrée et un spawn', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
-    expect(moveSel(s, { type: 'spawn', enc: 0, idx: 0 }, { x: 4, y: 4 }).encounters[0].enemies[0].pos).toEqual({ x: 4, y: 4 });
+    expect(moveSel(s, { type: 'spawn', enc: 0, idx: 0 }, { x: 4, y: 4 }).encounters[0].enemies![0].pos).toEqual({ x: 4, y: 4 });
   });
 });
 
@@ -121,7 +121,7 @@ describe('editorState — pose', () => {
     const z = addRestZone(emptyScene(10, 10), { x: 0, y: 0, w: 2, h: 2 });
     expect(z.scene.restZones![z.idx].places.camp).toBe(true);
     const sp = addSpawn(emptyScene(10, 10), '', 'Mutant', { x: 3, y: 3 });
-    expect(sp.scene.encounters[0].enemies[0]).toEqual({ ref: 'Mutant', pos: { x: 3, y: 3 } });
+    expect(sp.scene.encounters[0].enemies![0]).toEqual({ ref: 'Mutant', pos: { x: 3, y: 3 } });
     const sp2 = addSpawn(sp.scene, sp.encId, 'Mutant', { x: 4, y: 4 });
     expect(sp2.scene.encounters[0].enemies).toHaveLength(2);
   });

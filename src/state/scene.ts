@@ -130,6 +130,20 @@ export interface SceneEntity {
    *  `settlement`/`resaleRate`/`buyMarkup` surchargent l'archétype pour cette entité (prix paramétrables :
    *  resaleRate = rachat à la vente, buyMarkup = majoration à l'achat). */
   merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number; buyMarkup?: number; restockDays?: number };
+  /** RÔLE combat optionnel (au même titre que dialogue/marchand) : présent = ce personnage peut être
+   *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
+   *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
+  combat?: {
+    /** Traits FACULTATIFS choisis (LDB 76 l.49), fusionnés aux traits fixes au spawn. */
+    optionals?: string[];
+    /** Sorts connus (créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
+    spells?: string[];
+    /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
+    randomChars?: boolean;
+    /** Invisible en EXPLORATION (embuscade) : n'apparaît qu'au combat. `false`/absent = PNJ visible
+     *  qui devient hostile au déclenchement. Posé `true` par le normaliseur sur tout ennemi legacy. */
+    hiddenUntilCombat?: boolean;
+  };
 }
 
 export interface BuildingParams {
@@ -293,30 +307,44 @@ export function condMet(cond: string, flags: Record<string, boolean>): boolean {
     .every((c) => (c.startsWith('!') ? !flags[c.slice(1)] : !!flags[c]));
 }
 
+/** Membre d'une rencontre : RÉFÉRENCE une `SceneEntity` (kind 'personnage') de la scène — c'est
+ *  ELLE qui porte le profil (ref/statblock/apparence/arme/label/facing/combat). Le membre n'ajoute
+ *  que le contexte propre à CETTE rencontre (camp, monture). */
+export interface EncounterMember {
+  /** id de la `SceneEntity` enrôlée. */
+  entityId: string;
+  /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture prêtée). Défaut 'enemy'. */
+  side?: 'enemy' | 'ally';
+  /** Combat monté (LDB 14) : cet acteur est une MONTURE rideable (peut être enfourché). */
+  mount?: boolean;
+  /** id d'entité de la monture chevauchée au spawn (pré-monté) — réf stable (≠ ancien index `rides`). */
+  ridesEntityId?: string;
+}
+
+/** Forme LEGACY d'un ennemi inline — conservée en ENTRÉE d'authoring (scénarios, générateur) et
+ *  pour les vieux exports ; `migrateEncounters` (sceneMigrate.ts) la normalise en entité + membre. */
+export interface LegacyEncounterEnemy {
+  ref?: string;
+  statblock?: CustomStatblock;
+  pos: { x: number; y: number };
+  appearance?: EntityAppearance;
+  weapon?: string;
+  mount?: boolean;
+  rides?: number;
+  side?: 'enemy' | 'ally';
+  optionals?: string[];
+  spells?: string[];
+  randomChars?: boolean;
+}
+
 export interface EncounterDef {
   id: string;
-  enemies: {
-    ref?: string;
-    statblock?: CustomStatblock;
-    pos: { x: number; y: number };
-    /** Apparence (mutant modulaire : parts monstrueux) → même modèle qu'en exploration. */
-    appearance?: EntityAppearance;
-    /** Arme équipée (libellé) → affichée par le rig en combat. */
-    weapon?: string;
-    /** Combat monté (LDB 14) : cet acteur est une MONTURE rideable (peut être enfourché). */
-    mount?: boolean;
-    /** Index (dans `enemies`) de la monture que cet acteur chevauche au spawn (pré-monté). */
-    rides?: number;
-    /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture libre prêtable au groupe). Défaut 'enemy'. */
-    side?: 'enemy' | 'ally';
-    /** Traits FACULTATIFS choisis (LDB 76 l.49) — chaînes ÉDITÉES (Indice/Cible complétés par l'auteur,
-     *  ex. « Armure 2 », « Haine (Sigmarites) »), fusionnées aux traits fixes au spawn (créature `ref`). */
-    optionals?: string[];
-    /** Sorts connus (créature `ref`) — la donnée bestiaire n'en liste pas : choix d'auteur. */
-    spells?: string[];
-    /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
-    randomChars?: boolean;
-  }[];
+  /** CANONIQUE : membres référençant des entités de la scène (peuplé par l'éditeur ou par
+   *  `migrateEncounters` à partir de `enemies`). Le runtime ne lit QUE ceci. */
+  members?: EncounterMember[];
+  /** @deprecated Entrée LEGACY (authoring inline + back-compat). Normalisée vers `members` +
+   *  entités cachées au chargement. NE PAS lire au runtime — utiliser `members`. */
+  enemies?: LegacyEncounterEnemy[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];
   /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp

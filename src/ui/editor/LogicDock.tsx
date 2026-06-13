@@ -305,8 +305,8 @@ function EncountersTab({
   const enc = scene.encounters.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<EncounterDef>) =>
     setScene({ ...scene, encounters: scene.encounters.map((x) => (enc && x.id === enc.id ? { ...x, ...patch } : x)) });
-  const updEnemy = (ni: number, patch: Partial<EncounterDef['enemies'][number]>) =>
-    upd({ enemies: enc!.enemies.map((en, j) => (j === ni ? { ...en, ...patch } : en)) });
+  const updEnemy = (ni: number, patch: Partial<NonNullable<EncounterDef['enemies']>[number]>) =>
+    upd({ enemies: (enc!.enemies ?? []).map((en, j) => (j === ni ? { ...en, ...patch } : en)) });
   return (
     <div className="logic-split">
       <div className="logic-list">
@@ -316,7 +316,7 @@ function EncountersTab({
               <b>{x.id}</b>
               {x.surprise ? ' · embuscade' : ''}
             </span>
-            <span className="count">{x.enemies.length} ennemi(s)</span>
+            <span className="count">{(x.enemies ?? []).length} ennemi(s)</span>
           </button>
         ))}
         <button
@@ -356,7 +356,7 @@ function EncountersTab({
           </div>
           <div className="mini-title">Ennemis</div>
           <div className="enemy-list">
-            {enc.enemies.map((en, ni) => (
+            {(enc.enemies ?? []).map((en, ni) => (
               <div key={ni}>
                 <div className="enemy-row">
                   <select value={en.ref ?? ''} onChange={(e) => updEnemy(ni, { ref: e.target.value })}>
@@ -381,7 +381,7 @@ function EncountersTab({
                       {en.randomChars ? '🎲' : ''}
                     </span>
                   ) : null}
-                  <button className="btn small danger" onClick={() => upd({ enemies: enc.enemies.filter((_, j) => j !== ni) })}>
+                  <button className="btn small danger" onClick={() => upd({ enemies: (enc.enemies ?? []).filter((_, j) => j !== ni) })}>
                     ✕
                   </button>
                 </div>
@@ -394,7 +394,7 @@ function EncountersTab({
                     Chevauche{' '}
                     <select value={en.rides ?? ''} onChange={(e) => updEnemy(ni, { rides: e.target.value === '' ? undefined : Number(e.target.value) })}>
                       <option value="">— aucune —</option>
-                      {enc.enemies.map((m, idx) =>
+                      {(enc.enemies ?? []).map((m, idx) =>
                         idx !== ni && (m.mount || en.rides === idx) ? (
                           <option key={idx} value={idx}>
                             #{idx} {m.ref ?? '?'}
@@ -415,7 +415,7 @@ function EncountersTab({
             ))}
             <button
               className="btn small"
-              onClick={() => upd({ enemies: [...enc.enemies, { ref: creatures[0]?.label ?? 'Mutant', pos: { x: 0, y: 0 } }] })}
+              onClick={() => upd({ enemies: [...(enc.enemies ?? []), { ref: creatures[0]?.label ?? 'Mutant', pos: { x: 0, y: 0 } }] })}
             >
               + Ennemi
             </button>

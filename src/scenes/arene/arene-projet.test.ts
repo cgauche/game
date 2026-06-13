@@ -86,7 +86,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   });
 
   it('VITRINE des rencontres : sorciers ennemis (spells), traits optionnels édités, stats aléatoires, allié à pied', () => {
-    const all = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies));
+    const all = project.flatMap((s) => s.encounters.flatMap((e) => (e.enemies ?? [])));
     expect(all.some((e) => (e.spells ?? []).length > 0)).toBe(true); // lanceur de sorts ennemi (IA incante)
     expect(all.some((e) => (e.optionals ?? []).length > 0)).toBe(true); // traits facultatifs (LDB 76)
     expect(all.some((e) => e.randomChars)).toBe(true); // −10 + 2d10 au spawn (LDB 78)
@@ -195,7 +195,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const missing: string[] = [];
     for (const sc of project)
       for (const enc of sc.encounters)
-        for (const e of enc.enemies)
+        for (const e of (enc.enemies ?? []))
           if (e.ref && !findCreature(e.ref)) missing.push(`${sc.id}:${e.ref}`);
     expect(missing).toEqual([]);
   });
@@ -206,7 +206,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const bad: string[] = [];
     for (const sc of project)
       for (const enc of sc.encounters)
-        for (const e of enc.enemies) {
+        for (const e of (enc.enemies ?? [])) {
           const size = entitySize(e);
           for (const { x, y } of footprintTiles(e.pos, size)) {
             const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
@@ -219,22 +219,22 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('couvre les types de rencontre ÉTENDUS : Surprise/embuscade, Nuée (statbloc), Terreur, Test interactif', () => {
     const encs = project.flatMap((s) => s.encounters);
     expect(encs.some((e) => e.surprise === 'party')).toBe(true); // embuscade
-    expect(encs.some((e) => e.enemies.some((en) => (en.statblock?.traits ?? []).includes('Nuée')))).toBe(true); // Nuée = statbloc custom
-    expect(encs.some((e) => e.enemies.some((en) => en.ref === 'Spectre de cairn'))).toBe(true); // créature Terreur
+    expect(encs.some((e) => (e.enemies ?? []).some((en) => (en.statblock?.traits ?? []).includes('Nuée')))).toBe(true); // Nuée = statbloc custom
+    expect(encs.some((e) => (e.enemies ?? []).some((en) => en.ref === 'Spectre de cairn'))).toBe(true); // créature Terreur
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.effects?.some((ef) => ef.type === 'test'))));
     expect(hasTest).toBe(true); // Effet `test` (Crochetage) avec branches succès/échec
   });
 
   it('une zone met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {
-    const allEnemies = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies));
+    const allEnemies = project.flatMap((s) => s.encounters.flatMap((e) => (e.enemies ?? [])));
     expect(allEnemies.some((e) => e.rides != null)).toBe(true); // cavalier pré-monté (rides → index de la monture)
     expect(allEnemies.some((e) => e.mount && e.side === 'ally')).toBe(true); // monture LIBRE côté héros
   });
 
   it('FINALE : un boss MONSTRUEUX (4×4) au SOUFFLE de ténèbres (statbloc inline)', () => {
     const dragon = project
-      .flatMap((s) => s.encounters.flatMap((e) => e.enemies))
+      .flatMap((s) => s.encounters.flatMap((e) => (e.enemies ?? [])))
       .find((e) => e.statblock?.size === 'monstrueuse');
     expect(dragon, 'un ennemi de Taille Monstrueuse').toBeTruthy();
     expect((dragon!.statblock!.traits ?? []).some((t) => /Souffle/i.test(t))).toBe(true); // attaque de Souffle
@@ -261,7 +261,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     // L'arène fait découvrir un large bestiaire et des Traits canoniques pas encore tous codés mais déjà
     // présents en DONNÉES (« ça reste des systèmes qu'on veut tester »). On vérifie qu'ils sont référencés.
     const refs = new Set(
-      project.flatMap((s) => s.encounters.flatMap((e) => e.enemies.map((en) => en.ref).filter(Boolean))),
+      project.flatMap((s) => s.encounters.flatMap((e) => (e.enemies ?? []).map((en) => en.ref).filter(Boolean))),
     );
     expect(refs.size).toBeGreaterThanOrEqual(30); // large vitrine (≥30 créatures distinctes)
     // Traits canoniques (LDB 85) portés par les créatures référencées.
@@ -271,14 +271,14 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       expect(allTraits.some((t) => trait.test(t)), `Trait ${trait}`).toBe(true);
     }
     // Une créature MONSTRUEUSE (Dragon, statbloc) + une Énorme (Vouivre, par ref) au moins.
-    const sizes = project.flatMap((s) => s.encounters.flatMap((e) => e.enemies.map((en) => entitySize(en))));
+    const sizes = project.flatMap((s) => s.encounters.flatMap((e) => (e.enemies ?? []).map((en) => entitySize(en))));
     expect(sizes).toContain('monstrueuse');
     expect(sizes).toContain('enorme');
   });
 
   it('les ennemis d’une vague sont RÉPARTIS (pas tous dans la même colonne)', () => {
     for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
-      const xs = new Set(sc.encounters[0].enemies.map((e) => e.pos.x));
+      const xs = new Set((sc.encounters[0].enemies ?? []).map((e) => e.pos.x));
       expect(xs.size, sc.id).toBeGreaterThanOrEqual(2); // au moins 2 colonnes distinctes
     }
   });

@@ -83,7 +83,7 @@ export function Inspector({
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
   const selB = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
-  const spawn = sel?.type === 'spawn' ? scene.encounters[sel.enc]?.enemies[sel.idx] ?? null : null;
+  const spawn = sel?.type === 'spawn' ? (scene.encounters[sel.enc]?.enemies ?? [])[sel.idx] ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
   const entry = sel?.type === 'entry' ? scene.entryPoints?.[sel.id] ?? null : null;
 
@@ -93,12 +93,12 @@ export function Inspector({
     setScene({ ...scene, buildings: (scene.buildings ?? []).map((b) => (selB && b.id === selB.id ? { ...b, ...patch } : b)) });
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
-  const updateSpawn = (patch: Partial<EncounterDef['enemies'][number]>) => {
+  const updateSpawn = (patch: Partial<NonNullable<EncounterDef['enemies']>[number]>) => {
     if (sel?.type !== 'spawn') return;
     setScene({
       ...scene,
       encounters: scene.encounters.map((e, ei) =>
-        ei === sel.enc ? { ...e, enemies: e.enemies.map((en, ni) => (ni === sel.idx ? { ...en, ...patch } : en)) } : e,
+        ei === sel.enc ? { ...e, enemies: (e.enemies ?? []).map((en, ni) => (ni === sel.idx ? { ...en, ...patch } : en)) } : e,
       ),
     });
   };
