@@ -3,6 +3,7 @@
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
 import { Combatant } from './types';
+import { rule } from './policy';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
@@ -269,9 +270,16 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   return { died: false, log: [] };
 }
 
-/** Un figurant (non-héros, non-important) sort directement à 0 PB (Mort Subite, LDB 18 l.51-54). */
+/** Mort Subite (LDB 18 l.51-54) : sortie directe à 0 PB, sans passer par les Blessures critiques.
+ *  Portée réglable (`combat-sudden-death`) — JAMAIS les PJ : 'figurants' (défaut) = figurants seuls ;
+ *  'tous' = aussi les PNJ importants ; 'off' = personne (tout passe par les critiques). SOURCE UNIQUE
+ *  (consommée par `isOutOfAction` et la résolution de Blessure critique). */
 export function usesSuddenDeath(c: Combatant): boolean {
-  return c.kind !== 'hero' && !c.important;
+  if (c.kind === 'hero') return false; // jamais pour les PJ (LDB 18 l.54)
+  const mode = rule('combat-sudden-death');
+  if (mode === 'off') return false;
+  if (mode === 'tous') return true;
+  return !c.important; // 'figurants' : figurants seulement
 }
 
 /** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite). Un héros à 0 PB

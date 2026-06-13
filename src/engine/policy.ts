@@ -80,6 +80,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: false,
     hint: 'Tuer un adversaire en un seul coup permet d’enchaîner sur un autre (jusqu’au Bonus de CC). La règle de Taille enchaîne déjà sur une simple touche, indépendamment de cette option.',
   },
+  {
+    id: 'combat-sudden-death',
+    label: 'Mort Subite',
+    ref: 'LDB 18 l.51',
+    group: 'Combat',
+    kind: 'mode',
+    default: 'figurants',
+    options: ['figurants', 'tous', 'off'],
+    hint: 'Sur un coup fatal (Dégâts > PB), la cible meurt ou tombe Inconsciente sans passer par les Blessures critiques. figurants = figurants seuls (défaut) ; tous = aussi les PNJ importants ; off = personne (tout passe par les critiques). Jamais les PJ.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
