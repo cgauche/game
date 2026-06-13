@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { maybeOpenHeroPsych } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { evaluateTest } from '../engine/tests';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
@@ -68,6 +69,34 @@ describe('Test de Psychologie héros en modale (Peur/Terreur)', () => {
     expect(typeof useGame.getState().pendingPsych!.result!.calmeDR).toBe('number');
     useGame.getState().psychConfirm();
     expect(useGame.getState().pendingPsych).toBeNull();
+  });
+
+  it('Peur — Résilience « Je ne faillirai pas ! » : réussite forcée + CHOIX de la valeur du dé (LDB 17 l.73)', () => {
+    useGame.getState().seedRng(2);
+    const { H } = setup('grande'); // Peur 1
+    H.resilience = 2;
+    maybeOpenHeroPsych(useGame.getState, useGame.setState);
+    expect(useGame.getState().pendingPsych?.kind).toBe('peur');
+
+    // Résilience AVANT le jet : réussite garantie, défaut 01 → DR maximum, −1 Résilience.
+    useGame.getState().psychForceSuccess();
+    const r1 = useGame.getState().pendingPsych!;
+    expect(r1.forced).toBe(true);
+    expect(r1.result!.success).toBe(true);
+    expect(r1.result!.roll).toBe(1);
+    const target = r1.result!.target!;
+    expect(r1.result!.calmeDR).toBe(Math.max(evaluateTest(1, target).sl, 1)); // cumule depuis prevDR=0
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.resilience).toBe(1);
+
+    // « vous choisissez le résultat » : choisir le pire dé encore réussi (= la cible) → DR minimal.
+    useGame.getState().psychSetForcedRoll(target);
+    const r2 = useGame.getState().pendingPsych!;
+    expect(r2.result!.roll).toBe(target);
+    expect(r2.result!.calmeDR).toBe(Math.max(evaluateTest(target, target).sl, 0));
+
+    // Un dé RATÉ (> cible) est refusé : le résultat ne change pas.
+    useGame.getState().psychSetForcedRoll(Math.min(99, target) + 1);
+    expect(useGame.getState().pendingPsych!.result!.roll).toBe(target);
   });
 
   it('pas de source de peur (ennemi de même Taille) → aucune modale', () => {
