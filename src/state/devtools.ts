@@ -89,7 +89,7 @@ export function buildApi() {
 
     /** CARTOGRAPHIE : toutes les entités de la scène + comment y accéder. */
     entities: () =>
-      (g().scene?.entities ?? []).map((e) => ({
+      (g().scene?.entities ?? []).filter((e) => !e.combat?.hiddenUntilCombat).map((e) => ({
         id: e.id,
         label: e.label,
         kind: e.kind,

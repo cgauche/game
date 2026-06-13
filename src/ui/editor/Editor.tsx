@@ -18,6 +18,7 @@ import { projectSave, SavedProject } from '../../state/projectLibrary';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
+import { migrateScene } from '../../state/sceneMigrate';
 import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity } from './editorState';
 
 /**
@@ -76,8 +77,11 @@ export function Editor() {
   const view = useEditorView();
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
 
+  // Toute scène ENTRANT dans l'éditeur est normalisée : les ennemis legacy (`enemies[]`) deviennent
+  // des entités-personnages cachées + des membres de rencontre → l'éditeur les manipule comme des
+  // entités à part entière (un seul concept « Personnage »).
   function clone(s: Scene): Scene {
-    return JSON.parse(JSON.stringify(s));
+    return migrateScene(JSON.parse(JSON.stringify(s)));
   }
 
   /** Sélection depuis le CANVAS : un trigger ouvre aussi son détail dans le dock Logique. */
@@ -209,10 +213,10 @@ export function Editor() {
         const data = JSON.parse(txt);
         const { scenes, worldMap: wm } = parseProject(data); // projet v2, legacy (tableau) ou scène unique
         if (!scenes.length) return;
-        setOtherScenes(scenes.slice(1));
+        setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
         setSel(null);
-        resetScene(scenes[0]);
+        resetScene(clone(scenes[0]));
       } catch {
         alert('JSON invalide');
       }
@@ -396,6 +400,7 @@ export function Editor() {
         setDlgSel={setDlgSel}
         encSel={encSel}
         setEncSel={setEncSel}
+        onSelectEntity={(id) => { setSel({ type: 'entity', id }); setDrawer('inspector'); }}
       />
 
       <div className="editor-mobile-bar">

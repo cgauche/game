@@ -96,7 +96,14 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           walkEffects(c.effects, (eff) => checkEffect(eff, d.id, 'dialogue'));
         }
     }
-    for (const e of s.encounters) walkEffects(e.onVictory, (eff) => checkEffect(eff, e.id, 'encounter'));
+    const entIds = new Set(s.entities.map((e) => e.id));
+    for (const e of s.encounters) {
+      walkEffects(e.onVictory, (eff) => checkEffect(eff, e.id, 'encounter'));
+      for (const m of e.members ?? []) {
+        if (!entIds.has(m.entityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → membre inexistant « ${m.entityId} »`);
+        if (m.ridesEntityId && !entIds.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);
+      }
+    }
   }
   return out;
 }

@@ -9,6 +9,7 @@ import { Scene, Trigger, EncounterDef, Dialogue } from '../../state/scene';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
 import { CreatureData } from '../../data';
+import { addEnemyMember, removeMember, patchMember } from './editorState';
 import { EffectList, effectCtxOf, Ctx } from './EffectList';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
@@ -34,6 +35,7 @@ export function LogicDock({
   setDlgSel,
   encSel,
   setEncSel,
+  onSelectEntity,
 }: {
   scene: Scene;
   otherScenes: Scene[];
@@ -41,6 +43,8 @@ export function LogicDock({
   enemyCreatures: CreatureData[];
   warnings: Warning[];
   onSelectWarning: (w: Warning) => void;
+  /** Sélectionne une entité sur la carte (chip de membre → inspecteur). */
+  onSelectEntity: (id: string) => void;
   tab: LogicTab;
   setTab: (t: LogicTab) => void;
   open: boolean;
@@ -115,7 +119,7 @@ export function LogicDock({
             <DialoguesTab scene={scene} setScene={setScene} ctx={ctx} sel={dlgSel} setSel={setDlgSel} />
           )}
           {tab === 'encounters' && (
-            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} creatures={enemyCreatures} sel={encSel} setSel={setEncSel} />
+            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} creatures={enemyCreatures} sel={encSel} setSel={setEncSel} onSelectEntity={onSelectEntity} />
           )}
           {tab === 'validation' && (
             <div className="logic-validation">
@@ -294,6 +298,7 @@ function EncountersTab({
   creatures,
   sel,
   setSel,
+  onSelectEntity,
 }: {
   scene: Scene;
   setScene: (s: Scene) => void;
@@ -301,12 +306,13 @@ function EncountersTab({
   creatures: CreatureData[];
   sel: string | null;
   setSel: (id: string | null) => void;
+  onSelectEntity: (id: string) => void;
 }) {
   const enc = scene.encounters.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<EncounterDef>) =>
     setScene({ ...scene, encounters: scene.encounters.map((x) => (enc && x.id === enc.id ? { ...x, ...patch } : x)) });
-  const updEnemy = (ni: number, patch: Partial<EncounterDef['enemies'][number]>) =>
-    upd({ enemies: enc!.enemies.map((en, j) => (j === ni ? { ...en, ...patch } : en)) });
+  const byId = new Map(scene.entities.map((e) => [e.id, e]));
+  const members = enc?.members ?? [];
   return (
     <div className="logic-split">
       <div className="logic-list">
@@ -316,20 +322,20 @@ function EncountersTab({
               <b>{x.id}</b>
               {x.surprise ? ' · embuscade' : ''}
             </span>
-            <span className="count">{x.enemies.length} ennemi(s)</span>
+            <span className="count">{(x.members ?? []).length} membre(s)</span>
           </button>
         ))}
         <button
           className="btn small"
           onClick={() => {
             const id = nextEntityId('enc', scene.encounters.map((x) => x.id));
-            setScene({ ...scene, encounters: [...scene.encounters, { id, enemies: [] }] });
+            setScene({ ...scene, encounters: [...scene.encounters, { id, members: [] }] });
             setSel(id);
           }}
         >
           + Nouvelle rencontre
         </button>
-        <p className="hint">Astuce : outil ⚔️ pour placer les ennemis directement sur la carte.</p>
+        <p className="hint">Astuce : outil ⚔️ pour poser les combattants directement sur la carte.</p>
       </div>
       {enc ? (
         <div className="logic-detail">
@@ -354,70 +360,60 @@ function EncountersTab({
               Supprimer
             </button>
           </div>
-          <div className="mini-title">Ennemis</div>
+          <div className="mini-title">Combattants (membres)</div>
           <div className="enemy-list">
-            {enc.enemies.map((en, ni) => (
-              <div key={ni}>
-                <div className="enemy-row">
-                  <select value={en.ref ?? ''} onChange={(e) => updEnemy(ni, { ref: e.target.value })}>
-                    <option value="">— créature —</option>
-                    {creatures.map((c) => (
-                      <option key={c.label} value={c.label}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                  <label>
-                    x<input type="number" value={en.pos.x} onChange={(e) => updEnemy(ni, { pos: { ...en.pos, x: Number(e.target.value) } })} />
-                  </label>
-                  <label>
-                    y<input type="number" value={en.pos.y} onChange={(e) => updEnemy(ni, { pos: { ...en.pos, y: Number(e.target.value) } })} />
-                  </label>
-                  {/* Personnalisations d'auteur (édition fine : sélectionner le spawn sur la carte → inspecteur) */}
-                  {(en.optionals?.length || en.spells?.length || en.randomChars) ? (
-                    <span className="chip" title="Édité via l'inspecteur (sélectionner le spawn sur la carte)">
-                      {en.optionals?.length ? `+${en.optionals.length} facultatif(s) ` : ''}
-                      {en.spells?.length ? '🪄 ' : ''}
-                      {en.randomChars ? '🎲' : ''}
-                    </span>
-                  ) : null}
-                  <button className="btn small danger" onClick={() => upd({ enemies: enc.enemies.filter((_, j) => j !== ni) })}>
-                    ✕
-                  </button>
-                </div>
-                {/* Combat monté (LDB 14) : marquer une monture rideable, pré-monter un cavalier, basculer le camp. */}
-                <div className="enemy-mount">
-                  <label title="Cette créature est une monture rideable (peut être enfourchée — LDB 14).">
-                    <input type="checkbox" checked={!!en.mount} onChange={(e) => updEnemy(ni, { mount: e.target.checked || undefined })} /> 🐎 Monture
-                  </label>
-                  <label title="Monture (de cette rencontre) que cet acteur chevauche au spawn. ⚠ référence par index : change si on réordonne/supprime des ennemis.">
-                    Chevauche{' '}
-                    <select value={en.rides ?? ''} onChange={(e) => updEnemy(ni, { rides: e.target.value === '' ? undefined : Number(e.target.value) })}>
-                      <option value="">— aucune —</option>
-                      {enc.enemies.map((m, idx) =>
-                        idx !== ni && (m.mount || en.rides === idx) ? (
-                          <option key={idx} value={idx}>
-                            #{idx} {m.ref ?? '?'}
+            {members.map((m) => {
+              const e = byId.get(m.entityId);
+              const mounts = members.filter((mm) => mm.entityId !== m.entityId && (mm.mount || m.ridesEntityId === mm.entityId));
+              return (
+                <div key={m.entityId}>
+                  <div className="enemy-row">
+                    <button
+                      className="listrow insp-row"
+                      onClick={() => onSelectEntity(m.entityId)}
+                      title="Sélectionner sur la carte → éditer le profil/apparence dans l'inspecteur"
+                    >
+                      {e ? `${e.label ?? e.ref ?? m.entityId} · (${e.pos.x},${e.pos.y})` : `⚠ ${m.entityId} (entité manquante)`}
+                    </button>
+                    <button className="btn small danger" onClick={() => setScene(removeMember(scene, enc.id, m.entityId))} title="Retirer de la rencontre (l'entité reste sur la carte)">
+                      ✕
+                    </button>
+                  </div>
+                  <div className="enemy-mount">
+                    <label title="Cette créature est une monture rideable (peut être enfourchée — LDB 14).">
+                      <input type="checkbox" checked={!!m.mount} onChange={(e2) => setScene(patchMember(scene, enc.id, m.entityId, { mount: e2.target.checked || undefined }))} /> 🐎 Monture
+                    </label>
+                    <label title="Monture (de cette rencontre) que cet acteur chevauche au spawn (référence stable par entité).">
+                      Chevauche{' '}
+                      <select value={m.ridesEntityId ?? ''} onChange={(e2) => setScene(patchMember(scene, enc.id, m.entityId, { ridesEntityId: e2.target.value || undefined }))}>
+                        <option value="">— aucune —</option>
+                        {mounts.map((mm) => (
+                          <option key={mm.entityId} value={mm.entityId}>
+                            {byId.get(mm.entityId)?.label ?? byId.get(mm.entityId)?.ref ?? mm.entityId}
                           </option>
-                        ) : null,
-                      )}
-                    </select>
-                  </label>
-                  <label title="Camp au spawn : « Allié » place la créature du côté du groupe (monture libre prêtable). Défaut : Ennemi.">
-                    Camp{' '}
-                    <select value={en.side ?? 'enemy'} onChange={(e) => updEnemy(ni, { side: e.target.value === 'ally' ? 'ally' : undefined })}>
-                      <option value="enemy">Ennemi</option>
-                      <option value="ally">Allié</option>
-                    </select>
-                  </label>
+                        ))}
+                      </select>
+                    </label>
+                    <label title="Camp au spawn : « Allié » place la créature du côté du groupe (monture libre prêtable). Défaut : Ennemi.">
+                      Camp{' '}
+                      <select value={m.side ?? 'enemy'} onChange={(e2) => setScene(patchMember(scene, enc.id, m.entityId, { side: e2.target.value === 'ally' ? 'ally' : undefined }))}>
+                        <option value="enemy">Ennemi</option>
+                        <option value="ally">Allié</option>
+                      </select>
+                    </label>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <button
               className="btn small"
-              onClick={() => upd({ enemies: [...enc.enemies, { ref: creatures[0]?.label ?? 'Mutant', pos: { x: 0, y: 0 } }] })}
+              onClick={() => {
+                const r = addEnemyMember(scene, enc.id, creatures[0]?.label ?? 'Mutant', { x: 0, y: 0 });
+                setScene(r.scene);
+                onSelectEntity(r.entityId);
+              }}
             >
-              + Ennemi
+              + Combattant
             </button>
           </div>
           <div className="mini-title">Surprise (embuscade, LDB 13)</div>

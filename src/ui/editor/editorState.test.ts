@@ -13,7 +13,9 @@ import {
   addTrigger,
   addRestZone,
   addBuilding,
-  addSpawn,
+  addMember,
+  addEnemyMember,
+  removeMember,
   selRect,
   sameSel,
   DEFAULT_LAYERS,
@@ -22,19 +24,22 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 
 function sceneWith(): Scene {
   const s = emptyScene(10, 10);
-  s.entities = [{ id: 'perso-0', kind: 'personnage', pos: { x: 2, y: 2 } }];
+  s.entities = [
+    { id: 'perso-0', kind: 'personnage', pos: { x: 2, y: 2 } },
+    { id: 'enemy-0', kind: 'personnage', pos: { x: 1, y: 8 }, ref: 'Mutant', combat: { hiddenUntilCombat: true } },
+  ];
   s.triggers = [{ id: 'trig-0', rect: { x: 4, y: 4, w: 2, h: 2 }, once: true, effects: [] }];
   s.buildings = [{ id: 'b-0', type: 'maison', foot: { x: 6, y: 6, w: 3, h: 3 }, facing: 'S', reveal: 'cutaway', door: { x: 7, y: 8 }, params: {} }];
-  s.encounters = [{ id: 'enc-0', enemies: [{ ref: 'Mutant', pos: { x: 1, y: 8 } }] }];
+  s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];
   s.entryPoints = { entree: { x: 9, y: 0 } };
   return s;
 }
 
-describe('editorState — hitAt (priorité spawn > entité > entrée > trigger > repos > bâtiment)', () => {
+describe('editorState — hitAt (priorité entité > entrée > trigger > repos > bâtiment)', () => {
   const s = sceneWith();
   it('touche chaque type au bon endroit', () => {
-    expect(hitAt(s, { x: 1, y: 8 }, DEFAULT_LAYERS)).toEqual({ type: 'spawn', enc: 0, idx: 0 });
+    expect(hitAt(s, { x: 1, y: 8 }, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'enemy-0' }); // un ennemi EST une entité
     expect(hitAt(s, { x: 2, y: 2 }, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'perso-0' });
     expect(hitAt(s, { x: 9, y: 0 }, DEFAULT_LAYERS)).toEqual({ type: 'entry', id: 'entree' });
     expect(hitAt(s, { x: 5, y: 5 }, DEFAULT_LAYERS)).toEqual({ type: 'trigger', id: 'trig-0' });
@@ -42,9 +47,9 @@ describe('editorState — hitAt (priorité spawn > entité > entrée > trigger >
     expect(hitAt(s, { x: 7, y: 7 }, DEFAULT_LAYERS)).toEqual({ type: 'building', id: 'b-0' });
     expect(hitAt(s, { x: 3, y: 0 }, DEFAULT_LAYERS)).toBeNull();
   });
-  it('un calque masqué laisse cliquer à travers', () => {
+  it('un calque masqué laisse cliquer à travers (le calque Ennemis masque les embusqueurs)', () => {
     expect(hitAt(s, { x: 5, y: 5 }, { ...DEFAULT_LAYERS, triggers: false })).toBeNull();
-    expect(hitAt(s, { x: 1, y: 8 }, { ...DEFAULT_LAYERS, spawns: false })).toBeNull();
+    expect(hitAt(s, { x: 1, y: 8 }, { ...DEFAULT_LAYERS, spawns: false })).toBeNull(); // ennemi caché masqué
   });
 });
 
@@ -58,9 +63,9 @@ describe('editorState — moveSel (clampé)', () => {
     const out = moveSel(s, { type: 'trigger', id: 'trig-0' }, { x: 9, y: 9 });
     expect(out.triggers[0].rect).toEqual({ x: 8, y: 8, w: 2, h: 2 });
   });
-  it('déplace un point d’entrée et un spawn', () => {
+  it('déplace un point d’entrée et un ennemi (entité)', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
-    expect(moveSel(s, { type: 'spawn', enc: 0, idx: 0 }, { x: 4, y: 4 }).encounters[0].enemies[0].pos).toEqual({ x: 4, y: 4 });
+    expect(moveSel(s, { type: 'entity', id: 'enemy-0' }, { x: 4, y: 4 }).entities.find((e) => e.id === 'enemy-0')!.pos).toEqual({ x: 4, y: 4 });
   });
 });
 
@@ -83,11 +88,10 @@ describe('editorState — resizeSel (coin NW fixe)', () => {
 describe('editorState — deleteSel', () => {
   const s = sceneWith();
   it('supprime chaque type', () => {
-    expect(deleteSel(s, { type: 'entity', id: 'perso-0' }).entities).toHaveLength(0);
+    expect(deleteSel(s, { type: 'entity', id: 'perso-0' }).entities.map((e) => e.id)).toEqual(['enemy-0']);
     expect(deleteSel(s, { type: 'trigger', id: 'trig-0' }).triggers).toHaveLength(0);
     expect(deleteSel(s, { type: 'building', id: 'b-0' }).buildings).toHaveLength(0);
     expect(deleteSel(s, { type: 'restZone', idx: 0 }).restZones).toHaveLength(0);
-    expect(deleteSel(s, { type: 'spawn', enc: 0, idx: 0 }).encounters[0].enemies).toHaveLength(0);
     expect(deleteSel(s, { type: 'entry', id: 'entree' }).entryPoints).toBeUndefined();
     expect(deleteSel(s, null)).toBe(s);
   });
@@ -115,15 +119,36 @@ describe('editorState — pose', () => {
     const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'Loup', { x: 1, y: 1 });
     expect(scene.entities.find((e) => e.id === id)!.ref).toBe('Loup');
   });
-  it('addTrigger / addRestZone / addSpawn créent au bon endroit', () => {
+  it('addTrigger / addRestZone créent au bon endroit', () => {
     const t = addTrigger(emptyScene(10, 10), { x: 1, y: 1, w: 2, h: 2 });
     expect(t.scene.triggers[0].id).toBe(t.id);
     const z = addRestZone(emptyScene(10, 10), { x: 0, y: 0, w: 2, h: 2 });
     expect(z.scene.restZones![z.idx].places.camp).toBe(true);
-    const sp = addSpawn(emptyScene(10, 10), '', 'Mutant', { x: 3, y: 3 });
-    expect(sp.scene.encounters[0].enemies[0]).toEqual({ ref: 'Mutant', pos: { x: 3, y: 3 } });
-    const sp2 = addSpawn(sp.scene, sp.encId, 'Mutant', { x: 4, y: 4 });
-    expect(sp2.scene.encounters[0].enemies).toHaveLength(2);
+  });
+  it('addEnemyMember : pose une entité-personnage CACHÉE + l’enrôle (rencontre créée si absente)', () => {
+    const r = addEnemyMember(emptyScene(10, 10), '', 'Mutant', { x: 3, y: 3 });
+    const ent = r.scene.entities.find((e) => e.id === r.entityId)!;
+    expect(ent).toMatchObject({ kind: 'personnage', ref: 'Mutant', pos: { x: 3, y: 3 }, combat: { hiddenUntilCombat: true } });
+    expect(r.scene.encounters[0].members).toEqual([{ entityId: r.entityId }]);
+    // un 2ᵉ ennemi rejoint la MÊME rencontre
+    const r2 = addEnemyMember(r.scene, r.encId, 'Gobelin', { x: 4, y: 4 });
+    expect(r2.scene.encounters[0].members).toHaveLength(2);
+  });
+  it('addMember / removeMember : enrôle puis retire une entité existante (sans la supprimer)', () => {
+    let s = emptyScene(10, 10);
+    s = { ...s, entities: [{ id: 'p1', kind: 'personnage', pos: { x: 0, y: 0 } }], encounters: [{ id: 'enc-0', members: [] }] };
+    s = addMember(s, 'enc-0', 'p1').scene;
+    expect(s.encounters[0].members).toEqual([{ entityId: 'p1' }]);
+    expect(addMember(s, 'enc-0', 'p1').scene.encounters[0].members).toHaveLength(1); // idempotent
+    const out = removeMember(s, 'enc-0', 'p1');
+    expect(out.encounters[0].members).toHaveLength(0);
+    expect(out.entities).toHaveLength(1); // l'entité demeure
+  });
+  it('deleteSel d’une entité retire aussi ses rattachements de rencontre', () => {
+    const s = sceneWith();
+    const out = deleteSel(s, { type: 'entity', id: 'enemy-0' });
+    expect(out.entities.find((e) => e.id === 'enemy-0')).toBeUndefined();
+    expect(out.encounters[0].members).toHaveLength(0);
   });
   it('addBuilding : un drag pose l’empreinte dessinée telle quelle', () => {
     const r = addBuilding(emptyScene(10, 10), 'taverne', { x: 1, y: 1, w: 5, h: 2 })!;
@@ -165,7 +190,8 @@ describe('editorState — selRect / sameSel', () => {
     expect(selRect(s, { type: 'entity', id: 'perso-0' })).toBeNull();
   });
   it('sameSel compare par identité de cible', () => {
-    expect(sameSel({ type: 'spawn', enc: 0, idx: 0 }, { type: 'spawn', enc: 0, idx: 0 })).toBe(true);
+    expect(sameSel({ type: 'restZone', idx: 0 }, { type: 'restZone', idx: 0 })).toBe(true);
+    expect(sameSel({ type: 'entity', id: 'a' }, { type: 'entity', id: 'a' })).toBe(true);
     expect(sameSel({ type: 'trigger', id: 'a' }, { type: 'trigger', id: 'b' })).toBe(false);
     expect(sameSel(null, null)).toBe(true);
     expect(sameSel(null, { type: 'entity', id: 'x' })).toBe(false);

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook } from './spawn';
+import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook, spawnEnemy } from './spawn';
+import { enemyRigProfile } from '../gameIso/rig/enemyProfile';
 import { weaponFamily } from '../gameIso/rig/parts/equipment';
 import { findCreature } from '../data';
 import { CHAR_KEYS } from '../engine/types';
@@ -167,5 +168,35 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
     const [cc] = skillsFromBook(['Corps à Corps (Bagarre) 50'], chars);
     expect(cc).toMatchObject({ name: 'Corps à Corps', characteristic: 'CC', advances: 5 });
     expect(skillsFromBook(['Athlétisme'], chars)).toEqual([]); // rien d'inventé
+  });
+});
+
+/** L'apparence ÉDITÉE d'un ennemi (seed re-tiré, sexe, carrière…) doit survivre au spawn et
+ *  atteindre le rig en combat — sans elle, `enemyRigProfile` redérivait tout du nom (bug). */
+describe('spawnEnemy — transport de l’apparence/carrière éditée vers le Combatant (parité explo↔combat)', () => {
+  const at = { x: 0, y: 0 };
+
+  it('seed + sexe + carrure édités → portés par Combatant.appearance', () => {
+    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { seed: 12345, sex: 'F', build: 0.7 } });
+    expect(c.appearance).toMatchObject({ seed: 12345, sex: 'F', build: 0.7 });
+  });
+
+  it('carrière éditée (tenue) → portée par Combatant.career', () => {
+    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { career: 'Soldat' } });
+    expect(c.career).toBe('Soldat');
+  });
+
+  it('sans aucun override → appearance reste indéfini (rendu dérivé du nom inchangé)', () => {
+    const c = spawnEnemy('Mutant', undefined, 'e1', at);
+    expect(c.appearance).toBeUndefined();
+  });
+
+  it('override PARTIEL (seed seul) → enemyRigProfile conserve les défauts de race (coiffure/couleurs)', () => {
+    const plain = enemyRigProfile(spawnEnemy('Mutant', undefined, 'e1', at))!;
+    const seeded = enemyRigProfile(spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { seed: 999 } }))!;
+    expect(seeded.appearance.seed).toBe(999);
+    // Les champs NON édités (parts/colors canoniques de la race) restent ceux du défaut.
+    expect(seeded.appearance.parts).toEqual(plain.appearance.parts);
+    expect(seeded.appearance.colors).toEqual(plain.appearance.colors);
   });
 });

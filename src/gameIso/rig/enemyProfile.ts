@@ -132,6 +132,15 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
   return items;
 }
 
+/** Superpose les champs DÉFINIS de `over` sur `base` (un undefined ne masque pas le défaut). */
+function overlayDefined(base: Appearance, over: Appearance): Appearance {
+  const out: Appearance = { ...base };
+  for (const k of Object.keys(over) as (keyof Appearance)[]) {
+    if (over[k] !== undefined) (out as unknown as Record<string, unknown>)[k] = over[k];
+  }
+  return out;
+}
+
 /**
  * Profil rig d'un combattant, ou null si non-humanoïde (→ rendu par son gabarit corporel
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
@@ -147,7 +156,10 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const sex: 'M' | 'F' = perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
   const autoMon = perso?.monster;
-  const baseApp: Appearance = c.appearance ?? { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
+  // Défauts de race/seed PUIS superposition de l'override d'auteur (champs définis seulement) :
+  // un override partiel (ex. seed re-tiré, sexe forcé) conserve coiffure/couleurs/gabarit canoniques.
+  const def: Appearance = { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
+  const baseApp: Appearance = c.appearance ? overlayDefined(def, c.appearance) : def;
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
   // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).

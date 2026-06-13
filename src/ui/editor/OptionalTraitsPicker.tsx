@@ -108,7 +108,8 @@ export function SpellsField({ value, onChange }: { value: string[] | undefined; 
         }}
       />
       <datalist id="ed-spells-list">
-        {spells.map((s) => (
+        {/* dédoublonné par libellé : spells.json répète certains noms (clés React uniques). */}
+        {Array.from(new Map(spells.map((s) => [s.label, s])).values()).map((s) => (
           <option key={s.label} value={s.label}>{s.type}{s.subType ? ` — ${s.subType}` : ''}</option>
         ))}
       </datalist>

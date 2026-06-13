@@ -184,7 +184,7 @@ export function talentsFromBook(list: string[] | undefined): TalentInstance[] {
   return (list ?? []).map((name) => ({ name: name.trim(), times: 1 })).filter((t) => t.name);
 }
 
-/** Personnalisations d'AUTEUR d'un spawn de créature du bestiaire (EncounterDef.enemies[i]). */
+/** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */
 export interface SpawnExtras {
   /** Traits FACULTATIFS choisis (LDB 76 l.49), chaînes éditées — fusionnés avant toute dérivation. */
   optionals?: string[];
@@ -311,18 +311,23 @@ export function spawnEnemy(
   else if (ref && findCreature(ref)) c = creatureToCombatant(findCreature(ref)!, id, pos, opts);
   else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
 
-  // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique :
-  // parts monstrueux (mutant modulaire) + couleurs (palette) + arme équipée.
-  if (opts?.appearance?.monster || opts?.appearance?.colors || opts?.appearance?.parts || opts?.appearance?.eyes) {
-    c.appearance = riggedAppearance(c.name, opts.appearance.seed ?? hashSeed(id), {
-      monster: opts.appearance.monster,
-      colors: opts.appearance.colors,
-      parts: opts.appearance.parts,
-      sex: opts.appearance.sex,
-      build: opts.appearance.build,
-      eyes: opts.appearance.eyes,
+  // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur
+  // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté par
+  // `Combatant.appearance` ; `enemyRigProfile` le SUPERPOSE aux défauts de race (champs absents
+  // conservés). Sans aucun override, `appearance` reste indéfini → rendu dérivé du nom inchangé.
+  const a = opts?.appearance;
+  if (a && (a.monster || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined)) {
+    c.appearance = riggedAppearance(c.name, a.seed ?? hashSeed(id), {
+      monster: a.monster,
+      colors: a.colors,
+      parts: a.parts,
+      sex: a.sex,
+      build: a.build,
+      eyes: a.eyes,
     });
   }
+  // Tenue/carrière éditée (libellé) → portée par le rig en combat comme en exploration.
+  if (a?.career) c.career = a.career;
   if (opts?.weapon) {
     c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];
   }

@@ -36,7 +36,7 @@ export interface PendingEncounterPsych {
 /** PNJ « personnage » présents dans la scène, dérivés en Combatant (groups/causesPeur/Terreur/size). */
 export function sceneFearSources(scene: Scene): Combatant[] {
   return (scene.entities ?? [])
-    .filter((e) => e.kind === 'personnage')
+    .filter((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat) // un embusqueur caché n'inspire pas la Peur avant le combat
     .map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos));
 }
 
