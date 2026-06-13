@@ -24,9 +24,11 @@ beforeEach(() => {
 });
 
 describe('couverture de curation', () => {
-  it('Magie mineure (25), Arcanes communs (23), Miracles Sigmar+Shallya (12) : tous curés', () => {
+  it('Magie mineure, Arcanes communs, Domaines Feu/Lumière, Miracles Sigmar+Shallya : tous curés', () => {
+    const curedArcaneDomains = ['Feu', 'Lumière'];
     for (const s of spells) {
       const fam = s.type === 'Magie mineure' || (s.type === 'Magie des Arcanes' && s.subType == null)
+        || (s.type === 'Magie des Arcanes' && curedArcaneDomains.includes(s.subType ?? ''))
         || (s.type === 'Invocation' && (s.subType === 'Sigmar' || s.subType === 'Shallya'));
       if (fam) expect(spellSpecFor(s).curated, s.label).toBe(true);
     }
