@@ -28,6 +28,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Cultes (dieux + leurs six Bénédictions, LDB 41) : 1 culte = 1 fichier defs/.
+    dir: 'src/engine/cults/defs',
+    out: 'src/engine/cults/_registry.generated.ts',
+    exportName: 'cult',
+    arrayName: 'CULT_DEFS',
+    type: 'CultDef',
+    typeFrom: './types',
+  },
+  {
     // Scénarios de test : fichiers À PLAT dans le dossier (pas de sous-dossier defs/).
     dir: 'src/scenes/test-scenarios',
     out: 'src/scenes/test-scenarios/_registry.generated.ts',

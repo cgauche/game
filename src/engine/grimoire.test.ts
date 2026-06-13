@@ -6,8 +6,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import {
-  casterTalents, spellCost, learnableSpells, blessingsOf, canCastFromGrimoire, knownCount,
+  casterTalents, spellCost, learnableSpells, canCastFromGrimoire, knownCount,
 } from './grimoire';
+import { blessingsOf } from './cults/registry';
 import { spells } from '../data';
 
 const sp = (label: string) => spells.find((s) => s.label === label)!;

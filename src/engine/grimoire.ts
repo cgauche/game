@@ -21,26 +21,7 @@
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { spells, type SpellData } from '../data';
-
-/** Bénédictions par culte (LDB 41, verbatim). Clé = culte ; valeurs = suffixe du label
- *  (« Bataille » → « Bénédiction de Bataille »). */
-export const CULT_BLESSINGS: Record<string, string[]> = {
-  Manann: ['Bataille', 'Courage', 'Sauvagerie', 'Souffle', 'Ténacité', 'Vigueur'],
-  Morr: ['Chance', 'Courage', 'Droiture', 'Sagesse', 'Souffle', 'Ténacité'],
-  Myrmidia: ['Bataille', 'Chance', 'Conscience', 'Courage', 'Droiture', 'Protection'],
-  Ranald: ['Chance', 'Charisme', 'Conscience', 'Finesse', 'Protection', 'Vivacité'],
-  Rhya: ['Conscience', 'Convalescence', 'Grâce', 'Guérison', 'Protection', 'Souffle'],
-  Shallya: ['Conscience', 'Convalescence', 'Guérison', 'Protection', 'Souffle', 'Ténacité'],
-  Sigmar: ['Bataille', 'Courage', 'Droiture', 'Puissance', 'Protection', 'Vigueur'],
-  Taal: ['Bataille', 'Conscience', 'La Chasse', 'Sauvagerie', 'Souffle', 'Vigueur'],
-  Ulric: ['Bataille', 'Courage', 'Puissance', 'Sauvagerie', 'Ténacité', 'Vigueur'],
-  Verena: ['Chance', 'Conscience', 'Courage', 'Droiture', 'Sagesse', 'Vivacité'],
-};
-
-/** Labels complets des six Bénédictions d'un culte. */
-export function blessingsOf(cult: string): string[] {
-  return (CULT_BLESSINGS[cult] ?? []).map((x) => `Bénédiction de ${x}`);
-}
+import { blessingsOf } from './cults/registry'; // Bénédictions par culte : registre defs/ (plus de record en dur)
 
 export interface CasterTalent {
   kind: 'mineure' | 'arcane' | 'invocation' | 'beni' | 'chaos';

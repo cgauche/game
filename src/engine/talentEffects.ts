@@ -29,7 +29,7 @@ import { Combatant, CHAR_BY_LABEL, CharKey } from './types';
 import { bonus, maxWounds } from './characteristics';
 import { findTalent } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
-import { blessingsOf } from './grimoire';
+import { blessingsOf } from './cults/registry';
 
 /** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
 function addCharOf(talentLabel: string): string | null {
