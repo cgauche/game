@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useGame } from '../state/store';
+import { loadHouseRules } from '../state/houseRules';
 import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
@@ -31,8 +32,9 @@ function CoopBanner() {
 
 export function App() {
   const screen = useGame((s) => s.screen);
-  // Lien d'invitation ?join=CODE → arrivée directe sur l'écran coop (code pré-rempli).
+  // Règles maison persistées → registre (avant tout jet) ; lien d'invitation ?join=CODE → écran coop.
   useEffect(() => {
+    loadHouseRules();
     if (new URLSearchParams(location.search).get('join')) useGame.getState().setScreen('coop');
   }, []);
   return (

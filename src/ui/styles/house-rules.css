@@ -1,0 +1,61 @@
+/* Règles maison — panneau des règles optionnelles, GÉNÉRÉ depuis le registre `OPTIONAL_RULES`. */
+.house-rules {
+  max-width: min(560px, 94vw);
+  text-align: left;
+}
+.house-rules .hr-intro {
+  color: var(--ink-soft, #b8a98c);
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+.house-rules .hr-group {
+  margin-bottom: 1rem;
+}
+.house-rules .hr-group .mini-title {
+  margin: 0 0 0.35rem;
+}
+.house-rules .hr-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+}
+.house-rules .hr-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+.house-rules .hr-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.house-rules .hr-ref {
+  color: var(--ink-faint, #7d7259);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.house-rules .hr-reset {
+  background: none;
+  border: none;
+  color: var(--ink-faint, #7d7259);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+.house-rules .hr-reset:hover {
+  color: var(--copper, #c87f4a);
+}
+.house-rules .hr-control select,
+.house-rules .hr-control input[type='number'] {
+  min-width: 6rem;
+}
+@media (max-width: 560px) {
+  .house-rules .hr-row {
+    grid-template-columns: 1fr auto;
+  }
+  .house-rules .hr-ref {
+    display: none;
+  }
+}

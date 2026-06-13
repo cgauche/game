@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
 import { SaveLoadModal } from './SaveLoadModal';
+import { HouseRulesModal } from './HouseRulesModal';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const [loadOpen, setLoadOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const hasSaves = listSaves().some((m) => m != null);
 
   return (
@@ -25,6 +27,9 @@ export function MainMenu() {
           <button className="btn" onClick={() => setScreen('coop')}>
             🌐 Jouer en ligne
           </button>
+          <button className="btn" onClick={() => setRulesOpen(true)} title="Activer les règles optionnelles du Livre de base">
+            📜 Règles maison
+          </button>
         </div>
         <div className="rule-fleur menu-tools-rule" aria-hidden>Atelier</div>
         <div className="menu-buttons menu-tools">
@@ -41,6 +46,7 @@ export function MainMenu() {
         <p className="footnote">Adapté du Livre de base et des Archives de l'Empire I &amp; II (WFRP 4ᵉ édition).</p>
       </div>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
+      {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
     </div>
   );
 }
