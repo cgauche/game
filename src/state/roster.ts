@@ -45,6 +45,31 @@ export function rosterRemove(heroId: string): void {
   save(rosterLoad().filter((e) => e.hero.id !== heroId));
 }
 
+const EXPORT_KIND = 'wfrp4-hero';
+const EXPORT_VERSION = 1;
+
+/** Sérialise un héros (avec sa Richesse) en chaîne portable — sauvegarde, transfert d'appareil,
+ *  ou partage pour rejoindre la coop d'un ami. Format taggé pour une réimportation robuste. */
+export function rosterExport(entry: RosterEntry): string {
+  return JSON.stringify({ kind: EXPORT_KIND, v: EXPORT_VERSION, hero: entry.hero, wealth: entry.wealth }, null, 2);
+}
+
+/** Lit une chaîne `rosterExport` (ou un `RosterEntry` nu) → `RosterEntry`, ou null si invalide.
+ *  Réutilise la même garde que `rosterLoad` (hero.id chaîne) ; Richesse par défaut si absente. */
+export function rosterImport(str: string): RosterEntry | null {
+  try {
+    const p = JSON.parse(str) as Partial<RosterEntry> & { hero?: { id?: unknown } };
+    const hero = p?.hero;
+    if (!hero || typeof hero !== 'object' || typeof hero.id !== 'string') return null;
+    const w = (p as { wealth?: unknown }).wealth;
+    const wealth: Money =
+      w && typeof w === 'object' ? (w as Money) : { gold: 0, silver: 0, brass: 0 };
+    return { hero: hero as unknown as Combatant, wealth };
+  } catch {
+    return null;
+  }
+}
+
 function save(list: RosterEntry[]): void {
   try {
     storage()?.setItem(KEY, JSON.stringify(list));

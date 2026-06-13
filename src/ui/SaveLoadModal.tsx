@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { listSaves, readSlot, deleteSlot, exportSave, SAVE_SLOTS, type SaveSlot } from '../state/saves';
+import { downloadText } from '../state/fileIo';
 import { formatImperial } from '../engine/clock';
 import { Modal } from './Modal';
 
@@ -28,14 +29,7 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   };
   const onExport = (slot: SaveSlot) => {
     const save = readSlot(slot);
-    if (!save) return;
-    const blob = new Blob([exportSave(save)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `wfrp4-sauvegarde-${slot}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (save) downloadText(`wfrp4-sauvegarde-${slot}.json`, exportSave(save));
   };
   const onDelete = (slot: SaveSlot) => {
     deleteSlot(slot);

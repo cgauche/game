@@ -15,6 +15,7 @@ import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
 import { projectSave, SavedProject } from '../../state/projectLibrary';
+import { downloadText } from '../../state/fileIo';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
@@ -199,13 +200,7 @@ export function Editor() {
   function exportJson() {
     // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
     const project = { schema: 2 as const, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}) };
-    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${scene.id}-projet.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
     file.text().then((txt) => {

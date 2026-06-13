@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rosterLoad, rosterAdd, rosterRemove, RosterEntry } from './roster';
+import { rosterLoad, rosterAdd, rosterRemove, rosterExport, rosterImport, RosterEntry } from './roster';
 import { Combatant } from '../engine/types';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
@@ -83,5 +83,29 @@ describe('roster — persistance des personnages créés', () => {
     expect(rosterLoad()).toEqual([]);
     expect(() => rosterAdd(entry('h1'))).not.toThrow();
     expect(() => rosterRemove('h1')).not.toThrow();
+  });
+});
+
+describe('roster — export / import (portabilité)', () => {
+  it('round-trip préserve héros + richesse', () => {
+    const back = rosterImport(rosterExport(entry('h1')));
+    expect(back).not.toBeNull();
+    expect(back!.hero.id).toBe('h1');
+    expect(back!.wealth).toEqual({ gold: 1, silver: 2, brass: 3 });
+  });
+
+  it('accepte un RosterEntry nu (sans tag kind/v)', () => {
+    expect(rosterImport(JSON.stringify(entry('h2')))?.hero.id).toBe('h2');
+  });
+
+  it('richesse par défaut (0) si absente', () => {
+    expect(rosterImport(JSON.stringify({ hero: { id: 'h3', name: 'X' } }))?.wealth).toEqual({ gold: 0, silver: 0, brass: 0 });
+  });
+
+  it('null sur JSON invalide ou hero.id manquant/non-chaîne', () => {
+    expect(rosterImport('pas du json')).toBeNull();
+    expect(rosterImport('{}')).toBeNull();
+    expect(rosterImport(JSON.stringify({ hero: {} }))).toBeNull();
+    expect(rosterImport(JSON.stringify({ hero: { id: 42 } }))).toBeNull();
   });
 });

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
 import { makePregens } from '../data/pregens';
-import { rosterLoad, rosterRemove } from '../state/roster';
+import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
+import { downloadText, fileSlug } from '../state/fileIo';
 import { campaign } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
@@ -303,12 +304,28 @@ export function PartyPicker({
   const pregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
+  const [importErr, setImportErr] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const setScreen = useGame((s) => s.setScreen);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
   const removeSaved = (id: string) => {
     rosterRemove(id);
     setRoster(rosterLoad());
+  };
+  const exportHero = (entry: { hero: Combatant; wealth: Money }) =>
+    downloadText(`wfrp4-perso-${fileSlug(entry.hero.name)}.json`, rosterExport(entry));
+  const onImportFile = async (file: File | undefined) => {
+    if (!file) return;
+    const entry = rosterImport(await file.text());
+    if (!entry) {
+      setImportErr('Fichier de personnage invalide.');
+      return;
+    }
+    rosterAdd(entry);
+    setRoster(rosterLoad());
+    setImportErr(null);
+    setTab('roster');
   };
 
   return (
@@ -342,11 +359,27 @@ export function PartyPicker({
                 >
                   {inParty(hero.id) ? 'Déjà choisi' : 'Choisir'}
                 </button>
+                <button className="btn small" onClick={() => exportHero({ hero, wealth })} title="Télécharger ce personnage (JSON) — backup, autre appareil, ou coop d'un ami">
+                  Exporter
+                </button>
                 <button className="btn small danger" onClick={() => removeSaved(hero.id)}>
                   Supprimer
                 </button>
               </div>
             ))}
+            <div className="party-import">
+              <button className="btn small" onClick={() => fileRef.current?.click()} title="Importer un personnage depuis un fichier JSON exporté">
+                📥 Importer un personnage…
+              </button>
+              {importErr && <span className="hint danger">{importErr}</span>}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                style={{ display: 'none' }}
+                onChange={(e) => { void onImportFile(e.target.files?.[0]); e.target.value = ''; }}
+              />
+            </div>
           </div>
         ) : (
           <div className="pregen-list">

@@ -43,6 +43,15 @@
   flex: 1;
   min-width: 200px;
 }
+.party-import {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
 .picker-title {
   margin: 0 0 10px;
   color: var(--gold2);
