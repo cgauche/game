@@ -10,6 +10,7 @@
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, etats, creatures, traits, spells,
+  stars, locations, books,
 } from '../../data';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
@@ -84,6 +85,13 @@ export const CODEX: CodexCategory[] = [
     items: classes.map((c) => ({ label: c.label, desc: c.desc, source: src(c.source), tags: c.trappings })),
   },
   {
+    key: 'stars', label: 'Étoiles', group: 'Personnage',
+    items: stars.map((s) => ({
+      label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
+      meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant), fact('Caractéristiques', s.characteristics), fact('Talent', s.talent)),
+    })),
+  },
+  {
     key: 'skills', label: 'Compétences', group: 'Compétences',
     items: skills.map((s) => ({ label: s.label, sub: join(s.characteristic, s.type), desc: s.desc, source: src(s.source) })),
   },
@@ -130,6 +138,14 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'traits', label: 'Traits', group: 'Monde',
     items: traits.map((t) => ({ label: t.label, sub: t.prefix ?? undefined, desc: t.desc, source: src(t.source) })),
+  },
+  {
+    key: 'locations', label: 'Lieux', group: 'Monde',
+    items: locations.map((l) => ({ label: l.label, sub: l.parent ?? undefined, desc: l.desc ?? undefined, source: src(l.source) })),
+  },
+  {
+    key: 'books', label: 'Livres', group: 'Monde',
+    items: books.map((b) => ({ label: b.label, sub: b.abr ?? b.folder ?? undefined, desc: b.desc ?? undefined, html: true })),
   },
 ];
 

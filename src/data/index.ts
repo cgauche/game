@@ -18,6 +18,9 @@ import spellsJson from './spells.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import detailsJson from './details.json';
+import starsJson from './stars.json';
+import locationsJson from './locations.json';
+import booksJson from './books.json';
 import { CharKey } from '../engine/types';
 
 export interface SpeciesData {
@@ -171,6 +174,39 @@ export interface SpellData {
   source: { book: string; page: number };
 }
 
+/** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + faits. */
+export interface StarData {
+  label: string;
+  rand: number;
+  signe: string | null;
+  classique: string | null;
+  ascendant: string | null;
+  dates: string | null;
+  dieux: string | null;
+  apparence: string | null;
+  characteristics: string | null;
+  talent: string | null;
+  desc: string | null;
+  source: { book: string; page: number };
+}
+/** Lieu (Glorieux Reikland, LDB) : hiérarchie par `parent` (label d'un autre lieu). */
+export interface LocationData {
+  label: string;
+  parent: string | null;
+  prefix: string | null;
+  suffix: string | null;
+  desc: string | null;
+  source: { book: string; page: number };
+}
+/** Ouvrage WFRP4 référencé (bibliographie). `desc` = HTML de présentation. */
+export interface BookData {
+  label: string;
+  abr: string | null;
+  language: string | null;
+  folder: string | null;
+  desc: string | null;
+}
+
 export const characteristics = characteristicsJson as any[];
 export const species = speciesJson as SpeciesData[];
 export const classes = classesJson as ClassData[];
@@ -187,6 +223,9 @@ export const spells = spellsJson as SpellData[];
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;
+export const stars = starsJson as StarData[];
+export const locations = locationsJson as LocationData[];
+export const books = booksJson as BookData[];
 
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);
@@ -224,4 +263,13 @@ export function findCreature(label: string): CreatureData | undefined {
 }
 export function findSpell(label: string): SpellData | undefined {
   return spells.find((s) => s.label === label);
+}
+export function findStar(label: string): StarData | undefined {
+  return stars.find((s) => s.label === label);
+}
+export function findLocation(label: string): LocationData | undefined {
+  return locations.find((l) => l.label === label);
+}
+export function findBook(label: string): BookData | undefined {
+  return books.find((b) => b.label === label || b.abr === label);
 }

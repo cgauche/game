@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T20:23:02.043Z",
+  "generatedAt": "2026-06-13T21:13:17.254Z",
   "allowedBooks": [
     "LDB",
     "ADE1",
@@ -33,6 +33,9 @@
     "spells": 243,
     "eyes": 10,
     "hairs": 10,
-    "details": 5
+    "details": 5,
+    "stars": 24,
+    "locations": 55,
+    "books": 28
   }
 }

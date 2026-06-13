@@ -371,6 +371,48 @@ function main() {
   }));
   write('spells.json', spells, spells.length);
 
+  // --- Étoiles (signes astraux, ADE2) ---------------------------------------
+  // Table d100 : `rand` = borne haute cumulée. Les derniers signes (rand ≥ 100 déjà
+  // atteint) ne sont PAS tirables au hasard — sélection manuelle uniquement.
+  const stars = keep(raw.star as Any[]).map((s: Any) => ({
+    label: s.label,
+    rand: s.rand,
+    signe: norm(s.signe),
+    classique: norm(s.classique),
+    ascendant: norm(s.ascendant),
+    dates: norm(s.dates),
+    dieux: norm(s.dieux),
+    apparence: norm(s.apparence),
+    characteristics: norm(s.characteristics),
+    talent: norm(s.talent),
+    desc: norm(s.desc),
+    source: { book: s.book, page: s.page },
+  }));
+  write('stars.json', stars, stars.length);
+
+  // --- Lieux (Glorieux Reikland, LDB) ---------------------------------------
+  // Hiérarchie par `parent` (label d'un autre lieu). desc = prose de présentation.
+  const locations = keep(raw.lore as Any[]).map((l: Any) => ({
+    label: l.label,
+    parent: norm(l.parent),
+    prefix: norm(l.prefix),
+    suffix: norm(l.suffix),
+    desc: norm(l.desc),
+    source: { book: l.book, page: l.page },
+  }));
+  write('locations.json', locations, locations.length);
+
+  // --- Livres (bibliographie WFRP4 référencée) ------------------------------
+  // Pas de champ `book` → tous gardés. desc = HTML (présentation de l'ouvrage).
+  const books = keep(raw.book as Any[]).map((b: Any) => ({
+    label: b.label,
+    abr: norm(b.abr),
+    language: norm(b.language),
+    folder: norm(b.folder),
+    desc: norm(b.desc),
+  }));
+  write('books.json', books, books.length);
+
   // --- Index récapitulatif --------------------------------------------------
   const index = {
     generatedAt: new Date().toISOString(),
@@ -393,6 +435,9 @@ function main() {
       eyes: eyes.length,
       hairs: hairs.length,
       details: Object.keys(details).length,
+      stars: stars.length,
+      locations: locations.length,
+      books: books.length,
     },
   };
   write('_index.json', index, 1);
