@@ -136,7 +136,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
@@ -213,6 +213,12 @@ export interface BattleState {
 
 export interface GameState {
   screen: Screen;
+  /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex. */
+  compendiumFocus: { category: string; label: string } | null;
+  /** Écran à restaurer en quittant le Codex (capturé à l'ouverture). */
+  compendiumReturn: Screen;
+  /** Ouvre le Codex (optionnellement sur une entrée), en mémorisant l'écran courant pour le retour. */
+  openCodex: (focus?: { category: string; label: string }) => void;
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
@@ -815,6 +821,8 @@ export interface GameState {
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
+  compendiumFocus: null,
+  compendiumReturn: 'menu',
   pendingCampaign: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
@@ -914,6 +922,7 @@ export const useGame = create<GameState>((set, get) => ({
   previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
+  openCodex: (focus) => set((st) => ({ screen: 'compendium', compendiumFocus: focus ?? null, compendiumReturn: st.screen === 'compendium' ? st.compendiumReturn : st.screen })),
   setPendingCampaign: (pc) => set({ pendingCampaign: pc }),
 
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──

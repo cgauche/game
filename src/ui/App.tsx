@@ -13,6 +13,7 @@ const Editor = lazy(() => import('./editor/Editor').then((m) => ({ default: m.Ed
 const TestScenariosScreen = lazy(() => import('./TestScenariosScreen').then((m) => ({ default: m.TestScenariosScreen })));
 const InterludeScreen = lazy(() => import('./InterludeScreen').then((m) => ({ default: m.InterludeScreen })));
 const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
+const CompendiumScreen = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CompendiumScreen })));
 
 /** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
 function CoopBanner() {
@@ -49,6 +50,7 @@ export function App() {
         {screen === 'test' && <TestScenariosScreen />}
         {screen === 'interlude' && <InterludeScreen />}
         {screen === 'coop' && <CoopLobby />}
+        {screen === 'compendium' && <CompendiumScreen />}
       </Suspense>
     </div>
   );

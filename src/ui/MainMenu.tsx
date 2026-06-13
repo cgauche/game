@@ -6,6 +6,7 @@ import { HouseRulesModal } from './HouseRulesModal';
 
 export function MainMenu() {
   const setScreen = useGame((s) => s.setScreen);
+  const openCodex = useGame((s) => s.openCodex);
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const [loadOpen, setLoadOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -29,6 +30,9 @@ export function MainMenu() {
           </button>
           <button className="btn" onClick={() => setRulesOpen(true)} title="Activer les règles optionnelles du Livre de base">
             📜 Règles maison
+          </button>
+          <button className="btn" onClick={() => openCodex()} title="Consulter les règles, sorts, talents, bestiaire et lore (sourcés du Livre de base)">
+            📖 Compendium
           </button>
         </div>
         <div className="rule-fleur menu-tools-rule" aria-hidden>Atelier</div>

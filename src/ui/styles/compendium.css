@@ -1,0 +1,186 @@
+/* ════════════ CODEX (Compendium) — écran de référence en jeu ════════════
+   Compose les primitives canoniques (.panel/.listrow/.seg/.chip/.stat-chip) + .layout-sidebar
+   (s'empile ≤900px). Couleurs = tokens de base.css uniquement. */
+
+.screen.codex {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  box-sizing: border-box;
+}
+
+.codex-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.codex-h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--gold);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.codex-groups {
+  margin-left: auto;
+}
+
+/* sous-onglets de catégorie (pastilles avec compteur) */
+.codex-cats {
+  gap: 6px;
+}
+.codex-cat {
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.codex-cat.on {
+  border-color: var(--gold);
+  color: var(--gold2);
+  background: var(--panel2);
+}
+.codex-cat.on .count {
+  color: var(--gold2);
+}
+
+/* grille principale liste ⇄ détail — DEUX panneaux à défilement indépendant (pas le single-scroll
+   de .layout-sidebar : un Codex a 240+ entrées par catégorie). */
+.codex-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.codex-aside {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.codex-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 14px;
+}
+.codex-search::placeholder {
+  color: var(--muted);
+}
+.codex-rows {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+}
+.codex-row {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  transition: border-color 0.1s, background 0.1s;
+}
+.codex-row:hover {
+  border-color: var(--gold2);
+}
+.codex-row.on {
+  border-color: var(--gold);
+  background: var(--panel2);
+}
+.codex-row-src {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.codex-noresult,
+.codex-empty {
+  color: var(--muted);
+  padding: 16px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* détail (fiche) */
+.codex-detail {
+  overflow-y: auto;
+  min-height: 0;
+}
+.codex-entry-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+.codex-entry-title {
+  font-family: var(--font-display);
+  font-size: 21px;
+  color: var(--gold2);
+  margin: 0;
+}
+.codex-entry-sub {
+  width: 100%;
+  color: var(--muted);
+  font-size: 13px;
+}
+.codex-src {
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.codex-meta {
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.codex-fact {
+  min-width: 52px;
+}
+.codex-tags {
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.codex-body {
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.codex-body :is(b, strong) {
+  color: var(--gold2);
+}
+.codex-empty-desc {
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .screen.codex {
+    height: auto;
+    min-height: 100vh;
+  }
+  .codex-groups {
+    margin-left: 0;
+    width: 100%;
+  }
+  .codex-grid {
+    grid-template-columns: 1fr;
+  }
+  .codex-rows {
+    max-height: 38vh;
+  }
+}
