@@ -10,4 +10,8 @@ export interface CultDef {
   blessings: string[];
   /** Les Miracles du culte, par nom (« Invitation »…), LDB 42 + suppléments. */
   miracles: string[];
+  /** Lore (HTML : Sphères, Adorateurs, Offrandes, Siège du pouvoir, Festivités…) — pour le Codex. */
+  desc?: string;
+  /** Référence source (livre + page) — pour le Codex. */
+  source?: { book: string; page: number };
 }

@@ -167,6 +167,8 @@ function main() {
       title: norm(g.title) ?? undefined,
       blessings: splitList(g.blessings),
       miracles: [...new Set([...godMiracles, ...invocationMiracles])],
+      desc: norm(g.desc) ?? undefined,
+      source: { book: g.book, page: g.page },
     };
     const body = `import type { CultDef } from '../types';\n\n// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.\nexport const cult: CultDef = ${JSON.stringify(def, null, 2)};\n`;
     writeFileSync(join(CULTS_DIR, `${slug}.ts`), body, 'utf8');

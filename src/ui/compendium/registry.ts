@@ -12,6 +12,7 @@ import {
   qualities, trappings, etats, creatures, traits, spells,
   stars, locations, books,
 } from '../../data';
+import { CULTS } from '../../engine/cults/registry';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
 
@@ -125,6 +126,13 @@ export const CODEX: CodexCategory[] = [
     items: spells.map((s) => ({
       label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration)),
+    })),
+  },
+  {
+    key: 'gods', label: 'Dieux', group: 'Magie',
+    items: Object.values(CULTS).map((c) => ({
+      label: c.key, sub: c.title, desc: c.desc, html: true, source: c.source ?? null,
+      tags: [...c.blessings, ...c.miracles],
     })),
   },
   {
