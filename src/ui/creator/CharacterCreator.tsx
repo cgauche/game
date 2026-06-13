@@ -41,6 +41,7 @@ import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
+import { CodexRef } from '../compendium/CodexRef';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CreatorSummary, previewHero } from './CreatorSummary';
 import {
@@ -149,22 +150,22 @@ function Section({ title, right, children }: { title: ReactNode; right?: ReactNo
   );
 }
 
-/** Puce Compétence : caractéristique liée + infobulle descriptive (+ valeur vivante). */
+/** Puce Compétence : caractéristique liée + popover Codex (desc + source) + valeur vivante. */
 function SkillChip({ label, value }: { label: string; value?: number }) {
   const k = skillCharKey(label);
   return (
-    <span className="tag" title={skillTip(label)}>
-      {label}
+    <span className="tag">
+      <CodexRef category="skills" label={splitLabel(label).name}>{label}</CodexRef>
       {k && <em className="tag-char">{k}{value != null ? ` ${value}` : ''}</em>}
     </span>
   );
 }
 
-/** Puce Talent : infobulle descriptive. */
+/** Puce Talent : popover Codex (desc + source). */
 function TalentChip({ label }: { label: string }) {
   return (
-    <span className="tag talent" title={talentTip(label)}>
-      {label}
+    <span className="tag talent">
+      <CodexRef category="talents" label={splitLabel(label).name}>{label}</CodexRef>
     </span>
   );
 }
@@ -1206,9 +1207,11 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
       <Section title="Talents">
         <div className="skill-tags">
           {(hero?.talents ?? []).map((t) => (
-            <span key={t.name} className="tag talent" title={talentTip(t.name)}>
-              {t.name}
-              {t.times > 1 ? ` ×${t.times}` : ''}
+            <span key={t.name} className="tag talent">
+              <CodexRef category="talents" label={splitLabel(t.name).name}>
+                {t.name}
+                {t.times > 1 ? ` ×${t.times}` : ''}
+              </CodexRef>
             </span>
           ))}
         </div>
@@ -1218,9 +1221,11 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
           {(hero?.skills ?? [])
             .filter((s) => s.advances > 0)
             .map((s) => (
-              <span key={`${s.name}|${s.spec ?? ''}`} className="tag" title={skillTip(s.name)}>
-                {s.name}
-                {s.spec ? ` (${s.spec})` : ''} +{s.advances}
+              <span key={`${s.name}|${s.spec ?? ''}`} className="tag">
+                <CodexRef category="skills" label={s.name}>
+                  {s.name}
+                  {s.spec ? ` (${s.spec})` : ''} +{s.advances}
+                </CodexRef>
               </span>
             ))}
         </div>
