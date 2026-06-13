@@ -73,41 +73,10 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
 }
 
-/** Traits psy CIBLÉS (LDB 21) reconnus dans les données : `Type (Cible)`. Phobie → Peur 1 (l.84-87). */
-const TARGETED_TRAITS: { re: RegExp; type: PsychType }[] = [
-  { re: /^Animosit[ée]\s*\(([^)]*)\)/i, type: 'animosite' },
-  { re: /^Haine\s*\(([^)]*)\)/i, type: 'haine' },
-  { re: /^Pr[ée]jug[ée]\s*\(([^)]*)\)/i, type: 'prejuge' },
-  { re: /^Amour\s*\(([^)]*)\)/i, type: 'amour' },
-  { re: /^Camaraderie\s*\(([^)]*)\)/i, type: 'camaraderie' },
-  { re: /^Phobie\s*\(([^)]*)\)/i, type: 'phobie' },
-  { re: /^Effray[ée]\s*\(([^)]*)\)/i, type: 'phobie' }, // Effrayé (LDB 85 p.339) : « Peur 0 de la Cible » → ciblé type phobie, Indice 0
-];
-
-/** Parse les traits de données (`creatures.json`) en propriétés psy : Peur/Terreur/Immunité (LDB 85
- *  l.143-144) ET traits ciblés (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21). Une Cible
- *  « (un au choix) » reste indéfinie → trait inerte (ne déclenche pas) tant qu'une Cible n'est pas
- *  assignée (éditeur). `psychTraits` n'est présent que s'il y a au moins un trait ciblé. */
-export function parsePsychTraits(traits: string[]): { causesPeur?: number; causesTerreur?: number; psychImmune?: boolean; psychTraits?: PsychTrait[] } {
-  const out: { causesPeur?: number; causesTerreur?: number; psychImmune?: boolean; psychTraits?: PsychTrait[] } = {};
-  for (const t of traits) {
-    const peur = t.match(/^Peur\s+(\d+)/i);
-    const terreur = t.match(/^Terreur\s+(\d+)/i);
-    if (peur) out.causesPeur = Number(peur[1]);
-    if (terreur) out.causesTerreur = Number(terreur[1]);
-    if (/Immunit[ée].*Psychologie/i.test(t)) out.psychImmune = true;
-    for (const { re, type } of TARGETED_TRAITS) {
-      const m = t.match(re);
-      if (!m) continue;
-      const raw = m[1].trim();
-      const cible = raw === '' || /au choix/i.test(raw) ? undefined : raw; // « un au choix » → inerte
-      const trait: PsychTrait = { type, cible };
-      if (type === 'phobie') trait.indice = /^effray/i.test(t) ? 0 : 1; // Phobie = Peur 1 ; Effrayé = Peur 0 (LDB 85 p.339)
-      (out.psychTraits ??= []).push(trait);
-    }
-  }
-  return out;
-}
+/** Lecture des libellés de traits de Psychologie (Peur/Terreur/Immunité + ciblés Animosité/Haine/
+ *  Préjugé/Amour/Camaraderie/Phobie/Effrayé) → registre `psych/defs/` (plus de regex en dur ici).
+ *  SOURCE UNIQUE : ajouter un trait psy = déposer un fichier dans `engine/psych/defs/`. */
+export { parsePsychTraits } from './psych/registry';
 
 /** Baume pour un esprit blessé (LDB 42) : « Tous les Traits Psychologiques sont retirés pour la
  *  durée du Miracle » — les Traits psy de `c` sont DÉPLACÉS hors de la fiche (à porter par
