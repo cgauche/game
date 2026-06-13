@@ -92,9 +92,11 @@ export function makeForet() {
     ],
     encounters: [
       {
-        // La harde en lisière : on NE la voit pas venir (brouillard de sous-bois).
+        // La harde en lisière : embuscade — invisible jusqu'au combat (brouillard de sous-bois),
+        // + Test de Surprise opposé (la Perception du groupe peut la déjouer).
         id: 'enc-foret-harde',
         surprise: 'party',
+        hidden: true,
         enemies: [
           { ref: 'Gor', pos: { x: 12, y: 9 } },
           { ref: 'Gor', pos: { x: 18, y: 16 }, optionals: ['Armure 2'] },
@@ -115,8 +117,8 @@ export function makeForet() {
         id: 'enc-foret-bande',
         enemies: [
           { ref: 'Bella la Noire', pos: { x: 31, y: 11 } },
-          { ref: 'Humain', pos: { x: 29, y: 9 }, weapon: 'Arc', randomChars: true },
-          { ref: 'Humain', pos: { x: 33, y: 13 }, weapon: 'Épée bâtarde', randomChars: true },
+          { ref: 'Humain', pos: { x: 29, y: 9 }, weapon: 'Arc', randomChars: true, label: 'Coupe-jarret de Bella', appearance: { career: 'Voleur', sex: 'F' } },
+          { ref: 'Humain', pos: { x: 33, y: 13 }, weapon: 'Épée bâtarde', randomChars: true, label: 'Spadassin de Bella', appearance: { career: 'Voleur' } },
           { ref: 'Chien', pos: { x: 28, y: 14 } },
         ],
         onVictory: [
@@ -218,6 +220,7 @@ export function makeMarais() {
       {
         id: 'enc-marais',
         surprise: 'party',
+        hidden: true, // embuscade de tourbière : la chose surgit de l'eau morte
         enemies: [
           { ref: 'Bête des marais', pos: { x: 15, y: 19 } },
           { ref: 'Pieuvre des tourbières', pos: { x: 22, y: 19 } },
@@ -404,6 +407,7 @@ export function makeEmbuscade() {
       {
         id: 'enc-embuscade',
         surprise: 'party',
+        hidden: true, // embuscade de route : les détrousseurs jaillissent des fourrés
         enemies: [
           { ref: 'Gobelin', pos: { x: 14, y: 4 }, randomChars: true },
           { ref: 'Gobelin', pos: { x: 18, y: 9 }, randomChars: true },

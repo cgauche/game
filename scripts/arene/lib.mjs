@@ -3,7 +3,11 @@
  * fabriques d'entités/rencontres/triggers). Le JSON commité (`src/scenes/arene/arene-projet.json`)
  * reste la SOURCE CANONIQUE, 100 % éditable dans l'éditeur : ce script n'est qu'un outil d'auteur
  * (itération de layout), PAS un build — ne pas le brancher dans package.json.
+ *
+ * Lancé via tsx (`tsx scripts/arene/generate.mjs`) pour importer le SEUL `buildEncounter` du moteur
+ * (`src/state/encounterAuthoring.ts`) — l'expansion enemies→entités+members n'est PAS dupliquée ici.
  */
+import { buildEncounter } from '../../src/state/encounterAuthoring.ts';
 
 /** Légende ASCII commune (complétée/surchargée par scène via `legend`). `.` = sol de base. */
 const BASE_LEGEND = {
@@ -30,17 +34,27 @@ export function parseRows(rows, base, legend = {}) {
   return { w, h: rows.length, tiles };
 }
 
-/** Fabrique de scène : carte ASCII + le reste, avec défauts sûrs et ids vérifiés uniques. */
+/** Fabrique de scène : carte ASCII + le reste, avec défauts sûrs et ids vérifiés uniques. Les
+ *  rencontres authored terse (`enemies[]`) sont expansées en entités + members par `buildEncounter`
+ *  (moteur), à l'AUTHORING — plus aucune migration au chargement. `hidden` (défaut false = VISIBLE,
+ *  RAW : le groupe voit ses adversaires) pose `combat.hiddenUntilCombat`. */
 export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, entities = [], buildings = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+  const allEntities = [...entities];
+  const outEncounters = encounters.map((enc) => {
+    if (!enc.enemies) return enc; // déjà en members (ou rencontre vide)
+    const { entities: spawned, encounter } = buildEncounter(enc);
+    allEntities.push(...spawned);
+    return encounter;
+  });
   const { w, h, tiles } = parseRows(rows, base, legend);
-  for (const list of [entities, buildings, triggers, dialogues, encounters]) {
+  for (const list of [allEntities, buildings, triggers, dialogues, outEncounters]) {
     const seen = new Set();
     for (const it of list) {
       if (seen.has(it.id)) throw new Error(`${id} : id dupliqué « ${it.id} »`);
       seen.add(it.id);
     }
   }
-  const sc = { id, nom, description, dimensions: { w, h }, ambiance, tiles, entities, buildings, dialogues, triggers, encounters, flags };
+  const sc = { id, nom, description, dimensions: { w, h }, ambiance, tiles, entities: allEntities, buildings, dialogues, triggers, encounters: outEncounters, flags };
   if (weather) sc.weather = weather;
   if (music) sc.music = music;
   if (startMessage) sc.startMessage = startMessage;

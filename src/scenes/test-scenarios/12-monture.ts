@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 // Combat monté (LDB 14 l.212-225). On place :
@@ -10,7 +10,7 @@ import type { TestScenario } from './_shared';
 const scene = arena({ id: 'test-monture', nom: 'Combat monté', w: 18, h: 11, heroStart: { x: 2, y: 5 } });
 scene.startMessage =
   'Cavalerie : un Mutant chevauche un Cheval (Grande). Approchez la monture libre alliée (case ~6,7) et cliquez « Monter » pour chevaucher, puis chargez — le cavalier frappe à +20 toute cible plus petite que sa monture.';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-monture',
     enemies: [
@@ -20,7 +20,7 @@ scene.encounters = [
       { ref: 'Gobelin', pos: { x: 12, y: 7 } }, //             #3 — fantassin (cible plus petite)
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'monture',

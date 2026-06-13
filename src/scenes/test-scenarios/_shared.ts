@@ -1,6 +1,16 @@
 import { Combatant } from '../../engine/types';
 import { Scene, Terrain } from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
+import { buildEncounters, type AuthoredEncounter } from '../../state/encounterAuthoring';
+
+/** Attache des rencontres authored (terse) à une scène : expanse chaque liste d'ennemis en
+ *  entités 'personnage' + `members` canoniques, pousse les entités dans la scène et pose les
+ *  rencontres. Mutation EN PLACE (les scénarios construisent leur scène impérativement). */
+export function setEncounters(scene: Scene, list: AuthoredEncounter[]): void {
+  const built = buildEncounters(list);
+  scene.entities.push(...built.entities);
+  scene.encounters = built.encounters;
+}
 
 /** Un scénario de test = un groupe fixé + une scène adaptée (+ combat direct optionnel). */
 export interface TestScenario {

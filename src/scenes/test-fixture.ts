@@ -1,4 +1,5 @@
 import { Scene, Terrain } from '../state/scene';
+import { buildEncounter } from '../state/encounterAuthoring';
 
 /**
  * Scène de FIXTURE pour les tests de combat (neutre, sans contenu de campagne). Grille d'herbe
@@ -9,6 +10,17 @@ import { Scene, Terrain } from '../state/scene';
 const W = 22;
 const H = 16;
 
+// Rencontre `enc-mutants` (3 Mutants) : les tests de combat font `startCombat('enc-mutants')` puis
+// adaptent les combattants à leur cas (Taille, États…). Mêmes id/positions que l'ancienne embuscade.
+const enc = buildEncounter({
+  id: 'enc-mutants',
+  enemies: [
+    { ref: 'Mutant', pos: { x: 16, y: 11 } },
+    { ref: 'Mutant', pos: { x: 18, y: 12 } },
+    { ref: 'Mutant', pos: { x: 17, y: 13 } },
+  ],
+});
+
 export const testScene: Scene = {
   id: 'test-fixture',
   nom: 'Terrain de test',
@@ -16,20 +28,9 @@ export const testScene: Scene = {
   dimensions: { w: W, h: H },
   ambiance: 'jour',
   tiles: new Array(W * H).fill('herbe') as Terrain[],
-  entities: [{ id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } }],
+  entities: [{ id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } }, ...enc.entities],
   dialogues: [],
   triggers: [],
-  // Rencontre `enc-mutants` (3 Mutants) : les tests de combat font `startCombat('enc-mutants')` puis
-  // adaptent les combattants à leur cas (Taille, États…). Mêmes id/positions que l'ancienne embuscade.
-  encounters: [
-    {
-      id: 'enc-mutants',
-      enemies: [
-        { ref: 'Mutant', pos: { x: 16, y: 11 } },
-        { ref: 'Mutant', pos: { x: 18, y: 12 } },
-        { ref: 'Mutant', pos: { x: 17, y: 13 } },
-      ],
-    },
-  ],
+  encounters: [enc.encounter],
   flags: {},
 };

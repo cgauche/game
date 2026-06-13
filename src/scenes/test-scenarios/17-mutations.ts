@@ -3,7 +3,7 @@ import { rollMutation } from '../../data/mutations';
 import { attachMutation } from '../../engine/corruption';
 import { recomputeLoadout } from '../../engine/items';
 import type { Combatant } from '../../engine/types';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 // Visuels de mutation (LDB 19) : les 19 mutations physiques attachées en dur aux 4 pré-tirés
@@ -25,7 +25,7 @@ function mutate(c: Combatant, rolls: number[]): Combatant {
 const scene = arena({ id: 'test-mutations', nom: 'Visuels de mutation', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
 scene.startMessage =
   'Les 19 mutations physiques (LDB 19) réparties sur le groupe : vérifier les calques sur les pions (tourner la caméra — les détails de visage disparaissent de dos), la morpho (corpulent/émacié/court sur pattes) et les portraits du HUD. Les Mutants ennemis tirent leurs visuels au hasard du même registre.';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-mutants',
     enemies: [
@@ -34,7 +34,7 @@ scene.encounters = [
       { ref: 'Mutant', pos: { x: 12, y: 8 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'mutations',

@@ -1,7 +1,7 @@
 import { makePregens } from '../../data/pregens';
 import { itemFromTrapping, loadoutCreate, loadoutSetSlot, recomputeLoadout } from '../../engine/items';
 import type { ItemInstance } from '../../engine/types';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 const scene = arena({ id: 'test-dual-wield', nom: 'Maniement de deux armes', w: 16, h: 10, heroStart: { x: 4, y: 5 } });
@@ -9,7 +9,7 @@ scene.startMessage =
   'Sigmund manie une arme dans chaque main (talent Maniement de deux armes). À son tour, coche « ⚔️ Des deux ' +
   'armes » dans la modale d’attaque : si la main directrice touche, choisis la cible de la 2ᵉ frappe (jet ' +
   'inversé) — l’Avantage n’est gagné que si LES DEUX touchent, et toutes ses défenses subissent −10 jusqu’à son prochain Tour.';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-dual',
     enemies: [
@@ -17,7 +17,7 @@ scene.encounters = [
       { ref: 'Gobelin', pos: { x: 5, y: 6 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'maniement-deux-armes',

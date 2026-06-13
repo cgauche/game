@@ -1,17 +1,17 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 const scene = arena({ id: 'test-guerison', nom: 'Guérison (soin / hémorragie)', w: 16, h: 10, heroStart: { x: 2, y: 5 } });
 scene.startMessage =
   "Frère Anselm sait soigner (Compétence Guérison). Sigmund est blessé et saigne, à ses côtés : " +
   'à son tour, ouvrez « 🩹 Soigner » pour lui rendre des PB ou « 🩸 stopper » son hémorragie. Un gobelin approche.';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-guerison',
     enemies: [{ ref: 'Gobelin', pos: { x: 10, y: 5 } }],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'guerison',

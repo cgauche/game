@@ -1,0 +1,91 @@
+/**
+ * Helper d'AUTHORING de rencontres — PUR. Transforme une liste d'ennemis terse en la forme
+ * CANONIQUE du schéma : des `SceneEntity` 'personnage' (qui portent profil/apparence/arme/
+ * `combat`) + un `EncounterDef.members` qui les référence. Remplace l'ancienne migration au
+ * chargement (`enemies[]` → entités cachées) : l'expansion se fait désormais à l'authoring, et
+ * la VISIBILITÉ (`hidden`) est un choix explicite (défaut : visible — RAW, le groupe voit ses
+ * adversaires, quitte à les manquer sur un Test de Perception opposé via `surprise`).
+ *
+ * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
+ * Node pur) en porte un miroir JS — garder les deux alignés.
+ */
+import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, Effect, SceneEntity } from './scene';
+import type { Dir8 } from './dir8';
+
+export interface AuthoredEnemy {
+  ref?: string;
+  statblock?: CustomStatblock;
+  pos: { x: number; y: number };
+  appearance?: EntityAppearance;
+  weapon?: string;
+  facing?: Dir8;
+  label?: string;
+  /** Camp au spawn (défaut 'enemy'). */
+  side?: 'enemy' | 'ally';
+  /** Monture rideable. */
+  mount?: boolean;
+  /** Index (dans `enemies`) de la monture chevauchée au spawn. */
+  rides?: number;
+  optionals?: string[];
+  spells?: string[];
+  randomChars?: boolean;
+  /** Surcharge la visibilité de la rencontre pour CET ennemi. */
+  hidden?: boolean;
+}
+
+export interface AuthoredEncounter {
+  id: string;
+  enemies: AuthoredEnemy[];
+  /** Camp pris en embuscade (Test de Surprise opposé, LDB 13). */
+  surprise?: 'party' | 'enemies';
+  onVictory?: Effect[];
+  /** Invisibles en exploration jusqu'au combat (embuscade visuelle). Défaut : false (visibles). */
+  hidden?: boolean;
+}
+
+export interface BuiltEncounter {
+  /** Entités à fusionner dans `scene.entities`. */
+  entities: SceneEntity[];
+  /** Rencontre à fusionner dans `scene.encounters`. */
+  encounter: EncounterDef;
+}
+
+/** Expanse une rencontre terse en `{ entities, encounter(members) }`. PUR. */
+export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
+  const ids = a.enemies.map((_, i) => `enemy-${a.id}-${i}`);
+  const entities: SceneEntity[] = a.enemies.map((e, i) => {
+    const ent: SceneEntity = { id: ids[i], kind: 'personnage', pos: { ...e.pos } };
+    if (e.ref) ent.ref = e.ref;
+    if (e.statblock) ent.statblock = e.statblock;
+    if (e.appearance) ent.appearance = e.appearance;
+    if (e.weapon) ent.weapon = e.weapon;
+    if (e.facing) ent.facing = e.facing;
+    if (e.label) ent.label = e.label;
+    const hidden = e.hidden ?? a.hidden ?? false;
+    const combat: NonNullable<SceneEntity['combat']> = {};
+    if (hidden) combat.hiddenUntilCombat = true;
+    if (e.optionals) combat.optionals = e.optionals;
+    if (e.spells) combat.spells = e.spells;
+    if (e.randomChars) combat.randomChars = e.randomChars;
+    if (Object.keys(combat).length) ent.combat = combat;
+    return ent;
+  });
+  const members: EncounterMember[] = a.enemies.map((e, i) => {
+    const m: EncounterMember = { entityId: ids[i] };
+    if (e.side) m.side = e.side;
+    if (e.mount) m.mount = e.mount;
+    if (e.rides != null && ids[e.rides]) m.ridesEntityId = ids[e.rides];
+    return m;
+  });
+  const encounter: EncounterDef = { id: a.id, members };
+  if (a.surprise) encounter.surprise = a.surprise;
+  if (a.onVictory) encounter.onVictory = a.onVictory;
+  return { entities, encounter };
+}
+
+/** Sucre : plusieurs rencontres → toutes les entités + toutes les rencontres, prêtes à étaler
+ *  dans `scene({ entities: [...props, ...enc.entities], encounters: enc.encounters })`. PUR. */
+export function buildEncounters(list: AuthoredEncounter[]): { entities: SceneEntity[]; encounters: EncounterDef[] } {
+  const built = list.map(buildEncounter);
+  return { entities: built.flatMap((b) => b.entities), encounters: built.map((b) => b.encounter) };
+}

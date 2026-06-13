@@ -1,10 +1,10 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 const scene = arena({ id: 'test-magie', nom: 'Magie — incantation & bénédictions', w: 16, h: 10, heroStart: { x: 2, y: 5 } });
 scene.startMessage = 'Lancez Fléchette/Choc (Sorcier), bénissez (Prêtre), tentez une Focalisation.';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-magie',
     enemies: [
@@ -12,7 +12,7 @@ scene.encounters = [
       { ref: 'Zombie', pos: { x: 10, y: 6 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'magie',

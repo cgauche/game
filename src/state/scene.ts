@@ -92,6 +92,9 @@ export interface EntityAppearance {
   /** Surcharges cosmétiques (sinon dérivées du seed). */
   sex?: 'M' | 'F';
   build?: number;
+  /** Espèce/race CHOISIE — découple l'apparence du nom (label/ref) : 'Nains', 'Halflings',
+   *  'Elfes'… (canonicalisée par `baseSpeciesOf`). Vide = dérivée du nom. */
+  species?: string;
   /** Tenue (carrière) CHOISIE — découple l'habit du nom : un PNJ peut porter n'importe
    *  quelle tenue (Mendiant, Soldat, Skaven, Nu…). Vide = dérivée du nom/espèce. */
   career?: string;
@@ -327,30 +330,12 @@ export interface EncounterMember {
   ridesEntityId?: string;
 }
 
-/** Forme LEGACY d'un ennemi inline — conservée en ENTRÉE d'authoring (scénarios, générateur) et
- *  pour les vieux exports ; `migrateEncounters` (sceneMigrate.ts) la normalise en entité + membre. */
-export interface LegacyEncounterEnemy {
-  ref?: string;
-  statblock?: CustomStatblock;
-  pos: { x: number; y: number };
-  appearance?: EntityAppearance;
-  weapon?: string;
-  mount?: boolean;
-  rides?: number;
-  side?: 'enemy' | 'ally';
-  optionals?: string[];
-  spells?: string[];
-  randomChars?: boolean;
-}
-
 export interface EncounterDef {
   id: string;
-  /** CANONIQUE : membres référençant des entités de la scène (peuplé par l'éditeur ou par
-   *  `migrateEncounters` à partir de `enemies`). Le runtime ne lit QUE ceci. */
+  /** Membres référençant des entités de la scène (peuplés par l'éditeur, ou à l'authoring via
+   *  `buildEncounter`). SOURCE UNIQUE lue par le runtime — chaque membre pointe une `SceneEntity`
+   *  'personnage' qui porte tout le profil (ref/statblock/apparence/arme/`combat.hiddenUntilCombat`). */
   members?: EncounterMember[];
-  /** @deprecated Entrée LEGACY (authoring inline + back-compat). Normalisée vers `members` +
-   *  entités cachées au chargement. NE PAS lire au runtime — utiliser `members`. */
-  enemies?: LegacyEncounterEnemy[];
   /** Scène/flag déclenché à la victoire. */
   onVictory?: Effect[];
   /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp

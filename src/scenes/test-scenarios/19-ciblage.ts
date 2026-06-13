@@ -4,7 +4,7 @@ import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { CustomStatblock } from '../../state/scene';
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /** Cible inerte : M 0 (ne bouge pas), encaisse — la recette observe le CIBLAGE, pas le combat. */
@@ -41,7 +41,7 @@ const scene = arena({ id: 'test-ciblage', nom: 'Ciblage & Ligne de Vue', w: W, h
 for (let y = 5; y < H; y++) (scene.tiles as string[])[y * W + 10] = 'mur';
 scene.startMessage =
   'Survolez les mannequins : proche = réticule + carte de visée ; derrière le mur = ⛔ LdV (tir ET sort) ; au fond = ⛔ hors de portée. Testez aussi Explosion (gabarit de zone) et Bouclier magique (sur soi).';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-ciblage',
     enemies: [
@@ -50,7 +50,7 @@ scene.encounters = [
       { statblock: MANNEQUIN, pos: { x: 21, y: 2 } }, // visible mais au-delà de Portée ×3 (19 cases)
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'ciblage',

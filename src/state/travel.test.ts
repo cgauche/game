@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { emptyScene, Scene } from './scene';
+import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { toBrass } from '../engine/money';
@@ -29,10 +30,12 @@ function sceneA(): Scene {
   s.id = 'lieu-a-scene';
   s.nom = 'Village A';
   // Rencontre pour la péripétie d'auteur « brigands » (statblock → pas de dépendance bestiaire).
-  s.encounters = [{
+  const enc = buildEncounter({
     id: 'enc-test',
     enemies: [{ statblock: { name: 'Brigand', char: { CC: 30, F: 30, E: 30, I: 30, Ag: 30, B: 8 } }, pos: { x: 5, y: 5 } }],
-  }];
+  });
+  s.entities.push(...enc.entities);
+  s.encounters = [enc.encounter];
   return s;
 }
 function sceneB(): Scene {

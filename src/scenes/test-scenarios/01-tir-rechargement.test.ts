@@ -17,6 +17,6 @@ describe('Scénario Tir & Rechargement', () => {
     expect(scenario.autoCombat).toBeTruthy();
     const enc = scenario.scene.encounters.find((e) => e.id === scenario.autoCombat);
     expect(enc).toBeTruthy();
-    expect((enc!.enemies ?? []).length).toBeGreaterThanOrEqual(1);
+    expect((enc!.members ?? []).length).toBeGreaterThanOrEqual(1);
   });
 });

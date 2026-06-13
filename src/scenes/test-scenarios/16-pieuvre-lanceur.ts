@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 // Créatures personnalisées (LDB 76/78/85) — vitrine des personnalisations d'auteur :
@@ -13,7 +13,7 @@ import type { TestScenario } from './_shared';
 const scene = arena({ id: 'test-pieuvre-lanceur', nom: 'Créatures personnalisées', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
 scene.startMessage =
   'Personnalisations d’auteur : la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré sur Dégâts) ; le Sorcier mutant lance Fléchette ; le Squelette est un facultatif « Élite » (LDB 76) aux Caractéristiques aléatoires (LDB 78) ; Eusapia Balacañon (MSR) incante avec Langue (Magick) 63 et ses talents de la donnée. Inspectez-les via l’ordre de bataille (chips, M/Taille, Compétences, badge 🪄).';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-pieuvre',
     enemies: [
@@ -31,7 +31,7 @@ scene.encounters = [
       { ref: 'Eusapia Balacañon', pos: { x: 15, y: 6 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'pieuvre-lanceur',

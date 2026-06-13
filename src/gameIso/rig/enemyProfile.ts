@@ -188,17 +188,17 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
+  opts?: { species?: string; career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const species = detectSpecies(n);
+  const species = opts?.species ?? detectSpecies(n); // override d'auteur (Nain/Halfling…) sinon déduit du nom
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
   const monster = opts?.monster ?? perso?.monster; // auto skaven/… si non précisé
   const appearance: Appearance = riggedAppearance(name, seed, {
-    monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
+    species, monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? perso?.parts ?? race.parts,
     sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes ?? perso?.eyes,
     gabarit: perso?.gabarit ?? d?.gabarit,

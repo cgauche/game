@@ -4,7 +4,7 @@ import { contractDisease } from '../../engine/disease';
 import { itemFromTrapping } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { WorldMap } from '../../state/worldMap';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /**
@@ -76,14 +76,15 @@ const cite = arena({ id: 'test-voyage-cite', nom: 'Eichenfeld, la cité aux chê
 cite.startMessage = 'Eichenfeld, au bout de la longue route. (Reprenez la carte pour repartir.)';
 
 const embuscade = arena({ id: 'test-voyage-embuscade', nom: 'Sous-bois — embuscade', w: 14, h: 9, terrain: 'herbe', heroStart: { x: 2, y: 4 } });
-embuscade.encounters = [{
+setEncounters(embuscade, [{
   id: 'enc-vembuscade',
+  hidden: true, // embuscade de route : invisibles jusqu'au combat
   enemies: [
     { ref: 'Gobelin', pos: { x: 9, y: 3 } },
     { ref: 'Gobelin', pos: { x: 10, y: 5 } },
   ],
   surprise: 'party', // annulée si la Perception du voyage est réussie (« le groupe les voit venir »)
-}];
+}]);
 
 // ── Carte du monde : Weiler ↔ Federholz (piste dangereuse) et Weiler ↔ Steinbruck (diligence) ──
 const carte: WorldMap = {

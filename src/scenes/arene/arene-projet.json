@@ -517,6 +517,63 @@
       "y": 9
      },
      "ref": "barriere"
+    },
+    {
+     "id": "enemy-enc-zone1-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 13,
+      "y": 4
+     },
+     "ref": "Snotling"
+    },
+    {
+     "id": "enemy-enc-zone1-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 11
+     },
+     "ref": "Snotling"
+    },
+    {
+     "id": "enemy-enc-zone1-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 5
+     },
+     "ref": "Snotling"
+    },
+    {
+     "id": "enemy-enc-zone1-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 3
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone1-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 19,
+      "y": 12
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone1-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 12
+     },
+     "ref": "Rat géant"
     }
    ],
    "buildings": [],
@@ -542,49 +599,24 @@
    "encounters": [
     {
      "id": "enc-zone1",
-     "enemies": [
+     "members": [
       {
-       "ref": "Snotling",
-       "pos": {
-        "x": 13,
-        "y": 4
-       }
+       "entityId": "enemy-enc-zone1-0"
       },
       {
-       "ref": "Snotling",
-       "pos": {
-        "x": 15,
-        "y": 11
-       }
+       "entityId": "enemy-enc-zone1-1"
       },
       {
-       "ref": "Snotling",
-       "pos": {
-        "x": 18,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone1-2"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 16,
-        "y": 3
-       }
+       "entityId": "enemy-enc-zone1-3"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 19,
-        "y": 12
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone1-4"
       },
       {
-       "ref": "Rat géant",
-       "pos": {
-        "x": 12,
-        "y": 12
-       }
+       "entityId": "enemy-enc-zone1-5"
       }
      ],
      "onVictory": [
@@ -1429,6 +1461,7 @@
      "dialogueId": "dlg-rumeurs",
      "anim": "standing",
      "appearance": {
+      "career": "Mendiant",
       "sex": "F"
      }
     },
@@ -1440,7 +1473,10 @@
       "y": 15
      },
      "label": "Villageois",
-     "anim": "standing"
+     "anim": "standing",
+     "appearance": {
+      "career": "Mendiant"
+     }
     },
     {
      "id": "villageois-2",
@@ -1451,7 +1487,10 @@
      },
      "label": "Badaud",
      "anim": "cowering",
-     "facing": "E"
+     "facing": "E",
+     "appearance": {
+      "career": "Bourgeois"
+     }
     },
     {
      "id": "p0",
@@ -2519,6 +2558,7 @@
       "archetype": "taverniere"
      },
      "appearance": {
+      "career": "Bourgeois",
       "sex": "F",
       "build": 0.55
      }
@@ -2532,7 +2572,11 @@
      },
      "label": "Client",
      "anim": "feeding",
-     "facing": "E"
+     "facing": "E",
+     "appearance": {
+      "species": "Nains",
+      "career": "Batelier"
+     }
     },
     {
      "id": "client-2",
@@ -2543,7 +2587,10 @@
      },
      "label": "Habitué",
      "anim": "standing",
-     "facing": "O"
+     "facing": "O",
+     "appearance": {
+      "career": "Mendiant"
+     }
     },
     {
      "id": "p0",
@@ -3885,6 +3932,89 @@
       "y": 15
      },
      "ref": "detritus"
+    },
+    {
+     "id": "enemy-enc-zone2-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 10
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone2-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 13,
+      "y": 9
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone2-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 6,
+      "y": 4
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone2-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 14
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone2-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 5
+     },
+     "ref": "Orc"
+    },
+    {
+     "id": "enemy-enc-ruines-tresor-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 4
+     },
+     "ref": "Orc",
+     "combat": {
+      "optionals": [
+       "Insensible à la douleur"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-ruines-tresor-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 3
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-ruines-tresor-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 6
+     },
+     "ref": "Gobelin"
     }
    ],
    "buildings": [],
@@ -3926,43 +4056,21 @@
    "encounters": [
     {
      "id": "enc-zone2",
-     "enemies": [
+     "members": [
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 8,
-        "y": 10
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone2-0"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 13,
-        "y": 9
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone2-1"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 6,
-        "y": 4
-       }
+       "entityId": "enemy-enc-zone2-2"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 15,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone2-3"
       },
       {
-       "ref": "Orc",
-       "pos": {
-        "x": 12,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone2-4"
       }
      ],
      "onVictory": [
@@ -3991,33 +4099,18 @@
     },
     {
      "id": "enc-ruines-tresor",
-     "surprise": "enemies",
-     "enemies": [
+     "members": [
       {
-       "ref": "Orc",
-       "pos": {
-        "x": 22,
-        "y": 4
-       },
-       "optionals": [
-        "Insensible à la douleur"
-       ]
+       "entityId": "enemy-enc-ruines-tresor-0"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 20,
-        "y": 3
-       }
+       "entityId": "enemy-enc-ruines-tresor-1"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 24,
-        "y": 6
-       }
+       "entityId": "enemy-enc-ruines-tresor-2"
       }
      ],
+     "surprise": "enemies",
      "onVictory": [
       {
        "type": "giveXp",
@@ -4698,6 +4791,88 @@
       "y": 16
      },
      "ref": "champignon"
+    },
+    {
+     "id": "enemy-enc-zone3-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 4
+     },
+     "ref": "Rat géant"
+    },
+    {
+     "id": "enemy-enc-zone3-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 3
+     },
+     "ref": "Rat géant"
+    },
+    {
+     "id": "enemy-enc-zone3-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 6
+     },
+     "statblock": {
+      "name": "Nuée de rats",
+      "char": {
+       "M": 4,
+       "CC": 30,
+       "F": 25,
+       "E": 30,
+       "Ag": 40,
+       "B": 5
+      },
+      "traits": [
+       "Nuée",
+       "Taille (Petite)"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone3-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 5
+     },
+     "statblock": {
+      "name": "Nuée de rats",
+      "char": {
+       "M": 4,
+       "CC": 30,
+       "F": 25,
+       "E": 30,
+       "Ag": 40,
+       "B": 5
+      },
+      "traits": [
+       "Nuée",
+       "Taille (Petite)"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone3-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 3
+     },
+     "ref": "Snotling"
+    },
+    {
+     "id": "enemy-enc-zone3-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 6
+     },
+     "ref": "Snotling"
     }
    ],
    "buildings": [],
@@ -4757,76 +4932,24 @@
    "encounters": [
     {
      "id": "enc-zone3",
-     "enemies": [
+     "members": [
       {
-       "ref": "Rat géant",
-       "pos": {
-        "x": 10,
-        "y": 4
-       }
+       "entityId": "enemy-enc-zone3-0"
       },
       {
-       "ref": "Rat géant",
-       "pos": {
-        "x": 24,
-        "y": 3
-       }
+       "entityId": "enemy-enc-zone3-1"
       },
       {
-       "statblock": {
-        "name": "Nuée de rats",
-        "char": {
-         "M": 4,
-         "CC": 30,
-         "F": 25,
-         "E": 30,
-         "Ag": 40,
-         "B": 5
-        },
-        "traits": [
-         "Nuée",
-         "Taille (Petite)"
-        ]
-       },
-       "pos": {
-        "x": 8,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone3-2"
       },
       {
-       "statblock": {
-        "name": "Nuée de rats",
-        "char": {
-         "M": 4,
-         "CC": 30,
-         "F": 25,
-         "E": 30,
-         "Ag": 40,
-         "B": 5
-        },
-        "traits": [
-         "Nuée",
-         "Taille (Petite)"
-        ]
-       },
-       "pos": {
-        "x": 22,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone3-3"
       },
       {
-       "ref": "Snotling",
-       "pos": {
-        "x": 15,
-        "y": 3
-       }
+       "entityId": "enemy-enc-zone3-4"
       },
       {
-       "ref": "Snotling",
-       "pos": {
-        "x": 18,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone3-5"
       }
      ],
      "onVictory": [
@@ -5625,6 +5748,74 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone4-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 3
+     },
+     "ref": "Squelette"
+    },
+    {
+     "id": "enemy-enc-zone4-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 7
+     },
+     "ref": "Squelette"
+    },
+    {
+     "id": "enemy-enc-zone4-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 3
+     },
+     "ref": "Squelette",
+     "combat": {
+      "optionals": [
+       "Territorial"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone4-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 8
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-zone4-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 3
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-zone4-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 8
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-zone4-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 6
+     },
+     "ref": "Goule de crypte"
     }
    ],
    "buildings": [],
@@ -5670,61 +5861,30 @@
    "encounters": [
     {
      "id": "enc-zone4",
-     "surprise": "party",
-     "enemies": [
+     "members": [
       {
-       "ref": "Squelette",
-       "pos": {
-        "x": 8,
-        "y": 3
-       }
+       "entityId": "enemy-enc-zone4-0"
       },
       {
-       "ref": "Squelette",
-       "pos": {
-        "x": 16,
-        "y": 7
-       }
+       "entityId": "enemy-enc-zone4-1"
       },
       {
-       "ref": "Squelette",
-       "pos": {
-        "x": 22,
-        "y": 3
-       },
-       "optionals": [
-        "Territorial"
-       ]
+       "entityId": "enemy-enc-zone4-2"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 10,
-        "y": 8
-       }
+       "entityId": "enemy-enc-zone4-3"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 14,
-        "y": 3
-       }
+       "entityId": "enemy-enc-zone4-4"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 20,
-        "y": 8
-       }
+       "entityId": "enemy-enc-zone4-5"
       },
       {
-       "ref": "Goule de crypte",
-       "pos": {
-        "x": 12,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone4-6"
       }
      ],
+     "surprise": "party",
      "onVictory": [
       {
        "type": "giveMoney",
@@ -6445,6 +6605,60 @@
       "y": 13
      },
      "ref": "tas-foin"
+    },
+    {
+     "id": "enemy-enc-zone5-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 6,
+      "y": 11
+     },
+     "ref": "Cheval"
+    },
+    {
+     "id": "enemy-enc-zone5-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 4
+     },
+     "ref": "Cheval"
+    },
+    {
+     "id": "enemy-enc-zone5-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 4
+     },
+     "ref": "Mutant"
+    },
+    {
+     "id": "enemy-enc-zone5-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 26,
+      "y": 10
+     },
+     "ref": "Cheval"
+    },
+    {
+     "id": "enemy-enc-zone5-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 26,
+      "y": 10
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone5-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 6
+     },
+     "ref": "Gobelin"
     }
    ],
    "buildings": [],
@@ -6470,54 +6684,30 @@
    "encounters": [
     {
      "id": "enc-zone5",
-     "enemies": [
+     "members": [
       {
-       "ref": "Cheval",
-       "pos": {
-        "x": 6,
-        "y": 11
-       },
-       "mount": true,
-       "side": "ally"
-      },
-      {
-       "ref": "Cheval",
-       "pos": {
-        "x": 22,
-        "y": 4
-       },
+       "entityId": "enemy-enc-zone5-0",
+       "side": "ally",
        "mount": true
       },
       {
-       "ref": "Mutant",
-       "pos": {
-        "x": 22,
-        "y": 4
-       },
-       "rides": 1
-      },
-      {
-       "ref": "Cheval",
-       "pos": {
-        "x": 26,
-        "y": 10
-       },
+       "entityId": "enemy-enc-zone5-1",
        "mount": true
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 26,
-        "y": 10
-       },
-       "rides": 3
+       "entityId": "enemy-enc-zone5-2",
+       "ridesEntityId": "enemy-enc-zone5-1"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 18,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone5-3",
+       "mount": true
+      },
+      {
+       "entityId": "enemy-enc-zone5-4",
+       "ridesEntityId": "enemy-enc-zone5-3"
+      },
+      {
+       "entityId": "enemy-enc-zone5-5"
       }
      ],
      "onVictory": [
@@ -7567,6 +7757,74 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone6-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 6
+     },
+     "ref": "Gor"
+    },
+    {
+     "id": "enemy-enc-zone6-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 16
+     },
+     "ref": "Gor",
+     "combat": {
+      "optionals": [
+       "Armure 2"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone6-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 17,
+      "y": 7
+     },
+     "ref": "Ungor"
+    },
+    {
+     "id": "enemy-enc-zone6-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 10
+     },
+     "ref": "Ungor"
+    },
+    {
+     "id": "enemy-enc-zone6-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 14
+     },
+     "ref": "Loup funeste"
+    },
+    {
+     "id": "enemy-enc-zone6-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 25,
+      "y": 5
+     },
+     "ref": "Loup funeste"
+    },
+    {
+     "id": "enemy-enc-zone6-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 12
+     },
+     "ref": "Fimir"
     }
    ],
    "buildings": [],
@@ -7592,61 +7850,30 @@
    "encounters": [
     {
      "id": "enc-zone6",
-     "surprise": "party",
-     "enemies": [
+     "members": [
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 14,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone6-0"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 20,
-        "y": 16
-       },
-       "optionals": [
-        "Armure 2"
-       ]
+       "entityId": "enemy-enc-zone6-1"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 17,
-        "y": 7
-       }
+       "entityId": "enemy-enc-zone6-2"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 22,
-        "y": 10
-       }
+       "entityId": "enemy-enc-zone6-3"
       },
       {
-       "ref": "Loup funeste",
-       "pos": {
-        "x": 10,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone6-4"
       },
       {
-       "ref": "Loup funeste",
-       "pos": {
-        "x": 25,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone6-5"
       },
       {
-       "ref": "Fimir",
-       "pos": {
-        "x": 18,
-        "y": 12
-       }
+       "entityId": "enemy-enc-zone6-6"
       }
      ],
+     "surprise": "party",
      "onVictory": [
       {
        "type": "giveMoney",
@@ -8562,6 +8789,74 @@
      },
      "ref": "tonneau",
      "label": "Vieux camp"
+    },
+    {
+     "id": "enemy-enc-zone7-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 6
+     },
+     "ref": "Araignée géante"
+    },
+    {
+     "id": "enemy-enc-zone7-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 14
+     },
+     "ref": "Araignée géante"
+    },
+    {
+     "id": "enemy-enc-zone7-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 12
+     },
+     "ref": "Araignée géante",
+     "combat": {
+      "optionals": [
+       "Armure 1"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone7-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 6
+     },
+     "ref": "Serpent"
+    },
+    {
+     "id": "enemy-enc-zone7-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 16
+     },
+     "ref": "Serpent"
+    },
+    {
+     "id": "enemy-enc-zone7-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 18
+     },
+     "ref": "Basilic"
+    },
+    {
+     "id": "enemy-enc-zone7-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 5
+     },
+     "ref": "Vouivre"
     }
    ],
    "buildings": [],
@@ -8587,58 +8882,27 @@
    "encounters": [
     {
      "id": "enc-zone7",
-     "enemies": [
+     "members": [
       {
-       "ref": "Araignée géante",
-       "pos": {
-        "x": 12,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone7-0"
       },
       {
-       "ref": "Araignée géante",
-       "pos": {
-        "x": 18,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone7-1"
       },
       {
-       "ref": "Araignée géante",
-       "pos": {
-        "x": 8,
-        "y": 12
-       },
-       "optionals": [
-        "Armure 1"
-       ]
+       "entityId": "enemy-enc-zone7-2"
       },
       {
-       "ref": "Serpent",
-       "pos": {
-        "x": 20,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone7-3"
       },
       {
-       "ref": "Serpent",
-       "pos": {
-        "x": 14,
-        "y": 16
-       }
+       "entityId": "enemy-enc-zone7-4"
       },
       {
-       "ref": "Basilic",
-       "pos": {
-        "x": 22,
-        "y": 18
-       }
+       "entityId": "enemy-enc-zone7-5"
       },
       {
-       "ref": "Vouivre",
-       "pos": {
-        "x": 24,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone7-6"
       }
      ],
      "onVictory": [
@@ -9411,6 +9675,80 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone8-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 10
+     },
+     "ref": "Humain",
+     "appearance": {
+      "career": "Mendiant",
+      "build": 0.72
+     },
+     "weapon": "Épée bâtarde",
+     "label": "Gladiateur enchaîné"
+    },
+    {
+     "id": "enemy-enc-zone8-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 5
+     },
+     "ref": "Gor"
+    },
+    {
+     "id": "enemy-enc-zone8-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 11
+     },
+     "ref": "Gor",
+     "combat": {
+      "optionals": [
+       "Armure 2"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone8-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 16
+     },
+     "ref": "Gor"
+    },
+    {
+     "id": "enemy-enc-zone8-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 17,
+      "y": 9
+     },
+     "ref": "Ungor"
+    },
+    {
+     "id": "enemy-enc-zone8-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 6
+     },
+     "ref": "Ungor"
+    },
+    {
+     "id": "enemy-enc-zone8-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 16
+     },
+     "ref": "Minotaure"
     }
    ],
    "buildings": [],
@@ -9436,60 +9774,28 @@
    "encounters": [
     {
      "id": "enc-zone8",
-     "enemies": [
+     "members": [
       {
-       "ref": "Humain",
-       "pos": {
-        "x": 5,
-        "y": 10
-       },
-       "side": "ally",
-       "weapon": "Épée bâtarde"
+       "entityId": "enemy-enc-zone8-0",
+       "side": "ally"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 14,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone8-1"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 22,
-        "y": 11
-       },
-       "optionals": [
-        "Armure 2"
-       ]
+       "entityId": "enemy-enc-zone8-2"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 12,
-        "y": 16
-       }
+       "entityId": "enemy-enc-zone8-3"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 17,
-        "y": 9
-       }
+       "entityId": "enemy-enc-zone8-4"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 24,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone8-5"
       },
       {
-       "ref": "Minotaure",
-       "pos": {
-        "x": 20,
-        "y": 16
-       }
+       "entityId": "enemy-enc-zone8-6"
       }
      ],
      "onVictory": [
@@ -10387,6 +10693,61 @@
      },
      "ref": "feu-camp",
      "label": "Feu de l’Ogre"
+    },
+    {
+     "id": "enemy-enc-zone9-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 8
+     },
+     "ref": "Troll"
+    },
+    {
+     "id": "enemy-enc-zone9-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 14
+     },
+     "ref": "Squig des cavernes"
+    },
+    {
+     "id": "enemy-enc-zone9-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 11
+     },
+     "ref": "Squig des cavernes",
+     "combat": {
+      "optionals": [
+       "Frénésie"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone9-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 6
+     },
+     "ref": "Gor"
+    },
+    {
+     "id": "enemy-enc-caverne-ogre-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 27,
+      "y": 9
+     },
+     "ref": "Ogre",
+     "combat": {
+      "optionals": [
+       "Affamé"
+      ]
+     }
     }
    ],
    "buildings": [],
@@ -10428,37 +10789,18 @@
    "encounters": [
     {
      "id": "enc-zone9",
-     "enemies": [
+     "members": [
       {
-       "ref": "Troll",
-       "pos": {
-        "x": 12,
-        "y": 8
-       }
+       "entityId": "enemy-enc-zone9-0"
       },
       {
-       "ref": "Squig des cavernes",
-       "pos": {
-        "x": 16,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone9-1"
       },
       {
-       "ref": "Squig des cavernes",
-       "pos": {
-        "x": 8,
-        "y": 11
-       },
-       "optionals": [
-        "Frénésie"
-       ]
+       "entityId": "enemy-enc-zone9-2"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 18,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone9-3"
       }
      ],
      "onVictory": [
@@ -10488,16 +10830,9 @@
     },
     {
      "id": "enc-caverne-ogre",
-     "enemies": [
+     "members": [
       {
-       "ref": "Ogre",
-       "pos": {
-        "x": 27,
-        "y": 9
-       },
-       "optionals": [
-        "Affamé"
-       ]
+       "entityId": "enemy-enc-caverne-ogre-0"
       }
      ],
      "onVictory": [
@@ -11364,6 +11699,7 @@
      "anim": "cowering",
      "appearance": {
       "species": "Halflings",
+      "career": "Mendiant",
       "sex": "M"
      }
     },
@@ -11534,6 +11870,101 @@
       "y": 7
      },
      "ref": "gravats"
+    },
+    {
+     "id": "enemy-enc-zone10-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 10
+     },
+     "ref": "Guerrier des clans",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone10-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 12
+     },
+     "ref": "Guerrier des clans",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone10-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 19
+     },
+     "ref": "Guerrier des clans",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone10-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 28,
+      "y": 9
+     },
+     "ref": "Guerrier des clans",
+     "combat": {
+      "optionals": [
+       "Pisteur"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone10-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 15
+     },
+     "ref": "Vermine de choc"
+    },
+    {
+     "id": "enemy-enc-zone10-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 20
+     },
+     "ref": "Vermine de choc"
+    },
+    {
+     "id": "enemy-enc-zone10-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 29,
+      "y": 14
+     },
+     "ref": "Rat ogre"
+    },
+    {
+     "id": "enemy-enc-zone10-7",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 15
+     },
+     "ref": "Rat géant"
+    },
+    {
+     "id": "enemy-enc-zone10-8",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 20
+     },
+     "ref": "Rat géant"
     }
    ],
    "buildings": [],
@@ -11636,75 +12067,33 @@
    "encounters": [
     {
      "id": "enc-zone10",
-     "enemies": [
+     "members": [
       {
-       "ref": "Guerrier des clans",
-       "pos": {
-        "x": 16,
-        "y": 10
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone10-0"
       },
       {
-       "ref": "Guerrier des clans",
-       "pos": {
-        "x": 22,
-        "y": 12
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone10-1"
       },
       {
-       "ref": "Guerrier des clans",
-       "pos": {
-        "x": 18,
-        "y": 19
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone10-2"
       },
       {
-       "ref": "Guerrier des clans",
-       "pos": {
-        "x": 28,
-        "y": 9
-       },
-       "optionals": [
-        "Pisteur"
-       ]
+       "entityId": "enemy-enc-zone10-3"
       },
       {
-       "ref": "Vermine de choc",
-       "pos": {
-        "x": 20,
-        "y": 15
-       }
+       "entityId": "enemy-enc-zone10-4"
       },
       {
-       "ref": "Vermine de choc",
-       "pos": {
-        "x": 24,
-        "y": 20
-       }
+       "entityId": "enemy-enc-zone10-5"
       },
       {
-       "ref": "Rat ogre",
-       "pos": {
-        "x": 29,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone10-6"
       },
       {
-       "ref": "Rat géant",
-       "pos": {
-        "x": 14,
-        "y": 15
-       }
+       "entityId": "enemy-enc-zone10-7"
       },
       {
-       "ref": "Rat géant",
-       "pos": {
-        "x": 10,
-        "y": 20
-       }
+       "entityId": "enemy-enc-zone10-8"
       }
      ],
      "onVictory": [
@@ -12661,6 +13050,108 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone11-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 17,
+      "y": 3
+     },
+     "ref": "Chamane-Brey",
+     "combat": {
+      "spells": [
+       "Fléchette",
+       "La lance d’Ambre",
+       "Serres d’ambre"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone11-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 13,
+      "y": 10
+     },
+     "ref": "Cultiste",
+     "combat": {
+      "optionals": [
+       "Lanceur de Sorts (Chaos)"
+      ],
+      "spells": [
+       "Fléchette"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-zone11-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 21,
+      "y": 10
+     },
+     "ref": "Cultiste",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone11-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 17,
+      "y": 12
+     },
+     "ref": "Cultiste",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone11-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 6
+     },
+     "ref": "Mutant"
+    },
+    {
+     "id": "enemy-enc-zone11-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 6
+     },
+     "ref": "Mutant"
+    },
+    {
+     "id": "enemy-enc-zone11-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 14
+     },
+     "ref": "Sanguinaire de Khorne"
+    },
+    {
+     "id": "enemy-enc-zone11-7",
+     "kind": "personnage",
+     "pos": {
+      "x": 19,
+      "y": 14
+     },
+     "ref": "Horreur rose"
+    },
+    {
+     "id": "enemy-enc-zone11-8",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 16
+     },
+     "ref": "Horreur bleue"
     }
    ],
    "buildings": [],
@@ -12707,82 +13198,33 @@
    "encounters": [
     {
      "id": "enc-zone11",
-     "enemies": [
+     "members": [
       {
-       "ref": "Chamane-Brey",
-       "pos": {
-        "x": 17,
-        "y": 3
-       },
-       "spells": [
-        "Fléchette",
-        "La lance d’Ambre",
-        "Serres d’ambre"
-       ]
+       "entityId": "enemy-enc-zone11-0"
       },
       {
-       "ref": "Cultiste",
-       "pos": {
-        "x": 13,
-        "y": 10
-       },
-       "spells": [
-        "Fléchette"
-       ],
-       "optionals": [
-        "Lanceur de Sorts (Chaos)"
-       ]
+       "entityId": "enemy-enc-zone11-1"
       },
       {
-       "ref": "Cultiste",
-       "pos": {
-        "x": 21,
-        "y": 10
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone11-2"
       },
       {
-       "ref": "Cultiste",
-       "pos": {
-        "x": 17,
-        "y": 12
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone11-3"
       },
       {
-       "ref": "Mutant",
-       "pos": {
-        "x": 10,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone11-4"
       },
       {
-       "ref": "Mutant",
-       "pos": {
-        "x": 24,
-        "y": 6
-       }
+       "entityId": "enemy-enc-zone11-5"
       },
       {
-       "ref": "Sanguinaire de Khorne",
-       "pos": {
-        "x": 15,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone11-6"
       },
       {
-       "ref": "Horreur rose",
-       "pos": {
-        "x": 19,
-        "y": 14
-       }
+       "entityId": "enemy-enc-zone11-7"
       },
       {
-       "ref": "Horreur bleue",
-       "pos": {
-        "x": 22,
-        "y": 16
-       }
+       "entityId": "enemy-enc-zone11-8"
       }
      ],
      "onVictory": [
@@ -13653,6 +14095,74 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone12-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 4
+     },
+     "ref": "Squelette"
+    },
+    {
+     "id": "enemy-enc-zone12-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 4
+     },
+     "ref": "Squelette"
+    },
+    {
+     "id": "enemy-enc-zone12-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 8
+     },
+     "ref": "Fantôme"
+    },
+    {
+     "id": "enemy-enc-zone12-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 12
+     },
+     "ref": "Fantôme"
+    },
+    {
+     "id": "enemy-enc-zone12-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 2
+     },
+     "ref": "Banshee"
+    },
+    {
+     "id": "enemy-enc-zone12-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 12
+     },
+     "ref": "Spectre de cairn"
+    },
+    {
+     "id": "enemy-enc-zone12-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 8
+     },
+     "ref": "Vampire",
+     "combat": {
+      "optionals": [
+       "Champion"
+      ]
+     }
     }
    ],
    "buildings": [],
@@ -13698,58 +14208,27 @@
    "encounters": [
     {
      "id": "enc-zone12",
-     "enemies": [
+     "members": [
       {
-       "ref": "Squelette",
-       "pos": {
-        "x": 8,
-        "y": 4
-       }
+       "entityId": "enemy-enc-zone12-0"
       },
       {
-       "ref": "Squelette",
-       "pos": {
-        "x": 22,
-        "y": 4
-       }
+       "entityId": "enemy-enc-zone12-1"
       },
       {
-       "ref": "Fantôme",
-       "pos": {
-        "x": 12,
-        "y": 8
-       }
+       "entityId": "enemy-enc-zone12-2"
       },
       {
-       "ref": "Fantôme",
-       "pos": {
-        "x": 20,
-        "y": 12
-       }
+       "entityId": "enemy-enc-zone12-3"
       },
       {
-       "ref": "Banshee",
-       "pos": {
-        "x": 16,
-        "y": 2
-       }
+       "entityId": "enemy-enc-zone12-4"
       },
       {
-       "ref": "Spectre de cairn",
-       "pos": {
-        "x": 14,
-        "y": 12
-       }
+       "entityId": "enemy-enc-zone12-5"
       },
       {
-       "ref": "Vampire",
-       "pos": {
-        "x": 16,
-        "y": 8
-       },
-       "optionals": [
-        "Champion"
-       ]
+       "entityId": "enemy-enc-zone12-6"
       }
      ],
      "onVictory": [
@@ -15117,6 +15596,94 @@
        }
       ]
      }
+    },
+    {
+     "id": "enemy-enc-zone13-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 28,
+      "y": 9
+     },
+     "statblock": {
+      "name": "Dragon des ténèbres",
+      "char": {
+       "M": 6,
+       "CC": 55,
+       "CT": 45,
+       "F": 55,
+       "E": 55,
+       "I": 50,
+       "Ag": 35,
+       "Dex": 30,
+       "Int": 40,
+       "FM": 60,
+       "Soc": 40,
+       "B": 104
+      },
+      "traits": [
+       "Taille (Monstrueuse)",
+       "Souffle +15 (Ténèbres)",
+       "Terreur 2",
+       "Armure 5",
+       "Arme +10",
+       "Morsure +10",
+       "Vol"
+      ],
+      "size": "monstrueuse"
+     }
+    },
+    {
+     "id": "enemy-enc-zone13-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 24,
+      "y": 5
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone13-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 26,
+      "y": 16
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone13-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 21,
+      "y": 12
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-zone13-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 33,
+      "y": 18
+     },
+     "ref": "Gobelin"
+    },
+    {
+     "id": "enemy-enc-zone13-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 30,
+      "y": 3
+     },
+     "ref": "Cultiste",
+     "combat": {
+      "optionals": [
+       "Armure 1"
+      ]
+     }
     }
    ],
    "buildings": [],
@@ -15142,78 +15709,24 @@
    "encounters": [
     {
      "id": "enc-zone13",
-     "enemies": [
+     "members": [
       {
-       "statblock": {
-        "name": "Dragon des ténèbres",
-        "char": {
-         "M": 6,
-         "CC": 55,
-         "CT": 45,
-         "F": 55,
-         "E": 55,
-         "I": 50,
-         "Ag": 35,
-         "Dex": 30,
-         "Int": 40,
-         "FM": 60,
-         "Soc": 40,
-         "B": 104
-        },
-        "traits": [
-         "Taille (Monstrueuse)",
-         "Souffle +15 (Ténèbres)",
-         "Terreur 2",
-         "Armure 5",
-         "Arme +10",
-         "Morsure +10",
-         "Vol"
-        ],
-        "size": "monstrueuse"
-       },
-       "pos": {
-        "x": 28,
-        "y": 9
-       }
+       "entityId": "enemy-enc-zone13-0"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 24,
-        "y": 5
-       }
+       "entityId": "enemy-enc-zone13-1"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 26,
-        "y": 16
-       }
+       "entityId": "enemy-enc-zone13-2"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 21,
-        "y": 12
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-zone13-3"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 33,
-        "y": 18
-       }
+       "entityId": "enemy-enc-zone13-4"
       },
       {
-       "ref": "Cultiste",
-       "pos": {
-        "x": 30,
-        "y": 3
-       },
-       "optionals": [
-        "Armure 1"
-       ]
+       "entityId": "enemy-enc-zone13-5"
       }
      ],
      "onVictory": [
@@ -16612,6 +17125,158 @@
      },
      "ref": "gibet",
      "label": "L’avertissement de Bella"
+    },
+    {
+     "id": "enemy-enc-foret-harde-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 9
+     },
+     "ref": "Gor",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 16
+     },
+     "ref": "Gor",
+     "combat": {
+      "hiddenUntilCombat": true,
+      "optionals": [
+       "Armure 2"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 9,
+      "y": 12
+     },
+     "ref": "Ungor",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 20
+     },
+     "ref": "Ungor",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 19,
+      "y": 7
+     },
+     "ref": "Ungor",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 7,
+      "y": 16
+     },
+     "ref": "Loup",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-6",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 12
+     },
+     "ref": "Loup",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-harde-7",
+     "kind": "personnage",
+     "pos": {
+      "x": 17,
+      "y": 23
+     },
+     "ref": "Loup",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-bande-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 31,
+      "y": 11
+     },
+     "ref": "Bella la Noire"
+    },
+    {
+     "id": "enemy-enc-foret-bande-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 29,
+      "y": 9
+     },
+     "ref": "Humain",
+     "appearance": {
+      "career": "Voleur",
+      "sex": "F"
+     },
+     "weapon": "Arc",
+     "label": "Coupe-jarret de Bella",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-bande-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 33,
+      "y": 13
+     },
+     "ref": "Humain",
+     "appearance": {
+      "career": "Voleur"
+     },
+     "weapon": "Épée bâtarde",
+     "label": "Spadassin de Bella",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-foret-bande-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 28,
+      "y": 14
+     },
+     "ref": "Chien"
     }
    ],
    "buildings": [],
@@ -16653,68 +17318,33 @@
    "encounters": [
     {
      "id": "enc-foret-harde",
-     "surprise": "party",
-     "enemies": [
+     "members": [
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 12,
-        "y": 9
-       }
+       "entityId": "enemy-enc-foret-harde-0"
       },
       {
-       "ref": "Gor",
-       "pos": {
-        "x": 18,
-        "y": 16
-       },
-       "optionals": [
-        "Armure 2"
-       ]
+       "entityId": "enemy-enc-foret-harde-1"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 9,
-        "y": 12
-       }
+       "entityId": "enemy-enc-foret-harde-2"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 15,
-        "y": 20
-       }
+       "entityId": "enemy-enc-foret-harde-3"
       },
       {
-       "ref": "Ungor",
-       "pos": {
-        "x": 19,
-        "y": 7
-       }
+       "entityId": "enemy-enc-foret-harde-4"
       },
       {
-       "ref": "Loup",
-       "pos": {
-        "x": 7,
-        "y": 16
-       }
+       "entityId": "enemy-enc-foret-harde-5"
       },
       {
-       "ref": "Loup",
-       "pos": {
-        "x": 14,
-        "y": 12
-       }
+       "entityId": "enemy-enc-foret-harde-6"
       },
       {
-       "ref": "Loup",
-       "pos": {
-        "x": 17,
-        "y": 23
-       }
+       "entityId": "enemy-enc-foret-harde-7"
       }
      ],
+     "surprise": "party",
      "onVictory": [
       {
        "type": "giveXp",
@@ -16728,38 +17358,18 @@
     },
     {
      "id": "enc-foret-bande",
-     "enemies": [
+     "members": [
       {
-       "ref": "Bella la Noire",
-       "pos": {
-        "x": 31,
-        "y": 11
-       }
+       "entityId": "enemy-enc-foret-bande-0"
       },
       {
-       "ref": "Humain",
-       "pos": {
-        "x": 29,
-        "y": 9
-       },
-       "weapon": "Arc",
-       "randomChars": true
+       "entityId": "enemy-enc-foret-bande-1"
       },
       {
-       "ref": "Humain",
-       "pos": {
-        "x": 33,
-        "y": 13
-       },
-       "weapon": "Épée bâtarde",
-       "randomChars": true
+       "entityId": "enemy-enc-foret-bande-2"
       },
       {
-       "ref": "Chien",
-       "pos": {
-        "x": 28,
-        "y": 14
-       }
+       "entityId": "enemy-enc-foret-bande-3"
       }
      ],
      "onVictory": [
@@ -17924,6 +18534,54 @@
      },
      "ref": "menhir",
      "label": "Pierre engloutie"
+    },
+    {
+     "id": "enemy-enc-marais-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 15,
+      "y": 19
+     },
+     "ref": "Bête des marais",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-marais-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 19
+     },
+     "ref": "Pieuvre des tourbières",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-marais-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 9,
+      "y": 20
+     },
+     "ref": "Serpent",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-marais-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 21,
+      "y": 16
+     },
+     "ref": "Serpent",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
     }
    ],
    "buildings": [],
@@ -17949,37 +18607,21 @@
    "encounters": [
     {
      "id": "enc-marais",
-     "surprise": "party",
-     "enemies": [
+     "members": [
       {
-       "ref": "Bête des marais",
-       "pos": {
-        "x": 15,
-        "y": 19
-       }
+       "entityId": "enemy-enc-marais-0"
       },
       {
-       "ref": "Pieuvre des tourbières",
-       "pos": {
-        "x": 22,
-        "y": 19
-       }
+       "entityId": "enemy-enc-marais-1"
       },
       {
-       "ref": "Serpent",
-       "pos": {
-        "x": 9,
-        "y": 20
-       }
+       "entityId": "enemy-enc-marais-2"
       },
       {
-       "ref": "Serpent",
-       "pos": {
-        "x": 21,
-        "y": 16
-       }
+       "entityId": "enemy-enc-marais-3"
       }
      ],
+     "surprise": "party",
      "onVictory": [
       {
        "type": "setFlag",
@@ -19003,6 +19645,68 @@
       "y": 3
      },
      "ref": "tonneaux-pile"
+    },
+    {
+     "id": "enemy-enc-village-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 7
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-village-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 12
+     },
+     "ref": "Zombie",
+     "combat": {
+      "optionals": [
+       "Maladie"
+      ]
+     }
+    },
+    {
+     "id": "enemy-enc-village-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 11,
+      "y": 16
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-village-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 22,
+      "y": 8
+     },
+     "ref": "Zombie",
+     "combat": {
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-village-4",
+     "kind": "personnage",
+     "pos": {
+      "x": 16,
+      "y": 19
+     },
+     "ref": "Zombie"
+    },
+    {
+     "id": "enemy-enc-village-5",
+     "kind": "personnage",
+     "pos": {
+      "x": 20,
+      "y": 20
+     },
+     "ref": "Goule de crypte"
     }
    ],
    "buildings": [
@@ -19148,52 +19852,24 @@
    "encounters": [
     {
      "id": "enc-village",
-     "enemies": [
+     "members": [
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 14,
-        "y": 7
-       }
+       "entityId": "enemy-enc-village-0"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 18,
-        "y": 12
-       },
-       "optionals": [
-        "Maladie"
-       ]
+       "entityId": "enemy-enc-village-1"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 11,
-        "y": 16
-       }
+       "entityId": "enemy-enc-village-2"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 22,
-        "y": 8
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-village-3"
       },
       {
-       "ref": "Zombie",
-       "pos": {
-        "x": 16,
-        "y": 19
-       }
+       "entityId": "enemy-enc-village-4"
       },
       {
-       "ref": "Goule de crypte",
-       "pos": {
-        "x": 20,
-        "y": 20
-       }
+       "entityId": "enemy-enc-village-5"
       }
      ],
      "onVictory": [
@@ -19707,6 +20383,56 @@
       "y": 6
      },
      "ref": "tonneau"
+    },
+    {
+     "id": "enemy-enc-embuscade-0",
+     "kind": "personnage",
+     "pos": {
+      "x": 14,
+      "y": 4
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "hiddenUntilCombat": true,
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-embuscade-1",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 9
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "hiddenUntilCombat": true,
+      "randomChars": true
+     }
+    },
+    {
+     "id": "enemy-enc-embuscade-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 10,
+      "y": 10
+     },
+     "ref": "Gobelin",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
+    },
+    {
+     "id": "enemy-enc-embuscade-3",
+     "kind": "personnage",
+     "pos": {
+      "x": 21,
+      "y": 5
+     },
+     "ref": "Orc",
+     "combat": {
+      "hiddenUntilCombat": true
+     }
     }
    ],
    "buildings": [],
@@ -19715,39 +20441,21 @@
    "encounters": [
     {
      "id": "enc-embuscade",
-     "surprise": "party",
-     "enemies": [
+     "members": [
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 14,
-        "y": 4
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-embuscade-0"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 18,
-        "y": 9
-       },
-       "randomChars": true
+       "entityId": "enemy-enc-embuscade-1"
       },
       {
-       "ref": "Gobelin",
-       "pos": {
-        "x": 10,
-        "y": 10
-       }
+       "entityId": "enemy-enc-embuscade-2"
       },
       {
-       "ref": "Orc",
-       "pos": {
-        "x": 21,
-        "y": 5
-       }
+       "entityId": "enemy-enc-embuscade-3"
       }
      ],
+     "surprise": "party",
      "onVictory": [
       {
        "type": "giveXp",

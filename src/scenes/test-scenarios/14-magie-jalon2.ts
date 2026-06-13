@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey } from '../../engine/types';
 
@@ -30,7 +30,7 @@ scene.triggers = [
     ],
   },
 ];
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-jalon2',
     enemies: [
@@ -39,7 +39,7 @@ scene.encounters = [
       { ref: 'Zombie', pos: { x: 9, y: 6 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'magie-jalon2',

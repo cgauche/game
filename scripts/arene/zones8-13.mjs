@@ -61,7 +61,8 @@ export function makeZone8() {
         id: 'enc-zone8',
         enemies: [
           // 0 : le gladiateur évadé — un ALLIÉ de scène à pied (vitrine side:'ally' hors monture).
-          { ref: 'Humain', pos: { x: 5, y: 10 }, side: 'ally', weapon: 'Épée bâtarde' },
+          //     Dépouillé de son armure par la harde : haillons + carrure de lutteur (≠ soldat générique).
+          { ref: 'Humain', pos: { x: 5, y: 10 }, side: 'ally', weapon: 'Épée bâtarde', label: 'Gladiateur enchaîné', appearance: { career: 'Mendiant', build: 0.72 } },
           { ref: 'Gor', pos: { x: 14, y: 5 } },
           { ref: 'Gor', pos: { x: 22, y: 11 }, optionals: ['Armure 2'] },
           { ref: 'Gor', pos: { x: 12, y: 16 } },
@@ -251,7 +252,7 @@ export function makeZone10() {
       NPC('prisonnier', 10, 5, 'Prisonnier en cage', {
         dialogueId: 'dlg-prisonnier',
         anim: 'cowering',
-        appearance: { species: 'Halflings', sex: 'M' },
+        appearance: { species: 'Halflings', career: 'Mendiant', sex: 'M' },
       }),
       P(10, 6, 'cage', { label: 'Cage du garde-manger' }),
       P(12, 5, 'detritus'),

@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { arena } from './_shared';
+import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 // Traits de créature (LDB 85) — vitrine des traits nouvellement câblés (Lot C) :
@@ -14,7 +14,7 @@ import type { TestScenario } from './_shared';
 const scene = arena({ id: 'test-traits', nom: 'Traits de créature', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
 scene.startMessage =
   'Vitrine des Traits (LDB 85) : le Fantôme est Éthéré (frappez-le avec un sort !) et Instable ; la Démonette sauvegarde sur 8+ (Démoniaque), riposte en défense (Champion) et perturbe à 4 m (−20) ; le Troll régénère chaque Round et bave parfois (Stupide) ; l’Araignée emmaillote (Toile) et fuit sous la moitié de ses PB (Bestial).';
-scene.encounters = [
+setEncounters(scene, [
   {
     id: 'enc-traits',
     enemies: [
@@ -24,7 +24,7 @@ scene.encounters = [
       { ref: 'Araignée géante', pos: { x: 9, y: 6 } },
     ],
   },
-];
+]);
 
 export const scenario: TestScenario = {
   id: 'traits-creature',
