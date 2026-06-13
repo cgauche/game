@@ -21,7 +21,8 @@
  */
 import { Combatant } from './types';
 import { bonus } from './characteristics';
-import { findTalent, CareerLevelData } from '../data';
+import { findTalent, findSkill, spells, CareerLevelData } from '../data';
+import { CULT_KEYS } from './cults/registry';
 
 /** Une possibilité concrète ou ouverte couverte par un slot. */
 export interface SlotOption {
@@ -84,6 +85,23 @@ export function parseOption(raw: string): SlotOption {
 /** Parse une entrée de liste de carrière (gère le « A ou B » de premier niveau). */
 export function parseEntry(raw: string): SlotOption[] {
   return splitTopLevelOu(raw).map(parseOption);
+}
+
+/**
+ * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR
+ * (dont l'étape de dépense de PX) ET l'AVANCEMENT (plus de `findTalent(name)?.specs ?? []` dupliqué).
+ * Compétence groupée → ses Spécialisations. Talents à domaine/culte, DATA-DRIVEN : « Béni » → cultes
+ * du registre ; « Magie des Arcanes », « Magie du Chaos », « Invocation » → domaines/cultes = les
+ * `subType` distincts des sorts du TYPE homonyme (Feu/Ombres… ; Nurgle/Slaanesh/Tzeentch ; cultes).
+ * Sinon, les Spécialisations du talent. `[]` si rien.
+ */
+export function wildcardSpecs(name: string): string[] {
+  const skill = findSkill(name);
+  if (skill?.specs?.length) return skill.specs;
+  if (name === 'Béni') return CULT_KEYS; // les Bénédictions ne sont pas taguées par domaine → le culte
+  const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
+  if (fromSpells.length) return fromSpells;
+  return findTalent(name)?.specs ?? [];
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». */

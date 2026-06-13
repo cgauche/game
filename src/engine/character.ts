@@ -29,13 +29,12 @@ import {
   firstLevel,
   levelsForCareer,
   findSkill,
-  findTalent,
   findTrapping,
   classes,
   careers,
   talents as talentTable,
 } from '../data';
-import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached } from './careerSlots';
+import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 
 const SKILL_CHAR: Record<string, CharKey> = {
@@ -156,7 +155,7 @@ export function resolveSpeciesTalents(
     const chosen = opts.choices?.[entryKey];
     if (chosen && !isUnresolvedChoice(chosen)) return chosen;
     const { name, spec } = splitLabel(opt);
-    const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : findTalent(name)?.specs ?? [];
+    const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : wildcardSpecs(name);
     const free = specOptions.find((s) => !owned.has(concreteLabel(name, s))) ?? specOptions[0];
     return free ? concreteLabel(name, free) : name;
   };
@@ -235,7 +234,7 @@ function resolveEntry(raw: string, specChoices?: Record<string, string>): string
   const { name, spec } = splitLabel(raw);
   const options = /\sou\s/i.test(spec!)
     ? spec!.split(/\s+ou\s+/i).map((s) => s.trim())
-    : findSkill(name)?.specs ?? findTalent(name)?.specs ?? [];
+    : wildcardSpecs(name);
   const concrete = options.filter((o) => !/au choix/i.test(o));
   return concrete.length ? concreteLabel(name, concrete[0]) : name;
 }

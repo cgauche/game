@@ -32,10 +32,10 @@ import {
   XP_CHARS_REASSIGNED,
 } from '../../engine/creation';
 import { createHero, resolveSpeciesTalents } from '../../engine/character';
-import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached } from '../../engine/careerSlots';
+import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { bonus } from '../../engine/characteristics';
-import { findSpecies, findSkill, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
+import { findSpecies, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -249,12 +249,11 @@ export function careerSkillEntries(d: CreatorDraft): string[] {
   return [...base, ...careerSkillAdditions(probeHero(d))];
 }
 
-/** Options de spec d'une entrée « (Au choix) » (liste restreinte ou specs des données). */
+/** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */
 export function specOptionsFor(entry: string): string[] {
   const opt = parseEntry(entry)[0];
   if (!opt.wildcard) return [];
-  if (opt.specOptions) return opt.specOptions;
-  return findSkill(opt.name)?.specs ?? findTalent(opt.name)?.specs ?? [];
+  return opt.specOptions ?? wildcardSpecs(opt.name);
 }
 
 /** Libellés concrets proposés par une entrée de talent à choix (joker, joker restreint,
@@ -265,7 +264,7 @@ export function talentEntryChoices(entry: string): string[] | null {
   const out: string[] = [];
   for (const o of opts) {
     if (!o.wildcard) out.push(concreteLabel(o.name, o.spec));
-    else for (const s of o.specOptions ?? findTalent(o.name)?.specs ?? []) out.push(concreteLabel(o.name, s));
+    else for (const s of o.specOptions ?? wildcardSpecs(o.name)) out.push(concreteLabel(o.name, s));
   }
   return out;
 }

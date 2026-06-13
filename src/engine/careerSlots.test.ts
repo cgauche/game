@@ -14,6 +14,7 @@ import {
   freeSlotFor,
   talentMax,
   talentMaxReached,
+  wildcardSpecs,
 } from './careerSlots';
 import { CareerLevelData } from '../data';
 
@@ -169,5 +170,25 @@ describe('Maxi des Talents (LDB 10 « Schéma des Talents »)', () => {
     expect(talentMax(h, 'Sens aiguisé (Goût)')).toBe(3);
     expect(talentMaxReached(h, 'Sens aiguisé (Goût)')).toBe(true);
     expect(talentMaxReached(h, 'Sens aiguisé (Ouïe)')).toBe(false); // spec distincte
+  });
+});
+
+describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + avancement)', () => {
+  it('Béni → cultes du registre (dont les dieux gnomes NADJ)', () => {
+    const s = wildcardSpecs('Béni');
+    expect(s).toContain('Sigmar');
+    expect(s).toContain('Evawn');
+  });
+  it('Magie des Arcanes → domaines des sorts (subType), data-driven', () => {
+    expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['Feu', 'Ombres', 'Métal']));
+  });
+  it('Magie du Chaos → Nurgle / Slaanesh / Tzeentch', () => {
+    expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['Nurgle', 'Slaanesh', 'Tzeentch']);
+  });
+  it('Invocation → cultes (subType des Invocations)', () => {
+    expect(wildcardSpecs('Invocation')).toContain('Sigmar');
+  });
+  it('libellé sans domaine/culte/specs → []', () => {
+    expect(wildcardSpecs('Inexistant-xyz')).toEqual([]);
   });
 });

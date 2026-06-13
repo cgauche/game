@@ -28,9 +28,10 @@ import {
   concreteLabel,
   splitLabel,
   talentMaxReached,
+  wildcardSpecs,
 } from '../engine/careerSlots';
 import { careerSkillAdditions } from '../engine/talentEffects';
-import { levelsForCareer, findSkill, findTalent, findCareer, careers } from '../data';
+import { levelsForCareer, findSkill, findCareer, careers } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -164,7 +165,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   for (const slot of sSlots) {
     if (!slot.needsChoice || designations[slot.key]) continue;
     const o = slot.options[0];
-    const specPool = o.specOptions ?? findSkill(o.name)?.specs ?? [];
+    const specPool = o.specOptions ?? wildcardSpecs(o.name);
     const options = specPool
       .filter((spec) => !taken.has(concreteLabel(o.name, spec)))
       .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => s.name === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
@@ -182,7 +183,8 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     // Slot à choix non désigné : proposer les options concrètes non prises par la carrière.
     const options: { label: string; owned: boolean }[] = [];
     for (const o of slot.options) {
-      const pool: (string | undefined)[] = o.wildcard ? (o.specOptions ?? findTalent(o.name)?.specs ?? [undefined]) : [o.spec];
+      const specs = o.specOptions ?? wildcardSpecs(o.name);
+      const pool: (string | undefined)[] = o.wildcard ? (specs.length ? specs : [undefined]) : [o.spec];
       for (const spec of pool) {
         const lbl = concreteLabel(o.name, spec);
         if (taken.has(lbl)) continue;

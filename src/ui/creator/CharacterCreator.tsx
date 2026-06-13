@@ -72,6 +72,7 @@ import {
   concreteLabel,
   splitTopLevelOu,
 } from './draft';
+import { wildcardSpecs } from '../../engine/careerSlots';
 
 const STEPS = ['Espèce', 'Carrière', 'Caractéristiques', 'Compétences & Talents', 'Possessions', 'Détails', 'Récapitulatif'];
 
@@ -868,12 +869,12 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
         {resolved
           .filter((label) => {
             const { name, spec } = splitLabel(label);
-            const specs = findTalent(name)?.specs ?? [];
+            const specs = wildcardSpecs(name);
             return spec != null && specs.length > 0 && !sp.talents.some((e) => e.includes(label));
           })
           .map((label) => {
             const { name, spec } = splitLabel(label);
-            const free = (findTalent(name)?.specs ?? []).filter((s) => s === spec || !resolved.includes(concreteLabel(name, s)));
+            const free = wildcardSpecs(name).filter((s) => s === spec || !resolved.includes(concreteLabel(name, s)));
             return (
               <label key={label} style={{ display: 'block', marginTop: 6 }}>
                 {name} (tiré) — spécialisation
