@@ -9,6 +9,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
+import { dropExpiredGrantedResources } from './grantedResources';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
 
@@ -216,6 +217,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
     dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
+    dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainFortune/gainFate) non dépensés
     restoreSuppressedPsych(c, expired); // Traits psy suspendus (Baume, LDB 42) restitués
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.

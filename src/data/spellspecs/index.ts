@@ -11,6 +11,7 @@ import { DOMAINE_FEU } from './domaine-feu';
 import { DOMAINE_OMBRES } from './domaine-ombres';
 import { DOMAINE_METAL } from './domaine-metal';
 import { DOMAINE_LUMIERE } from './domaine-lumiere';
+import { DOMAINE_CIEUX } from './domaine-cieux';
 import { MAGIE_MINEURE } from './magie-mineure';
 import { ARCANES_COMMUNS } from './arcanes-communs';
 import { MIRACLES_SIGMAR } from './miracles-sigmar';
@@ -18,7 +19,7 @@ import { MIRACLES_SHALLYA } from './miracles-shallya';
 
 const ALL: SpellSpec[] = [
   ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...DOMAINE_LUMIERE,
-  ...MAGIE_MINEURE, ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
+  ...DOMAINE_CIEUX, ...MAGIE_MINEURE, ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
 ];
 
 /** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */
