@@ -6,7 +6,7 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useRef, useState } from 'react';
-import { Scene, SceneEntity, tileAt } from '../../state/scene';
+import { Scene, tileAt } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
@@ -19,7 +19,7 @@ import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEntry, addTrigger, addRestZone, addBuilding, addSpawn, eraseAt, sameSel,
+  placeEntity, placeEntry, addTrigger, addRestZone, addBuilding, addEnemyMember, eraseAt, sameSel,
 } from './editorState';
 
 export function EditorCanvas({
@@ -125,9 +125,10 @@ export function EditorCanvas({
         return;
       }
       case 'encounter': {
-        const out = addSpawn(scene, encTarget, encRef, p);
+        const out = addEnemyMember(scene, encTarget, encRef, p);
         setScene(out.scene);
         if (out.encId !== encTarget) setEncTarget(out.encId);
+        onSelect({ type: 'entity', id: out.entityId }); // sélectionne l'ennemi posé (édition immédiate)
         return;
       }
       case 'erase':
@@ -250,6 +251,8 @@ export function EditorCanvas({
                   if (ov) objs.push({ d: ov.d, el: <g key={`ov${x}-${y}`} dangerouslySetInnerHTML={{ __html: ov.html }} /> });
                 }
               if (layers.buildings) for (const b of scene.buildings ?? []) objs.push(buildingObj(b, dims, false, false)); // aperçu de jour ; le jour/nuit est runtime via l'horloge
+              // Entités de COMBAT : celles enrôlées dans une rencontre (teinte rouge + empreinte).
+              const memberIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
               for (const en of scene.entities) {
                 if (en.kind === 'heroStart') {
                   const { cx, cy } = tileCenter(en.pos.x, en.pos.y, dims);
@@ -264,35 +267,35 @@ export function EditorCanvas({
                       </g>
                     ),
                   });
+                  continue;
+                }
+                const hidden = !!en.combat?.hiddenUntilCombat;
+                if (hidden && !layers.spawns) continue; // calque « Ennemis » masqué → cacher les embusqueurs
+                const isCombat = memberIds.has(en.id);
+                const isSel = sameSel(sel, { type: 'entity', id: en.id });
+                if (isCombat) {
+                  objs.push({
+                    d: depth(en.pos.x, en.pos.y, dims) + 0.45,
+                    el: (
+                      <g key={en.id} opacity={hidden ? 0.6 : 1}>
+                        {footprintTiles(en.pos, entitySize(en)).map((t) => (
+                          <path
+                            key={`fp-${t.x}-${t.y}`}
+                            d={diamondPath(t.x, t.y, dims)}
+                            fill="rgba(192,57,43,0.32)"
+                            stroke={isSel ? '#ffe066' : '#c0392b'}
+                            strokeWidth={isSel ? 2.5 : 1.5}
+                            strokeDasharray={hidden ? '4 3' : undefined}
+                          />
+                        ))}
+                        <EntityToken ent={en} dims={dims} />
+                      </g>
+                    ),
+                  });
                 } else {
                   objs.push({ d: depth(en.pos.x, en.pos.y, dims) + 0.5, el: <EntityToken key={en.id} ent={en} dims={dims} /> });
                 }
               }
-              // Ennemis des rencontres (points d'apparition).
-              if (layers.spawns)
-                for (const [encIdx, enc] of scene.encounters.entries()) {
-                  (enc.enemies ?? []).forEach((en, idx) => {
-                    const isSel = sameSel(sel, { type: 'spawn', enc: encIdx, idx });
-                    const synth = { id: `spawn-${encIdx}-${idx}`, kind: 'personnage', ref: en.ref, pos: en.pos, appearance: en.appearance, weapon: en.weapon } as SceneEntity;
-                    objs.push({
-                      d: depth(en.pos.x, en.pos.y, dims) + 0.45,
-                      el: (
-                        <g key={`spawn-${encIdx}-${idx}`}>
-                          {footprintTiles(en.pos, entitySize(en)).map((t) => (
-                            <path
-                              key={`fp-${t.x}-${t.y}`}
-                              d={diamondPath(t.x, t.y, dims)}
-                              fill="rgba(192,57,43,0.32)"
-                              stroke={isSel ? '#ffe066' : '#c0392b'}
-                              strokeWidth={isSel ? 2.5 : 1.5}
-                            />
-                          ))}
-                          <EntityToken ent={synth} dims={dims} />
-                        </g>
-                      ),
-                    });
-                  });
-                }
               objs.sort((a, b) => a.d - b.d);
               return objs.map((o) => o.el);
             })()}

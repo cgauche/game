@@ -248,7 +248,7 @@ export function Palette({
               <option value="">Nouvelle rencontre…</option>
               {scene.encounters.map((e) => (
                 <option key={e.id} value={e.id}>
-                  {e.id} ({(e.enemies ?? []).length})
+                  {e.id} ({(e.members ?? []).length})
                 </option>
               ))}
             </select>

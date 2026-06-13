@@ -4,7 +4,7 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
 import { defaultDoor } from '../../state/buildings';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
@@ -33,8 +33,7 @@ export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, buildings:
 export type Sel =
   | null
   | { type: 'entity' | 'building' | 'trigger' | 'entry'; id: string }
-  | { type: 'restZone'; idx: number }
-  | { type: 'spawn'; enc: number; idx: number };
+  | { type: 'restZone'; idx: number };
 
 export const KIND_LABEL: Record<EntityKind, string> = {
   heroStart: 'Départ héros',
@@ -52,20 +51,17 @@ const clamp = (v: number, max: number) => Math.max(0, Math.min(max - 1, v));
 /** Deux sélections désignent-elles le même élément ? */
 export function sameSel(a: Sel, b: Sel): boolean {
   if (!a || !b || a.type !== b.type) return a === b;
-  if (a.type === 'spawn' && b.type === 'spawn') return a.enc === b.enc && a.idx === b.idx;
   if (a.type === 'restZone' && b.type === 'restZone') return a.idx === b.idx;
   return (a as { id: string }).id === (b as { id: string }).id;
 }
 
-/** Élément occupant la case p — priorité spawn > entité > entrée > trigger > zone repos > bâtiment.
- *  Les calques masqués sont ignorés (cliquer « à travers »). */
+/** Élément occupant la case p — priorité entité > entrée > trigger > zone repos > bâtiment.
+ *  Les calques masqués sont ignorés (cliquer « à travers »). Le calque `spawns` masque les entités
+ *  de COMBAT cachées (embusqueurs) : on ne peut alors cliquer que les PNJ visibles. */
 export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
-  if (layers.spawns)
-    for (let ei = 0; ei < scene.encounters.length; ei++) {
-      const ii = (scene.encounters[ei].enemies ?? []).findIndex((en) => en.pos.x === p.x && en.pos.y === p.y);
-      if (ii >= 0) return { type: 'spawn', enc: ei, idx: ii };
-    }
-  const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
+  const ent = scene.entities.find(
+    (e) => e.pos.x === p.x && e.pos.y === p.y && (layers.spawns || !e.combat?.hiddenUntilCombat),
+  );
   if (ent) return { type: 'entity', id: ent.id };
   if (layers.entries)
     for (const [name, pos] of Object.entries(scene.entryPoints ?? {}))
@@ -96,7 +92,6 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
 /** Position d'ancrage de la sélection (coin NW pour les rects) — cible des flèches de nudge. */
 export function selPos(scene: Scene, sel: Sel): Pt | null {
   if (sel?.type === 'entity') return scene.entities.find((e) => e.id === sel.id)?.pos ?? null;
-  if (sel?.type === 'spawn') return (scene.encounters[sel.enc]?.enemies ?? [])[sel.idx]?.pos ?? null;
   if (sel?.type === 'entry') return scene.entryPoints?.[sel.id] ?? null;
   const r = selRect(scene, sel);
   return r ? { x: r.x, y: r.y } : null;
@@ -107,13 +102,6 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
   const { w, h } = scene.dimensions;
   if (sel?.type === 'entity')
     return { ...scene, entities: scene.entities.map((e) => (e.id === sel.id ? { ...e, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } } : e)) };
-  if (sel?.type === 'spawn') {
-    const encs = scene.encounters.map((e) => ({ ...e, enemies: [...(e.enemies ?? [])] }));
-    const en = (encs[sel.enc]?.enemies ?? [])[sel.idx];
-    if (!en) return scene;
-    encs[sel.enc].enemies![sel.idx] = { ...en, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } };
-    return { ...scene, encounters: encs };
-  }
   if (sel?.type === 'entry') {
     const pos = scene.entryPoints?.[sel.id];
     if (!pos) return scene;
@@ -154,17 +142,20 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
   return scene;
 }
 
-/** Supprime l'élément sélectionné. Scene inchangée si rien/introuvable. */
+/** Supprime l'élément sélectionné. Scene inchangée si rien/introuvable. Supprimer une entité retire
+ *  aussi ses rattachements de rencontre (membre + toute monture qui la chevauchait). */
 export function deleteSel(scene: Scene, sel: Sel): Scene {
-  if (sel?.type === 'entity') return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id) };
+  if (sel?.type === 'entity') {
+    const encounters = scene.encounters.map((e) => {
+      const members = (e.members ?? []).filter((m) => m.entityId !== sel.id);
+      if (members.length === (e.members ?? []).length) return e;
+      return { ...e, members: members.map((m) => (m.ridesEntityId === sel.id ? { ...m, ridesEntityId: undefined } : m)) };
+    });
+    return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters };
+  }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   if (sel?.type === 'building') return { ...scene, buildings: (scene.buildings ?? []).filter((b) => b.id !== sel.id) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).filter((_, i) => i !== sel.idx) };
-  if (sel?.type === 'spawn')
-    return {
-      ...scene,
-      encounters: scene.encounters.map((e, ei) => (ei === sel.enc ? { ...e, enemies: (e.enemies ?? []).filter((_, ni) => ni !== sel.idx) } : e)),
-    };
   if (sel?.type === 'entry') {
     const entries = { ...scene.entryPoints };
     delete entries[sel.id];
@@ -266,16 +257,55 @@ export function addBuilding(scene: Scene, type: string, rect: Rect): { scene: Sc
   return { scene: { ...scene, buildings: [...(scene.buildings ?? []), b] }, id: b.id };
 }
 
-/** Ajoute un ennemi `ref` à la rencontre `encId` (créée si absente/vide) à la case p. */
-export function addSpawn(scene: Scene, encId: string, ref: string, p: Pt): { scene: Scene; encId: string } {
-  const encs = scene.encounters.map((e) => ({ ...e, enemies: [...(e.enemies ?? [])] }));
+/** Rattache une entité existante à la rencontre `encId` (créée si absente). No-op si déjà membre. */
+export function addMember(scene: Scene, encId: string, entityId: string): { scene: Scene; encId: string } {
+  const encs = scene.encounters.map((e) => ({ ...e, members: [...(e.members ?? [])] }));
   let target = encs.find((e) => e.id === encId);
   if (!target) {
-    target = { id: encId || nextEntityId('enc', scene.encounters.map((e) => e.id)), enemies: [] };
+    target = { id: encId || nextEntityId('enc', scene.encounters.map((e) => e.id)), members: [] };
     encs.push(target);
   }
-  target.enemies.push({ ref, pos: { ...p } });
+  if (!target.members!.some((m) => m.entityId === entityId)) target.members!.push({ entityId });
   return { scene: { ...scene, encounters: encs }, encId: target.id };
+}
+
+/** Retire un membre (par entité) d'une rencontre — et toute monture qui le chevauchait. */
+export function removeMember(scene: Scene, encId: string, entityId: string): Scene {
+  return {
+    ...scene,
+    encounters: scene.encounters.map((e) => {
+      if (e.id !== encId) return e;
+      return {
+        ...e,
+        members: (e.members ?? [])
+          .filter((m) => m.entityId !== entityId)
+          .map((m) => (m.ridesEntityId === entityId ? { ...m, ridesEntityId: undefined } : m)),
+      };
+    }),
+  };
+}
+
+/** Patche le contexte de rencontre d'un membre (camp/monture/chevauche). */
+export function patchMember(scene: Scene, encId: string, entityId: string, patch: Partial<EncounterMember>): Scene {
+  return {
+    ...scene,
+    encounters: scene.encounters.map((e) =>
+      e.id === encId
+        ? { ...e, members: (e.members ?? []).map((m) => (m.entityId === entityId ? { ...m, ...patch } : m)) }
+        : e,
+    ),
+  };
+}
+
+/** Outil ⚔️ : POSE une entité-personnage de combat (cachée par défaut) à p ET l'enrôle dans la
+ *  rencontre `encId` (créée si absente). `ref` = créature du bestiaire (profil). */
+export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt): { scene: Scene; encId: string; entityId: string } {
+  const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
+  const ent: SceneEntity = { id, kind: 'personnage', pos: { ...p }, combat: { hiddenUntilCombat: true } };
+  if (ref && ref !== 'Villageois') { ent.ref = ref; ent.label = ref; }
+  const withEnt = { ...scene, entities: [...scene.entities, ent] };
+  const { scene: out, encId: usedEnc } = addMember(withEnt, encId, id);
+  return { scene: out, encId: usedEnc, entityId: id };
 }
 
 /** Gomme : retire l'entité posée sur p (les autres couches se suppriment via leur sélection). */

@@ -26,6 +26,7 @@ function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
       setDlgSel={vi.fn()}
       encSel={null}
       setEncSel={vi.fn()}
+      onSelectEntity={vi.fn()}
       {...overrides}
     />
   );
@@ -34,7 +35,7 @@ function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
 describe('LogicDock — onglet Rencontres (remplace la modale EncountersEditor)', () => {
   it('affiche les récompenses de victoire (onVictory) de la rencontre sélectionnée', () => {
     const scene = emptyScene(10, 10);
-    scene.encounters = [{ id: 'e1', enemies: [], onVictory: [{ type: 'giveXp', amount: 20 }] }];
+    scene.encounters = [{ id: 'e1', members: [], onVictory: [{ type: 'giveXp', amount: 20 }] }];
     const html = renderToStaticMarkup(dock({ scene, tab: 'encounters', encSel: 'e1' }));
     expect(html).toContain('À la victoire'); // section de récompenses
     expect(html).toContain('Donner des PX'); // l'option giveXp du constructeur d'effets
