@@ -6,6 +6,7 @@ import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
+import { CodexRef } from './compendium/CodexRef';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : mannequin
@@ -108,7 +109,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           </div>
           {wornCape ? (
             <div className="eq-piece" title="Cape portée (visible dans le dos du héros)">
-              <span className="eq-piece-name">{wornCape.name}</span>
+              <span className="eq-piece-name"><CodexRef category="trappings" label={wornCape.name}>{wornCape.name}</CodexRef></span>
               <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Retirer'} onClick={() => toggleEquip(hero.id, wornCape.uid)}>✕</button>
             </div>
           ) : capes.length ? (
@@ -142,7 +143,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                       {worn ? (
                         <div className="eq-piece" title={pieceTitle(worn)}>
                           <span className="eq-piece-name">
-                            {worn.name}
+                            <CodexRef category="trappings" label={worn.name}>{worn.name}</CodexRef>
                             {zonesOf(worn).length > 1 && <em className="eq-multi" title={`Cette pièce couvre : ${zonesOf(worn).join(' + ')}`}> 🔗</em>}
                           </span>
                           <span className="eq-piece-pa">PA {Math.max(0, (worn.pa ?? 0) - (worn.damageTaken ?? 0))}</span>
@@ -219,7 +220,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
               const ammo = w.type === 'ranged' ? compatibleAmmo(hero, w).reduce((s, a) => s + (a.qty ?? 0), 0) : null;
               return (
                 <span className="weap" key={i}>
-                  {w.name} <em>({w.damage})</em>
+                  <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef> <em>({w.damage})</em>
                   {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                 </span>
               );

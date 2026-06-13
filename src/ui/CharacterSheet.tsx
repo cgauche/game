@@ -440,7 +440,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                 <div className={`inv-row kind-${it.kind} ${highlighted ? 'equipped' : ''}`}>
                   <div className="ir-main">
                     <span className="ir-name">
-                      {it.name}{skinned && ' ✨'}
+                      <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && ' ✨'}
                       {it.identified === false && (
                         <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
                           {it.magicKnown ? '✨ Magique — non identifié' : '🔮 Non identifié'}
