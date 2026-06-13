@@ -4,6 +4,7 @@
  * (l.30, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
  */
 import { d100, d10, RNG, defaultRNG } from './dice';
+import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape } from './combat';
@@ -118,10 +119,6 @@ export function critLocationRoll(rng: RNG = defaultRNG, shape: BodyShape = 'huma
   return hitLocationByShape(d100(rng), shape);
 }
 
-function findEntry(table: CritEntry[], roll: number): CritEntry {
-  return table.find((e) => roll >= e.min && roll <= e.max) ?? table[table.length - 1];
-}
-
 /**
  * Résout une Blessure critique sur `target` à la `location`. `overkill` = PB perdus au-delà des
  * PB courants (0 pour un Coup Critique sans overkill). Le Test de Résistance d'une entrée est
@@ -138,7 +135,7 @@ export function rollCritical(
   const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
   const roll = Math.max(1, raw - reduction);
-  const entry = findEntry(CRITICAL_TABLES[location], roll);
+  const entry = findTableEntry(CRITICAL_TABLES[location], roll);
   const resistVal =
     effectiveChar(target, 'E') +
     (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);

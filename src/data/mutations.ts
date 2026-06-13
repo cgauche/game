@@ -6,6 +6,7 @@
  * (journalisée + visible sur la fiche, arbitrage MJ — rien d'inventé).
  */
 import { RNG, d100 } from '../engine/dice';
+import { findTableEntry } from '../engine/tables';
 import type { Mutation } from '../engine/corruption';
 
 interface Row {
@@ -73,6 +74,6 @@ export const LABELS_MENTALES: readonly string[] = MENTALE.map((r) => r.label);
 export function rollMutation(kind: 'physique' | 'mentale', rng: RNG): Mutation {
   const roll = d100(rng);
   const table = TABLES[kind];
-  const row = table.find((r) => roll >= r.min && roll <= r.max) ?? table[table.length - 1];
+  const row = findTableEntry(table, roll);
   return { label: row.label, kind, roll, ...(row.fx ?? {}) };
 }

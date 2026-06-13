@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { FLOWS } from '../state/rollFlows';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { CIBLE_TYPES, calmeValue } from '../engine/psychology';
@@ -36,6 +37,8 @@ export function PsychModal() {
   const failed = r ? (isCible || isTerreur ? !r.success : (r.dr ?? 0) === 0) : false;
   const ok = r ? (isCible || isTerreur ? !!r.success : !!r.vaincue) : false;
   const cl = isCible ? CIBLE_LABEL[pp.kind] : null;
+  // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
+  const forcedDie = FLOWS.psych.picker?.(pp, c);
 
   const outcomeText = !r
     ? ''
@@ -77,7 +80,7 @@ export function PsychModal() {
       forceShow={!ok}
       /* « Je ne faillirai pas ! » sur une Peur (Test ÉTENDU, non opposé) : choix de la valeur du dé
          (LDB 17 l.73) — le DR gagné se cumule vers l'Indice. Binaire (ciblé/Terreur) → pas de choix. */
-      forcedRoll={pp.forced && !isCible && !isTerreur && r ? { roll: r.roll, target: r.target ?? calmeValue(c), onSet: setForcedRoll } : undefined}
+      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
       onConfirm={confirm}
     />
   );

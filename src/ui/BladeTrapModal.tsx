@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { ChoiceButtons } from './OptionChooser';
 
 /**
  * Piège-lame (LDB 62 l.292-294) : le héros a obtenu un Critique en PARANT avec une arme Piège-lame
@@ -26,14 +27,12 @@ export function BladeTrapModal() {
         lame ; Succès Stupéfiant → elle est <b>brisée</b> (sauf Incassable) ; échec → il se libère et le Coup
         Critique est perdu.
       </p>
-      <div className="modal-actions">
-        <button className="btn" onClick={() => resolve(false)} title="Infliger le Coup Critique normal">
-          💥 Coup Critique
-        </button>
-        <button className="btn btn-primary" onClick={() => resolve(true)} title="Tenter de piéger la lame (Test opposé de Force)">
-          🗡️ Piéger la lame
-        </button>
-      </div>
+      <ChoiceButtons
+        options={[
+          { key: 'crit', label: '💥 Coup Critique', onSelect: () => resolve(false), title: 'Infliger le Coup Critique normal' },
+          { key: 'trap', label: '🗡️ Piéger la lame', primary: true, onSelect: () => resolve(true), title: 'Tenter de piéger la lame (Test opposé de Force)' },
+        ]}
+      />
     </Modal>
   );
 }

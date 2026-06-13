@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { combineMods } from './combat';
+import { combineMods, defenseModifiers } from './combat';
+import type { Combatant } from './types';
 
 describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
   it('plafonne la somme des malus à -30', () => {
@@ -23,5 +24,14 @@ describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
   });
   it('liste vide → 0', () => {
     expect(combineMods([])).toBe(0);
+  });
+});
+
+describe('defenseModifiers — Avantage hors plafond, malus plafonnés (B1, parité avec l’attaque)', () => {
+  it('l’Avantage de la DÉFENSE est `uncapped` → +80 NON plafonné à +60', () => {
+    const d = { advantage: 8, conditions: [], weapons: [], defensiveStance: false } as unknown as Combatant;
+    const mods = defenseModifiers(d, 'esquive');
+    expect(mods.find((m) => m.label === 'Avantage')).toMatchObject({ value: 80, uncapped: true });
+    expect(combineMods(mods)).toBe(80);
   });
 });

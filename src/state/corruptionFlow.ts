@@ -55,7 +55,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): 
   // témoin : PNJ (l'IA ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
   if (hero.kind === 'hero' && !get().pendingCorruption) {
     lines.push(`${hero.name} : la Corruption déborde son seuil — Test de Résistance.`);
-    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'Résistance' } });
+    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'Résistance', skillLocked: true } });
     return lines;
   }
   const t = rollTest(testValue(hero, 'Résistance'), 'intermediaire', rng);

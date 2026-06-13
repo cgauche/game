@@ -13,6 +13,9 @@ import { ResilienceButton } from './ResilienceButton';
  */
 export function InfluenceRow({
   actor,
+  fortune,
+  freeReroll,
+  resilience,
   rerollable,
   onReroll,
   onBonusSL,
@@ -22,8 +25,14 @@ export function InfluenceRow({
   forceShow = false,
   children,
 }: {
-  /** Le héros qui jette (Chance/relance gratuite/Résilience lus dessus). Absent → rangée réduite. */
-  actor: Combatant | null | undefined;
+  /** Le héros qui jette : Chance/relance gratuite/Résilience en sont DÉRIVÉES (passé une fois, plus
+   *  d'oubli). Les vues présentationnelles `*View` et `RollFlowShell` passent plutôt les primitives
+   *  ci-dessous (testables sans `Combatant`). */
+  actor?: Combatant | null;
+  /** Primitives — PRIORITAIRES sur `actor` quand fournies (vues sans `Combatant`). */
+  fortune?: number;
+  freeReroll?: boolean;
+  resilience?: number;
   rerollable: boolean;
   onReroll: () => void;
   /** Absent → Test binaire : pas de « +1 DR ». */
@@ -36,18 +45,21 @@ export function InfluenceRow({
   forceShow?: boolean;
   children?: ReactNode;
 }) {
+  const fort = fortune ?? actor?.fortune ?? 0;
+  const free = freeReroll ?? freeRerollOf(actor);
+  const resil = resilience ?? actor?.resilience ?? 0;
   return (
     <div className="rm-influence">
       <ChanceButtons
-        fortune={actor?.fortune ?? 0}
+        fortune={fort}
         rerollable={rerollable}
         onReroll={onReroll}
-        freeReroll={freeRerollOf(actor)}
+        freeReroll={free}
         onBonusSL={onBonusSL}
         darkPactable={darkPactable}
         onDarkPact={onDarkPact}
       />
-      {onForce && <ResilienceButton resilience={actor?.resilience ?? 0} show={forceShow} onForce={onForce} />}
+      {onForce && <ResilienceButton resilience={resil} show={forceShow} onForce={onForce} />}
       {children}
     </div>
   );

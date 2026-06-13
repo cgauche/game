@@ -19,7 +19,7 @@ import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
 import { makeRollFlow } from './rollFlow';
 import { battleRng } from './battleRng';
-import { actorIn } from './combatOrParty';
+import { actorIn, touchActors } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
@@ -38,15 +38,6 @@ import {
   resolvePeurTest, resolveTerreurTest, resolveCalmeSimple, resolveFrenzyEntry, calmeValue, CIBLE_TYPES,
 } from '../engine/psychology';
 import { findSpell } from '../data/index';
-
-/** Acteur dans la file de combat (flux strictement en-combat). */
-const inBattle = (s: GameState, id: string): Combatant | undefined =>
-  s.battle?.combatants.find((c) => c.id === id);
-/** Acteur dans le groupe (flux d'exploration : Test de scène, marchand). */
-const inParty = (s: GameState, id: string): Combatant | undefined =>
-  s.party.find((c) => c.id === id);
-/** Re-rendu côté groupe (les flux d'exploration patchaient historiquement `party`, pas `battle`). */
-const touchParty = (s: GameState): Partial<GameState> => ({ party: [...s.party] });
 
 /** Résolution du Test de Psychologie (LDB 21) — partagée entre `roll` et `reroll` (re-jet complet). */
 function psychResolve(s: GameState, p: PendingPsych, actor: Combatant | undefined) {
@@ -81,11 +72,34 @@ export const FLOWS = {
   attack: makeRollFlow<PendingAttack>({
     key: 'pendingAttack',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.attackerId),
-    // Relance (Chance/Pacte) : re-résolution complète — mêmes environnement et options de tir.
-    resolve: (s, p, actor, get) => {
-      const target = inBattle(s, p.targetId);
+    actor: (s, p) => actorIn(s, p.attackerId),
+    // Résolveur UNIQUE (`caps.forced`) : jet normal (relance Chance/Pacte = re-résolution complète,
+    // mêmes environnement et options de tir) OU Résilience (LDB 17 l.73) selon `forced`.
+    // Dé choisi (`picker`) : le d100 de l'attaquant — son inverse donne la localisation (LDB 13 l.142).
+    caps: {
+      forced: true,
+      picker: (p) => (p.forced && p.result?.attackerDetail ? { roll: p.result.attackerRoll, target: p.result.attackerDetail.target } : null),
+    },
+    resolve: (s, p, actor, get, forced) => {
+      const target = actorIn(s, p.targetId);
       if (!actor || !target) return null;
+      if (forced) {
+        const ad = p.result?.attackerDetail;
+        if (!ad) return null; // (ancien `force.guard : !!p.result?.attackerDetail`)
+        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
+        const defSL = p.result!.defenderDetail?.sl ?? 0;
+        if (forced.roll != null) {
+          // Dé CHOISI : 11 → Coup Critique (l'exemple Salundra l.75) ; 01 → DR max ; les unités
+          // nourrissent Percutante/Dévastatrice et la localisation inversée. Doit RESTER une réussite.
+          if (forced.roll > Math.min(99, ad.target)) return null;
+          const sl = Math.max(evaluateTest(forced.roll, ad.target).sl, defSL + 1, 1);
+          const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
+          return { result: rederiveAttack(actor, target, p, atk2) };
+        }
+        // Dé PAR DÉFAUT : on garde le jet courant, forcé à l'emporter.
+        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
+        return { result: rederiveAttack(actor, target, p, atk2) };
+      }
       const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid);
       return r ? { result: r.res, victimId: r.victim?.id } : null;
     },
@@ -94,35 +108,10 @@ export const FLOWS = {
     bonus: {
       guard: (p) => !!p.result?.attackerDetail,
       derive: (s, p, actor) => {
-        const target = inBattle(s, p.targetId);
+        const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederiveAttack(actor, target, p, atk2) };
-      },
-    },
-    force: {
-      guard: (p) => !!p.result?.attackerDetail,
-      derive: (s, p, actor) => {
-        const target = inBattle(s, p.targetId);
-        if (!target) return null;
-        const ad = p.result!.attackerDetail!;
-        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
-        const defSL = p.result!.defenderDetail?.sl ?? 0;
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, defSL + 1, 1), isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederiveAttack(actor, target, p, atk2) };
-      },
-    },
-    // « vous choisissez le résultat » : 11 → Coup Critique (l'exemple Salundra l.75) ; 01 → DR max ;
-    // les unités nourrissent Percutante/Dévastatrice et la localisation inversée.
-    forceRoll: {
-      derive: (s, p, actor, roll) => {
-        const target = inBattle(s, p.targetId);
-        const ad = p.result?.attackerDetail;
-        if (!target || !ad || roll > Math.min(99, ad.target)) return null; // doit RESTER une réussite
-        const defSL = p.result!.defenderDetail?.sl ?? 0;
-        const sl = Math.max(evaluateTest(roll, ad.target).sl, defSL + 1, 1);
-        const atk2: TestResult = { roll, target: ad.target, success: true, sl, isDouble: isDoubleRoll(roll) };
         return { result: rederiveAttack(actor, target, p, atk2) };
       },
     },
@@ -136,10 +125,29 @@ export const FLOWS = {
   defense: makeRollFlow<PendingDefense>({
     key: 'pendingDefense',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.defenderId),
-    resolve: (s, p, actor) => {
-      const attacker = inBattle(s, p.attackerId);
+    actor: (s, p) => actorIn(s, p.defenderId),
+    // Résolveur UNIQUE (`caps.forced`) : seul le jet du défenseur se (re)joue (`p.atk` figé).
+    caps: {
+      forced: true,
+      picker: (p) => (p.forced && p.def ? { roll: p.def.roll, target: p.def.target } : null),
+    },
+    resolve: (s, p, actor, _get, forced) => {
+      const attacker = actorIn(s, p.attackerId);
       if (!attacker || !actor) return null;
+      if (forced) {
+        const dd = p.result?.defenderDetail;
+        if (!dd || !p.def) return null; // (ancien `force.guard`)
+        if (forced.roll != null) {
+          // Dé CHOISI — doit RESTER une réussite.
+          if (forced.roll > Math.min(99, p.def.target)) return null;
+          const sl = Math.max(evaluateTest(forced.roll, p.def.target).sl, p.atk.sl + 1, 1);
+          const def2: TestResult = { roll: forced.roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
+          return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+        }
+        // Dé PAR DÉFAUT : Test opposé « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
+        const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, p.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
+        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+      }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
       const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
@@ -150,32 +158,12 @@ export const FLOWS = {
     bonus: {
       guard: (p) => !!p.result?.defenderDetail,
       derive: (s, p, actor) => {
-        const attacker = inBattle(s, p.attackerId);
+        const attacker = actorIn(s, p.attackerId);
         if (!attacker) return null;
         const dd = p.result!.defenderDetail!;
         const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined, [], 0, undefined, parry) };
-      },
-    },
-    force: {
-      guard: (p) => !!p.result?.defenderDetail && !!p.def,
-      derive: (s, p, actor) => {
-        const attacker = inBattle(s, p.attackerId);
-        if (!attacker) return null;
-        const dd = p.result!.defenderDetail!;
-        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
-        const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, p.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
-        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
-      },
-    },
-    forceRoll: {
-      derive: (s, p, actor, roll) => {
-        const attacker = inBattle(s, p.attackerId);
-        if (!attacker || !p.def || roll > Math.min(99, p.def.target)) return null; // doit RESTER une réussite
-        const sl = Math.max(evaluateTest(roll, p.def.target).sl, p.atk.sl + 1, 1);
-        const def2: TestResult = { roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(roll) };
-        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
       },
     },
   }),
@@ -189,11 +177,38 @@ export const FLOWS = {
     key: 'pendingCast',
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
-    // Relance (Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48).
-    resolve: (s, p, actor) => {
+    // Résolveur UNIQUE (`caps.forced`) : jet normal (Relance Chance/Pacte) OU Résilience (LDB 17
+    // l.73) selon `forced` — plus de dérives `force`/`forceRoll` séparées. La localisation d'un
+    // Projectile suit le dé inversé (LDB 46 l.156) : choisir le dé via `forced.roll` la re-dérive.
+    // Picker : 11 → Incantation Critique seulement pour un sort (les Prières n'ont pas de Critique).
+    caps: {
+      forced: true,
+      picker: (p) => {
+        if (!p.forced || !p.result || p.result.target <= 0) return null;
+        const spell = effectiveSpellOf(p);
+        return { roll: p.result.roll, target: p.result.target, critable: !(spell && castInfoIsPrayer(spell.type)) };
+      },
+    },
+    resolve: (s, p, actor, _get, forced) => {
       const target = actorIn(s, p.targetId);
       const spell = effectiveSpellOf(p); // NI ×2 si lecture au grimoire (LDB 47 l.34)
       if (!actor || !target || !spell) return null;
+      if (forced) {
+        // — Résilience « vous choisissez le résultat » (LDB 17 l.73), seulement APRÈS le jet —
+        const cur = p.result;
+        if (!cur) return null; // (ancien `force.guard : !!p.result` : rien à forcer sans jet)
+        const ni = p.focused ? 0 : spell.cn ?? 0;
+        if (forced.roll != null) {
+          // Dé CHOISI (setForcedRoll) : 11 → Incantation Critique ; 01 → DR max → Surincantation.
+          if (forced.roll > Math.min(99, cur.target)) return null; // doit RESTER une réussite
+          const sl = evaluateTest(forced.roll, cur.target).sl
+            + castTestTalentDR(actor, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
+          return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
+        }
+        // Dé PAR DÉFAUT (forceSuccess) — plancher : le sort PART (DR ≥ NI), d100 propre réussi.
+        return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, p.missile, p.focused, Math.max(1, ni - cur.sl)) };
+      }
+      // — Jet NORMAL (relance Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48). —
       const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell);
       const res = p.missile
         ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
@@ -211,30 +226,6 @@ export const FLOWS = {
         return { result: rederiveCastSL(actor, target, spell, p.result!, p.missile, p.focused, 1) };
       },
     },
-    force: {
-      guard: (p) => !!p.result,
-      // Plancher : le sort PART (DR ≥ NI) — on force aussi un d100 propre réussi.
-      derive: (s, p, actor) => {
-        const target = actorIn(s, p.targetId);
-        const spell = effectiveSpellOf(p);
-        if (!target || !spell) return null;
-        const ni = p.focused ? 0 : spell.cn ?? 0;
-        const cur = p.result!;
-        return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, p.missile, p.focused, Math.max(1, ni - cur.sl)) };
-      },
-    },
-    // « vous choisissez le résultat » : 11 → Incantation Critique ; 01 → DR max → Surincantation.
-    forceRoll: {
-      derive: (s, p, actor, roll) => {
-        const target = actorIn(s, p.targetId);
-        const spell = effectiveSpellOf(p);
-        if (!target || !spell || !p.result || roll > Math.min(99, p.result.target)) return null;
-        const ni = p.focused ? 0 : spell.cn ?? 0;
-        const sl = evaluateTest(roll, p.result.target).sl
-          + castTestTalentDR(actor, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue (Magick)');
-        return { result: rederiveCastSL(actor, target, spell, { ...p.result, roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
-      },
-    },
   }),
 
   /**
@@ -245,9 +236,15 @@ export const FLOWS = {
   disengage: makeRollFlow<PendingDisengage>({
     key: 'pendingDisengage',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.moverId),
-    resolve: (s, p, actor) => {
+    actor: (s, p) => actorIn(s, p.moverId),
+    // Issue BINAIRE → `forced` ignore le dé choisi : la Résilience fait simplement l'emporter.
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
       if (!actor || !p.atk) return null;
+      if (forced) {
+        if (!p.result || !p.def) return null; // (ancien `force.guard`)
+        return { result: 'success' as const }; // l'emporte (LDB ch.17 l.73)
+      }
       const def = rollMeleeDefender(actor, 'esquive', battleRng());
       const opp = resolveOpposed(def, p.atk); // mover = « attaquant » du Test opposé
       return { def, result: disengageOutcome(opp.winner) };
@@ -261,51 +258,43 @@ export const FLOWS = {
         return { def: def2, result: disengageOutcome(opp.winner) };
       },
     },
-    force: {
-      guard: (p) => !!p.result && !!p.def,
-      derive: () => ({ result: 'success' as const }), // l'emporte (LDB ch.17 l.73)
-    },
   }),
 
   /** Piétinement (LDB 85 l.320-321) : attaque de Bagarre, action gratuite à 1 Avantage. */
   trample: makeRollFlow<PendingTrample>({
     key: 'pendingTrample',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.attackerId),
-    resolve: (s, p, actor) => {
-      const target = inBattle(s, p.targetId);
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: {
+      forced: true,
+      picker: (p) => (p.forced && p.result?.attackerDetail ? { roll: p.result.attackerDetail.roll, target: p.result.attackerDetail.target } : null),
+    },
+    resolve: (s, p, actor, _get, forced) => {
+      const target = actorIn(s, p.targetId);
       if (!actor || !target) return null;
+      if (forced) {
+        const ad = p.result?.attackerDetail;
+        if (!ad) return null; // (ancien `force.guard`)
+        if (forced.roll != null) {
+          // « vous choisissez le résultat » (LDB 17 l.73) : un Piétinement est une attaque — un
+          // double choisi (11) inflige un Coup Critique, comme l'exemple Salundra (l.75). Doit RESTER réussi.
+          if (forced.roll > Math.min(99, ad.target)) return null;
+          const atk2: TestResult = { roll: forced.roll, target: ad.target, success: true, sl: Math.max(evaluateTest(forced.roll, ad.target).sl, 1), isDouble: isDoubleRoll(forced.roll) };
+          return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
+        }
+        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, 1), isDouble: isDoubleRoll(ad.roll) };
+        return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
+      }
       return { result: resolveTrample(actor, target, battleRng()) };
     },
     failed: (p) => !p.result?.attackerDetail?.success,
     bonus: {
       guard: (p) => !!p.result?.attackerDetail,
       derive: (s, p, actor) => {
-        const target = inBattle(s, p.targetId);
+        const target = actorIn(s, p.targetId);
         if (!target) return null;
         const ad = p.result!.attackerDetail!;
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
-      },
-    },
-    force: {
-      guard: (p) => !!p.result?.attackerDetail,
-      derive: (s, p, actor) => {
-        const target = inBattle(s, p.targetId);
-        if (!target) return null;
-        const ad = p.result!.attackerDetail!;
-        const atk2: TestResult = { roll: ad.roll, target: ad.target, success: true, sl: Math.max(ad.sl, 1), isDouble: isDoubleRoll(ad.roll) };
-        return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
-      },
-    },
-    // « vous choisissez le résultat » (LDB 17 l.73) : un Piétinement est une attaque — un double
-    // choisi (11) inflige un Coup Critique, comme l'exemple Salundra (l.75).
-    forceRoll: {
-      derive: (s, p, actor, roll) => {
-        const target = inBattle(s, p.targetId);
-        const ad = p.result?.attackerDetail;
-        if (!target || !ad || roll > Math.min(99, ad.target)) return null; // doit RESTER une réussite
-        const atk2: TestResult = { roll, target: ad.target, success: true, sl: Math.max(evaluateTest(roll, ad.target).sl, 1), isDouble: isDoubleRoll(roll) };
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       },
     },
@@ -315,23 +304,21 @@ export const FLOWS = {
   run: makeRollFlow<PendingRun>({
     key: 'pendingRun',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.combatantId),
-    resolve: (s, p, actor) => {
+    actor: (s, p) => actorIn(s, p.combatantId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
       if (!s.battle || !actor) return null;
-      // Sprinter (LDB 10) : « Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez. »
-      return { result: resolveRun(testValue(actor, actor.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
-    },
-    failed: (p) => !p.result?.success,
-    force: {
-      guard: (p) => !p.result?.success,
-      derive: (s, p, actor) => {
-        if (!s.battle) return null;
+      if (forced) {
+        if (p.result?.success) return null; // (ancien `force.guard : !p.result?.success`)
         const m = mountMovement(s.battle, actor); // à cheval : Mouvement de la monture (LDB 14 l.215)
         const base = p.result;
         // RAW LDB 17 l.73 : avant le jet (result==null → on choisit 01) OU après un échec.
         return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } };
-      },
+      }
+      // Sprinter (LDB 10) : « Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez. »
+      return { result: resolveRun(testValue(actor, actor.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
+    failed: (p) => !p.result?.success,
   }),
 
   /** Focalisation (Test étendu de magie) — vaut en combat ET hors combat (`actorIn`). */
@@ -339,24 +326,24 @@ export const FLOWS = {
     key: 'pendingFocus',
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
-    resolve: (s, p, actor) => {
-      const spell = findSpell(p.spellLabel);
-      if (!actor || !spell) return null;
-      return { result: resolveFocus(actor, spell, battleRng()) };
-    },
-    failed: (p) => p.result?.dr === 0, // aucun DR gagné → rejouable
-    bonus: {
-      derive: (_s, p) => ({ result: { ...p.result!, dr: p.result!.dr + 1, log: `${p.result!.log} (+1 DR)` } }),
-    },
-    force: {
-      derive: (_s, p, actor) => {
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      if (forced) {
         const base = p.result;
         // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
         // rationnel est 01 → DR MAXIMUM quand la cible du Test est connue (post-échec) ;
         // pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
         const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
         return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: 1, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
-      },
+      }
+      const spell = findSpell(p.spellLabel);
+      if (!spell) return null;
+      return { result: resolveFocus(actor, spell, battleRng()) };
+    },
+    failed: (p) => p.result?.dr === 0, // aucun DR gagné → rejouable
+    bonus: {
+      derive: (_s, p) => ({ result: { ...p.result!, dr: p.result!.dr + 1, log: `${p.result!.log} (+1 DR)` } }),
     },
   }),
 
@@ -364,8 +351,34 @@ export const FLOWS = {
   psych: makeRollFlow<PendingPsych>({
     key: 'pendingPsych',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.combatantId),
-    resolve: psychResolve,
+    actor: (s, p) => actorIn(s, p.combatantId),
+    // Picker SEULEMENT sur une Peur (Test étendu de Calme) : ciblé/Terreur = binaires (rien à choisir).
+    caps: {
+      forced: true,
+      picker: (p, actor) =>
+        p.forced && actor && !CIBLE_TYPES.has(p.kind) && p.kind !== 'terreur' && p.result
+          ? { roll: p.result.roll, target: p.result.target ?? calmeValue(actor) }
+          : null,
+    },
+    resolve: (s, p, actor, _get, forced) => {
+      if (forced) {
+        if (!actor) return null;
+        // Binaire (Trait ciblé / Terreur) : « Je ne faillirai pas ! » garantit la réussite (rien à choisir).
+        if (CIBLE_TYPES.has(p.kind)) return { result: { ...(p.result ?? { roll: 1 }), success: true } };
+        if (p.kind === 'terreur') return { result: { ...(p.result ?? { roll: 1 }), success: true, brise: 0 } };
+        // Peur = Test ÉTENDU : la Résilience (LDB 17 l.73) garantit un Test de Calme RÉUSSI ce round.
+        // RAW « vous choisissez le résultat des dés » — pas d'opposant ici, on choisit la valeur :
+        // dé CHOISI (`forced.roll`, plancher DR 0) ou 01 par défaut (plancher DR 1). Le DR se cumule
+        // vers l'Indice (LDB 21). Le dé choisi doit RESTER une réussite (≤ cible).
+        const target = p.result?.target ?? calmeValue(actor);
+        const roll = forced.roll ?? 1;
+        if (roll > Math.min(99, target)) return null;
+        const dr = Math.max(evaluateTest(roll, target).sl, forced.roll != null ? 0 : 1);
+        const calmeDR = (p.prevDR ?? 0) + dr;
+        return { result: { roll, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
+      }
+      return psychResolve(s, p, actor);
+    },
     failed: (p) =>
       CIBLE_TYPES.has(p.kind) || p.kind === 'terreur' ? !p.result?.success : (p.result?.dr ?? 0) === 0,
     bonus: {
@@ -379,48 +392,21 @@ export const FLOWS = {
         };
       },
     },
-    force: {
-      derive: (_s, p, actor) => {
-        // Binaire (Trait ciblé / Terreur) : « Je ne faillirai pas ! » garantit la réussite (rien à choisir).
-        if (CIBLE_TYPES.has(p.kind)) return { result: { ...(p.result ?? { roll: 1 }), success: true } };
-        if (p.kind === 'terreur') return { result: { ...(p.result ?? { roll: 1 }), success: true, brise: 0 } };
-        // Peur = Test ÉTENDU : la Résilience (LDB 17 l.73) garantit un Test de Calme RÉUSSI ce round.
-        // RAW : « vous choisissez le résultat des dés et l'emportez dans un Test opposé » — ici PAS
-        // d'opposant, donc on choisit simplement la valeur. Défaut = 01 → DR MAXIMUM ; le DR se cumule
-        // vers l'Indice (LDB 21). `setForcedRoll` permet ensuite de changer le dé (cf. `forceRoll`).
-        const target = p.result?.target ?? calmeValue(actor);
-        const dr = Math.max(evaluateTest(1, target).sl, 1);
-        const calmeDR = (p.prevDR ?? 0) + dr;
-        return { result: { roll: 1, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
-      },
-    },
-    // « vous choisissez le résultat » (LDB 17 l.73) : sur un Test de Calme contre la Peur (étendu, non
-    // opposé), choisir le dé fixe le DR gagné ce round (cumul vers l'Indice). Binaire (ciblé/Terreur) →
-    // pas de dé à choisir. Le dé choisi doit RESTER une réussite (≤ cible).
-    forceRoll: {
-      derive: (_s, p, actor, roll) => {
-        if (CIBLE_TYPES.has(p.kind) || p.kind === 'terreur') return null;
-        const target = p.result?.target ?? calmeValue(actor);
-        if (roll > Math.min(99, target)) return null;
-        const dr = Math.max(evaluateTest(roll, target).sl, 0);
-        const calmeDR = (p.prevDR ?? 0) + dr;
-        return { result: { roll, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
-      },
-    },
   }),
 
   /** Entrée en Frénésie (LDB 21 l.31-36) : Test de FM. */
   frenzy: makeRollFlow<PendingFrenzy>({
     key: 'pendingFrenzy',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.combatantId),
-    resolve: (s, p, actor) => (s.battle && actor ? { result: resolveFrenzyEntry(effectiveChar(actor, 'FM'), battleRng()) } : null),
-    failed: (p) => !p.result?.success,
-    force: {
-      guard: (p) => !p.result?.success,
+    actor: (s, p) => actorIn(s, p.combatantId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!s.battle || !actor) return null;
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-      derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target } }),
+      if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target } };
+      return { result: resolveFrenzyEntry(effectiveChar(actor, 'FM'), battleRng()) };
     },
+    failed: (p) => !p.result?.success,
   }),
 
   /** Approche d'une source de Peur (LDB 21 l.29) : Test SEC de Calme Intermédiaire (+0) pour oser
@@ -428,18 +414,16 @@ export const FLOWS = {
   approach: makeRollFlow<PendingApproach>({
     key: 'pendingApproach',
     rolled: (p) => !!p.result,
-    actor: (s, p) => inBattle(s, p.combatantId),
-    resolve: (_s, _p, actor) => {
+    actor: (s, p) => actorIn(s, p.combatantId),
+    caps: { forced: true },
+    resolve: (_s, p, actor, _get, forced) => {
       if (!actor) return null;
+      // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
+      if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } };
       const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
       return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
     },
     failed: (p) => !p.result?.success,
-    force: {
-      guard: (p) => !p.result?.success,
-      // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-      derive: (_s, p) => ({ result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } }),
-    },
   }),
 
   /** Activité d'interlude (LDB 23) : Revenus (Test Accessible de la compétence de carrière,
@@ -447,21 +431,21 @@ export const FLOWS = {
   activity: makeRollFlow<PendingActivity>({
     key: 'pendingActivity',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inParty(s, p.heroId),
+    actor: (s, p) => actorIn(s, p.heroId),
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1 }) },
-    touch: touchParty,
+    touch: touchActors,
   }),
 
   /** Rechargement (LDB 63 l.28-29) : Test ÉTENDU de Projectiles — le DR se cumule à l'Appliquer. */
   reload: makeRollFlow<PendingReload>({
     key: 'pendingReload',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inBattle(s, p.actorId),
+    actor: (s, p) => actorIn(s, p.actorId),
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
@@ -474,7 +458,7 @@ export const FLOWS = {
   recover: makeRollFlow<PendingStateRecovery>({
     key: 'pendingStateRecovery',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inBattle(s, p.actorId),
+    actor: (s, p) => actorIn(s, p.actorId),
     resolve: (_s, p) => {
       const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
       if (p.opposed && p.opponentValue != null) {
@@ -500,10 +484,21 @@ export const FLOWS = {
   test: makeRollFlow<PendingTest>({
     key: 'pendingTest',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inParty(s, p.actorId),
-    touch: touchParty,
-    resolve: (s, p) => {
-      const actor = inParty(s, p.actorId);
+    actor: (s, p) => actorIn(s, p.actorId),
+    touch: touchActors,
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (forced) {
+        if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
+        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
+        // compétence, le choix rationnel est 01 → DR MAXIMUM (les talents à bonus de DR s'ajoutent
+        // comme sur un jet naturel, le seuil `requireSL` reste garanti).
+        return {
+          roll: 1, success: true,
+          sl: Math.max(evaluateTest(1, p.target).sl + (actor ? talentTestDR(actor, p.label) : 0), p.requireSL, 1),
+          forced: true,
+        };
+      }
       let res = rollTest(p.skillValue, p.difficulty);
       // Talents d'INVERSION (LDB 10 — Sociable/Studieux/Lecture rapide/Pharmacologie/Chat de
       // gouttière/Noctambule/Pansement de fortune) : un Test raté est relu chiffres inversés s'il
@@ -521,17 +516,6 @@ export const FLOWS = {
     },
     failed: (p) => (p.roll ?? 0) > p.target, // d100 propre raté (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
-    force: {
-      guard: (p) => !p.success, // rien à forcer si déjà réussi
-      // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double sur un Test de
-      // compétence, le choix rationnel est 01 → DR MAXIMUM (les talents à bonus de DR s'ajoutent
-      // comme sur un jet naturel, le seuil `requireSL` reste garanti).
-      derive: (_s, p, actor) => ({
-        roll: 1, success: true,
-        sl: Math.max(evaluateTest(1, p.target).sl + (actor ? talentTestDR(actor, p.label) : 0), p.requireSL, 1),
-        forced: true,
-      }),
-    },
   }),
 
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme
@@ -555,8 +539,8 @@ export const FLOWS = {
   appraise: makeRollFlow<PendingAppraise>({
     key: 'pendingAppraise',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inParty(s, p.actorId),
-    touch: touchParty,
+    actor: (s, p) => actorIn(s, p.actorId),
+    touch: touchActors,
     resolve: (_s, p) => {
       const res = rollTest(p.skillValue, p.difficulty);
       return { roll: res.roll, sl: res.sl, success: res.success };
@@ -569,8 +553,8 @@ export const FLOWS = {
   bargain: makeRollFlow<PendingBargain>({
     key: 'pendingBargain',
     rolled: (p) => p.roll != null,
-    actor: (s, p) => inParty(s, p.playerId),
-    touch: touchParty,
+    actor: (s, p) => actorIn(s, p.playerId),
+    touch: touchActors,
     resolve: (_s, p) => {
       const player = rollTest(p.playerSkill, 'intermediaire');
       const merchant = rollTest(p.merchantValue, 'intermediaire');
@@ -597,17 +581,18 @@ export const FLOWS = {
     key: 'pendingHeal',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.healerId),
-    resolve: (_s, p) => {
+    caps: { forced: true },
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.success || p.mode === 'surgery') return null; // (ancien `force.guard`)
+        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
+        // rationnel est 01 → DR MAXIMUM (le soin scale avec le DR : BI + DR Blessures soignées).
+        return { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) };
+      }
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target }) }, // le soin scale avec le DR (LDB 17 l.26)
-    force: {
-      guard: (p) => !p.success && p.mode !== 'surgery',
-      // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, le choix
-      // rationnel est 01 → DR MAXIMUM (le soin scale avec le DR : BI + DR Blessures soignées).
-      derive: (_s, p) => ({ roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1) }),
-    },
   }),
 };

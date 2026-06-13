@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { Modal } from './Modal';
+import { ChoiceButtons } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
 
 /**
@@ -33,19 +34,19 @@ export function DeviationModal() {
           ? "Dévier : sacrifier 1 Point d'Armure pour IGNORER ce Critique (le coup inflige alors ses Blessures normales recalculées, PA réduite)."
           : "Sans armure à cette localisation, la déviation est impossible : le Coup Critique sera subi."}
       </p>
-      <div className="modal-actions">
-        <button className="btn" onClick={() => apply(false)} title="Encaisser le Coup Critique affiché ci-dessus">
-          Subir
-        </button>
-        <button
-          className="btn btn-primary"
-          disabled={!canDeviate}
-          onClick={() => apply(true)}
-          title={canDeviate ? "Sacrifier 1 Point d'Armure pour ignorer le Coup Critique" : 'Aucune armure à sacrifier à cette localisation'}
-        >
-          🛡️ Dévier (−1 PA)
-        </button>
-      </div>
+      <ChoiceButtons
+        options={[
+          { key: 'subir', label: 'Subir', onSelect: () => apply(false), title: 'Encaisser le Coup Critique affiché ci-dessus' },
+          {
+            key: 'devier',
+            label: '🛡️ Dévier (−1 PA)',
+            primary: true,
+            disabled: !canDeviate,
+            onSelect: () => apply(true),
+            title: canDeviate ? "Sacrifier 1 Point d'Armure pour ignorer le Coup Critique" : 'Aucune armure à sacrifier à cette localisation',
+          },
+        ]}
+      />
     </Modal>
   );
 }

@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { ChoiceButtons } from './OptionChooser';
 
 /**
  * « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
@@ -26,14 +27,12 @@ export function RenounceModal() {
         « Je te renie ! » : sacrifier <b>1 Point de Résilience</b> ({resilience} restant{resilience > 1 ? 's' : ''}) pour
         refuser la mutation. Les Points de Corruption restent — la menace reviendra.
       </p>
-      <div className="modal-actions">
-        <button className="btn" onClick={() => resolve(false)} title="Laisser la mutation se développer (tirage sur le Tableau des Corruptions)">
-          🎲 Subir la mutation
-        </button>
-        <button className="btn btn-primary" disabled={resilience <= 0} onClick={() => resolve(true)} title="Refuser la mutation — 1 Point de Résilience">
-          ✊ Je te renie ! (−1 Résilience)
-        </button>
-      </div>
+      <ChoiceButtons
+        options={[
+          { key: 'subir', label: '🎲 Subir la mutation', onSelect: () => resolve(false), title: 'Laisser la mutation se développer (tirage sur le Tableau des Corruptions)' },
+          { key: 'renier', label: '✊ Je te renie ! (−1 Résilience)', primary: true, disabled: resilience <= 0, onSelect: () => resolve(true), title: 'Refuser la mutation — 1 Point de Résilience' },
+        ]}
+      />
     </Modal>
   );
 }

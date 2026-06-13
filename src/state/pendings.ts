@@ -323,6 +323,9 @@ export interface PendingCorruption {
   /** Niveau d'exposition — EXPOSITION seulement (absent au seuil). */
   level?: import('../engine/corruption').ExposureLevel;
   skill: 'Résistance' | 'Calme';
+  /** Compétence déterminée en amont (source ou seuil) → pas de choix joueur. Absent/false = nature
+   *  indéterminée (LDB 19 l.26) → la modale propose Résistance/Calme (cf. `corruptionSetSkill`). */
+  skillLocked?: boolean;
   roll?: number;
   target?: number;
   sl?: number;
@@ -413,10 +416,13 @@ export interface PendingDisengage {
   /** Esquive/Fuite disponibles ? Faux si l'Action est déjà dépensée (elles la coûtent) → seule
    *  l'option A « Sacrifier l'Avantage » reste, ce qui évite la boucle infinie d'Esquive. */
   canEsquive?: boolean;
-  phase: 'choice' | 'esquive'; // 'choice' = menu d'options ; 'esquive' = Test d'Esquive en cours
+  phase: 'choice' | 'esquive' | 'fuir'; // 'choice' = menu ; 'esquive' = Test d'Esquive ; 'fuir' = coup dans le dos résolu, montré INLINE
   atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // Esquive : jet d'Esquive du mover
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
+  /** « Fuir » (l.98-109) : coup dans le dos + Test de Calme RÉSOLUS, présentés DANS la modale (plus
+   *  de popin RevealModal séparée). Les conséquences sont déjà appliquées ; « Continuer » ferme. */
+  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; calmeRoll?: number; broken: number };
   /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }

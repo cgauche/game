@@ -1,10 +1,11 @@
 import { useGame } from '../state/store';
 import { defenseValue, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
+import { OptionChooser } from './OptionChooser';
 import { RollPanel } from './RollPanel';
+import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -12,11 +13,11 @@ import { Modal } from './Modal';
 import { testBreakdown } from './breakdown';
 
 /**
- * Modale de Désengagement (LDB 15-Dépl l.84-109). Phase « choice » = menu : Sacrifier
- * l'Avantage / Esquiver / Fuir / Renoncer. Si « Esquiver » → phase « esquive » : Test opposé
- * rendu sur le panneau de jet unique (deux lignes + vainqueur accentué), Chance/Pacte/Résilience
- * en rangée « influencer le jet », puis Appliquer.
- * « Fuir » résout l'attaque dans le dos immédiatement (pas de phase intermédiaire).
+ * Modale de Désengagement (LDB 15-Dépl l.84-109). Le pré-jet est un MENU d'« options de jet »
+ * (`OptionChooser` PARTAGÉ) : Sacrifier l'Avantage / Esquiver / Fuir.
+ * - « Esquiver » → phase 'esquive' : Test opposé sur le panneau unique + rangée d'influence + Appliquer.
+ * - « Fuir » → phase 'fuir' : le coup dans le dos (+ Test de Calme) est résolu et montré INLINE ici
+ *   (plus de popin RevealModal séparée) ; « Continuer » ferme et libère le déplacement de Fuite.
  */
 export function DisengageModal() {
   const pd = useGame((s) => s.pendingDisengage);
@@ -29,6 +30,7 @@ export function DisengageModal() {
   const forceSuccess = useGame((s) => s.disengageForceSuccess);
   const confirm = useGame((s) => s.disengageConfirm);
   const flee = useGame((s) => s.disengageFlee);
+  const fleeAck = useGame((s) => s.disengageFleeAck);
   const cancel = useGame((s) => s.disengageCancel);
   if (!pd || !battle) return null;
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
@@ -42,6 +44,10 @@ export function DisengageModal() {
       : pd.result === 'tie'
         ? 'Échange neutre — reste au contact'
         : "Échec — l'adversaire gagne l'Avantage";
+  const f = pd.fuir;
+  const fleeOutcome = f
+    ? `Fuite ! ${f.hit ? `Coup encaissé (${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''})${f.broken ? `, ${f.broken} État${f.broken > 1 ? 's' : ''} Brisé` : ''}. ` : 'Coup esquivé. '}Cours te mettre à l'abri.`
+    : '';
 
   return (
     <Modal title="Se désengager" onClose={pd.phase === 'choice' ? cancel : undefined}>
@@ -50,23 +56,15 @@ export function DisengageModal() {
       {pd.phase === 'choice' ? (
         <>
           <div className="rm-options">
-            <div className="rm-loc-grid">
-              {pd.canSacrifice && (
-                <button className="btn small" onClick={sacrifice} title="Tu as l'Avantage supérieur : pars librement, sans coût d'Action">
-                  Sacrifier l'Avantage
-                </button>
-              )}
-              {pd.canEsquive !== false && (
-                <>
-                  <button className="btn small btn-primary" onClick={esquiver} title="Test opposé d'Esquive — coûte ton Action">
-                    🤸 Esquiver ({defenseValue(mover, 'esquive')})
-                  </button>
-                  <button className="btn small" onClick={flee} title="Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours">
-                    🏃 Fuir (coup dans le dos)
-                  </button>
-                </>
-              )}
-            </div>
+            {/* Menu d'options PARTAGÉ (OptionChooser) — Esquiver montre sa valeur effective d'Esquive. */}
+            <OptionChooser
+              layout="grid"
+              options={[
+                { key: 'sacrifice', label: "Sacrifier l'Avantage", hidden: !pd.canSacrifice, onSelect: sacrifice, title: "Tu as l'Avantage supérieur : pars librement, sans coût d'Action" },
+                { key: 'esquive', label: '🤸 Esquiver', value: defenseValue(mover, 'esquive'), hidden: pd.canEsquive === false, primary: true, onSelect: esquiver, title: "Test opposé d'Esquive — coûte ton Action" },
+                { key: 'fuir', label: '🏃 Fuir (coup dans le dos)', hidden: pd.canEsquive === false, onSelect: flee, title: 'Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours' },
+              ]}
+            />
             {pd.canEsquive === false && (
               <p className="rm-log">Action déjà dépensée : seul « Sacrifier l'Avantage » (sans coût d'Action) reste possible.</p>
             )}
@@ -80,6 +78,28 @@ export function DisengageModal() {
           <div className="modal-actions">
             <button className="btn btn-ghost" onClick={cancel}>
               Renoncer
+            </button>
+          </div>
+        </>
+      ) : pd.phase === 'fuir' ? (
+        <>
+          {/* Coup dans le dos + Test de Calme RÉSOLUS, montrés INLINE (jets subis sur table). */}
+          <TableRollLine
+            table={`Coup dans le dos — ${foe.name} (+20)`}
+            roll={f?.attackerRoll}
+            result={f?.hit ? `Touché · ${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''}` : 'Manqué'}
+          />
+          {f?.calmeRoll != null && (
+            <TableRollLine
+              table="Test de Calme"
+              roll={f.calmeRoll}
+              result={f.broken ? `Panique : ${f.broken} État${f.broken > 1 ? 's' : ''} Brisé` : 'Sang-froid gardé'}
+            />
+          )}
+          <JournalLine className="rm-journal" event={ev('flee', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={fleeAck}>
+              Continuer
             </button>
           </div>
         </>

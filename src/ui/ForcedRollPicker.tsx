@@ -1,3 +1,32 @@
+import { HIT_LOCATION_LABELS } from '../engine/types';
+import type { HitLocation } from '../engine/types';
+
+/** Les 6 localisations d'un Coup Critique (ordre du tableau LDB). */
+const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
+
+/**
+ * Grille PARTAGÉE de la localisation d'un Coup Critique FORCÉ (RAW-2, LDB 17 l.73 : sur un Critique
+ * obtenu via « Je ne faillirai pas ! », le joueur CHOISIT la localisation atteinte). Un seul endroit
+ * d'affichage — les modales qui en ont besoin la posent (attaque), elles ne la recopient plus.
+ */
+export function CritLocationPicker({ current, onSet }: {
+  current?: HitLocation | null;
+  onSet: (loc: HitLocation) => void;
+}) {
+  return (
+    <div className="rm-options">
+      <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
+      <div className="rm-loc-grid">
+        {CRIT_LOCS.map((l) => (
+          <button key={l} className={`btn small ${current === l ? 'btn-primary' : ''}`} onClick={() => onSet(l)}>
+            {HIT_LOCATION_LABELS[l]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * « Je ne faillirai pas ! » (LDB 17 l.73) : « au lieu de lancer les dés pour un Test, vous
  * choisissez le résultat ». Sélecteur PARTAGÉ du dé choisi d'un Test forcé par la Résilience :

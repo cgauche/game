@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { OptionChooser, ChoiceButtons } from './OptionChooser';
 
 /**
  * Sauvetage par le Destin (LDB « Destin et Résistance » ch.17 l.31-35) : quand un héros à Destin
@@ -25,22 +26,15 @@ export function FateSaveModal() {
         (il en reste {fate})
       </p>
       <div className="rm-options">
-        <div className="rm-loc-grid">
-          {p.source === 'hit' && (
-            <button className="btn small" onClick={negate} title="Évite tout le coup et reste en combat (Destin −1)">
-              🍀 Comment ça a pu rater ?
-            </button>
-          )}
-          <button className="btn small" onClick={survive} title="Survit mais quitte le combat (Destin −1)">
-            🛟 Meurs un autre jour
-          </button>
-        </div>
+        <OptionChooser
+          layout="grid"
+          options={[
+            { key: 'negate', label: '🍀 Comment ça a pu rater ?', hidden: p.source !== 'hit', onSelect: negate, title: 'Évite tout le coup et reste en combat (Destin −1)' },
+            { key: 'survive', label: '🛟 Meurs un autre jour', onSelect: survive, title: 'Survit mais quitte le combat (Destin −1)' },
+          ]}
+        />
       </div>
-      <div className="modal-actions">
-        <button className="btn btn-primary" onClick={accept} title="Le héros meurt">
-          ☠️ Accepter le sort
-        </button>
-      </div>
+      <ChoiceButtons options={[{ key: 'accept', label: '☠️ Accepter le sort', primary: true, onSelect: accept, title: 'Le héros meurt' }]} />
     </Modal>
   );
 }

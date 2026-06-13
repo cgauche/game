@@ -26,6 +26,7 @@ const read = (f: string) => readFileSync(here(f), 'utf8');
 const FLOW_MODULES: Record<string, string> = {
   combatFlow: read('./combatFlow.ts'),
   combatGeometry: read('./combatGeometry.ts'), // helpers géométrie extraits de combatFlow
+  combatEffects: read('./combatEffects.ts'), // effets de scène/campagne extraits de combatFlow
   medicFlow: read('./medicFlow.ts'),
   partyFlow: read('./partyFlow.ts'),
   merchantFlow: read('./merchantFlow.ts'),

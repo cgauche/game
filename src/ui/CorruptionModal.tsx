@@ -4,6 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { corruptionGain, EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { RollFlowShell } from './RollFlowShell';
+import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -22,6 +23,7 @@ export function CorruptionModal() {
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.corruptionRoll);
+  const setSkill = useGame((s) => s.corruptionSetSkill);
   const reroll = useGame((s) => s.corruptionReroll);
   const bonusSL = useGame((s) => s.corruptionBonusSL);
   const darkPact = useGame((s) => s.corruptionDarkPact);
@@ -54,6 +56,22 @@ export function CorruptionModal() {
       }
       rolled={rolled}
       onRoll={roll}
+      setup={
+        // Compétence indéterminée en amont (LDB 19 l.26) → le joueur tranche Résistance/Calme (cf.
+        // Défense). Déterminée par la source (`skillLocked`) ou au seuil → pas de choix.
+        !seuil && !pc.skillLocked && hero ? (
+          <div className="rm-options">
+            <OptionChooser
+              layout="seg"
+              groupLabel="Compétence"
+              options={[
+                { key: 'Résistance', label: 'Résistance', value: testValue(hero, 'Résistance'), selected: pc.skill === 'Résistance', title: 'Influence physique', onSelect: () => setSkill('Résistance') },
+                { key: 'Calme', label: 'Calme', value: testValue(hero, 'Calme'), selected: pc.skill === 'Calme', title: 'Corruption spirituelle', onSelect: () => setSkill('Calme') },
+              ]}
+            />
+          </div>
+        ) : undefined
+      }
       breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
       pending={testPending(`Test de ${pc.skill}`, base, undefined, 'intermediaire')}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pc.heroId)} combatants={pool} />}

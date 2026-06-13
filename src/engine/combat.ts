@@ -179,6 +179,13 @@ const bd = (label: string, base: number, t: TestResult, mods?: ModLine[]): RollB
 });
 export const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
 
+/** Libellé FR de la nature d'une attaque gratuite de créature (`freeKind`) — terminologie de combat,
+ *  source UNIQUE (utilisée par la modale de défense). */
+export const FREE_ATTACK_LABEL: Record<string, string> = {
+  morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes (charge)', pietinement: 'Piétinement',
+  langue: 'Langue', hurlement: 'Hurlement',
+};
+
 /**
  * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS est plafonnée
  * à −30 (Très Difficile) et la somme des BONUS à +60 (Très Facile) ; un mélange se somme. Les
@@ -309,7 +316,9 @@ export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): n
 export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive', dodgeMod = 0, weapon?: Weapon): ModLine[] {
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
-  if (adv) out.push({ label: 'Avantage', value: adv });
+  // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
+  // plafond ±30/+60 de `combineMods`. (Avant : non marqué → l'affichage défense plafonnait l'Avantage à tort.)
+  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
   const pen = combatTestPenalty(defender);
   if (pen) out.push({ label: 'État', value: pen });
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20 });
@@ -320,6 +329,13 @@ export function defenseModifiers(defender: Combatant, mode: 'parade' | 'esquive'
   }
   if (defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
   return out;
+}
+
+/** Modificateurs de BASE d'un Test de combat « brut » (hors Atouts d'arme et bonus de cible) :
+ *  Avantage ×10 + pénalité d'États. SOURCE UNIQUE réutilisée par les jets de Désengagement et le
+ *  coup dans le dos. Réutiliser ; ne pas réécrire `c.advantage * 10 + combatTestPenalty(c)`. */
+export function baseTestMods(c: Combatant): number {
+  return c.advantage * 10 + combatTestPenalty(c);
 }
 
 export interface AttackOptions {
@@ -394,28 +410,29 @@ export function rollMeleeDefender(
   vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.320-321)
 ): TestResult {
   const defVal = defenseValue(defender, mode, parryWeapon);
-  const snow = mode === 'esquive' ? dodgeMod : 0;
-  // Pénalité de main secondaire à la PARADE (LDB 62 l.192 ; 0 si Parade+Défensive ou main principale) —
-  // appliquée au JET, pas seulement affichée. (Esquive : aucune arme → pas de pénalité d'arme.)
-  const offHand = mode === 'parade' ? parryPenalty(defender, parryWeapon) : 0;
+  // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage uncapped, État, Sur la défensive, Neige,
+  // Main secondaire, Maniement deux armes) + le malus Rapide (qui dépend de l'arme ATTAQUANTE, donc
+  // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.126-131 :
+  // malus ≤ −30, bonus ≤ +60). Avant : somme à la main NON plafonnée (incohérent avec l'affichage).
+  const mods = defenseModifiers(defender, mode, dodgeMod, parryWeapon);
   // Rapide (LDB 62 l.320-321) : −10 aux Tests de Corps à corps (Parade) contre une arme Rapide,
   // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
   const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
-  const dualPen = defender.dualStrikeDefensePenalty ? -10 : 0; // Maniement de deux armes : −10 à TOUTES ses défenses (LDB 10 l.638)
-  return rollTest(defVal, 'intermediaire', rng, defender.advantage * 10 + combatTestPenalty(defender) + (defender.defensiveStance ? 20 : 0) + snow + offHand + rapide + dualPen);
+  if (rapide) mods.push({ label: 'Rapide', value: rapide });
+  return rollTest(defVal, 'intermediaire', rng, combineMods(mods));
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
  *  (LDB 15-Dépl l.89 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
  *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
 export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe));
+  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe));
 }
 
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, foe.advantage * 10 + combatTestPenalty(foe) + 20);
+  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe) + 20);
   return resolveMeleePassive(foe, target, foe.weapons[0], atk);
 }
 

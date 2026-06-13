@@ -6,6 +6,8 @@
  * Classes canon visées par certains événements : Citadins, Courtisans, Guerriers, Itinérants,
  * Lettrés, Riverains, Roublards, Ruraux. (Le texte dit « Voleurs » pour les Roublards.)
  */
+import { findTableEntry } from '../engine/tables';
+
 export interface InterludeEventFx {
   /** % appliqué à la bourse du groupe AVANT les Activités (le Prévôt −30, Kleptomane −50). */
   moneyPct?: number;
@@ -73,5 +75,5 @@ export const INTERLUDE_EVENTS: InterludeEvent[] = [
 /** Entrée du tableau pour un jet d100 (01-00). */
 export function interludeEventFor(roll: number): InterludeEvent {
   const r = Math.max(1, Math.min(100, roll));
-  return INTERLUDE_EVENTS.find((e) => r >= e.min && r <= e.max) ?? INTERLUDE_EVENTS[INTERLUDE_EVENTS.length - 1];
+  return findTableEntry(INTERLUDE_EVENTS, r);
 }

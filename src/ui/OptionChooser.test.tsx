@@ -1,0 +1,85 @@
+import { describe, it, expect } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { OptionChooser, ChoiceButtons, type RollOption } from './OptionChooser';
+import { optionValue, optionPending } from './breakdown';
+
+describe('OptionChooser — sélecteur d’options de jet partagé', () => {
+  const seg: RollOption[] = [
+    { key: 'parade', label: 'Parade', value: 55, selected: true, title: 'Parer' },
+    { key: 'esquive', label: 'Esquive', value: 48, title: 'Esquiver' },
+  ];
+
+  it('layout seg : segmented control, mini-titre, valeur effective, option active = classe `on`', () => {
+    const html = renderToStaticMarkup(<OptionChooser layout="seg" groupLabel="Réaction" options={seg} />);
+    expect(html).toContain('class="seg"');
+    expect(html).toContain('Réaction'); // mini-titre du groupe
+    expect(html).toContain('Parade');
+    expect(html).toContain('55'); // valeur effective affichée à côté du libellé
+    expect(html).toContain('Esquive');
+    expect(html).toContain('48');
+    // L'option sélectionnée porte la classe `on`, pas l'autre.
+    expect(html).toMatch(/class="on"[^>]*>\s*Parade/);
+    expect(html).not.toMatch(/class="on"[^>]*>\s*Esquive/);
+  });
+
+  it('layout grid : `.rm-loc-grid` de `.btn small`, primary, valeur entre parenthèses, masquage et désactivation', () => {
+    const opts: RollOption[] = [
+      { key: 'sacrifice', label: "Sacrifier l'Avantage" },
+      { key: 'esquive', label: '🤸 Esquiver', value: 48, primary: true },
+      { key: 'fuir', label: '🏃 Fuir', disabled: true },
+      { key: 'cache', label: 'Caché', hidden: true },
+    ];
+    const html = renderToStaticMarkup(<OptionChooser layout="grid" options={opts} />);
+    expect(html).toContain('class="rm-loc-grid"');
+    expect(html).toContain('btn small btn-primary'); // option primary
+    expect(html).toContain('(48)'); // valeur entre parenthèses en grille
+    expect(html).toContain('disabled'); // option désactivée
+    expect(html).not.toContain('Caché'); // option masquée non rendue
+  });
+
+  it('layout actions : `.modal-actions` de `.btn` (primary/ghost)', () => {
+    const opts: RollOption[] = [
+      { key: 'subir', label: 'Subir la mutation' },
+      { key: 'renier', label: 'Je te renie !', primary: true },
+      { key: 'renoncer', label: 'Renoncer', ghost: true },
+    ];
+    const html = renderToStaticMarkup(<OptionChooser layout="actions" options={opts} />);
+    expect(html).toContain('class="modal-actions"');
+    expect(html).toContain('btn btn-primary');
+    expect(html).toContain('btn btn-ghost');
+  });
+
+  it('content : rendu custom à la place de `label value` (ex. portraits)', () => {
+    const opts: RollOption[] = [{ key: 'k', label: 'ignoré', value: 10, content: <span className="portrait-x" /> }];
+    const html = renderToStaticMarkup(<OptionChooser layout="grid" options={opts} />);
+    expect(html).toContain('portrait-x');
+    expect(html).not.toContain('ignoré'); // le content remplace le label
+    expect(html).not.toContain('(10)');
+  });
+
+  it('ChoiceButtons = OptionChooser en barre d’actions', () => {
+    const opts: RollOption[] = [{ key: 'a', label: 'A' }, { key: 'b', label: 'B', primary: true }];
+    expect(renderToStaticMarkup(<ChoiceButtons options={opts} />)).toBe(
+      renderToStaticMarkup(<OptionChooser layout="actions" options={opts} />),
+    );
+  });
+});
+
+describe('optionValue / optionPending — forme unique pré-jet', () => {
+  it('optionValue = base + combineMods (plafonds de Difficulté inclus)', () => {
+    expect(optionValue(40, [{ label: 'Avantage', value: 10 }])).toBe(50);
+    // Malus plafonné à −30 (Très Difficile) : 40 + (−40 plafonné −30) = 10.
+    expect(optionValue(40, [{ label: 'X', value: -40 }])).toBe(10);
+    // `uncapped` (Avantage hors table) échappe au plafond des bonus.
+    expect(optionValue(40, [{ label: 'Avantage', value: 100, uncapped: true }])).toBe(140);
+  });
+
+  it('optionPending : { label, base, mods } ; cible omise par défaut, fournie si plafonnée', () => {
+    expect(optionPending('Parade', 45, [{ label: 'Avantage', value: 10 }])).toEqual({
+      label: 'Parade',
+      base: 45,
+      mods: [{ label: 'Avantage', value: 10 }],
+    });
+    expect(optionPending('Corps à corps', 38, [], 98)).toEqual({ label: 'Corps à corps', base: 38, mods: [], target: 98 });
+  });
+});

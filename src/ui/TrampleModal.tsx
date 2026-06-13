@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { FLOWS } from '../state/rollFlows';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
@@ -28,6 +29,8 @@ export function TrampleModal() {
   const target = battle.combatants.find((c) => c.id === pt.targetId);
   if (!attacker || !target) return null;
   const r = pt.result;
+  // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
+  const forcedDie = FLOWS.trample.picker?.(pt, attacker);
 
   return (
     <RollFlowShell
@@ -60,7 +63,7 @@ export function TrampleModal() {
       }}
       forceShow={!r?.hit}
       /* LDB 17 l.73 : Piétinement forcé = attaque → le dé se choisit (11 → Coup Critique). */
-      forcedRoll={pt.forced && r?.attackerDetail ? { roll: r.attackerDetail.roll, target: r.attackerDetail.target, onSet: setForcedRoll } : undefined}
+      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
       onConfirm={confirm}
     />
   );

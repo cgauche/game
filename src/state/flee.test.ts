@@ -23,8 +23,9 @@ describe('fleeReachable — Fuite dans la direction OPPOSÉE à l’adversaire (
   });
 });
 
-// Fuite (LDB 15-Dépl l.101-107) : coup dans le dos + Test de Calme → révélations témoins.
-describe('Fuite en révélation (store)', () => {
+// Fuite (LDB 15-Dépl l.101-107) : coup dans le dos + Test de Calme → montrés INLINE dans la modale
+// de Désengagement (phase 'fuir'), plus de popin RevealModal séparée.
+describe('Fuite intégrée à la modale (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -35,7 +36,7 @@ describe('Fuite en révélation (store)', () => {
     vi.useRealTimers();
   });
 
-  it('Fuir pousse le coup dans le dos puis (si touché) le Test de Calme en révélations', () => {
+  it('Fuir résout le coup dans le dos + Test de Calme et les montre INLINE (phase fuir), sans révélation', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().seedRng(2);
@@ -58,9 +59,17 @@ describe('Fuite en révélation (store)', () => {
 
     useGame.getState().disengageFlee();
 
-    const reveals = useGame.getState().pendingReveals;
-    expect(reveals.map((r) => r.kind)).toEqual(['backstab', 'calme']); // coup dans le dos PUIS Calme
-    expect(typeof reveals[0].dice).toBe('number');
+    // Plus de popin RevealModal : tout est porté par la modale de Désengagement (phase 'fuir').
+    expect(useGame.getState().pendingReveals).toHaveLength(0);
+    const pdf = useGame.getState().pendingDisengage!;
+    expect(pdf).toBeTruthy();
+    expect(pdf.phase).toBe('fuir');
+    expect(typeof pdf.fuir!.attackerRoll).toBe('number');
+    expect(pdf.fuir!.hit).toBe(true); // CC 90 +20 → touche
+    expect(typeof pdf.fuir!.calmeRoll).toBe('number'); // touché → Test de Calme résolu
+
+    // « Continuer » ferme la modale (conséquences déjà appliquées).
+    useGame.getState().disengageFleeAck();
     expect(useGame.getState().pendingDisengage).toBeNull();
   });
 });

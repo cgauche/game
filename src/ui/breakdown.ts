@@ -1,4 +1,4 @@
-import type { ModLine, RollBreakdown } from '../engine/combat';
+import { combineMods, type ModLine, type RollBreakdown } from '../engine/combat';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { PendingRoll } from './RollLine';
 
@@ -42,4 +42,24 @@ export function testBreakdown(
 export function testPending(label: string, base: number, target?: number, difficulty?: Difficulty): PendingRoll {
   const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0);
   return { label, base, target: t, mods: difficultyMods(difficulty) };
+}
+
+/**
+ * Valeur effective d'une « option de jet » = `base + combineMods(mods)` (plafonds de Difficulté
+ * inclus). SOURCE UNIQUE du calcul « base + mods » montré sur le sélecteur d'options
+ * (`OptionChooser`) — jusqu'ici réécrit inline dans chaque modale (ex. `segVal` de la Défense).
+ * Réutiliser ; ne pas recombiner les mods à la main.
+ */
+export function optionValue(base: number, mods: ModLine[]): number {
+  return base + combineMods(mods);
+}
+
+/**
+ * Ligne pré-jet d'une option choisie, dans la forme UNIQUE `{ label, base, mods }` (cible omise →
+ * dérivée par `PendingRollLine`, ou fournie si déjà plafonnée). Builder canonique vers lequel
+ * convergent `previewAttack`/`previewDefense`/`previewCast`/`testPending`/`calmePending` (cf. P6) :
+ * un seul endroit assemble le pré-jet d'une option. Réutiliser ; ne pas refabriquer l'objet à la main.
+ */
+export function optionPending(label: string, base: number, mods: ModLine[], target?: number): PendingRoll {
+  return { label, base, mods, ...(target != null ? { target } : {}) };
 }

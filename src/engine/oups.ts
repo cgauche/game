@@ -4,6 +4,7 @@
  * Tableau des Oups !, ou un Incident de Tir (arme à Poudre noire + jet pair → explosion, l.56-57).
  */
 import { d100, RNG, defaultRNG } from './dice';
+import { findTableEntry } from './tables';
 import { isDoubleRoll } from './tests';
 import { Weapon } from './types';
 import { OUPS_TABLE, OupsKind } from '../data/oups';
@@ -32,6 +33,6 @@ export function rollOups(weapon: Weapon | undefined, rng: RNG = defaultRNG): Oup
   if (isFirearm(weapon) && roll % 2 === 0) {
     return { roll, kind: 'misfire', label: 'Incident de Tir ! L’arme explose dans votre main (Dégâts au Bras principal, arme détruite).' };
   }
-  const entry = OUPS_TABLE.find((e) => roll >= e.min && roll <= e.max) ?? OUPS_TABLE[OUPS_TABLE.length - 1];
+  const entry = findTableEntry(OUPS_TABLE, roll);
   return { roll, kind: entry.kind, label: entry.label };
 }

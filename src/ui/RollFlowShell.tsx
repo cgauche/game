@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RollBreakdown } from '../engine/combat';
 import { bus, EVT } from '../state/bus';
-import { ChanceButtons } from './ChanceButtons';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { ResilienceButton } from './ResilienceButton';
+import { InfluenceRow } from './InfluenceRow';
 import { RollPanel, type RollRowData } from './RollPanel';
 import type { PendingRoll } from './RollLine';
 import { Modal } from './Modal';
@@ -61,7 +62,16 @@ export function RollFlowShell({
   forceShow = false,
   forcedRoll,
   confirmLabel = 'Appliquer',
+  confirmTitle,
   onConfirm,
+  setup,
+  preInfluence,
+  postRollExtra,
+  forcedExtra,
+  rollFrisson = false,
+  cancelLabel = 'Annuler',
+  cancelTitle,
+  disableEscClose = false,
 }: {
   variant?: 'roll' | 'test';
   /** Rendu EMBARQUÉ (zone de jet d'une modale persistante, ex. infirmerie) : même contenu,
@@ -114,12 +124,40 @@ export function RollFlowShell({
    *  les flux où la valeur a un enjeu (double → Critique). Absent → pas de sélecteur. */
   forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean };
   confirmLabel?: string;
+  /** Infobulle du bouton primaire (ex. « Poser la zone » de l'incantation). */
+  confirmTitle?: string;
   onConfirm: () => void;
+  /** Contenu métier PRÉ-JET uniquement (options : choix d'arme/localisation visée, Parade/Esquive…). */
+  setup?: ReactNode;
+  /** Boutons contextuels dans la rangée d'influence PRÉ-JET (ex. Détermination « retirer un État »). */
+  preInfluence?: ReactNode;
+  /** Contenu métier POST-JET, APRÈS l'issue et AVANT le picker du dé forcé (Surincantation,
+   *  Contre-sort, choix d'effet du Critique d'incantation). */
+  postRollExtra?: ReactNode;
+  /** Contenu métier juste APRÈS le picker du dé forcé (grille de localisation du Critique forcé). */
+  forcedExtra?: ReactNode;
+  /** Anime le jet (« frisson » ~480 ms) avant de résoudre — Attaque/Défense. Honore reduced-motion. */
+  rollFrisson?: boolean;
+  /** Libellé du bouton « Annuler » (ex. « Subir » pour la défense passive). */
+  cancelLabel?: string;
+  /** Infobulle du bouton d'annulation. */
+  cancelTitle?: string;
+  /** N'attache PAS Échap/✕ à l'annulation (flux où l'on ne peut pas « fermer » — défense obligatoire). */
+  disableEscClose?: boolean;
 }) {
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
+  const [rolling, setRolling] = useState(false);
+  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  // Frisson du jet (R3) : beat cosmétique avant le jet (seeded) réel. Sans `rollFrisson` → immédiat.
+  const doRoll = () => {
+    bus.emit(EVT.DICE_ROLL);
+    if (!rollFrisson || reduceMotion) return onRoll();
+    setRolling(true);
+    window.setTimeout(() => { setRolling(false); onRoll(); }, 480);
+  };
   const cancelBtn = onCancel && (
-    <button className="btn btn-ghost" onClick={onCancel}>
-      Annuler
+    <button className="btn btn-ghost" onClick={onCancel} title={cancelTitle}>
+      {cancelLabel}
     </button>
   );
   const determineBtn = determination && determination.resolve > 0 && (
@@ -137,50 +175,64 @@ export function RollFlowShell({
   const preRows: RollRowData[] | undefined = pending
     ? (Array.isArray(pending) ? pending : [pending]).map((p) => ({ pending: p }))
     : undefined;
-  // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le permet).
-  const escClose = (!rolled || cancelAfterRoll) ? onCancel : undefined;
+  // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le
+  // permet) — JAMAIS pendant le frisson (le jet est imminent), comme les anciennes modales lourdes.
+  const escClose = (disableEscClose || rolling) ? undefined : ((!rolled || cancelAfterRoll) ? onCancel : undefined);
   const body = (
     <>
-      <p className={subClass}>{subtitle}</p>
+      {subtitle && <p className={subClass}>{subtitle}</p>}
       {extra}
       {!rolled ? (
         <>
+          {setup}
           {preRows && <RollPanel rows={preRows} />}
-          <div className="rm-influence">
-            {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
-            {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}
-            {determineBtn}
-          </div>
-          <div className="modal-actions">
-            {cancelBtn}
-            <button className="btn btn-primary" onClick={() => { bus.emit(EVT.DICE_ROLL); onRoll(); }}>
-              {rollLabel}
-            </button>
-          </div>
+          {rolling ? (
+            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+          ) : (
+            <>
+              <div className="rm-influence">
+                {/* Résilience AVANT le jet (LDB 17 l.73 : « au lieu de lancer les dés »). */}
+                {onForce && <ResilienceButton resilience={resilience} show={resilience > 0} onForce={preRollForce ?? onForce} />}
+                {preInfluence}
+                {determineBtn}
+              </div>
+              <div className="modal-actions">
+                {cancelBtn}
+                <button className="btn btn-primary" onClick={doRoll}>
+                  {rollLabel}
+                </button>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>
           {panelRows && <RollPanel rows={panelRows} winnerIndex={winnerIndex} netSL={netSL} />}
           {outcome}
+          {postRollExtra}
           {forcedRoll && <ForcedRollPicker {...forcedRoll} />}
-          <div className="rm-influence">
-            <ChanceButtons
-              fortune={fortune}
-              rerollable={rerollable}
-              onReroll={onReroll}
-              freeReroll={freeReroll}
-              onBonusSL={onBonusSL}
-              darkPactable={darkPactable}
-              onDarkPact={onDarkPact}
-            />
-            {onForce && <ResilienceButton resilience={resilience} show={forceShow} onForce={onForce} />}
+          {forcedExtra}
+          {/* Rangée « influencer le jet » : assemblée UNE seule fois (InfluenceRow) — le shell passe
+              les primitives (fortune/freeReroll/resilience), pas d'acteur. */}
+          <InfluenceRow
+            fortune={fortune}
+            freeReroll={freeReroll}
+            resilience={resilience}
+            rerollable={rerollable}
+            onReroll={onReroll}
+            onBonusSL={onBonusSL}
+            darkPactable={darkPactable}
+            onDarkPact={onDarkPact}
+            onForce={onForce}
+            forceShow={forceShow}
+          >
             {forceShow && determineBtn}
-          </div>
+          </InfluenceRow>
           <div className="modal-actions">
             {cancelAfterRoll && cancelBtn}
             {/* () => onConfirm() : ne PAS passer l'événement React à l'action — en coop l'invité
                 sérialise les args de l'intent (JSON), un événement (circulaire) perdrait l'intent. */}
-            <button className="btn btn-primary" onClick={() => onConfirm()}>
+            <button className="btn btn-primary" onClick={() => onConfirm()} title={confirmTitle}>
               {confirmLabel}
             </button>
           </div>

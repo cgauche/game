@@ -1,26 +1,24 @@
 import { useGame } from '../state/store';
-import { bus, EVT } from '../state/bus';
+import { FLOWS } from '../state/rollFlows';
 import { ownsLocally } from '../state/netFlow';
 import { counterspellCandidates, overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { InfluenceRow } from './InfluenceRow';
-import { ForcedRollPicker } from './ForcedRollPicker';
-import { ResilienceButton } from './ResilienceButton';
 import { CharFrame } from './CharFrame';
+import { RollFlowShell } from './RollFlowShell';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { Modal } from './Modal';
 
 /**
- * Modale d'incantation (« tous les jets méritent leur modale ») : on sélectionne un sort + une
- * cible, on clique « Lancer » (le jet d'incantation se fait alors), on voit le résultat — réussite
- * (DR ≥ NI), échec, ou Maladresse — Chance/Pacte/Résilience en rangée « influencer le jet », puis
- * « Appliquer ». Même flux différé que l'attaque, sur le panneau de jet unique.
+ * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollFlowShell` (comme Attaque/Défense) :
+ * on sélectionne un sort + une cible, « Lancer » fait le jet, on voit le résultat (réussite DR ≥ NI,
+ * échec, ou Maladresse), Chance/Pacte/Résilience en rangée d'influence, puis « Appliquer ». Le métier
+ * propre à l'incantation (Surincantation, Contre-sort, choix du Critique, pose de zone) passe par les
+ * slots `setup`/`postRollExtra` ; toute la mécanique générique vit dans la coquille.
  *
  * Surincantation « +Cible » : EN COMBAT, le choix des cibles supplémentaires se fait SUR LE CHAMP
  * DE BATAILLE (`castPickTargets` efface la modale, bandeau TargetPrompt + clic carte) ; hors
@@ -52,7 +50,6 @@ export function CastModal() {
   const spell = findSpell(pc.spellLabel);
   if (!caster || !target || !spell) return null;
   const res = pc.result;
-  const fortune = caster.fortune ?? 0;
   const rerollable = !!res && canReroll(res.roll > res.target, !!pc.rerolled);
   const isPrayer = spell.cn == null;
   const ni = spell.cn ?? 0;
@@ -62,6 +59,7 @@ export function CastModal() {
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
   const placeable = zoneUnplaced && !!res && !res.dispelled &&
     (res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'));
+  const forcedDie = FLOWS.cast.picker?.(pc, caster); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui.
   const outcome = !res
     ? ''
@@ -76,78 +74,68 @@ export function CastModal() {
           : 'Incantation échouée';
 
   return (
-    <Modal title={isPrayer ? 'Prière' : 'Incantation'} onClose={!res && caster.kind !== 'enemy' ? cancel : undefined}>
-      <VsHeader
-        actor={caster}
-        target={selfTarget || zoneUnplaced ? undefined : target}
-        label={
-          <>
-            {spell.label}
-            {!isPrayer ? ` · NI ${ni}` : ''}
-          </>
-        }
-        verb="✨"
-      />
-      {(selfTarget || pc.zone) && (
-        <p className="rm-vs">
-          {pc.zone ? (
-            <>
-              <strong>Zone d'Effet</strong> — gabarit {pc.zone.radius * 2 + 1}×{pc.zone.radius * 2 + 1} cases
-              {zoneUnplaced ? ' · la zone se pose après le jet' : ''}
-            </>
-          ) : (
-            <>
-              <strong>{spell.label}</strong>
-              {!isPrayer ? ` · NI ${ni}` : ''} — sur lui-même
-            </>
+    <RollFlowShell
+      title={isPrayer ? 'Prière' : 'Incantation'}
+      subtitle={null}
+      extra={
+        <>
+          <VsHeader
+            actor={caster}
+            target={selfTarget || zoneUnplaced ? undefined : target}
+            label={
+              <>
+                {spell.label}
+                {!isPrayer ? ` · NI ${ni}` : ''}
+              </>
+            }
+            verb="✨"
+          />
+          {(selfTarget || pc.zone) && (
+            <p className="rm-vs">
+              {pc.zone ? (
+                <>
+                  <strong>Zone d'Effet</strong> — gabarit {pc.zone.radius * 2 + 1}×{pc.zone.radius * 2 + 1} cases
+                  {zoneUnplaced ? ' · la zone se pose après le jet' : ''}
+                </>
+              ) : (
+                <>
+                  <strong>{spell.label}</strong>
+                  {!isPrayer ? ` · NI ${ni}` : ''} — sur lui-même
+                </>
+              )}
+            </p>
           )}
-        </p>
-      )}
-
-      {!res ? (
-        <>
-          {/* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
-              vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */}
-          <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
-          <div className="rm-influence">
-            {/* Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite. */}
-            <ResilienceButton resilience={caster.resilience ?? 0} show={(caster.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
-          </div>
-          <div className="modal-actions">
-            {/* Lanceur ennemi : le témoin ne peut pas annuler l'action de l'IA (tour suspendu). */}
-            {caster.kind !== 'enemy' && (
-              <button className="btn btn-ghost" onClick={cancel}>
-                Annuler
-              </button>
-            )}
-            <button className="btn btn-primary" onClick={() => { bus.emit(EVT.DICE_ROLL); roll(); }}>
-              🎲 Lancer
-            </button>
-          </div>
         </>
-      ) : (
+      }
+      rolled={!!res}
+      onRoll={roll}
+      onCancel={caster.kind !== 'enemy' ? cancel : undefined}
+      setup={
+        /* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
+           vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */
+        <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
+      }
+      rows={res ? [{
+        combatant: caster,
+        d: {
+          label: pc.missile ? 'Projectile' : isPrayer ? 'Prière' : `Incantation${!isPrayer ? ` / NI ${ni}` : ''}`,
+          base: res.target,
+          modifier: 0,
+          target: res.target,
+          roll: res.roll,
+          success: res.cast,
+          sl: res.sl,
+        },
+      }] : undefined}
+      outcome={res && (
+        <JournalLine
+          className="rm-journal"
+          event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
+          combatants={pool}
+        />
+      )}
+      postRollExtra={res && (
         <>
-          <RollPanel
-            rows={[
-              {
-                combatant: caster,
-                d: {
-                  label: pc.missile ? 'Projectile' : isPrayer ? 'Prière' : `Incantation${!isPrayer ? ` / NI ${ni}` : ''}`,
-                  base: res.target,
-                  modifier: 0,
-                  target: res.target,
-                  roll: res.roll,
-                  success: res.cast,
-                  sl: res.sl,
-                },
-              },
-            ]}
-          />
-          <JournalLine
-            className="rm-journal"
-            event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
-            combatants={pool}
-          />
           {/* Surincantation : pour chaque +2 DR (au-delà du NI pour un Sort, LDB 47 l.28-31 ;
               DR entier pour une Bénédiction/un Miracle, LDB 41/42), étendre la Durée
               (+durée initiale) ou la Cible (+1) — jamais « Vous »/« Spécial »/Instantanée. */}
@@ -259,34 +247,23 @@ export function CastModal() {
               </div>
             </div>
           )}
-          {/* LDB 17 l.73 « vous choisissez le résultat » : 01 = DR max (Surincantation) ;
-              11 = double le plus bas → Incantation Critique au meilleur DR. */}
-          {pc.forced && res.target > 0 && (
-            <ForcedRollPicker roll={res.roll} target={res.target} onSet={setForcedRoll} critable={!isPrayer} />
-          )}
-          <InfluenceRow
-            actor={caster}
-            rerollable={rerollable}
-            onReroll={reroll}
-            onBonusSL={bonusSL}
-            darkPactable={caster.kind === 'hero' && res.roll > 0 && res.roll > res.target}
-            onDarkPact={darkPact}
-            onForce={forceSuccess}
-            forceShow={!!res && !res.cast}
-          />
-          <div className="modal-actions">
-            {placeable ? (
-              <button className="btn btn-primary" onClick={() => placeZone(true)} title="La modale s'efface — clique une case du champ de bataille pour déposer la zone">
-                📍 Poser la zone
-              </button>
-            ) : (
-              <button className="btn btn-primary" onClick={confirm}>
-                Appliquer
-              </button>
-            )}
-          </div>
         </>
       )}
-    </Modal>
+      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
+      fortune={caster.fortune ?? 0}
+      freeReroll={freeRerollOf(caster)}
+      rerollable={rerollable}
+      onReroll={reroll}
+      onBonusSL={bonusSL}
+      darkPactable={caster.kind === 'hero' && res != null && res.roll > 0 && res.roll > res.target}
+      onDarkPact={darkPact}
+      resilience={caster.resilience ?? 0}
+      onForce={forceSuccess}
+      preRollForce={() => { roll(); forceSuccess(); }}
+      forceShow={!!res && !res.cast}
+      confirmLabel={placeable ? '📍 Poser la zone' : 'Appliquer'}
+      confirmTitle={placeable ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined}
+      onConfirm={placeable ? () => placeZone(true) : confirm}
+    />
   );
 }

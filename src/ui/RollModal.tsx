@@ -1,32 +1,31 @@
-import { useState } from 'react';
 import { useGame, movementRemaining } from '../state/store';
-import { bus, EVT } from '../state/bus';
+import { FLOWS } from '../state/rollFlows';
 import { HitLocation, HIT_LOCATION_LABELS } from '../engine/types';
 import { combatValue, crowdMod } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../state/combatFlow';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
-import { InfluenceRow } from './InfluenceRow';
-import { ForcedRollPicker } from './ForcedRollPicker';
-import { ResilienceButton } from './ResilienceButton';
+import { CritLocationPicker } from './ForcedRollPicker';
 import { DeterminationButton } from './DeterminationButton';
+import { RollFlowShell } from './RollFlowShell';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { Modal } from './Modal';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
 /**
- * Modale d'attaque — modale de RÉFÉRENCE du panneau de jet unique (`RollPanel`) : l'avant-jet est
- * le même bloc que le résultat, pré-rempli. MA ligne montre mon score + mes bonus/malus ; la ligne
- * adverse ne montre QUE son portrait, sa compétence de défense probable et ses bonus/malus (pas de
- * valeur, pas de % de toucher, pas d'encaissé — LDB : le joueur ne connaît pas la cible adverse).
+ * Modale d'attaque — paramétrage de la coquille PARTAGÉE `RollFlowShell` (comme Psych/Défense) :
+ * l'avant-jet est le même panneau (`RollPanel`) que le résultat, pré-rempli. MA ligne montre mon
+ * score + mes bonus/malus ; la ligne adverse ne montre QUE son portrait, sa compétence de défense
+ * probable et ses bonus/malus (LDB : le joueur ne connaît pas la cible adverse).
  *
- * La mêlée est un TEST OPPOSÉ : post-jet, les DEUX lignes sont remplies et la ligne GAGNANTE est
- * accentuée (badge « DR net »), l'issue tient en une ligne style journal.
+ * La mêlée est un TEST OPPOSÉ : post-jet, les DEUX lignes sont remplies, la ligne GAGNANTE est
+ * accentuée (badge « DR net »), l'issue tient en une ligne style journal. Toute la mécanique
+ * générique (frisson, rangée d'influence, picker du dé forcé, localisation du Critique, pied de
+ * page) vit dans la coquille — cette modale ne fournit QUE son contenu métier.
  */
 export function RollModal() {
   const pa = useGame((s) => s.pendingAttack);
@@ -46,9 +45,6 @@ export function RollModal() {
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
   const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
   const spendResolve = useGame((s) => s.spendResolveCondition);
-  // « Frisson » du lancer (R3) : beat de roulement PUREMENT cosmétique (état UI-local, RNG seedé intact —
-  // le jet réel n'a lieu qu'à la fin du beat). Honore prefers-reduced-motion.
-  const [rolling, setRolling] = useState(false);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
@@ -70,18 +66,11 @@ export function RollModal() {
   // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
   // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
   const canHoldGround = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
-  const fortune = attacker.fortune ?? 0;
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
-  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const doRoll = () => {
-    bus.emit(EVT.DICE_ROLL);
-    if (reduceMotion) return roll();
-    setRolling(true);
-    window.setTimeout(() => { setRolling(false); roll(); }, 480); // le jet (seeded) n'a lieu qu'à la fin du frisson
-  };
+  const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne, sans répéter les noms — le panneau dit déjà qui) à la place du log complet.
   const outcome = res
     ? res.critical
@@ -92,14 +81,21 @@ export function RollModal() {
     : '';
 
   return (
-    <Modal title="Attaque" onClose={!res && !rolling ? cancel : undefined}>
-      <VsHeader
-        actor={attacker}
-        target={target}
-        label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
-      />
-
-      {!res ? (
+    <RollFlowShell
+      title="Attaque"
+      subtitle={null}
+      extra={
+        <VsHeader
+          actor={attacker}
+          target={target}
+          label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
+        />
+      }
+      rolled={!!res}
+      onRoll={roll}
+      rollFrisson
+      onCancel={cancel}
+      setup={
         <>
           <div className="rm-options">
             {/* Maniement de deux armes (LDB 10 l.638) : attaquer des DEUX armes pour son Action. */}
@@ -190,79 +186,33 @@ export function RollModal() {
               ]}
             />
           ))}
-          {rolling ? (
-            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
-          ) : (
-            <>
-              <div className="rm-influence">
-                {/* Résilience AVANT le jet (LDB 17 l.73) : force la réussite (résultat garanti, sans frisson). */}
-                <ResilienceButton resilience={attacker.resilience ?? 0} show={(attacker.resilience ?? 0) > 0} onForce={() => { roll(); forceSuccess(); }} />
-                {/* Détermination (LDB 17 l.66) : retirer un État négatif AVANT de lancer — la ligne recalcule. */}
-                <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />
-              </div>
-              <div className="modal-actions">
-                <button className="btn btn-ghost" onClick={cancel}>
-                  Annuler
-                </button>
-                <button className="btn btn-primary" onClick={doRoll}>
-                  🎲 Lancer
-                </button>
-              </div>
-            </>
-          )}
         </>
-      ) : (
-        <>
-          {/* Test opposé : mêmes lignes que l'avant-jet, remplies — vainqueur accentué + DR net. */}
-          <RollPanel
-            rows={[
-              { combatant: attacker, d: res.attackerDetail },
-              { combatant: target, d: res.defenderDetail },
-            ]}
-            winnerIndex={res.defenderDetail ? (res.hit ? 0 : 1) : undefined}
-            netSL={res.defenderDetail ? res.netSL : undefined}
-          />
-          {/* Issue courte (1 ligne, icône du journal) — le détail des noms vit dans les lignes. */}
-          <JournalLine
-            className="rm-journal"
-            event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', outcome, attacker.id, target.id)}
-            combatants={battle.combatants}
-          />
-          {/* LDB 17 l.73 « vous choisissez le résultat » : 01 = DR max ; 11 = double LE PLUS BAS
-              → Coup Critique au meilleur DR (l'exemple Salundra l.75 choisit 11). */}
-          {pa.forced && res.attackerDetail && (
-            <ForcedRollPicker roll={res.attackerRoll} target={res.attackerDetail.target} onSet={setForcedRoll} />
-          )}
-          {res.critical && pa.forced && (
-            <div className="rm-options">
-              {/* RAW-2 (LDB 17 l.73) : sur un Coup Critique forcé, le joueur CHOISIT la localisation atteinte. */}
-              <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
-              <div className="rm-loc-grid">
-                {LOCS.map((l) => (
-                  <button key={l} className={`btn small ${res.critLocation === l ? 'btn-primary' : ''}`} onClick={() => setCritLocation(l)}>
-                    {HIT_LOCATION_LABELS[l]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <InfluenceRow
-            actor={attacker}
-            rerollable={rerollable}
-            onReroll={reroll}
-            onBonusSL={bonusSL}
-            darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
-            onDarkPact={darkPact}
-            onForce={forceSuccess}
-            forceShow={!!res && !res.hit}
-          />
-          <div className="modal-actions">
-            <button className="btn btn-primary" onClick={confirm}>
-              Appliquer
-            </button>
-          </div>
-        </>
+      }
+      preInfluence={<DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />}
+      rows={res ? [{ combatant: attacker, d: res.attackerDetail }, { combatant: target, d: res.defenderDetail }] : undefined}
+      winnerIndex={res?.defenderDetail ? (res.hit ? 0 : 1) : undefined}
+      netSL={res?.defenderDetail ? res.netSL : undefined}
+      outcome={res && (
+        <JournalLine
+          className="rm-journal"
+          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', outcome, attacker.id, target.id)}
+          combatants={battle.combatants}
+        />
       )}
-    </Modal>
+      forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
+      forcedExtra={res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} /> : undefined}
+      fortune={attacker.fortune ?? 0}
+      freeReroll={freeRerollOf(attacker)}
+      rerollable={rerollable}
+      onReroll={reroll}
+      onBonusSL={bonusSL}
+      darkPactable={attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success}
+      onDarkPact={darkPact}
+      resilience={attacker.resilience ?? 0}
+      onForce={forceSuccess}
+      preRollForce={() => { roll(); forceSuccess(); }}
+      forceShow={!!res && !res.hit}
+      onConfirm={confirm}
+    />
   );
 }

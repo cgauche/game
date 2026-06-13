@@ -250,7 +250,9 @@ export type Effect =
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence physique)
    *  ou de Calme (spirituelle) par MODALE ; Points de Corruption selon le niveau et le DR. Cible : héros
    *  désigné, sinon le premier vivant. Au-delà de BFM+BE : Test de Résistance ou MUTATION. */
-  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill: 'Résistance' | 'Calme'; heroId?: string }
+  // `skill` ABSENT = nature indéterminée (l.26 « comme déterminé par le MJ ») → le joueur choisit
+  // Résistance/Calme dans la modale ; PRÉSENT = déterminé en amont → verrouillé (pas de choix).
+  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'Résistance' | 'Calme'; heroId?: string }
   /** Points de Corruption DIRECTS (LDB 19) — contact d'un artefact maudit, Sombre Pacte scénarisé…
    *  (sans Test ; pour l'exposition testée, utiliser `corruptionExposure`). */
   | { type: 'giveCorruption'; amount?: number; heroId?: string }

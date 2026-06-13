@@ -490,6 +490,10 @@ export interface GameState {
   resolveTest: () => void;
   /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
   corruptionRoll: () => void;
+  /** Choisit Résistance/Calme AVANT le jet d'exposition (LDB 19 l.26 : « ou … comme déterminé par le
+   *  MJ » — RAW indéterminé pour le trait de créature ; le joueur tranche, comme la Défense). Le SEUIL
+   *  (l.80) reste figé sur Résistance et ignore cet appel. */
+  corruptionSetSkill: (skill: 'Résistance' | 'Calme') => void;
   corruptionReroll: () => void;
   corruptionBonusSL: () => void;
   corruptionDarkPact: () => void;
@@ -778,6 +782,7 @@ export interface GameState {
   trampleSetForcedRoll: (roll: number) => void;
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
+  disengageFleeAck: () => void; // « Continuer » après le coup dans le dos montré INLINE
   disengageCancel: () => void;
   log: (msg: string) => void;
   /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */
@@ -3094,28 +3099,26 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || !pd) return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     const foe = battle.combatants.find((c) => c.id === pd.foeId);
-    set({ pendingDisengage: null });
-    if (!mover || !foe) return;
+    if (!mover || !foe) return set({ pendingDisengage: null });
     const log = [...battle.log];
     gainAdvantage(foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
     foe.gainedAdvThisRound = true;
     const res = resolveBackstabAttack(foe, mover, battleRng());
     log.push(ev('flee', `${mover.name} fuit — ${foe.name} frappe dans le dos : ${res.log}`, mover.id, foe.id));
-    // « Un jet = une modale » : le héros voit le dé du coup dans le dos (jet subi).
-    if (mover.kind === 'hero') pushReveal(set, { kind: 'backstab', title: 'Fuite — coup dans le dos', dice: res.attackerRoll, lines: [res.log], subjectId: mover.id });
+    let calmeRoll: number | undefined;
+    let broken = 0;
     if (res.hit && res.woundsLost) {
       loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
       gainAdvantage(foe); // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
       const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
       const ct = rollTest(calme, 'intermediaire', battleRng());
-      const broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
+      broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
+      calmeRoll = ct.roll;
       if (broken) {
         addCondition(mover, 'Brisé', broken);
         log.push(ev('fear', `${mover.name} panique : ${broken} État(s) Brisé.`, mover.id));
       }
-      if (mover.kind === 'hero')
-        pushReveal(set, { kind: 'calme', title: 'Test de Calme', dice: ct.roll, lines: [ct.success ? 'Sang-froid gardé.' : `Panique : ${broken} État(s) Brisé.`], subjectId: mover.id });
     }
     const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     for (const f of foes) disengageFrom(mover, f);
@@ -3126,7 +3129,18 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, blocked, sizeFootprint(mover.size)), log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
+    // Coup dans le dos INTÉGRÉ à la modale (plus de popin RevealModal séparée) : on garde la modale
+    // ouverte sur la phase 'fuir' pour MONTRER le dé subi + le Test de Calme ; « Continuer » ferme et
+    // libère le déplacement de Fuite. Cas particuliers (PNJ, combat fini, mort→Destin, autre révélation
+    // en attente) : on ferme tout de suite pour ne pas empiler les modales.
+    const st = get();
+    if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
+      set({ pendingDisengage: null });
+      return;
+    }
+    set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, calmeRoll, broken } } });
   },
+  disengageFleeAck: () => set({ pendingDisengage: null }), // « Continuer » : ferme la modale (conséquences déjà appliquées)
   disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
 
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
@@ -3151,6 +3165,12 @@ export const useGame = create<GameState>((set, get) => ({
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
   corruptionRoll: () => FLOWS.corruption.roll(get, set),
+  corruptionSetSkill: (skill) => {
+    const pc = get().pendingCorruption;
+    // Pré-jet uniquement, et JAMAIS si la compétence est déterminée en amont (source ou seuil).
+    if (!pc || pc.roll != null || pc.skillLocked) return;
+    set({ pendingCorruption: { ...pc, skill } });
+  },
   corruptionReroll: () => FLOWS.corruption.reroll(get, set),
   corruptionBonusSL: () => FLOWS.corruption.bonusSL(get, set),
   corruptionDarkPact: () => FLOWS.corruption.darkPact(get, set),

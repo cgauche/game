@@ -40,6 +40,41 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
     expect(useGame.getState().journal.join('\n')).toMatch(/Corruption/);
   });
 
+  it('compétence DÉTERMINÉE par la source (skill) → verrouillée, corruptionSetSkill sans effet', () => {
+    const { a, party } = party2();
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: 'Calme', heroId: a.id }]);
+    expect(useGame.getState().pendingCorruption!.skill).toBe('Calme');
+    expect(useGame.getState().pendingCorruption!.skillLocked).toBe(true);
+    useGame.getState().corruptionSetSkill('Résistance'); // verrouillé → ignoré
+    expect(useGame.getState().pendingCorruption!.skill).toBe('Calme');
+  });
+
+  it('compétence INDÉTERMINÉE (skill absent) → défaut Résistance, choix joueur autorisé', () => {
+    const { a, party } = party2();
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', heroId: a.id }]);
+    expect(useGame.getState().pendingCorruption!.skill).toBe('Résistance'); // défaut affiché
+    expect(useGame.getState().pendingCorruption!.skillLocked).toBeFalsy();
+    useGame.getState().corruptionSetSkill('Calme'); // le joueur tranche
+    expect(useGame.getState().pendingCorruption!.skill).toBe('Calme');
+    // Après le jet, plus de changement possible.
+    useGame.getState().corruptionRoll();
+    useGame.getState().corruptionSetSkill('Résistance');
+    expect(useGame.getState().pendingCorruption!.skill).toBe('Calme');
+  });
+
+  it('seuil (l.80) : Résistance verrouillée', () => {
+    const { a, party } = party2();
+    a.corruption = 99; // au-delà du seuil BFM+BE
+    useGame.setState({ party });
+    gainCorruption(useGame.getState, useGame.setState, a, 1);
+    const pc = useGame.getState().pendingCorruption;
+    expect(pc?.kind).toBe('seuil');
+    expect(pc?.skill).toBe('Résistance');
+    expect(pc?.skillLocked).toBe(true);
+  });
+
   it('exposition repoussée (DR suffisant) → aucun Point', () => {
     const { a, party } = party2();
     useGame.setState({ party });

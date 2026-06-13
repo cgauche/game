@@ -1156,7 +1156,10 @@ describe('Boucle de jeu (store)', () => {
     expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 1); // +1 immédiat (l.101), +1 de plus si touché
     expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
     expect(st.battle!.action).toBeNull(); expect(st.battle!.reachable.size).toBeGreaterThan(0); // peut courir (budget de Course posé)
-    expect(st.pendingDisengage).toBeNull();
+    // Coup dans le dos montré INLINE (phase 'fuir') ; « Continuer » ferme.
+    expect(st.pendingDisengage!.phase).toBe('fuir');
+    useGame.getState().disengageFleeAck();
+    expect(useGame.getState().pendingDisengage).toBeNull();
   });
 
   it('attaque en DIAGONALE : un ennemi diagonalement adjacent est à portée de mêlée (distance Chebyshev)', () => {

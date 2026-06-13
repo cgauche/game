@@ -172,10 +172,30 @@ src/state/
   worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
                             effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
-  combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat)
+  combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat).
+                              CONVENTION « baril » : les clusters FEUILLES extraits sont des modules
+                              séparés que combatFlow ré-exporte (`export * from './combatX'`) pour ne
+                              pas casser les importeurs — un module feuille n'importe RIEN de combatFlow
+                              (tout passe par get().xxx / modules feuilles). Déjà sortis : combatGeometry.ts
+                              (géométrie pure) et combatEffects.ts (effets de scène/campagne : applyEffects,
+                              butin attribuable, checkTriggers, pushReveal). NE PAS extraire le preview
+                              (previewAttack/Defense) : il partage attackEnv/bestDefenseMode avec la
+                              résolution → cycle. La cohésion preview↔résolution est voulue.
   rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« un jet = une modale ») +
-                              specs des 11 flux (trample/run/focus/psych/frenzy/reload/recover/test/
-                              appraise/bargain/heal) — un nouveau jet = 1 spec + 1 xConfirm
+                              specs des flux (attack/defense/cast/disengage/trample/run/focus/psych/
+                              frenzy/approach/test/heal + reload/recover/activity/corruption/appraise/
+                              bargain) — un nouveau jet = 1 spec + 1 xConfirm. Résilience « Je ne
+                              faillirai pas ! » (LDB 17 l.73, GLOBALE) : mécanisme UNIQUE (factory
+                              `forceSuccess`/`setForcedRoll` + UI `ForcedRollPicker`). Un flux qui
+                              l'offre déclare `caps: { forced: true }` ; son `resolve(s,p,actor,get,
+                              forced?)` porte alors LES TROIS cas dans UN seul résolveur : `forced`
+                              absent = jet normal (RNG) ; `{}` = `forceSuccess` (dé par défaut : 01→DR
+                              max, ou opposé→jet courant forcé à ≥ DR+1) ; `{ roll }` = `setForcedRoll`
+                              (dé choisi, doit rester une réussite). PLUS de dérives `force`/`forceRoll`
+                              séparées (l'ancien « code dérivé ») — la résolution forcée VIT dans le
+                              résolveur du Test, à côté du jet normal. La localisation suit le dé inversé
+                              (attaque LDB 13 l.142, Projectile magique LDB 46 l.156) : choisir le dé la
+                              re-dérive — il n'y a PAS de « coup ciblé » libre pour un Projectile (RAW).
   corruptionFlow.ts           gainCorruption (seuil → mutation → damnation, révélation 🧬) + cibles
   pendings.ts                 types Pending* (ré-exportés par store.ts)
   partyFlow.ts                équipement, avancement PX, consommables de fiche, butin
@@ -198,8 +218,14 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
 src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
   creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
                               (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
-  RollFlowShell.tsx           coquille PARTAGÉE des modales de jet (Lancer→Chance→Résilience→Appliquer)
-                              + <Dice> — pendant UI de state/rollFlow
+  RollFlowShell.tsx           coquille PARTAGÉE et UNIQUE des modales de jet (Lancer→Chance→Pacte→
+                              Résilience→Appliquer) + frisson + pickers (dé forcé `caps.picker` /
+                              localisation du Critique) + <Dice>. TOUTE modale de jet la PARAMÈTRE :
+                              contrôles en props, métier en slots (setup/preInfluence/postRollExtra/
+                              forcedExtra) — calquée sur PsychModal ; aucune mécanique générique
+                              réécrite par modale. (Désengagement : pré-jet = MENU d'options via
+                              <OptionChooser>, pas un « preview + Lancer » ; le coup dans le dos de
+                              « Fuir » est montré INLINE dans la modale, plus de popin RevealModal.)
   editor/                     Éditeur v2 : Editor.tsx (shell), editorState.ts (sélection unifiée +
                               mutations PURES), EditorCanvas (pointeur/overlays/resize), Palette (rail
                               d'outils + contenu contextuel), Inspector (DOCKÉ, folds ; scène si rien
@@ -240,6 +266,36 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   panneau Logique en bas (triggers/dialogues/rencontres/validation, master-détail, édition live →
   undo global), points d'entrée ⚑ et zones de repos dessinés sur la carte, resize à la poignée,
   barre de statut. Bouton « Tester » lance la scène en jeu.
+
+## Primitives partagées (RÉUTILISER — ne JAMAIS réécrire à la main)
+
+Source UNIQUE de motifs récurrents. **Avant d'écrire un segmented control, une paire de boutons de
+choix, une rangée d'influence, un calcul « base + mods », un onglet, un lookup de table d100, ou une
+recherche de combattant par id : utiliser la primitive ci-dessous.** Chaque ajout d'option/bouton se
+fait DANS la primitive, pas dans une nième copie.
+
+| Besoin | Primitive (source unique) | Fichier |
+|---|---|---|
+| Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) | `RollFlowShell` (props=contrôles, slots=métier) | `src/ui/RollFlowShell.tsx` |
+| Choix d'**options de jet** (Parade/Esquive, menu de désengagement, Calme/Résistance) | `OptionChooser` (`seg`/`grid`/`actions`) | `src/ui/OptionChooser.tsx` |
+| Paire/triplet de **boutons de décision** (Renoncer, Destin, Piège à lame…) | `ChoiceButtons` (= `OptionChooser layout='actions'`) | `src/ui/OptionChooser.tsx` |
+| Valeur effective d'une option (`base + mods` plafonné) | `optionValue` | `src/ui/breakdown.ts` |
+| Ligne pré-jet `{ label, base, mods }` | `optionPending` / `testPending` | `src/ui/breakdown.ts` |
+| Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | `InfluenceRow` (+ `ResilienceButton`/`DeterminationButton`) | `src/ui/InfluenceRow.tsx` |
+| En-tête A→B d'une modale de combat | `VsHeader` | `src/ui/VsHeader.tsx` |
+| Affichage d'un personnage (HUD/modale/picker) | `PortraitTile` / `CharFrame` | `src/ui/PortraitTile.tsx` |
+| Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
+| Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
+| Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
+| Combattant par id (combat ou groupe) | `actorIn` / `inBattle` | `src/state/combatOrParty.ts` |
+
+> Pistes ÉVALUÉES puis ÉCARTÉES (sites trop divergents pour une source unique propre — ne pas
+> « globaliser » de force) : `confirmPending` (les `xConfirm` divergent par leur garde de résultat et
+> réutilisent `battle` localement → un wrapper ne raccourcit rien), `<Tabs>` (3 systèmes de classes
+> distincts + LogicDock replie un dock / MerchantPanel = boutons non mappés), `useMasterDetail`
+> (marchand ⇄ carte divergent après sélection), `<StatChip>`/`itemStatParts` (3 formes de données
+> différentes : chaîne d'`ItemInstance`, `Combatant.weapons` résolues, table par famille). Le sweep
+> `actorIn` dans `store.ts` est aussi écarté : `battle` y reste en portée pour le `set` final.
 
 ## Workflows multi-agents (sur opt-in « ultracode »)
 

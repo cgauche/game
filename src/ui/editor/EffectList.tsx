@@ -115,7 +115,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
     case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
-    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'Résistance'})`;
+    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
     case 'learnSpell': return `${icon} Apprendre : ${e.spell || '?'}`;
     case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
@@ -317,7 +317,10 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
               <option value="moderee">Exposition modérée (+2 / +1 si DR 0-1)</option>
               <option value="majeure">Exposition majeure (+3 / +2 / +1 selon DR)</option>
             </select>
-            <select value={e.skill ?? 'Résistance'} onChange={(ev) => upd({ skill: ev.target.value })}>
+            {/* Compétence déterminée en amont (verrouillée en jeu) ou « au choix » (nature indéterminée,
+                LDB 19 l.26 → le joueur tranche dans la modale, comme la Défense). */}
+            <select value={e.skill ?? ''} onChange={(ev) => upd({ skill: ev.target.value || undefined })}>
+              <option value="">Au choix du joueur (nature indéterminée)</option>
               <option value="Résistance">Résistance (Influence physique)</option>
               <option value="Calme">Calme (Corruption spirituelle)</option>
             </select>

@@ -35,6 +35,33 @@ export interface PendingBase {
   forced?: boolean;
 }
 
+/**
+ * Résolution FORCÉE par la Résilience (LDB 17 l.73 « vous choisissez le résultat des dés »).
+ * Passé en 5ᵉ argument de `resolve` quand `caps.forced` est posé :
+ *  - `{}`               → `forceSuccess` : le flux applique son dé PAR DÉFAUT (01 → DR max, ou,
+ *                          en Test opposé, le jet courant forcé à l'emporter) ;
+ *  - `{ roll: n }`      → `setForcedRoll` : le joueur a CHOISI le dé `n` (doit rester une réussite).
+ * Absent (`resolve` appelé sans ce paramètre) → jet NORMAL (RNG). Un seul résolveur porte donc les
+ * trois cas, au lieu des dérives séparées `force`/`forceRoll` (le « code dérivé » d'avant).
+ */
+export interface ForcedResolve {
+  roll?: number;
+}
+
+/**
+ * Props du sélecteur de dé PARTAGÉ (« Je ne faillirai pas ! », LDB 17 l.73). Renvoyé par
+ * `caps.picker` quand le Test forcé offre un CHOIX du dé (attaque/défense/incantation/piétinement/
+ * Peur) — `null` = pas de picker (flux binaire, ou avant `forceSuccess`). Le dé choisi pilote le DR,
+ * le Critique (11) ET la localisation inversée. Co-localisé avec `resolve` : un seul endroit connaît
+ * la forme du résultat du flux.
+ */
+export interface ForcedPick {
+  roll: number;
+  target: number;
+  /** Le double (11) a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
+  critable?: boolean;
+}
+
 export interface RollFlowSpec<P extends PendingBase> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */
   key: keyof GameState & string;
@@ -47,20 +74,31 @@ export interface RollFlowSpec<P extends PendingBase> {
    * (précondition manquante : cible disparue, sort introuvable…) — AVANT toute dépense de point.
    * `actor` peut être `undefined` au premier jet (certains flux n'en ont pas besoin pour lancer).
    * `get` : accès au store pour les résolveurs qui lisent l'environnement (resolveAttack).
+   * `forced` (5ᵉ arg, seulement si `caps.forced`) : Résilience — cf. `ForcedResolve`. Absent → jet normal.
    */
-  resolve: (s: GameState, p: P, actor: Combatant | undefined, get: Get) => Partial<P> | null;
+  resolve: (s: GameState, p: P, actor: Combatant | undefined, get: Get, forced?: ForcedResolve) => Partial<P> | null;
   /** Patch de RELANCE (défaut : `resolve`) — utile en Test opposé où l'adversaire garde son jet figé. */
   reresolve?: (s: GameState, p: P, actor: Combatant, get: Get) => Partial<P> | null;
   /** Jet « propre raté » → relançable par la Chance (LDB 12 : d100 raté, 1× max). */
   failed: (p: P) => boolean;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
   bonus?: { guard?: (p: P) => boolean; derive: (s: GameState, p: P, actor: Combatant) => Partial<P> | null };
-  /** Résilience « Je ne faillirai pas ! » (absent → le flux ne l'offre pas). Marche AVANT le jet. */
-  force?: { guard?: (p: P) => boolean; derive: (s: GameState, p: P, actor: Combatant) => Partial<P> | null };
-  /** « vous choisissez le résultat » (LDB 17 l.73) : re-dérive avec un dé IMPOSÉ après `forceSuccess`
-   *  (absent → le flux n'offre pas le choix du dé — flux binaires/déjà au maximum). Même Test →
-   *  pas de re-dépense de Résilience ; `derive` rend null si la valeur n'est pas une réussite. */
-  forceRoll?: { derive: (s: GameState, p: P, actor: Combatant, roll: number) => Partial<P> | null };
+  /**
+   * Traits déclaratifs du flux. `forced` : ce flux offre la Résilience (LDB 17 l.73, GLOBALE),
+   * résolue DANS `resolve(…, forced)` — un seul résolveur porte les trois cas (jet normal,
+   * `forceSuccess` = dé par défaut, `setForcedRoll` = dé choisi). Un flux qui NE pose PAS `forced`
+   * n'offre simplement pas la Résilience (`forceSuccess`/`setForcedRoll` y sont des no-op : reload,
+   * marchandage, évaluation…). Plus aucune dérive `force`/`forceRoll` séparée — cf. `ForcedResolve`.
+   *
+   * `picker` : sélecteur PARTAGÉ du dé choisi (UI `ForcedDie` → `ForcedRollPicker`). Pure, il lit la
+   * forme du résultat du flux (que `resolve` connaît déjà) et rend les props du picker ou `null`
+   * (masqué). Centralise la visibilité (`p.forced` + résultat « pickable ») et les props {roll,
+   * target, critable} — fini le câblage recopié dans chaque modale.
+   */
+  caps?: {
+    forced?: boolean;
+    picker?: (p: P, actor: Combatant | undefined) => ForcedPick | null;
+  };
   /** Patch de re-rendu après mutation en place de l'acteur. Défaut : `touchActors` (combat ⇄ groupe). */
   touch?: (s: GameState) => Partial<GameState>;
 }
@@ -70,8 +108,12 @@ export interface RollFlowHandlers {
   reroll: (get: Get, set: Set) => void;
   bonusSL: (get: Get, set: Set) => void;
   forceSuccess: (get: Get, set: Set) => void;
-  /** Choix du dé d'un Test forcé (no-op sans `spec.forceRoll` ou avant `forceSuccess`). */
+  /** Choix du dé d'un Test forcé (no-op sans `caps.forced` ou avant `forceSuccess`). */
   setForcedRoll: (get: Get, set: Set, roll: number) => void;
+  /** Sélecteur du dé choisi pour le picker partagé (cf. `caps.picker`) — absent si le flux n'en a pas.
+   *  `p` est le pending CONCRET du flux (typé côté `caps.picker`) ; `any` ici car les handlers ne
+   *  portent pas le paramètre générique `P` — l'appelant (`ForcedDie`) le re-type. */
+  picker?: (p: any, actor: Combatant | undefined) => ForcedPick | null;
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
@@ -82,6 +124,7 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
   const pendingOf = (s: GameState) => s[spec.key] as P | null | undefined;
   const touch = spec.touch ?? touchActors;
   return {
+    picker: spec.caps?.picker,
     roll(get, set) {
       const s = get();
       const p = pendingOf(s);
@@ -124,20 +167,21 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       set({ [spec.key]: { ...p, ...patch }, ...touch(s) } as Partial<GameState>);
     },
     forceSuccess(get, set) {
-      if (!spec.force) return;
+      if (!spec.caps?.forced) return; // le flux n'offre pas la Résilience
       const s = get();
       const p = pendingOf(s);
       if (!p) return; // (pas d'exigence de jet : la Résilience vaut AVANT le jet, LDB 17 l.73)
-      if (spec.force.guard && !spec.force.guard(p)) return;
       const actor = spec.actor(s, p);
       if (!actor || (actor.resilience ?? 0) <= 0) return;
-      const patch = spec.force.derive(s, p, actor);
+      // `resolve(…, {})` = dé PAR DÉFAUT du flux. Son `null` joue le rôle de l'ancien `guard`
+      // (cas interdit / déjà réussi → refus, donc PAS de dépense de Résilience).
+      const patch = spec.resolve(s, p, actor, get, {});
       if (!patch) return;
       actor.resilience = (actor.resilience ?? 0) - 1;
       set({ [spec.key]: { ...p, ...patch, forced: true }, ...touch(s) } as Partial<GameState>);
     },
     setForcedRoll(get, set, roll) {
-      if (!spec.forceRoll) return;
+      if (!spec.caps?.forced) return; // le flux n'offre pas le choix du dé
       const s = get();
       const p = pendingOf(s);
       if (!p || !p.forced) return; // seulement après « Je ne faillirai pas ! » (même Test)
@@ -145,7 +189,8 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
       if (!actor) return;
       const chosen = Math.floor(roll);
       if (chosen < 1) return;
-      const patch = spec.forceRoll.derive(s, p, actor, chosen);
+      // `resolve(…, { roll })` = dé CHOISI ; `null` si le dé n'est pas une réussite (pas d'effet).
+      const patch = spec.resolve(s, p, actor, get, { roll: chosen });
       if (!patch) return;
       set({ [spec.key]: { ...p, ...patch } } as Partial<GameState>);
     },

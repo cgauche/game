@@ -13,6 +13,7 @@
  * inventé : son texte canonique est journalisé et laissé à l'arbitrage du MJ.
  */
 import { RNG, defaultRNG, d100 } from './dice';
+import { findTableEntry } from './tables';
 import { GameOp } from './ops';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';
@@ -159,7 +160,7 @@ function label(sev: MiscastSeverity): string {
 }
 
 function pick(table: Row[], roll: number): Row {
-  return table.find((r) => roll >= r.min && roll <= r.max) ?? table[table.length - 1];
+  return findTableEntry(table, roll);
 }
 
 /**

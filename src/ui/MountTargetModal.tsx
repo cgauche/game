@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { ChoiceButtons } from './OptionChooser';
 
 /**
  * Combat monté (Livre de base p.14 l.219) : « Si vous tentez de toucher un Personnage qui est sur une
@@ -24,6 +25,8 @@ export function MountTargetModal() {
         {rider.name} chevauche {mount.name} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
         plus petit que la monture ; abattre la monture désarçonne le cavalier.
       </p>
+      {/* Choix = picker de PORTRAITS (CharFrame), pas des boutons : reste un widget propre (cf. OptionChooser
+          ne couvre que les choix à boutons). Seule la barre d'action ci-dessous passe par <ChoiceButtons>. */}
       <div className="rm-options">
         <div className="rm-loc-grid">
           <span className="frame-pick">
@@ -36,11 +39,7 @@ export function MountTargetModal() {
           </span>
         </div>
       </div>
-      <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={cancel}>
-          Annuler
-        </button>
-      </div>
+      <ChoiceButtons options={[{ key: 'cancel', label: 'Annuler', ghost: true, onSelect: cancel }]} />
     </Modal>
   );
 }
