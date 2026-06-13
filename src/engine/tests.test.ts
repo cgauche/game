@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { evaluateTest, maxForcedRoll } from './tests';
+import { evaluateTest, maxForcedRoll, rollTest } from './tests';
 import type { TestPolicy } from './testPolicy';
+import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
 
 const P = (over: Partial<TestPolicy> = {}): TestPolicy => ({
@@ -40,6 +41,16 @@ describe('evaluateTest — DR rapide (« Calculer Rapidement un DR », LDB 12 l.
   });
 });
 
+describe('Tests >100 % (LDB 12 l.101-104) : la valeur n’est plus plafonnée à 99', () => {
+  const rng50: RNG = { int: () => 50 }; // jet 50
+  it('off (défaut) : valeur 115 plafonnée à 99 → DR = tens(99) − tens(50) = 4', () => {
+    expect(rollTest(115, 'intermediaire', rng50, 0, P()).sl).toBe(4);
+  });
+  it('on : valeur 115 non plafonnée → DR = tens(115) − tens(50) = 6 (+1 par 10 % au-delà de 100)', () => {
+    expect(rollTest(115, 'intermediaire', rng50, 0, P({ targetMax: 999 })).sl).toBe(6);
+  });
+});
+
 describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un nombre en dur)', () => {
   it("'normal' : ≤ cible ET ≤ autoFailMin − 1 (96-00 échoue toujours, LDB 12 l.46)", () => {
     expect(maxForcedRoll(99, P())).toBe(95);
@@ -51,7 +62,7 @@ describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un n
 });
 
 describe('Bascule in-game : éditer UNE règle change le comportement (preuve « un seul edit »)', () => {
-  afterEach(() => { resetRule('test-auto-bands'); resetRule('test-fast-sl'); });
+  afterEach(() => { resetRule('test-auto-bands'); resetRule('test-fast-sl'); resetRule('test-over-100'); });
   it('test-auto-bands → inverted : evaluateTest (policy par défaut) suit la surcharge', () => {
     expect(evaluateTest(3, 99).success).toBe(true); // normal
     setRule('test-auto-bands', 'inverted');
@@ -61,5 +72,11 @@ describe('Bascule in-game : éditer UNE règle change le comportement (preuve «
     expect(evaluateTest(36, 80).sl).toBe(5); // standard
     setRule('test-fast-sl', true);
     expect(evaluateTest(36, 80).sl).toBe(3); // dizaines du jet
+  });
+  it('test-over-100 → true : rollTest cesse de plafonner la valeur à 99', () => {
+    const rng50: RNG = { int: () => 50 };
+    expect(rollTest(115, 'intermediaire', rng50).sl).toBe(4); // défaut : plafonné 99
+    setRule('test-over-100', true);
+    expect(rollTest(115, 'intermediaire', rng50).sl).toBe(6); // règle on : valeur 115 pleine
   });
 });

@@ -61,6 +61,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Sur une réussite, le DR = le chiffre des dizaines du jet.',
   },
   {
+    id: 'test-over-100',
+    label: 'Tests supérieurs à 100 %',
+    ref: 'LDB 12 l.101',
+    group: 'Tests',
+    kind: 'flag',
+    default: false,
+    hint: 'Une valeur de Compétence/Caractéristique au-delà de 100 % n’est plus plafonnée : +1 DR par tranche de 10 % au-dessus de 100 sur une réussite.',
+  },
+  {
     id: 'combat-advantage-cap',
     label: 'Plafond d’Avantage',
     ref: 'LDB 15 l.17',
