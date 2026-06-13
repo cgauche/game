@@ -1,8 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S npx tsx
 /**
  * Génère `src/scenes/arene/arene-projet.json` (projet v2 : { schema, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
- * éditable dans l'éditeur. Usage : `node scripts/arene/generate.mjs`.
+ * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `lib.mjs` importe
+ * le `buildEncounter` TS du moteur — zéro duplication de l'expansion enemies→members).
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
