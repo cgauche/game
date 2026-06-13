@@ -13,6 +13,8 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { careers, findSpell, findStar, spells as allSpells } from '../data';
+import { CodexRef } from './compendium/CodexRef';
+import { splitLabel } from '../engine/careerSlots';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { EquipmentPanel } from './EquipmentPanel';
@@ -113,7 +115,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               </span>
               {hero.star && (
                 <span className="char-sub star-sub">
-                  🌟 {hero.star}
+                  🌟 <CodexRef category="stars" label={hero.star}>{hero.star}</CodexRef>
                   {(() => {
                     const s = findStar(hero.star);
                     return s?.signe ? ` — ${s.signe}` : '';
@@ -195,9 +197,9 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           const offensive = isMagicMissile(sp);
           const support = spellSupport(spellSpecFor(sp), offensive);
           return (
-            <div className="spell-row" key={sp.label} title={sp.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : '')}>
+            <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
-                {sp.label}
+                <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
                 {support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
               </span>
@@ -343,8 +345,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             return (
               <div className="skill-line" key={i} title={`${s.characteristic} ${hero.characteristics[s.characteristic]} + ${s.advances}`}>
                 <span className="sk-name">
-                  {s.name}
-                  {s.spec ? ` (${s.spec})` : ''}
+                  <CodexRef category="skills" label={s.name}>
+                    {s.name}
+                    {s.spec ? ` (${s.spec})` : ''}
+                  </CodexRef>
                 </span>
                 <span className="sk-val">{val}</span>
                 <span className="sk-adv">+{s.advances}</span>
@@ -358,8 +362,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             <div className="skill-tags">
               {hero.talents.map((t, i) => (
                 <span className="tag talent" key={i}>
-                  {t.name}
-                  {t.times > 1 ? ` ×${t.times}` : ''}
+                  <CodexRef category="talents" label={splitLabel(t.name).name}>
+                    {t.name}
+                    {t.times > 1 ? ` ×${t.times}` : ''}
+                  </CodexRef>
                 </span>
               ))}
             </div>

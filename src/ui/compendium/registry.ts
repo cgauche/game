@@ -162,3 +162,11 @@ export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter
 
 /** Catégorie par clé. */
 export const categoryByKey = (key: string): CodexCategory | undefined => CODEX.find((c) => c.key === key);
+
+/** Résout une entrée (catégorie + libellé) → sa fiche, pour les tooltips `CodexRef`.
+ *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
+export function codexLookup(category: string, label: string): CodexItem | undefined {
+  const items = categoryByKey(category)?.items;
+  if (!items) return undefined;
+  return items.find((i) => i.label === label) ?? items.find((i) => i.label.toLowerCase() === label.toLowerCase());
+}

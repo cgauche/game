@@ -7,6 +7,7 @@ import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
 import { SIZE_LABEL, effectiveSize } from '../engine/size';
 import { parseTrait } from '../engine/traits/dispatch';
 import { traits as TRAIT_DATA } from '../data';
+import { CodexRef } from './compendium/CodexRef';
 
 /**
  * Panneau d'INSPECTION en lecture seule d'un combattant (clic sur l'ordre de bataille) — répond au
@@ -18,13 +19,17 @@ import { traits as TRAIT_DATA } from '../data';
 const SHOWN_CHARS: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'FM'];
 const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
 
-/** Desc VERBATIM du trait (traits.json, LDB 85) — tooltip. Clé canonique de parseTrait (registre)
- *  d'abord, sinon libellé nu (sans Indice/parenthèse/compte) cherché dans la donnée (« 8 Tentacules
- *  +9 » → « Tentacules », « Arme +6 » → « Arme »). */
-function traitDesc(t: string): string | undefined {
-  const bare = t.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/g, '').replace(/\s*[+-]?\d+\s*\+?\s*$/, '').trim().toLowerCase();
-  const key = parseTrait(t)?.key.toLowerCase() ?? bare;
-  return TRAIT_DATA.find((d) => d.label.toLowerCase() === key)?.desc ?? TRAIT_DATA.find((d) => d.label.toLowerCase() === bare)?.desc;
+/** Libellé canonique du trait (traits.json, LDB 85) pour le Codex. Clé de parseTrait (registre)
+ *  d'abord, sinon libellé nu (sans Indice/parenthèse/compte) (« 8 Tentacules +9 » → « Tentacules »,
+ *  « Arme +6 » → « Arme »). Renvoie le libellé exact de la donnée pour que `CodexRef` résolve. */
+function traitKey(t: string): string {
+  const bare = t.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/g, '').replace(/\s*[+-]?\d+\s*\+?\s*$/, '').trim();
+  const key = parseTrait(t)?.key ?? bare;
+  return (
+    TRAIT_DATA.find((d) => d.label.toLowerCase() === key.toLowerCase())?.label ??
+    TRAIT_DATA.find((d) => d.label.toLowerCase() === bare.toLowerCase())?.label ??
+    bare
+  );
 }
 
 export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onClose: () => void }) {
@@ -110,7 +115,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
               {/* valeur de Test finale = Caractéristique + avances (LDB 09) */}
               {c.skills.map((s, i) => (
                 <span key={i} className="insp-trait-chip">
-                  {s.name}{s.spec ? ` (${s.spec})` : ''} {c.characteristics[s.characteristic] + s.advances}
+                  <CodexRef category="skills" label={s.name}>{s.name}{s.spec ? ` (${s.spec})` : ''}</CodexRef> {c.characteristics[s.characteristic] + s.advances}
                 </span>
               ))}
             </span>
@@ -123,8 +128,8 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
             <span className="insp-traits">
               {/* un chip par trait, desc VERBATIM (LDB 85) en tooltip */}
               {c.traits!.map((t, i) => (
-                <span key={i} className="insp-trait-chip" title={traitDesc(t)}>
-                  {t}
+                <span key={i} className="insp-trait-chip">
+                  <CodexRef category="traits" label={traitKey(t)}>{t}</CodexRef>
                 </span>
               ))}
             </span>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup } from './registry';
 import { codexMatch, deburr } from './search';
 
 describe('Codex registry', () => {
@@ -28,6 +28,14 @@ describe('Codex registry', () => {
     for (const c of CODEX) for (const it of c.items) expect(it.label).toBeTruthy();
     const races = categoryByKey('races')!;
     expect(races.items.every((i) => i.source?.book)).toBe(true);
+  });
+
+  it('codexLookup résout exact + casse ignorée, undefined sinon', () => {
+    const first = categoryByKey('etats')!.items[0];
+    expect(codexLookup('etats', first.label)).toBe(first);
+    expect(codexLookup('etats', first.label.toUpperCase())).toBe(first);
+    expect(codexLookup('etats', 'libellé inexistant')).toBeUndefined();
+    expect(codexLookup('categorie-inexistante', first.label)).toBeUndefined();
   });
 });
 
