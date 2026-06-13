@@ -155,11 +155,18 @@ function main() {
   }
   const cultDefs = keep(raw.god as Any[]).map((g: Any) => {
     const slug = deburr(String(g.label)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    // Miracles d'un culte = colonne `god` (suppléments, ex. dieux gnomes NADJ ; séparés par « ; »)
+    // ∪ les sorts d'Invocation du culte (type Invocation, subType = nom du culte). Cette 2ᵉ source
+    // est celle des cultes LDB (dont la colonne `god` miracles est vide).
+    const godMiracles = String(g.miracles ?? '').split(';').map((x: string) => x.trim()).filter(Boolean);
+    const invocationMiracles = (raw.spell as Any[])
+      .filter((s) => s.type === 'Invocation' && s.subType === g.label && allowed(s))
+      .map((s) => String(s.label));
     const def = {
       key: g.label,
       title: norm(g.title) ?? undefined,
       blessings: splitList(g.blessings),
-      miracles: String(g.miracles ?? '').split(';').map((x: string) => x.trim()).filter(Boolean),
+      miracles: [...new Set([...godMiracles, ...invocationMiracles])],
     };
     const body = `import type { CultDef } from '../types';\n\n// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.\nexport const cult: CultDef = ${JSON.stringify(def, null, 2)};\n`;
     writeFileSync(join(CULTS_DIR, `${slug}.ts`), body, 'utf8');

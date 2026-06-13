@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Souffle",
     "Bénédiction de Ténacité"
   ],
-  "miracles": []
+  "miracles": [
+    "Anéantir les morts-vivants",
+    "Condamné",
+    "Main de Morr",
+    "Masque mortuaire",
+    "Rites funéraires",
+    "Seuil du Portail"
+  ]
 };

@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Ténacité",
     "Bénédiction de Vigueur"
   ],
-  "miracles": []
+  "miracles": [
+    "Encalminé",
+    "Générosité de Manann",
+    "Marcher sur les eaux",
+    "Mer déchainée",
+    "Vents favorables",
+    "Visage de l'homme noyé"
+  ]
 };

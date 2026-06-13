@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Souffle",
     "Bénédiction de Vigueur"
   ],
-  "miracles": []
+  "miracles": [
+    "Bondissant comme un cerf",
+    "Dent et griffe",
+    "Enchevêtrement",
+    "Instincts animaux",
+    "Roi de la Nature",
+    "Seigneur de la Chasse"
+  ]
 };

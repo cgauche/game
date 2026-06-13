@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Protection",
     "Bénédiction de Souffle"
   ],
-  "miracles": []
+  "miracles": [
+    "Abri de Rhya",
+    "Caresse de Rhya",
+    "Enfants de Rhya",
+    "Récolte de Rhya",
+    "Secours de Rhya",
+    "Union de Rhya"
+  ]
 };

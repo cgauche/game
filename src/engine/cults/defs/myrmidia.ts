@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Droiture",
     "Bénédiction de Protection"
   ],
-  "miracles": []
+  "miracles": [
+    "Appel à la Fureur",
+    "Bouclier de Myrmidia",
+    "Inspirant",
+    "Lance de Myrmidia",
+    "Œil de l'aigle",
+    "Soleil flamboyant"
+  ]
 };

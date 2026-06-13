@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Sagesse",
     "Bénédiction de Vivacité"
   ],
-  "miracles": []
+  "miracles": [
+    "Entraves à la vérité",
+    "Épée de justice",
+    "Justice aveugle",
+    "La Vérité éclatera",
+    "Sagesse de la chouette",
+    "Verena est mon témoin"
+  ]
 };

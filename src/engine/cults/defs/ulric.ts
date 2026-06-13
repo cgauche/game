@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Ténacité",
     "Bénédiction de Vigueur"
   ],
-  "miracles": []
+  "miracles": [
+    "Frisson du givre",
+    "Fureur d'Ulric",
+    "Hurlement du loup",
+    "Jugement du Roi de la neige",
+    "Morsure de l'hiver",
+    "Peau de loup d'hiver"
+  ]
 };

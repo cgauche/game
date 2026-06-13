@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Protection",
     "Bénédiction de Vivacité"
   ],
-  "miracles": []
+  "miracles": [
+    "Grâce de Ranald",
+    "Invitation",
+    "Que la chance persiste",
+    "Riche, pauvre, mendiant, voleur",
+    "Vous ne m'avez pas vu, n'est-ce pas?",
+    "Yeux de chat"
+  ]
 };

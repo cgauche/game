@@ -14,8 +14,9 @@ describe('Registre des cultes (defs/ généré par build-data depuis le type god
     expect(blessingsOf('Sigmar')).toContain('Bénédiction de Protection');
     expect(blessingsOf('Khorne')).toEqual([]);
   });
-  it('miraclesOf : les dieux gnomes NADJ portent leurs Miracles (fichier god)', () => {
-    expect(miraclesOf('Evawn')).toContain('Invitation');
+  it('miraclesOf : cultes LDB (sorts d’Invocation raccrochés) ET dieux gnomes NADJ (colonne god)', () => {
+    expect(miraclesOf('Sigmar')).toContain('Marteau ardent de Sigmar'); // LDB : sort d'Invocation
+    expect(miraclesOf('Evawn')).toContain('Invitation'); // NADJ : colonne god
     expect(miraclesOf('Khorne')).toEqual([]);
   });
 });

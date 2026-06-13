@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Souffle",
     "Bénédiction de Ténacité"
   ],
-  "miracles": []
+  "miracles": [
+    "Amère catharsis",
+    "Baume pour un esprit blessé",
+    "Endurance de l'anachorète",
+    "Innocence immaculée",
+    "Larmes de Shallya",
+    "Martyr"
+  ]
 };

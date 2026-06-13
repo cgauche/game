@@ -12,5 +12,12 @@ export const cult: CultDef = {
     "Bénédiction de Protection",
     "Bénédiction de Vigueur"
   ],
-  "miracles": []
+  "miracles": [
+    "Comète à Deux Queues",
+    "Feu de l'âme",
+    "Flambeau de Vertu",
+    "Marteau ardent de Sigmar",
+    "N'écoutez point la Sorcière",
+    "Vaincre les impies"
+  ]
 };
