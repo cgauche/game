@@ -8,6 +8,7 @@ import { SIZE_LABEL, effectiveSize } from '../engine/size';
 import { parseTrait } from '../engine/traits/dispatch';
 import { traits as TRAIT_DATA } from '../data';
 import { CodexRef } from './compendium/CodexRef';
+import { EffectChips } from './EffectChips';
 
 /**
  * Panneau d'INSPECTION en lecture seule d'un combattant (clic sur l'ordre de bataille) — répond au
@@ -97,14 +98,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
         {fx.visible.length > 0 && (
           <div className="insp-row">
             <span className="insp-lbl">États</span>
-            <span className="fx-chips">
-              {fx.visible.map((v) => (
-                <span key={v.key} className={`fx-chip ${v.kind}`} title={v.label}>
-                  {v.icon}
-                  {v.count && v.count > 1 ? `×${v.count}` : ''}
-                </span>
-              ))}
-            </span>
+            <EffectChips conditions={c.conditions} effects={c.activeEffects ?? []} flags={combatantFlags(c)} />
           </div>
         )}
 

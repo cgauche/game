@@ -37,7 +37,8 @@ describe('InspectPanel', () => {
     expect(html).toContain('–'); // CT « – » (Schéma des Profils, LDB 76)
     expect(html).toContain('insp-trait-chip');
     expect(html).toContain('Vision nocturne');
-    expect(html).toContain('title="La créature'); // desc verbatim en tooltip (Foulée/Nerveux…)
+    expect(html).toContain('codex-ref'); // le trait pointe vers le Codex
+    expect(html).toContain('La créature'); // desc verbatim dans le popover CodexRef (Foulée/Nerveux…)
   });
 
   it('badge 🪄 si l’ennemi connaît des sorts', () => {
