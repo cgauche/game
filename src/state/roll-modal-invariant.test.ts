@@ -25,6 +25,7 @@ const read = (f: string) => readFileSync(here(f), 'utf8');
 /** Modules de flux DÉLÉGUÉS par le store (points d'entrée joueur) — tous scannés. */
 const FLOW_MODULES: Record<string, string> = {
   combatFlow: read('./combatFlow.ts'),
+  combatGeometry: read('./combatGeometry.ts'), // helpers géométrie extraits de combatFlow
   medicFlow: read('./medicFlow.ts'),
   partyFlow: read('./partyFlow.ts'),
   merchantFlow: read('./merchantFlow.ts'),
