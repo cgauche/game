@@ -6,7 +6,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
-import { recomputeLoadout, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from '../engine/items';
+import { recomputeLoadout, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, ensureWeaponSet, WEAPON_SET_NAMES } from '../engine/items';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -77,20 +77,29 @@ function isCompleted(hero: Combatant): boolean {
   });
 }
 
-/** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. */
-export function toggleEquip(_get: Get, set: Set, heroId: string, uid: string): void {
+/** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. Équiper une armure
+ *  retire d'abord les pièces de MÊME couche sur une localisation commune (LDB 63 — pas deux cuirs
+ *  souples superposés), une cape retire l'autre cape : échange façon jeu vidéo, journalisé. */
+export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): void {
+  let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
       const it = (clone.items ?? []).find((i) => i.uid === uid);
       if (it) {
+        if (!it.equipped) {
+          const out = equipConflicts(clone, it);
+          for (const o of out) o.equipped = false;
+          if (out.length) msg = `${clone.name} troque ${out.map((o) => o.name).join(' + ')} contre ${it.name} (même couche).`;
+        }
         it.equipped = !it.equipped;
         recomputeLoadout(clone);
       }
       return clone;
     }),
   }));
+  if (msg) get().log(msg);
 }
 
 /** Applique une mutation de loadout à un héros (clone + recompute), même pattern que toggleEquip. */
@@ -120,6 +129,19 @@ export function setActiveLoadout(_get: Get, set: Set, heroId: string, id: string
 }
 export function setLoadoutSlot(_get: Get, set: Set, heroId: string, id: string, slot: 'main' | 'off', uid: string | null): void {
   mutLoadout(set, heroId, (c) => loadoutSetSlot(c, id, slot, uid));
+}
+
+/** Pose une arme dans l'un des DEUX sets fixes de la fiche (`setIndex` 0 = Set I, 1 = Set II) en les
+ *  créant au besoin — les sauvegardes d'avant les sets fixes peuvent n'avoir que 0 ou 1 loadout. */
+export function setWeaponSetSlot(_get: Get, set: Set, heroId: string, setIndex: number, slot: 'main' | 'off', uid: string | null): void {
+  if (setIndex < 0 || setIndex >= WEAPON_SET_NAMES.length) return;
+  mutLoadout(set, heroId, (c) => loadoutSetSlot(c, ensureWeaponSet(c, setIndex).id, slot, uid));
+}
+
+/** Rend ACTIF le set fixe d'index 0/1 (créé au besoin — un set vide actif = Mains nues). */
+export function activateWeaponSet(_get: Get, set: Set, heroId: string, setIndex: number): void {
+  if (setIndex < 0 || setIndex >= WEAPON_SET_NAMES.length) return;
+  mutLoadout(set, heroId, (c) => loadoutSetActive(c, ensureWeaponSet(c, setIndex).id));
 }
 
 export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string, toHeroId: string): void {

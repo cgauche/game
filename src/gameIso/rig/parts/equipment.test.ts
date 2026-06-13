@@ -86,4 +86,30 @@ describe('equipFromCombatant', () => {
     expect(e.shield).toBeTruthy();
     expect(e.weapons.length).toBe(2);
   });
+
+  it('superposition : la couche du DESSUS s’affiche (plaque > maille > cuir), par slot', () => {
+    const piece = (uid: string, name: string, locs: string[]): ItemInstance =>
+      ({ uid, name, kind: 'armor', qualities: [], pa: 1, locs, enc: 1, equipped: true } as ItemInstance);
+    const c = {
+      weapons: [],
+      items: [
+        piece('cuir', 'Veste de cuir', ['brasG', 'brasD', 'corps']),
+        piece('maille', 'Chemise de mailles', ['corps']),
+        piece('plate', 'Plastron', ['corps']),
+      ],
+    } as unknown as Combatant;
+    const e = equipFromCombatant(c);
+    expect(e.armour.map((i) => i.name)).toEqual(['Plastron', 'Chemise de mailles', 'Veste de cuir']);
+    // resolve.ts prend la 1re pièce couvrant le slot → torse = plate, bras = cuir (seule à couvrir).
+    expect(pickView(armourPart(e.armour.find((i) => (i.locs ?? []).includes('corps'))!, 'torse'), 'front'))
+      .toBe(pickView(armourPart(e.armour[0], 'torse'), 'front'));
+  });
+
+  it('cape/manteau porté → EquipCtx.cape (cosmétique) ; non porté → absent', () => {
+    const cape = { uid: 'c', name: 'Cape', kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
+    const c = { weapons: [], items: [cape] } as unknown as Combatant;
+    expect(equipFromCombatant(c).cape?.name).toBe('Cape');
+    cape.equipped = false;
+    expect(equipFromCombatant(c).cape).toBeUndefined();
+  });
 });

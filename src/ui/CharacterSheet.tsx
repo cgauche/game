@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
-import { maxEncumbrance, isWeaponActive } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem } from '../engine/items';
 import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
@@ -15,7 +15,7 @@ import { spellSpecFor } from '../data/spellspecs';
 import { careers, findSpell, spells as allSpells } from '../data';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
-import { LoadoutSection } from './LoadoutSection';
+import { EquipmentPanel } from './EquipmentPanel';
 import { CharFrame } from './CharFrame';
 import { PortraitTile } from './PortraitTile';
 import { pickView } from '../gameIso/rig/parts/types';
@@ -62,7 +62,6 @@ const LOC_SHORT: Record<HitLocation, string> = {
   jambeG: 'Jambe G',
   jambeD: 'Jambe D',
 };
-const LOCS: HitLocation[] = ['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'];
 const SHORT: Record<CharKey, string> = {
   CC: 'CC',
   CT: 'CT',
@@ -240,11 +239,6 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
 
 function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
-  const createLoadout = useGame((s) => s.createLoadout);
-  const renameLoadout = useGame((s) => s.renameLoadout);
-  const deleteLoadout = useGame((s) => s.deleteLoadout);
-  const setActiveLoadout = useGame((s) => s.setActiveLoadout);
-  const setLoadoutSlot = useGame((s) => s.setLoadoutSlot);
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
@@ -256,7 +250,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const enc = hero.encumbrance ?? 0;
   const maxEnc = maxEncumbrance(hero);
   const over = enc > maxEnc;
-  const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
   const party = useGame((s) => s.party);
   const openMedic = useGame((s) => s.openMedic);
   const inBattle = useGame((s) => !!s.battle);
@@ -278,7 +271,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       return [it.damage && `Dégâts ${it.damage}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
         .filter(Boolean)
         .join(' · ');
-    if (it.kind === 'armor') return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', ')].filter(Boolean).join(' · ');
+    if (it.kind === 'armor')
+      return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]
+        .filter(Boolean)
+        .join(' · ');
     return quals;
   };
 
@@ -326,44 +322,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         </div>
       </>)}
 
-      {section === 'combat' && (<>
-      <div className="panel stack">
-        <div className="sc-block">
-          <span className="mini-title">Défense — Points d'Armure</span>
-          <div className="ap-row">
-            {LOCS.map((l) => (
-              <div className="ap-cell" key={l}>
-                <span>{LOC_SHORT[l]}</span>
-                <b className={hero.armour[l] > 0 ? 'on' : ''}>{hero.armour[l]}</b>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="sc-weapons">
-          <span className="mini-title">Armes actives</span>
-          {activeWeapons.length === 0 ? (
-            <span className="muted">Mains nues</span>
-          ) : (
-            activeWeapons.map((w, i) => (
-              <span className="weap" key={i}>
-                {w.name} <em>({w.damage})</em>
-              </span>
-            ))
-          )}
-        </div>
-      </div>
-
-      {!inBattle && (
-        <LoadoutSection
-          hero={hero}
-          onCreate={(name) => createLoadout(hero.id, name)}
-          onRename={(id, name) => renameLoadout(hero.id, id, name)}
-          onDelete={(id) => deleteLoadout(hero.id, id)}
-          onSetActive={(id) => setActiveLoadout(hero.id, id)}
-          onSetSlot={(id, slot, uid) => setLoadoutSlot(hero.id, id, slot, uid)}
-        />
-      )}
-      </>)}
+      {section === 'combat' && <EquipmentPanel hero={hero} />}
 
       {section === 'competences' && (
       <div className="sheet-skills">
@@ -451,7 +410,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
           {items.map((it) => {
             const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
-            const equipable = it.kind === 'armor' || isProsthesis; // armes = via les loadouts (cf. LoadoutSection)
+            const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
+            const equipable = it.kind === 'armor' || isProsthesis || isCape; // armes = via les sets d'armes (cf. EquipmentPanel)
             const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
             const inLoadout = isWeaponItem && (hero.loadouts ?? []).some((l) => l.main === it.uid || l.off === it.uid);
             // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
@@ -516,10 +476,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <button
                       className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
                       disabled={inBattleNow}
-                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : undefined}
+                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : undefined}
                       onClick={() => toggleEquip(hero.id, it.uid)}
                     >
-                      {isProsthesis ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
+                      {isProsthesis || isCape ? (it.equipped ? 'Portée' : 'Porter') : it.equipped ? 'Équipé' : 'Équiper'}
                     </button>
                   ) : consumable ? (
                     <button

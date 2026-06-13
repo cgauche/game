@@ -535,6 +535,172 @@
 .sc-weapons .weap em {
   color: var(--gold);
 }
+/* ── Écran d'équipement (onglet Combat) : mannequin + zones à couches (LDB 63) + sets d'armes ──
+   ≥700px : mannequin à gauche, zones en grille 2 colonnes ; ≤700px : mannequin au-dessus ;
+   ≤560px : zones en 1 colonne. Cibles tactiles élargies via pointer: coarse. */
+.equip-panel {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.equip-doll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.equip-figure {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.equip-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-content: start;
+}
+.equip-zone {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.eq-zone-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.eq-zone-name {
+  font-weight: 600;
+  color: var(--gold2);
+  font-size: 13px;
+}
+.eq-ap {
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-ap.on {
+  color: var(--gold2);
+}
+/* Une COUCHE de la zone : libellé (Extérieure/Flexible/Souple) + pièce portée ou sélecteur. */
+.eq-layer {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+.eq-layer-name {
+  font-size: 11px;
+  color: var(--muted);
+}
+.eq-piece {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 4px 2px 8px;
+  min-width: 0;
+}
+.eq-piece-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eq-piece-pa {
+  font-size: 11px;
+  color: var(--gold);
+  flex: 0 0 auto;
+}
+.eq-pick {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+.equip-sets {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.loadout-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap; /* primitive .bar-like : s'enroule sur écran étroit */
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.loadout-row.active {
+  border-color: var(--gold);
+}
+.loadout-row .lo-name {
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 44px;
+}
+.lo-slot {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.lo-slot select {
+  max-width: 170px;
+}
+.eq-active-weapons {
+  margin-top: 4px;
+}
+.eq-ammo {
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .equip-panel {
+    grid-template-columns: 1fr;
+  }
+  /* Mannequin compact à gauche, emplacement Cape à sa droite (pas de grande zone vide). */
+  .equip-doll {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .equip-figure {
+    width: 128px;
+    flex: 0 0 auto;
+  }
+  .equip-cape {
+    flex: 1;
+  }
+}
+@media (max-width: 560px) {
+  .equip-zones {
+    grid-template-columns: 1fr;
+  }
+}
+@media (pointer: coarse) {
+  .eq-pick,
+  .lo-slot select {
+    min-height: 38px;
+  }
+  .eq-piece .btn,
+  .loadout-row .btn {
+    min-height: 34px;
+    min-width: 34px;
+  }
+}
 .sheet-skills {
   margin-bottom: 14px;
 }

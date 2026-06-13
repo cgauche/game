@@ -116,6 +116,38 @@ export function isTwoHandedWeapon(it: ItemInstance): boolean {
   return weaponHands(it) === 2;
 }
 
+/** Couche de PORT d'une pièce d'armure (LDB 63) : le « Cuir souple » « peut être porté sans pénalité
+ *  sous n'importe quelle autre Armure » (l.93) ; une armure Flexible « peut être portée sous une
+ *  couche d'armure non Flexible » (l.105-106) ; le reste forme la couche extérieure rigide.
+ *  Une seule pièce par couche et par localisation. */
+export type ArmourLayer = 'souple' | 'flexible' | 'rigide';
+export function armourLayer(it: ItemInstance): ArmourLayer {
+  if ((it.subType ?? '').toLowerCase() === 'cuir souple') return 'souple';
+  if (hasQuality(it, 'Flexible')) return 'flexible';
+  return 'rigide';
+}
+
+/** Cape/manteau (« Vêtements et Accessoires », sans stats) : PORTABLE dans l'emplacement Cape de la
+ *  fiche — purement cosmétique (rendu dorsal du rig), une seule à la fois. */
+export function isCapeItem(it: ItemInstance): boolean {
+  return it.kind === 'misc' && /^(cape|manteau)\b/i.test(it.name.trim());
+}
+
+/** Objets ÉQUIPÉS en conflit de port avec `it` : armure de MÊME couche sur ≥1 localisation commune
+ *  (pas deux justaucorps de cuir l'un sur l'autre), ou autre cape déjà portée. Équiper `it` doit
+ *  d'abord les retirer (échange façon jeu vidéo). */
+export function equipConflicts(c: Combatant, it: ItemInstance): ItemInstance[] {
+  const others = (c.items ?? []).filter((o) => o.uid !== it.uid && o.equipped);
+  if (it.kind === 'armor' && it.locs?.length) {
+    const layer = armourLayer(it);
+    return others.filter(
+      (o) => o.kind === 'armor' && armourLayer(o) === layer && (o.locs ?? []).some((l) => it.locs!.includes(l)),
+    );
+  }
+  if (isCapeItem(it)) return others.filter(isCapeItem);
+  return [];
+}
+
 let _unarmed: Weapon | null = null;
 /** Arme « Mains nues » canonique, DÉRIVÉE du trapping (LDB 62 l.75 : +BF+0, Personnelle, Inoffensive) —
  *  plus de valeur codée en dur. Lazy + mémoïsé (data chargée au 1ᵉʳ appel). Copie fraîche à chaque appel. */
@@ -218,32 +250,41 @@ export function recomputeLoadout(c: Combatant): void {
 }
 
 let loadoutCounter = 0;
-/** Génère les loadouts par défaut d'un héros qui n'en a pas : « Mêlée » (meilleure arme de mêlée + bouclier/
- *  2e arme à 1 main en secondaire) et « Distance » (1re arme à distance) si présentes. Idempotent. */
+/** Noms canoniques des DEUX sets d'armes fixes de la fiche (façon jeu vidéo). */
+export const WEAPON_SET_NAMES = ['Set I', 'Set II'] as const;
+/** Génère les DEUX sets d'armes fixes d'un héros qui n'en a pas : « Set I » = meilleure arme de
+ *  mêlée (+ bouclier/2e arme à 1 main en secondaire), « Set II » = 1re arme à distance (sinon
+ *  vide). Idempotent. */
 export function ensureDefaultLoadout(c: Combatant): void {
   if (c.loadouts?.length) return;
   const items = (c.items ?? []).filter((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged'));
   const melee = items.filter((i) => i.kind === 'melee');
   const ranged = items.filter((i) => i.kind === 'ranged');
-  const loadouts: WeaponLoadout[] = [];
 
+  const set1: WeaponLoadout = { id: `lo-${++loadoutCounter}`, name: WEAPON_SET_NAMES[0] };
   if (melee.length) {
     const main = [...melee].sort((a, b) => damageScore(b.damage) - damageScore(a.damage))[0];
-    let off: ItemInstance | undefined;
-    if (weaponHands(main) === 1) off = melee.find((i) => i.uid !== main.uid && weaponHands(i) === 1);
-    loadouts.push({ id: `lo-${++loadoutCounter}`, name: 'Mêlée', main: main.uid, off: off?.uid });
+    set1.main = main.uid;
+    if (weaponHands(main) === 1) set1.off = melee.find((i) => i.uid !== main.uid && weaponHands(i) === 1)?.uid;
   }
-  if (ranged.length) {
-    loadouts.push({ id: `lo-${++loadoutCounter}`, name: 'Distance', main: ranged[0].uid });
-  }
-  if (!loadouts.length) return; // aucune arme équipée : pas de loadout (Mains nues suffisent via recompute)
-  c.loadouts = loadouts;
-  c.activeLoadoutId = loadouts[0].id;
+  const set2: WeaponLoadout = { id: `lo-${++loadoutCounter}`, name: WEAPON_SET_NAMES[1], main: ranged[0]?.uid };
+  c.loadouts = [set1, set2];
+  c.activeLoadoutId = (set1.main ? set1 : set2.main ? set2 : set1).id;
 }
 
 /** Id de loadout unique (réutilise le compteur d'ensureDefaultLoadout). */
 export function newLoadoutId(): string {
   return `lo-${++loadoutCounter}`;
+}
+
+/** Garantit l'existence du set fixe d'index 0/1 (« Set I »/« Set II ») et le renvoie — complète les
+ *  héros d'avant les sets fixes (sauvegardes à 0 ou 1 loadout) sans toucher au set actif. */
+export function ensureWeaponSet(c: Combatant, setIndex: number): WeaponLoadout {
+  ensureDefaultLoadout(c);
+  while ((c.loadouts ?? []).length <= setIndex) {
+    c.loadouts = [...(c.loadouts ?? []), { id: newLoadoutId(), name: WEAPON_SET_NAMES[Math.min(c.loadouts!.length, WEAPON_SET_NAMES.length - 1)] }];
+  }
+  return c.loadouts![setIndex];
 }
 
 /** Crée un loadout vide nommé, le rend actif, et renvoie son id. */
@@ -399,13 +440,16 @@ export function buildInventory(trappingNames: string[]): ItemInstance[] {
       items.push(it);
     }
   }
-  // Équipement par défaut : la MEILLEURE arme de mêlée + la première à distance
-  // + toutes les armures. Les doublons restent dans l'inventaire (déséquipés).
+  // Équipement par défaut : la MEILLEURE arme de mêlée + la première à distance + les armures
+  // SANS conflit de couche (max une pièce par couche × localisation, meilleure PA d'abord —
+  // LDB 63 : pas de « 2 armures de cuir »). Les doublons restent dans l'inventaire (déséquipés).
   const melee = items.filter((i) => i.kind === 'melee');
   const ranged = items.filter((i) => i.kind === 'ranged');
   if (melee.length) melee.sort((a, b) => damageScore(b.damage) - damageScore(a.damage))[0].equipped = true;
   if (ranged.length) ranged[0].equipped = true;
-  for (const a of items) if (a.kind === 'armor') a.equipped = true;
+  const holder = { items } as Combatant; // equipConflicts lit c.items (équipés au fil de l'eau)
+  const armours = items.filter((i) => i.kind === 'armor').sort((a, b) => (b.pa ?? 0) - (a.pa ?? 0));
+  for (const a of armours) if (!equipConflicts(holder, a).length) a.equipped = true;
   return items;
 }
 

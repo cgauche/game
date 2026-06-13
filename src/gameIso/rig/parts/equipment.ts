@@ -1,4 +1,5 @@
 import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engine/types';
+import { isCapeItem } from '../../../engine/items';
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
@@ -17,18 +18,27 @@ const EPEE_ART: PartArt = {
 /** Contexte d'équipement extrait d'un Combatant (le rendu lit l'engine — direction permise). */
 export interface EquipCtx {
   weapons: Weapon[];
-  armour: ItemInstance[];           // pièces d'armure ÉQUIPÉES (locs renseignés)
+  armour: ItemInstance[];           // pièces d'armure ÉQUIPÉES (locs renseignés), couche VISIBLE d'abord
   shield?: Weapon | ItemInstance;
+  cape?: ItemInstance;              // cape/manteau porté (cosmétique — rendu dorsal)
 }
 
 export const isShield = (x: { name: string; qualities?: string[] }) =>
   (x.qualities ?? []).some((q) => /bouclier/i.test(q)) || /bouclier/i.test(x.name);
 
+/** Rang d'affichage des matériaux : la couche du DESSUS s'affiche (plaque sur maille sur cuir). */
+const MATERIAL_RANK: Record<ReturnType<typeof armourMaterial>, number> = { plaque: 3, maille: 2, cuir: 1, rembourre: 0 };
+
 export function equipFromCombatant(c: Combatant): EquipCtx {
   const weapons = c.weapons ?? [];
-  const armour = (c.items ?? []).filter((i) => i.kind === 'armor' && i.equipped && (i.locs?.length ?? 0) > 0);
+  // Pièces TRIÉES par matériau décroissant : par slot, le rendu (resolve.ts) prend la 1re pièce qui
+  // le couvre → un héros en cuir + maille montre la maille, la plate par-dessus tout.
+  const armour = (c.items ?? [])
+    .filter((i) => i.kind === 'armor' && i.equipped && (i.locs?.length ?? 0) > 0)
+    .sort((a, b) => MATERIAL_RANK[armourMaterial(b)] - MATERIAL_RANK[armourMaterial(a)]);
   const shield = weapons.find(isShield); // un bouclier tenu est dans le set actif → présent dans c.weapons
-  return { weapons, armour, shield };
+  const cape = (c.items ?? []).find((i) => i.equipped && isCapeItem(i));
+  return { weapons, armour, shield, cape };
 }
 
 /**

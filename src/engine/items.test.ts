@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory } from './items';
 import { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
@@ -164,26 +164,35 @@ describe('ensureDefaultLoadout', () => {
   const hero = (items: ItemInstance[]): Combatant =>
     ({ id: 'h', name: 'H', kind: 'hero', items } as unknown as Combatant);
 
-  it('crée « Mêlée » = meilleure arme de mêlée en main, bouclier en secondaire', () => {
+  it('crée « Set I » = meilleure arme de mêlée en main, bouclier en secondaire', () => {
     const c = hero([
       w('e', 'Epee', { subType: 'Base', hands: 1, damage: '+BF+4' }),
       w('b', 'Bouclier', { subType: 'Base', hands: 1, damage: '+BF', qualities: ['Défensive'] }),
     ]);
     ensureDefaultLoadout(c);
-    const lo = c.loadouts!.find((l) => l.name === 'Mêlée')!;
+    const lo = c.loadouts!.find((l) => l.name === 'Set I')!;
     expect(lo.main).toBe('e');
     expect(lo.off).toBe('b');
     expect(c.activeLoadoutId).toBe(lo.id);
   });
 
-  it('arme distance présente → loadout « Distance » en plus', () => {
+  it('crée TOUJOURS deux sets : « Set II » porte la 1re arme à distance (sinon vide)', () => {
     const c = hero([
       w('e', 'Epee', { subType: 'Base', hands: 1 }),
       w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: '+9' }),
     ]);
     ensureDefaultLoadout(c);
-    expect(c.loadouts!.map((l) => l.name).sort()).toEqual(['Distance', 'Mêlée']);
-    expect(c.loadouts!.find((l) => l.name === 'Distance')!.main).toBe('arc');
+    expect(c.loadouts!.map((l) => l.name)).toEqual(['Set I', 'Set II']);
+    expect(c.loadouts!.find((l) => l.name === 'Set II')!.main).toBe('arc');
+    const soloMelee = hero([w('e', 'Epee', { subType: 'Base', hands: 1 })]);
+    ensureDefaultLoadout(soloMelee);
+    expect(soloMelee.loadouts!.map((l) => [l.name, l.main])).toEqual([['Set I', 'e'], ['Set II', undefined]]);
+  });
+
+  it('héros sans arme distance équipée : actif = Set I ; sans mêlée : actif = Set II', () => {
+    const c = hero([w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: '+9' })]);
+    ensureDefaultLoadout(c);
+    expect(c.loadouts!.find((l) => l.id === c.activeLoadoutId)!.name).toBe('Set II');
   });
 
   it('idempotent : ne recrée pas si loadouts déjà présents', () => {
@@ -193,6 +202,53 @@ describe('ensureDefaultLoadout', () => {
     ensureDefaultLoadout(c);
     expect(c.loadouts).toHaveLength(1);
     expect(c.activeLoadoutId).toBe('x');
+  });
+});
+
+describe('couches d’armure (LDB 63) — armourLayer / equipConflicts', () => {
+  const hero = (items: ItemInstance[]): Combatant => ({ id: 'h', items } as unknown as Combatant);
+
+  it('armourLayer lit la donnée réelle : Cuir souple / Flexible (Mailles) / rigide (Cuir bouilli, Plate)', () => {
+    expect(armourLayer(itemFromTrapping('Justaucorps de cuir')!)).toBe('souple'); // subType Cuir souple (LDB 63 l.93)
+    expect(armourLayer(itemFromTrapping('Chemise de mailles')!)).toBe('flexible'); // qualité Flexible (l.105-106)
+    expect(armourLayer(itemFromTrapping('Plastron de cuir')!)).toBe('rigide'); // Cuir bouilli
+    expect(armourLayer(itemFromTrapping('Plastron')!)).toBe('rigide'); // Plate
+  });
+
+  it('2 cuirs souples sur le Corps = conflit ; souple + maille + plate se superposent sans conflit', () => {
+    const justau = { ...itemFromTrapping('Justaucorps de cuir')!, equipped: true };
+    const veste = itemFromTrapping('Veste de cuir')!; // souple, Bras+Corps
+    const maille = { ...itemFromTrapping('Chemise de mailles')!, equipped: true };
+    const plastron = { ...itemFromTrapping('Plastron')!, equipped: true };
+    const c = hero([justau, veste, maille, plastron]);
+    expect(equipConflicts(c, veste).map((i) => i.name)).toEqual(['Justaucorps de cuir']); // même couche, loc commune
+    expect(equipConflicts(c, justau)).toEqual([]); // déjà porté : maille/plate = autres couches
+    expect(equipConflicts(c, maille)).toEqual([]);
+    expect(equipConflicts(c, plastron)).toEqual([]);
+  });
+
+  it('pas de conflit sans localisation commune (calotte vs justaucorps, tous deux souples)', () => {
+    const calotte = { ...itemFromTrapping('Calotte de cuir')!, equipped: true };
+    const justau = itemFromTrapping('Justaucorps de cuir')!;
+    expect(equipConflicts(hero([calotte, justau]), justau)).toEqual([]);
+  });
+
+  it('isCapeItem reconnaît Cape/Manteau (trappings sans stats) ; une seule cape portée', () => {
+    const cape = { ...itemFromTrapping('Cape')!, equipped: true };
+    const manteau = itemFromTrapping('Manteau')!;
+    expect(isCapeItem(cape)).toBe(true);
+    expect(isCapeItem(manteau)).toBe(true);
+    expect(isCapeItem(itemFromTrapping('Justaucorps de cuir')!)).toBe(false);
+    expect(equipConflicts(hero([cape, manteau]), manteau).map((i) => i.name)).toEqual(['Cape']);
+  });
+
+  it('buildInventory n’équipe qu’UNE pièce par couche × localisation (meilleure PA)', () => {
+    const items = buildInventory(['Justaucorps de cuir', 'Veste de cuir', 'Chemise de mailles', 'Plastron']);
+    const worn = items.filter((i) => i.equipped).map((i) => i.name).sort();
+    // Justaucorps et Veste sont tous deux Cuir souple sur le Corps → une seule des deux portée.
+    expect(worn).toContain('Chemise de mailles');
+    expect(worn).toContain('Plastron');
+    expect(worn.filter((n) => n === 'Justaucorps de cuir' || n === 'Veste de cuir')).toHaveLength(1);
   });
 });
 
