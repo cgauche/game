@@ -26,8 +26,7 @@ import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
 import { gainCorruption } from './corruptionFlow';
 
-type Get = () => GameState;
-type Set = (s: Partial<GameState>) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {

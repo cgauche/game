@@ -380,16 +380,31 @@ export const FLOWS = {
       },
     },
     force: {
-      derive: (_s, p) => {
-        // RAW LDB 17 l.73 : avant le jet (result==null → base 01) OU après un échec.
-        const r = p.result ?? { roll: 1 };
-        return {
-          result: CIBLE_TYPES.has(p.kind)
-            ? { ...r, success: true }
-            : p.kind === 'terreur'
-              ? { ...r, success: true, brise: 0 }
-              : { ...r, calmeDR: p.indice, vaincue: true },
-        };
+      derive: (_s, p, actor) => {
+        // Binaire (Trait ciblé / Terreur) : « Je ne faillirai pas ! » garantit la réussite (rien à choisir).
+        if (CIBLE_TYPES.has(p.kind)) return { result: { ...(p.result ?? { roll: 1 }), success: true } };
+        if (p.kind === 'terreur') return { result: { ...(p.result ?? { roll: 1 }), success: true, brise: 0 } };
+        // Peur = Test ÉTENDU : la Résilience (LDB 17 l.73) garantit un Test de Calme RÉUSSI ce round.
+        // RAW : « vous choisissez le résultat des dés et l'emportez dans un Test opposé » — ici PAS
+        // d'opposant, donc on choisit simplement la valeur. Défaut = 01 → DR MAXIMUM ; le DR se cumule
+        // vers l'Indice (LDB 21). `setForcedRoll` permet ensuite de changer le dé (cf. `forceRoll`).
+        const target = p.result?.target ?? calmeValue(actor);
+        const dr = Math.max(evaluateTest(1, target).sl, 1);
+        const calmeDR = (p.prevDR ?? 0) + dr;
+        return { result: { roll: 1, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
+      },
+    },
+    // « vous choisissez le résultat » (LDB 17 l.73) : sur un Test de Calme contre la Peur (étendu, non
+    // opposé), choisir le dé fixe le DR gagné ce round (cumul vers l'Indice). Binaire (ciblé/Terreur) →
+    // pas de dé à choisir. Le dé choisi doit RESTER une réussite (≤ cible).
+    forceRoll: {
+      derive: (_s, p, actor, roll) => {
+        if (CIBLE_TYPES.has(p.kind) || p.kind === 'terreur') return null;
+        const target = p.result?.target ?? calmeValue(actor);
+        if (roll > Math.min(99, target)) return null;
+        const dr = Math.max(evaluateTest(roll, target).sl, 0);
+        const calmeDR = (p.prevDR ?? 0) + dr;
+        return { result: { roll, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
       },
     },
   }),

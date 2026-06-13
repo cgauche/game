@@ -34,8 +34,7 @@ import { restoreSuppressedPsych } from '../engine/psychology';
 import { tickTraumaRecovery } from '../engine/trauma';
 import { bus, EVT } from './bus';
 
-type Get = () => GameState;
-type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Jour courant de l'horloge (index de jour depuis l'époque). */
 export function dayIndex(gameTime: number): number {

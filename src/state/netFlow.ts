@@ -28,8 +28,7 @@ import type { NetMessage } from '../net/protocol';
 import type { Scene } from './scene';
 import { bus, EVT } from './bus';
 
-type Get = () => GameState;
-type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+import type { Get, Set } from './flowTypes';
 
 /** État réseau SÉRIALISABLE (dans GameState). `ownership` : heroId → siège (0 = hôte).
  *  `slots` : siège attribué à chacun des 4 emplacements de l'écran d'équipe (0 = hôte). */

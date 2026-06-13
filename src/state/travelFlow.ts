@@ -37,8 +37,7 @@ import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
 import { d10, d100 } from '../engine/dice';
 
-type Get = () => GameState;
-type Set = (partial: Partial<GameState> | ((s: GameState) => Partial<GameState>)) => void;
+import type { Get, Set } from './flowTypes';
 
 /** Une journée du récapitulatif de voyage (audit M4) : progression + ce qui s'y est passé. */
 export interface TravelRecapDay {

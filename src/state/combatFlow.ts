@@ -4,6 +4,7 @@
  * Refacto pure -- comportement preserve.
  */
 import type { GameState, BattleState, RevealEntry } from './store';
+import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
@@ -117,6 +118,13 @@ import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
+// Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
+// l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
+import {
+  occupied, pushBackTiles, findFreeTile, displaceSmaller, removeEntity, inRect,
+  applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
+} from './combatGeometry';
+export * from './combatGeometry';
 
 
 // ---------------------------------------------------------------------------
@@ -128,100 +136,11 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 }
 
 /** Empile une révélation témoin (montre le dé d'un jet subi/sur table) en queue de file FIFO. */
-export function pushReveal(set: any, entry: RevealEntry): void {
+export function pushReveal(set: SetFn, entry: RevealEntry): void {
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
 }
 
-/**
- * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.55) de chaque AUTRE
- * combattant, SAUF ceux de Taille STRICTEMENT inférieure au mover — une créature plus grande
- * « dégage les combattants de taille inférieure du chemin, se déplaçant où elle veut » (LDB 85
- * l.308-309). Passer un id (legacy/tests) ⇒ aucun filtrage de Taille (toutes les empreintes bloquent).
- */
-export function occupied(battle: BattleState, mover: Combatant | string): Set<string> {
-  const exceptId = typeof mover === 'string' ? mover : mover.id;
-  const moverSize = typeof mover === 'string' ? undefined : mover.size;
-  const s = new Set<string>();
-  for (const c of battle.combatants) {
-    if (c.id === exceptId || isOutOfAction(c) || !c.pos) continue;
-    if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.308-309)
-    for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
-  }
-  return s;
-}
-
-/** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction
- *  opposée à l'attaquant (cases praticables et libres seulement). Renvoie les cases reculées. */
-export function pushBackTiles(get: () => GameState, attacker: Combatant, target: Combatant, tiles: number): number {
-  const { scene, battle } = get();
-  if (!scene || !battle || !attacker.pos || !target.pos || tiles <= 0) return 0;
-  let pos = target.pos;
-  const dx = Math.sign(pos.x - attacker.pos.x);
-  const dy = Math.sign(pos.y - attacker.pos.y);
-  if (!dx && !dy) return 0;
-  const blocked = occupied(battle, target);
-  let moved = 0;
-  for (let i = 0; i < tiles; i++) {
-    const next = { x: pos.x + dx, y: pos.y + dy };
-    const foot = footprintTiles(next, target.size);
-    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(`${t.x},${t.y}`))) break;
-    pos = next;
-    moved++;
-  }
-  target.pos = pos;
-  if (moved) bus.emit(EVT.ANIM_MOVE, { id: target.id, path: [{ ...target.pos }] });
-  return moved;
-}
-
-export function findFreeTile(scene: Scene): Pt {
-  for (let y = 0; y < scene.dimensions.h; y++)
-    for (let x = 0; x < scene.dimensions.w; x++) if (isWalkable(scene, x, y)) return { x, y };
-  return { x: 0, y: 0 };
-}
-
-/**
- * Après qu'un combattant a bougé, « dégage de son chemin » les combattants de Taille STRICTEMENT
- * inférieure dont la case est désormais SOUS son empreinte (LDB 85 l.308-309 : un plus grand « se
- * déplace où il veut ») : chacun est poussé vers la case libre la plus proche, hors de l'empreinte.
- * Mute les `pos` en place ; l'appelant émet SCENE_DIRTY / re-set la bataille. Renvoie true si déplacé.
- */
-export function displaceSmaller(get: () => GameState, mover: Combatant): boolean {
-  const battle = get().battle;
-  const scene = get().scene;
-  if (!battle || !scene || !mover.pos || sizeFootprint(mover.size) <= 1) return false;
-  let moved = false;
-  for (const c of battle.combatants) {
-    if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue; // jamais éjecter SON propre cavalier (il chevauche)
-    if (sizeGap(c.size, mover.size) >= 0) continue; // pas strictement plus petit → non dégagé
-    if (!occupiesTile(mover.pos, mover.size, c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
-    const free = nearestFreeOutside(scene, battle, c, mover);
-    if (free) { c.pos = free; moved = true; }
-  }
-  return moved;
-}
-
-/** Case walkable la plus proche de `c`, non occupée (toutes empreintes) et HORS de l'empreinte de
- *  `mover` — anneaux croissants (rayon ≤ 6). `undefined` si rien (c reste, co-occupation tolérée). */
-function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mover: Combatant): Pt | undefined {
-  const blocked = occupied(battle, c.id); // id (legacy) ⇒ TOUTES les empreintes bloquent (placement)
-  for (let r = 1; r <= 6; r++)
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
-        const x = c.pos!.x + dx, y = c.pos!.y + dy;
-        if (occupiesTile(mover.pos!, mover.size, x, y)) continue; // garder hors empreinte du mover
-        if (isWalkable(scene, x, y) && !blocked.has(`${x},${y}`)) return { x, y };
-      }
-  return undefined;
-}
-
-export function removeEntity(get: () => GameState, set: any, id: string) {
-  const scene = get().scene;
-  if (!scene) return;
-  scene.entities = scene.entities.filter((e) => e.id !== id);
-  set({ scene: { ...scene } });
-  bus.emit(EVT.SCENE_DIRTY);
-}
+// occupied / pushBackTiles / findFreeTile / displaceSmaller / removeEntity → combatGeometry.ts
 
 /** Items ramassables d'un prop interactif : un par effet « donneur » de son `interact`.
  *  `key` = `eff:<index dans interact.effects>`. Les effets non-objet (journal/document…) sont ignorés. */
@@ -234,7 +153,7 @@ export function entityPickables(ent: { interact?: { effects: Effect[] } }): { ke
   return out;
 }
 
-export function checkTriggers(get: () => GameState, set: any) {
+export function checkTriggers(get: Get, set: SetFn) {
   const { scene, partyPos, flags } = get();
   if (!scene) return;
   for (const t of scene.triggers) {
@@ -247,9 +166,7 @@ export function checkTriggers(get: () => GameState, set: any) {
   }
 }
 
-export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number }): boolean {
-  return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
-}
+// inRect → combatGeometry.ts
 
 /** Sépare d'un lot d'Effets les giveTrapping ATTRIBUABLES (sans heroId) → lignes de butin
  *  « qui l'emporte ? ». Brique partagée écran de victoire / fenêtre de loot. Un giveTrapping
@@ -269,7 +186,7 @@ export function gearFromEffects(effects: Effect[]): { gear: LootGear[]; rest: Ef
  *  s'applique à la bourse ET s'affiche ; les textes `journal` du lot deviennent le texte
  *  d'ambiance de la fenêtre. Sans butin (ou en combat : Ramasser/victoire ont leurs flux),
  *  strictement équivalent à applyEffects. Fenêtre déjà ouverte → le butin s'y AJOUTE. */
-export function applyEffectsLoot(get: () => GameState, set: any, effects: Effect[], title: string) {
+export function applyEffectsLoot(get: Get, set: SetFn, effects: Effect[], title: string) {
   if (get().battle) { applyEffects(get, set, effects); return; }
   const { gear, rest } = gearFromEffects(effects);
   applyEffects(get, set, rest);
@@ -295,14 +212,14 @@ export function applyEffectsLoot(get: () => GameState, set: any, effects: Effect
 /** Attribue la ligne `index` du butin (`pendingLoot` ou `pendingVictory`) au héros choisi :
  *  l'Effet d'origine s'applique avec ce heroId (qualités/skin/identification conservés), la
  *  ligne quitte la fenêtre. Source unique de l'attribution (victoire ET fenêtre de loot). */
-export function assignGearAt(get: () => GameState, set: any, key: 'pendingLoot' | 'pendingVictory', index: number, heroId: string) {
+export function assignGearAt(get: Get, set: SetFn, key: 'pendingLoot' | 'pendingVictory', index: number, heroId: string) {
   const bucket = get()[key];
   if (!bucket?.gear || index < 0 || index >= bucket.gear.length) return;
   applyEffects(get, set, [{ ...bucket.gear[index].effect, heroId }]);
   set({ [key]: { ...bucket, gear: bucket.gear.filter((_, i) => i !== index) } });
 }
 
-export function applyEffects(get: () => GameState, set: any, effects: Effect[]) {
+export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
   for (const e of effects) {
     switch (e.type) {
       case 'setFlag':
@@ -615,7 +532,7 @@ export function applyEffects(get: () => GameState, set: any, effects: Effect[]) 
  * introuvable pour un PNJ → boutons inertes). LEGACY : `act` simple ≡ `acts: [{ act }]`, le prix
  * restant porté par le choix de dialogue.
  */
-function openMedicalAidEffect(get: () => GameState, set: any, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
+function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
   const acts = e.acts ?? (e.act ? [{ act: e.act }] : []);
   if (!acts.length) return;
   const npc = e.entityId ? get().scene?.entities.find((x) => x.id === e.entityId) : undefined;
@@ -694,8 +611,7 @@ export function crowdEligible(battle: BattleState, attacker: Combatant, target: 
   );
 }
 
-/** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */
-export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zones);
+// smokeOf → combatGeometry.ts
 
 /** Bénédiction de Protection (LDB 41 — L13) : si la cible est bénie, l'attaquant doit réussir un
  *  Test de FM Accessible (+20) pour OSER attaquer — joué à la DÉCLARATION ; sur un échec, « ils
@@ -747,16 +663,7 @@ export function organicProjectile(w: Weapon): boolean {
   return /\barc\b|arbal|javelot|fl[èe]che|carreau/i.test(`${w.name} ${w.subType ?? ''}`);
 }
 
-/** Traversée de zones persistantes (Mur de feu, LDB 47 — L11) au terme d'un déplacement :
- *  applique l'`onCross` des zones croisées par `path` et journalise. (La Téléportation ne
- *  « traverse » pas — apparition — et n'appelle pas ce helper.) */
-export function applyZoneCrossings(get: () => GameState, mover: Combatant, path: Pt[]): void {
-  const battle = get().battle;
-  if (!battle?.zones?.length || !path.length) return;
-  const lines = crossZones(battle.zones, mover, path, (id) => (id ? battle.combatants.find((c) => c.id === id) : undefined), battleRng());
-  for (const l of lines) battle.log.push(ev('condition', l, mover.id));
-  if (lines.length) bus.emit(EVT.SCENE_DIRTY);
-}
+// applyZoneCrossings → combatGeometry.ts
 
 /** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
  *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77) ;
@@ -789,28 +696,18 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
   return lines;
 }
 
-const DIR8_RING: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
-/** Flanc/dos (LDB 14 l.91) : l'attaquant frappe-t-il hors du champ de vision avant du défenseur ?
- *  Front = orientation du défenseur ±45° (3 directions avant) ; flanc/dos = les 5 autres (écart ≥ 2 sur l'anneau). */
-export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean {
-  const a = DIR8_RING.indexOf(targetFacing);
-  const b = DIR8_RING.indexOf(dirToAttacker);
-  return Math.min(Math.abs(a - b), 8 - Math.abs(a - b)) >= 2;
-}
+// DIR8_RING / isFlankOrRear → combatGeometry.ts
 
 /** Environnement d'attaque (LdV/couvert/météo/mouvement/tir-mêlée/surnombre/monture) — SOURCE UNIQUE
  *  des modificateurs positionnels/scéniques, partagée par la RÉSOLUTION (`resolveAttack`) ET l'APERÇU
  *  (`previewAttack`), pour que l'aperçu affiche EXACTEMENT ce que le jet appliquera (R4). Pur (lit l'état).
  *  `blocked` = tir sans Ligne de Vue ; `inMelee`/`crowd`/`cm`/`sc` servent à la résolution (tir dévié,
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
-/** Voit dans l'obscurité : Trait Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne (LDB 10). */
-function seesInDark(c: Combatant): boolean {
-  return traitSeesInDark(c.traits) || (c.talents ?? []).some((t) => /^vision nocturne/i.test(t.name));
-}
+// seesInDark → combatGeometry.ts
 
 export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; }
 export function attackEnv(
-  get: () => GameState,
+  get: Get,
   attacker: Combatant,
   target: Combatant,
   weapon: Weapon,
@@ -867,7 +764,7 @@ export function attackEnv(
 }
 
 export function resolveAttack(
-  get: () => GameState,
+  get: Get,
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
@@ -918,7 +815,7 @@ export function resolveAttack(
  *  toucher) inclut déjà la pénalité de main secondaire (l'arme `off` porte `hand:'off'`, cf. plan #1). Le
  *  défenseur fait un NOUVEAU jet de défense (l.638 « opposée à un nouveau lancer de défense »). */
 export function resolveDualSecond(
-  get: () => GameState,
+  get: Get,
   attacker: Combatant,
   target: Combatant,
   offWeapon: Weapon,
@@ -960,7 +857,7 @@ export interface AttackPreview {
   soak: number;
 }
 export function previewAttack(
-  get: () => GameState,
+  get: Get,
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
@@ -1044,7 +941,7 @@ export function previewResourceDelta(battle: BattleState | null): { action: numb
 /** Cibles VALIDES de l'attaque du héros actif (R4) : ennemis en vie atteignables (mêlée à l'Allonge / tir
  *  dans une bande de portée AVEC Ligne de Vue) — MÊMES prédicats que la résolution (via `previewAttack`),
  *  pour surligner les cibles cliquables et griser les inéligibles. Pur. Vide hors tour de héros. */
-export function eligibleAttackTargetIds(get: () => GameState): Set<string> {
+export function eligibleAttackTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
@@ -1062,7 +959,7 @@ export function eligibleAttackTargetIds(get: () => GameState): Set<string> {
  *  l'UI les GRISE pour distinguer « hors LdV » de « hors de portée » (pas d'anneau dans les
  *  deux cas). Même vérité que l'attaque réelle (`previewAttack.blocked`, arme à distance
  *  seulement — la mêlée n'est jamais bloquée par la LdV). */
-export function outOfSightTargetIds(get: () => GameState): Set<string> {
+export function outOfSightTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
@@ -1079,7 +976,7 @@ export function outOfSightTargetIds(get: () => GameState): Set<string> {
  *  capable de voir – par exemple, avoir en Ligne de vue – votre cible ») : BINAIRE — un Sort n'est
  *  pas un tir, aucune règle ne lui applique de malus de couvert → seul `.blocked` compte.
  *  Occupants ignorés (une créature ne bloque pas la vue, elle ne donne que du couvert — hors sorts). */
-export function castSightBlocked(get: () => GameState, from: Pt, to: Pt): boolean {
+export function castSightBlocked(get: Get, from: Pt, to: Pt): boolean {
   const { scene, battle } = get();
   if (!scene) return false;
   return lineOfSightCover(scene, from, to, [], battle ? smokeOf(battle) : []).blocked;
@@ -1089,7 +986,7 @@ export function castSightBlocked(get: () => GameState, from: Pt, to: Pt): boolea
  *  le clic-sol (`displayedReach`/`computeRunReach`/`pathTo`, géométrie de la monture incluse) :
  *  l'aperçu ne ment pas. Les gates de COMMIT (Peur à l'approche, Frénésie) restent au clic,
  *  comme pour le tap-1 tactile. null = case non atteignable / pas en mode neutre. */
-export function movePreviewAt(get: () => GameState, pt: Pt): { kind: 'move' | 'run'; path: Pt[]; cost: number } | null {
+export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: Pt[]; cost: number } | null {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || battle.over || battle.action !== null) return null;
@@ -1109,7 +1006,7 @@ export function movePreviewAt(get: () => GameState, pt: Pt): { kind: 'move' | 'r
 
 /** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.170) — même grisage
  *  que le tir, mais indépendant de l'arme portée (mode incantation). */
-export function castOutOfSightTargetIds(get: () => GameState): Set<string> {
+export function castOutOfSightTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
@@ -1133,7 +1030,7 @@ export function disengageOutcome(winner: 'attacker' | 'defender' | 'tie'): 'succ
 /** Lance le Désengagement d'un combattant Engagé (LDB 15-Dépl l.84-89) : option A
  *  (Avantage > adversaires → résolue direct) ou option B (Test opposé d'Esquive vs le
  *  foe le plus dangereux). No-op « rouvre le mouvement » si plus aucun foe vivant. */
-export function startDisengage(get: () => GameState, set: any, mover: Combatant): void {
+export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   const battle = get().battle!;
   const foes = (mover.engagedWith ?? [])
     .map((id) => battle.combatants.find((c) => c.id === id))
@@ -1195,7 +1092,7 @@ export function bestAdjacentReachable(reach: Map<string, number>, target: Pt): P
  *  (mouvement décomposable), géométrie de la monture, règle M-A-M, filtre Brisé. Vide si Engagé
  *  (le déplacement passe par le Désengagement — LDB 15 l.84). Reprend la logique de l'ex-mode
  *  « Déplacer » (battleSelectAction) ; source unique pour l'affichage ET la validation des clics. */
-export function computeMoveReach(get: () => GameState): Map<string, number> {
+export function computeMoveReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return new Map();
   const active = activeCombatant(battle);
@@ -1222,7 +1119,7 @@ function briseFleeFilter(battle: BattleState, active: Combatant, reach: Map<stri
 /** Zone NOMINALE de Course (LDB 15 l.79-82) : Marche + Course (3M cases, avant DR) — affichée dans une
  *  autre couleur ; un clic dedans demande le Test d'Athlétisme (+20), le déplacement réel dépendant du
  *  jet. Mêmes conditions que la Course : plein Mouvement, Action libre, non Engagé, pas À Terre. */
-export function computeRunReach(get: () => GameState): Map<string, number> {
+export function computeRunReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over || battle.acted || battle.movementUsed > 0) return new Map();
   const active = activeCombatant(battle);
@@ -1238,7 +1135,7 @@ export function computeRunReach(get: () => GameState): Map<string, number> {
 
 /** Cases cliquables affichées/validées : budget SPÉCIAL stocké (Course, post-Désengagement)
  *  prioritaire, sinon Marche restante dérivée. */
-export function displayedReach(get: () => GameState): Map<string, number> {
+export function displayedReach(get: Get): Map<string, number> {
   const battle = get().battle;
   if (!battle) return new Map();
   return battle.reachable.size > 0 ? battle.reachable : computeMoveReach(get);
@@ -1285,7 +1182,7 @@ export function aiApproachPlan(
 /** Cible IMPOSÉE d'un combattant en Frénésie (LDB 21 l.34) : l'ennemi le plus proche dans sa Ligne
  *  de Vue (à distance égale, le plus blessé — même critère que l'IA). Null si pas frénétique ou
  *  aucun ennemi visible (alors pas de contrainte). */
-export function frenzyTarget(get: () => GameState, c: Combatant): Combatant | null {
+export function frenzyTarget(get: Get, c: Combatant): Combatant | null {
   const { battle, scene } = get();
   if (!battle || !scene || !c.frenzied || !c.pos) return null;
   const visible = battle.combatants.filter(
@@ -1321,7 +1218,7 @@ export type AttackPlan =
 /** Ce qu'un clic sur CET ennemi ferait : attaque directe (Allonge / tir), Charge implicite
  *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.74-77), ou
  *  rejoindre-et-attaquer dans la Marche restante (pas une Charge → pas de bonus). Pure-store. */
-export function attackPlan(get: () => GameState, active: Combatant, target: Combatant): AttackPlan {
+export function attackPlan(get: Get, active: Combatant, target: Combatant): AttackPlan {
   const battle = get().battle!;
   const scene = get().scene!;
   if (combatDistance(active, target) <= meleeReachTiles(active.weapons)) return { kind: 'attack' };
@@ -1357,7 +1254,7 @@ export function attackPlan(get: () => GameState, active: Combatant, target: Comb
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
  *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal. */
-export function finalizeHeroDeath(get: () => GameState, set: any, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number): void {
+export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number): void {
   if (hero.kind === 'hero' && (hero.fate ?? 0) > 0) {
     set({ pendingFateSave: { heroId: hero.id, source, restoreWounds } });
   } else {
@@ -1374,7 +1271,7 @@ export function applyCriticalToTarget(
   isCoupCritique: boolean,
   overkill: number,
   log: string[],
-  set: any,
+  set: SetFn,
   chosenCritLocation?: HitLocation, // RAW-2 : localisation CHOISIE (« Je ne faillirai pas ! », LDB 17 l.73)
   ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
   prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
@@ -1498,8 +1395,8 @@ export function weaponHasBlade(w: Weapon | undefined): boolean {
  *  Critique ignoré — parité avec la Déviation auto de l'IA, LDB 63 l.63-66) ; un HÉROS victime le
  *  subit directement (pas de modale de déviation sur ce chemin secondaire — limitation documentée). */
 function applyOpposedCritical(
-  get: () => GameState,
-  set: any,
+  get: Get,
+  set: SetFn,
   victim: Combatant,
   roll: number,
   ctx: { attackerId?: string; weapon?: string },
@@ -1520,8 +1417,8 @@ function applyOpposedCritical(
 }
 
 export function applyAttackResult(
-  get: () => GameState,
-  set: any,
+  get: Get,
+  set: SetFn,
   attacker: Combatant,
   target: Combatant,
   weapon: Weapon,
@@ -1870,7 +1767,7 @@ export function applyAttackResult(
  * tous les DR accumulés au Test étendu de Focalisation. » Jet SUBI auto-résolu,
  * révélé au joueur pour un héros (kind 'calme' — précédent : Calme de Fuite).
  */
-export function checkFocusInterruption(get: () => GameState, set: any, target: Combatant): string[] {
+export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant): string[] {
   if (!target.focus || target.focus.dr <= 0) return [];
   const t = rollTest(testValue(target, 'Calme'), 'difficile', battleRng());
   const lines = [
@@ -1948,7 +1845,7 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
  * Applique l'effet du Tableau des Oups ! au combattant `c` (mute + journalise). LDB 14 l.14-57.
  * Le chiffre des unités du jet sert de DR pour les touches (l.44).
  */
-export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: Weapon, r: OupsResolved): void {
+export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r: OupsResolved): void {
   const battle = get().battle!;
   const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
   // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.82) — sauvegarde Solide possible.
@@ -2010,7 +1907,7 @@ export function applyOups(get: () => GameState, set: any, c: Combatant, weapon: 
 }
 
 /** Maladresse d'un ENNEMI : résolue instantanément (IA abstraite). No-op si pas un ennemi/pas de fumble. */
-export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
+export function resolveEnemyFumble(get: Get, set: SetFn, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
   if (enemy.kind !== 'enemy' || !attackerFumbled(res, weapon)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
@@ -2019,8 +1916,8 @@ export function resolveEnemyFumble(get: () => GameState, set: any, enemy: Combat
  *  à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
  *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
 export function maybeOpenDefense(
-  get: () => GameState,
-  set: any,
+  get: Get,
+  set: SetFn,
   attacker: Combatant,
   target: Combatant,
   weapon: Weapon = attacker.weapons[0],
@@ -2055,7 +1952,7 @@ export function maybeOpenDefense(
 
 /** Attaque de l'IA : ouvre la modale de défense (→ true, tour SUSPENDU) si la cible
  *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
-export function doAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant): boolean {
+export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant): boolean {
   // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) pour oser attaquer le
   // béni ; échec → l'IA renonce à CE coup (simplification : pas de re-ciblage, documentée).
   const ward = attackWardGate(attacker, target);
@@ -2103,7 +2000,7 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
  *  LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore frappés,
  *  se déplaçant sur la case d'une cible tuée (l.10). Résolution instantanée — les enchaînements
  *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA). */
-export function autoCleave(get: () => GameState, set: any, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
+export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
   if (attacker.kind !== 'enemy' || !res.cleave) return;
   const bcc = bonus(effectiveChar(attacker, 'CC'));
   if (bcc < 1) return;
@@ -2136,7 +2033,7 @@ export function autoCleave(get: () => GameState, set: any, attacker: Combatant, 
  *  d'être résolu). Ouvre/maintient `pendingCleave` tant qu'il reste des cibles adjacentes ET que le
  *  nombre d'enchaînements reste < BCC (LDB 14 l.12) ; sinon le ferme. Déplacement sur la case d'une
  *  cible tuée (l.10). */
-export function maybeHeroCleave(get: () => GameState, set: any, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
+export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
   if (attacker.kind !== 'hero') return;
   const pc = get().pendingCleave;
   if (!pc && !res.cleave) return; // ni balayage en cours, ni déclenché par cette touche
@@ -2180,7 +2077,7 @@ export function trampleTarget(battle: BattleState, c: Combatant, targetId?: stri
 
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
-export function applyTrample(get: () => GameState, set: any, attacker: Combatant, target: Combatant): void {
+export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
   attacker.advantage = Math.max(0, attacker.advantage - 1); // coût : 1 Avantage (LDB 85 l.320)
   const res = resolveTrample(attacker, target, battleRng());
@@ -2190,7 +2087,7 @@ export function applyTrample(get: () => GameState, set: any, attacker: Combatant
 
 /** L'IA piétine (faible priorité, après l'attaque principale) : action gratuite si l'ennemi a ≥1
  *  Avantage et qu'un adversaire adjacent plus petit est à portée. Instantané (pas de modale IA). */
-export function aiMaybeTrample(get: () => GameState, set: any, enemy: Combatant): void {
+export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy) || enemy.advantage < 1) return;
   const battle = get().battle;
   if (!battle || battle.over) return;
@@ -2203,7 +2100,7 @@ export function aiMaybeTrample(get: () => GameState, set: any, enemy: Combatant)
  *  un ennemi frenzied porte une attaque de mêlée supplémentaire avec son arme contre un adversaire
  *  adjacent. Elle NE consomme ni Avantage ni Action. Résolution instantanée — comme autoCleave /
  *  aiMaybeTrample, l'IA ne déclenche pas de modale de défense (simplification documentée). */
-export function aiFrenzyAttack(get: () => GameState, set: any, enemy: Combatant): void {
+export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
   if (enemy.kind !== 'enemy' || !enemy.frenzied || isOutOfAction(enemy)) return;
   const battle = get().battle;
   if (!battle || battle.over || !enemy.pos) return;
@@ -2262,7 +2159,7 @@ function venomDiffKey(label: string): import('../engine/types').Difficulty {
  *  - Attaque caudale → cible de Taille INFÉRIEURE → À Terre (LDB 85 l.338) ;
  *  - Atout Venin de la créature → Test de Résistance (Endurance) à la Difficulté du Venin ;
  *    sur un échec, la cible subit l'État Empoisonné (LDB 85 l.326, voir p.168). */
-export function applyFreeAttackEffects(get: () => GameState, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
+export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
   const traits = attacker.traits ?? [];
   // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
@@ -2313,7 +2210,7 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
  *  défense (héros) → suspendu (true) ; sinon résout instantanément (opposé auto, ou passif si Surpris),
  *  restaure l'Action et applique les effets. Dépense `cost` Avantage (coût RAW par type :
  *  Cornes/Tentacules 0, Morsure/Caudale/Piétinement 1). */
-function applyFreeAttack(get: () => GameState, set: any, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
+function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
   const prevActed = get().battle?.acted ?? false;
   attacker.advantage = Math.max(0, attacker.advantage - cost);
   const weapon = freeAttackWeapon(kind, bonus);
@@ -2337,7 +2234,7 @@ function emitCreatureAttackAnim(attacker: Combatant, kind: string): void {
  *  cible : Dégâts (mitigés BE+PA, sauf ignore-PA des Types Feu/Électricité/Poison) + effet de Type
  *  (Enflammé/Sonné/Empoisonné) ou Sonné (Vomi) + corrosion (Armure/Arme −1). Instantané (pas de modale
  *  IA), résolution opposée auto. Ne consomme pas l'Action. RAW : LDB 85 Souffle / Vomissement. */
-export function applyAreaAttack(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
+export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos) return;
   attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
@@ -2405,7 +2302,7 @@ export function applyAreaAttack(get: () => GameState, set: any, attacker: Combat
 /** Langue préhensile (Jabberslythe, LDB 85) : Attaque gratuite à 1 Avantage, À DISTANCE. Cible
  *  visible la plus proche, Test opposé CT/Esquive ; sur une touche : Dégâts = Indice + État Empêtré
  *  (et traction/Empoignade — non modélisées). Instantané. Ne consomme pas l'Action. */
-export function applyTongue(get: () => GameState, set: any, attacker: Combatant, a: CreatureAttack): void {
+export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): void {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos) return;
   attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
@@ -2432,7 +2329,7 @@ export function applyTongue(get: () => GameState, set: any, attacker: Combatant,
  *  TOUS les Avantages (min 2). Toutes les créatures VIVANTES (non Mort-vivant) à Initiative mètres
  *  subissent 1d10 Blessures (ignore BE et PA), un Test de Résistance Accessible (+20) ou l'État Brisé,
  *  et 3 États Assourdi. Instantané. Renvoie true si poussé. */
-export function applyWail(get: () => GameState, set: any, attacker: Combatant): boolean {
+export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
   attacker.advantage = 0; // dépense TOUS les Avantages
@@ -2470,7 +2367,7 @@ export function applyWail(get: () => GameState, set: any, attacker: Combatant): 
  *  dépense tout ce qu'elle a, min 1) → Test opposé CT/Initiative avec +1 DR par Avantage dépensé.
  *  La cible reçoit 1 État Sonné par tranche de 2 DR de marge ; pétrifiée si la marge atteint 6 DR.
  *  Cible visible la plus proche. Instantané. Consomme l'Action. Renvoie true si résolu. */
-export function applyGaze(get: () => GameState, set: any, attacker: Combatant): boolean {
+export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos || attacker.advantage < 1) return false;
   const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
@@ -2497,7 +2394,7 @@ export function applyGaze(get: () => GameState, set: any, attacker: Combatant): 
 /** Étreinte glaciale (Spectre de cairn, LDB 85) : ACTION + 2 Avantages. Test opposé CC vs Corps à
  *  corps/Esquive de la cible ; sur un succès, la cible perd 1d10 + DR Blessures ignorant le Bonus
  *  d'Endurance ET les PA. Attaque magique. Cible adjacente. Instantané. Consomme l'Action. */
-export function applyChillGrasp(get: () => GameState, set: any, attacker: Combatant): boolean {
+export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): boolean {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
   const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1);
@@ -2520,7 +2417,7 @@ export function applyChillGrasp(get: () => GameState, set: any, attacker: Combat
 
 /** Attaque-ACTION spéciale de l'IA (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
  *  normale, si la créature en a le trait et l'Avantage requis. Renvoie true si elle a agi. */
-export function aiMaybeSpecialAction(get: () => GameState, set: any, enemy: Combatant): boolean {
+export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): boolean {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return false;
   const atks = creatureAttacks(enemy.traits ?? []);
   if (atks.some((a) => a.kind === 'regard') && enemy.advantage >= 1) return applyGaze(get, set, enemy);
@@ -2532,7 +2429,7 @@ export function aiMaybeSpecialAction(get: () => GameState, set: any, enemy: Comb
  *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
  *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
  *  true si une modale s'est ouverte (tour SUSPENDU). */
-export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Combatant): boolean {
+export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): boolean {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) { enemy.pendingFreeAttacks = undefined; return false; }
   const battle = get().battle;
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
@@ -2585,7 +2482,7 @@ export function aiCreatureFreeAttacks(get: () => GameState, set: any, enemy: Com
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: () => GameState, set: any, caster: Combatant, severity: MiscastSeverity): string[] {
+export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity): string[] {
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
   const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
   const m = rollMiscast(severity, battleRng(), sinPoints);
@@ -2619,7 +2516,7 @@ export function applyMiscast(get: () => GameState, set: any, caster: Combatant, 
  * fournit la RÉSOLUTION des acteurs (`actorIn`/`touchActors`), ce helper la finalisation.
  * `selectedSpell:null` est neutre pour une action non-incantation (déjà null).
  */
-export function finishPlayerAction(get: () => GameState, set: any, lines: string[], kind: CombatEventKind = 'info'): void {
+export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: CombatEventKind = 'info'): void {
   const battle = get().battle;
   if (battle) {
     set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...evLines(lines, kind)] } });
@@ -2636,8 +2533,8 @@ export function finishPlayerAction(get: () => GameState, set: any, lines: string
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
 /** Ouvre la modale d'incantation (jet différé, façon attaque) : pose `pendingCast` sans lancer. */
 export function castSpell(
-  get: () => GameState,
-  set: any,
+  get: Get,
+  set: SetFn,
   caster: Combatant,
   target: Combatant,
   label: string,
@@ -2706,7 +2603,7 @@ export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
  *  désigner, le centre se choisit APRÈS le jet et la Surincantation (+Zone agrandit le gabarit).
  *  `targetId` = ancre lanceur (aucun effet ne lui est appliqué — les cibles réelles sont
  *  recensées à la pose). Retourne false si le sort n'est PAS une zone chiffrable. */
-export function castZoneSpell(get: () => GameState, set: any, caster: Combatant, label: string): boolean {
+export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: string): boolean {
   const spell = findSpell(label);
   if (!spell) return false;
   const r0m = zoneRadiusMeters(spell, caster);
@@ -2748,7 +2645,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'battle'>): Pla
 
 /** La case `pt` est-elle une POSE valide pour la zone en cours ? Portée depuis l'ancre + Ligne
  *  de Vue vers le point (LDB 46 l.170/202) — partagé par le gabarit (couleur) et le clic. */
-export function placedZoneValidAt(get: () => GameState, pz: PlacingZone, pt: Pt): boolean {
+export function placedZoneValidAt(get: Get, pz: PlacingZone, pt: Pt): boolean {
   const caster = get().battle?.combatants.find((c) => c.id === pz.casterId);
   if (!caster?.pos) return false;
   if (pz.rangeTiles != null && chebyshev(caster.pos, pt) > pz.rangeTiles) return false;
@@ -2756,7 +2653,7 @@ export function placedZoneValidAt(get: () => GameState, pz: PlacingZone, pt: Pt)
 }
 
 /** Dépose la zone en cours sur `pt` — dispatch par source (chaque consommateur garde ses gates). */
-export function commitPlacedZone(get: () => GameState, set: any, pt: Pt): void {
+export function commitPlacedZone(get: Get, set: SetFn, pt: Pt): void {
   const pz = placingZoneOf(get());
   if (!pz) return;
   if (pz.source === 'cast') castCommitZone(get, set, pt);
@@ -2766,7 +2663,7 @@ export function commitPlacedZone(get: () => GameState, set: any, pt: Pt): void {
  *  de Vue vers le point (LDB 46 l.170/202), puis applique le MÊME jet à tous les combattants du
  *  rayon FINAL — parité avec l'ancien flux (premier = target, reste = extraTargets,
  *  evaluateMissile par cible). Zone posée dans le vide : Sort lancé, Action consommée. */
-export function castCommitZone(get: () => GameState, set: any, pt: Pt): void {
+export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   const pc = get().pendingCast;
   const battle = get().battle;
   if (!pc?.zone || !pc.result || !battle) return;
@@ -2811,7 +2708,7 @@ export type SpellSight = { scene: Scene; smoke?: Pt[] } | null;
 const spellSightBlocked = (sight: SpellSight | undefined, caster: Combatant, t: Combatant): boolean =>
   !!sight && !!caster.pos && !!t.pos && lineOfSightCover(sight.scene, caster.pos, t.pos, [], sight.smoke ?? []).blocked;
 /** SpellSight depuis l'état courant (scène + fumée du combat), null hors combat. */
-export const spellSightOf = (get: () => GameState): SpellSight =>
+export const spellSightOf = (get: Get): SpellSight =>
   get().scene && get().battle ? { scene: get().scene!, smoke: smokeOf(get().battle!) } : null;
 
 /** Meilleur Projectile magique CONNU et jouable d'un ennemi (IA). Un Sort n'aboutit que si
@@ -2921,7 +2818,7 @@ export function counterspellCandidates(
  *  Langue (Magick) (LDB 46 l.201-202) — dissipé si le contre-lanceur gagne, sinon l'incantation se
  *  re-détermine au DR NET. Marque l'essai du Round et re-dérive le résultat (Projectile compris) ;
  *  la Surincantation est re-planifiée (IA) ou remise à zéro (héros — le budget a changé). */
-export function applyCounterspell(get: () => GameState, set: any, counter: Combatant): boolean {
+export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
   const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
@@ -2959,8 +2856,8 @@ export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
 /** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
 export function applyCast(
-  get: () => GameState,
-  set: any,
+  get: Get,
+  set: SetFn,
   caster: Combatant,
   target: Combatant,
   spell: NonNullable<ReturnType<typeof findSpell>>,
@@ -3287,7 +3184,7 @@ export function castInfoIsPrayer(type: string): boolean {
  *  lanceur→cible centré sur la cible ; Grands feux : disque autour de la cible). Durée = celle
  *  du sort (× Surincantation), formules résolues contre le LANCEUR. Hors combat : narratif. */
 function placeSpellZone(
-  get: () => GameState,
+  get: Get,
   caster: Combatant,
   target: Combatant,
   spell: { label: string },
@@ -3367,7 +3264,7 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: { type: 
 
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
  *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés. */
-export function finalizeBattle(get: () => GameState, set: any): void {
+export function finalizeBattle(get: Get, set: SetFn): void {
   const { battle, party } = get();
   if (!battle) return;
   // « Après un combat où vous avez subi une Blessure critique » (LDB 20 l.72) : Test de Résistance Très
@@ -3425,7 +3322,7 @@ export function finalizeBattle(get: () => GameState, set: any): void {
   set({ party: newParty, ...(infectLog.length ? { journal: [...get().journal.slice(-40), ...infectLog] } : {}) });
 }
 
-export function checkBattleOver(get: () => GameState, set: any): boolean {
+export function checkBattleOver(get: Get, set: SetFn): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return true;
   // Combat monté (LDB 14 l.212-225) : une monture mise hors de combat désarçonne son cavalier (strict
@@ -3486,7 +3383,7 @@ export function checkBattleOver(get: () => GameState, set: any): boolean {
 /** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
  *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
  *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
-export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean): void {
+export function resolveBladeTrap(get: Get, set: SetFn, trap: boolean): void {
   const { battle, pendingBladeTrap: pbt } = get();
   if (!battle || !pbt) return;
   set({ pendingBladeTrap: null });
@@ -3532,13 +3429,13 @@ export function resolveBladeTrap(get: () => GameState, set: any, trap: boolean):
 
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
-export function resumeEnemyTurn(get: () => GameState, set: any): void {
+export function resumeEnemyTurn(get: Get, set: SetFn): void {
   const b = get().battle;
   if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
-export function advanceTurn(get: () => GameState, set: any) {
+export function advanceTurn(get: Get, set: SetFn) {
   const battle = get().battle;
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
@@ -3692,7 +3589,7 @@ export function advanceTurn(get: () => GameState, set: any) {
  * + Engagement (une seule fois, après toutes les morts) ; (4) pré-emption d'initiative (Chance,
  * 3e usage) sinon sélection de l'acteur + IA. Rappelée par fate* après résolution d'une mort lente.
  */
-export function resolveRoundBoundary(get: () => GameState, set: any): void {
+export function resolveRoundBoundary(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle || battle.over) return;
   // (1) Un héros mourant à Destin non résolu → suspend (LDB ch.17 l.31-35).
@@ -3746,7 +3643,7 @@ export function resolveRoundBoundary(get: () => GameState, set: any): void {
 }
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
-export function maybeRunEnemyTurn(get: () => GameState, set: any) {
+export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle;
   if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
@@ -3758,7 +3655,7 @@ export function maybeRunEnemyTurn(get: () => GameState, set: any) {
  *  Intermédiaire (+0) ou gagner un État Brisé. » Appelé APRÈS le déplacement de `mover` (IA) : tout héros
  *  qui le craint (Peur active non vaincue) ET dont il s'est rapproché fait un Test de Calme ; échec → Brisé.
  *  Jet montré en révélation témoin (comme la Fuite). */
-export function approachFearTrigger(get: () => GameState, set: any, mover: Combatant, fromPos: Pt): void {
+export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, fromPos: Pt): void {
   const battle = get().battle;
   if (!battle || !mover.pos) return;
   const approachKey = `${battle.round}:${battle.turn}`; // UN Test par Tour de la source (l.29) —
@@ -3783,7 +3680,7 @@ export function approachFearTrigger(get: () => GameState, set: any, mover: Comba
  *    retirant 1 + DR États Brisé sur un succès ;
  *  - +1 État Brisé retiré si l'on est resté caché hors de vue de TOUT ennemi ce Round (l.59).
  *  Émet chaque ligne via `sink(line, combattant)` — l'entretien de Round partitionne héros/ennemis. */
-export function brokenRecovery(get: () => GameState, sink: (line: string, c: Combatant) => void): void {
+export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void): void {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle) return;
@@ -3814,7 +3711,7 @@ export function brokenRecovery(get: () => GameState, sink: (line: string, c: Com
 /** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources
  *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
  *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
-export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant): void {
+export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return;
   const battle = get().battle;
   const scene = get().scene;
@@ -3873,7 +3770,7 @@ export function resolvePsychAI(get: () => GameState, set: any, enemy: Combatant)
 
 /** Premier Test de Psychologie DÛ pour un combattant (héros) ce Round : nouvelle source de Peur/Terreur
  *  en Ligne de Vue, ou Peur active non encore testée ce Round. Pur de lecture (ne mute pas). */
-export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: PsychType; sourceId: string; indice: number; prevDR: number; cible?: string } | null {
+export function collectHeroPsych(get: Get, c: Combatant): { kind: PsychType; sourceId: string; indice: number; prevDR: number; cible?: string } | null {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !c.pos || isPsychImmune(c)) return null; // Immunité psy (trait/Frénésie/Détermination temp)
@@ -3902,7 +3799,7 @@ export function collectHeroPsych(get: () => GameState, c: Combatant): { kind: Ps
 
 /** Ouvre la modale de Test de Calme/Psychologie si le combattant ACTIF est un héros qui doit tester
  *  (LDB 21). No-op si une autre modale/révélation est en cours. */
-export function maybeOpenHeroPsych(get: () => GameState, set: any): void {
+export function maybeOpenHeroPsych(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle || battle.over || get().pendingPsych || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
   const active = activeCombatant(battle);
@@ -3914,7 +3811,7 @@ export function maybeOpenHeroPsych(get: () => GameState, set: any): void {
 
 /** Fin de Frénésie (LDB 21 l.36) : si plus aucun adversaire vivant en Ligne de Vue, ou si Sonné /
  *  Inconscient → quitte la Frénésie et gagne **Exténué**. À appeler au début du tour du combattant. */
-export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): void {
+export function endFrenzyIfDone(get: Get, set: SetFn, c: Combatant): void {
   if (!c.frenzied) return;
   const battle = get().battle;
   const scene = get().scene;
@@ -3933,7 +3830,7 @@ export function endFrenzyIfDone(get: () => GameState, set: any, c: Combatant): v
 /** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.32) : combattant capable, pas déjà
  *  frenzied ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
  *  Mentale ; sur un succès, il entre en Frénésie (gérée ensuite par les drapeaux). Instantané, journalisé. */
-export function aiMaybeFrenzy(get: () => GameState, set: any, enemy: Combatant): void {
+export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   if (enemy.kind !== 'enemy' || enemy.frenzied || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
   const battle = get().battle;
   const scene = get().scene;
@@ -3948,7 +3845,7 @@ export function aiMaybeFrenzy(get: () => GameState, set: any, enemy: Combatant):
   }
 }
 
-export function runEnemyAI(get: () => GameState, set: any, enemyId: string) {
+export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
   const enemy = battle.combatants.find((c) => c.id === enemyId);

@@ -11,6 +11,7 @@
  * seulement les résolveurs PURS (`resolveTerreurTest`/`resolveCalmeSimple`) et `encounterPsych`.
  */
 import type { GameState } from './store';
+import type { Get, Set } from './flowTypes';
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { spawnEnemy } from './spawn';
@@ -42,7 +43,7 @@ export function sceneFearSources(scene: Scene): Combatant[] {
 
 /** Ouvre le 1er Test de Psychologie de rencontre dû (hors combat). No-op en combat, si une modale est déjà
  *  ouverte, ou sans scène/PNJ. Auto-appelé à l'entrée de scène et après chaque résolution (chaînage). */
-export function openEncounterPsych(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function openEncounterPsych(get: Get, set: Set): void {
   const s = get();
   if (s.battle || s.pendingEncounterPsych || !s.scene) return;
   const npcs = sceneFearSources(s.scene);
@@ -67,7 +68,7 @@ function rollFor(pe: PendingEncounterPsych, hero: Combatant): PendingEncounterPs
   return { roll: r.roll, success: r.success, target: r.target, sl: r.sl };
 }
 
-export function encounterPsychRoll(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychRoll(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || pe.result) return;
   const hero = party.find((h) => h.id === pe.heroId);
@@ -75,7 +76,7 @@ export function encounterPsychRoll(get: () => GameState, set: (s: Partial<GameSt
   set({ pendingEncounterPsych: { ...pe, result: rollFor(pe, hero) } });
 }
 
-export function encounterPsychReroll(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychReroll(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || !pe.result) return;
   if (!canReroll(!pe.result.success, !!pe.rerolled)) return;
@@ -90,7 +91,7 @@ export function encounterPsychReroll(get: () => GameState, set: (s: Partial<Game
 
 /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER le Test raté — même déjà
  *  relancé par la Chance (le Pacte reste disponible : chaque usage corrompt, c'est sa limite). */
-export function encounterPsychDarkPact(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychDarkPact(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || !pe.result || pe.result.success) return; // on ne pactise que pour relancer un Test RATÉ
   const hero = party.find((h) => h.id === pe.heroId);
@@ -100,7 +101,7 @@ export function encounterPsychDarkPact(get: () => GameState, set: (s: Partial<Ga
   set({ pendingEncounterPsych: { ...get().pendingEncounterPsych!, result: rollFor(pe, hero) }, party: [...get().party] });
 }
 
-export function encounterPsychForceSuccess(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychForceSuccess(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || pe.result?.success) return;
   const hero = party.find((h) => h.id === pe.heroId);
@@ -113,7 +114,7 @@ export function encounterPsychForceSuccess(get: () => GameState, set: (s: Partia
 
 /** Détermination (LDB 17 l.62) : dépense 1 point de Détermination → immunité à la Psychologie, la
  *  rencontre est surmontée d'office (retour playtest #6 : pouvoir se protéger des effets psy d'un clic). */
-export function encounterPsychResolve(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychResolve(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe) return;
   const hero = party.find((h) => h.id === pe.heroId);
@@ -123,7 +124,7 @@ export function encounterPsychResolve(get: () => GameState, set: (s: Partial<Gam
   set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
 }
 
-export function encounterPsychConfirm(get: () => GameState, set: (s: Partial<GameState>) => void): void {
+export function encounterPsychConfirm(get: Get, set: Set): void {
   const { pendingEncounterPsych: pe, party } = get();
   if (!pe || !pe.result) return;
   const hero = party.find((h) => h.id === pe.heroId);

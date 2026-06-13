@@ -276,6 +276,8 @@ export interface PendingPsych {
   cible?: string;
   result: { roll: number; target?: number; sl?: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
   rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73) → sur une Peur, le joueur CHOISIT la valeur du dé. */
+  forced?: boolean;
 }
 /** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
 export interface PendingFrenzy {

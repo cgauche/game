@@ -23,6 +23,7 @@ export function PsychModal() {
   const bonusSL = useGame((s) => s.psychBonusSL);
   const darkPact = useGame((s) => s.psychDarkPact);
   const force = useGame((s) => s.psychForceSuccess);
+  const setForcedRoll = useGame((s) => s.psychSetForcedRoll);
   const determine = useGame((s) => s.psychResolve);
   const confirm = useGame((s) => s.psychConfirm);
   if (!pp || !battle) return null;
@@ -74,6 +75,9 @@ export function PsychModal() {
       resilience={c.resilience ?? 0}
       onForce={force}
       forceShow={!ok}
+      /* « Je ne faillirai pas ! » sur une Peur (Test ÉTENDU, non opposé) : choix de la valeur du dé
+         (LDB 17 l.73) — le DR gagné se cumule vers l'Indice. Binaire (ciblé/Terreur) → pas de choix. */
+      forcedRoll={pp.forced && !isCible && !isTerreur && r ? { roll: r.roll, target: r.target ?? calmeValue(c), onSet: setForcedRoll } : undefined}
       onConfirm={confirm}
     />
   );

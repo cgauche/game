@@ -707,6 +707,8 @@ export interface GameState {
   psychReroll: () => void;
   psychBonusSL: () => void;
   psychForceSuccess: () => void;
+  /** « Je ne faillirai pas ! » (LDB 17 l.73) sur une Peur : choix de la valeur du dé du Test de Calme forcé. */
+  psychSetForcedRoll: (roll: number) => void;
   psychDarkPact: () => void;
   /** Détermination (LDB 17 l.62) : immunité Psychologie → passe la Peur/Terreur/trait sans risque. */
   psychResolve: () => void;
@@ -1737,6 +1739,7 @@ export const useGame = create<GameState>((set, get) => ({
   psychReroll: () => FLOWS.psych.reroll(get, set),
   psychBonusSL: () => FLOWS.psych.bonusSL(get, set),
   psychForceSuccess: () => FLOWS.psych.forceSuccess(get, set),
+  psychSetForcedRoll: (roll) => FLOWS.psych.setForcedRoll(get, set, roll),
   psychDarkPact: () => FLOWS.psych.darkPact(get, set),
   psychResolve: () => {
     // Détermination (LDB 17 l.62) : immunité TEMPORAIRE à la Psychologie (ce Round + le prochain) — elle

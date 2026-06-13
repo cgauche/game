@@ -28,8 +28,7 @@ import { findCareer, levelsForCareer, findTrapping, findTalent } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
-type Get = () => GameState;
-type Set = (s: Partial<GameState>) => void;
+import type { Get, Set } from './flowTypes';
 
 export interface InterludeHeroState {
   /** Jet d100 sur le Tableau des Événements (LDB 22). */
