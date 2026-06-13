@@ -27,8 +27,7 @@ export { Dice } from './Dice';
  * - `onBonusSL` absent : Test binaire → pas de bouton « +1 DR » ;
  * - `onForce` absent : pas de Résilience (flux sans « Réussite garantie ») ;
  * - `preRollForce` : action Résilience pré-jet spécifique (ex. Piétinement : lancer PUIS forcer) ;
- * - `cancelFirst` historique : « Annuler » est désormais TOUJOURS à gauche (barre normée) ;
- *   `cancelAfterRoll` : Annuler aussi après le jet (Piétinement, Focalisation) ;
+ * - `cancelAfterRoll` : Annuler aussi après le jet (Piétinement, Focalisation) ;
  * - `rows`/`winnerIndex`/`netSL` : Test opposé riche (portraits + vainqueur accentué).
  */
 export function RollFlowShell({
@@ -86,8 +85,6 @@ export function RollFlowShell({
   onRoll: () => void;
   /** Absent → pas de bouton « Annuler ». */
   onCancel?: () => void;
-  /** @deprecated la barre normée place toujours « Annuler » à gauche. */
-  cancelFirst?: boolean;
   cancelAfterRoll?: boolean;
   /** Ligne(s) de jet riche(s) (base = cible · d100 · DR), façon Attaque/Défense — un tableau pour
    *  les Tests opposés (acteur puis opposant). */

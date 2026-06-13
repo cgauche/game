@@ -61,7 +61,6 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       rolled={rolled}
       onRoll={roll}
       onCancel={cancel}
-      cancelFirst
       breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
       pending={testPending('Guérison', ph.skillValue, ph.target, ph.difficulty)}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
