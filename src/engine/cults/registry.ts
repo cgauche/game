@@ -11,7 +11,15 @@ export type { CultDef } from './types';
 /** Table des cultes par clé (« Sigmar » → CultDef). */
 export const CULTS: Record<string, CultDef> = Object.fromEntries(CULT_DEFS.map((c) => [c.key, c]));
 
-/** Labels complets des six Bénédictions d'un culte (« Bataille » → « Bénédiction de Bataille »). */
+/** Noms des cultes disponibles (pour le choix de divinité à la création). */
+export const CULT_KEYS: string[] = CULT_DEFS.map((c) => c.key).sort();
+
+/** Les six Bénédictions d'un culte, libellés complets (« Bénédiction de Bataille »). */
 export function blessingsOf(cult: string): string[] {
-  return (CULTS[cult]?.blessings ?? []).map((x) => `Bénédiction de ${x}`);
+  return CULTS[cult]?.blessings ?? [];
+}
+
+/** Les Miracles d'un culte (« Invitation »…). */
+export function miraclesOf(cult: string): string[] {
+  return CULTS[cult]?.miracles ?? [];
 }

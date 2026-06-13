@@ -8,9 +8,9 @@
  * IMPORTANT : on ne livre jamais all-data.json tel quel ; ce script produit
  * notre propre format. Lancer avec `npm run build:data`.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -19,8 +19,9 @@ const OUT = resolve(ROOT, 'src/data');
 
 /** Livres autorisés (contenu complet) : Livre de base + Archives de l'Empire I & II + suppléments
  *  retenus par le GM — EDO (L'Ennemi dans l'Ombre : sorts de Tzeentch, créatures du Chaos),
- *  Middenheim (3 origines humaines + carrière Frère Loup), EDOC (véhicules du Compagnon). */
-const ALLOWED = new Set(['LDB', 'ADE1', 'ADE2', 'EDO', 'Middenheim', 'EDOC']);
+ *  Middenheim (3 origines humaines + carrière Frère Loup), EDOC (véhicules du Compagnon),
+ *  NADJ (Nuits Agitées & Dures Journées : espèce Gnomes + dieux gnomes Evawn/Mabyn/Ringil). */
+const ALLOWED = new Set(['LDB', 'ADE1', 'ADE2', 'EDO', 'Middenheim', 'EDOC', 'NADJ']);
 /** Livres de CAMPAGNE (règle 2 : le contenu de campagne est éditable/posable) — admis pour le
  *  BESTIAIRE SEULEMENT : les statblocs de PNJ nommés (Eusapia Balacañon…) sont du contenu de
  *  scénario, pas des règles génériques (règle 1 reste LDB/ADE pour tout le reste). */
@@ -140,6 +141,31 @@ function main() {
     };
   });
   write('species.json', species, species.length);
+
+  // --- Cultes (dieux : six Bénédictions + Miracles, LDB 41-42) → cults/defs/ GÉNÉRÉS ----------
+  // Les cultes sont du DATA de livre (type `god`) : build-data écrit un fichier `defs/` par dieu
+  // AUTORISÉ (le registre gen-registry les assemble). Le dossier `defs/` est 100 % généré : ajouter
+  // un dieu = autoriser son livre. Bénédictions = libellés complets ; Miracles = séparés par « ; ».
+  const deburr = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const CULTS_DIR = resolve(ROOT, 'src/engine/cults/defs');
+  if (existsSync(CULTS_DIR)) {
+    for (const f of readdirSync(CULTS_DIR)) if (f.endsWith('.ts') && !f.startsWith('_')) unlinkSync(join(CULTS_DIR, f));
+  } else {
+    mkdirSync(CULTS_DIR, { recursive: true });
+  }
+  const cultDefs = keep(raw.god as Any[]).map((g: Any) => {
+    const slug = deburr(String(g.label)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const def = {
+      key: g.label,
+      title: norm(g.title) ?? undefined,
+      blessings: splitList(g.blessings),
+      miracles: String(g.miracles ?? '').split(';').map((x: string) => x.trim()).filter(Boolean),
+    };
+    const body = `import type { CultDef } from '../types';\n\n// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.\nexport const cult: CultDef = ${JSON.stringify(def, null, 2)};\n`;
+    writeFileSync(join(CULTS_DIR, `${slug}.ts`), body, 'utf8');
+    return def;
+  });
+  console.log(`  ✓ cults/defs/ (généré)   ${cultDefs.length} dieux`);
 
   // --- Classes --------------------------------------------------------------
   const classes = keep(raw.class).filter((c: Any) => !DENY_CLASS.has(c.label)).map((c: Any) => ({

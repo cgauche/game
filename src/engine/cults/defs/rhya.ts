@@ -1,7 +1,16 @@
 import type { CultDef } from '../types';
 
-/** Culte de Rhya, déesse de la Fertilité (LDB 30/41). */
+// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.
 export const cult: CultDef = {
-  key: 'Rhya',
-  blessings: ['Conscience', 'Convalescence', 'Grâce', 'Guérison', 'Protection', 'Souffle'],
+  "key": "Rhya",
+  "title": "Déesse de la festilité",
+  "blessings": [
+    "Bénédiction de Conscience",
+    "Bénédiction de Convalescence",
+    "Bénédiction de Grâce",
+    "Bénédiction de Guérison",
+    "Bénédiction de Protection",
+    "Bénédiction de Souffle"
+  ],
+  "miracles": []
 };

@@ -1,7 +1,16 @@
 import type { CultDef } from '../types';
 
-/** Culte d'Ulric, dieu de la Guerre (LDB 34/41). */
+// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.
 export const cult: CultDef = {
-  key: 'Ulric',
-  blessings: ['Bataille', 'Courage', 'Puissance', 'Sauvagerie', 'Ténacité', 'Vigueur'],
+  "key": "Ulric",
+  "title": "Dieu de la guerre",
+  "blessings": [
+    "Bénédiction de Bataille",
+    "Bénédiction de Courage",
+    "Bénédiction de Puissance",
+    "Bénédiction de Sauvagerie",
+    "Bénédiction de Ténacité",
+    "Bénédiction de Vigueur"
+  ],
+  "miracles": []
 };

@@ -1,8 +1,13 @@
-/** Un culte et ses six Bénédictions (LDB 41). 1 culte = 1 fichier dans `cults/defs/` →
- *  ajouter un dieu = déposer un fichier, zéro code applicatif. */
+/** Un culte : ses six Bénédictions + ses Miracles (LDB 41-42 ; suppléments). Les fichiers
+ *  `cults/defs/` sont GÉNÉRÉS par `build-data` depuis le type `god` de all-data.json (filtré aux
+ *  livres autorisés) : ajouter un dieu = autoriser son livre puis `npm run build:data`. */
 export interface CultDef {
-  /** Nom du culte (clé : « Sigmar », « Shallya »…). */
+  /** Nom du culte (clé : « Sigmar », « Evawn »…). */
   key: string;
-  /** Les SIX Bénédictions par suffixe (« Bataille » → « Bénédiction de Bataille », LDB 41). */
+  /** Titre/épithète (« dieu de l'Empire »). */
+  title?: string;
+  /** Les six Bénédictions, libellés COMPLETS (« Bénédiction de Bataille »), LDB 41. */
   blessings: string[];
+  /** Les Miracles du culte, par nom (« Invitation »…), LDB 42 + suppléments. */
+  miracles: string[];
 }

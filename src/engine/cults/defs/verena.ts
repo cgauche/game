@@ -1,7 +1,16 @@
 import type { CultDef } from '../types';
 
-/** Culte de Verena, déesse de la sagesse (LDB 35/41). */
+// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.
 export const cult: CultDef = {
-  key: 'Verena',
-  blessings: ['Chance', 'Conscience', 'Courage', 'Droiture', 'Sagesse', 'Vivacité'],
+  "key": "Verena",
+  "title": "Déesse de la sagesse",
+  "blessings": [
+    "Bénédiction de Chance",
+    "Bénédiction de Conscience",
+    "Bénédiction de Courage",
+    "Bénédiction de Droiture",
+    "Bénédiction de Sagesse",
+    "Bénédiction de Vivacité"
+  ],
+  "miracles": []
 };

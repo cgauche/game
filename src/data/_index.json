@@ -1,19 +1,20 @@
 {
-  "generatedAt": "2026-06-12T20:27:19.018Z",
+  "generatedAt": "2026-06-13T20:23:02.043Z",
   "allowedBooks": [
     "LDB",
     "ADE1",
     "ADE2",
     "EDO",
     "Middenheim",
-    "EDOC"
+    "EDOC",
+    "NADJ"
   ],
   "skippedByBook": {
-    "SOC": 33,
+    "ADE3": 32,
+    "SOC": 34,
     "AA": 25,
     "VDLM": 150,
     "Lustria": 4,
-    "ADE3": 30,
     "Salzemund": 1
   },
   "counts": {

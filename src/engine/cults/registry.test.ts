@@ -1,17 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { CULTS, blessingsOf } from './registry';
+import { CULTS, blessingsOf, miraclesOf } from './registry';
 import { CULT_DEFS } from './_registry.generated';
 
-describe('Registre des cultes (defs/ auto-chargé, gen-registry) — LDB 41', () => {
-  it('les 10 cultes du panthéon sont chargés, six Bénédictions chacun', () => {
-    expect(CULT_DEFS).toHaveLength(10);
+describe('Registre des cultes (defs/ généré par build-data depuis le type god) — LDB 41-42 + NADJ', () => {
+  it('cultes chargés (10 LDB + 3 dieux gnomes NADJ), six Bénédictions chacun', () => {
+    expect(CULT_DEFS).toHaveLength(13);
     for (const c of CULT_DEFS) expect(c.blessings).toHaveLength(6);
     expect(Object.keys(CULTS).sort()).toEqual(
-      ['Manann', 'Morr', 'Myrmidia', 'Ranald', 'Rhya', 'Shallya', 'Sigmar', 'Taal', 'Ulric', 'Verena'],
+      ['Evawn', 'Mabyn', 'Manann', 'Morr', 'Myrmidia', 'Ranald', 'Rhya', 'Ringil', 'Shallya', 'Sigmar', 'Taal', 'Ulric', 'Verena'],
     );
   });
-  it('blessingsOf préfixe « Bénédiction de » ; culte inconnu → []', () => {
+  it('blessingsOf = libellés complets ; culte inconnu → []', () => {
     expect(blessingsOf('Sigmar')).toContain('Bénédiction de Protection');
     expect(blessingsOf('Khorne')).toEqual([]);
+  });
+  it('miraclesOf : les dieux gnomes NADJ portent leurs Miracles (fichier god)', () => {
+    expect(miraclesOf('Evawn')).toContain('Invitation');
+    expect(miraclesOf('Khorne')).toEqual([]);
   });
 });
