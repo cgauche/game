@@ -111,16 +111,16 @@ export function CompendiumScreen() {
             aria-label="Rechercher dans le Codex"
           />
           <div className="codex-rows">
+            {/* Liste TOUJOURS plate (aspect cohérent entre catégories) ; les hiérarchies n'ajoutent
+                qu'un séparateur léger par groupe (muet, collant), pas une structure différente. */}
             {grouped
-              ? grouped.map(([g, items]) => (
-                  <details key={g} className="codex-group" open>
-                    <summary className="codex-group-head">
-                      <span>{g}</span>
-                      <span className="count">{items.length}</span>
-                    </summary>
-                    {items.map((it, i) => renderRow(it, `${g}-${it.label}-${i}`))}
-                  </details>
-                ))
+              ? grouped.flatMap(([g, items]) => [
+                  <div key={`grp-${g}`} className="codex-grouplbl">
+                    <span>{g}</span>
+                    <span className="count">{items.length}</span>
+                  </div>,
+                  ...items.map((it, i) => renderRow(it, `${g}-${it.label}-${i}`)),
+                ])
               : list.map((it, i) => renderRow(it, `${it.label}__${i}`))}
             {list.length === 0 && <div className="codex-noresult">Aucun résultat</div>}
           </div>

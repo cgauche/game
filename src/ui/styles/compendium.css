@@ -259,42 +259,23 @@
   color: var(--gold2);
 }
 
-/* ── Liste hiérarchique (groupes repliables) ── */
-.codex-group {
-  border-bottom: 1px solid var(--border);
-}
-.codex-group > summary {
+/* ── Hiérarchie : séparateur de groupe LÉGER (même liste plate, aspect cohérent) ── */
+.codex-grouplbl {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px 5px;
-  cursor: pointer;
-  list-style: none;
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--gold2);
-  letter-spacing: 0.3px;
+  padding: 9px 8px 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
   position: sticky;
   top: 0;
   background: var(--panel);
   z-index: 1;
 }
-.codex-group > summary::-webkit-details-marker {
-  display: none;
-}
-.codex-group > summary::before {
-  content: '▾';
-  color: var(--muted);
-  font-size: 11px;
-}
-.codex-group:not([open]) > summary::before {
-  content: '▸';
-}
-.codex-group > summary .count {
+.codex-grouplbl .count {
   margin-left: auto;
-}
-.codex-group .codex-row {
-  margin-left: 8px;
 }
 
 /* ── CodexRef : libellé enrichi + popover (hover/focus) ── */
