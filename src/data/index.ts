@@ -122,6 +122,9 @@ export interface CreatureData {
   spells: string[];
   desc: string | null;
   source: { book: string; page: number };
+  /** Espèce d'apparence EXPLICITE (clé `CreatureDef`, bipèdes) — remplace le match-par-nom POC du rig
+   *  (plan P1). Figée depuis la résolution actuelle ; le rig la lit, repli sur le nom si absente. */
+  species?: string;
 }
 export interface EtatData {
   label: string;

@@ -230,6 +230,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     id,
     name: creature.label,
     kind: 'enemy',
+    ...(creature.species ? { species: creature.species } : {}), // apparence EXPLICITE (P1a) → le rig la lit au lieu du match-par-nom
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,

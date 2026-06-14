@@ -34,7 +34,8 @@
     "source": {
       "book": "LDB",
       "page": 311
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Nain",
@@ -74,7 +75,8 @@
     "source": {
       "book": "LDB",
       "page": 311
-    }
+    },
+    "species": "Nain"
   },
   {
     "label": "Halfling",
@@ -111,7 +113,8 @@
     "source": {
       "book": "LDB",
       "page": 311
-    }
+    },
+    "species": "Halfling"
   },
   {
     "label": "Elfe (haut et sylvain)",
@@ -154,7 +157,8 @@
     "source": {
       "book": "LDB",
       "page": 311
-    }
+    },
+    "species": "Haut-Elfe"
   },
   {
     "label": "Ogre",
@@ -195,7 +199,8 @@
     "source": {
       "book": "LDB",
       "page": 312
-    }
+    },
+    "species": "Ogre"
   },
   {
     "label": "Bella la Noire",
@@ -234,7 +239,8 @@
     "source": {
       "book": "LDB",
       "page": 313
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Pol Dankels",
@@ -271,7 +277,8 @@
     "source": {
       "book": "LDB",
       "page": 313
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Eusapia Balacañon",
@@ -347,7 +354,8 @@
     "source": {
       "book": "MSR",
       "page": 48
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Araignée géante",
@@ -963,7 +971,8 @@
     "source": {
       "book": "LDB",
       "page": 319
-    }
+    },
+    "species": "Fimir"
   },
   {
     "label": "Géant",
@@ -1008,7 +1017,8 @@
     "source": {
       "book": "LDB",
       "page": 320
-    }
+    },
+    "species": "Géant"
   },
   {
     "label": "Griffon",
@@ -1406,7 +1416,8 @@
     "source": {
       "book": "LDB",
       "page": 324
-    }
+    },
+    "species": "Troll"
   },
   {
     "label": "Vouivre",
@@ -1490,7 +1501,8 @@
     "source": {
       "book": "LDB",
       "page": 325
-    }
+    },
+    "species": "Orc"
   },
   {
     "label": "Gobelin",
@@ -1533,7 +1545,8 @@
     "source": {
       "book": "LDB",
       "page": 326
-    }
+    },
+    "species": "Gobelin"
   },
   {
     "label": "Snotling",
@@ -1573,7 +1586,8 @@
     "source": {
       "book": "LDB",
       "page": 326
-    }
+    },
+    "species": "Snotling"
   },
   {
     "label": "Banshee",
@@ -1750,7 +1764,8 @@
     "source": {
       "book": "LDB",
       "page": 328
-    }
+    },
+    "species": "Goule"
   },
   {
     "label": "Loup funeste",
@@ -1883,7 +1898,8 @@
     "source": {
       "book": "LDB",
       "page": 329
-    }
+    },
+    "species": "Squelette"
   },
   {
     "label": "Vampire",
@@ -1938,7 +1954,8 @@
     "source": {
       "book": "LDB",
       "page": 330
-    }
+    },
+    "species": "Vampire"
   },
   {
     "label": "Zombie",
@@ -1984,7 +2001,8 @@
     "source": {
       "book": "LDB",
       "page": 330
-    }
+    },
+    "species": "Zombie"
   },
   {
     "label": "Chamane-Brey",
@@ -2028,7 +2046,8 @@
     "source": {
       "book": "LDB",
       "page": 331
-    }
+    },
+    "species": "Chamane-Brey"
   },
   {
     "label": "Gor",
@@ -2074,7 +2093,8 @@
     "source": {
       "book": "LDB",
       "page": 332
-    }
+    },
+    "species": "Gor"
   },
   {
     "label": "Minotaure",
@@ -2119,7 +2139,8 @@
     "source": {
       "book": "LDB",
       "page": 332
-    }
+    },
+    "species": "Minotaure"
   },
   {
     "label": "Ungor",
@@ -2162,7 +2183,8 @@
     "source": {
       "book": "LDB",
       "page": 332
-    }
+    },
+    "species": "Ungor"
   },
   {
     "label": "Cultiste",
@@ -2199,7 +2221,8 @@
     "source": {
       "book": "LDB",
       "page": 333
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Mutant",
@@ -2235,7 +2258,8 @@
     "source": {
       "book": "LDB",
       "page": 333
-    }
+    },
+    "species": "Humain"
   },
   {
     "label": "Guerrier du Chaos",
@@ -2278,7 +2302,8 @@
     "source": {
       "book": "LDB",
       "page": 334
-    }
+    },
+    "species": "Guerrier du Chaos"
   },
   {
     "label": "Sanguinaire de Khorne",
@@ -2320,7 +2345,8 @@
     "source": {
       "book": "LDB",
       "page": 335
-    }
+    },
+    "species": "Démon"
   },
   {
     "label": "Démonette de Slaanesh",
@@ -2359,7 +2385,8 @@
     "source": {
       "book": "LDB",
       "page": 335
-    }
+    },
+    "species": "Démonette"
   },
   {
     "label": "Furie du Chaos",
@@ -2408,7 +2435,8 @@
     "source": {
       "book": "EDO",
       "page": 84
-    }
+    },
+    "species": "Furie du Chaos"
   },
   {
     "label": "Horreur rose",
@@ -2455,7 +2483,8 @@
     "source": {
       "book": "EDO",
       "page": 85
-    }
+    },
+    "species": "Horreur rose"
   },
   {
     "label": "Horreur bleue",
@@ -2500,7 +2529,8 @@
     "source": {
       "book": "EDO",
       "page": 85
-    }
+    },
+    "species": "Horreur bleue"
   },
   {
     "label": "Slenderthigh Whiptongue",
@@ -2629,7 +2659,8 @@
     "source": {
       "book": "LDB",
       "page": 337
-    }
+    },
+    "species": "Skaven"
   },
   {
     "label": "Rat ogre",
@@ -2675,7 +2706,8 @@
     "source": {
       "book": "LDB",
       "page": 337
-    }
+    },
+    "species": "Rat ogre"
   },
   {
     "label": "Vermine de choc",
@@ -2714,6 +2746,7 @@
     "source": {
       "book": "LDB",
       "page": 337
-    }
+    },
+    "species": "Vermine de choc"
   }
 ]
