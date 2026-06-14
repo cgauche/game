@@ -74,6 +74,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   extendedTest: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)',
   forceDoor: 'Enfoncer une porte à plusieurs (objet BE/B)',
   setTime: 'Régler l’heure (jour/nuit)',
+  delayedEffect: 'Effet différé (minuterie / heure)',
   endDialogue: 'Fermer le dialogue',
 };
 
@@ -82,7 +83,7 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
   ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
   ['☠️ Afflictions', ['inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
-  ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime']],
+  ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
   ['🎲 Tests', ['test', 'extendedTest', 'forceDoor']],
@@ -94,7 +95,7 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
   startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
-  setTime: '🕰', endDialogue: '✖️',
+  setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
 };
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
@@ -138,6 +139,12 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'extendedTest': return `${icon} Test Étendu ${e.skill || e.characteristic || '?'} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
+    case 'delayedEffect': {
+      const when = e.afterMinutes != null
+        ? `dans ${e.afterMinutes} min`
+        : `à ${String(e.atHour ?? 0).padStart(2, '0')}:${String(e.atMinute ?? 0).padStart(2, '0')}`;
+      return `${icon} Différé ${when} → ${e.effects?.length ?? 0} effet(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
+    }
     case 'endDialogue': return `${icon} Fermer le dialogue`;
   }
 }
@@ -199,6 +206,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'mealParty' };
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
+    case 'delayedEffect':
+      return { type: 'delayedEffect', afterMinutes: 60, effects: [], cancelFlag: '' };
     default:
       return { type: 'journal', text: '' };
   }
@@ -381,6 +390,33 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
               ))}
             </select>
           </label>
+        )}
+        {effect.type === 'delayedEffect' && (
+          <div className="test-fields">
+            <div className="tf-row">
+              <select
+                value={e.afterMinutes != null ? 'rel' : 'abs'}
+                onChange={(ev) =>
+                  ev.target.value === 'rel'
+                    ? onChange({ type: 'delayedEffect', afterMinutes: e.afterMinutes ?? 60, effects: e.effects ?? [], cancelFlag: e.cancelFlag })
+                    : onChange({ type: 'delayedEffect', atHour: e.atHour ?? 0, atMinute: e.atMinute ?? 0, effects: e.effects ?? [], cancelFlag: e.cancelFlag })
+                }
+              >
+                <option value="rel">Compte à rebours (minutes)</option>
+                <option value="abs">Heure du jour (prochaine occurrence)</option>
+              </select>
+              {e.afterMinutes != null ? (
+                <label className="dr">dans <input type="number" min={0} value={e.afterMinutes ?? 0} onChange={(ev) => upd({ afterMinutes: Number(ev.target.value) })} /> min</label>
+              ) : (
+                <label className="dr">à <input type="number" min={0} max={23} value={e.atHour ?? 0} onChange={(ev) => upd({ atHour: Number(ev.target.value) })} />:<input type="number" min={0} max={59} value={e.atMinute ?? 0} onChange={(ev) => upd({ atMinute: Number(ev.target.value) })} /></label>
+              )}
+              <input placeholder="Flag d’annulation (désamorçage, optionnel)" value={e.cancelFlag ?? ''} onChange={(ev) => upd({ cancelFlag: ev.target.value || undefined })} />
+            </div>
+            <div className="branch">
+              <span className="branch-label">Effets à l’échéance :</span>
+              <EffectList effects={e.effects ?? []} onChange={(x) => upd({ effects: x })} ctx={ctx} />
+            </div>
+          </div>
         )}
         {effect.type === 'startCombat' && (
           <select value={e.encounter ?? ''} onChange={(ev) => upd({ encounter: ev.target.value })}>

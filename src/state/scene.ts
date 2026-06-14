@@ -221,6 +221,12 @@ export type Effect =
   | { type: 'forceDoor'; label: string; doorBE: number; doorB: number; flag?: string }
   | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
   | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
+  /** Effet PROGRAMMÉ (Lot 0) : `effects` est appliqué quand l'horloge atteint l'échéance —
+   *  `afterMinutes` (compte à rebours relatif : mèche de bombe) OU `atHour`/`atMinute` (prochaine
+   *  occurrence de cette heure du jour). Annulé si `cancelFlag` est posé avant l'échéance
+   *  (désamorçage). Déclenché au FRANCHISSEMENT dans `advanceTime` (le temps avance par actions
+   *  discrètes : un événement programmé entre deux pas se déclenche dès le pas qui le dépasse). */
+  | { type: 'delayedEffect'; afterMinutes?: number; atHour?: number; atMinute?: number; effects: Effect[]; cancelFlag?: string }
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }

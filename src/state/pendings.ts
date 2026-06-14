@@ -38,6 +38,13 @@ export interface PendingLoot {
   gold?: Money;
   gear: LootGear[];
 }
+/** Entrée de la file d'effets PROGRAMMÉS (runtime, Lot 0) : `effects` appliqué quand l'horloge
+ *  atteint `executeAt` (minute absolue `gameTime`), sauf si `cancelFlag` a été posé entre-temps. */
+export interface ScheduledEffect {
+  executeAt: number;
+  effects: Effect[];
+  cancelFlag?: string;
+}
 /** Récompenses capturées à la victoire (pour l'écran de fin de combat) : XP de groupe gagnée, or récupéré,
  *  butin (noms d'objets, dans l'inventaire de groupe, assignables à un héros), ennemis vaincus (groupés). */
 export interface PendingVictory {

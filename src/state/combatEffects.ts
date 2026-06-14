@@ -114,6 +114,24 @@ export function assignGearAt(get: Get, set: SetFn, key: 'pendingLoot' | 'pending
   set({ [key]: { ...bucket, gear: bucket.gear.filter((_, i) => i !== index) } });
 }
 
+/** Lot 0 — déclenche les effets PROGRAMMÉS (file `scheduledEffects`) dont l'échéance est atteinte.
+ *  Appelé par `advanceTime` à chaque avance d'horloge (le temps progresse par actions discrètes →
+ *  un événement programmé entre deux pas se déclenche dès le pas qui le dépasse). Un effet dont le
+ *  `cancelFlag` a été posé est CONSOMMÉ sans s'appliquer (désamorçage). Les entrées dues sont
+ *  retirées AVANT application (pas de re-déclenchement). */
+export function fireScheduledEffects(get: Get, set: SetFn) {
+  const now = get().gameTime;
+  const all = get().scheduledEffects;
+  const due = all.filter((s) => s.executeAt <= now);
+  if (!due.length) return;
+  set({ scheduledEffects: all.filter((s) => s.executeAt > now) });
+  const flags = get().flags;
+  for (const s of due) {
+    if (s.cancelFlag && flags[s.cancelFlag]) continue;
+    applyEffectsLoot(get, set, s.effects, 'Événement');
+  }
+}
+
 export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
   for (const e of effects) {
     switch (e.type) {
@@ -435,6 +453,16 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
           ? (DAY_PHASES.find((p) => p.key === e.phase)?.start ?? 0)
           : e.hour * 60 + (e.minute ?? 0);
         get().advanceTime(minutesUntilNext(get().gameTime, target));
+        break;
+      }
+      case 'delayedEffect': {
+        // Échéance absolue (minute `gameTime`) : compte à rebours relatif `afterMinutes`, sinon la
+        // prochaine occurrence de l'heure du jour `atHour:atMinute`.
+        const now = get().gameTime;
+        const executeAt = e.afterMinutes != null
+          ? now + Math.max(0, e.afterMinutes)
+          : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
+        set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, effects: e.effects, cancelFlag: e.cancelFlag }] }));
         break;
       }
       case 'openMerchant':

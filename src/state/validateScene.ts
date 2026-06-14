@@ -11,7 +11,7 @@ export interface Warning {
   message: string;
 }
 
-/** Le Test imbrique onSuccess/onFailure → parcours récursif de tous les Effet. */
+/** Test (onSuccess/onFailure) et delayedEffect (effects) imbriquent des Effet → parcours récursif. */
 function walkEffects(effects: Effect[] | undefined, fn: (e: Effect) => void) {
   for (const e of effects ?? []) {
     fn(e);
@@ -19,6 +19,7 @@ function walkEffects(effects: Effect[] | undefined, fn: (e: Effect) => void) {
       walkEffects(e.onSuccess, fn);
       walkEffects(e.onFailure, fn);
     }
+    if (e.type === 'delayedEffect') walkEffects(e.effects, fn);
   }
 }
 

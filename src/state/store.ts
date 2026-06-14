@@ -10,7 +10,7 @@ import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import {
-  activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
+  activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables, fireScheduledEffects,
   applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
@@ -107,7 +107,7 @@ import type {
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingKnockdown, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
-  PendingCastOpposition, OppositionParticipant, PendingCascade,
+  PendingCastOpposition, OppositionParticipant, PendingCascade, ScheduledEffect,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -316,6 +316,9 @@ export interface GameState {
   pendingDualStrike: PendingDualStrike | null;
   /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
   pendingReveals: RevealEntry[];
+  /** File d'effets PROGRAMMÉS (Lot 0 : minuteries `delayedEffect`) — déclenchés au franchissement de
+   *  leur échéance dans `advanceTime`. */
+  scheduledEffects: ScheduledEffect[];
   /** Piétinement en cours (modale interactive). */
   pendingTrample: PendingTrample | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
@@ -1001,6 +1004,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCleave: null,
   pendingDualStrike: null,
   pendingReveals: [],
+  scheduledEffects: [],
   pendingTrample: null,
   pendingRun: null,
   pendingApproach: null,
@@ -3473,6 +3477,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (minutes <= 0) return;
     set({ gameTime: get().gameTime + minutes });
     bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
+    fireScheduledEffects(get, set); // Lot 0 : déclenche les minuteries/événements dont l'échéance vient d'être franchie
+
     // HORS COMBAT : faire progresser les États qui tickent (Hémorragique/Poison/Flammes) et l'agonie au
     // prorata du temps écoulé (1 Round ≈ TIME_COST.combatRound min). En combat, la frontière de Round le fait.
     if (!get().battle) {
