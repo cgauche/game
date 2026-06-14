@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerCascadeApplier } from './cascade';
+import { startCascade, registerCascadeApplier, stepInteraction, stepReady } from './cascade';
 import type { CascadeStep } from './pendings';
 
 /**
@@ -105,5 +105,49 @@ describe('Cascade séquentielle influençable', () => {
     useGame.getState().cascadeForceSuccess('s1');
     expect(useGame.getState().pendingCascade!.participants[0].result!.success).toBe(true);
     expect(useGame.getState().party[0].resilience).toBe(0);
+  });
+
+  it('stepInteraction / stepReady : type d’interaction inféré des champs', () => {
+    const jet: CascadeStep = { id: 'j', kind: 'tally', actorId: 'x', rollLabel: 'R', base: 30, target: 30, result: null, interactive: true };
+    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: 'x', options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true };
+    const aff: CascadeStep = { id: 'd', kind: 'note', actorId: 'x', interactive: true };
+    expect(stepInteraction(jet)).toBe('jet');
+    expect(stepInteraction(choix)).toBe('choix');
+    expect(stepInteraction(aff)).toBe('affichage');
+    expect(stepReady(jet)).toBe(false);
+    expect(stepReady({ ...jet, result: { roll: 10, target: 30, sl: 2, success: true } })).toBe(true);
+    expect(stepReady(choix)).toBe(false);
+    expect(stepReady({ ...choix, chosen: 'a' })).toBe(true);
+    expect(stepReady(aff)).toBe(true);
+  });
+
+  it('étape « choix » : no-op sans choix, puis l’option pilote la conséquence + insertion', () => {
+    const h = hero();
+    registerCascadeApplier('pick', (_g, _s, step) => {
+      applied.push({ kind: step.kind, success: step.chosen === 'devier' });
+      return step.chosen === 'devier' ? { insert: [{ id: 'suite', kind: 'note', actorId: h.id, interactive: true }] } : {};
+    });
+    registerCascadeApplier('note', (_g, _s, step) => { applied.push({ kind: step.kind, success: true }); return { journal: [`${step.id}`] }; });
+    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }], interactive: true };
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });
+    useGame.getState().cascadeNext(); // pas de choix → no-op
+    expect(applied).toHaveLength(0);
+    expect(useGame.getState().pendingCascade!.cursor).toBe(0);
+    useGame.getState().cascadeChoose('c', 'devier');
+    expect(useGame.getState().pendingCascade!.participants[0].chosen).toBe('devier');
+    useGame.getState().cascadeNext(); // valide → applier voit 'devier' + insère 'suite'
+    expect(applied[0]).toEqual({ kind: 'pick', success: true });
+    expect(useGame.getState().pendingCascade!.participants).toHaveLength(2);
+    expect(useGame.getState().pendingCascade!.cursor).toBe(1);
+  });
+
+  it('étape « affichage » : validée sans jet ni choix', () => {
+    const h = hero();
+    registerCascadeApplier('note', (_g, _s, step) => { applied.push({ kind: 'note', success: true }); return { journal: [`${step.id}`] }; });
+    const aff: CascadeStep = { id: 'd', kind: 'note', actorId: h.id, interactive: true };
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [aff] });
+    useGame.getState().cascadeNext(); // affichage → acquitté directement, cascade finalisée
+    expect(applied).toEqual([{ kind: 'note', success: true }]);
+    expect(useGame.getState().pendingCascade).toBeNull();
   });
 });

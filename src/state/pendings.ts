@@ -391,6 +391,19 @@ export interface PendingBladeTrap {
   /** d100 du jet de défense critique (localisation du Coup Critique si refusé). */
   roll: number;
 }
+/** Déstabilisante (Aux Armes p.89) : un HÉROS a touché avec une arme Déstabilisante et a les
+ *  Avantages requis. Il CHOISIT de les dépenser pour un Test opposé (`char`/`skill`) qui, gagné,
+ *  met la cible `condition` (À Terre). L'IA, elle, déclenche d'office (pas de modale). */
+export interface PendingKnockdown {
+  attackerId: string; // le héros qui a touché
+  targetId: string;   // la cible à renverser
+  weaponName: string;
+  quality: string;    // « Déstabilisante »
+  advantageCost: number;
+  char: CharKey;
+  skill?: string;
+  condition: string;  // « À Terre »
+}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
@@ -599,6 +612,12 @@ export interface CascadeStep extends RollParticipant {
   committed?: boolean;
   /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */
   outcome?: string[];
+  /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
+  options?: { key: string; label: string; detail?: string }[];
+  /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
+  chosen?: string;
+  /** Clé choisie d'office par « Tout lancer » / résolution immédiate (défaut = `options[0]`). */
+  defaultChoice?: string;
 }
 /**
  * CASCADE séquentielle influençable (régime choisi par l'utilisateur pour les jets de NUIT et de

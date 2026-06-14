@@ -58,6 +58,35 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier, desc
   cascadeAppliers[kind] = { apply, describe };
 }
 
+/** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
+ *  un Test (`target`), un choix du joueur (`options`), ou un pur affichage (ni l'un ni l'autre). */
+export function stepInteraction(step: CascadeStep): 'jet' | 'choix' | 'affichage' {
+  if (step.target != null) return 'jet';
+  if (step.options != null) return 'choix';
+  return 'affichage';
+}
+
+/** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; choix → tranchée (`chosen`) ;
+ *  affichage → toujours (rien à résoudre avant la conséquence). */
+export function stepReady(step: CascadeStep): boolean {
+  switch (stepInteraction(step)) {
+    case 'jet': return !!step.result;
+    case 'choix': return step.chosen != null;
+    case 'affichage': return true;
+  }
+}
+
+/** Pose le choix du joueur sur l'étape « choix » COURANTE (valide que `key ∈ options`). Analogue de
+ *  `cascadeRoll` côté jet : prépare l'étape ; la VALIDATION (conséquence) reste à `advanceCascade`. */
+export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  const cur = p.participants[p.cursor];
+  if (!cur || cur.id !== stepId) return;
+  if (!cur.options?.some((o) => o.key === key)) return;
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, chosen: key } : x)) } });
+}
+
 /** Ouvre une cascade interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape. */
 export function startCascade(
   get: Get,
@@ -97,7 +126,7 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   const p = get().pendingCascade;
   if (!p) return null;
   const cur = p.participants[p.cursor];
-  if (cur && cur.target != null && !cur.result) return null; // jet requis d'abord
+  if (cur && !stepReady(cur)) return null; // jet non lancé / choix non tranché → la modale force d'abord
   let steps = p.participants;
   // La conséquence d'une étape vit sur l'ÉTAPE (`outcome`, affichée dans la pile) — pas dupliquée
   // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.

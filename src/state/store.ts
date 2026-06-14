@@ -20,7 +20,7 @@ import {
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
-  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
+  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap, resolveKnockdown,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -105,7 +105,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
-  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
+  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingKnockdown, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, OppositionParticipant, PendingCascade,
 } from './pendings';
@@ -136,7 +136,7 @@ import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
-import { advanceCascade, resolveRemainingCascade, finalizeCascade } from './cascade';
+import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -273,6 +273,8 @@ export interface GameState {
   pendingDeviation: PendingDeviation | null;
   /** Piège-lame (LDB 62 l.292-294) : choix du héros défenseur — Coup Critique ou piéger la lame. */
   pendingBladeTrap: PendingBladeTrap | null;
+  /** Déstabilisante (Aux Armes p.89) : choix du héros attaquant — dépenser des Avantages pour renverser. */
+  pendingKnockdown: PendingKnockdown | null;
   /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
   pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
@@ -674,6 +676,8 @@ export interface GameState {
   cascadeDarkPact: (pid: string) => void;
   cascadeForceSuccess: (pid: string) => void;
   cascadeSetForcedRoll: (pid: string, roll: number) => void;
+  /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
+  cascadeChoose: (pid: string, key: string) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
    *  finalise selon `purpose` (reprise de voyage…). */
   cascadeNext: () => void;
@@ -840,6 +844,8 @@ export interface GameState {
   deviationApply: (deviate: boolean) => void;
   /** Piège-lame (LDB 62 l.292-294) : résout le choix (true = piéger la lame, false = Coup Critique). */
   bladeTrapResolve: (trap: boolean) => void;
+  /** Déstabilisante (Aux Armes p.89) : résout le choix (true = dépenser les Avantages et tenter le renversement). */
+  knockdownResolve: (accept: boolean) => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;
   /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
@@ -978,6 +984,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDefense: null,
   pendingDeviation: null,
   pendingBladeTrap: null,
+  pendingKnockdown: null,
   pendingRenounce: null,
   pendingMountTarget: null,
   pendingDisengage: null,
@@ -1846,6 +1853,7 @@ export const useGame = create<GameState>((set, get) => ({
   cascadeDarkPact: (pid) => FLOWS.cascade.darkPact(get, set, pid),
   cascadeForceSuccess: (pid) => FLOWS.cascade.forceSuccess(get, set, pid),
   cascadeSetForcedRoll: (pid, roll) => FLOWS.cascade.setForcedRoll(get, set, roll, pid),
+  cascadeChoose: (pid, key) => setCascadeChoice(get, set, pid, key),
   cascadeNext: () => {
     const done = advanceCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
@@ -3157,6 +3165,7 @@ export const useGame = create<GameState>((set, get) => ({
   // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
   // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
   bladeTrapResolve: (trap: boolean) => resolveBladeTrap(get, set, trap),
+  knockdownResolve: (accept: boolean) => resolveKnockdown(get, set, accept),
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
   deviationApply: (deviate: boolean) => {
     const { battle, pendingDeviation: pdv } = get();
