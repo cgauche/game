@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, tileAt, normalizeEntityKind, normalizeAmbiance, isIndoor, condMet } from './scene';
+import { emptyScene, isWalkable, tileAt, normalizeAmbiance, isIndoor, condMet } from './scene';
 import type { Scene } from './scene';
 
 describe('condMet — conditions de flag (triggers + dialogues, source unique)', () => {
@@ -29,22 +29,6 @@ describe('scene + terrain registre', () => {
     const s = emptyScene(3, 3);
     expect(tileAt(s, -1, 0)).toBe('mur');
     expect(isWalkable(s, -1, 0)).toBe(false);
-  });
-});
-
-describe('normalizeEntityKind — compat fusion pnj/ennemi', () => {
-  it('mappe les anciennes valeurs (pnj/ennemi → personnage, objet → prop)', () => {
-    expect(normalizeEntityKind('pnj')).toBe('personnage');
-    expect(normalizeEntityKind('ennemi')).toBe('personnage');
-    expect(normalizeEntityKind('objet')).toBe('prop'); // dissous dans prop (décor interactif)
-  });
-  it('conserve les kinds canoniques', () => {
-    expect(normalizeEntityKind('personnage')).toBe('personnage');
-    expect(normalizeEntityKind('heroStart')).toBe('heroStart');
-    expect(normalizeEntityKind('prop')).toBe('prop');
-  });
-  it('valeur inconnue → personnage (défaut sûr)', () => {
-    expect(normalizeEntityKind('zzz')).toBe('personnage');
   });
 });
 

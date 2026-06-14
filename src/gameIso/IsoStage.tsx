@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, normalizeEntityKind } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo } from '../state/path';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
@@ -874,7 +874,7 @@ export function IsoStage() {
       }
       return;
     }
-    if (ent && normalizeEntityKind(ent.kind) === 'personnage') {
+    if (ent && ent.kind === 'personnage') {
       // FIGURANT (PNJ sans dialogue/boutique/fouille) : on ne lui marche pas DESSUS — on s'approche
       // à une case adjacente et on le dit (sinon le groupe « entre dans » le corps du PNJ).
       st.setPendingInteract(null);

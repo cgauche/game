@@ -126,7 +126,6 @@ import * as restFlow from './restFlow';
 import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { Scene, SceneEntity, Dialogue, Effect, isWalkable } from './scene';
-import { migrateScene } from './sceneMigrate';
 import { doorAt } from './buildings';
 import { spawnEnemy } from './spawn';
 import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, Pt } from './path';
@@ -1029,7 +1028,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({
       ...(JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>),
       screen, party, camRot, zoom, viewMode, inspectEnabled, net,
-      scene: migrateScene(JSON.parse(JSON.stringify(scene))), // dissout objet→prop + loot/search→interact au chargement
+      scene: JSON.parse(JSON.stringify(scene)),
       mode: 'exploration',
       partyPos: pos,
       flags: { ...scene.flags },
@@ -1066,7 +1065,7 @@ export const useGame = create<GameState>((set, get) => ({
       target.entities.find((e) => e.kind === 'heroStart')?.pos ||
       findFreeTile(target);
     set((s) => ({
-      scene: migrateScene(JSON.parse(JSON.stringify(target))), // migration au chargement (cf. startScene)
+      scene: JSON.parse(JSON.stringify(target)),
       mode: 'exploration',
       partyPos: { ...start },
       // flags persistants : on conserve l'état narratif et on ajoute les
@@ -1266,8 +1265,8 @@ export const useGame = create<GameState>((set, get) => ({
       if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
       return c;
     });
-    // Chaque membre RÉFÉRENCE une entité de la scène (le normaliseur a injecté les ennemis legacy).
-    // L'entité PORTE le profil/apparence/arme/traits — on résout (membre + entité appariés), puis
+    // Chaque membre RÉFÉRENCE une entité de la scène. L'entité PORTE le profil/apparence/arme/traits
+    // — on résout (membre + entité appariés), puis
     // on spawne (id `enemy-${i}`, conservé pour les tests/recettes de combat).
     const byEntity = new Map(scene.entities.map((e) => [e.id, e]));
     const roster = (enc.members ?? [])

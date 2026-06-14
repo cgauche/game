@@ -12,7 +12,6 @@ import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
 import { entityBlockedAt } from './sceneRules';
-import { migrateEntityKind } from './sceneMigrate';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
@@ -23,16 +22,8 @@ export type Facing = 'N' | 'S' | 'E' | 'O';
  * Rôle d'une entité de scène. `personnage` = tout être animé (apparence libre
  * via `ref` + dialogue/quête optionnel) — fusion des anciens `pnj`/`ennemi`,
  * que le combat (encounters) et l'interaction (dialogueId) ne distinguaient pas.
- * Les valeurs `pnj`/`ennemi` restent acceptées au chargement des scènes anciennes
- * (normalisées via `normalizeEntityKind`).
  */
 export type EntityKind = 'heroStart' | 'personnage' | 'prop';
-
-/** Mappe les anciennes valeurs de kind (`pnj`/`ennemi` → `personnage`, `objet` → `prop`).
- *  Délègue à `migrateEntityKind` — source unique de la normalisation des kinds. */
-export function normalizeEntityKind(k: string): EntityKind {
-  return migrateEntityKind(k);
-}
 
 export interface CustomStatblock {
   name: string;
@@ -144,7 +135,7 @@ export interface SceneEntity {
     /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;
     /** Invisible en EXPLORATION (embuscade) : n'apparaît qu'au combat. `false`/absent = PNJ visible
-     *  qui devient hostile au déclenchement. Posé `true` par le normaliseur sur tout ennemi legacy. */
+     *  qui devient hostile au déclenchement. */
     hiddenUntilCombat?: boolean;
   };
 }
