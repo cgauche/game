@@ -378,5 +378,105 @@
       "book": "LDB",
       "page": 299
     }
+  },
+  {
+    "label": "Léger",
+    "type": "Atout",
+    "subType": "Objet",
+    "desc": "Fabriqué pour le transport : -1 Point d'Encombrement.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Pratique",
+    "type": "Atout",
+    "subType": "Objet",
+    "desc": "+1 DR à un Test raté avec l'objet ; pour une armure, les pénalités de port sont réduites d'un niveau.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Raffiné",
+    "type": "Atout",
+    "subType": "Objet",
+    "desc": "Travail soigné : signe de statut social (cumulable).",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Solide",
+    "type": "Atout",
+    "subType": "Objet",
+    "desc": "Robuste : encaisse Indice Points de Dégâts avant pénalités, et bénéficie d'une Sauvegarde 9+ (-1 par cran) contre la casse.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Bâclé",
+    "type": "Défaut",
+    "subType": "Objet",
+    "desc": "Fait à la hâte : se casse sur tout Test raté obtenant un double (pour une armure : casse sur un Coup Critique à sa Localisation).",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Laid",
+    "type": "Défaut",
+    "subType": "Objet",
+    "desc": "Sans esthétique : jusqu'à -10 aux Tests de Sociabilité associés.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Peu Fiable",
+    "type": "Défaut",
+    "subType": "Objet",
+    "desc": "-1 DR à un Test raté avec l'objet ; pour une armure, les pénalités de port sont doublées.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Volumineux",
+    "type": "Défaut",
+    "subType": "Objet",
+    "desc": "+1 Encombrement (1 même porté, pour les vêtements et armures) ; les pénalités de Fatigue sont doublées.",
+    "source": {
+      "book": "LDB",
+      "page": 286
+    }
+  },
+  {
+    "label": "Magique",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "L'arme est considérée comme Magique : ses attaques blessent les créatures Éthérées.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "label": "De plaies atroces",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Qualité magique : les Dégâts prennent le plus haut résultat entre le DR et le dé des unités (comme Dévastatrice).",
+    "source": {
+      "book": "ADE2",
+      "page": 76
+    }
   }
 ]

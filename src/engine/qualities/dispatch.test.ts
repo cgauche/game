@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
-import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable } from './dispatch';
+import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize } from './dispatch';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -71,11 +71,32 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
   });
 });
 
+describe('Aux Armes — qualités d’artillerie câblées', () => {
+  it('Arme d’équipe maniée seul : Indice ≥ 3 → Imprécise (-1 DR), Indice ≥ 4 → Dangereuse', () => {
+    expect(attackDRAdjust(w(["Arme d'équipe 2"]))).toBe(0);
+    expect(attackDRAdjust(w(["Arme d'équipe 3"]))).toBe(-1);
+    expect(dangerousNine(w(["Arme d'équipe 4"]), 19, false)).toBe(true); // 19 contient un 9, échec
+    expect(dangerousNine(w(["Arme d'équipe 3"]), 19, false)).toBe(false); // Indice 3 : pas Dangereuse
+  });
+  it('Arme d’équipe : Recharge DOUBLÉE (reloadDRTarget)', () => {
+    expect(reloadDRTarget({ qualities: ['Recharge 3'], reload: 3 })).toBe(3);
+    expect(reloadDRTarget({ qualities: ['Recharge 3', "Arme d'équipe 2"], reload: 3 })).toBe(6);
+  });
+  it('Salve : chargeur d’Indice tirs avant rechargement (magazineSize)', () => {
+    expect(magazineSize(w(['Salve 7']))).toBe(7);
+    expect(magazineSize(w(['Recharge 3']))).toBeUndefined();
+  });
+  it('Tir de zone : qualité de zone reconnue au registre (areaFire)', () => {
+    expect(QUALITIES['Tir de zone'].areaFire).toBe(true);
+  });
+});
+
 describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
       'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux',
-      'Taillade', 'Déséquilibrée', 'Déstabilisante']) { // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / onHitKnockdown)
+      'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / onHitKnockdown)
+      "Arme d'équipe", 'Salve', 'Tir de zone']) { // Aux Armes p.124/126/89 — artillerie câblée (sous-effectif / chargeur / zone)
       expect(QUALITIES[k]).toBeTruthy();
     }
   });
@@ -86,12 +107,9 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
   // CONSCIENCE — c'est le garde-fou anti-empilement. (Vide depuis l'intégration des 10 dernières
   // qualités d'arme : À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
   // Dangereuse, Épuisante, Imprécise, Lente.)
-  const NON_DANS_REGISTRE = new Set<string>([
-    // Aux Armes — qualités d'artillerie/zone : règles d'équipe, de volée et de tir de zone non
-    // modélisées dans le moteur tactique (siège/structure laissé de côté). Desc verbatim, arbitrage MJ.
-    // (Les qualités de mêlée Taillade/Déséquilibrée/Déstabilisante sont DÉSORMAIS câblées au registre.)
-    'Salve', "Arme d'équipe", 'Tir de zone',
-  ]);
+  // Vide : toutes les qualités d'arme de qualities.json (Aux Armes incluses) sont désormais câblées
+  // au registre. Une NOUVELLE qualité non câblée s'ajouterait ici EN CONSCIENCE (garde-fou anti-empilement).
+  const NON_DANS_REGISTRE = new Set<string>([]);
   it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
     const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;

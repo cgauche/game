@@ -86,9 +86,21 @@ export function qualitySocMod(w: QualityCarrier | undefined): number {
   return resolveQualities(w).reduce((s, r) => s + (r.def.socMod ?? 0), 0);
 }
 
-/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. */
+/** Indice d'une Arme d'équipe maniée en sous-effectif (toujours, faute d'équipe modélisée), ou 0. */
+function crewedSoloIndice(w: QualityCarrier | undefined): number {
+  return resolveQualities(w).find((r) => r.def.crewedTeam)?.indice ?? 0;
+}
+
+/** DR cible du rechargement (Recharge Indice), DOUBLÉ pour une Arme d'équipe maniée seul
+ *  (sous-effectif, Aux Armes p.124). 0 si l'arme n'a pas le Défaut Recharge. */
+export function reloadDRTarget(w: (QualityCarrier & { reload?: number }) | undefined): number {
+  return (w?.reload ?? 0) * (crewedSoloIndice(w) >= 2 ? 2 : 1);
+}
+
+/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. Inclut le sous-
+ *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
 export function attackDRAdjust(w: QualityCarrier | undefined): number {
-  return resolveQualities(w).reduce((s, r) => s + (r.def.attackDR ?? 0), 0);
+  return resolveQualities(w).reduce((s, r) => s + (r.def.attackDR ?? 0), 0) + (crewedSoloIndice(w) >= 3 ? -1 : 0);
 }
 
 /** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
@@ -113,15 +125,18 @@ export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.def.fastStrike));
 }
 
-/** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ? */
+/** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
+ *  Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse (Aux Armes p.124). */
 export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
-  if (success || !resolveQualities(w).some((r) => r.def.fumbleOn9)) return false;
+  const dangerous = resolveQualities(w).some((r) => r.def.fumbleOn9) || crewedSoloIndice(w) >= 4;
+  if (success || !dangerous) return false;
   return roll % 10 === 9 || Math.floor(roll / 10) % 10 === 9;
 }
 
-/** À Répétition (Indice) : taille du chargeur (LDB 62 l.264), ou undefined si l'arme n'en a pas. */
+/** Chargeur (Indice) avant rechargement complet : À Répétition (LDB 62 l.264) ou Salve (Aux Armes
+ *  p.126) — l'arme tire Indice fois avant d'exiger un rechargement. undefined si l'arme n'en a pas. */
 export function magazineSize(w: QualityCarrier | undefined): number | undefined {
-  const r = resolveQualities(w).find((x) => x.def.magazine);
+  const r = resolveQualities(w).find((x) => x.def.magazine || x.def.salvo);
   return r ? r.indice ?? 1 : undefined;
 }
 

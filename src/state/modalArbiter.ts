@@ -27,6 +27,7 @@ export const MODAL_DEFS = [
   { key: 'fumble', when: (s) => !!s.pendingFumble, owner: (s) => s.pendingFumble?.combatantId },
   { key: 'deviation', when: (s) => !!s.pendingDeviation, owner: (s) => s.pendingDeviation?.targetId },
   { key: 'bladeTrap', when: (s) => !!s.pendingBladeTrap, owner: (s) => s.pendingBladeTrap?.defenderId },
+  { key: 'knockdown', when: (s) => !!s.pendingKnockdown, owner: (s) => s.pendingKnockdown?.attackerId },
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId },
   { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId },
   { key: 'reveal', when: (s) => (s.pendingReveals?.length ?? 0) > 0, owner: (s) => s.pendingReveals?.[0]?.subjectId }, // sans sujet (entretien) → hôte

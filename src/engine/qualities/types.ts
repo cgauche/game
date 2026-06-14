@@ -59,6 +59,19 @@ export interface QualityDef {
    *  `condition` (À Terre). Simplification documentée : déclenché d'office quand l'attaquant a les
    *  Avantages requis — comme Assommante s'applique sans choix (combatFlow). */
   onHitKnockdown?: { advantageCost: number; char: CharKey; skill?: string; condition: string };
+  /** Arme d'équipe (Indice) (Aux Armes p.124) : arme de siège exigeant une équipe d'Indice servants.
+   *  Notre jeu ne modélise pas d'équipe → toute arme d'équipe est maniée EN SOUS-EFFECTIF (1 servant) :
+   *  Indice ≥ 3 → Défaut Imprécise (-1 DR) ; Indice ≥ 4 → Défaut Dangereuse (Maladresse sur 9). Lu par
+   *  `attackDRAdjust`/`dangerousNine` ; double aussi le temps de recharge (Recharge ×2). */
+  crewedTeam?: boolean;
+  /** Salve (Indice) (Aux Armes p.126) : chargeur d'Indice tirs avant rechargement — lu par
+   *  `magazineSize` comme un chargeur À Répétition (l'arme ne se recharge qu'à 0). Le « plusieurs
+   *  tirs par Round à −10 cumulatif » suppose une économie d'Actions multi-tir (1 Action/tour ici). */
+  salvo?: boolean;
+  /** Tir de zone (Indice) (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 2 m) → +Indice
+   *  Dégâts sur la cible ; à portée → frappe aussi les Indice créatures les plus proches (≤ Indice m).
+   *  Appliqué par combatFlow après la touche (réutilise la géométrie de zone). */
+  areaFire?: boolean;
   /** Encombrement : délta dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
   encDelta?: number;
   /** +X DR à un Test RATÉ utilisant l'objet (Pratique +1 / Peu Fiable -1, LDB 60 l.59/88). En mêlée

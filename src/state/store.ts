@@ -79,7 +79,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, customTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
-import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst } from '../engine/qualities/dispatch';
+import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
@@ -2559,7 +2559,7 @@ export const useGame = create<GameState>((set, get) => ({
         actorId: active.id,
         actorName: active.name,
         weaponName: w.name,
-        reload: w.reload ?? 0,
+        reload: reloadDRTarget(w), // Recharge ×2 si Arme d'équipe maniée seul (Aux Armes p.124)
         progressBefore: active.reloadProgress ?? 0,
         skillValue,
         difficulty: 'intermediaire',

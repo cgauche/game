@@ -1366,13 +1366,17 @@ export function applyAttackResult(
     const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
     log.push(ev('condition', `${target.name} est Empêtré (${weapon.name} — Immobilisante).`, target.id));
   }
-  // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant dépense des Avantages pour un
-  // Test opposé Force/Athlétisme ; s'il l'emporte, la cible est mise À Terre. Simplification : auto-
-  // déclenché quand l'attaquant a les Avantages requis (comme Assommante s'applique sans choix).
+  // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
+  // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → choix en modale
+  // (pendingKnockdown) ; IA → déclenché d'office quand elle a les Avantages requis.
   if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
     for (const { def } of resolveQualities(weapon)) {
       const kd = def.onHitKnockdown;
       if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
+      if (attacker.kind === 'hero') {
+        set({ pendingKnockdown: { attackerId: attacker.id, targetId: target.id, weaponName: weapon.name, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition } });
+        break; // un seul renversement proposé par touche
+      }
       attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
       const aSk = kd.skill ? (attacker.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
       const dSk = kd.skill ? (target.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
@@ -1381,10 +1385,35 @@ export function applyAttackResult(
         addCondition(target, kd.condition);
         const dline = `${target.name} est ${kd.condition} (${def.key}, ${kd.advantageCost} Avantages).`;
         log.push(ev('condition', dline, target.id));
-        if (target.kind === 'hero' || attacker.kind === 'hero')
-          pushReveal(set, { kind: 'assommante', title: def.key, lines: [dline], subjectId: target.id, severity: 'minor' });
+        if (target.kind === 'hero') pushReveal(set, { kind: 'assommante', title: def.key, lines: [dline], subjectId: target.id, severity: 'minor' });
       } else {
         log.push(ev('detail', `${attacker.name} cherche à renverser ${target.name} (${def.key}, ${kd.advantageCost} Avantages) — sans succès.`, target.id));
+      }
+    }
+  }
+  // Tir de zone (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 1 case ≈ 2 m) → +Indice
+  // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
+  // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).
+  if (res.hit && weapon.type === 'ranged' && res.damage != null && attacker.pos && target.pos && !isOutOfAction(target)) {
+    const tz = resolveQualities(weapon).find((r) => r.def.areaFire);
+    if (tz) {
+      const indice = tz.indice ?? 1;
+      if (chebyshev(attacker.pos, target.pos) <= 1) {
+        loseWounds(target, indice);
+        log.push(ev('shoot', `Tir de zone à bout portant : ${target.name} subit ${indice} Blessure(s) de plus.`, target.id));
+      } else {
+        const radTiles = Math.max(1, Math.ceil(indice / 2));
+        const near = battle.combatants
+          .filter((c) => c.kind !== attacker.kind && c.id !== target.id && !isOutOfAction(c) && c.pos && chebyshev(target.pos!, c.pos) <= radTiles)
+          .sort((a, b) => chebyshev(target.pos!, a.pos!) - chebyshev(target.pos!, b.pos!))
+          .slice(0, indice);
+        for (const sec of near) {
+          const wl = woundsFromHit(weapon, sec, res.location ?? 'corps', res.damage);
+          if (wl > 0) {
+            loseWounds(sec, wl);
+            log.push(ev('shoot', `Tir de zone : ${sec.name} est aussi pris dans la gerbe — ${wl} Blessure(s).`, sec.id));
+          }
+        }
       }
     }
   }
@@ -3182,11 +3211,41 @@ export function resolveBladeTrap(get: Get, set: SetFn, trap: boolean): void {
   resumeEnemyTurn(get, set);
 }
 
+/** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
+ *  Test opposé Force/Athlétisme → À Terre). `accept=false` : il renonce, rien n'est dépensé. */
+export function resolveKnockdown(get: Get, set: SetFn, accept: boolean): void {
+  const { battle, pendingKnockdown: pk } = get();
+  if (!battle || !pk) return;
+  set({ pendingKnockdown: null });
+  const attacker = battle.combatants.find((c) => c.id === pk.attackerId);
+  const target = battle.combatants.find((c) => c.id === pk.targetId);
+  if (!attacker || !target) { resumeEnemyTurn(get, set); return; }
+  const lines: string[] = [];
+  if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
+    attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
+    const aSk = pk.skill ? (attacker.skills.find((s) => s.name.toLowerCase().startsWith(pk.skill!.toLowerCase()))?.advances ?? 0) : 0;
+    const dSk = pk.skill ? (target.skills.find((s) => s.name.toLowerCase().startsWith(pk.skill!.toLowerCase()))?.advances ?? 0) : 0;
+    const aT = rollTest(effectiveChar(attacker, pk.char) + aSk, 'intermediaire', battleRng());
+    const dT = rollTest(effectiveChar(target, pk.char) + dSk, 'intermediaire', battleRng());
+    const opp = resolveOpposed(aT, dT);
+    lines.push(`Renversement (${pk.quality}) — Test opposé : ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) contre ${target.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}).`);
+    lines.push(opp.winner === 'attacker' ? `${target.name} est ${pk.condition} !` : `${target.name} garde son équilibre.`);
+    if (opp.winner === 'attacker') addCondition(target, pk.condition);
+  } else if (accept) {
+    lines.push(`${attacker.name} ne peut plus tenter le renversement.`);
+  }
+  const b = get().battle!;
+  if (lines.length) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', attacker.id, target.id)] } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+  resumeEnemyTurn(get, set);
+}
+
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
@@ -3195,7 +3254,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
-  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -3401,7 +3460,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
