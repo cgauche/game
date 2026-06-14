@@ -140,7 +140,7 @@ export function CompendiumScreen() {
           )}
           {selected && editing && import.meta.env.DEV && cat && editableDataset(cat.key)
             ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
-            : selected && <CodexEntry item={selected} instance={instance} />}
+            : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
         </section>
       </div>
     </div>

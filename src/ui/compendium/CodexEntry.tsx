@@ -2,6 +2,8 @@
  *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
 import type { CodexItem, CodexRow, CodexSection } from './registry';
 import { CodexRef } from './CodexRef';
+import { CreaturePreview } from './CreaturePreview';
+import { findCreature } from '../../data';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -62,8 +64,9 @@ export function CodexSections({ sections }: { sections: CodexSection[] }) {
   );
 }
 
-export function CodexEntry({ item, instance }: { item: CodexItem; instance?: string }) {
+export function CodexEntry({ item, instance, category }: { item: CodexItem; instance?: string; category?: string }) {
   const hasBody = !!item.desc || !!item.meta?.length || !!item.sections?.length;
+  const creature = category === 'creatures' ? findCreature(item.label) : undefined;
   return (
     <article className="codex-entry">
       <header className="codex-entry-head">
@@ -71,6 +74,8 @@ export function CodexEntry({ item, instance }: { item: CodexItem; instance?: str
         <CodexSourceBadge source={item.source} />
         {item.sub && <div className="codex-entry-sub">{item.sub}</div>}
       </header>
+
+      {creature && <CreaturePreview name={item.label} appearance={creature.appearance} />}
 
       {instance && instance !== item.label && (
         <div className="codex-instance">

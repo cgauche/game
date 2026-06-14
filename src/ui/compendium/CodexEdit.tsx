@@ -12,6 +12,7 @@ import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { RACES } from '../../gameIso/rig/races';
+import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 
 /** Catégorie Codex → dataset éditable. `gods` (cultes générés) absent = non éditable en v1. */
@@ -77,7 +78,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
         <button className="btn small btn-primary" disabled={!dirty} onClick={save}>Enregistrer{dirty ? ' •' : ''}</button>
       </div>
       <div className="codex-edit-form">
-        {isCreature && <AppearanceField value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
+        {isCreature && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
     </div>
@@ -87,12 +88,13 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
 /** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
  *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/yeux). Édite le VRAI record
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
-function AppearanceField({ value, onChange }: { value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
+function AppearanceField({ name, value, onChange }: { name: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
   const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
   return (
     <div className="ed-field ed-appearance">
       <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
+      <CreaturePreview name={name} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
       <label className="ed-subfield">
         Espèce
         <input value={a.species ?? ''} list="dl-rig-species" placeholder="(déduite du nom)"
