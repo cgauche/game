@@ -103,7 +103,7 @@ export function otherEnd(route: MapRoute, placeId: string): string {
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// v1 (legacy) : `Scene[]` (la 1re scène est l'entrée). v2 : `{ schema: 2, scenes, worldMap? }`.
+// Format unique : `{ schema: 2, scenes, worldMap? }`.
 import type { Scene } from './scene';
 
 export interface ProjectDoc {
@@ -112,12 +112,12 @@ export interface ProjectDoc {
   worldMap?: WorldMap;
 }
 
-/** Parse un document de projet — accepte le legacy (tableau de scènes, ou scène unique) et le v2. */
+/** Parse un document de projet (format `{ schema: 2, scenes, worldMap? }`). Lève si le format est
+ *  invalide — les anciens formats (tableau de scènes, scène unique) ne sont plus supportés. */
 export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap } {
-  if (Array.isArray(data)) return { scenes: data as Scene[] };
-  const obj = data as Record<string, unknown>;
-  if (obj && Array.isArray(obj.scenes)) {
-    return { scenes: obj.scenes as Scene[], worldMap: (obj.worldMap as WorldMap) ?? undefined };
+  const obj = data as Record<string, unknown> | null;
+  if (!obj || typeof obj !== 'object' || !Array.isArray(obj.scenes)) {
+    throw new Error('Projet invalide : format attendu { schema: 2, scenes: [...] }.');
   }
-  return { scenes: [data as Scene] }; // scène unique legacy
+  return { scenes: obj.scenes as Scene[], worldMap: (obj.worldMap as WorldMap) ?? undefined };
 }
