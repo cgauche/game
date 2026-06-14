@@ -1,7 +1,6 @@
 // Homme-bête : trapu musclé voûté, légèrement étiré en hauteur.
 import type { RaceDef } from '../types';
-import { OV_QUEUE } from '../../parts/monstrous';
-import { furPatch } from '../../parts/textures';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Homme-bête',
   gabarit: 'trapu-massif',
@@ -11,13 +10,7 @@ export const race: RaceDef = {
   tenue: 'Nu',
   head: 'caprin',
   legs: 'chevre',
-  // PAS de cornes ici : la taille des cornes = statut de l'homme-bête (LDB 83), portée par
-  // CHAQUE def créature (Gor grandes / Ungor vestigiales / Chamane caprines) en perso.features.
-  // Queue de pelage derrière le bassin ; PELAGE (textures.ts) sur le poitrail nu et les épaules.
-  features: [
-    { bone: 'bassin', svg: OV_QUEUE,         scale: 'bone', layer: -2 },
-    { bone: 'torse',   svg: furPatch(-7.5, 7.5, -19, 11, 3.2), scale: 'bone' },
-    { bone: 'epauleG', svg: furPatch(-2.4, 2.4, 2, 24, 2.8),   scale: 'bone' },
-    { bone: 'epauleD', svg: furPatch(-2.4, 2.4, 2, 24, 2.8),   scale: 'bone' },
-  ],
+  // PAS de cornes ici : la taille des cornes = statut de l'homme-bête (LDB 83), portée par chaque
+  // def créature (Gor grandes / Ungor vestigiales / Chamane caprines) en perso.features.
+  features: feat('queue', 'pelage'),
 };

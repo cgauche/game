@@ -9,7 +9,7 @@ import { worldTransforms, toSvg, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
-import { applyEyes } from './parts/eyes';
+import { applyEyes, eyesArtFromKeys } from './parts/eyes';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
@@ -82,7 +82,8 @@ export function resolveRig(
   // Yeux personnalisés (œil de verre, Œil énorme, yeux d'animaux…) : remplacés EN PLACE
   // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur). Les yeux de
   // RACE (Vampire rougeoyant) servent de défaut, l'apparence (mutation/blessure) prime.
-  const eyes = race.eyes || appearance.eyes ? { ...race.eyes, ...appearance.eyes } : undefined;
+  // race.eyes = CLÉS du catalogue d'yeux (résolues en art ici) ; appearance.eyes = art déjà résolu en amont.
+  const eyes = race.eyes || appearance.eyes ? { ...eyesArtFromKeys(race.eyes), ...appearance.eyes } : undefined;
   if (eyes && parts.visage?.svg) parts.visage = { svg: applyEyes(parts.visage.svg, eyes) };
 
   // Échelle de rendu par os = (thickness/réf, length/réf). Os de longueur/épaisseur

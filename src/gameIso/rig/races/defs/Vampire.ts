@@ -1,7 +1,6 @@
 // Vampire : élancé aristocratique, légèrement plus court que le Haut-Elfe.
 import type { RaceDef } from '../types';
-import { OV_CROCS } from '../../parts/monstrous';
-import { OEIL_ROUGE } from '../../parts/eyes';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Vampire',
   gabarit: 'elance',
@@ -12,10 +11,7 @@ export const race: RaceDef = {
   sex: 'M',
   parts: { cheveux: 1, visage: 0 },
   colors: { vet1: "#241018", vet2: "#6a0e18", cuir: "#1a0e12", metal: "#8a8f9e" },
-  // Crocs discrets visibles de face seulement (calque par-dessus le visage humain) ;
-  // yeux ROUGEOYANTS remplacés en place sur le visage humain (système d'yeux).
-  features: [
-    { bone: 'tete', svg: OV_CROCS, scale: 'bone', layer: 98, view: 'front' },
-  ],
-  eyes: { G: OEIL_ROUGE, D: OEIL_ROUGE },
+  // Crocs (face) du catalogue ; yeux ROUGEOYANTS par CLÉ du catalogue d'yeux (réutilisable hors Vampire).
+  features: feat('crocs'),
+  eyes: { G: 'rouge', D: 'rouge' },
 };

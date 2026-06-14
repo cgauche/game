@@ -1,6 +1,6 @@
 // Troll : grand, bras démesurés jusqu'au sol, petites jambes.
 import type { RaceDef } from '../types';
-import { OV_VERRUES } from '../../parts/monstrous';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Troll',
   gabarit: 'brute-bras-longs',
@@ -8,8 +8,5 @@ export const race: RaceDef = {
   pose: { torse: 18, cou: 16, tete: -12, epauleG: 6, epauleD: 6 },
   tenue: 'Nu',
   head: 'troll',
-  // Verrues + ventre pâle sur le torse (par-dessus la peau verte).
-  features: [
-    { bone: 'torse', svg: OV_VERRUES, scale: 'bone', layer: 98 },
-  ],
+  features: feat('verrues'),
 };

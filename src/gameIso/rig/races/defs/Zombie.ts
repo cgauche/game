@@ -1,6 +1,6 @@
 // Zombie : trapu voûté titubant.
 import type { RaceDef } from '../types';
-import { OV_PLAIE } from '../../parts/monstrous';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Zombie',
   gabarit: 'trapu-voute',
@@ -8,8 +8,5 @@ export const race: RaceDef = {
   pose: { torse: 8, cou: 6, tete: -4 },
   tenue: 'Mendiant',
   head: 'pourri',
-  // Plaie de chair rouge exposée sur le torse (par-dessus la peau).
-  features: [
-    { bone: 'torse', svg: OV_PLAIE, scale: 'bone', layer: 98 },
-  ],
+  features: feat('plaie'),
 };

@@ -1,6 +1,6 @@
 // Skaven : homme-rat voûté élancé.
 import type { RaceDef } from '../types';
-import { OV_QUEUE_RAT } from '../../parts/monstrous';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Skaven',
   gabarit: 'elance-voute',
@@ -8,8 +8,5 @@ export const race: RaceDef = {
   pose: { torse: 15, cou: 11, tete: -9, epauleG: 4, epauleD: 4 },
   tenue: 'Skaven',
   head: 'rat',
-  // Longue queue rose en S — tell de silhouette du Skaven (derrière le bassin).
-  features: [
-    { bone: 'bassin', svg: OV_QUEUE_RAT, scale: 'bone', layer: -2 },
-  ],
+  features: feat('queue-rat'),
 };

@@ -34,7 +34,7 @@ export interface RaceDef {
   sex?: 'M' | 'F';              // sexe forcé
   parts?: { cheveux?: number; visage?: number }; // coiffure/visage épinglés
   scale?: number;               // échelle globale du token en jeu (Géant)
-  /** yeux de race remplacés EN PLACE sur le visage généré (parts/eyes.ts — ex. Vampire
-   *  rougeoyant). Surchargés par `Appearance.eyes` (mutation/blessure prime). */
+  /** yeux de race par défaut — CLÉS du catalogue d'yeux (`EYE_OPTIONS`, ex. 'rouge' pour le Vampire),
+   *  résolues en art par `composeRig`. Surchargés par `Appearance.eyes` (mutation/blessure prime). */
   eyes?: { G?: string; D?: string };
 }

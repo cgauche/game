@@ -1,6 +1,6 @@
 // Goule : maigre noueuse, semi-quadrupède, légèrement plus compacte.
 import type { RaceDef } from '../types';
-import { OV_GRIFFES } from '../../parts/monstrous';
+import { feat } from '../../parts/elements';
 export const race: RaceDef = {
   id: 'Goule',
   gabarit: 'trapu-voute',
@@ -9,9 +9,5 @@ export const race: RaceDef = {
   pose: { torse: 24, cou: 18, tete: -14, epauleG: 8, epauleD: 8 },
   tenue: 'Nu',
   head: 'goule',
-  // Longues griffes recourbées aux deux mains (par-dessus).
-  features: [
-    { bone: 'mainG', svg: OV_GRIFFES, scale: 'bone', layer: 98 },
-    { bone: 'mainD', svg: OV_GRIFFES, scale: 'bone', layer: 98 },
-  ],
+  features: feat('griffes'),
 };
