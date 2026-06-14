@@ -18,15 +18,11 @@ export function MultiRollList({ entries }: { entries: NightEntry[] }) {
         return (
           <div key={i} className={`mrl-row ${e.tone ?? ''}`}>
             <span className="mrl-port">{actor && <CharFrame c={actor} variant="identity" size="xs" />}</span>
-            <span className="mrl-ic">{e.icon}</span>
-            {e.d ? (
-              <div className="mrl-roll">
-                <span className="mrl-label">{e.label}</span>
-                <RollLine d={e.d} />
-              </div>
-            ) : (
-              <span className="mrl-text"><b>{e.label}</b>{e.text ? ` — ${e.text}` : ''}</span>
-            )}
+            <div className="mrl-roll">
+              {/* Libellé AU-DESSUS de la ligne de jet (plus de texte coincé à gauche du jet). */}
+              <span className="mrl-label">{e.icon ? `${e.icon} ` : ''}{e.label}</span>
+              {e.d ? <RollLine d={e.d} /> : (e.text ? <span className="mrl-text">{e.text}</span> : null)}
+            </div>
           </div>
         );
       })}

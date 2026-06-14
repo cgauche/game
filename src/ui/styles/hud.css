@@ -471,16 +471,16 @@
 .rest-travel-lines li { margin: 2px 0; }
 
 /* ── Brique MULTI-JETS (bilan de nuit, cascades globalisées) ── */
-.mrl { display: flex; flex-direction: column; gap: 4px; max-height: min(46vh, 420px); overflow-y: auto; }
-.mrl-row { display: flex; gap: 6px; align-items: center; }
-.mrl-port { flex: 0 0 34px; display: flex; justify-content: center; }
-.mrl-ic { flex: 0 0 18px; text-align: center; }
-.mrl-roll { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: center; }
-.mrl-roll .rm-roll-block { flex: 1; min-width: 0; }
-.mrl-label { font-size: 12px; color: var(--muted); flex: 0 0 auto; }
+.mrl { display: flex; flex-direction: column; gap: 6px; max-height: min(46vh, 420px); overflow-y: auto; }
+.mrl-row { display: flex; gap: 8px; align-items: flex-start; }
+.mrl-port { flex: 0 0 34px; display: flex; justify-content: center; padding-top: 2px; }
+/* Corps en COLONNE : libellé (icône incluse) au-dessus, ligne de jet / note en dessous. */
+.mrl-roll { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mrl-roll .rm-roll-block { min-width: 0; }
+.mrl-label { font-size: 12px; color: var(--muted); }
 .mrl-text { font-size: 12.5px; }
-.mrl-row.bad .mrl-text { color: var(--danger-soft); }
-.mrl-row.ok .mrl-text { color: var(--ok-bright); }
+.mrl-row.bad .mrl-label, .mrl-row.bad .mrl-text { color: var(--danger-soft); }
+.mrl-row.ok .mrl-label, .mrl-row.ok .mrl-text { color: var(--ok-bright); }
 
 /* Cascade séquentielle (jets de nuit/voyage) : le bilan empilé réutilise `.mrl` (MultiRollList) dans
    le slot `extra` de RollFlowShell ; l'étape courante = un jet standard du flot de base. Marge sous
