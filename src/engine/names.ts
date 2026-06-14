@@ -10,15 +10,8 @@
  * élevés » avec suffixe sexué — « –sson » fils de…, « –snev » neveu de…, « –sdottir » fille de…,
  * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
  */
-import NAMES from '../data/names.json';
+import { names as POOLS, type NamePool } from '../data';
 import type { RNG } from './dice';
-
-interface NamePool {
-  maleFirstNames: string[];
-  femaleFirstNames: string[];
-  lastNames: string[];
-}
-const POOLS = NAMES as Record<string, NamePool>;
 
 /** Suffixes de patronyme nain (LDB 05 l.622) — par sexe du PERSONNAGE. */
 export const NAIN_SUFFIXES = { M: ['sson', 'snev'], F: ['sdottir', 'sniz'] } as const;

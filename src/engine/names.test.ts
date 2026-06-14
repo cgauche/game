@@ -7,9 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import { generateName, NAIN_SUFFIXES } from './names';
-import NAMES from '../data/names.json';
-
-const N = NAMES as Record<string, { maleFirstNames: string[]; femaleFirstNames: string[]; lastNames: string[] }>;
+import { names as N } from '../data';
 const startsWithOne = (name: string, pool: string[]) => pool.some((p) => name.startsWith(p + ' '));
 const endsWithOne = (name: string, pool: string[]) => pool.some((p) => name.endsWith(' ' + p));
 

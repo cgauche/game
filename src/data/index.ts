@@ -1,6 +1,7 @@
 /**
- * Accès typé à NOTRE base de jeu (générée par `npm run build:data`).
- * Ne jamais éditer les *.json à la main : ils sont régénérés depuis les sources.
+ * Accès typé à NOTRE base de jeu — désormais APP-OWNED et ÉDITABLE (éditeur de données DEV in-app,
+ * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE ; `scripts/build-data.ts`
+ * n'est plus qu'un IMPORTEUR ponctuel (re-seed depuis Source/all-data.json à la demande).
  */
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
@@ -21,6 +22,7 @@ import detailsJson from './details.json';
 import starsJson from './stars.json';
 import locationsJson from './locations.json';
 import booksJson from './books.json';
+import namesJson from './names.json';
 import { CharKey } from '../engine/types';
 
 export interface SpeciesData {
@@ -206,6 +208,12 @@ export interface BookData {
   folder: string | null;
   desc: string | null;
 }
+/** Banque de noms par race (clé : « Humain », « Nain »…) : prénoms M/F + noms de famille (LDB 05). */
+export interface NamePool {
+  maleFirstNames: string[];
+  femaleFirstNames: string[];
+  lastNames: string[];
+}
 
 export const characteristics = characteristicsJson as any[];
 export const species = speciesJson as SpeciesData[];
@@ -226,6 +234,7 @@ export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 export const locations = locationsJson as LocationData[];
 export const books = booksJson as BookData[];
+export const names = namesJson as Record<string, NamePool>;
 
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);

@@ -1,4 +1,4 @@
-import careers from '../../../data/careers.json';
+import { careers } from '../../../data';
 import { GENERATED_CAREER_TENUES } from './generated/careerTenues';
 import { CAREER_PALETTES } from './generated/careerPalettes';
 import TENUE_VIEWS_JSON from './generated/tenueViews.json';
@@ -22,9 +22,8 @@ function withViews(career: string, set: TenueSet): TenueSet {
   return out;
 }
 
-type CareerRow = { label: string; class: string };
 const BY_LABEL: Record<string, string> = {};
-for (const row of careers as CareerRow[]) BY_LABEL[row.label] = row.class;
+for (const row of careers) BY_LABEL[row.label] = row.class;
 
 export function careerClass(career: string): string {
   return BY_LABEL[career] ?? 'Citadins';

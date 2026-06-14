@@ -5,8 +5,10 @@
  * Archives de l'Empire I & II + EDO / Middenheim / EDOC), normalise et
  * réécrit dans src/data/*.json.
  *
- * IMPORTANT : on ne livre jamais all-data.json tel quel ; ce script produit
- * notre propre format. Lancer avec `npm run build:data`.
+ * IMPORTANT : depuis 2026-06-14, src/data/*.json est la SOURCE CANONIQUE app-owned, ÉDITABLE
+ * in-app (éditeur de données DEV, écran 'dataEditor'). Ce script n'est plus qu'un IMPORTEUR
+ * ponctuel : on le lance (`npm run build:data`) seulement pour RE-SEED depuis une mise à jour
+ * de Source/all-data.json — il ÉCRASE les éditions manuelles. Ne pas l'inclure dans `npm run build`.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
