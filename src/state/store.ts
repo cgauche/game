@@ -19,7 +19,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
-  counterspellCandidates, applyCounterspell, applyCounterspellOutcome,
+  counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
@@ -107,6 +107,7 @@ import type {
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
+  PendingCastOpposition, OppositionParticipant, PendingCascade,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -135,6 +136,7 @@ import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
+import { advanceCascade, finishCascadeRest } from './cascade';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -286,6 +288,14 @@ export interface GameState {
   /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2 : objet BE/B) : flux multi PARALLÈLE — chaque
    *  héros frappe (`FLOWS.forceDoor`), cumul des dégâts vs B dans `forceDoorConfirm`. */
   pendingForceDoor: PendingForceDoor | null;
+  /** CASCADE séquentielle influençable (jets de NUIT / VOYAGE) : une étape à la fois (`FLOWS.cascade`),
+   *  conséquence par `kind` + avancée du curseur dans `cascadeNext` (state/cascade.ts). */
+  pendingCascade: PendingCascade | null;
+  /** Incantation OPPOSÉE (`spec.opposed`) : chaque CIBLE oppose son Test (FM/Int) à l'incantation
+   *  figée (`pendingCast.result`) — multijet DANS la modale de cast (cible IA = rangée témoin
+   *  auto-roulée, cible héros = interactive). `oppositionConfirm` agrège → `pendingCast.opposedOutcome`
+   *  → `castConfirm` applique (cible résistante = aucune op ; sinon ops à la marge). */
+  pendingCastOpposition: PendingCastOpposition | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
@@ -656,6 +666,29 @@ export interface GameState {
   /** Applique les dégâts du Round (somme) ; porte à ≤ 0 B → cède (flag posé) ; sinon nouveau Round. */
   forceDoorConfirm: () => void;
   forceDoorCancel: () => void;
+  /** CASCADE séquentielle (`FLOWS.cascade`) : jet de l'étape courante + cycle Chance/+1 DR/Pacte/
+   *  Résilience (ciblé par `pid` = id d'étape). */
+  cascadeRoll: (pid: string) => void;
+  cascadeReroll: (pid: string) => void;
+  cascadeBonusSL: (pid: string) => void;
+  cascadeDarkPact: (pid: string) => void;
+  cascadeForceSuccess: (pid: string) => void;
+  cascadeSetForcedRoll: (pid: string, roll: number) => void;
+  /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
+   *  finalise selon `purpose` (reprise de voyage…). */
+  cascadeNext: () => void;
+  /** « Renoncer » : résout d'office les étapes restantes (on ne peut pas dé-dormir) puis finalise. */
+  cascadeCancel: () => void;
+  /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
+   *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée. */
+  oppositionRoll: (pid: string) => void;
+  oppositionReroll: (pid: string) => void;
+  oppositionBonusSL: (pid: string) => void;
+  oppositionDarkPact: (pid: string) => void;
+  oppositionForceSuccess: (pid: string) => void;
+  oppositionSetForcedRoll: (pid: string, roll: number) => void;
+  /** « Appliquer » : agrège les oppositions → `pendingCast.opposedOutcome` (résisté + marge par cible) → castConfirm. */
+  oppositionConfirm: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
@@ -950,6 +983,8 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCounterspell: null,
   pendingExtendedTest: null,
   pendingForceDoor: null,
+  pendingCascade: null,
+  pendingCastOpposition: null,
   pendingHeal: null,
   medic: null,
   pendingRest: null,
@@ -1142,6 +1177,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingPsych: null,
       pendingEncounterPsych: null,
       pendingFrenzy: null,
+      pendingCascade: null,
       document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
@@ -1623,18 +1659,26 @@ export const useGame = create<GameState>((set, get) => ({
     const caster = actorIn(get(), pc.casterId);
     const target = actorIn(get(), pc.targetId);
     const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+    // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
+    // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
+    const extras = (pc.extraTargetIds ?? [])
+      .map((id) => actorIn(get(), id))
+      .filter((x): x is NonNullable<typeof x> => !!x)
+      .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
+    // OPPOSITION (`spec.opposed`) : un Sort réussi dont la/les cible(s) opposent leur Test (FM/Int)
+    // ne s'applique PAS encore — on ouvre le multijet d'opposition DANS la modale (GARDE pendingCast).
+    // `oppositionConfirm` repose `opposedOutcome` puis rappelle castConfirm (ce bloc est alors sauté).
+    if (caster && target && spell && pc.result.cast && !pc.opposedOutcome && get().battle
+        && openCastOpposition(get, set, pc, [target, ...extras])) {
+      return;
+    }
     set({ pendingCast: null });
     if (caster && target && spell) {
-      // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
-      // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
-      const extras = (pc.extraTargetIds ?? [])
-        .map((id) => actorIn(get(), id))
-        .filter((x): x is NonNullable<typeof x> => !!x)
-        .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
       applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
         durationMult: 1 + (pc.overcast?.duration ?? 0),
         extraTargets: extras,
         conjureForm: pc.conjureForm,
+        opposedOutcome: pc.opposedOutcome,
       });
     }
     // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une
@@ -1790,6 +1834,41 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
   forceDoorCancel: () => { set({ pendingForceDoor: null }); },
+  // CASCADE séquentielle (jets de NUIT / VOYAGE) : flux multi SÉQUENTIEL générique (fabrique UNIQUE).
+  // L'étape courante = `participants[cursor]` ; la conséquence par `kind` + l'avancée vivent dans
+  // `advanceCascade` (state/cascade.ts), la finalisation propre au `purpose` ici.
+  cascadeRoll: (pid) => FLOWS.cascade.roll(get, set, pid),
+  cascadeReroll: (pid) => FLOWS.cascade.reroll(get, set, pid),
+  cascadeBonusSL: (pid) => FLOWS.cascade.bonusSL(get, set, pid),
+  cascadeDarkPact: (pid) => FLOWS.cascade.darkPact(get, set, pid),
+  cascadeForceSuccess: (pid) => FLOWS.cascade.forceSuccess(get, set, pid),
+  cascadeSetForcedRoll: (pid, roll) => FLOWS.cascade.setForcedRoll(get, set, roll, pid),
+  cascadeNext: () => {
+    const done = advanceCascade(get, set);
+    if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+  },
+  cascadeCancel: () => {
+    const done = finishCascadeRest(get, set);
+    if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+  },
+  // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
+  // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
+  oppositionRoll: (pid) => FLOWS.castOpposition.roll(get, set, pid),
+  oppositionReroll: (pid) => FLOWS.castOpposition.reroll(get, set, pid),
+  oppositionBonusSL: (pid) => FLOWS.castOpposition.bonusSL(get, set, pid),
+  oppositionDarkPact: (pid) => FLOWS.castOpposition.darkPact(get, set, pid),
+  oppositionForceSuccess: (pid) => FLOWS.castOpposition.forceSuccess(get, set, pid),
+  oppositionSetForcedRoll: (pid, roll) => FLOWS.castOpposition.setForcedRoll(get, set, roll, pid),
+  oppositionConfirm: () => {
+    const pco = get().pendingCastOpposition;
+    const pc = get().pendingCast;
+    if (!pco || !pc) return;
+    // Issue par cible (résisté + marge de DR) → portée par `pendingCast.opposedOutcome`, lue par applyCast.
+    const outcome: Record<string, { resisted: boolean; margin: number }> = {};
+    for (const part of pco.participants) if (part.result) outcome[part.id] = { resisted: part.result.resisted, margin: part.result.margin };
+    set({ pendingCastOpposition: null, pendingCast: { ...pc, opposedOutcome: outcome } });
+    get().castConfirm(); // applique le Sort (cibles résistantes ignorées, autres à la marge)
+  },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
   oocCastSpell: (casterId, label, targetId, fromGrimoire) => {

@@ -53,6 +53,9 @@ export const MODAL_DEFS = [
   { key: 'forceDoor', when: (s) => !!s.pendingForceDoor, owner: () => '*' },
   // Test Étendu SÉQUENTIEL (un acteur enchaîne des Rounds) : modale chez le propriétaire de l'acteur.
   { key: 'extendedTest', when: (s) => !!s.pendingExtendedTest, owner: (s) => s.pendingExtendedTest?.actorId },
+  // CASCADE séquentielle (jets de nuit/voyage) : l'étape COURANTE a son héros → modale chez son
+  // propriétaire (coop : chaque contrôleur influence ses propres jets, l'un après l'autre).
+  { key: 'cascade', when: (s) => !!s.pendingCascade, owner: (s) => s.pendingCascade?.participants[s.pendingCascade.cursor]?.actorId },
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.

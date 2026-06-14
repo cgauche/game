@@ -563,6 +563,63 @@ export interface PendingExtendedTest extends PendingBase {
   flag?: string;
 }
 
+/** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
+export interface CascadeRoll {
+  roll: number;
+  target: number;
+  sl: number;
+  success: boolean;
+}
+/**
+ * Une ÉTAPE influençable d'une CASCADE séquentielle (bilan de nuit, journée de voyage…). Le `kind`
+ * détermine la CONSÉQUENCE (appliée à la validation par `cascadeAppliers[kind]`, cf. state/cascade.ts) ;
+ * le jet lui-même est kind-agnostique (Test de `base`+difficulté sur `target`). `meta` porte les
+ * paramètres sérialisables de la conséquence (ex. `days`, `count`) — PAS de closure (coop : le pending
+ * est snapshoté/transmis). Une étape SANS `target` est un simple passage (rare) ; les notes en clair
+ * vont dans `PendingCascade.log`, pas en étapes.
+ */
+export interface CascadeStep extends RollParticipant {
+  /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
+  kind: string;
+  /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
+  actorId?: string;
+  icon?: string;
+  /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
+  rollLabel?: string;
+  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */
+  base?: number;
+  /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
+  target?: number;
+  result?: CascadeRoll | null;
+  /** Paramètres sérialisables de la conséquence (jamais de closure — coop). */
+  meta?: Record<string, number | string | boolean>;
+  /** Note en clair d'une étape SANS jet (rare — les notes de cascade vont plutôt dans `log`). */
+  text?: string;
+  /** Étape déjà validée (conséquence appliquée). */
+  committed?: boolean;
+}
+/**
+ * CASCADE séquentielle influençable (régime choisi par l'utilisateur pour les jets de NUIT et de
+ * VOYAGE — cf. docs/superpowers/specs/2026-06-14-multi-roll-modal-design.md, Étape 3) : on présente
+ * UNE étape à la fois, chacune avec son cycle Chance/+1 DR/Pacte/Résilience, on valide, on enchaîne.
+ * `participants` = les seules étapes INFLUENÇABLES (les notes en clair vont dans `log`). `cursor` =
+ * l'étape courante. À la validation d'une étape, sa conséquence est appliquée (`cascadeAppliers`) et
+ * elle peut INSÉRER des étapes suivantes (dépendance : abri → nombre de jets d'Exposition). `purpose`
+ * pilote la FINALISATION (reprise de voyage…). Même fabrique que le Test Étendu — seule la sémantique
+ * d'étape (conséquence par `kind` au lieu d'un cumul de DR) change. */
+export interface PendingCascade extends MultiPending<CascadeStep> {
+  title: string;
+  icon?: string;
+  /** Index de l'étape courante dans `participants`. */
+  cursor: number;
+  /** Journal de la cascade (entretien, conséquences validées) — affiché sous l'étape courante. */
+  log: string[];
+  /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'test' (autonome). */
+  purpose: 'night' | 'travel' | 'test';
+  /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
+  travelHalt?: boolean;
+}
+
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
  *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`
  *  (combat ⇄ groupe, cf. combatOrParty). `intBonus` figé à l'ouverture. La CHIRURGIE n'est PLUS un

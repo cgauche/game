@@ -17,6 +17,7 @@ import type {
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
+  PendingCascade, CascadeStep,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
@@ -278,6 +279,51 @@ export const FLOWS = {
   }),
 
   /**
+   * Incantation OPPOSÉE (Fauche-démon → FM, Parole de Tzeentch → Intelligence) — flux MULTI : le jet
+   * d'incantation est FIGÉ (`pendingCast.result`) ; chaque CIBLE oppose son Test, avec son propre cycle
+   * Chance/+1 DR/Pacte/Résilience. `oppositionConfirm` agrège (résisté + marge de DR par cible). Cible
+   * IA = rangée témoin (jet auto-roulé à l'ouverture, openCastOpposition).
+   */
+  castOpposition: makeRollFlow<PendingCastOpposition, OppositionParticipant>({
+    key: 'pendingCastOpposition',
+    multi: { slots: (p) => p.participants, idOf: (part) => part.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (part) => !!part.result,
+    actor: (s, part) => actorIn(s, part.id),
+    resolve: (s, part, actor, _get, forced) => {
+      const pcCast = s.pendingCast?.result;
+      const pco = s.pendingCastOpposition;
+      if (!actor || !pcCast || !pco) return null;
+      const castT = castTestOf(pcCast); // l'incantation figée = l'« attaquant » de l'opposition
+      const oppVal = testValue(actor, pco.skill, pco.char); // FM / Intelligence de la cible
+      if (forced) {
+        // Résilience « Je ne faillirai pas ! » : la cible force sa réussite → résiste (l'emporte).
+        const cur = part.result;
+        const roll = cur ? cur.oppose.roll : 1; // 01 = jet propre garanti (LDB 17 l.73)
+        const sl = Math.max(cur?.oppose.sl ?? 1, castT.sl + 1, 1);
+        const oppose: TestResult = { roll, target: oppVal, success: true, sl, isDouble: isDoubleRoll(roll) };
+        return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
+      }
+      const oppose = rollTest(oppVal, 'intermediaire', battleRng());
+      const o = resolveOpposed(castT, oppose);
+      return { result: { oppose, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - oppose.sl) } };
+    },
+    // La cible a ÉCHOUÉ à résister (le lanceur l'emporte) → relançable par SA Chance (héros défenseur).
+    failed: (part) => !!part.result && !part.result.resisted,
+    caps: { forced: true },
+    bonus: {
+      derive: (s, part, actor) => {
+        const pcCast = s.pendingCast?.result;
+        const cur = part.result;
+        if (!cur || !pcCast || !actor) return null;
+        const castT = castTestOf(pcCast);
+        const oppose: TestResult = { ...cur.oppose, sl: cur.oppose.sl + 1 };
+        const o = resolveOpposed(castT, oppose);
+        return { result: { oppose, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - oppose.sl) } };
+      },
+    },
+  }),
+
+  /**
    * Test Étendu (LDB 12 l.197-211) — flux multi SÉQUENTIEL : un Round à la fois, chacun son cycle
    * Chance/+1 DR/Pacte/Résilience. Ici `resolve` ne fait QUE le jet du Round ; le CUMUL du DR (et la
    * dépendance au total des Rounds précédents) vit dans `extendedTestNext` (store). Même fabrique
@@ -303,6 +349,35 @@ export const FLOWS = {
     caps: { forced: true },
     bonus: {
       derive: (_s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
+    },
+  }),
+
+  /**
+   * CASCADE séquentielle (jets de NUIT / VOYAGE) — flux multi SÉQUENTIEL générique : une étape à la
+   * fois (l'étape courante = `participants[cursor]`), chacune son cycle Chance/+1 DR/Pacte/Résilience.
+   * Le JET est kind-agnostique (Test « +0 » sur `step.target`, difficulté déjà appliquée) ; la
+   * CONSÉQUENCE par `kind` + l'avancée du curseur vivent dans `cascadeNext`/`advanceCascade`
+   * (state/cascade.ts). Même fabrique que le Test Étendu — seule la sémantique d'étape change.
+   */
+  cascade: makeRollFlow<PendingCascade, CascadeStep>({
+    key: 'pendingCascade',
+    multi: { slots: (p) => p.participants, idOf: (st) => st.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (st) => !!st.result,
+    actor: (s, st) => (st.actorId ? actorIn(s, st.actorId) : undefined),
+    resolve: (_s, st, _actor, _get, forced) => {
+      if (st.target == null) return null; // étape sans jet → rien à lancer
+      if (forced) {
+        // Résilience « Je ne faillirai pas ! » : jet garanti réussi (dé 01 → DR max), LDB 17 l.73.
+        const e = evaluateTest(1, st.target);
+        return { result: { roll: 1, target: st.target, sl: e.sl, success: true } };
+      }
+      const t = rollTest(st.target, 'intermediaire', battleRng());
+      return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
+    },
+    failed: (st) => !!st.result && !st.result.success,
+    caps: { forced: true },
+    bonus: {
+      derive: (_s, st) => (st.result ? { result: { ...st.result, sl: st.result.sl + 1 } } : null),
     },
   }),
 
