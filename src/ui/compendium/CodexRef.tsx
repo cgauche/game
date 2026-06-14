@@ -26,6 +26,7 @@ export function CodexRef({
   children,
   className,
   hideIfUnknown = false,
+  instance,
 }: {
   category: string;
   label: string;
@@ -34,6 +35,9 @@ export function CodexRef({
   className?: string;
   /** Pour un déclencheur-icône (ℹ️) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
   hideIfUnknown?: boolean;
+  /** Instance paramétrée portant les Indices (« 8 Tentacules +8 ») — affichée en tête du popover
+   *  et transmise au Codex à l'ouverture (le Codex « prend en compte les Indices »). */
+  instance?: string;
 }) {
   const openCodex = useGame((s) => s.openCodex);
   const item = codexLookup(category, label);
@@ -56,7 +60,8 @@ export function CodexRef({
   if (!item) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
 
   const body = item.desc ? truncate(item.html ? stripHtml(item.desc) : item.desc) : null;
-  const open = () => openCodex({ category, label: item.label });
+  const inst = instance && instance !== item.label ? instance : undefined;
+  const open = () => openCodex({ category, label: item.label, instance: inst });
 
   return (
     <span
@@ -80,7 +85,8 @@ export function CodexRef({
       {pos &&
         createPortal(
           <span className="codex-pop" style={{ top: pos.top, left: pos.left, maxWidth: Math.min(POP_W, window.innerWidth - 16) }} role="tooltip">
-            <span className="codex-pop-title">{item.label}</span>
+            <span className="codex-pop-title">{inst ?? item.label}</span>
+            {inst && <span className="codex-pop-sub">{item.label}</span>}
             {item.sub && <span className="codex-pop-sub">{item.sub}</span>}
             {body && <span className="codex-pop-body">{body}</span>}
             {item.source && (

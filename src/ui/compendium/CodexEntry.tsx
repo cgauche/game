@@ -1,5 +1,7 @@
-/** Rendu uniforme d'une fiche du Codex (détail). Composé des primitives `.stat-chip`/`.chip`. */
-import type { CodexItem } from './registry';
+/** Rendu d'une fiche du Codex (détail) : en-tête + faits + prose + SECTIONS riches (statbloc,
+ *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
+import type { CodexItem, CodexRow, CodexSection } from './registry';
+import { CodexRef } from './CodexRef';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -10,7 +12,47 @@ export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   );
 }
 
-export function CodexEntry({ item }: { item: CodexItem }) {
+function CodexRowView({ row }: { row: CodexRow }) {
+  switch (row.t) {
+    case 'sub':
+      return <div className="codex-rowsub">{row.label}</div>;
+    case 'kv':
+      return (
+        <div className="codex-kv">
+          <span className="ck-k">{row.k}</span>
+          <span className="ck-v">{row.v}</span>
+        </div>
+      );
+    case 'text':
+      return row.html ? (
+        <div className="codex-rowtext" dangerouslySetInnerHTML={{ __html: row.text }} />
+      ) : (
+        <p className="codex-rowtext">{row.text}</p>
+      );
+    case 'ref':
+      return (
+        <CodexRef category={row.category} label={row.label} instance={row.show} className="codex-chip">
+          {row.show}
+        </CodexRef>
+      );
+  }
+}
+
+function CodexSectionView({ section }: { section: CodexSection }) {
+  return (
+    <section className="codex-sec">
+      <h3 className="codex-sec-title">{section.title}</h3>
+      <div className={`codex-sec-body codex-${section.layout ?? 'list'}`}>
+        {section.rows.map((row, i) => (
+          <CodexRowView key={i} row={row} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function CodexEntry({ item, instance }: { item: CodexItem; instance?: string }) {
+  const hasBody = !!item.desc || !!item.meta?.length || !!item.sections?.length;
   return (
     <article className="codex-entry">
       <header className="codex-entry-head">
@@ -18,6 +60,12 @@ export function CodexEntry({ item }: { item: CodexItem }) {
         <CodexSourceBadge source={item.source} />
         {item.sub && <div className="codex-entry-sub">{item.sub}</div>}
       </header>
+
+      {instance && instance !== item.label && (
+        <div className="codex-instance">
+          Cette occurrence : <b>{instance}</b>
+        </div>
+      )}
 
       {item.meta && item.meta.length > 0 && (
         <div className="row-flex codex-meta">
@@ -30,23 +78,18 @@ export function CodexEntry({ item }: { item: CodexItem }) {
         </div>
       )}
 
-      {item.tags && item.tags.length > 0 && (
-        <div className="row-flex codex-tags">
-          {item.tags.map((t, i) => (
-            <span key={`${t}-${i}`} className="chip">{t}</span>
-          ))}
-        </div>
-      )}
-
-      {item.desc ? (
-        item.html ? (
+      {item.desc &&
+        (item.html ? (
           <div className="codex-body" dangerouslySetInnerHTML={{ __html: item.desc }} />
         ) : (
           <p className="codex-body">{item.desc}</p>
-        )
-      ) : (
-        <p className="codex-body codex-empty-desc">—</p>
-      )}
+        ))}
+
+      {item.sections?.map((sec, i) => (
+        <CodexSectionView key={i} section={sec} />
+      ))}
+
+      {!hasBody && <p className="codex-body codex-empty-desc">—</p>}
     </article>
   );
 }

@@ -152,10 +152,6 @@
 .codex-fact {
   min-width: 52px;
 }
-.codex-tags {
-  gap: 5px;
-  margin-bottom: 10px;
-}
 .codex-body {
   line-height: 1.55;
   color: var(--text);
@@ -166,6 +162,139 @@
 }
 .codex-empty-desc {
   color: var(--muted);
+}
+
+/* ── Instance paramétrée (« 8 Tentacules +8 ») en tête de fiche ── */
+.codex-instance {
+  margin: 2px 0 10px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--gold);
+  background: var(--bg2);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.codex-instance b {
+  color: var(--gold2);
+}
+
+/* ── Sections riches (statbloc, niveaux de carrière, bénédictions…) ── */
+.codex-sec {
+  margin-top: 14px;
+}
+.codex-sec-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--gold);
+  letter-spacing: 0.3px;
+  margin: 0 0 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+}
+.codex-sec-body.codex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 6px;
+  align-items: baseline;
+}
+.codex-sec-body.codex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 5px;
+}
+.codex-sec-body.codex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* sous-en-tête à l'intérieur d'une section de chips → casse la ligne, pleine largeur */
+.codex-rowsub {
+  flex-basis: 100%;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.codex-kv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 4px;
+  text-align: center;
+}
+.codex-kv .ck-k {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.codex-kv .ck-v {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.codex-rowtext {
+  margin: 0;
+  line-height: 1.5;
+}
+/* puce cliquable de cross-référence */
+.codex-ref.codex-chip {
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: border-color 0.1s, color 0.1s;
+}
+.codex-ref.codex-chip:hover,
+.codex-ref.codex-chip:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+/* ── Liste hiérarchique (groupes repliables) ── */
+.codex-group {
+  border-bottom: 1px solid var(--border);
+}
+.codex-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 5px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--gold2);
+  letter-spacing: 0.3px;
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 1;
+}
+.codex-group > summary::-webkit-details-marker {
+  display: none;
+}
+.codex-group > summary::before {
+  content: '▾';
+  color: var(--muted);
+  font-size: 11px;
+}
+.codex-group:not([open]) > summary::before {
+  content: '▸';
+}
+.codex-group > summary .count {
+  margin-left: auto;
+}
+.codex-group .codex-row {
+  margin-left: 8px;
 }
 
 /* ── CodexRef : libellé enrichi + popover (hover/focus) ── */

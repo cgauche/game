@@ -212,12 +212,13 @@ export interface BattleState {
 
 export interface GameState {
   screen: Screen;
-  /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex. */
-  compendiumFocus: { category: string; label: string } | null;
+  /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex.
+   *  `instance` = libellé paramétré porté par le lien (« 8 Tentacules +8 ») affiché en tête de fiche. */
+  compendiumFocus: { category: string; label: string; instance?: string } | null;
   /** Écran à restaurer en quittant le Codex (capturé à l'ouverture). */
   compendiumReturn: Screen;
   /** Ouvre le Codex (optionnellement sur une entrée), en mémorisant l'écran courant pour le retour. */
-  openCodex: (focus?: { category: string; label: string }) => void;
+  openCodex: (focus?: { category: string; label: string; instance?: string }) => void;
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';

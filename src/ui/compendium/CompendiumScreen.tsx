@@ -1,12 +1,13 @@
 /**
  * Écran Codex — référentiel browsable des règles/lore (pièce maîtresse).
  * Master-détail : familles (onglets `.seg`) → catégories (pastilles `.chip` + `.count`) →
- * liste filtrée (`.listrow`) → fiche (`CodexEntry`). Responsive via `.layout-sidebar`.
- * Ouverture ciblée depuis n'importe quel écran via `store.openCodex({category,label})`.
+ * liste (groupée si hiérarchie : Classe→Carrières, famille→Races, dossier→Créatures…) → fiche
+ * RICHE (`CodexEntry` : sections + liens cross-réf). Ouverture ciblée via `store.openCodex(...)`,
+ * qui porte aussi l'« instance » paramétrée (« 8 Tentacules +8 ») montrée en tête de fiche.
  */
 import { useMemo, useState } from 'react';
 import { useGame } from '../../state/store';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
 import { filterItems } from './search';
 import { CodexEntry } from './CodexEntry';
 
@@ -27,6 +28,21 @@ export function CompendiumScreen() {
   const list = useMemo(() => filterItems(cat?.items ?? [], q), [cat, q]);
   // Jamais d'état vide : à défaut de sélection valide dans la liste filtrée, on montre la 1re.
   const selected = list.find((it) => it.label === picked) ?? list[0] ?? null;
+  // Instance paramétrée du lien d'ouverture (« 8 Tentacules +8 ») — seulement sur l'entrée ciblée.
+  const instance = selected && focus?.instance && selected.label === focus.label ? focus.instance : undefined;
+
+  // Hiérarchie (Axe 3) : groupe les entrées si la catégorie en porte (famille/classe/dossier/parent).
+  const grouped = useMemo(() => {
+    if (!list.some((it) => it.group)) return null;
+    const map = new Map<string, CodexItem[]>();
+    for (const it of list) {
+      const g = it.group ?? '—';
+      const arr = map.get(g) ?? [];
+      arr.push(it);
+      map.set(g, arr);
+    }
+    return [...map.entries()];
+  }, [list]);
 
   const pickGroup = (g: CodexGroup) => {
     setGroup(g);
@@ -39,6 +55,17 @@ export function CompendiumScreen() {
     setPicked(null);
     setQ('');
   };
+
+  const renderRow = (it: CodexItem, key: string) => (
+    <button
+      key={key}
+      className={`listrow codex-row${selected?.label === it.label ? ' on' : ''}`}
+      onClick={() => setPicked(it.label)}
+    >
+      <span className="lr-name">{it.label}</span>
+      {it.source && <span className="codex-row-src">{it.source.book}</span>}
+    </button>
+  );
 
   return (
     <div className="screen codex">
@@ -72,22 +99,23 @@ export function CompendiumScreen() {
             aria-label="Rechercher dans le Codex"
           />
           <div className="codex-rows">
-            {list.map((it, i) => (
-              <button
-                key={`${it.label}__${i}`}
-                className={`listrow codex-row${selected?.label === it.label ? ' on' : ''}`}
-                onClick={() => setPicked(it.label)}
-              >
-                <span className="lr-name">{it.label}</span>
-                {it.source && <span className="codex-row-src">{it.source.book}</span>}
-              </button>
-            ))}
+            {grouped
+              ? grouped.map(([g, items]) => (
+                  <details key={g} className="codex-group" open>
+                    <summary className="codex-group-head">
+                      <span>{g}</span>
+                      <span className="count">{items.length}</span>
+                    </summary>
+                    {items.map((it, i) => renderRow(it, `${g}-${it.label}-${i}`))}
+                  </details>
+                ))
+              : list.map((it, i) => renderRow(it, `${it.label}__${i}`))}
             {list.length === 0 && <div className="codex-noresult">Aucun résultat</div>}
           </div>
         </aside>
 
         <section className="codex-detail panel">
-          {selected && <CodexEntry item={selected} />}
+          {selected && <CodexEntry item={selected} instance={instance} />}
         </section>
       </div>
     </div>
