@@ -208,11 +208,14 @@ export function resolveRig(
     boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
   }
   // Traits ADDITIFS d'INSTANCE — `appearance.features` (clés du catalogue) : n'importe quel PNJ pioche
-  // des traits réutilisables (queue, cornes, crocs…) par-dessus sa race/def. Cœur de la perso (B1b).
+  // des éléments réutilisables (queue, cornes, crocs… ET difformités : tentacule, bouche…) par-dessus
+  // sa race/def, EN APPARENCE PURE (sans trait/talent). Applique le calque COMPLET : remplacement de
+  // membre (`replace`), arrière-plan (`behind`) ou calque échelonné (`scale`) — comme une mutation.
   for (const f of catalogFeatures(...(appearance.features ?? []))) {
     if (f.view && f.view !== view) continue;
-    const part = featureToPart(f, scaleOf[f.bone]);
-    boneParts[f.bone].push({ svg: part.svg, layer: part.layer });
+    if (f.replace) { boneParts[f.bone] = f.svg ? [{ svg: f.svg, layer: 5 }] : []; continue; }
+    if (f.scale) { const part = featureToPart(f, scaleOf[f.bone]); boneParts[f.bone].push({ svg: part.svg, layer: part.layer }); }
+    else boneParts[f.bone].push({ svg: f.svg, layer: f.behind ? -2 : 99 });
   }
 
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.

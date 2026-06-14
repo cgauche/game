@@ -136,8 +136,8 @@ export function MonsterPartsFields({
       )}
       {onFeatures && (
         <div className="ed-field">
-          <span>Traits du corps (catalogue partagé)</span>
-          {elementsOf('trait').map((e) => {
+          <span>Traits &amp; difformités (apparence pure — sans trait/talent)</span>
+          {[...elementsOf('trait'), ...elementsOf('mutation')].map((e) => {
             const on = (features ?? []).includes(e.key);
             return (
               <label key={e.key} className="ed-check">

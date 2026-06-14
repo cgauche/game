@@ -57,6 +57,7 @@ export const EYE_OPTIONS: Record<string, { label: string; art: string }> = {
   noir: { label: 'Œil noir', art: OEIL_NOIR },
   rouge: { label: 'Œil rougeoyant', art: OEIL_ROUGE },
   verre: { label: 'Œil de verre', art: OEIL_DE_VERRE },
+  enorme: { label: 'Œil énorme', art: OEIL_ENORME }, // difformité posable en apparence pure (sans le trait Mutation)
 };
 
 /** Remplace l'œil `side` du visage par `art` (centré sur l'ancre `data-ec` de l'orbite).
