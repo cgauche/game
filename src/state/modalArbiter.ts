@@ -51,6 +51,8 @@ export const MODAL_DEFS = [
   // Enfoncer une porte à plusieurs (EDO Appendice 2) : action de GROUPE — modale chez tous, chacun
   // ne pilote que ses héros (gating per-participant côté UI + netOwnership).
   { key: 'forceDoor', when: (s) => !!s.pendingForceDoor, owner: () => '*' },
+  // Test Étendu SÉQUENTIEL (un acteur enchaîne des Rounds) : modale chez le propriétaire de l'acteur.
+  { key: 'extendedTest', when: (s) => !!s.pendingExtendedTest, owner: (s) => s.pendingExtendedTest?.actorId },
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.

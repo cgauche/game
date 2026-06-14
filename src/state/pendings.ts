@@ -559,6 +559,8 @@ export interface PendingExtendedTest extends PendingBase {
   targetDR: number; // DR CUMULÉ à atteindre (LDB 12 : « une valeur cible »)
   total: number; // DR cumulé courant (dépend des Rounds précédents → c'est ce qui rend le flux SÉQUENTIEL)
   rounds: ExtendedTestRound[];
+  /** Flag de scène posé à la RÉUSSITE (DR cumulé ≥ cible) — gate la suite (porte/serrure d'éditeur). */
+  flag?: string;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

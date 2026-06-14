@@ -201,6 +201,21 @@ export type Effect =
       onSuccess?: Effect[];
       onFailure?: Effect[];
     }
+  /** Test ÉTENDU (LDB 12 l.197-211) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
+   *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
+  | {
+      type: 'extendedTest';
+      skill?: string;
+      characteristic?: CharKey;
+      difficulty?: Difficulty;
+      label: string;
+      /** DR CUMULÉ à atteindre (ex. serrure complexe = 5). */
+      targetDR: number;
+      flag?: string;
+    }
+  /** Enfoncer une PORTE/objet à PLUSIEURS (EDO Appendice 2) : objet (BE = Bonus d'Endurance, B =
+   *  Blessures) ; chaque héros frappe (Bagarre, dégâts = DR + BF − BE). `flag` posé quand l'objet cède. */
+  | { type: 'forceDoor'; label: string; doorBE: number; doorB: number; flag?: string }
   | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
   | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un

@@ -634,8 +634,8 @@ export interface GameState {
   counterspellConfirm: () => void;
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
-  /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. porte DR 20) ; un Round à la fois. */
-  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number }) => void;
+  /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. crocheter DR 5) ; un Round à la fois. */
+  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; flag?: string }) => void;
   extendedTestRoll: (pid: string) => void;
   extendedTestReroll: (pid: string) => void;
   extendedTestBonusSL: (pid: string) => void;
@@ -1756,6 +1756,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (total >= p.targetDR) {
       set({ pendingExtendedTest: null });
       get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
+      if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
       return;
     }
     set({ pendingExtendedTest: { ...p, total, rounds: [...p.rounds, { id: `round-${p.rounds.length + 1}`, interactive: true, result: null }] } });

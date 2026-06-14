@@ -413,6 +413,22 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         });
         return; // la suite est portée par la branche (résolue à l'acquittement)
       }
+      case 'extendedTest': {
+        // Test ÉTENDU (LDB 12) : le meilleur du groupe pour la Compétence enchaîne les Rounds.
+        const best = partyBest(get().party, e.skill, e.characteristic);
+        if (!best) break;
+        const difficulty = e.difficulty ?? 'intermediaire';
+        const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
+        get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ?? e.characteristic ?? 'Test', target, targetDR: e.targetDR, flag: e.flag });
+        return;
+      }
+      case 'forceDoor': {
+        // Enfoncer une PORTE/objet à plusieurs (EDO Append. 2) : tout le groupe vivant frappe.
+        const heroes = get().party.filter((h) => !h.dead).map((h) => h.id);
+        if (!heroes.length) break;
+        get().startForceDoor({ label: e.label, doorBE: e.doorBE, doorB: e.doorB, heroIds: heroes, flag: e.flag });
+        return;
+      }
       case 'setTime': {
         // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
         const target = 'phase' in e

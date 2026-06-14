@@ -71,6 +71,8 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   openMerchant: 'Ouvrir une boutique (marchand)',
   medicalAid: 'Acte de soin payant (PNJ médecin/guérisseur)',
   test: 'Test de compétence',
+  extendedTest: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)',
+  forceDoor: 'Enfoncer une porte à plusieurs (objet BE/B)',
   setTime: 'Régler l’heure (jour/nuit)',
   endDialogue: 'Fermer le dialogue',
 };
@@ -83,7 +85,7 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
-  ['🎲 Tests', ['test']],
+  ['🎲 Tests', ['test', 'extendedTest', 'forceDoor']],
 ];
 
 const EFFECT_ICON: Record<Effect['type'], string> = {
@@ -91,7 +93,8 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
-  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', setTime: '🕰', endDialogue: '✖️',
+  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
+  setTime: '🕰', endDialogue: '✖️',
 };
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
@@ -132,6 +135,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
     case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
     case 'test': return `${icon} Test ${e.skill || '?'} (${DIFFICULTY_LABELS[(e.difficulty ?? 'intermediaire') as Difficulty] ?? e.difficulty}) — ${e.onSuccess?.length ?? 0}✓ / ${e.onFailure?.length ?? 0}✗`;
+    case 'extendedTest': return `${icon} Test Étendu ${e.skill || e.characteristic || '?'} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
+    case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
     case 'endDialogue': return `${icon} Fermer le dialogue`;
   }
@@ -162,6 +167,10 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 };
     case 'test':
       return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
+    case 'extendedTest':
+      return { type: 'extendedTest', skill: 'Crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' };
+    case 'forceDoor':
+      return { type: 'forceDoor', label: 'Porte', doorBE: 3, doorB: 10, flag: '' };
     case 'openWorldMap':
       return { type: 'openWorldMap' };
     case 'endDialogue':
