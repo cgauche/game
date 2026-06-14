@@ -60,49 +60,67 @@ export function exposureTestCount(severity: ExposureSeverity, sheltered: boolean
   return sheltered ? 0 : 2;
 }
 
+/** Protection magique contre les intempéries (op `weatherWard`) : aucun Test de froid tant qu'elle dure. */
+export function isWeatherWarded(c: Combatant): boolean {
+  return (c.activeEffects ?? []).some((e) => e.weatherImmune);
+}
+
+/** Cible (et base) d'UN Test d'Exposition au froid : Résistance +0, −10 sans manteau ni cape (ch.66 l.46). */
+export function exposureTarget(c: Combatant, resVal: number): number {
+  return Math.max(0, resVal + (hasCoat(c) ? 0 : -10));
+}
+
+/**
+ * Applique la `failures`-ième défaillance d'Exposition au froid (RAW l.415, escalade CUMULATIVE —
+ * c'est cette dépendance qui rend la séquence SÉQUENTIELLE) : 1 → −10 CT/Ag/Dex ; 2 → −10 le reste ;
+ * 3+ → 1d10 Blessures (ignore les PA), Inconscient à 0 PB. Mute `c` ; renvoie le journal + les
+ * Blessures infligées. Partagé par `exposureNight` (eager) et l'applicateur de cascade « exposure ».
+ */
+export function applyExposureFailure(c: Combatant, failures: number, rng: RNG): { log: string[]; wounds: number } {
+  const log: string[] = [];
+  if (failures === 1) {
+    for (const k of FIRST_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+    log.push(`${c.name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).`);
+    return { log, wounds: 0 };
+  }
+  if (failures === 2) {
+    for (const k of SECOND_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+    log.push(`${c.name} est transi — −10 à toutes les autres Caractéristiques.`);
+    return { log, wounds: 0 };
+  }
+  const dmg = Math.max(1, rng.int(1, 10));
+  loseWounds(c, dmg);
+  log.push(`${c.name} souffre du froid : ${dmg} Blessure(s) (ignore les PA).`);
+  if (c.wounds.current <= 0 && !hasCondition(c, 'Inconscient')) {
+    addCondition(c, 'Inconscient');
+    log.push(`${c.name} sombre, gelé — Inconscient.`);
+  }
+  return { log, wounds: dmg };
+}
+
 /**
  * Une NUIT d'Exposition au froid pour `c` : `count` Tests de Résistance (+0) — sans manteau, −10.
- * Applique les échecs en cascade (RAW l.415). Renvoie les jets et le journal.
+ * Applique les échecs en cascade (RAW l.415, via `applyExposureFailure`). Renvoie les jets et le journal.
  */
 export function exposureNight(c: Combatant, count: number, resVal: number, rng: RNG): { rolls: ExposureRoll[]; log: string[]; failures: number; wounds: number } {
-  // Protection magique contre les intempéries (Peau de loup d'hiver, Protection contre la pluie) :
-  // aucune Exposition tant que l'effet dure (op `weatherWard`).
-  if ((c.activeEffects ?? []).some((e) => e.weatherImmune)) {
+  if (isWeatherWarded(c)) {
     return { rolls: [], log: [`${c.name} ignore le froid et les intempéries (protection magique).`], failures: 0, wounds: 0 };
   }
   const rolls: ExposureRoll[] = [];
   const log: string[] = [];
   let failures = 0;
   let wounds = 0;
-  const coat = hasCoat(c);
-  const malus = coat ? 0 : -10;
+  const target = exposureTarget(c, resVal);
   for (let i = 0; i < count; i++) {
-    const res = rollTest(Math.max(0, resVal + malus), 'intermediaire', rng);
-    rolls.push({ base: resVal + malus, target: res.target, roll: res.roll, sl: res.sl, success: res.success });
+    const res = rollTest(target, 'intermediaire', rng);
+    rolls.push({ base: target, target: res.target, roll: res.roll, sl: res.sl, success: res.success });
     if (res.success) continue;
     failures++;
-    if (failures === 1) {
-      for (const k of FIRST_FAIL) {
-        c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
-      }
-      log.push(`${c.name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).`);
-    } else if (failures === 2) {
-      for (const k of SECOND_FAIL) {
-        c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
-      }
-      log.push(`${c.name} est transi — −10 à toutes les autres Caractéristiques.`);
-    } else {
-      const dmg = Math.max(1, rng.int(1, 10));
-      wounds += dmg;
-      loseWounds(c, dmg);
-      log.push(`${c.name} souffre du froid : ${dmg} Blessure(s) (ignore les PA).`);
-      if (c.wounds.current <= 0 && !hasCondition(c, 'Inconscient')) {
-        addCondition(c, 'Inconscient');
-        log.push(`${c.name} sombre, gelé — Inconscient.`);
-      }
-    }
+    const f = applyExposureFailure(c, failures, rng);
+    log.push(...f.log);
+    wounds += f.wounds;
   }
-  if (!coat && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−10 aux Tests d'Exposition).`);
+  if (!hasCoat(c) && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−10 aux Tests d'Exposition).`);
   return { rolls, log, failures, wounds };
 }
 

@@ -121,42 +121,75 @@ export interface RestRoll {
  * `collect` (modale de Repos) reçoit les JETS structurés (récupération, cauchemars) pour le bilan.
  * (Maladies/convalescence : décomptées par l'entretien quotidien — cf. en-tête #T3.)
  */
+/** Cible du Test de récupération d'une nuit (Résistance Accessible +20, LDB 18 l.380 volet a). */
+export function recoveryTarget(c: Combatant): number {
+  return restResistVal(c) + 20; // Accessible = +20
+}
+
+/** Un héros doit-il LANCER le Test de récupération cette nuit ? (Non si mort/éjecté/instable/affamé/PB
+ *  plein.) Sépare la DÉCISION du jet (pour différer en cascade) de son application. */
+export function needsRecoveryRoll(c: Combatant): boolean {
+  return !c.dead && !c.outOfRencontre && !unstable(c) && !isStarving(c) && c.wounds.current < c.wounds.max;
+}
+
+/**
+ * Applique UNE journée de récupération à `c` étant donné le JET de Résistance (volet a) — ou `null`
+ * si aucun jet n'était requis (PB plein, affamé). Sépare le jet (différable/influençable en cascade)
+ * de sa CONSÉQUENCE : dissipation d'Exténué (sommeil, 16 l.91), soin volet a (DR+BE sur réussite) +
+ * volet b (+BE inconditionnel, l.380), plafond « blessé » (l.110), réveil (l.28). Mute `c` ; renvoie
+ * `{ wokeUp }` (l'appelant journalise — `restRecovery` agrège, la cascade journalise par étape).
+ * Partagé par `restRecovery` (eager) et l'applicateur de cascade « recovery » — zéro duplication.
+ */
+export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; success: boolean } | null): { wokeUp: boolean } {
+  if (c.dead || c.outOfRencontre || unstable(c)) return { wokeUp: false };
+  const be = bonus(effectiveChar(c, 'E'));
+  // Faim & Soif (18 l.418) : un héros AFFAMÉ ne récupère ni PB ni Exténué naturellement.
+  const starving = isStarving(c);
+  // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) reste ; chaque « blessé » bloque 1 PB (l.110).
+  const malaise = activeMalaiseCount(c);
+  const blesse = diseaseBlesseCount(c);
+  const fat = stacks(c, 'Exténué');
+  const removable = starving ? 0 : Math.max(0, fat - malaise);
+  if (removable > 0) removeCondition(c, 'Exténué', removable);
+  const dayStartPB = c.wounds.current;
+  // volet a : DR + BE sur réussite (une fois par jour).
+  if (!starving && recoveryRoll?.success && c.wounds.current < c.wounds.max)
+    c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, recoveryRoll.sl) + be);
+  // volet b : +BE INCONDITIONNEL.
+  if (!starving && c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
+  // Symptôme « blessé » : la plaie reste ouverte.
+  if (blesse > 0) c.wounds.current = Math.max(dayStartPB, c.wounds.current - blesse);
+  // Réveil : > 0 PB lève l'Inconscient et relève l'À Terre (l.28). PAS applyHealWounds (soin de rencontre).
+  let wokeUp = false;
+  if (c.wounds.current > 0) {
+    c.roundsAtZero = 0;
+    if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); wokeUp = true; }
+    if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
+  }
+  return { wokeUp };
+}
+
 export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, collect?: RestRoll[]): string[] {
   if (c.dead || c.outOfRencontre) return []; // un mort / éjecté ne se repose pas
   // LDB 16 l.105 : un héros qui saigne, brûle ou est empoisonné ne trouve pas le repos — à stabiliser
   // d'abord (Test de Guérison, Sort). Pas de récupération réparatrice tant que ces États subsistent.
   if (unstable(c)) return [`${c.name} ne trouve pas le repos (blessures à stabiliser d'abord — Guérison).`];
 
-  const be = bonus(effectiveChar(c, 'E'));
-  const resVal = restResistVal(c);
   const startPB = c.wounds.current;
   const hadFatigue = stacks(c, 'Exténué') > 0;
   let nightmareNights = 0;
+  let wokeUp = false;
 
   for (let d = 0; d < Math.max(1, days); d++) {
-    // Faim & Soif (18 l.418) : un héros AFFAMÉ « ne peut pas récupérer de Points de Blessure ou se
-    // débarrasser de l'État Exténué de manière naturelle » → pas de dissipation ni de soin ce jour
-    // (les cauchemars suivent leur cours).
-    const starving = isStarving(c);
-    // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) n'est PAS dissipé par le sommeil ;
-    // chaque « blessé » bloque la guérison d'1 PB (l.110). (La progression vit dans l'entretien — #T3.)
-    const malaise = activeMalaiseCount(c);
-    const blesse = diseaseBlesseCount(c);
-    // Sommeil : dissipe les Exténué de FATIGUE, mais garde ceux imposés par un malaise actif.
-    const fat = stacks(c, 'Exténué');
-    const removable = starving ? 0 : Math.max(0, fat - malaise);
-    if (removable > 0) removeCondition(c, 'Exténué', removable);
-    const dayStartPB = c.wounds.current;
-    // volet a (l.380) : Test de Résistance Accessible (+20) → DR + BE PB (une fois par jour).
-    if (!starving && c.wounds.current < c.wounds.max) {
-      const res = rollTest(resVal, 'accessible', rng); // Accessible = +20
-      collect?.push({ kind: 'recovery', base: resVal, target: res.target, roll: res.roll, sl: res.sl, success: res.success });
-      if (res.success) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, res.sl) + be);
+    // volet a (l.380) : Test de Résistance Accessible (+20) — lancé seulement si utile (PB < max, non affamé).
+    let roll: { sl: number; success: boolean } | null = null;
+    if (needsRecoveryRoll(c)) {
+      const res = rollTest(restResistVal(c), 'accessible', rng);
+      collect?.push({ kind: 'recovery', base: restResistVal(c), target: res.target, roll: res.roll, sl: res.sl, success: res.success });
+      roll = { sl: res.sl, success: res.success };
     }
-    // volet b (l.380) : +BE par journée de repos, INCONDITIONNEL (même Test raté).
-    if (!starving && c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
-    // Symptôme « blessé » (l.110) : bloque la guérison d'1 PB par symptôme (la plaie reste ouverte).
-    if (blesse > 0) c.wounds.current = Math.max(dayStartPB, c.wounds.current - blesse);
+    // Conséquence du jour (dissipation + soin volets a/b + plafond blessé + réveil) — logique PARTAGÉE.
+    if (applyRecoveryDay(c, roll).wokeUp) wokeUp = true;
     // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
     if (c.nightmares) {
       const before = stacks(c, 'Exténué');
@@ -167,14 +200,8 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
     }
   }
 
-  // Réveil : repasser > 0 PB lève l'Inconscient et relève l'À Terre (LDB 18 l.28 ; pas de « se relever »
-  // hors combat). On NE passe PAS par applyHealWounds (qui consommerait le soin de Guérison de rencontre).
   const log: string[] = [];
-  if (c.wounds.current > 0) {
-    c.roundsAtZero = 0;
-    if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); log.push(`${c.name} reprend connaissance.`); }
-    if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
-  }
+  if (wokeUp) log.push(`${c.name} reprend connaissance.`);
   const healed = c.wounds.current - startPB;
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
