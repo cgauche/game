@@ -7,7 +7,9 @@ import { d10 } from '../engine/dice';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
+import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
+import { easeDifficulty } from '../engine/tests';
+import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromTrapping, customTrapping } from '../engine/items';
 import { contractDisease } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
@@ -402,7 +404,14 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
             : undefined;
         const best = partyBest(get().party, e.skill, e.characteristic, socialMod);
         if (!best) break;
-        const difficulty = e.difficulty ?? 'intermediaire';
+        const baseDifficulty = e.difficulty ?? 'intermediaire';
+        // `easierIf` : −`steps` crans si un héros vivant possède la compétence/le talent requis
+        // (ex. détecter la bombe est plus facile pour qui s'y connaît en poudre noire).
+        const eased = !!e.easierIf && get().party.some((c) => !c.dead && (
+          (!!e.easierIf!.hasSkill && actorHasSkill(c, e.easierIf!.hasSkill)) ||
+          (!!e.easierIf!.hasTalent && hasTalent(c, e.easierIf!.hasTalent))
+        ));
+        const difficulty = eased ? easeDifficulty(baseDifficulty, e.easierIf!.steps ?? 1) : baseDifficulty;
         // Le GROUPE peut tenter : chaque membre vivant est un candidat (le défaut reste le meilleur,
         // mais le JOUEUR choisit qui lance via `testSetActor`). Valeur/cible/malus/outil PAR acteur.
         const candidates = get().party.filter((c) => !c.dead).map((actor) => {

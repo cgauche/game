@@ -12,6 +12,15 @@ import { type TestPolicy, getTestPolicy } from './testPolicy';
 /** Chiffre des dizaines d'un d100 (00 = 100 → 10). SOURCE UNIQUE du calcul de DR. */
 export const tens = (n: number): number => Math.floor(n / 10);
 
+/** Échelle de Difficulté ORDONNÉE, du plus FACILE (tresFacile +60) au plus difficile (tresDifficile −30). */
+export const DIFFICULTY_LADDER: Difficulty[] = ['tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe', 'difficile', 'tresDifficile'];
+
+/** Décale une difficulté de `steps` crans vers PLUS FACILE (bornée aux extrémités de l'échelle). PUR. */
+export function easeDifficulty(base: Difficulty, steps: number): Difficulty {
+  const i = DIFFICULTY_LADDER.indexOf(base);
+  return DIFFICULTY_LADDER[Math.max(0, Math.min(DIFFICULTY_LADDER.length - 1, i - steps))];
+}
+
 export interface TestResult {
   roll: number;
   target: number; // valeur effective après difficulté

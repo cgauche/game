@@ -201,6 +201,10 @@ export type Effect =
       /** Groupes de l'interlocuteur (ex. « Elfe », « Mort-vivant ») : sur un Test de **Sociabilité**, un PJ
        *  qui possède Animosité/Préjugé envers ce groupe subit −20/−10 (LDB 21). Sans effet hors Sociabilité. */
       vsGroups?: string[];
+      /** Difficulté RÉDUITE de `steps` crans (défaut 1) si un héros vivant du groupe possède la
+       *  compétence `hasSkill` (ex. « Projectiles (Poudre noire) ») ou le talent `hasTalent` —
+       *  ex. détecter la bombe est plus facile pour qui s'y connaît en poudre. Absent = sans effet. */
+      easierIf?: { hasSkill?: string; hasTalent?: string; steps?: number };
       onSuccess?: Effect[];
       onFailure?: Effect[];
     }

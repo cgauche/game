@@ -226,6 +226,11 @@ export function newEffect(type: Effect['type']): Effect {
 function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx }) {
   const e = effect as any;
   const upd = (patch: any) => onChange({ ...e, ...patch });
+  /** MAJ du modulateur `easierIf` du Test, en l'élaguant à `undefined` s'il ne cible plus rien. */
+  const setEase = (patch: any) => {
+    const m = { ...(e.easierIf ?? {}), ...patch };
+    upd({ easierIf: m.hasSkill || m.hasTalent ? m : undefined });
+  };
   return (
     <div className="eff-body">
       <select className="eff-type" value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
@@ -582,6 +587,12 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
                 />
               </div>
             )}
+            <div className="tf-row">
+              <span className="dr">Plus facile si</span>
+              <input placeholder="compétence (ex. Projectiles (Poudre noire))" value={e.easierIf?.hasSkill ?? ''} onChange={(ev) => setEase({ hasSkill: ev.target.value || undefined })} />
+              <input placeholder="ou talent" value={e.easierIf?.hasTalent ?? ''} onChange={(ev) => setEase({ hasTalent: ev.target.value || undefined })} />
+              <label className="dr">−<input type="number" min={1} value={e.easierIf?.steps ?? 1} onChange={(ev) => setEase({ steps: Number(ev.target.value) })} /> cran(s)</label>
+            </div>
             <div className="branch">
               <span className="branch-label ok">Si RÉUSSITE :</span>
               <EffectList effects={e.onSuccess ?? []} onChange={(x) => upd({ onSuccess: x })} ctx={ctx} />

@@ -41,6 +41,16 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return base + (sk?.advances ?? 0) + states + enc + armour + soc + traumaSkill + mut;
 }
 
+/** Le personnage possède-t-il la compétence `label` (nom seul OU « Nom (Spécialisation) », ex.
+ *  « Projectiles (Poudre noire) ») ? Insensible à la casse. Sert aux modulateurs (ex. `easierIf`). */
+export function actorHasSkill(c: Combatant, label: string): boolean {
+  const low = label.trim().toLowerCase();
+  return c.skills.some((s) => {
+    const full = s.spec ? `${s.name} (${s.spec})` : s.name;
+    return full.toLowerCase() === low || s.name.toLowerCase() === low;
+  });
+}
+
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le
  *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le −20/−10 est en effet
  *  l'issue du Test de Psychologie RÉUSSI (Animosité l.22 / Préjugé l.50) — ou, hors combat (pas de Test
