@@ -11,7 +11,7 @@ import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells } from '../../data';
+import { spells, etats } from '../../data';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -56,6 +56,8 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
   inflictDisease: 'Infliger une maladie (LDB 20)',
   inflictTrauma: 'Infliger une Blessure Critique (LDB 18)',
+  inflictDamage: 'Infliger des dégâts (héros / groupe)',
+  applyCondition: 'Poser un État (héros / groupe)',
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
@@ -82,7 +84,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
 export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
   ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
-  ['☠️ Afflictions', ['inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
+  ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
@@ -93,6 +95,7 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
+  inflictDamage: '💥', applyCondition: '🌀',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
   startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
   setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
@@ -118,6 +121,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictNightmares': return `${icon} Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
     case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
+    case 'inflictDamage': return `${icon} ${e.amount ?? 0} dégât(s) → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'applyCondition': return `${icon} État « ${e.name || '?'} »${e.value && e.value > 1 ? ` ×${e.value}` : ''} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
@@ -192,6 +197,10 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
     case 'inflictTrauma':
       return { type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' };
+    case 'inflictDamage':
+      return { type: 'inflictDamage', target: 'party', amount: 5 };
+    case 'applyCondition':
+      return { type: 'applyCondition', target: 'party', name: etats[0]?.label ?? 'Sonné', value: 1 };
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
@@ -416,6 +425,29 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
               <span className="branch-label">Effets à l’échéance :</span>
               <EffectList effects={e.effects ?? []} onChange={(x) => upd({ effects: x })} ctx={ctx} />
             </div>
+          </div>
+        )}
+        {(effect.type === 'inflictDamage' || effect.type === 'applyCondition') && (
+          <div className="tf-row">
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+            {effect.type === 'inflictDamage' ? (
+              <label className="dr">Dégâts <input type="number" min={0} value={e.amount ?? 0} onChange={(ev) => upd({ amount: Number(ev.target.value) })} /></label>
+            ) : (
+              <>
+                <select value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value })}>
+                  {etats.map((s) => (
+                    <option key={s.label} value={s.label}>{s.label}</option>
+                  ))}
+                </select>
+                <label className="dr">Intensité <input type="number" min={1} value={e.value ?? 1} onChange={(ev) => upd({ value: Number(ev.target.value) })} /></label>
+              </>
+            )}
           </div>
         )}
         {effect.type === 'startCombat' && (

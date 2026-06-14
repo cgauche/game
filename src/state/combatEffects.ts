@@ -22,6 +22,8 @@ import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, condMet } from './scene';
 import { inRect } from './combatGeometry';
+import { loseWounds, addCondition } from '../engine/conditions';
+import { touchActors } from './combatOrParty';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -130,6 +132,18 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
     if (s.cancelFlag && flags[s.cancelFlag]) continue;
     applyEffectsLoot(get, set, s.effects, 'Événement');
   }
+}
+
+/** Cibles d'un Effet hors combat (`inflictDamage`/`applyCondition`) : les héros vivants concernés,
+ *  dans le bon ensemble (file de combat si en combat, sinon le groupe). `hero` = celui désigné par
+ *  `heroId` (défaut : 1er vivant) ; `party` = tous les héros vivants. SOURCE UNIQUE (pas de dup). */
+function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Combatant[] {
+  const pool = get().battle?.combatants ?? get().party;
+  if (target === 'hero') {
+    const id = heroId || pool.find((c) => c.kind === 'hero' && !c.dead)?.id;
+    return pool.filter((c) => c.id === id);
+  }
+  return pool.filter((c) => c.kind === 'hero' && !c.dead);
 }
 
 export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
@@ -463,6 +477,24 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
           ? now + Math.max(0, e.afterMinutes)
           : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
         set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, effects: e.effects, cancelFlag: e.cancelFlag }] }));
+        break;
+      }
+      case 'inflictDamage': {
+        const targets = effectTargets(get, e.target, e.heroId);
+        for (const c of targets) loseWounds(c, Math.max(0, e.amount));
+        if (targets.length) {
+          set(touchActors(get()));
+          get().log(`💥 ${targets.length === 1 ? targets[0].name : 'Le groupe'} subit ${e.amount} Blessure(s).`);
+        }
+        break;
+      }
+      case 'applyCondition': {
+        const targets = effectTargets(get, e.target, e.heroId);
+        for (const c of targets) addCondition(c, e.name, e.value ?? 1);
+        if (targets.length) {
+          set(touchActors(get()));
+          get().log(`${targets.length === 1 ? targets[0].name : 'Le groupe'} : ${e.name}.`);
+        }
         break;
       }
       case 'openMerchant':

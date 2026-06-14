@@ -259,6 +259,13 @@ export type Effect =
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
   | { type: 'inflictTrauma'; kind: 'dechirure' | 'fracture' | 'amputation'; severity?: 'mineur' | 'majeur'; location: import('../engine/types').HitLocation; heroId?: string }
+  /** Inflige des dégâts (Lot 3) à un héros (`hero` + `heroId`, défaut = 1er vivant) ou à TOUT le
+   *  groupe (`party`) — piège, souffle scénarisé, tick… `amount` = Points de Blessure (0 PB → À Terre,
+   *  géré par `loseWounds`). DÉTERMINISTE (pas de jet) → pas de modale. */
+  | { type: 'inflictDamage'; target: 'party' | 'hero'; heroId?: string; amount: number }
+  /** Pose un État (Lot 3) sur un héros ou tout le groupe — En flammes, Empoisonné, Sonné, Aveuglé… ;
+   *  `value` = intensité initiale (défaut 1). */
+  | { type: 'applyCondition'; target: 'party' | 'hero'; heroId?: string; name: string; value?: number }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
    *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
    *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
