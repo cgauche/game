@@ -48,36 +48,36 @@ export interface ConjureForm {
   group: string; // Groupe / Spé de Corps à corps appliquée par combatValue
 }
 
-/** Une ARME D'ATTAQUE de mêlée RÉELLE représentative par Groupe (sous-type), tirée de la base — la
- *  1ʳᵉ rencontrée, hors boucliers / armes improvisées / Inoffensives / mains nues. Source unique des
- *  profils (allonge/mains) : zéro stat d'arme réinventée. */
-function meleeWeaponByGroup(): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const t of trappings) {
-    const it = itemFromTrapping(t.label);
-    if (it?.kind !== 'melee' || !it.subType) continue;
-    if (/bouclier|improvis|mains nues/i.test(it.name)) continue; // pas une arme à invoquer
-    if (it.qualities?.some((q) => /inoffensiv/i.test(q))) continue;
-    const g = it.subType.toLowerCase();
-    if (!map.has(g)) map.set(g, t.label);
-  }
-  return map;
+/** Une arme de mêlée est-elle un objet À INVOQUER ? Exclut les boucliers, armes improvisées, mains
+ *  nues et armes Inoffensives — PAS « Arme simple » (= épée/hache/marteau/masse/lance courte, l'arme
+ *  de base la plus commune, cf. sa description). */
+function isConjurableWeapon(it: { name: string; qualities?: string[] }): boolean {
+  if (/bouclier|improvis|mains nues/i.test(it.name)) return false;
+  if (it.qualities?.some((q) => /inoffensiv/i.test(q))) return false;
+  return true;
 }
 
 /** Formes proposées au lanceur : « n'importe quelle Compétence de Corps à corps que vous POSSÉDEZ »
- *  (LDB 47) → une arme réelle représentative par Spécialisation de Corps à corps connue, la mieux
- *  entraînée d'abord. Aucune Spé → une arme de base par défaut. */
+ *  (LDB 47) → TOUTES les armes réelles des Spécialisations de Corps à corps connues (le lanceur
+ *  CHOISIT son arme), les Spé les mieux entraînées d'abord. Aucune Spé → l'arme de base par défaut. */
 export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureForm[] {
-  const byGroup = meleeWeaponByGroup();
-  const seen = new Set<string>();
-  const forms = (caster.skills ?? [])
-    .filter((s) => /corps à corps/i.test(s.name) && s.spec)
-    .sort((a, b) => (b.advances ?? 0) - (a.advances ?? 0))
-    .map((s) => s.spec!.trim())
-    .filter((g) => (seen.has(g.toLowerCase()) ? false : seen.add(g.toLowerCase())))
-    .map((g) => ({ group: g, weapon: byGroup.get(g.toLowerCase()) }))
-    .filter((f): f is ConjureForm => !!f.weapon);
-  if (forms.length) return forms;
-  const fallback = byGroup.get('base') ?? [...byGroup.values()][0];
-  return fallback ? [{ weapon: fallback, group: 'Base' }] : [];
+  const groupAdv = new Map<string, number>(); // groupe (minuscule) → meilleures avances connues
+  for (const s of caster.skills ?? []) {
+    if (/corps à corps/i.test(s.name) && s.spec) {
+      const g = s.spec.trim().toLowerCase();
+      groupAdv.set(g, Math.max(groupAdv.get(g) ?? 0, s.advances ?? 0));
+    }
+  }
+  if (!groupAdv.size) groupAdv.set('base', 0); // mage sans Spé → armes de base
+  const out: { weapon: string; group: string; adv: number }[] = [];
+  for (const t of trappings) {
+    const it = itemFromTrapping(t.label);
+    if (it?.kind !== 'melee' || !it.subType || !isConjurableWeapon(it)) continue;
+    const adv = groupAdv.get(it.subType.toLowerCase());
+    if (adv == null) continue;
+    out.push({ weapon: t.label, group: it.subType, adv });
+  }
+  out.sort((a, b) => b.adv - a.adv); // meilleure Spé d'abord (l'ordre des armes dans la base sinon)
+  const forms = out.map(({ weapon, group }) => ({ weapon, group }));
+  return forms.length ? forms : [{ weapon: 'Arme simple', group: 'Base' }];
 }

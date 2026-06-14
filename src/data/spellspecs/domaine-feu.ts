@@ -98,7 +98,10 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   FIXES +6 (la valeur d'arme, pas un bonus à votre épée), Percutante, +1 En flammes à la touche.
     //   La maladresse d'un porteur sans Magie des Arcanes (Feu) reste journalisée.
     ops: [
-      { op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }] },
+      { op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }],
+        form: 'Épée bâtarde', // silhouette d'épée pour le rendu
+        // Épée de flammes magiques — orange ardent, reflets dorés.
+        skin: { metal: '#ff8a3a', metalH: '#ffe1a3', metalO: '#7e2a10', cuir: '#5a2410', cuirH: '#c1631e', cuirO: '#2a1206', accent: '#ffce4a', accentH: '#fff6d6', accentO: '#d2641e' } },
       { op: 'narrative', text: 'Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },

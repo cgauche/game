@@ -204,6 +204,12 @@ export type GameOp =
   | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
       qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
       onHitConditions?: { name: string; value?: number }[];
+      /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
+       *  propagé à `Weapon.skin` par recomputeLoadout, l'arme se rend recolorée (système d'objet unique). */
+      skin?: Record<string, string>;
+      /** Silhouette de RENDU (libellé d'arme du catalogue) pour les conjures à forme FIXE (Faux →
+       *  « Hallebarde », Épée ardente → « Épée bâtarde ») — `chooseForm` la prend du choix du lanceur. */
+      form?: string;
       /** Forme LIBRE (Arme aethyrique) : le lanceur choisit l'arme → `ctx.conjureForm` clone le profil
        *  (Groupe/allonge/mains) d'une arme RÉELLE de la base ; sinon stats fixes du Sort. */
       chooseForm?: boolean }
@@ -664,6 +670,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           enc: 0,
           equipped: false, // hors Set I/II auto : l'objet vit dans son SET dédié (equipConjuredWeapon)
           conjured: true,
+          ...(o.skin ? { skin: o.skin } : {}), // teinte magique unique (aethyrique/améthyste/ardente)
+          // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
+          // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
+          ...(form ? { form: form.weapon } : o.form ? { form: o.form } : {}),
         };
         // SET d'armes DÉDIÉ rendu actif (réutilise les loadouts) — le joueur peut rebasculer sur ses
         // armes ; à l'expiration, le set d'origine est restauré (engine/conjuredWeapons).

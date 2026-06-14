@@ -38,7 +38,10 @@ export const DOMAINE_MORT: SpellSpec[] = [
     //   d'hast magique à 2 mains, Dégâts FIXES = BFM+3. La clause anti-Avantage des Mort-vivant
     //   (modificateur relationnel non exprimable en une op) reste journalisée.
     ops: [
-      { op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'] },
+      { op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'],
+        form: 'Hallebarde', // silhouette de polearm à lame (faux) pour le rendu
+        // Faux d'améthyste — Vent de Shyish, violet sépulcral.
+        skin: { metal: '#b07fdc', metalH: '#ecd6ff', metalO: '#42275f', cuir: '#2b1b3d', cuirH: '#6b4a8c', cuirO: '#180f29', accent: '#d6acff', accentH: '#ffffff', accentO: '#7a4aa6' } },
       { op: 'narrative', text: 'La Faux de Shyish : les ennemis Mort-vivant ne reçoivent pas d’Avantage quand ils sont Engagés avec vous — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },

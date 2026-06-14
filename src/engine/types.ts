@@ -123,6 +123,10 @@ export interface Weapon {
   /** SKIN cosmétique (objets uniques/légendaires) : override de palette token→hex appliqué au
    *  rendu de l'arme (ex. { metal:'#caa64a' } → lame dorée). Données opaques côté moteur. */
   skin?: Record<string, string>;
+  /** Silhouette de RENDU forcée (libellé d'arme du catalogue, ex. arme invoquée affichée comme
+   *  « Bâton de combat » bien que nommée « Arme aethyrique ») — résolue par le rig (weaponFamily).
+   *  Donnée opaque côté moteur (un simple libellé). */
+  form?: string;
 }
 
 /** Points d'Armure par localisation. */
@@ -358,6 +362,8 @@ export interface ItemInstance {
   /** Arme INVOQUÉE temporaire (op `conjureWeapon`) : objet ordinaire mais TENU d'office (injecté en
    *  tête de `c.weapons` par recomputeLoadout) et retiré à l'expiration du Sort. */
   conjured?: boolean;
+  /** Silhouette de RENDU forcée (libellé d'arme du catalogue) — propagée à `Weapon.form`. */
+  form?: string;
 }
 
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */

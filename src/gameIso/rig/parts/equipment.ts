@@ -73,6 +73,12 @@ const ART_BY_GROUP: Record<string, string> = {
 };
 
 export function weaponFamily(w: Weapon): string {
+  // Silhouette de rendu forcée (arme invoquée nommée « Arme aethyrique » mais dessinée comme la
+  // forme choisie) : un libellé catalogue → son slug de forme. Prioritaire sur le nom.
+  if (w.form) {
+    const f = wnorm(w.form);
+    if (f in ART_BY_LABEL) return ART_BY_LABEL[f];
+  }
   const n = wnorm(w.name);
   if (n in ART_BY_LABEL) return ART_BY_LABEL[n];
   return ART_BY_GROUP[weaponGroupKey(w)] ?? (w.type === 'ranged' ? 'arc' : 'epee');

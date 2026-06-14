@@ -127,9 +127,9 @@ export function CastModal() {
               <div className="rm-loc-grid">
                 {conjureForms.map((f) => (
                   <button
-                    key={f.group}
-                    className={`btn small ${selectedForm?.group === f.group ? 'btn-primary' : ''}`}
-                    title={`Corps à corps (${f.group}) — profil d'arme : ${f.weapon}`}
+                    key={`${f.group}:${f.weapon}`}
+                    className={`btn small ${selectedForm?.weapon === f.weapon ? 'btn-primary' : ''}`}
+                    title={`Corps à corps (${f.group}) — l'arme prend la forme : ${f.weapon}`}
                     onClick={() => setConjureForm(f)}
                   >
                     {f.weapon} · {f.group}

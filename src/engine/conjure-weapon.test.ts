@@ -32,6 +32,14 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
     expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.F))).toBe(4);
   });
 
+  it('formes proposées : toutes les armes réelles des Spé connues, « Arme simple » incluse (≠ junk)', () => {
+    const c = mage({ skills: [{ name: 'Corps à corps', spec: 'Base', advances: 10 }] as Combatant['skills'] });
+    const labels = conjureFormOptions(c).map((f) => f.weapon);
+    expect(labels).toContain('Arme simple'); // arme de base commune (épée/hache/masse/lance courte)
+    expect(labels.every((l) => !/bouclier|improvis|mains nues/i.test(l))).toBe(true); // junk exclu
+    expect(conjureFormOptions(c).every((f) => f.group.toLowerCase() === 'base')).toBe(true); // seulement la Spé connue
+  });
+
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
     const c = mage({ skills: [{ name: 'Corps à corps', spec: 'Escrime', advances: 10 }] as Combatant['skills'] });
     const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)

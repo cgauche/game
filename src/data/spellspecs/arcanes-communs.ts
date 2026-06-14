@@ -26,7 +26,9 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   Bonus de Force), tenu tant que le Sort dure. Le lanceur CHOISIT la forme (n'importe quelle
     //   Compétence de Corps à corps qu'il possède) → l'arme prend le profil de cette Spé (Groupe/allonge).
     ops: [
-      { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true },
+      { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true,
+        // Lame d'Aethyr translucide, bleu spectral lumineux.
+        skin: { metal: '#8fd4ff', metalH: '#e6f7ff', metalO: '#2e5c8a', cuir: '#34557f', cuirH: '#6fa3d6', cuirO: '#1b3450', accent: '#bfe6ff', accentH: '#ffffff', accentO: '#5a92cc' } },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

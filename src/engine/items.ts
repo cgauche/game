@@ -193,7 +193,7 @@ export function recomputeLoadout(c: Combatant): void {
     const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
     return { name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
-      skin: it.skin, hands, hand, uid: it.uid };
+      skin: it.skin, form: it.form, hands, hand, uid: it.uid };
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de

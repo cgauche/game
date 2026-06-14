@@ -198,16 +198,20 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
             </div>
           );
         })}
-        {/* Sets hérités des anciennes sauvegardes (au-delà des 2 fixes) : actifs/supprimables, plus de création. */}
+        {/* Sets au-delà des 2 fixes : soit une ARME INVOQUÉE (op conjureWeapon) — auto-gérée (créée à
+            l'incantation, retirée à l'expiration), NON supprimable ; soit un set personnalisé supprimable. */}
         {(hero.loadouts ?? []).slice(WEAPON_SET_NAMES.length).map((lo) => {
           const active = hero.activeLoadoutId === lo.id;
+          const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
           return (
-            <div key={lo.id} className={`loadout-row legacy ${active ? 'active' : ''}`}>
+            <div key={lo.id} className={`loadout-row ${conjured ? 'conjured' : 'extra'} ${active ? 'active' : ''}`}>
               <button className={`btn small ${active ? 'btn-primary' : ''}`} disabled={inBattle} title={lockTitle} onClick={() => setActiveLoadout(hero.id, lo.id)}>
                 {active ? '● Actif' : 'Activer'}
               </button>
-              <span className="lo-name">{lo.name} <em className="muted">(ancien set)</em></span>
-              <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set hérité'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+              <span className="lo-name">{conjured ? <>✦ {lo.name} <em className="muted">(invoquée)</em></> : lo.name}</span>
+              {!conjured && (
+                <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+              )}
             </div>
           );
         })}
