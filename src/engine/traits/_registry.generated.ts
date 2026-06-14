@@ -38,9 +38,10 @@ import { trait as e33 } from './defs/resistance-a-la-magie';
 import { trait as e34 } from './defs/ruse';
 import { trait as e35 } from './defs/sang-corrosif';
 import { trait as e36 } from './defs/stupide';
-import { trait as e37 } from './defs/territorial';
-import { trait as e38 } from './defs/toile';
-import { trait as e39 } from './defs/vision-nocturne';
-import { trait as e40 } from './defs/vol';
+import { trait as e37 } from './defs/taille';
+import { trait as e38 } from './defs/territorial';
+import { trait as e39 } from './defs/toile';
+import { trait as e40 } from './defs/vision-nocturne';
+import { trait as e41 } from './defs/vol';
 
-export const TRAIT_DEFS: TraitDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40];
+export const TRAIT_DEFS: TraitDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41];

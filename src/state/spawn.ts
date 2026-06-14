@@ -11,7 +11,7 @@ import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm } from '../engine/traits/dispatch';
+import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits } from '../engine/traits/dispatch';
 import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -108,17 +108,12 @@ function armourFromTraits(traits: string[]): ArmourPoints {
   return emptyArmour(0);
 }
 
-/** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85), ou null si absent.
- *  Une plage (« Taille (de Petite à Énorme) ») est résolue à sa borne haute par `parseSizeLabel`. */
+/** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits
+ *  (`resolveTraits` → arg), plus de regex propre. Une plage (« Taille (de Petite à Énorme) ») est
+ *  résolue à sa borne haute par `parseSizeLabel`. null si absent ou argument non reconnu. */
 export function sizeFromTraits(traits: string[]): SizeCategory | null {
-  for (const t of traits) {
-    const m = t.match(/^Taille\s*\(([^)]+)\)/i);
-    if (m) {
-      const cat = parseSizeLabel(m[1]);
-      if (cat) return cat;
-    }
-  }
-  return null;
+  const arg = resolveTraits(traits).find((r) => r.def.key === 'Taille')?.arg;
+  return arg ? parseSizeLabel(arg) : null;
 }
 
 /** Catégorie de Taille d'une entité de scène (créature posée) : champ explicite du statbloc, sinon

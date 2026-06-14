@@ -32,8 +32,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
   // Profil dérivé au spawn — state/spawn.ts
   ['Armure', 'PA plats au spawn (armourFromTraits)'],
-  ['Taille', 'catégorie de Taille au spawn (sizeFromTraits) + sous-système Taille'],
-  // 'Nuée' est désormais une DEF du registre (flag `swarm`, lue par `isSwarm`) → couverture unique par la def.
+  // 'Taille' et 'Nuée' sont désormais des DEFS du registre (Taille → arg lu par sizeFromTraits ;
+  // Nuée → flag `swarm` lu par isSwarm) → couverture unique par la def, plus d'entrée allowlist.
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],
