@@ -30,6 +30,8 @@ import { MIRACLES_MANANN } from './miracles-manann';
 import { MIRACLES_RANALD } from './miracles-ranald';
 import { MIRACLES_RHYA } from './miracles-rhya';
 import { MIRACLES_TAAL } from './miracles-taal';
+import { MIRACLES_ULRIC } from './miracles-ulric';
+import { MIRACLES_VERENA } from './miracles-verena';
 
 const ALL: SpellSpec[] = [
   ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...DOMAINE_LUMIERE,
@@ -37,6 +39,7 @@ const ALL: SpellSpec[] = [
   ...DOMAINE_MORT, ...DOMAINE_VIE, ...MAGIE_NATURELLE, ...NECROMANCIE,
   ...MAGIE_MINEURE, ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA, ...MIRACLES_MORR,
   ...MIRACLES_MYRMIDIA, ...MIRACLES_MANANN, ...MIRACLES_RANALD, ...MIRACLES_RHYA, ...MIRACLES_TAAL,
+  ...MIRACLES_ULRIC, ...MIRACLES_VERENA,
 ];
 
 /** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */
