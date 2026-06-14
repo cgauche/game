@@ -1,18 +1,22 @@
 import { makePregens } from '../../data/pregens';
+import { spells } from '../../data';
+import { blessingsOf, miraclesOf } from '../../engine/cults/registry';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
-import type { Combatant, CharKey, SkillInstance } from '../../engine/types';
+import type { Combatant, CharKey, SkillInstance, TalentInstance } from '../../engine/types';
 
 const scene = arena({ id: 'test-magie', nom: 'Magie — sorcière elfe & prêtres', w: 18, h: 12, heroStart: { x: 2, y: 6 } });
 scene.startMessage = 'Casters de haut niveau : invoquez (Réanimation, Hurlement du loup), enchantez, drainez, corrompez.';
+// Ennemis VIVANTS uniquement (pas de Mort-vivant) → aucun Test de Peur au début de combat, qui
+// interromprait la recette des sorts. La Nécromancie reste testable : les invoqués sont des ALLIÉS.
 setEncounters(scene, [
   {
     id: 'enc-magie',
     enemies: [
-      { ref: 'Zombie', pos: { x: 12, y: 4 } },
-      { ref: 'Zombie', pos: { x: 12, y: 8 } },
-      { ref: 'Bandit de Grand Chemin', pos: { x: 13, y: 6 } },
+      { ref: 'Bandit de Grand Chemin', pos: { x: 12, y: 4 } },
       { ref: 'Bandit de Grand Chemin', pos: { x: 14, y: 5 } },
+      { ref: 'Loup', pos: { x: 12, y: 8 } },
+      { ref: 'Loup', pos: { x: 13, y: 6 } },
     ],
   },
 ]);
@@ -31,6 +35,27 @@ const setChars = (c: Combatant, over: Partial<Record<CharKey, number>>) => {
   for (const [k, v] of Object.entries(over)) c.characteristics[k as CharKey] = v as number;
 };
 
+/** Ajoute des Talents (libellés concrets) sans doublon. */
+function addTalents(c: Combatant, names: string[]): void {
+  for (const name of names) if (!c.talents.some((t) => t.name === name)) c.talents.push({ name, times: 1 } as TalentInstance);
+}
+
+/** Labels des sorts d'un type (+ sous-type optionnel) depuis la base. */
+const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =>
+  spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.label);
+
+/** Prêtre COMPLET d'un culte : Prière + Béni/Invocation (Culte) + TOUTES ses Bénédictions ET Miracles. */
+function makePriest(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>): Combatant {
+  const p = clone(base);
+  p.id = id; p.name = name;
+  setChars(p, chars);
+  p.fate = 3; p.fortune = 3;
+  boostSkill(p, 'Prière', undefined, 'Soc', 50);
+  addTalents(p, [`Béni (${cult})`, `Invocation (${cult})`]);
+  p.spells = [...blessingsOf(cult), ...miraclesOf(cult)]; // roster COMPLET du culte (data-driven)
+  return p;
+}
+
 /**
  * Test « Magie » de haut niveau (recette B4) — la composition couvre TOUTES les familles de sorts
  * curées : une Haute Sorcière elfe MULTI-DOMAINE (RAW : un sorcier elfe maîtrise plusieurs Vents)
@@ -41,9 +66,10 @@ function makeMagicParty(): Combatant[] {
   const P = makePregens();
   const wil = P.find((p) => p.id === 'pregen-707')!; // Sorcier (Langue (Magick))
   const ans = P.find((p) => p.id === 'pregen-808')!; // Prêtre (Prière)
-  const tueur = P.find((p) => p.id === 'pregen-202')!; // Tueur (mêlée, allié martial)
+  const tueur = P.find((p) => p.id === 'pregen-202')!; // Tueur (mêlée, allié martial / cible d'enchantement)
 
-  // — Haute Sorcière elfe : arcane multi-domaine + Nécromancie (invocations) —
+  // — Haute Sorcière elfe : arcane multi-domaine COMPLET + Nécromancie (invocations) —
+  const ARC_DOMAINS = ['Feu', 'Mort', 'Cieux', 'Bête', 'Vie'];
   const sorc = clone(wil);
   sorc.id = 'sc-elfe';
   sorc.name = 'Aelindra, Haute Sorcière';
@@ -51,53 +77,21 @@ function makeMagicParty(): Combatant[] {
   sorc.wounds = { current: 18, max: 18, base: 18 };
   sorc.fate = 4; sorc.fortune = 4; sorc.resilience = 3; sorc.resolve = 3;
   boostSkill(sorc, 'Langue', 'Magick', 'Int', 55);
-  for (const dom of ['Feu', 'Mort', 'Cieux', 'Bête', 'Vie']) boostSkill(sorc, 'Focalisation', dom, 'FM', 40);
-  sorc.talents = [
-    ...sorc.talents,
-    { name: 'Magie des Arcanes (Feu)', times: 1 },
-    { name: 'Magie des Arcanes (Mort)', times: 1 },
-    { name: 'Magie des Arcanes (Cieux)', times: 1 },
-    { name: 'Magie des Arcanes (Bête)', times: 1 },
-    { name: 'Magie des Arcanes (Vie)', times: 1 },
-  ];
+  for (const dom of ARC_DOMAINS) boostSkill(sorc, 'Focalisation', dom, 'FM', 40);
+  addTalents(sorc, ['Magie mineure', ...ARC_DOMAINS.map((d) => `Magie des Arcanes (${d})`), 'Nécromancie']);
+  // Roster COMPLET (data-driven) : Magie mineure + Arcanes communs + ses 5 Domaines + Nécromancie.
   sorc.spells = [
-    'Fléchette', 'Téléportation', 'Armure Aethyrique', // mineure + arcanes communs
-    "Grands feux d'U'Zhul", // Feu — zone persistante
-    'Caresse de Laniph', 'Vol de vie', 'Le Voile violet de Shyish', // Mort — drains + voile
-    "Arc de T'Essla", "Le Premier Signe d'Amul", // Cieux — missile + Chance
-    "La lance d'Ambre", // Bête — missile perçant
-    'Sang de la Terre', // Vie — zone de soin
-    'Réanimation', 'Relever les morts', // Nécromancie — INVOCATIONS liées au sorcier
-    'Feu rose de Tzeentch', // Chaos — missile + En flammes
+    ...spellsOf('Magie mineure'),
+    ...spellsOf('Magie des Arcanes', [null, ...ARC_DOMAINS, 'Nécromancie']),
   ];
   sorc.appearance = { species: 'Hauts Elfes', sex: 'F', build: 0.38 };
   sorc.species = 'Hauts Elfes';
   sorc.pos = { x: 2, y: 5 };
 
-  // — Grand Prêtre de Sigmar : bénédictions + Comète + marteau enchanté —
-  const sigmar = clone(ans);
-  sigmar.id = 'pr-sigmar';
-  sigmar.name = 'Frère Anselm, Grand Prêtre';
-  setChars(sigmar, { Soc: 68, FM: 60, F: 45, E: 45 });
-  sigmar.fate = 3; sigmar.fortune = 3;
-  boostSkill(sigmar, 'Prière', undefined, 'Soc', 50);
-  sigmar.spells = [
-    'Bénédiction de Guérison', 'Bénédiction de Bataille', 'Bénédiction de Courage',
-    'Comète à Deux Queues', 'Marteau ardent de Sigmar', 'Flambeau de Vertu', 'Vaincre les impies',
-  ];
+  // — Prêtres COMPLETS (toutes leurs Bénédictions ET Miracles, talents de culte) —
+  const sigmar = makePriest(ans, 'pr-sigmar', 'Frère Anselm, Grand Prêtre', 'Sigmar', { Soc: 68, FM: 60, F: 45, E: 45 });
   sigmar.pos = { x: 2, y: 6 };
-
-  // — Prêtre d'Ulric : invoque le loup blanc + Frénésie + châtiment —
-  const ulric = clone(ans);
-  ulric.id = 'pr-ulric';
-  ulric.name = "Wulfric, Prêtre d'Ulric";
-  setChars(ulric, { Soc: 66, FM: 58, F: 48, E: 48 });
-  ulric.fate = 3; ulric.fortune = 3;
-  boostSkill(ulric, 'Prière', undefined, 'Soc', 48);
-  ulric.spells = [
-    'Hurlement du loup', "Fureur d'Ulric", 'Frisson du givre',
-    'Jugement du Roi de la neige', "Morsure de l'hiver", 'Bénédiction de Guérison',
-  ];
+  const ulric = makePriest(ans, 'pr-ulric', "Wulfric, Prêtre d'Ulric", 'Ulric', { Soc: 66, FM: 58, F: 48, E: 48 });
   ulric.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.62 };
   ulric.pos = { x: 2, y: 7 };
 
