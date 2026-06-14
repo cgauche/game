@@ -5,7 +5,7 @@
  * RICHE (`CodexEntry` : sections + liens cross-réf). Ouverture ciblée via `store.openCodex(...)`,
  * qui porte aussi l'« instance » paramétrée (« 8 Tentacules +8 ») montrée en tête de fiche.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../state/store';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
 import { filterItems } from './search';
@@ -22,6 +22,18 @@ export function CompendiumScreen() {
   const [catKey, setCatKey] = useState<string>(initialCat.key);
   const [picked, setPicked] = useState<string | null>(focus?.label ?? null);
   const [q, setQ] = useState('');
+
+  // Un clic de cross-référence (ou une ouverture externe) change `compendiumFocus` alors que
+  // l'écran est DÉJÀ monté → on s'y déplace (les initialiseurs useState ne re-lisent pas le focus).
+  useEffect(() => {
+    if (!focus) return;
+    const fc = categoryByKey(focus.category);
+    if (!fc) return;
+    setGroup(fc.group);
+    setCatKey(fc.key);
+    setPicked(focus.label);
+    setQ('');
+  }, [focus]);
 
   const cats = useMemo(() => categoriesIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
