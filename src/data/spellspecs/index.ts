@@ -16,6 +16,8 @@ import { DOMAINE_GUEULE } from './domaine-gueule';
 import { DOMAINE_BETE } from './domaine-bete';
 import { SORCELLERIE } from './sorcellerie';
 import { DEMONOLOGIE } from './demonologie';
+import { DOMAINE_MORT } from './domaine-mort';
+import { DOMAINE_VIE } from './domaine-vie';
 import { MAGIE_MINEURE } from './magie-mineure';
 import { ARCANES_COMMUNS } from './arcanes-communs';
 import { MIRACLES_SIGMAR } from './miracles-sigmar';
@@ -24,6 +26,7 @@ import { MIRACLES_SHALLYA } from './miracles-shallya';
 const ALL: SpellSpec[] = [
   ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...DOMAINE_LUMIERE,
   ...DOMAINE_CIEUX, ...DOMAINE_GUEULE, ...DOMAINE_BETE, ...SORCELLERIE, ...DEMONOLOGIE,
+  ...DOMAINE_MORT, ...DOMAINE_VIE,
   ...MAGIE_MINEURE, ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA,
 ];
 

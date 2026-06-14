@@ -16,6 +16,9 @@ import { addCondition, loseWounds, applyZeroWounds } from './conditions';
 export interface ZoneEffect {
   /** Dégâts : `amount` résolu contre le LANCEUR (« votre Bonus de Force Mentale ») — repli : la victime. */
   damage?: { amount: Formula; ignoreAP?: boolean; ignoreTB?: boolean };
+  /** Soin : `amount` rendu à qui stationne dans la zone (Sang de la Terre, LDB 48 — Vie : « guérissent
+   *  d'un nombre de Blessures égal à votre BFM au début de chaque round »). Résolu contre le lanceur. */
+  heal?: { amount: Formula };
   /** États infligés (« gagne 1 État En flammes »). */
   conditions?: { name: string; value?: number }[];
 }
@@ -40,6 +43,13 @@ export function applyZoneEffect(
       if (victim.wounds.current <= 0) applyZeroWounds(victim);
     } else {
       lines.push(`${victim.name} encaisse sans dommage (${label}).`);
+    }
+  }
+  if (eff.heal) {
+    const h = Math.max(0, resolveFormula(eff.heal.amount, ref ?? victim, rng));
+    if (h > 0 && victim.wounds.current < victim.wounds.max) {
+      victim.wounds.current = Math.min(victim.wounds.max, victim.wounds.current + h);
+      lines.push(`${victim.name} regagne ${h} Blessure(s) (${label}).`);
     }
   }
   for (const c of eff.conditions ?? []) {

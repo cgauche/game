@@ -97,7 +97,8 @@ describe('registre curé — Bénédictions ≡ repli (golden iso-comportement)'
   });
 
   it('un sort non curé passe par le repli', () => {
-    const ombres = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Ombres')!;
-    expect(spellSpecFor(ombres).curated).toBe(false);
+    // Famille pas encore curée (le Chaos est traité en dernier) → repli regex.
+    const uncured = spells.find((s) => s.type === 'Magie du Chaos')!;
+    expect(spellSpecFor(uncured).curated).toBe(false);
   });
 });

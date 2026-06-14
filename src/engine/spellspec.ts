@@ -76,6 +76,14 @@ export interface SpellSpec {
     onCross?: ZoneEffect;
     perRound?: ZoneEffect;
   };
+  /** VOL DE VIE (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : le lanceur récupère une fraction
+   *  des Blessures réellement infligées par le Projectile (`num/den`, arrondi). Consommé dans la
+   *  branche missile (engine/magic ne connaît pas le lanceur côté soin). */
+  lifeSteal?: { num: number; den: number; round: 'floor' | 'ceil' };
+  /** Ops appliquées au LANCEUR à l'incantation (en plus de celles sur la cible) : « vous retirez
+   *  tout État Exténué dont vous souffrez » (Vol de vie), buffs de soi d'un sort offensif… Référent
+   *  des formules = le lanceur. Appliquées une seule fois par lancement (missile ou soutien). */
+  casterOps?: GameOp[];
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */

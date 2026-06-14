@@ -2578,6 +2578,17 @@ export function applyCast(
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
+      // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : le lanceur récupère une
+      // fraction des Blessures RÉELLEMENT infligées (jamais plus que les PB perdus par la cible).
+      if (missileSpec.lifeSteal && mres.woundsLost) {
+        const dealt = Math.min(mres.woundsLost, currentBefore);
+        const { num, den, round } = missileSpec.lifeSteal;
+        const healed = round === 'ceil' ? Math.ceil((dealt * num) / den) : Math.floor((dealt * num) / den);
+        if (healed > 0) {
+          caster.wounds.current = Math.min(caster.wounds.max, caster.wounds.current + healed);
+          logLines.push(`${caster.name} draine ${healed} Blessure(s) de ${t.name}.`);
+        }
+      }
       // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
       logLines.push(...checkFocusInterruption(get, set, t));
       if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
@@ -2760,6 +2771,19 @@ export function applyCast(
     }
     // Bête (l.9) : le lanceur gagne Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi.
     logLines.push(...ghurFearAfterCast(caster, spell, battleRng()));
+    // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
+    // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
+    const castSpec = spellSpecFor(spell);
+    if (castSpec.casterOps?.length) {
+      const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
+      const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
+      logLines.push(...applyOps(caster, castSpec.casterOps, {
+        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
+        defaultDurationRounds: baseRounds ?? COMBAT_PERSIST,
+        ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+        onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+      }));
+    }
   }
 
   // Péché et Colère Divine (LDB 40 l.44-45) : à CHAQUE Test de Prière, si le dé des
