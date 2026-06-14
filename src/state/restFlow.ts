@@ -549,7 +549,12 @@ export function restSleep(get: Get, set: Set): void {
     const { steps, log } = buildNightCascade(get, set, p, { extraContagion });
     set({ pendingRest: null });
     if (steps.length) {
-      const title = p.places.auberge ? 'Nuit à l’auberge' : p.places.maison ? 'Nuit chez soi' : 'Campement';
+      // Titre = le couchage RÉELLEMENT choisi (pas l'OFFRE du lieu) : tout le monde dehors → Campement,
+      // même si une auberge était dispo (le joueur a choisi la belle étoile).
+      const lodgings = party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => p.perHero[h.id].lodging);
+      const title = lodgings.some((l) => l === 'privee' || l === 'commune') ? 'Nuit à l’auberge'
+        : lodgings.some((l) => l === 'maison') ? 'Nuit chez soi'
+        : 'Campement';
       startCascade(get, set, { title, icon: '🌙', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
     } else {
       for (const l of log) get().log(l); // rien à influencer (PB pleins, pas de campement) — déjà dormi
