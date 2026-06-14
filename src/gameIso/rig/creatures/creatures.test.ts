@@ -77,7 +77,8 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
     expect(raceById('Skaven').tenue).toBe('Skaven');
     expect(raceById('Vampire').sex).toBe('M');
     expect(raceById('Goule').head).toBe('goule');
-    expect(raceById('Nain').tenue).toBeUndefined(); // humanoïde simple : pas de défaut de tenue
+    expect(raceById('Nain').tenue).toBe('Artisan'); // espèce civilisée → défaut HABILLÉ (anti-« à poil »), comme toutes les races
+    expect(raceById('Humain').tenue).toBe('Bourgeois');
   });
 
   it('routage par clé/alias à limite de mot', () => {

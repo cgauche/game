@@ -108,9 +108,9 @@ describe('enemyRigProfile', () => {
     // au spawn, cf. spawnEnemy), PAS d'une regex sur le nom (POC ROLE_CAREERS retiré, 47ec0b6).
     expect(enemyRigProfile(mkEnemy('Cultiste', { career: 'Flagellant' }))!.tenue).toBe('Flagellant');
     expect(enemyRigProfile(mkEnemy('Voyou', { career: 'Voleur' }))!.tenue).toBe('Voleur');
-    // Sans donnée de tenue, un humanoïde quelconque retombe sur le défaut (Nu = corps nu) : le nom
-    // « Flagellant » ne suffit plus à inférer la tenue.
-    expect(enemyRigProfile(mkEnemy('Flagellant'))!.tenue).toBe('Nu');
+    // Sans donnée de tenue, un humanoïde retombe sur le défaut HABILLÉ de sa race (Humain → Bourgeois,
+    // pas « Nu ») : le nom « Flagellant » ne suffit plus à inférer la tenue Flagellant.
+    expect(enemyRigProfile(mkEnemy('Flagellant'))!.tenue).toBe('Bourgeois');
   });
 
   it('armure synthétisée depuis les PA quand pas d’inventaire', () => {
@@ -157,7 +157,7 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
   it('villageois → Humain ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
     const p = entityRigProfile('Villageois', 1)!;
     expect(p.appearance.species).toBe('Humain');
-    expect(p.tenue).toBe('Nu'); // défaut neutre = corps nu ; la tenue ne se déduit plus du nom (POC retiré)
+    expect(p.tenue).toBe('Bourgeois'); // défaut HABILLÉ de la race Humain ; la tenue ne se déduit plus du nom (POC retiré)
     // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle.
     expect(entityRigProfile('Villageois', 1, { tenue: 'Mendiant' })!.tenue).toBe('Mendiant');
   });

@@ -35,20 +35,6 @@ export interface EnemyRigProfile {
   equip: EquipCtx;
 }
 
-/**
- * Indices de NON-rig : noms qui ressemblent à des humanoïdes mais qui ont une
- * peau/tête non-humaine (peaux-vertes, skavens, hommes-bêtes, morts-vivants), ou
- * de vraies bêtes/démons. Couvre les 57 entrées du bestiaire + mots-clés généraux.
- * Un rig à tête humaine serait pire que leur sprite dédié → ils restent en sprite
- * (et héritent du facing 8-dir via F2).
- */
-// Bornes de mot (\b…\b) pour éviter les faux positifs de sous-chaîne (ex. « orc »
-// dans « sorcier », « gor » dans « rigori- »). Couvre les 57 entrées du bestiaire
-// non-humanoïdes + synonymes courants.
-/**
- * Patterns de rôles humanoïdes à peau humaine, mappés vers une carrière (pour la
- * tenue). Ordre = priorité. Le 1er match gagne pour la carrière.
- */
 /** Classifieur cosmétique : 'rig' (humanoïde → rig bipède) ou 'creature' (non-humanoïde →
  *  gabarit quad/ailé/serpentin/… ou sprite monolithique). 100 % registry-driven : un def
  *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
@@ -56,9 +42,8 @@ export function classifyEnemy(name: string): 'rig' | 'creature' {
   return creaturePlanMatch(name) || isSwarm(name) ? 'creature' : 'rig'; // nuée (trait) = non-bipède
 }
 
-/** Espèce de rig détectée du nom (sinon Humain). Dérivé du registre : chaque espèce bipède
- *  porte sa regex `match` + `matchPriority` dans son fichier defs/ (l'ordre de priorité
- *  désambiguïse « rat ogre » → Skaven avant Ogre, etc.). Plus d'if-chain centrale. */
+/** Espèce de rig détectée du nom (sinon Humain) : `bipedSpeciesMatch` route par name+aliases,
+ *  triés par `matchPriority` (« rat ogre » → Skaven avant Ogre). Plus d'if-chain centrale. */
 function detectSpecies(n: string): string {
   return bipedSpeciesMatch(n) ?? 'Humain';
 }
@@ -141,7 +126,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   if (classifyEnemy(c.name) === 'creature') return null;
   const n = norm(c.name);
   const seed = hashSeed(c.id);
-  const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature (P2)
+  const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature
   const species = c.species ?? cd?.species ?? detectSpecies(n);
   const d = bipedDef(species); // def bipède canonique (porte le perso éventuel + override race/gabarit)
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
@@ -155,9 +140,8 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const withCreature: Appearance = cd ? overlayDefined(def, rigFieldsFrom(cd)) : def;
   const baseApp: Appearance = c.appearance ? overlayDefined(withCreature, c.appearance) : withCreature;
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
-  // Tenue DATA-DRIVEN : carrière de jeu du Combatant (`c.career`, sert de tenue par défaut) → apparence
-  // du record (`appearance.tenue`) → défaut de la def (perso/race) → Nu (corps nu : pas d'habit imposé,
-  // l'auteur l'habille en donnée). Plus de name-match ni de défaut « Soldat » arbitraire.
+  // Tenue DATA-DRIVEN : carrière du Combatant (`c.career`) → record (`appearance.tenue`) → défaut de
+  // la def (perso/race) → Nu (corps nu, l'auteur l'habille en donnée).
   const tenue = c.career ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'Nu';
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
@@ -165,10 +149,8 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const armour = base.armour.length ? base.armour : synthArmour(c.armour);
   const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
 
-  // Les calques de mutation NE viennent PAS du nom (POC `isMutant`/`randomMutationOverlays` retiré) :
-  // ils sont dérivés des mutations RÉELLES du combattant (`combatantOverlays(c.mutations)`, appliqué
-  // par AnimatedRigToken) — donnée, pas regex. Un mutant déclare son tell dans SA donnée (trait
-  // « Mutation (Cornes asymétriques) » → c.mutations au spawn).
+  // Calques de mutation = donnée (`combatantOverlays(c.mutations)`, appliqués par AnimatedRigToken),
+  // jamais le nom : un mutant déclare son tell via un trait « Mutation (X) » → c.mutations au spawn.
   return { appearance, tenue, equip };
 }
 
@@ -184,7 +166,7 @@ export function entityRigProfile(
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const cd = findCreature(name)?.appearance; // apparence par défaut UNIFIÉE du record créature (P2)
+  const cd = findCreature(name)?.appearance; // apparence par défaut UNIFIÉE du record créature
   const species = opts?.species ?? cd?.species ?? detectSpecies(n); // override d'auteur sinon record sinon déduit du nom
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
@@ -198,8 +180,7 @@ export function entityRigProfile(
     eyes: opts?.eyes ?? cd?.eyes ?? perso?.eyes,
     gabarit: perso?.gabarit ?? d?.gabarit,
   });
-  // Pas de calques dérivés du nom (POC `isMutant` retiré) : une entité d'ambiance « mutée » déclare
-  // ses parts/overlays dans SA donnée d'apparence (monster parts), pas via une regex sur le nom.
+  // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
   return {
     appearance,
     tenue: opts?.tenue ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'Nu',
