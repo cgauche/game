@@ -24,6 +24,14 @@ describe('Groupes — dérivation & matching (LDB 21, P3)', () => {
     expect(g.filter((x) => x === 'Humain').length).toBe(1);
   });
 
+  it('classe « Roublards » → Groupe « Criminel » auto-dérivé (Épée de justice / Traits psy ciblés)', () => {
+    for (const career of ['Voleur', 'Hors-la-loi', 'Charlatan', 'Receleur']) {
+      expect(groupsFor({ career })).toEqual(expect.arrayContaining([career, 'Criminel']));
+    }
+    expect(groupsFor({ career: 'Soldat' })).not.toContain('Criminel'); // classe Guerriers
+    expect(groupMatch('Criminel', groupsFor({ career: 'Voleur' }))).toBe(true);
+  });
+
   it('groupMatch : insensible casse/accents + tolérance pluriel', () => {
     expect(groupMatch('Elfes', ['Elfe'])).toBe(true); // Cible pluriel vs groupe singulier
     expect(groupMatch('mort-vivant', ['Mort-vivant'])).toBe(true);

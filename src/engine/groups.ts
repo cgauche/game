@@ -6,6 +6,7 @@
  * Cf. spec : docs/superpowers/specs/2026-06-07-psychologie-design.md (§3).
  */
 import { norm } from '../lib/normalize';
+import { findCareer } from '../data';
 
 /** Folder bestiaire (`creatures.json`) → catégorie de Groupe. Règles ORDONNÉES (la plus spécifique
  *  d'abord : « hommes-bêtes » avant « bêtes »). Mot-clé normalisé cherché dans le folder normalisé. */
@@ -49,7 +50,13 @@ export function groupsFor(src: { folder?: string | null; species?: string; caree
   };
   if (src.folder) push(categoryFromFolder(src.folder));
   if (src.species) push(racialFromSpecies(src.species));
-  if (src.career) push(src.career);
+  if (src.career) {
+    push(src.career);
+    // Classe « Roublards » (la classe criminelle de la LDB — Hors-la-loi, Voleur, Receleur,
+    // Pilleur de tombes, Charlatan, Sorcier dissident…) → Groupe « Criminel » (auto-dérivé,
+    // consommé par Épée de justice / Traits psy ciblés). L'éditeur peut surcharger via les extras.
+    if (findCareer(src.career)?.class === 'Roublards') push('Criminel');
+  }
   (src.extras ?? []).forEach(push);
   return out;
 }
