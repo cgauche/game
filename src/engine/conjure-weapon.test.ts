@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
 import { effectiveWeaponDamage, enchantOnHitConditions } from './weaponDamage';
+import { conjureFormOptions } from './conjuredWeapons';
 import { bonus } from './characteristics';
 import type { Combatant } from './types';
 
 /**
- * Armes INVOQUÉES (op `conjureWeapon`, LDB 47/48) : Arme aethyrique (Dégâts = BFM), Faux de Shyish
- * (Arme d'hast, BFM+3), Épée ardente de Rhuin (Dégâts +6, Percutante, En flammes). L'arme passe en
- * tête de `c.weapons` tant que le Sort dure puis disparaît à l'expiration (loadout recomposé).
+ * Armes INVOQUÉES temporaires (op `conjureWeapon`, LDB 47/48) : un OBJET ordinaire `conjured` posé en
+ * inventaire, tenu d'office (recomputeLoadout) puis retiré à l'expiration. Réutilise la base d'armes
+ * (itemFromTrapping) et le loadout — seuls Dégâts (= BFM…) et l'Atout Magique sont surchargés.
  */
 const mage = (p: Partial<Combatant> = {}): Combatant =>
   ({
@@ -19,46 +20,56 @@ const mage = (p: Partial<Combatant> = {}): Combatant =>
     ...p,
   } as Combatant);
 
-describe('conjureWeapon — Arme aethyrique (Dégâts = BFM, Magique)', () => {
-  it('place l’arme invoquée en tête de c.weapons, Dégâts FIXES = BFM (sans Bonus de Force)', () => {
+describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', () => {
+  it('crée un OBJET `conjured` en inventaire, tenu en tête de c.weapons, Dégâts FIXES = BFM', () => {
     const c = mage(); // FM 45 → BFM 4
     applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4 });
-    expect(c.weapons[0].name).toBe('Arme aethyrique');
+    expect(c.items?.some((it) => it.conjured && it.name === 'Arme aethyrique')).toBe(true); // objet réel
+    expect(c.weapons[0].name).toBe('Arme aethyrique'); // arme directrice
     expect(c.weapons[0].qualities).toContain('Magique');
     expect(c.weapons[0].damage).toBe('+4'); // BFM, pas de +BF
-    expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.F))).toBe(4); // Dégâts = BFM seul
+    expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.F))).toBe(4);
   });
 
-  it('disparaît de c.weapons à l’expiration du Sort (loadout recomposé)', () => {
+  it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
+    const c = mage({ skills: [{ name: 'Corps à corps', spec: 'Escrime', advances: 10 }] as Combatant['skills'] });
+    const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)
+    applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true }],
+      { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
+    expect(c.weapons[0].subType?.toLowerCase()).toBe('escrime'); // Groupe = la Spé choisie (profil réel)
+    expect(c.weapons[0].name).toContain('Arme aethyrique');
+    expect(c.weapons[0].damage).toBe('+4'); // Dégâts toujours = BFM (le gabarit ne donne que le profil)
+  });
+
+  it('disparaît (objet + arme) à l’expiration du Sort', () => {
     const c = mage();
     applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 1 });
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(true);
-    endOfRound(c); // 1 Round → l'effet expire
+    endOfRound(c); // 1 Round → expire
+    expect(c.items?.some((it) => it.conjured)).toBeFalsy(); // objet retiré de l'inventaire
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(false);
-    expect(c.activeEffects?.some((e) => e.conjuredWeapon)).toBeFalsy();
   });
 });
 
-describe('conjureWeapon — variantes de domaine', () => {
-  it('Faux de Shyish : Arme d’hast à 2 mains, Dégâts = BFM+3', () => {
+describe('conjureWeapon — variantes de domaine (stats fixes du Sort)', () => {
+  it('Faux de Shyish : Armes d’hast à 2 mains, Dégâts = BFM+3', () => {
     const c = mage(); // BFM 4
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Arme d’hast', hands: 2, qualities: ['Magique'] }],
+    applyOps(c, [{ op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'] }],
       { label: 'La Faux de Shyish', defaultDurationRounds: 4 });
     expect(c.weapons[0].name).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);
-    expect(c.weapons[0].subType).toBe('Arme d’hast');
+    expect(c.weapons[0].subType).toBe('Armes d’hast');
     expect(c.weapons[0].damage).toBe('+7'); // BFM 4 + 3
   });
 
-  it('Épée ardente de Rhuin : Dégâts +6 fixes, Percutante + En flammes à la touche', () => {
+  it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Épée', qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }] }],
+    applyOps(c, [{ op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));
-    // l'État « à la touche » est porté par l'enchantement compagnon, gaté sur l'arme invoquée.
     expect(enchantOnHitConditions(c, c.weapons[0]).some((x) => x.name === 'En flammes')).toBe(true);
   });
 });

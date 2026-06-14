@@ -239,11 +239,14 @@ export function recomputeLoadout(c: Combatant): void {
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 
-  // Armes INVOQUÉES (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente de Rhuin)
-  // portées par un effet actif : l'arme magique tenue passe en TÊTE (arme directrice = c.weapons[0])
-  // tant que le Sort dure ; `dropExpiredConjuredWeapons` recompose à l'expiration.
-  for (const e of c.activeEffects ?? []) {
-    if (e.conjuredWeapon) weapons.unshift({ ...e.conjuredWeapon, hand: 'main' });
+  // Armes INVOQUÉES temporaires (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
+  // un objet `conjured` ORDINAIRE posé en inventaire, converti par le MÊME `toWeapon` que les armes
+  // tenues (zéro arme synthétique) et placé en TÊTE (arme directrice = c.weapons[0]) tant que le Sort
+  // dure ; `dropExpiredConjuredWeapons` retire l'objet à l'expiration.
+  for (const it of items) {
+    if (!it.conjured) continue;
+    const w = toWeapon(it, 'main');
+    if (w) weapons.unshift(w);
   }
 
   const armour = wornArmourPoints(items);

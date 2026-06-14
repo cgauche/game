@@ -8,6 +8,7 @@ import { Combatant, CharKey, HitLocation, DIFFICULTY_MODIFIERS } from '../engine
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
+import type { ConjureForm } from '../engine/conjuredWeapons';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables,
   applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
@@ -597,6 +598,8 @@ export interface GameState {
   castCounterspell: (counterId: string) => void;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
+  /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
+  castSetConjureForm: (form: ConjureForm) => void;
   /** Surincantation (LDB 47 l.29) : alloue +2 DR du surplus à un axe (Durée / Cible / Zone d'Effet). */
   castAllocOvercast: (axis: 'duration' | 'targets' | 'zone') => void;
   /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
@@ -1591,6 +1594,7 @@ export const useGame = create<GameState>((set, get) => ({
       applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
         durationMult: 1 + (pc.overcast?.duration ?? 0),
         extraTargets: extras,
+        conjureForm: pc.conjureForm,
       });
     }
     // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une
@@ -1602,6 +1606,12 @@ export const useGame = create<GameState>((set, get) => ({
     const pc = get().pendingCast;
     if (!pc || !pc.result?.isCritical) return;
     set({ pendingCast: { ...pc, critChoice: choice } });
+  },
+  /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
+  castSetConjureForm: (form) => {
+    const pc = get().pendingCast;
+    if (!pc) return;
+    set({ pendingCast: { ...pc, conjureForm: form } });
   },
   /** Surincantation : chaque allocation consomme +2 DR du surplus — Sorts : DR − NI (LDB 47
    *  l.28-31) ; Bénédictions/Miracles : DR entier (LDB 41/42 « Degrés de Réussite » — Durée

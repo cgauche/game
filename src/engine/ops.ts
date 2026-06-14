@@ -22,9 +22,9 @@ import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, newUid } from './items';
 import { suppressPsychTraits } from './psychology';
-import { norm } from '../lib/normalize';
+import { ConjureForm, conjureFormOptions } from './conjuredWeapons';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -34,7 +34,7 @@ import {
   Difficulty,
   DIFFICULTY_LABELS,
   HIT_LOCATION_LABELS,
-  Weapon,
+  ItemInstance,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -202,8 +202,11 @@ export type GameOp =
    *  `c.weapons` (arme directrice) tant que le Sort dure (engine/items.recomputeLoadout) puis
    *  disparaît à l'expiration. `onHitConditions` : États infligés à la touche (Épée ardente → En flammes). */
   | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
-      type?: 'melee' | 'ranged'; qualities?: string[]; subType?: string; hands?: 1 | 2;
-      bypass?: ArmourBypass; onHitConditions?: { name: string; value?: number }[] }
+      qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
+      onHitConditions?: { name: string; value?: number }[];
+      /** Forme LIBRE (Arme aethyrique) : le lanceur choisit l'arme → `ctx.conjureForm` clone le profil
+       *  (Groupe/allonge/mains) d'une arme RÉELLE de la base ; sinon stats fixes du Sort. */
+      chooseForm?: boolean }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -217,6 +220,9 @@ export interface OpsCtx {
   rng?: RNG;
   /** Référent des formules « (Bonus de X) » (le lanceur d'un sort) ; défaut : la cible. */
   caster?: Combatant;
+  /** Forme choisie par le lanceur pour une arme invoquée à forme libre (op `conjureWeapon` +
+   *  `chooseForm`) — fixe Groupe/allonge/mains. Défaut (absent) : la 1ʳᵉ forme proposée. */
+  conjureForm?: ConjureForm;
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
@@ -641,22 +647,36 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'conjureWeapon': {
         const flat = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         const dmg = o.plusBF ? `+BF+${flat}` : `+${flat}`;
-        const weapon: Weapon = {
-          name: o.name, type: o.type ?? 'melee', damage: dmg,
-          qualities: [...(o.qualities ?? [])], subType: o.subType, hands: o.hands ?? 1,
-          ...(o.bypass != null ? { bypass: o.bypass } : {}),
-          uid: `conjure-${target.id}-${norm(o.name)}`,
+        // Forme LIBRE (Arme aethyrique) : on CLONE le profil (Groupe/allonge/mains) d'une arme RÉELLE
+        // choisie par le lanceur (ctx.conjureForm, défaut = sa meilleure Spé de CC) ; sinon stats du
+        // Sort. Seuls les Dégâts (= BFM…) et les Atouts du Sort surchargent le profil → un OBJET ordinaire.
+        const form = o.chooseForm ? (ctx.conjureForm ?? conjureFormOptions(ref)[0]) : null;
+        const tpl = form ? itemFromTrapping(form.weapon) : null;
+        const item: ItemInstance = {
+          uid: `conjure-${newUid()}`,
+          name: form ? `${o.name} (${tpl?.name ?? form.weapon})` : o.name,
+          kind: 'melee',
+          damage: dmg,
+          subType: form ? tpl?.subType : o.subType,
+          reach: form ? tpl?.reach : (o.reach ?? null),
+          hands: form ? (tpl?.hands ?? 1) : (o.hands ?? 1),
+          qualities: [...(o.qualities ?? [])], // Atouts du Sort (Magique, Percutante) — PAS ceux du gabarit
+          enc: 0,
+          equipped: false, // tenue d'office via le marqueur `conjured` (recomputeLoadout), hors loadout
+          conjured: true,
         };
+        target.items = target.items ?? [];
+        target.items.push(item);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? o.name, bonus: 0,
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-          conjuredWeapon: weapon,
+          conjuredItemUid: item.uid,
           ...(o.onHitConditions?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitConditions: o.onHitConditions } } : {}),
         });
-        recomputeLoadout(target); // l'arme invoquée entre en tête de c.weapons (arme directrice)
-        lines.push(`${target.name} invoque ${o.name} (Dégâts ${dmg}${o.qualities?.length ? `, ${o.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
+        recomputeLoadout(target); // l'objet invoqué entre en tête de c.weapons (arme directrice)
+        lines.push(`${target.name} invoque ${item.name} (Dégâts ${dmg}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

@@ -79,6 +79,7 @@ import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import { polymorphOps } from '../engine/polymorph';
+import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
@@ -2486,7 +2487,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; extraTargets?: Combatant[] },
+  extras?: { durationMult?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
@@ -2688,6 +2689,7 @@ export function applyCast(
             sl: res.sl,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+            ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );

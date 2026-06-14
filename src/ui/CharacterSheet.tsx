@@ -82,7 +82,7 @@ const SHORT: Record<CharKey, string> = {
 function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): string {
   if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
   if (e.grantedTrait) return `Trait ${e.grantedTrait}`;
-  if (e.conjuredWeapon) return `Arme invoquée : ${e.conjuredWeapon.name} (Dégâts ${e.conjuredWeapon.damage})`;
+  if (e.conjuredItemUid) return `Arme invoquée (${e.label})`;
   if (e.grantedTalent) return `Talent ${e.grantedTalent}`;
   if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
   if (e.weaponEnchant) return 'Arme enchantée';

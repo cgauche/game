@@ -3,6 +3,8 @@ import { FLOWS } from '../state/rollFlows';
 import { ownsLocally } from '../state/netFlow';
 import { counterspellCandidates, overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
+import { spellSpecFor } from '../data/spellspecs';
+import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -35,6 +37,7 @@ export function CastModal() {
   const bonusSL = useGame((s) => s.castBonusSL);
   const darkPact = useGame((s) => s.castDarkPact);
   const setCritChoice = useGame((s) => s.castSetCritChoice);
+  const setConjureForm = useGame((s) => s.castSetConjureForm);
   const allocOvercast = useGame((s) => s.castAllocOvercast);
   const toggleExtraTarget = useGame((s) => s.castToggleExtraTarget);
   const pickTargets = useGame((s) => s.castPickTargets);
@@ -54,6 +57,11 @@ export function CastModal() {
   const isPrayer = spell.cn == null;
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
+  // Arme invoquée à forme libre (Arme aethyrique, op conjureWeapon + chooseForm) : le lanceur choisit
+  // la Compétence de Corps à corps / le profil d'arme avant d'appliquer (RAW LDB 47). Sinon : [].
+  const conjureForms = spellSpecFor(spell).ops.some((o) => o.op === 'conjureWeapon' && o.chooseForm)
+    ? conjureFormOptions(caster) : [];
+  const selectedForm = pc.conjureForm ?? conjureForms[0];
   // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose
   // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
@@ -111,9 +119,29 @@ export function CastModal() {
       onRoll={roll}
       onCancel={caster.kind !== 'enemy' ? cancel : undefined}
       setup={
-        /* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
-           vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */
-        <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
+        <>
+          {conjureForms.length > 0 && (
+            <div className="rm-crit-choice rm-options">
+              {/* Arme invoquée à forme libre (LDB 47) : le lanceur choisit sa Compétence de Corps à corps. */}
+              <span className="mini-title">🗡️ Forme de l'arme invoquée</span>
+              <div className="rm-loc-grid">
+                {conjureForms.map((f) => (
+                  <button
+                    key={f.group}
+                    className={`btn small ${selectedForm?.group === f.group ? 'btn-primary' : ''}`}
+                    title={`Corps à corps (${f.group}) — profil d'arme : ${f.weapon}`}
+                    onClick={() => setConjureForm(f)}
+                  >
+                    {f.weapon} · {f.group}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Panneau de jet PRÉ-REMPLI (même géométrie qu'après le jet) : ma ligne en attente, dé/DR
+              vides — exactement comme l'Attaque (previewAttack) et la Défense (previewDefense). */}
+          <RollPanel rows={[{ combatant: caster, pending: previewCast(caster, spell, { missile: pc.missile, focused: pc.focused }) }]} />
+        </>
       }
       rows={res ? [{
         combatant: caster,

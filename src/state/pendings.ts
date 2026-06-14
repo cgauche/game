@@ -4,6 +4,7 @@
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
 import type { Difficulty, HitLocation, Weapon } from '../engine/types';
+import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
 import type { TestResult, OpposedResult } from '../engine/tests';
@@ -450,6 +451,10 @@ export interface PendingCast {
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */
   critChoice?: 'critique' | 'puissance' | 'ineluctable';
+  /** Forme choisie pour une arme invoquée à forme libre (Arme aethyrique, op `conjureWeapon` +
+   *  `chooseForm`) — le lanceur sélectionne la Compétence de Corps à corps/profil d'arme. Défaut
+   *  (absent) : sa meilleure Spé de Corps à corps. */
+  conjureForm?: ConjureForm;
   /** Surincantation (LDB 47 l.29) : « pour chaque +2 DR [au-delà du NI], ajouter une valeur
    *  de Portée/Zone d'Effet/Durée/Cible égale à la valeur initiale », cumulable. Allocation
    *  du surplus dans la modale — `duration` = ×(1+n) sur la durée ; `targets` = n cibles
