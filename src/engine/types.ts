@@ -240,6 +240,9 @@ export interface ActiveEffect {
   suffocates?: boolean;
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   noBreath?: boolean;
+  /** « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim —
+   *  `dailyFoodUpkeep` saute la consommation de ration et l'aggravation tant que l'effet dure. */
+  noHunger?: boolean;
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête — Peau de loup d'hiver d'Ulric,
    *  Protection contre la pluie) : `exposureNight` est sauté tant que l'effet dure. */
   weatherImmune?: boolean;

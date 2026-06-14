@@ -30,6 +30,7 @@
 import { Combatant, CharKey, ItemInstance } from './types';
 import { RNG, defaultRNG, d10 } from './dice';
 import { rollTest } from './tests';
+import { hasActiveFlag } from './activeFlags';
 
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
@@ -97,6 +98,13 @@ export interface FoodUpkeepResult {
 export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG): FoodUpkeepResult {
   const res: FoodUpkeepResult = { ate: false, rationConsumed: false, damage: 0, log: [] };
   if (c.dead) return res;
+  // Sustentation magique (Graisse de la terre, LDB 48 : « n'a pas besoin de manger ou de boire ») :
+  // la Faim est suspendue — pas de ration consommée, compteurs purgés, tant que l'effet dure.
+  if (hasActiveFlag(c, 'noHunger')) {
+    res.ate = true;
+    c.hunger = undefined;
+    return res;
+  }
   const brouet = hasBrouet(c);
   const h: HungerState = c.hunger ?? { days: 0, tests: 0, failures: 0 };
 

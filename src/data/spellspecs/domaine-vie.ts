@@ -1,10 +1,10 @@
 /**
  * Domaine de la Vie (Ghyran) — LDB 48 « Magie des Arcanes (Vie) », 8 sorts.
  * Curation B4 : durcissement de peau (Écorce, charMod), zones de soin (Sang de la Terre) et de
- * ronces (Forêt d'épines), Régénération accordée, jaillissement de terre (téléportation) ; les
- * sorts de fertilité/cartographie/sustentation restent narratifs. L'attribut de Domaine (Ghyran :
- * purge Exténué/Hémorragique des vivants, dégâts aux morts-vivants) reste assuré par
- * domainAttributes.ts. Aucune op nouvelle (ZoneEffect.heal est un champ de zone).
+ * ronces (Forêt d'épines), Régénération accordée, jaillissement de terre (téléportation),
+ * sustentation magique (Graisse de la terre → op `noHunger`, exempte de la Faim) ; les sorts de
+ * fertilité/cartographie restent narratifs. L'attribut de Domaine (Ghyran : purge Exténué/
+ * Hémorragique des vivants, dégâts aux morts-vivants) reste assuré par domainAttributes.ts.
  */
 import { SpellSpec } from '../../engine/spellspec';
 
@@ -73,7 +73,10 @@ export const DOMAINE_VIE: SpellSpec[] = [
     label: 'Graisse de la terre',
     // « La cible n'a pas besoin de manger ou de boire (mais excrète d'un vert intense). » —
     //   sustentation magique (hors combat) : arbitré.
-    ops: [{ op: 'narrative', text: 'Graisse de la terre : pour la durée (jours), la cible n’a pas besoin de manger ni de boire — arbitrage MJ.' }],
+    ops: [
+      { op: 'noHunger' }, // exempte de la Faim (système de provisions) tant que le Sort dure
+      { op: 'narrative', text: 'Graisse de la terre : la cible excrète d’un vert intense pour la durée — arbitrage MJ.' },
+    ],
     durationRounds: null, // « (Bonus de Force Mentale) jours »
     curated: true,
     source: 'LDB 48 — Domaine de la Vie « Graisse de la terre »',
