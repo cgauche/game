@@ -164,19 +164,6 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     useGame.getState().closeMedic();
   });
 
-  it('LEGACY : `act` simple ≡ `acts: [{ act }]` (anciennes scènes, prix porté par le choix de dialogue)', () => {
-    const party = makeArenaParty();
-    party[0].wounds = { ...party[0].wounds, current: party[0].wounds.current - 3 };
-    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', act: 'wounds', skill: 55, intBonus: 4, entityId: 'medecin' }]);
-    const m = useGame.getState().medic!;
-    expect(m.npc!.acts).toEqual([{ act: 'wounds' }]); // sans tarif : déjà payé par le choix
-    useGame.getState().medicAct('wounds');
-    expect(useGame.getState().pendingHeal!.healerName).toBe('Médecin');
-    useGame.getState().healCancel();
-    useGame.getState().closeMedic();
-  });
-
   it('le JOUEUR choisit le patient dans l’infirmerie (medicSelectPatient)', () => {
     const party = makeArenaParty();
     party[0].wounds = { ...party[0].wounds, current: party[0].wounds.current - 3 };

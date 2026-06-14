@@ -434,9 +434,7 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
         ))}
         {effect.type === 'medicalAid' && (() => {
-          // Schéma étendu : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
-          // LEGACY : `act` simple ≡ `acts: [{ act }]` (prix porté par le choix de dialogue) — toute
-          // édition migre vers `acts`.
+          // Schéma : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
           const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string }[] = [
             { key: 'wounds', label: '🩹 Soin de Blessures' },
             { key: 'bleed', label: '🩸 Arrêt d’hémorragie' },
@@ -444,7 +442,7 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
             { key: 'surgery', label: '🔪 Chirurgie' },
           ];
           const acts: { act: string; cost?: { gold?: number; silver?: number; brass?: number } }[] =
-            e.acts ?? (e.act ? [{ act: e.act }] : []);
+            e.acts ?? [];
           const setActs = (next: typeof acts) => upd({ acts: next, act: undefined });
           const setCost = (k: string, field: 'gold' | 'silver' | 'brass', v: number) =>
             setActs(acts.map((a) => (a.act === k ? { ...a, cost: { ...a.cost, [field]: v || undefined } } : a)));

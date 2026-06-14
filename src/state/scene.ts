@@ -212,9 +212,8 @@ export type Effect =
    *  au lancement de chaque acte (remboursé si annulé avant le jet). `skill`/`intBonus` = compétence
    *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant).
    *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
-   *  joueur choisit les patients dans la modale. LEGACY : `act` simple (prix porté par le choix de
-   *  dialogue) ≡ `acts: [{ act }]`. */
-  | { type: 'medicalAid'; acts?: { act: 'wounds' | 'bleed' | 'trauma' | 'surgery'; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }
+   *  joueur choisit les patients dans la modale. */
+  | { type: 'medicalAid'; acts?: { act: 'wounds' | 'bleed' | 'trauma' | 'surgery'; cost?: { gold?: number; silver?: number; brass?: number } }[]; skill: number; intBonus: number; entityId?: string }
   /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }

@@ -426,11 +426,10 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
  * Soins PAYANTS d'un PNJ (Effet `medicalAid`, LDB 75) : ouvre l'INFIRMERIE (state/medicFlow) avec
  * la compétence du PNJ et ses actes tarifés — le débit a lieu à l'acte, dans la modale. Le joueur
  * choisit les patients ; le PNJ effectue les jets (la Chance interroge `actorIn(healerId)` →
- * introuvable pour un PNJ → boutons inertes). LEGACY : `act` simple ≡ `acts: [{ act }]`, le prix
- * restant porté par le choix de dialogue.
+ * introuvable pour un PNJ → boutons inertes).
  */
-function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; act?: 'wounds' | 'bleed' | 'surgery'; skill: number; intBonus: number; entityId?: string }): void {
-  const acts = e.acts ?? (e.act ? [{ act: e.act }] : []);
+function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; skill: number; intBonus: number; entityId?: string }): void {
+  const acts = e.acts ?? [];
   if (!acts.length) return;
   const npc = e.entityId ? get().scene?.entities.find((x) => x.id === e.entityId) : undefined;
   openMedic(get, set, {
