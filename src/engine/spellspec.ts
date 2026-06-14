@@ -13,7 +13,7 @@
  * La résolution (jet d'incantation, NI, Maladresse, Projectile magique) reste
  * dans engine/magic ; la spec ne décrit que les EFFETS d'un lancement réussi.
  */
-import { GameOp, Formula } from './ops';
+import { GameOp, Formula, PerSL } from './ops';
 import type { ZoneEffect } from './zones';
 import {
   SpellLike,
@@ -84,6 +84,21 @@ export interface SpellSpec {
    *  tout État Exténué dont vous souffrez » (Vol de vie), buffs de soi d'un sort offensif… Référent
    *  des formules = le lanceur. Appliquées une seule fois par lancement (missile ou soutien). */
   casterOps?: GameOp[];
+  /** INVOCATION de créature(s) en combat (Nécromancie « Réanimation/Relever les morts », Ulric
+   *  « Hurlement du loup », Démonologie « Manifestation »…) : `ref` = créature du bestiaire ; `count`
+   *  (+`countPerSL`) = nombre invoqué ; `addTraits`/`size` surchargent le statbloc (loup blanc =
+   *  Loup + Frénésie + Grand) ; `allyOfCaster` = combat dans le camp du lanceur (sinon hostile —
+   *  démons « pas sous votre contrôle ») ; `despawnIfCasterDown` = s'effondre si le lanceur tombe
+   *  (minions morts-vivants). Résolu par state/summonFlow (hors combat : journalisé). */
+  summon?: {
+    ref: string;
+    count: Formula;
+    countPerSL?: PerSL;
+    addTraits?: string[];
+    size?: import('./size').SizeCategory;
+    allyOfCaster?: boolean;
+    despawnIfCasterDown?: boolean;
+  };
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */

@@ -77,6 +77,7 @@ import {
 } from '../engine/magic';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
+import { applySummon, purgeExpiredSummons } from './summonFlow';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
@@ -2774,6 +2775,12 @@ export function applyCast(
     // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
     // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
     const castSpec = spellSpecFor(spell);
+    // INVOCATION (champ summon — Nécromancie, Hurlement du loup, Manifestation de démon…) : la/les
+    // créature(s) entrent en combat près du lanceur et se dissipent à l'expiration (state/summonFlow).
+    if (castSpec.summon) {
+      const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
+      logLines.push(...applySummon(get, set, caster, castSpec.summon, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
+    }
     if (castSpec.casterOps?.length) {
       const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
@@ -3182,6 +3189,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       for (const c of battle.combatants) suffocationTick(c).forEach((l) => tickLine(l, c)); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
       zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => tickLine(t.line, t.combatant)); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
+      purgeExpiredSummons(battle, round).forEach((l) => tickLine(l)); // invocations à durée écoulée OU lanceur tombé (state/summonFlow)
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // « un jet = une modale » (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.

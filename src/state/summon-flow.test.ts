@@ -1,0 +1,76 @@
+import { describe, it, expect } from 'vitest';
+import { applySummon, purgeExpiredSummons } from './summonFlow';
+import type { Combatant } from '../engine/types';
+import type { Scene } from './scene';
+
+/**
+ * Moteur d'invocation (SpellSpec.summon) : la créature entre en combat dans le camp du lanceur,
+ * insérée dans l'initiative, marquée `Combatant.summon` ; elle se dissipe à l'expiration de durée
+ * ou si le lanceur (pour les minions liés) tombe.
+ */
+const caster = (over: Partial<Combatant> = {}): Combatant =>
+  ({
+    id: 'necro', name: 'Nécromancien', kind: 'hero',
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 40, Soc: 30 },
+    wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], skills: [], talents: [],
+    weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    pos: { x: 5, y: 5 }, ...over,
+  } as Combatant);
+
+const scene = (): Scene =>
+  ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', tiles: new Array(14 * 14).fill('herbe'), entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
+
+const battle = (combatants: Combatant[], round = 1): any =>
+  ({ combatants, order: combatants.map((c) => c.id), turn: 0, round, log: [], zones: [], over: false });
+
+function harness(c: Combatant, b: any) {
+  let state: any = { battle: b, scene: scene() };
+  return { get: () => state, set: (p: any) => { state = { ...state, ...p }; }, state: () => state };
+}
+
+describe('applySummon', () => {
+  it('Réanimation : invoque BFM + DR créatures alliées, placées et insérées dans l’ordre', () => {
+    const c = caster(); // BFM = 4
+    const h = harness(c, battle([c]));
+    const lines = applySummon(h.get, h.set, c, { ref: 'Zombie', count: { bonusOf: 'FM' }, countPerSL: { every: 1, amount: 1 }, allyOfCaster: true, despawnIfCasterDown: true }, { sl: 2, rounds: null, label: 'Réanimation' });
+    const summons = h.state().battle.combatants.filter((x: Combatant) => x.summon);
+    expect(summons.length).toBe(4 + 2); // BFM(4) + DR(2)
+    expect(summons.every((s: Combatant) => s.kind === 'hero')).toBe(true); // camp du lanceur héros
+    expect(summons.every((s: Combatant) => s.summon!.byId === 'necro' && s.summon!.despawnIfSummonerDown)).toBe(true);
+    expect(h.state().battle.order).toContain(summons[0].id); // dans l'initiative
+    expect(lines.join(' ')).toMatch(/invoque 6/);
+  });
+
+  it('summon hostile : camp opposé au lanceur', () => {
+    const c = caster();
+    const h = harness(c, battle([c]));
+    applySummon(h.get, h.set, c, { ref: 'Sanguinaire de Khorne', count: 1, allyOfCaster: false }, { rounds: 3, label: 'Déchirer l’Aethyr' });
+    const s = h.state().battle.combatants.find((x: Combatant) => x.summon);
+    expect(s.kind).toBe('enemy'); // hostile à un lanceur héros
+  });
+});
+
+describe('purgeExpiredSummons', () => {
+  it('dissipe à l’expiration de durée (round ≥ expiresAtRound)', () => {
+    const c = caster();
+    const h = harness(c, battle([c], 1));
+    applySummon(h.get, h.set, c, { ref: 'Loup', count: 1, allyOfCaster: true }, { rounds: 2, label: 'Hurlement du loup' }); // expiresAtRound = 1 + 2 = 3
+    const b = h.state().battle;
+    expect(purgeExpiredSummons(b, 2)).toHaveLength(0); // pas encore
+    const gone = purgeExpiredSummons(b, 3); // round 3 ≥ 3 → dissipe
+    expect(gone).toHaveLength(1);
+    expect(b.combatants.some((x: Combatant) => x.summon)).toBe(false);
+    expect(b.order.length).toBe(1); // retiré de l'ordre
+  });
+
+  it('minion lié : s’effondre si le lanceur tombe (despawnIfSummonerDown)', () => {
+    const c = caster();
+    const h = harness(c, battle([c], 1));
+    applySummon(h.get, h.set, c, { ref: 'Squelette', count: 2, allyOfCaster: true, despawnIfCasterDown: true }, { rounds: null, label: 'Relever les morts' });
+    const b = h.state().battle;
+    expect(purgeExpiredSummons(b, 5)).toHaveLength(0); // lanceur debout, pas d'expiration de durée
+    c.conditions = [{ name: 'Inconscient', value: 1 }]; // le sorcier tombe
+    expect(purgeExpiredSummons(b, 5)).toHaveLength(2); // les 2 squelettes s'effondrent
+    expect(b.combatants.filter((x: Combatant) => x.summon)).toHaveLength(0);
+  });
+});

@@ -25,7 +25,7 @@ beforeEach(() => {
 
 describe('couverture de curation', () => {
   it('Magie mineure, Arcanes communs, Domaines Feu/Lumière, Miracles Sigmar+Shallya : tous curés', () => {
-    const curedArcaneDomains = ['Feu', 'Lumière', 'Cieux', 'Métal', 'Ombres', 'Gueule', 'Bête', 'Sorcellerie', 'Démonologie', 'Mort', 'Vie', 'Magie naturelle'];
+    const curedArcaneDomains = ['Feu', 'Lumière', 'Cieux', 'Métal', 'Ombres', 'Gueule', 'Bête', 'Sorcellerie', 'Démonologie', 'Mort', 'Vie', 'Magie naturelle', 'Nécromancie'];
     const curedCults = ['Sigmar', 'Shallya', 'Morr', 'Myrmidia', 'Manann', 'Ranald', 'Rhya'];
     for (const s of spells) {
       const fam = s.type === 'Magie mineure' || (s.type === 'Magie des Arcanes' && s.subType == null)
