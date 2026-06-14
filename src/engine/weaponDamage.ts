@@ -48,9 +48,15 @@ export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Wea
   return out;
 }
 
-/** États « à la touche » des enchantements actifs du porteur (Marteau ardent : En flammes + À Terre). */
-export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>): { name: string; value?: number }[] {
+/** États « à la touche » des enchantements actifs du porteur (Marteau ardent : En flammes + À Terre).
+ *  `onlyGroups` éventuel : le gating de Groupe est appliqué à la résolution (combatFlow). */
+export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>): { name: string; value?: number; onlyGroups?: string[] }[] {
   return (bearer.activeEffects ?? []).flatMap((e) => e.weaponEnchant?.onHitConditions ?? []);
+}
+
+/** Tests « à la touche » gatés par Groupe des enchantements actifs (Épée de justice, Morsure de l'hiver). */
+export function enchantOnHitTests(bearer: Pick<Combatant, 'activeEffects'>): NonNullable<NonNullable<Combatant['activeEffects']>[number]['weaponEnchant']>['onHitTest'][] {
+  return (bearer.activeEffects ?? []).flatMap((e) => (e.weaponEnchant?.onHitTest ? [e.weaponEnchant.onHitTest] : []));
 }
 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */

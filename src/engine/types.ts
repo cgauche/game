@@ -185,8 +185,14 @@ export interface ActiveEffect {
     addQualities?: string[];
     /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6). */
     damageBonus?: number;
-    /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre). */
-    onHitConditions?: { name: string; value?: number }[];
+    /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre), sans Test.
+     *  `onlyGroups` : ne s'applique qu'aux cibles d'un Groupe (engine/groups). */
+    onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
+    /** Test à la touche GATÉ par Groupe (système de Groupes — auteur-marqué) : une cible du/des
+     *  `onlyGroups` (ou hors `exceptGroups`) effectue un Test ; sur ÉCHEC elle gagne `onFail`.
+     *  Épée de justice : un « Criminel » frappé teste Résistance (+20) ou tombe Inconscient ;
+     *  Morsure de l'hiver : une cible « vivante » (hors Mort-vivant/Démon) teste ou gagne Sonné. */
+    onHitTest?: { onlyGroups?: string[]; exceptGroups?: string[]; skill: string; difficulty: Difficulty; onFail: { name: string; value?: number }[] };
   };
   /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
    *  consommé à l'usage au point de relance des flux de jet (engine/activeFlags). */

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { enchantedWeapon, enchantOnHitConditions, effectiveWeaponDamage } from './weaponDamage';
+import { enchantedWeapon, enchantOnHitConditions, enchantOnHitTests, effectiveWeaponDamage } from './weaponDamage';
 import { isMagicWeapon } from './qualities/dispatch';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
@@ -56,5 +56,19 @@ describe('enchantedWeapon — fusion des enchantements actifs du porteur', () =>
     expect(w.qualities).not.toContain('Percutante');
     expect(effectiveWeaponDamage(w, 3)).toBe(3 + 4);
     expect(enchantOnHitConditions(c)).toHaveLength(0);
+  });
+
+  it('Épée de justice : Test à la touche GATÉ par le Groupe « Criminel » (Inconscient sur échec)', () => {
+    const c = dummy({});
+    applyOps(c, [{
+      op: 'enchantWeapon', addQualities: ['Magique'],
+      onHitTest: { onlyGroups: ['Criminel'], skill: 'Résistance', difficulty: 'accessible', onFail: [{ name: 'Inconscient' }] },
+    }], { label: 'Épée de justice', defaultDurationRounds: 4 });
+    const tests = enchantOnHitTests(c);
+    expect(tests).toHaveLength(1);
+    expect(tests[0]?.onlyGroups).toEqual(['Criminel']);
+    expect(tests[0]?.onFail[0].name).toBe('Inconscient');
+    endOfRound(c); endOfRound(c); endOfRound(c); endOfRound(c);
+    expect(enchantOnHitTests(c)).toHaveLength(0); // dissipé avec l'enchantement
   });
 });

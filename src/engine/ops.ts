@@ -132,7 +132,10 @@ export type GameOp =
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
-  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; onHitConditions?: { name: string; value?: number }[] }
+  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
+      /** Test à la touche gaté par Groupe (Épée de justice : Criminel → Inconscient ; Morsure de
+       *  l'hiver : vivant → Sonné). La cible teste `skill`/`difficulty` ; ÉCHEC → `onFail`. */
+      onHitTest?: { onlyGroups?: string[]; exceptGroups?: string[]; skill: string; difficulty: Difficulty; onFail: { name: string; value?: number }[] } }
   /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
   | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
   /** −N jours sur la durée d'une maladie active (B. de Convalescence, LDB 41 — 1×/maladie). */
@@ -449,12 +452,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
             ...(dmg ? { damageBonus: dmg } : {}),
             ...(o.onHitConditions?.length ? { onHitConditions: o.onHitConditions } : {}),
+            ...(o.onHitTest ? { onHitTest: o.onHitTest } : {}),
           },
         });
         const parts = [
           ...(o.addQualities ?? []),
           ...(dmg ? [`+${dmg} Dégâts`] : []),
           ...(o.onHitConditions ?? []).map((x) => `${x.name} à la touche`),
+          ...(o.onHitTest ? [`${o.onHitTest.onFail.map((c) => c.name).join('/')} à la touche (Test de ${o.onHitTest.skill})`] : []),
         ];
         lines.push(`${target.name} : son arme est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
         break;

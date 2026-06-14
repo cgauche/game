@@ -28,9 +28,12 @@ export const MIRACLES_VERENA: SpellSpec[] = [
     //   testent Résistance (+0) ou subissent Inconscient (≥ BSoc rounds). Tout crime commis contre un
     //   inconscient ainsi vous coûte +1 Péché. » — Magique mécanique ; ignore-PA, la condition
     //   « criminel », le Test/Inconscient et le Péché restent journalisés.
+    // « …les adversaires criminels frappés testent Résistance (+20) ou subissent Inconscient. » — le
+    //   statut « criminel » est porté par le système de Groupes (marquez les PNJ avec le Groupe
+    //   « Criminel » dans l'éditeur, comme pour les Traits psy ciblés) → Test à la touche gaté.
     ops: [
-      { op: 'enchantWeapon', addQualities: ['Magique'] },
-      { op: 'narrative', text: 'Épée de justice : ne vaut que si vous portez une épée ; elle ignore alors les PA, et un adversaire CRIMINEL frappé teste Résistance (+0) ou tombe Inconscient (au moins BSoc rounds) — arbitrage MJ.' },
+      { op: 'enchantWeapon', addQualities: ['Magique'], onHitTest: { onlyGroups: ['Criminel'], skill: 'Résistance', difficulty: 'accessible', onFail: [{ name: 'Inconscient' }] } },
+      { op: 'narrative', text: 'Épée de justice : ne vaut que si vous portez une épée ; elle ignore alors les PA. L’Inconscient ne frappe que les cibles du Groupe « Criminel » (auteur-marqué) — arbitrage MJ pour le statut.' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

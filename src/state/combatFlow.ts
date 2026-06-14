@@ -101,7 +101,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions, enchantOnHitTests } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -1277,9 +1277,23 @@ export function applyAttackResult(
     // ardent : « toute cible frappée reçoit En flammes et À Terre » ; Épée ardente de Rhuin :
     // « quiconque est frappé gagne +1 En flammes »). RAW : sans Test, à la touche.
     if (weapon.type === 'melee') {
+      const inGroups = (only?: string[], except?: string[]) =>
+        (!only || only.some((g) => groupMatch(g, target.groups ?? [])))
+        && (!except || !except.some((g) => groupMatch(g, target.groups ?? [])));
       for (const cond of enchantOnHitConditions(attacker)) {
+        if (!inGroups(cond.onlyGroups)) continue; // ex. « Criminel » seulement (système de Groupes)
         addCondition(target, cond.name, cond.value ?? 1);
         assommanteLog = `${target.name} reçoit ${cond.value ?? 1} État ${cond.name} (arme enchantée).`;
+      }
+      // Test à la touche gaté par Groupe (Épée de justice : un Criminel teste Résistance ou tombe
+      // Inconscient ; Morsure de l'hiver : une cible vivante teste ou gagne Sonné). RAW : Test à la touche.
+      for (const ht of enchantOnHitTests(attacker)) {
+        if (!ht || !inGroups(ht.onlyGroups, ht.exceptGroups)) continue;
+        const t = rollTest(testValue(target, ht.skill), ht.difficulty, battleRng());
+        if (!t.success) {
+          for (const c of ht.onFail) addCondition(target, c.name, c.value ?? 1);
+          assommanteLog = `${target.name} échoue à son Test de ${ht.skill} (arme enchantée) — ${ht.onFail.map((c) => c.name).join(', ')}.`;
+        }
       }
     }
   }
