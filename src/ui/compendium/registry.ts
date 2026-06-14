@@ -14,6 +14,8 @@ import {
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
+import { CHAR_KEYS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
+import { SIZE_LABEL, effectiveSize } from '../../engine/size';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
 
@@ -247,4 +249,32 @@ export function codexLookup(category: string, label: string): CodexItem | undefi
   const items = categoryByKey(category)?.items;
   if (!items) return undefined;
   return items.find((i) => i.label === label) ?? items.find((i) => i.label.toLowerCase() === label.toLowerCase());
+}
+
+const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
+
+/** Statbloc d'un combattant VIVANT (valeurs réelles : carac, armes/armure dérivées, états déjà à
+ *  part) en sections — MÊME rendu que la fiche Codex (CodexEntry/CodexSections). Sert l'inspection
+ *  d'un ennemi en combat sans recopier un panneau partiel. TOUTES les caracs (« – » si inexistante). */
+export function combatantSections(c: Combatant): CodexSection[] {
+  const ch = c.characteristics;
+  const charRows: CodexRow[] = [
+    { t: 'kv', k: 'M', v: String(c.movement) },
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–' } as CodexRow)),
+    { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] },
+  ];
+  const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
+    refRow('skills', `${s.name}${s.spec ? ` (${s.spec})` : ''} ${(ch[s.characteristic] ?? 0) + s.advances}`),
+  );
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${w.damage})` }));
+  const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
+  return sections(
+    { title: 'Caractéristiques', layout: 'grid', rows: charRows },
+    weaponRows.length ? { title: 'Armes', layout: 'list', rows: weaponRows } : null,
+    worn.length ? { title: 'Armure', layout: 'list', rows: [{ t: 'text', text: worn.map((l) => `${HIT_LOCATION_LABELS[l]} ${c.armour![l]}`).join(' · ') }] } : null,
+    chips('Traits', 'traits', c.traits),
+    skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,
+    chips('Talents', 'talents', (c.talents ?? []).map((t) => t.name)),
+    chips('Sorts', 'spells', c.spells),
+  );
 }

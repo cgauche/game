@@ -51,6 +51,17 @@ function CodexSectionView({ section }: { section: CodexSection }) {
   );
 }
 
+/** Rendu PARTAGÉ d'une liste de sections (fiche Codex ET statbloc d'inspection en combat). */
+export function CodexSections({ sections }: { sections: CodexSection[] }) {
+  return (
+    <>
+      {sections.map((sec, i) => (
+        <CodexSectionView key={i} section={sec} />
+      ))}
+    </>
+  );
+}
+
 export function CodexEntry({ item, instance }: { item: CodexItem; instance?: string }) {
   const hasBody = !!item.desc || !!item.meta?.length || !!item.sections?.length;
   return (
@@ -85,9 +96,7 @@ export function CodexEntry({ item, instance }: { item: CodexItem; instance?: str
           <p className="codex-body">{item.desc}</p>
         ))}
 
-      {item.sections?.map((sec, i) => (
-        <CodexSectionView key={i} section={sec} />
-      ))}
+      {item.sections && <CodexSections sections={item.sections} />}
 
       {!hasBody && <p className="codex-body codex-empty-desc">—</p>}
     </article>
