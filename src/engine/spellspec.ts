@@ -92,6 +92,18 @@ export interface SpellSpec {
    *  F/E/Ag/Dex et Traits (sauf Bestial) remplacent ceux de la cible le temps du Sort. Résolu par
    *  `engine/polymorph.polymorphOps` (charMod différentiel + grantTrait, auto-restitués). */
   polymorph?: { ref: string };
+  /** OPPOSITION de la cible (jet supplémentaire DANS la modale d'incantation — multijet, jamais
+   *  auto-roulé). `resist` : « le Test d'Incantation est opposé par la cible » (Fauche-démon → FM,
+   *  Parole de Tzeentch → Intelligence) ; `contact` : un Sort de Portée Contact frappe via un Test
+   *  opposé de Corps à corps (Bagarre) en combat (LDB 46 l.174). La cible l'emporte → Sort résisté
+   *  (aucune op) ; sinon les ops portent sur la MARGE de DR. Résolu par `resolveOpposed` au point de
+   *  résolution du flux `cast` (slot d'opposition), gaté avant `applyCast`. */
+  opposed?: {
+    kind: 'resist' | 'contact';
+    /** `resist` : Caractéristique/Compétence opposée de la cible (FM, Intelligence, Calme…). */
+    skill?: string;
+    char?: import('./types').CharKey;
+  };
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */
