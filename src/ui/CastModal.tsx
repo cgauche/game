@@ -118,7 +118,7 @@ export function CastModal() {
       rows={res ? [{
         combatant: caster,
         d: {
-          label: pc.missile ? 'Projectile' : isPrayer ? 'Prière' : `Incantation${!isPrayer ? ` / NI ${ni}` : ''}`,
+          label: isPrayer ? 'Prière' : `Incantation / NI ${ni}`, // jet = Test de Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
           base: res.target,
           modifier: 0,
           target: res.target,

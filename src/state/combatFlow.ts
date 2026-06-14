@@ -505,7 +505,7 @@ export function previewCast(
     ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
   ];
   return {
-    label: opts?.missile ? 'Projectile' : isPrayer ? 'Prière' : `Incantation / NI ${ni}`,
+    label: isPrayer ? 'Prière' : `Incantation / NI ${ni}`, // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
     base: target - advMod - penMod,
     target,
     mods,
