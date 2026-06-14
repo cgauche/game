@@ -58,6 +58,19 @@ describe('enchantedWeapon — fusion des enchantements actifs du porteur', () =>
     expect(enchantOnHitConditions(c)).toHaveLength(0);
   });
 
+  it('Épée de justice : bypass « all » (ignore les PA) UNIQUEMENT sur une épée (requiresWeapon)', async () => {
+    const { woundsFromHit } = await import('./combat');
+    const c = dummy({});
+    applyOps(c, [{ op: 'enchantWeapon', requiresWeapon: 'épée', addQualities: ['Magique'], bypass: 'all' }], { label: 'Épée de justice', defaultDurationRounds: 4 });
+    const enchSword = enchantedWeapon(c, sword());
+    expect(enchSword.bypass).toBe('all'); // épée → enchantée
+    const hammer: Weapon = { name: 'Marteau de guerre', type: 'melee', damage: '+BF+5', reach: 'Moyenne', range: null, qualities: [] };
+    expect(enchantedWeapon(c, hammer).bypass).toBeUndefined(); // pas une épée → enchant ignoré
+    const armored = dummy({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 5, jambeG: 0, jambeD: 0 } }); // 5 PA corps, BE 3
+    expect(woundsFromHit(sword(), armored, 'corps', 12)).toBe(12 - 3 - 5); // arme normale : −BE −PA
+    expect(woundsFromHit(enchSword, armored, 'corps', 12)).toBe(12 - 3); // épée enchantée : ignore les 5 PA
+  });
+
   it('Épée de justice : Test à la touche GATÉ par le Groupe « Criminel » (Inconscient sur échec)', () => {
     const c = dummy({});
     applyOps(c, [{

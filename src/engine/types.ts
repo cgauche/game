@@ -88,6 +88,12 @@ export interface HeroDetails {
   ambitionLong?: string;
 }
 
+/** Ignorance de PA — descripteur GÉNÉRAL réutilisable (armes enchantées, attributs de Domaine,
+ *  Projectiles…). Un NOMBRE = N points ignorés (Perforante = 1) ; sinon une catégorie : 'all' (tous),
+ *  'metal' (armures métalliques — Chamon/Azyr), 'leather' (cuir — Ghur), 'nonMagic' (tout le non
+ *  magique — Ulgu). Calcul : engine/armourBypass.bypassedAP. */
+export type ArmourBypass = number | 'all' | 'metal' | 'leather' | 'nonMagic';
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
@@ -107,6 +113,9 @@ export interface Weapon {
   uid?: string;
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
+  /** Ignorance de PA de l'arme (Épée de justice → 'all', etc.) — fusionnée par `enchantedWeapon`,
+   *  lue par `woundsFromHit` (engine/armourBypass). */
+  bypass?: ArmourBypass;
   /** Dégâts subis par l'arme (LDB 62 l.178) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
   damageTaken?: number;
   /** Arme détruite (Incident de Tir, LDB 14) : inutilisable. */
@@ -185,6 +194,11 @@ export interface ActiveEffect {
     addQualities?: string[];
     /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6). */
     damageBonus?: number;
+    /** Ignorance de PA conférée à l'arme (Épée de justice → 'all') — descripteur général ArmourBypass. */
+    bypass?: ArmourBypass;
+    /** L'enchantement ne s'applique QUE si l'arme tenue matche cette famille (mot-clé sur nom/sous-type :
+     *  « épée », « hache », « lance ») — Épée de justice / Morsure de l'hiver / Lance de Myrmidia. */
+    requiresWeapon?: string;
     /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre), sans Test.
      *  `onlyGroups` : ne s'applique qu'aux cibles d'un Groupe (engine/groups). */
     onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];

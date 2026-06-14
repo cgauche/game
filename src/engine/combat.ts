@@ -9,6 +9,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
+import { bypassedAP } from './armourBypass';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
@@ -363,8 +364,11 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'E'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort (Armure Aethyrique, LDB 47)
-  // + PA conférés par l'arme d'opposition (Protectrice, LDB 62 l.306 — `extraAP`).
-  const ap = Math.max(0, effectiveArmourAt(target, location) + extraAP - qualitySum(weapon, 'armourReduction'));
+  // + PA conférés par l'arme d'opposition (Protectrice, LDB 62 l.306 — `extraAP`), Perforante déduite.
+  const baseAP = Math.max(0, effectiveArmourAt(target, location) + extraAP - qualitySum(weapon, 'armourReduction'));
+  // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass)
+  // — même mécanisme que l'attribut de Domaine pour les Projectiles.
+  const ap = Math.max(0, baseAP - bypassedAP(target, location, weapon.bypass, baseAP));
   return Math.max(1, totalDamage - (tb + ap));
 }
 

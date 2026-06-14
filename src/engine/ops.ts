@@ -26,6 +26,7 @@ import { damageLeatherArmour } from './items';
 import { suppressPsychTraits } from './psychology';
 import {
   ActiveEffect,
+  ArmourBypass,
   CHAR_LABELS,
   CharKey,
   Combatant,
@@ -132,7 +133,7 @@ export type GameOp =
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
-  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
+  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string; onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
       /** Test à la touche gaté par Groupe (Épée de justice : Criminel → Inconscient ; Morsure de
        *  l'hiver : vivant → Sonné). La cible teste `skill`/`difficulty` ; ÉCHEC → `onFail`. */
       onHitTest?: { onlyGroups?: string[]; exceptGroups?: string[]; skill: string; difficulty: Difficulty; onFail: { name: string; value?: number }[] } }
@@ -451,6 +452,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           weaponEnchant: {
             ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
             ...(dmg ? { damageBonus: dmg } : {}),
+            ...(o.bypass != null ? { bypass: o.bypass } : {}),
+            ...(o.requiresWeapon ? { requiresWeapon: o.requiresWeapon } : {}),
             ...(o.onHitConditions?.length ? { onHitConditions: o.onHitConditions } : {}),
             ...(o.onHitTest ? { onHitTest: o.onHitTest } : {}),
           },

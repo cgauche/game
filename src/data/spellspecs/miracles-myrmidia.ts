@@ -41,8 +41,7 @@ export const MIRACLES_MYRMIDIA: SpellSpec[] = [
     label: 'Lance de Myrmidia',
     // « Si vous portez une lance, elle gagne l'Atout Percutante, et est considérée comme Magique. »
     ops: [
-      { op: 'enchantWeapon', addQualities: ['Percutante', 'Magique'] },
-      { op: 'narrative', text: 'Lance de Myrmidia : l’effet ne vaut que si vous portez effectivement une lance — arbitrage MJ.' },
+      { op: 'enchantWeapon', requiresWeapon: 'lance', addQualities: ['Percutante', 'Magique'] },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

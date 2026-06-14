@@ -37,6 +37,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { addCondition, removeCondition, loseWounds, applyZeroWounds, stacks } from './conditions';
 import { grantTrait } from './grantedTraits';
 import { groupMatch } from './groups';
+import { bypassedAP } from './armourBypass';
 
 /** Domaine d'un sort (« issu du Domaine X ») : le subType d'un Sort d'Arcane, sinon null. */
 export function domainOf(spell: { type?: string; subType?: string | null }): string | null {
@@ -50,20 +51,12 @@ export function hasArcaneTalent(c: Combatant, domain: string): boolean {
   return (c.talents ?? []).some((t) => re.test(t.name));
 }
 
-/** PA des pièces MÉTALLIQUES portées à `loc` (matière par nom — heuristique d'armourCastDRPenalty). */
-export function metalAPAt(c: Combatant, loc: HitLocation): number {
-  return (c.items ?? [])
-    .filter((i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && /maille|plate|m[ée]tal|metal/i.test(i.name))
-    .reduce((s, i) => s + Math.max(0, (i.pa ?? 0) - (i.damageTaken ?? 0)), 0);
-}
-
-/** PA MAGIQUES (effets actifs `apAll` — Armure Aethyrique) : seuls épargnés par Ulgu. */
-export function magicAPOf(c: Combatant): number {
-  return (c.activeEffects ?? []).reduce((s, e) => s + (e.apAll ?? 0), 0);
-}
+// PA par matière (métal/cuir), PA magiques et ignorance générale : moteur UNIQUE engine/armourBypass.
+export { metalAPAt, magicAPOf } from './armourBypass';
 
 /** Modulation de la MITIGATION d'un Projectile magique par l'attribut du Domaine (Cieux/Métal/
- *  Ombres). `totalAP` = PA effectifs de la cible à la localisation (pièces + plats + magiques). */
+ *  Ombres). `totalAP` = PA effectifs de la cible à la localisation (pièces + plats + magiques).
+ *  Exprimé via le bypass GÉNÉRAL (engine/armourBypass) : Chamon/Azyr = métal, Ulgu = non-magique. */
 export function domainMissileMods(
   target: Combatant,
   spell: { type?: string; subType?: string | null },
@@ -72,11 +65,11 @@ export function domainMissileMods(
 ): { apIgnored: number; bonusDamage: number } {
   const dom = domainOf(spell);
   if (dom === 'Métal') {
-    const m = Math.min(totalAP, metalAPAt(target, loc));
+    const m = bypassedAP(target, loc, 'metal', totalAP); // ignore le métal ET l'ajoute aux Dégâts
     return { apIgnored: m, bonusDamage: m };
   }
-  if (dom === 'Cieux') return { apIgnored: Math.min(totalAP, metalAPAt(target, loc)), bonusDamage: 0 };
-  if (dom === 'Ombres') return { apIgnored: Math.max(0, totalAP - magicAPOf(target)), bonusDamage: 0 };
+  if (dom === 'Cieux') return { apIgnored: bypassedAP(target, loc, 'metal', totalAP), bonusDamage: 0 };
+  if (dom === 'Ombres') return { apIgnored: bypassedAP(target, loc, 'nonMagic', totalAP), bonusDamage: 0 };
   return { apIgnored: 0, bonusDamage: 0 };
 }
 

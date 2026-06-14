@@ -32,8 +32,8 @@ export const MIRACLES_VERENA: SpellSpec[] = [
     //   statut « criminel » est porté par le système de Groupes (marquez les PNJ avec le Groupe
     //   « Criminel » dans l'éditeur, comme pour les Traits psy ciblés) → Test à la touche gaté.
     ops: [
-      { op: 'enchantWeapon', addQualities: ['Magique'], onHitTest: { onlyGroups: ['Criminel'], skill: 'Résistance', difficulty: 'accessible', onFail: [{ name: 'Inconscient' }] } },
-      { op: 'narrative', text: 'Épée de justice : ne vaut que si vous portez une épée ; elle ignore alors les PA. L’Inconscient ne frappe que les cibles du Groupe « Criminel » (auteur-marqué) — arbitrage MJ pour le statut.' },
+      { op: 'enchantWeapon', requiresWeapon: 'épée', addQualities: ['Magique'], bypass: 'all', onHitTest: { onlyGroups: ['Criminel'], skill: 'Résistance', difficulty: 'accessible', onFail: [{ name: 'Inconscient' }] } },
+      { op: 'narrative', text: 'Épée de justice : marquez les adversaires criminels du Groupe « Criminel » (éditeur) pour que l’Inconscient les frappe — le statut de criminel relève de l’arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

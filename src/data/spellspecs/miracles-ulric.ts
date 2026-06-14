@@ -60,8 +60,8 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     // « …toute cible VIVANTE frappée teste Résistance (+0) ou gagne Sonné. » — « vivante » = hors des
     //   Groupes Mort-vivant/Démon (système de Groupes) → Test à la touche gaté par exclusion.
     ops: [
-      { op: 'enchantWeapon', addQualities: ['Magique'], onHitTest: { exceptGroups: ['Mort-vivant', 'Démon'], skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ name: 'Sonné' }] } },
-      { op: 'narrative', text: 'Morsure de l’hiver : ne vaut que si vous portez une hache ; elle inflige aussi +DR Dégâts et ses frappes retirent tout Hémorragique sans jamais en causer — arbitrage MJ.' },
+      { op: 'enchantWeapon', requiresWeapon: 'hache', addQualities: ['Magique'], onHitTest: { exceptGroups: ['Mort-vivant', 'Démon'], skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ name: 'Sonné' }] } },
+      { op: 'narrative', text: 'Morsure de l’hiver : la hache inflige aussi +DR Dégâts et ses frappes retirent tout Hémorragique sans jamais en causer — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

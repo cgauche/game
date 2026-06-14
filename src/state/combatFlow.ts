@@ -1280,14 +1280,14 @@ export function applyAttackResult(
       const inGroups = (only?: string[], except?: string[]) =>
         (!only || only.some((g) => groupMatch(g, target.groups ?? [])))
         && (!except || !except.some((g) => groupMatch(g, target.groups ?? [])));
-      for (const cond of enchantOnHitConditions(attacker)) {
+      for (const cond of enchantOnHitConditions(attacker, weapon)) {
         if (!inGroups(cond.onlyGroups)) continue; // ex. « Criminel » seulement (système de Groupes)
         addCondition(target, cond.name, cond.value ?? 1);
         assommanteLog = `${target.name} reçoit ${cond.value ?? 1} État ${cond.name} (arme enchantée).`;
       }
       // Test à la touche gaté par Groupe (Épée de justice : un Criminel teste Résistance ou tombe
       // Inconscient ; Morsure de l'hiver : une cible vivante teste ou gagne Sonné). RAW : Test à la touche.
-      for (const ht of enchantOnHitTests(attacker)) {
+      for (const ht of enchantOnHitTests(attacker, weapon)) {
         if (!ht || !inGroups(ht.onlyGroups, ht.exceptGroups)) continue;
         const t = rollTest(testValue(target, ht.skill), ht.difficulty, battleRng());
         if (!t.success) {

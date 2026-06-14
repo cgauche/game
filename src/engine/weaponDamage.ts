@@ -5,6 +5,27 @@
  */
 import { Combatant, Weapon } from './types';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
+import { norm } from '../lib/normalize';
+
+type WeaponEnchant = NonNullable<NonNullable<Combatant['activeEffects']>[number]['weaponEnchant']>;
+
+/** L'arme `w` matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type) ?
+ *  Pas de famille requise → toujours vrai ; pas d'arme connue → faux (l'enchant ne s'applique pas). */
+function weaponMatchesFamily(w: Weapon | undefined, requires?: string): boolean {
+  if (!requires) return true;
+  if (!w) return false;
+  return norm(`${w.name} ${w.subType ?? ''}`).includes(norm(requires));
+}
+
+/** Enchantements actifs du porteur APPLICABLES à l'arme `w` (gatés par `requiresWeapon` — Épée de
+ *  justice ne vaut que sur une épée, Morsure de l'hiver une hache, Lance de Myrmidia une lance).
+ *  `w` absent (ex. badge de fiche) → on ignore le gating de famille (tous les enchants comptent). */
+function activeEnchantsFor(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant[] {
+  return (bearer.activeEffects ?? [])
+    .map((e) => e.weaponEnchant)
+    .filter((x): x is WeaponEnchant => !!x)
+    .filter((e) => w === undefined || weaponMatchesFamily(w, e.requiresWeapon));
+}
 
 /** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
 function flatDamage(damage: string): number {
@@ -36,7 +57,7 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
  * à la formule (sommée par `flatDamage`). Renvoie l'arme telle quelle sans enchantement.
  */
 export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Weapon): Weapon {
-  const enchants = (bearer.activeEffects ?? []).map((e) => e.weaponEnchant).filter((x): x is NonNullable<typeof x> => !!x);
+  const enchants = activeEnchantsFor(bearer, w); // gatés par famille d'arme (requiresWeapon)
   if (!enchants.length) return w;
   const out: Weapon = { ...w, qualities: [...(w.qualities ?? [])] };
   let dmgPlus = 0;
@@ -45,18 +66,20 @@ export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Wea
     dmgPlus += e.damageBonus ?? 0;
   }
   if (dmgPlus > 0) out.damage = `${out.damage ?? '+BF'}+${dmgPlus}`;
+  const bypasses = enchants.map((e) => e.bypass).filter((b) => b != null);
+  if (bypasses.length) out.bypass = bypasses.includes('all') ? 'all' : bypasses[bypasses.length - 1]; // 'all' prime
   return out;
 }
 
-/** États « à la touche » des enchantements actifs du porteur (Marteau ardent : En flammes + À Terre).
- *  `onlyGroups` éventuel : le gating de Groupe est appliqué à la résolution (combatFlow). */
-export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>): { name: string; value?: number; onlyGroups?: string[] }[] {
-  return (bearer.activeEffects ?? []).flatMap((e) => e.weaponEnchant?.onHitConditions ?? []);
+/** États « à la touche » des enchantements actifs APPLICABLES à `w` (Marteau ardent : En flammes +
+ *  À Terre). `onlyGroups` éventuel : le gating de Groupe est appliqué à la résolution (combatFlow). */
+export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): { name: string; value?: number; onlyGroups?: string[] }[] {
+  return activeEnchantsFor(bearer, w).flatMap((e) => e.onHitConditions ?? []);
 }
 
-/** Tests « à la touche » gatés par Groupe des enchantements actifs (Épée de justice, Morsure de l'hiver). */
-export function enchantOnHitTests(bearer: Pick<Combatant, 'activeEffects'>): NonNullable<NonNullable<Combatant['activeEffects']>[number]['weaponEnchant']>['onHitTest'][] {
-  return (bearer.activeEffects ?? []).flatMap((e) => (e.weaponEnchant?.onHitTest ? [e.weaponEnchant.onHitTest] : []));
+/** Tests « à la touche » gatés par Groupe des enchantements APPLICABLES à `w` (Épée de justice, Morsure de l'hiver). */
+export function enchantOnHitTests(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant['onHitTest'][] {
+  return activeEnchantsFor(bearer, w).flatMap((e) => (e.onHitTest ? [e.onHitTest] : []));
 }
 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */
