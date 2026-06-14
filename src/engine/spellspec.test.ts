@@ -1,11 +1,10 @@
 /**
- * engine/spellspec + data/spellspecs — specs structurées de sorts : le repli
- * regex reproduit le POC à l'identique, et les entrées CURÉES (Bénédictions)
- * produisent le MÊME résultat que le repli (golden d'iso-comportement).
+ * engine/spellspec + data/spellspecs — specs CURÉES de sorts. Les 243 sorts de la base ont une
+ * entrée relue de la source (plus de repli regex) ; ces tests vérifient que la résolution applique
+ * bien les effets curés et que la désambiguïsation par type fonctionne.
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
-import { fallbackSpec } from './spellspec';
 import { spellSpecFor, curatedSpec } from '../data/spellspecs';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from './ops';
 import { spells } from '../data';
@@ -22,83 +21,46 @@ function hero(p: Partial<Combatant> = {}): Combatant {
 }
 
 /** Applique la spec d'un sort comme applyCast le fait (durée résolue contre le lanceur). */
-function castVia(spec: ReturnType<typeof fallbackSpec>, caster: Combatant, target: Combatant): string[] {
+function castVia(spec: ReturnType<typeof spellSpecFor>, caster: Combatant, target: Combatant): string[] {
   const rounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster) : null;
   return applyOps(target, spec.ops, { caster, label: spec.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
 }
 
-describe('fallbackSpec — synthèse depuis la desc (parseurs historiques)', () => {
-  it('soin littéral : « 4 Points de Blessure » → op heal 4', () => {
-    const s = fallbackSpec({ label: 'X', type: 'Béni', cn: null, desc: 'La cible regagne 4 Points de Blessure.' });
-    expect(s.ops).toEqual([{ op: 'heal', amount: 4 }]);
-    expect(s.curated).toBe(false);
-  });
-
-  it('soin paramétré : « Guérir (Bonus de Sociabilité) Blessures » → formule bonusOf résolue contre le LANCEUR', () => {
-    const s = fallbackSpec({ label: 'Caresse', type: 'Invocation', cn: null, desc: 'Guérir (Bonus de Sociabilité) Blessures.' });
-    expect(s.ops).toEqual([{ op: 'heal', amount: { bonusOf: 'Soc' } }]);
-    const caster = hero({ id: 'c' }); // Soc 42 → 4
+describe('specs curées — résolution', () => {
+  it('Bénédiction de Guérison : op heal littérale (+1 PB)', () => {
+    const spell = spells.find((s) => s.label === 'Bénédiction de Guérison')!;
     const target = hero();
-    castVia(s, caster, target);
-    expect(target.wounds.current).toBe(10);
+    castVia(spellSpecFor(spell), hero({ id: 'c' }), target);
+    expect(target.wounds.current).toBe(7);
   });
 
-  it('buff double : « -10 en Agilité et Dextérité » → 2 charMod ; durée formule « (Bonus de FM) Rounds »', () => {
-    const s = fallbackSpec({ label: 'Écorce', type: 'Magie des Arcanes', cn: 5, duration: '(Bonus de Force Mentale) Rounds', desc: 'La cible gagne +2 PA mais subit -10 en Agilité et Dextérité.' });
-    expect(s.ops).toEqual([
+  it('Caresse de Rhya : « Guérir (Bonus de Sociabilité) Blessures » résolu contre le LANCEUR', () => {
+    const spell = spells.find((s) => s.label === 'Caresse de Rhya')!;
+    const caster = hero({ id: 'c' }); // Soc 42 → BSoc 4
+    const target = hero();
+    castVia(spellSpecFor(spell), caster, target);
+    expect(target.wounds.current).toBe(10); // 6 + 4
+  });
+
+  it('Écorce : +2 BE (charMod E +20) et −10 en Agilité/Dextérité', () => {
+    const spell = spells.find((s) => s.label === 'Écorce')!;
+    expect(spellSpecFor(spell).ops).toEqual([
+      { op: 'charMod', char: 'E', mod: 20 },
       { op: 'charMod', char: 'Ag', mod: -10 },
       { op: 'charMod', char: 'Dex', mod: -10 },
     ]);
-    expect(s.durationRounds).toEqual({ bonusOf: 'FM' });
-  });
-
-  it('État : « reçoit 1 État Sonné » → op condition ; priorité exclusive soin > buff > État (iso-POC)', () => {
-    const s = fallbackSpec({ label: 'Y', type: 'Magie mineure', cn: 0, desc: 'La cible reçoit 1 État Sonné.' });
-    expect(s.ops).toEqual([{ op: 'condition', name: 'Sonné', value: 1 }]);
-    // Une desc qui guérit ET buffe ne produit QUE le soin (comportement historique d'applyCast).
-    const both = fallbackSpec({ label: 'Z', type: 'Béni', cn: null, desc: 'Guérit 2 Points de Blessure et la cible gagne +10 en Force.' });
-    expect(both.ops).toHaveLength(1);
-    expect(both.ops[0].op).toBe('heal');
-  });
-
-  it('desc sans effet modélisable → aucune op (journal d’incantation seul, rien d’inventé)', () => {
-    const s = fallbackSpec({ label: 'Murmures', type: 'Magie mineure', cn: 0, desc: 'Vous murmurez un message à une cible en vue.' });
-    expect(s.ops).toEqual([]);
   });
 });
 
-describe('registre curé — Bénédictions ≡ repli (golden iso-comportement)', () => {
-  const labels = [
-    'Bénédiction de Bataille', 'Bénédiction de Charisme', 'Bénédiction de Courage',
-    'Bénédiction de Finesse', 'Bénédiction de Grâce', 'Bénédiction de La Chasse',
-    'Bénédiction de Puissance', 'Bénédiction de Sagesse', 'Bénédiction de Vigueur',
-    'Bénédiction de Vivacité', 'Bénédiction de Guérison', 'Bénédiction de Ténacité',
-  ];
-  it.each(labels)('%s : la spec curée produit le même état que le repli regex', (label) => {
-    const spell = spells.find((s) => s.label === label)!;
-    expect(spell).toBeDefined();
-    const caster = hero({ id: 'c' });
-    const viaCurated = hero({ conditions: [{ name: 'Exténué', value: 1 }] });
-    const viaFallback = hero({ conditions: [{ name: 'Exténué', value: 1 }] });
-    const cur = spellSpecFor(spell);
-    expect(cur.curated).toBe(true);
-    castVia(cur, caster, viaCurated);
-    castVia(fallbackSpec(spell), caster, viaFallback);
-    expect(viaCurated.wounds).toEqual(viaFallback.wounds);
-    expect(viaCurated.conditions).toEqual(viaFallback.conditions);
-    expect(viaCurated.activeEffects?.map((e) => ({ char: e.char, bonus: e.bonus, roundsLeft: e.roundsLeft })))
-      .toEqual(viaFallback.activeEffects?.map((e) => ({ char: e.char, bonus: e.bonus, roundsLeft: e.roundsLeft })));
-  });
-
+describe('registre curé — couverture & désambiguïsation', () => {
   it('les 19 Bénédictions sont toutes curées', () => {
     const blessed = spells.filter((s) => s.type === 'Béni');
     expect(blessed).toHaveLength(19);
     for (const s of blessed) expect(curatedSpec(s.label), s.label).toBeDefined();
   });
 
-  it('un sort non curé passe par le repli', () => {
-    // Famille pas encore curée (le Chaos est traité en dernier) → repli regex.
-    const uncured = spells.find((s) => s.type === 'Magie du Chaos')!;
-    expect(spellSpecFor(uncured).curated).toBe(false);
+  it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal)', () => {
+    expect(curatedSpec('Enchevêtrement', 'Magie des Arcanes')?.type).toBe('Magie des Arcanes');
+    expect(curatedSpec('Enchevêtrement', 'Invocation')?.type).toBe('Invocation');
   });
 });

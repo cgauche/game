@@ -185,65 +185,6 @@ export function parseSpellDamage(
   };
 }
 
-/**
- * Soin apporté par un sort/prière, au niveau FORMULE : « N Points de Blessure »
- * (littéral) ou « Guérir (Bonus de X) Blessures » (paramétré, ex. Caresse de
- * Rhya = Bonus de Sociabilité — résolu contre le lanceur à l'application).
- */
-export function parseHealFormula(desc: string): Formula | null {
-  const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
-  if (lit) return parseInt(lit[1], 10);
-  const bon = desc.match(/Gu[ée]ri(?:r|ssez)?[^.]*?\(Bonus d[e'’]\s*([^)]+)\)\s*Blessure/i);
-  if (bon) {
-    const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return { bonusOf: key };
-  }
-  return null;
-}
-
-/**
- * Soin apporté par un sort/prière : formule résolue contre le lanceur.
- * Retourne le nombre de Blessures rendues, ou null si aucun soin.
- */
-export function parseHeal(desc: string, caster: Combatant): number | null {
-  const f = parseHealFormula(desc);
-  return f == null ? null : resolveFormula(f, caster);
-}
-
-/**
- * Effet d'État d'un sort : ajout (« reçoit/gagne N État X ») ou retrait
- * (« retirer/perd N État [X] » — le nom peut être absent, choix de la cible).
- * Retourne null si la description ne mentionne aucun État.
- */
-export function parseConditionEffect(
-  desc: string,
-): { op: 'add' | 'remove'; name?: string; value: number } | null {
-  const rem = desc.match(/(?:retire[rz]|perd(?:ent)?)\s+(\d+)?\s*[ÉE]tats?(?:\s+([A-Za-zÀ-ÿ'’-]+))?/i);
-  if (rem) return { op: 'remove', name: rem[2], value: rem[1] ? parseInt(rem[1], 10) : 1 };
-  const add = desc.match(/(\d+)?\s*[ÉE]tats?\s+([A-Za-zÀ-ÿ'’-]+)/i);
-  if (add) return { op: 'add', name: add[2], value: add[1] ? parseInt(add[1], 10) : 1 };
-  return null;
-}
-
-/**
- * Modificateurs de caractéristique d'un sort : « +N en X » (bonus) ou « -N en X »
- * (pénalité, bonus négatif), y compris la forme « -N en X et Y » qui touche deux
- * caractéristiques (ex. Écorce : -10 en Agilité et Dextérité). Bonus et pénalités
- * ne se cumulent pas — voir effectiveChar (Livre de base l.168 : meilleur bonus +
- * pire pénalité). Retourne la liste des modificateurs trouvés.
- */
-export function parseCharBuffs(desc: string): { char: CharKey; bonus: number }[] {
-  const out: { char: CharKey; bonus: number }[] = [];
-  for (const [key, label] of Object.entries(CHAR_LABELS) as [CharKey, string][]) {
-    // « Force » ne doit pas capturer le préfixe de « Force Mentale ».
-    const lab = label === 'Force' ? 'Force(?!\\s+Mentale)' : label;
-    let m = desc.match(new RegExp(`([+-])\\s*(\\d+)\\s+en\\s+${lab}`, 'i'));
-    // Forme « ... en Y et X » (seconde caractéristique d'un même modificateur).
-    if (!m) m = desc.match(new RegExp(`([+-])\\s*(\\d+)\\s+en\\s+[A-Za-zÀ-ÿ'’ ]*?\\bet\\s+${lab}`, 'i'));
-    if (m) out.push({ char: key, bonus: (m[1] === '-' ? -1 : 1) * parseInt(m[2], 10) });
-  }
-  return out;
-}
 
 /** Vrai si le sort est un Projectile magique (Dégâts résolus comme une attaque). */
 export function isMagicMissile(spell: SpellLike): boolean {

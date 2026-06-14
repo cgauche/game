@@ -271,9 +271,6 @@ import {
   castingValue,
   parseSpellDamage,
   parseDurationRounds,
-  parseHeal,
-  parseConditionEffect,
-  parseCharBuffs,
   buffDurationRounds,
   durationClockMinutes,
   isMagicMissile,
@@ -615,22 +612,6 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
   });
 });
 
-describe('Magie — parseCharBuffs (bonus/pénalités de caractéristique)', () => {
-  it('lit un bonus simple « +N en X »', () => {
-    expect(parseCharBuffs('Votre cible gagne +10 en Capacité de Combat.')).toEqual([{ char: 'CC', bonus: 10 }]);
-  });
-  it('lit une pénalité multi-caractéristiques « -N en X et Y » (Écorce)', () => {
-    expect(parseCharBuffs('La cible subit -10 en Agilité et Dextérité.')).toEqual([
-      { char: 'Ag', bonus: -10 },
-      { char: 'Dex', bonus: -10 },
-    ]);
-  });
-  it('ne confond pas « Force » et « Force Mentale »', () => {
-    expect(parseCharBuffs('Vous gagnez +20 en Force Mentale.')).toEqual([{ char: 'FM', bonus: 20 }]);
-    expect(parseCharBuffs('Vous gagnez +5 en Force.')).toEqual([{ char: 'F', bonus: 5 }]);
-  });
-});
-
 describe('Magie — correctifs de fidélité (audit)', () => {
   // B1 — Projectile ignorant le Bonus d'Endurance : le BE n'est pas déduit.
   it('B1 : un Projectile « ignore le Bonus d’Endurance » ne déduit pas le BE', () => {
@@ -648,22 +629,6 @@ describe('Magie — correctifs de fidélité (audit)', () => {
       // mitigation BE+PA = 0 → toutes les Blessures passent.
       expect(res.woundsLost).toBe(res.damage);
     }
-  });
-
-  // B2 — soin paramétré « (Bonus de Sociabilité) Blessures » (Caresse de Rhya).
-  it('B2 : parseHeal lit le soin littéral ET « (Bonus de X) Blessures »', () => {
-    const pretre = caster({ Soc: 45 }); // BSoc 4
-    expect(parseHeal('Guérir 1d10... non. Guérir 3 Points de Blessure.', pretre)).toBe(3);
-    expect(parseHeal('Choisissez : Guérir (Bonus de Sociabilité) Blessures.', pretre)).toBe(4);
-    expect(parseHeal('Votre cible gagne +10 en Capacité de Combat.', pretre)).toBeNull();
-  });
-
-  // B3 — distinction retrait/ajout d'État ; « retirer 1 Etat » (sans accent ni nom).
-  it('B3 : parseConditionEffect distingue retrait et ajout d’État', () => {
-    expect(parseConditionEffect('Votre cible peut retirer 1 Etat.')).toEqual({ op: 'remove', name: undefined, value: 1 });
-    expect(parseConditionEffect('La cible reçoit 1 État Sonné.')).toEqual({ op: 'add', name: 'Sonné', value: 1 });
-    expect(parseConditionEffect('Le porteur perd 2 États Aveuglé.')).toEqual({ op: 'remove', name: 'Aveuglé', value: 2 });
-    expect(parseConditionEffect('Votre cible gagne +10 en Agilité.')).toBeNull();
   });
 
   // I1 — pas d'invention d'1 round ; résolution des durées-formule « (Bonus de X) Rounds ».

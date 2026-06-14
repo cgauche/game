@@ -1,10 +1,10 @@
 /**
- * Registre des specs de sorts CURÉES (cf. engine/spellspec) : une entrée = les
- * effets structurés d'un sort, recopiés de sa description canon. Les sorts sans
- * entrée passent par `fallbackSpec` (parseurs regex historiques) — la curation
- * est incrémentale, famille par famille, sans régression.
+ * Registre des specs de sorts CURÉES (cf. engine/spellspec) : une entrée = les effets structurés
+ * d'un sort, recopiés de sa description canon. Les 243 sorts de la base sont curés (cf. le test
+ * « TOUS les sorts sont curés ») ; `spellSpecFor` n'a donc plus de repli regex — si un sort INÉDIT
+ * était ajouté sans entrée, il retombe sur une spec narrative minimale (sa desc journalisée).
  */
-import { SpellSpec, fallbackSpec } from '../../engine/spellspec';
+import { SpellSpec } from '../../engine/spellspec';
 import { SpellLike } from '../../engine/magic';
 import { BENEDICTIONS } from './benedictions';
 import { DOMAINE_FEU } from './domaine-feu';
@@ -50,7 +50,9 @@ export function curatedSpec(label: string, type?: string): SpellSpec | undefined
   return candidates.find((s) => s.type != null && s.type === type) ?? candidates.find((s) => s.type == null);
 }
 
-/** Spec d'un sort : curée si présente au registre, sinon repli (desc → regex). */
+/** Spec d'un sort : curée si présente au registre, sinon (sort inédit hors base) une spec narrative
+ *  minimale — sa description est journalisée verbatim, rien n'est deviné par regex. */
 export function spellSpecFor(spell: SpellLike): SpellSpec {
-  return curatedSpec(spell.label, spell.type) ?? fallbackSpec(spell);
+  return curatedSpec(spell.label, spell.type)
+    ?? { label: spell.label, ops: [{ op: 'narrative', text: spell.desc }], durationRounds: null, curated: false };
 }
