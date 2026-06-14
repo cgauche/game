@@ -32,7 +32,12 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // incantation / prière
   'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice', 'castSetForcedRoll',
   'castAllocOvercast', 'castToggleExtraTarget', 'castPickTargets', 'castPlaceZone', 'castForceSuccess',
-  'castCounterspell', 'castConfirm', 'castCancel',
+  'castConfirm', 'castCancel',
+  // Contre-sort à plusieurs (réaction au Sort ennemi, flux multi) + Test Étendu séquentiel
+  'counterspellRoll', 'counterspellReroll', 'counterspellBonusSL', 'counterspellDarkPact',
+  'counterspellForceSuccess', 'counterspellSetForcedRoll', 'counterspellConfirm', 'counterspellCancel',
+  'extendedTestRoll', 'extendedTestReroll', 'extendedTestBonusSL', 'extendedTestDarkPact',
+  'extendedTestForceSuccess', 'extendedTestSetForcedRoll', 'extendedTestNext', 'extendedTestCancel',
   // désengagement
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',

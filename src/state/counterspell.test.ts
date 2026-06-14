@@ -66,33 +66,26 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     expect(pc2.result!.log).not.toContain('Contre-sort de');
   });
 
-  it('héros : castCounterspell oppose Langue (Magick) au Sort ennemi figé (dissipé OU DR net)', () => {
+  it('routage : un Sort ENNEMI est pré-roulé par le moteur et ouvre le Contre-sort à plusieurs', () => {
     useGame.getState().seedRng(9);
     const { H, E } = setup();
     castSpell(useGame.getState, useGame.setState, E, H, 'Carreau');
-    useGame.getState().castRoll();
-    const before = useGame.getState().pendingCast!.result!;
-    useGame.getState().castCounterspell(H.id);
-    const after = useGame.getState().pendingCast!.result!;
-    expect(after.log).toContain('Contre-sort de W');
+    // castSpell roule l'incantation ennemie (jet figé, plus de « Lancer ») ET ouvre pendingCounterspell.
+    expect(useGame.getState().pendingCast!.result).toBeTruthy();
+    const pcs = useGame.getState().pendingCounterspell;
+    expect(pcs).toBeTruthy();
+    expect(pcs!.participants.map((p) => p.id)).toContain(H.id);
+    // H oppose son Langue (Magick) ; « Appliquer » agrège + résout via castConfirm.
+    useGame.getState().counterspellRoll(H.id);
+    expect(useGame.getState().pendingCounterspell!.participants[0].result).toBeTruthy();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.dispelledThisRound).toBe(true);
-    if (after.dispelled) {
-      expect(after.cast).toBe(false); // gagné → dissipé
-    } else {
-      // perdu → « le Sort utilise le DR du Test opposé » : DR net SIGNÉ (un contre-sort raté en
-      // DR négatif peut même AUGMENTER le DR du lanceur — quirk RAW des Tests opposés, assumé).
-      const net = Number(after.log.match(/se résout à DR (-?\d+)/)?.[1]);
-      expect(after.sl).toBe(net);
-      const counterSL = Number(after.log.match(/DR (-?\d+)\) :/)?.[1]);
-      expect(net).toBe(before.sl - counterSL);
-    }
-    // 2e tentative du même héros ce Round : no-op.
-    const frozen = after;
-    useGame.getState().castCounterspell(H.id);
-    expect(useGame.getState().pendingCast!.result).toBe(frozen);
+    useGame.getState().counterspellConfirm();
+    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
+    expect(useGame.getState().pendingCounterspell).toBeNull();
+    expect(useGame.getState().pendingCast).toBeNull();
   });
 
-  it('IA : la modale d’incantation ennemie SUSPEND le tour — reprise à l’Appliquer', () => {
+  it('IA : le Sort ennemi SUSPEND le tour ; « Laisser passer » applique et la main passe', () => {
     useGame.getState().seedRng(3);
     const { H, E } = setup();
     H.wounds = { ...H.wounds, max: 99, current: 99 }; // survit au Carreau : le sujet est la suspension
@@ -100,19 +93,19 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
       battle: { ...useGame.getState().battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingRoundStart: null, pendingReveals: [],
     });
-    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau jouable → modale témoin
+    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau pré-roulé + Contre-sort ouvert
     vi.advanceTimersByTime(5000);
     let st = useGame.getState();
-    expect(st.pendingCast?.casterId).toBe(E.id); // la modale d'incantation ennemie est ouverte
+    expect(st.pendingCast?.casterId).toBe(E.id); // incantation ennemie figée
+    expect(st.pendingCounterspell).toBeTruthy(); // H peut Dissiper → modale de réaction (pas de « Lancer »)
     expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur le lanceur (non avancé)
     expect(st.battle!.round).toBe(1);
-    // Le témoin déroule : Lancer → Appliquer → le tour de l'IA reprend (et seulement là).
-    st.castRoll();
-    useGame.getState().castConfirm();
+    useGame.getState().counterspellCancel(); // « Laisser passer » → le Sort se résout + le tour reprend
     for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     vi.advanceTimersByTime(2000);
     st = useGame.getState();
     expect(st.pendingCast).toBeNull();
+    expect(st.pendingCounterspell).toBeNull();
     expect(st.battle!.round).toBe(2); // frontière franchie : la main est bien passée
   });
 

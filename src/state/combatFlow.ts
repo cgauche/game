@@ -2207,6 +2207,31 @@ export function castSpell(
       focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
     },
   });
+  // Lanceur ENNEMI : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas le
+  // dé de l'adversaire), puis aiguille : Contre-sort à plusieurs si un héros peut Dissiper, sinon la
+  // modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
+  if (caster.kind === 'enemy' && get().battle) {
+    get().castRoll();
+    routeEnemyCast(get, set);
+  }
+}
+
+/** Après le jet (figé) d'un Sort ENNEMI : ouvre le Contre-sort à plusieurs si au moins un héros peut
+ *  Dissiper (LDB 46 l.201-202 ; pas une Prière, pas un Critique non-Projectile « inéluctable »).
+ *  Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en révélation. */
+function routeEnemyCast(get: Get, set: SetFn): void {
+  const pc = get().pendingCast;
+  const battle = get().battle;
+  if (!pc?.result || !battle) return;
+  const caster = battle.combatants.find((c) => c.id === pc.casterId);
+  const target = battle.combatants.find((c) => c.id === pc.targetId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !target || !spell) return;
+  const dispellable = isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile);
+  const heroes = dispellable ? counterspellCandidates(battle, get().scene, caster, target).filter((c) => c.kind === 'hero') : [];
+  if (heroes.length) {
+    set({ pendingCounterspell: { participants: heroes.map((h) => ({ id: h.id, interactive: true, result: null })) } });
+  }
 }
 
 /** Rayon INITIAL d'un sort de ZONE en mètres (spec curée prioritaire sur le champ Cible —

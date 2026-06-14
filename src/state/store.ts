@@ -600,8 +600,6 @@ export interface GameState {
   castBonusSL: () => void;
   /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
   castDarkPact: () => void;
-  /** Contre-sort (Dissipation, LDB 46 l.201-202) : un héros lanceur oppose Langue (Magick) au Sort ennemi figé. */
-  castCounterspell: (counterId: string) => void;
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
@@ -1591,13 +1589,6 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
   /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.201-202). */
-  castCounterspell: (counterId) => {
-    const pc = get().pendingCast;
-    const counter = actorIn(get(), counterId);
-    const caster = pc && actorIn(get(), pc.casterId);
-    if (!pc?.result || !counter || !caster || caster.kind !== 'enemy' || counter.kind !== 'hero') return;
-    if (applyCounterspell(get, set, counter)) set({ ...touchActors(get()) });
-  },
   // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `cast` de rollFlows.ts).
   castReroll: () => FLOWS.cast.reroll(get, set),
   castBonusSL: () => FLOWS.cast.bonusSL(get, set),

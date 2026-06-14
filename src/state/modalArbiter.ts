@@ -45,6 +45,9 @@ export const MODAL_DEFS = [
   // Repos (nuit) : chacun règle SES héros, ready-check, l'hôte dort — modale chez tous.
   { key: 'rest', when: (s) => !!s.pendingRest, owner: () => '*' },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId },
+  // Contre-sort à PLUSIEURS (réaction au Sort ennemi figé dans pendingCast) : PRIORITAIRE sur `cast`
+  // (les deux pendings coexistent) → la modale de réaction prend la main. Moment partagé → tous.
+  { key: 'counterspell', when: (s) => !!s.pendingCounterspell, owner: () => '*' },
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.

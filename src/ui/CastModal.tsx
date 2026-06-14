@@ -1,7 +1,6 @@
 import { useGame } from '../state/store';
 import { FLOWS } from '../state/rollFlows';
-import { ownsLocally } from '../state/netFlow';
-import { counterspellCandidates, overcastTargetCandidates, previewCast } from '../state/combatFlow';
+import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { spellSpecFor } from '../data/spellspecs';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
@@ -31,7 +30,6 @@ export function CastModal() {
   const battle = useGame((s) => s.battle);
   const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
-  const counterspell = useGame((s) => s.castCounterspell);
   const roll = useGame((s) => s.castRoll);
   const reroll = useGame((s) => s.castReroll);
   const bonusSL = useGame((s) => s.castBonusSL);
@@ -220,36 +218,6 @@ export function CastModal() {
                     <button className="btn small" onClick={() => pickTargets(true)}>🗺️ Choisir sur le champ de bataille</button>
                   </p>
                 )}
-              </div>
-            );
-          })()}
-          {/* Dissipation (LDB 46 l.201-202) : un héros lanceur ÉLIGIBLE oppose Langue (Magick) au
-              Sort ennemi figé — gratuit, un seul par Round. Bloqué si le critique ennemi sera
-              « Force inéluctable » (défaut IA d'un Sort non-Projectile réussi, l.59). */}
-          {(() => {
-            if (caster.kind !== 'enemy' || !res.cast || res.dispelled || isPrayer) return null;
-            if (res.isCritical && !pc.missile) return null; // inéluctable (défaut IA)
-            // COOP : chacun n'engage que SES contre-lanceurs (le sort ennemi s'affiche chez tous —
-            // Contre-sort à plusieurs sur le même sort, RAW LDB 46 + arbitrage).
-            const state = useGame.getState();
-            const cands = counterspellCandidates(battle ?? null, scene, caster, target)
-              .filter((c) => c.kind === 'hero' && ownsLocally(state, c.id));
-            if (!cands.length) return null;
-            return (
-              <div className="rm-overcast rm-options">
-                <span className="mini-title">🛡️ Contre-sort (Dissipation) — Test opposé de Langue (Magick), 1/Round</span>
-                <div className="rm-loc-grid">
-                  {cands.map((h) => (
-                    <CharFrame
-                      key={h.id}
-                      c={h}
-                      variant="vital"
-                      size="sm"
-                      onClick={() => counterspell(h.id)}
-                      title={`${h.name} — Gagné : le Sort est dissipé. Perdu : l'incantation se résout au DR net du Test opposé.`}
-                    />
-                  ))}
-                </div>
               </div>
             );
           })()}
