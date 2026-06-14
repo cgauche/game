@@ -72,9 +72,9 @@ export function CompendiumScreen() {
             aria-label="Rechercher dans le Codex"
           />
           <div className="codex-rows">
-            {list.map((it) => (
+            {list.map((it, i) => (
               <button
-                key={it.label}
+                key={`${it.label}__${i}`}
                 className={`listrow codex-row${selected?.label === it.label ? ' on' : ''}`}
                 onClick={() => setPicked(it.label)}
               >

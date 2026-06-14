@@ -178,17 +178,16 @@
 .codex-ref:focus-visible {
   border-bottom-color: var(--gold);
 }
+/* Popover en PORTAL (document.body) : position fixed inline depuis le rect du déclencheur →
+   échappe à tout overflow/empilement. pointer-events:none = pur tooltip (aucun pont de survol). */
 .codex-pop {
-  position: absolute;
-  left: 0;
-  bottom: 100%;
-  z-index: 60;
-  display: none;
+  position: fixed;
+  z-index: 9999;
+  display: flex;
   flex-direction: column;
   gap: 5px;
-  width: max-content;
-  max-width: 320px;
-  margin-bottom: 6px;
+  max-height: 50vh;
+  overflow: hidden;
   padding: 9px 11px;
   background: var(--panel2);
   border: 1px solid var(--gold);
@@ -196,12 +195,8 @@
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55);
   text-align: left;
   white-space: normal;
-  cursor: auto;
   font-weight: 400;
-}
-.codex-ref:hover > .codex-pop,
-.codex-ref:focus-within > .codex-pop {
-  display: flex;
+  pointer-events: none;
 }
 .codex-pop-title {
   font-family: var(--font-display);
@@ -245,9 +240,6 @@
   .screen.codex {
     height: auto;
     min-height: 100vh;
-  }
-  .codex-pop {
-    max-width: min(86vw, 320px);
   }
   .codex-groups {
     margin-left: 0;

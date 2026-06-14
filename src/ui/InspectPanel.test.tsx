@@ -36,9 +36,8 @@ describe('InspectPanel', () => {
     const html = renderToStaticMarkup(<InspectPanel combatant={wolf} onClose={() => {}} />);
     expect(html).toContain('–'); // CT « – » (Schéma des Profils, LDB 76)
     expect(html).toContain('insp-trait-chip');
-    expect(html).toContain('Vision nocturne');
-    expect(html).toContain('codex-ref'); // le trait pointe vers le Codex
-    expect(html).toContain('La créature'); // desc verbatim dans le popover CodexRef (Foulée/Nerveux…)
+    expect(html).toContain('Vision nocturne'); // libellé du trait
+    expect(html).toContain('codex-ref'); // enrobé en CodexRef (popover desc+source au survol, portal)
   });
 
   it('badge 🪄 si l’ennemi connaît des sorts', () => {
