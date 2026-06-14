@@ -503,6 +503,9 @@ export interface GameState {
   /** Détermination (LDB 17 l.62) : insensible à la Psychologie — retire le malus social
    *  (Animosité/Préjugé) du Test en cours, AVANT le jet. */
   testDetermination: () => void;
+  /** Choix du LANCEUR d'un Test de scène parmi les candidats du groupe (avant le jet) — au lieu
+   *  d'une désignation automatique du meilleur. Re-cible valeur/cible/malus/outil. */
+  testSetActor: (id: string) => void;
   resolveTest: () => void;
   /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
   corruptionRoll: () => void;
@@ -3279,6 +3282,14 @@ export const useGame = create<GameState>((set, get) => ({
   disengageFleeAck: () => set({ pendingDisengage: null }), // « Continuer » : ferme la modale (conséquences déjà appliquées)
   disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
 
+  /** Choix du lanceur (avant le jet) : re-cible le Test sur le candidat `id` du groupe. */
+  testSetActor: (id) => {
+    const pt = get().pendingTest;
+    if (!pt || pt.roll != null) return; // seulement AVANT le jet
+    const cand = pt.candidates?.find((c) => c.id === id);
+    if (!cand) return;
+    set({ pendingTest: { ...pt, actorId: cand.id, actorName: cand.name, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid } });
+  },
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
   testRoll: () => FLOWS.test.roll(get, set),
   /** Chance : relance (LDB Destin) / « +1 DR » (LDB ch.17 l.26), cf. spec `test` de rollFlows. */

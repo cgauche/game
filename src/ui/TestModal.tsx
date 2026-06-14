@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
+import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -20,6 +21,7 @@ export function TestModal() {
   const darkPact = useGame((s) => s.testDarkPact);
   const determination = useGame((s) => s.testDetermination);
   const forceSuccess = useGame((s) => s.testForceSuccess);
+  const setActor = useGame((s) => s.testSetActor);
   const resolve = useGame((s) => s.resolveTest);
   if (!pt) return null;
   const rolled = pt.roll != null;
@@ -47,6 +49,22 @@ export function TestModal() {
       }
       rolled={rolled}
       onRoll={roll}
+      /* Choix du LANCEUR (avant le jet) : le joueur désigne qui du groupe tente — au lieu d'un
+         meilleur imposé. Chaque option montre sa cible effective (valeur + difficulté). */
+      setup={!rolled && pt.candidates && pt.candidates.length > 1 ? (
+        <OptionChooser
+          layout="grid"
+          groupLabel="Qui tente le Test ?"
+          options={pt.candidates.map((c) => ({
+            key: c.id,
+            label: c.name,
+            value: c.target,
+            selected: c.id === pt.actorId,
+            title: `${c.name} — cible ${c.target}${c.psychDetail ? ` · ${c.psychDetail}` : ''}`,
+            onSelect: () => setActor(c.id),
+          }))}
+        />
+      ) : undefined}
       /* Détermination (LDB 17 l.62) : AVANT le jet, si un malus psy social pèse sur le Test
          (Animosité/Préjugé envers l'interlocuteur), la dépense l'ignore. */
       determination={!rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined}

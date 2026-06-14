@@ -7,7 +7,7 @@ import { d10 } from '../engine/dice';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel } from '../engine/skills';
+import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { recomputeLoadout, itemFromTrapping, customTrapping } from '../engine/items';
 import { contractDisease } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
@@ -370,32 +370,45 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
             : undefined;
         const best = partyBest(get().party, e.skill, e.characteristic, socialMod);
         if (!best) break;
-        const psychMod = socialMod ? socialMod(best.actor) : 0;
-        const psychLabel = socialMod ? socialPsychLabel(best.actor, e.vsGroups!) : undefined;
-        const psychDetail = psychLabel ? `${psychLabel} envers ${e.vsGroups!.join('/')}` : undefined;
-        // Outil utilisé (Phase C2a) : résolu par NOM vers l'uid de l'objet du héros qui agit.
-        const tool = e.tool ? best.actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
         const difficulty = e.difficulty ?? 'intermediaire';
+        // Le GROUPE peut tenter : chaque membre vivant est un candidat (le défaut reste le meilleur,
+        // mais le JOUEUR choisit qui lance via `testSetActor`). Valeur/cible/malus/outil PAR acteur.
+        const candidates = get().party.filter((c) => !c.dead).map((actor) => {
+          const value = testValue(actor, e.skill, e.characteristic) + (socialMod ? socialMod(actor) : 0);
+          const pl = socialMod ? socialPsychLabel(actor, e.vsGroups!) : undefined;
+          const tool = e.tool ? actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
+          return {
+            id: actor.id,
+            name: actor.name,
+            value,
+            target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),
+            psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
+            psychDetail: pl ? `${pl} envers ${e.vsGroups!.join('/')}` : undefined,
+            itemUid: tool?.uid,
+          };
+        });
+        const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
+        if (!def) break;
         const label = e.label || e.skill || (e.characteristic ? `Test de ${e.characteristic}` : 'Test');
-        const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
         set({
           pendingTest: {
-            actorId: best.actor.id,
-            actorName: best.actor.name,
+            actorId: def.id,
+            actorName: def.name,
             label,
-            skillValue: best.value,
+            skillValue: def.value,
             difficulty,
             requireSL: e.requireSL ?? 0,
-            target,
-            psychMod: psychMod || undefined, // malus Animosité/Préjugé de l'acteur (affiché en modale)
-            psychDetail, // libellé lisible (« Animosité −20 envers Elfe »)
-            itemUid: tool?.uid,
+            target: def.target,
+            psychMod: def.psychMod, // malus Animosité/Préjugé de l'acteur (affiché en modale)
+            psychDetail: def.psychDetail, // libellé lisible (« Animosité −20 envers Elfe »)
+            itemUid: def.itemUid,
             isDouble: false,
             roll: null, // pas encore lancé
             success: false,
             sl: 0,
             onSuccess: e.onSuccess,
             onFailure: e.onFailure,
+            candidates: candidates.length > 1 ? candidates : undefined, // choix seulement si plusieurs
           },
         });
         return; // la suite est portée par la branche (résolue à l'acquittement)

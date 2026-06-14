@@ -72,6 +72,10 @@ export interface PendingTest {
   itemUid?: string;
   /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */
   isDouble?: boolean;
+  /** Membres du GROUPE pouvant tenter ce Test (le défaut `actorId` = le meilleur) — le joueur CHOISIT
+   *  qui lance via `testSetActor` (au lieu d'une désignation automatique). Chaque entrée porte sa
+   *  valeur/cible/malus, pour re-cibler le Test sans recalcul. Absent/≤1 → pas de choix. */
+  candidates?: { id: string; name: string; value: number; target: number; psychMod?: number; psychDetail?: string; itemUid?: string }[];
   /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
   roll: number | null;
   success: boolean;
