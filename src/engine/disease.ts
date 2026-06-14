@@ -375,7 +375,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       }
       // active
       if (hasSymptom(dz, 'blesse')) {
-        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » — ${c.name} (${dz.name})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
+        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » (${dz.name})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
         else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('Blessure Purulente'); } // l.110
       }
       if (hasSymptom(dz, 'toxine') && !defer) {
@@ -384,7 +384,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       // Gangrène (l.135+) : Test de Résistance Accessible (+20) journalier ; plus d'échecs que le
       // Bonus d'Endurance → la Localisation est PERDUE (règles d'Amputation — journalisé, MJ/Chirurgie).
       if (hasSymptom(dz, 'gangrene') && !dz.gangreneLost) {
-        if (defer) defer({ kind: 'diseaseGangrene', label: `Gangrène — ${c.name}`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, resistVal } });
+        if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, resistVal } });
         else if (!rollTest(resistVal, 'accessible', rng).success) {
           dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
           const be = Math.floor(resistVal / 10); // approximation BE ≈ Endurance/10 (resistVal = E + avances)
@@ -403,7 +403,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       if (dz.persistDifficulty) {
         if (defer) {
           dz.endTestPending = true;
-          defer({ kind: 'diseasePersist', label: `Fin de « ${dz.name} » — ${c.name}`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
+          defer({ kind: 'diseasePersist', label: `Fin de « ${dz.name} »`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
           survivors.push(dz);
         } else {
           const res = rollTest(resistVal, dz.persistDifficulty, rng); // l.162

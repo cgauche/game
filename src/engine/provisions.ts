@@ -165,7 +165,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest({ kind: 'faim', label: `Faim — ${c.name}`, base: resVal, difficulty: 'intermediaire', penalty });
+      deferTest({ kind: 'faim', label: 'Faim', base: resVal, difficulty: 'intermediaire', penalty });
       return res;
     }
     const t = rollTest(resVal, 'intermediaire', rng, penalty);

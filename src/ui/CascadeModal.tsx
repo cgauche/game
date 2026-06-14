@@ -26,6 +26,7 @@ export function CascadeModal() {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const next = useGame((s) => s.cascadeNext);
+  const resolveAll = useGame((s) => s.cascadeCancel); // « Tout lancer » : résout d'un coup les jets restants
 
   if (!p) return null;
   const cur = p.participants[p.cursor];
@@ -86,6 +87,14 @@ export function CascadeModal() {
       forceShow={rolled && !res?.success}
       confirmLabel={isLast ? 'Terminer' : 'Continuer'}
       onConfirm={() => next()}
+      /* « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup les étapes restantes (RNG, sans
+         influence) — slot secondaire partagé du shell (comme « Subir » de Défense). Pas d'Échap : la
+         cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie. */
+      onCancel={!isLast ? () => resolveAll() : undefined}
+      cancelLabel="🎲 Tout lancer"
+      cancelTitle="Résoudre d'un coup tous les jets restants (sans influence)"
+      cancelAfterRoll
+      disableEscClose
     />
   );
 }

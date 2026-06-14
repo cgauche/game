@@ -226,7 +226,7 @@ function buildExposureSteps(party: Combatant[], camperIds: string[], count: numb
     if (!h) continue;
     const resVal = restResistVal(h);
     for (let i = 0; i < count; i++) {
-      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: `Exposition — ${h.name}`, icon: '🥶',
+      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: '🥶',
         rollLabel: 'Résistance', base: resVal, target: exposureTarget(h, resVal), result: null, interactive: true });
     }
   }
@@ -354,7 +354,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const id of p.travelMarch ?? []) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
-    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: `Marche forcée — ${h.name}`, icon: '🥾',
+    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: '🥾',
       rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
   }
   // Tests d'entretien DIFFÉRÉS (faim, maladie, convalescence) → étapes influençables, dans l'ordre collecté.
@@ -368,7 +368,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
-    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion — ${h.name} (${c.diseaseName})`, icon: '🤒',
+    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: '🤒',
       rollLabel: 'Résistance', base: c.resVal, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName } });
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
@@ -398,7 +398,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const h of party) {
     if (h.dead) continue;
     if (needsRecoveryRoll(h)) {
-      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: `Récupération — ${h.name}`, icon: '🛌',
+      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: '🛌',
         rollLabel: 'Résistance', base: restResistVal(h), target: recoveryTarget(h), result: null, interactive: true });
     } else {
       const before = h.wounds.current;
@@ -407,7 +407,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       if (wokeUp) log.push(`${h.name} reprend connaissance.`);
     }
     if (h.nightmares) {
-      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: `Cauchemars — ${h.name}`, icon: '😱',
+      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: '😱',
         rollLabel: 'Calme', base: calmeVal(h), target: calmeVal(h) + 40, result: null, interactive: true });
     }
   }
