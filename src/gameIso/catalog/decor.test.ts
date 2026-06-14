@@ -47,3 +47,19 @@ describe('SP2 — décors fouillables', () => {
     expect(PROPS.cadavre.searchable).toBeFalsy();
   });
 });
+
+describe('Opéra — props de théâtre', () => {
+  const OPERA = ['rangee-sieges', 'rideau-scene', 'balustrade-loge', 'lustre-opera'];
+  it('les props d’opéra sont enregistrés et rendus non vides', () => {
+    for (const id of OPERA) {
+      expect(PROPS[id], id).toBeDefined();
+      expect(propSvg(id).length, id).toBeGreaterThan(120);
+    }
+  });
+  it('le mobilier de salle porte une empreinte 3×1 ; le lustre est en surplomb (sans empreinte)', () => {
+    expect(PROPS['rangee-sieges'].foot).toEqual({ w: 3, h: 1 });
+    expect(PROPS['rideau-scene'].foot).toEqual({ w: 3, h: 1 });
+    expect(PROPS['balustrade-loge'].foot).toEqual({ w: 3, h: 1 });
+    expect(PROPS['lustre-opera'].foot).toBeUndefined();
+  });
+});
