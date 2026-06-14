@@ -74,6 +74,15 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Éléments d'apparence (catalogue unifié — traits de corps réutilisables) : 1 élément = 1 fichier defs/.
+    dir: 'src/gameIso/rig/parts/elements/defs',
+    out: 'src/gameIso/rig/parts/elements/_registry.generated.ts',
+    exportName: 'element',
+    arrayName: 'ELEMENT_DEFS',
+    type: 'AppearanceElement',
+    typeFrom: './types',
+  },
+  {
     // Armes (forme + art unifiés) : 1 arme = 1 fichier defs/.
     dir: 'src/gameIso/rig/parts/weapons/defs',
     out: 'src/gameIso/rig/parts/weapons/_registry.generated.ts',
