@@ -62,4 +62,10 @@ describe('Opéra — props de théâtre', () => {
     expect(PROPS['balustrade-loge'].foot).toEqual({ w: 3, h: 1 });
     expect(PROPS['lustre-opera'].foot).toBeUndefined();
   });
+  it('le mobilier d’ambiance d’opéra est enregistré et rendu (applique, pupitre, fauteuil)', () => {
+    for (const id of ['applique-murale', 'pupitre-chef', 'fauteuil-loge']) {
+      expect(PROPS[id], id).toBeDefined();
+      expect(propSvg(id).length, id).toBeGreaterThan(120);
+    }
+  });
 });
