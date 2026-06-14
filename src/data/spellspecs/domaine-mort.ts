@@ -31,13 +31,19 @@ export const DOMAINE_MORT: SpellSpec[] = [
   },
   {
     label: 'La Faux de Shyish',
-    // « Vous invoquez une faux magique (Corps à corps (Arme d'hast), Dégâts BFM+3). Les ennemis
-    //   Mort-vivant ne reçoivent pas d'Avantage quand ils sont Engagés avec vous. » — arme invoquée
-    //   à statistiques propres + clause anti-mort-vivant : non modélisée (création d'arme) : arbitré.
-    ops: [{ op: 'narrative', text: 'La Faux de Shyish : vous maniez une faux magique invoquée (Arme d’hast, Dégâts = BFM+3) ; les Mort-vivant Engagés avec vous ne gagnent pas d’Avantage — arbitrage MJ.' }],
+    // « Vous invoquez une faux magique, qui peut être portée en combat, utilisant la Compétence Corps
+    //   à corps (Arme d'hast). Elle agit comme une faux banale avec une valeur de Dégâts égale à votre
+    //   Bonus de Force Mentale +3. Les ennemis possédant le Trait Mort-vivant ne reçoivent pas
+    //   d'Avantage quand ils sont Engagés en combat avec vous. » — INVOQUÉE (op conjureWeapon) : Arme
+    //   d'hast magique à 2 mains, Dégâts FIXES = BFM+3. La clause anti-Avantage des Mort-vivant
+    //   (modificateur relationnel non exprimable en une op) reste journalisée.
+    ops: [
+      { op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Arme d’hast', hands: 2, qualities: ['Magique'] },
+      { op: 'narrative', text: 'La Faux de Shyish : les ennemis Mort-vivant ne reçoivent pas d’Avantage quand ils sont Engagés avec vous — arbitrage MJ.' },
+    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 48 — Domaine de la Mort « La Faux de Shyish »',
+    source: 'LDB 48 — Domaine de la Mort « La Faux de Shyish » (l.433)',
   },
   {
     label: 'Le Voile violet de Shyish',

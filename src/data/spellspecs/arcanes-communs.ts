@@ -19,17 +19,18 @@ const N = (label: string, text: string, durationRounds: SpellSpec['durationRound
 export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Arme aethyrique',
-    // « Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre BFM… L'arme est
-    //   considérée comme Magique. » — approximation : l'Atout Magique est posé sur l'arme TENUE
-    //   (op enchantWeapon) ; la création d'une arme dédiée (Dégâts = BFM seuls, toute Compétence
-    //   de CC) reste journalisée.
+    // « Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bonus de Force
+    //   Mentale. Elle peut prendre n'importe quelle forme et peut donc utiliser n'importe quelle
+    //   Compétence de Corps à corps que vous possédez. L'arme est considérée comme Magique. » —
+    //   INVOQUÉE (op conjureWeapon) : arme de mêlée Magique, Dégâts FIXES = BFM (sans Bonus de Force),
+    //   tenue tant que le Sort dure. Le libre choix de la forme/Compétence de CC reste journalisé.
     ops: [
-      { op: 'enchantWeapon', addQualities: ['Magique'] },
-      { op: 'narrative', text: 'Arme aethyrique : arme créée de Dégâts = BFM (sans Bonus de Force), maniable avec n’importe quelle Compétence de Corps à corps — arbitrage MJ.' },
+      { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] },
+      { op: 'narrative', text: 'Arme aethyrique : elle prend la forme que vous voulez et se manie avec n’importe quelle Compétence de Corps à corps que vous possédez — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: 'LDB 47 p.242 « Arme aethyrique »',
+    source: 'LDB 47 — Arcanes communs « Arme Aethyrique » (l.243)',
   },
   {
     label: 'Armure Aethyrique',

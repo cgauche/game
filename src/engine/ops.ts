@@ -22,8 +22,9 @@ import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout } from './items';
 import { suppressPsychTraits } from './psychology';
+import { norm } from '../lib/normalize';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -33,6 +34,7 @@ import {
   Difficulty,
   DIFFICULTY_LABELS,
   HIT_LOCATION_LABELS,
+  Weapon,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -193,6 +195,15 @@ export type GameOp =
    *  Alimente tout sort qui DONNE du matériel : Rations (Générosité de Manann, Récolte de Rhya →
    *  système de provisions/Faim), etc. `count`/`perSL` : « +1 par +2 DR ». */
   | { op: 'giveTrapping'; trapping: string; count?: number; perSL?: PerSL }
+  /** Invoque une arme MAGIQUE temporaire (Arme aethyrique : Dégâts = BFM ; Faux de Shyish : Arme
+   *  d'hast, BFM+3 ; Épée ardente de Rhuin : Dégâts +6, Percutante). `damage` (résolue vs lanceur)
+   *  + `damagePlus` (offset constant) donnent la composante chiffrée ; `plusBF` y ajoute le Bonus de
+   *  Force (défaut : Dégâts FIXES, sans BF — conforme aux armes invoquées). L'arme passe en tête de
+   *  `c.weapons` (arme directrice) tant que le Sort dure (engine/items.recomputeLoadout) puis
+   *  disparaît à l'expiration. `onHitConditions` : États infligés à la touche (Épée ardente → En flammes). */
+  | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
+      type?: 'melee' | 'ranged'; qualities?: string[]; subType?: string; hands?: 1 | 2;
+      bypass?: ArmourBypass; onHitConditions?: { name: string; value?: number }[] }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -625,6 +636,27 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'perRound': {
         pushPerRound(target, o.ops, ctx);
+        break;
+      }
+      case 'conjureWeapon': {
+        const flat = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
+        const dmg = o.plusBF ? `+BF+${flat}` : `+${flat}`;
+        const weapon: Weapon = {
+          name: o.name, type: o.type ?? 'melee', damage: dmg,
+          qualities: [...(o.qualities ?? [])], subType: o.subType, hands: o.hands ?? 1,
+          ...(o.bypass != null ? { bypass: o.bypass } : {}),
+          uid: `conjure-${target.id}-${norm(o.name)}`,
+        };
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? o.name, bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          conjuredWeapon: weapon,
+          ...(o.onHitConditions?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitConditions: o.onHitConditions } } : {}),
+        });
+        recomputeLoadout(target); // l'arme invoquée entre en tête de c.weapons (arme directrice)
+        lines.push(`${target.name} invoque ${o.name} (Dégâts ${dmg}${o.qualities?.length ? `, ${o.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

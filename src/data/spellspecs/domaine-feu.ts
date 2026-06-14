@@ -91,21 +91,19 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: "L'Épée ardente de Rhuin",
-    // « L'arme possède Dégâts +6 et l'Atout Percutante, et quiconque est frappé par la lame
-    //   gagne +1 État En flammes. » — op enchantWeapon ; le volet « Maladresse d'un porteur
-    //   sans Magie des Arcanes (Feu) » reste journalisé.
+    // « Vous enveloppez une épée de flammes magiques. L'arme possède Dégâts +6 et l'Atout Percutante,
+    //   et quiconque est frappé par la lame gagne +1 État En flammes. Si les porteurs ne possèdent pas
+    //   le Talent Magie des Arcanes (Feu) et obtiennent une maladresse… ils gagnent +1 État En flammes. »
+    //   — INVOQUÉE (op conjureWeapon, et non enchantement de l'arme tenue) : épée magique à Dégâts
+    //   FIXES +6 (la valeur d'arme, pas un bonus à votre épée), Percutante, +1 En flammes à la touche.
+    //   La maladresse d'un porteur sans Magie des Arcanes (Feu) reste journalisée.
     ops: [
-      {
-        op: 'enchantWeapon',
-        addQualities: ['Percutante'],
-        damageBonus: 6,
-        onHitConditions: [{ name: 'En flammes' }],
-      },
+      { op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Épée', qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }] },
       { op: 'narrative', text: 'Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
-    source: "LDB 47 p.247 « L'Épée ardente de Rhuin »",
+    source: "LDB 48 — Domaine du Feu « L'épée Ardente de Rhuin » (l.216)",
   },
   {
     label: 'Mur de feu',
