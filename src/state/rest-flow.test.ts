@@ -12,6 +12,7 @@ import { restPlacesHere } from './restFlow';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { toBrass } from '../engine/money';
+import { stacks } from '../engine/conditions';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
@@ -126,6 +127,21 @@ describe('openRest / choix par héros', () => {
     expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false);
     const kinds = walkCascadeAbriFails(); // abri raté → campement exposé
     expect(kinds.filter((k) => k === 'exposure').length).toBe(2 * 2); // 2 héros × 2 Tests
+  });
+
+  it('cascade : valider une MARCHE FORCÉE ratée applique +Exténué (applicateur forcedMarch)', () => {
+    const h = useGame.getState().party[0];
+    const exten0 = stacks(h, 'Exténué');
+    // Cascade à une étape de marche forcée, jet figé sur un ÉCHEC.
+    useGame.setState({ pendingCascade: {
+      title: 'Marche', purpose: 'travel', cursor: 0, log: [], participants: [
+        { id: 'm1', kind: 'forcedMarch', actorId: h.id, label: 'Marche forcée', rollLabel: 'Résistance',
+          base: 40, target: 40, result: { roll: 99, target: 40, sl: -4, success: false }, interactive: true },
+      ],
+    } });
+    useGame.getState().cascadeNext(); // verrouille l'échec → +Exténué (applyForcedMarch)
+    expect(stacks(useGame.getState().party[0], 'Exténué')).toBe(exten0 + 1);
+    expect(useGame.getState().pendingCascade).toBeNull();
   });
 
   it('avec une TENTE dans le paquetage : pas d’Exposition par nuit difficile (note de campement au journal)', () => {
