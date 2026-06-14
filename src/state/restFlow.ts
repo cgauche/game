@@ -32,6 +32,7 @@ import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recov
 import { rollContraction, DISEASE_DEFS, contagiousDiseases } from '../engine/disease';
 import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
 import { effectiveChar } from '../engine/characteristics';
+import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import type { CascadeStep } from './pendings';
 import { isRation, feedFromMeal } from '../engine/provisions';
@@ -90,6 +91,9 @@ export interface PendingRest {
   /** HALTE de voyage : le RAPPORT DU JOUR (km, jets, péripéties) — affiché en tête de la modale
    *  (la journée se lit le soir même, le recap final ne re-déroule plus tout le trajet). */
   travelDay?: import('./travelFlow').TravelRecapDay;
+  /** HALTE de voyage À PIED au-delà des heures RAW : héros à tester en MARCHE FORCÉE (l.224) — leurs
+   *  jets ouvrent la cascade de la nuit (influençables), avant l'abri/la récupération. */
+  travelMarch?: string[];
 }
 
 import type { Get, Set } from './flowTypes';
@@ -245,6 +249,11 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   return { journal: applyExposureFailure(hero, priorFails + 1, battleRng()).log };
 });
 
+registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  return { journal: [applyForcedMarch(hero, step.result.success).line] }; // l.224 : échec → +Exténué
+});
+
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
   return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
@@ -271,6 +280,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily }));
 
   const steps: CascadeStep[] = [];
+  // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
+  for (const id of p.travelMarch ?? []) {
+    const h = party.find((x) => x.id === id);
+    if (!h || h.dead) continue;
+    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: `Marche forcée — ${h.name}`, icon: '🥾',
+      rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
+  }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
   const severity = weatherExposure(get().scene?.weather);
@@ -371,7 +387,7 @@ export function restPlacesHere(st: GameState): { places: RestPlaces; quality: 'n
 }
 
 /** Ouvre la modale de Repos avec une OFFRE de lieux (effet, halte de voyage, bouton 🌙). */
-export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean; travelDay?: import('./travelFlow').TravelRecapDay }): void {
+export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean; travelDay?: import('./travelFlow').TravelRecapDay; travelMarch?: string[] }): void {
   const st = get();
   if (st.battle || st.pendingRest) return;
   const places = opts?.places ?? { maison: true, camp: true };
@@ -380,7 +396,7 @@ export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quali
     if (h.dead) continue;
     perHero[h.id] = { lodging: lodgingOptions(places)[0], food: foodOptions(places, h)[0] };
   }
-  set({ pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt, travelDay: opts?.travelDay } });
+  set({ pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt, travelDay: opts?.travelDay, travelMarch: opts?.travelMarch } });
 }
 
 export function restSet(get: Get, set: Set, heroId: string, patch: Partial<{ lodging: RestLodging; food: RestFood }>): void {

@@ -123,18 +123,31 @@ export interface ForcedMarchResult {
   d: { label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number };
 }
 
+/** Cible du Test de marche forcée (Résistance +0, l.224) — base de l'étape de cascade. */
+export function forcedMarchTarget(c: Combatant): number {
+  return testValue(c, 'Résistance', 'E');
+}
+
+/** Applique le RÉSULTAT d'un Test de marche forcée (séparé du jet pour différer/influencer en
+ *  cascade) : échec → +1 Exténué (+1 si Surchargé, p.293). Mute `c` ; renvoie le journal + gagnés.
+ *  Partagé par `forcedMarchTest` (eager) et l'applicateur de cascade « forcedMarch ». */
+export function applyForcedMarch(c: Combatant, success: boolean): { line: string; gained: number } {
+  if (success) return { line: `${c.name} — marche forcée : il tient l'allure.`, gained: 0 };
+  const overloaded = encumbrancePenalties(c).tier > 0;
+  const n = overloaded ? 2 : 1;
+  addCondition(c, 'Exténué', n);
+  return { line: `${c.name} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
+}
+
 /** Marche forcée (l.224) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
  *  échec = +1 Exténué (+1 de plus si Surchargé/Encombré, p.293). Mute `c` ; null = mort. */
 export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarchResult | null {
   if (c.dead) return null;
-  const base = testValue(c, 'Résistance', 'E');
+  const base = forcedMarchTarget(c);
   const t = rollTest(base, 'intermediaire', rng);
   const d = testDetail('Résistance', base, t);
-  if (t.success) return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → il tient l'allure.`, gained: 0, d };
-  const overloaded = encumbrancePenalties(c).tier > 0;
-  const n = overloaded ? 2 : 1;
-  addCondition(c, 'Exténué', n);
-  return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n, d };
+  const r = applyForcedMarch(c, t.success);
+  return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
 }
 
 /** Fatigue d'Encombrement d'une journée de voyage à pied (LDB p.295 — `travelFatigue` enfin

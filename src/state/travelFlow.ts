@@ -216,34 +216,44 @@ function runTravelDays(get: Get, set: Set): void {
     const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday, lines: [...upkeepLines], entries: [] };
     recap?.days.push(recapDay);
 
-    // Fin de journée de route À PIED : fatigue d'Encombrement (p.295) + marche forcée (l.224).
+    // Fin de journée de route À PIED : fatigue d'Encombrement (p.295, non-jetée) + recensement des
+    // héros en MARCHE FORCÉE (l.224). Le JET de marche forcée est DIFFÉRÉ : s'il y a une halte de
+    // nuit, il ouvre la cascade influençable de la nuit ; sinon (arrivée/interruption) il est roulé
+    // d'office ici (pas de halte où le présenter).
     const dayLines: string[] = [];
+    const marchHeroes: string[] = [];
     if (plan.mode === 'pied' && hoursToday >= base - 1e-9) {
       for (const h of party) {
         if (h.dead || h.outOfRencontre) continue;
         const fatigue = applyTravelFatigue(h);
         dayLines.push(...fatigue);
         recapDay.lines.push(...fatigue);
-        if (plan.hoursPerDay > base) {
-          const r = forcedMarchTest(h, battleRng());
-          if (r) {
-            // Journal en texte ; recap en LIGNE DE JET (multijet, comme le bilan de nuit).
-            dayLines.push(r.line);
-            recapDay.entries!.push({ actorId: h.id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' });
-          }
-        }
+        if (plan.hoursPerDay > base) marchHeroes.push(h.id);
       }
       if (dayLines.length) set({ party: [...party] });
     }
     log(get, set, dayLines);
+    const rollMarchEager = () => {
+      if (!marchHeroes.length) return;
+      const lines: string[] = [];
+      for (const id of marchHeroes) {
+        const h = get().party.find((x) => x.id === id);
+        if (!h) continue;
+        const r = forcedMarchTest(h, battleRng());
+        if (r) { lines.push(r.line); recapDay.entries!.push({ actorId: id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
+      }
+      set({ party: [...get().party] });
+      log(get, set, lines);
+    };
 
     // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage — une
     // EMBUSCADE est alors DIFFÉRÉE derrière le récit (`recap.then`) : le joueur lit d'abord
     // ce qui lui arrive, le combat démarre à l'acquittement du recap.
     const out: { then?: TravelThen } = {};
-    if (resolvePerils(get, set, route, to.label, recapDay, out)) { finishRecap('interrupted', out.then); return; }
+    if (resolvePerils(get, set, route, to.label, recapDay, out)) { rollMarchEager(); finishRecap('interrupted', out.then); return; }
 
     if (arrived) {
+      rollMarchEager();
       set({ travelPlan: null });
       log(get, set, [`— Arrivée à ${to.label} —`]);
       finishRecap('arrived');
@@ -252,8 +262,8 @@ function runTravelDays(get: Get, set: Set): void {
     }
     // Nuit en route : HALTE — modale de Repos (auberge de relais si la route en a, sinon
     // campement). Le voyage se suspend ; « Continuer » du bilan reprend la route au matin.
-    // Le RAPPORT DU JOUR s'affiche dans la halte (le soir même, avec ses conséquences).
-    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true, travelDay: { ...recapDay, lines: [...recapDay.lines], entries: [...(recapDay.entries ?? [])] } });
+    // La MARCHE FORCÉE du jour ouvre la cascade de la nuit (influençable) via `travelMarch`.
+    openRest(get, set, { places: placesOfKind(route.inns ? 'auberge' : 'camp'), travelHalt: true, travelMarch: marchHeroes, travelDay: { ...recapDay, lines: [...recapDay.lines], entries: [...(recapDay.entries ?? [])] } });
     return; // au matin, runTravelDays repart sur un recap NEUF (segment suivant)
   }
 }

@@ -112,6 +112,19 @@ describe('startTravel — à pied', () => {
     expect(rationCount(st.party[0])).toBe(2);
   });
 
+  it('marche forcée (allure > 6 h/jour) : les jets ouvrent la cascade INFLUENÇABLE de la halte de nuit', () => {
+    setup(map({ km: 60 })); // assez long pour une halte de nuit après le 1er jour
+    useGame.getState().startTravel('r1', 'pied', { hoursPerDay: 8 }); // > 6 h → marche forcée (l.224)
+    const p = useGame.getState().pendingRest!;
+    expect(p.phase).toBe('setup');
+    expect((p.travelMarch ?? []).length).toBeGreaterThan(0); // héros à tester en marche forcée
+    useGame.getState().restSleep();
+    const cas = useGame.getState().pendingCascade!;
+    // Le jet de marche forcée du jour est une ÉTAPE influençable de la cascade de nuit.
+    expect(cas.participants[0].kind).toBe('forcedMarch');
+    expect(cas.participants.filter((s) => s.kind === 'forcedMarch').length).toBe(1); // 1 héros
+  });
+
   it('route à RELAIS (inns) : la halte de nuit propose l’auberge — chambre privée débitée, puis arrivée', () => {
     setup(map({ km: 30, inns: true }));
     useGame.setState({ money: { gold: 2, silver: 0, brass: 0 } });
