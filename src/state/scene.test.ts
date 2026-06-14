@@ -33,17 +33,14 @@ describe('scene + terrain registre', () => {
 });
 
 describe('ambiance — intérieur vs extérieur (jour/nuit vient de l’horloge, #T1c)', () => {
-  it('normalizeAmbiance : interieur conservé ; jour/nuit/foret/undefined → exterieur', () => {
+  it('normalizeAmbiance : interieur conservé ; exterieur/undefined → exterieur', () => {
     expect(normalizeAmbiance('interieur')).toBe('interieur');
     expect(normalizeAmbiance('exterieur')).toBe('exterieur');
-    expect(normalizeAmbiance('jour')).toBe('exterieur');
-    expect(normalizeAmbiance('nuit')).toBe('exterieur');
-    expect(normalizeAmbiance('foret')).toBe('exterieur');
     expect(normalizeAmbiance(undefined)).toBe('exterieur');
   });
   it('isIndoor', () => {
     expect(isIndoor({ ambiance: 'interieur' } as Scene)).toBe(true);
-    expect(isIndoor({ ambiance: 'nuit' } as Scene)).toBe(false);
+    expect(isIndoor({ ambiance: 'exterieur' } as Scene)).toBe(false);
     expect(isIndoor({ ambiance: undefined } as Scene)).toBe(false);
   });
 });

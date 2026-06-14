@@ -47,7 +47,7 @@ export function arena(opts: {
     nom: opts.nom,
     description: 'Arène de test.',
     dimensions: { w, h },
-    ambiance: 'jour',
+    ambiance: 'exterieur',
     tiles: new Array(w * h).fill(opts.terrain ?? 'herbe') as Terrain[],
     entities: [{ id: 'start', kind: 'heroStart', pos: opts.heroStart ?? { x: 2, y: Math.floor(h / 2) } }],
     dialogues: [],

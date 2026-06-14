@@ -137,7 +137,7 @@ function build(): Scene {
       'Route forestière. Une diligence éventrée, ses passagers dépecés, des mutants de toutes ' +
       "formes qui s'en repaissent. L'approche déclenche un dialogue, dont la fin lance le combat.",
     dimensions: { w: W, h: H },
-    ambiance: 'foret',
+    ambiance: 'exterieur',
     tiles,
     startMessage:
       'Au détour des arbres, une diligence renversée, des corps éparpillés… et des formes difformes ' +

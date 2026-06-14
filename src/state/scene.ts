@@ -341,9 +341,8 @@ export interface Scene {
   description: string;
   dimensions: { w: number; h: number };
   /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
-   *  (jour/nuit = horloge). Valeurs HÉRITÉES 'jour'|'nuit'|'foret' = legacy, normalisées 'exterieur'
-   *  (cf. normalizeAmbiance) — gardées pour la rétro-compat des scènes existantes (#T1c). */
-  ambiance?: 'interieur' | 'exterieur' | 'jour' | 'nuit' | 'foret';
+   *  (jour/nuit = horloge). Absent = extérieur. */
+  ambiance?: 'interieur' | 'exterieur';
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
@@ -404,8 +403,7 @@ export function emptyScene(w = 20, h = 15): Scene {
   };
 }
 
-/** Le jour/nuit ne vient plus de la scène (il vient de l'horloge) ; `ambiance` ne distingue plus que
- *  intérieur vs extérieur. Normalise les valeurs héritées (jour/nuit/foret/undefined → exterieur). (#T1c) */
+/** `ambiance` ne distingue qu'intérieur vs extérieur (le jour/nuit vient de l'horloge). Absent → extérieur. */
 export function normalizeAmbiance(a: Scene['ambiance']): 'interieur' | 'exterieur' {
   return a === 'interieur' ? 'interieur' : 'exterieur';
 }

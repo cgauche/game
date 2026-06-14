@@ -26,7 +26,7 @@ export const testScene: Scene = {
   nom: 'Terrain de test',
   description: 'Scène neutre pour les tests de combat.',
   dimensions: { w: W, h: H },
-  ambiance: 'jour',
+  ambiance: 'exterieur',
   tiles: new Array(W * H).fill('herbe') as Terrain[],
   entities: [{ id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } }, ...enc.entities],
   dialogues: [],
