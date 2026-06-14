@@ -26,7 +26,7 @@ beforeEach(() => {
 describe('couverture de curation', () => {
   it('Magie mineure, Arcanes communs, Domaines Feu/Lumière, Miracles Sigmar+Shallya : tous curés', () => {
     const curedArcaneDomains = ['Feu', 'Lumière', 'Cieux', 'Métal', 'Ombres', 'Gueule', 'Bête', 'Sorcellerie', 'Démonologie', 'Mort', 'Vie', 'Magie naturelle', 'Nécromancie'];
-    const curedCults = ['Sigmar', 'Shallya', 'Morr', 'Myrmidia', 'Manann', 'Ranald', 'Rhya'];
+    const curedCults = ['Sigmar', 'Shallya', 'Morr', 'Myrmidia', 'Manann', 'Ranald', 'Rhya', 'Taal'];
     for (const s of spells) {
       const fam = s.type === 'Magie mineure' || (s.type === 'Magie des Arcanes' && s.subType == null)
         || (s.type === 'Magie des Arcanes' && curedArcaneDomains.includes(s.subType ?? ''))
@@ -35,11 +35,13 @@ describe('couverture de curation', () => {
     }
   });
 
-  it('labels en double : « Enchevêtrement » d\'Arcane est curé, le miracle de Taal reste en repli', () => {
-    expect(curatedSpec('Enchevêtrement', 'Magie des Arcanes')).toBeTruthy();
-    expect(curatedSpec('Enchevêtrement', 'Invocation')).toBeUndefined();
-    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation')!;
-    expect(spellSpecFor(taal).curated).toBe(false);
+  it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal, tous deux curés)', () => {
+    const arcane = curatedSpec('Enchevêtrement', 'Magie des Arcanes');
+    const taal = curatedSpec('Enchevêtrement', 'Invocation');
+    expect(arcane?.type).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
+    expect(taal?.type).toBe('Invocation'); // discriminant du miracle de Taal
+    const taalSpell = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation')!;
+    expect(spellSpecFor(taalSpell).curated).toBe(true);
   });
 
   it('spellSupport : classification mécanique / partiel / narratif', () => {
